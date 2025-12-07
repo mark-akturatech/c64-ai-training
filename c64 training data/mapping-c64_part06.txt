@@ -1,0 +1,252 @@
+# C64 Zero Page - BASIC Variables $43-$60
+
+
+77            $4D            OPMASK
+Mask for Comparison Operation
+
+The expression evaluation routine creates a mask here which lets it
+know whether the current comparieson operation is a less-than (1),
+equals (2), or greater-than (4) comparison.
+
+78-79         $4E-$4F        DEFPNT
+Pointer to the Current FN Descriptor
+
+During function definition (DEF FN) this location is used as a pointer
+to the descriptor that is created.  During function execution (FN) it
+points to the FN descriptor in which the evaluation results should be
+saved.
+
+80-82         $50-$52        DSCPNT
+Temporary Pointer to the Current String Descriptor
+
+The string assignment and handling routines use the first two bytes as
+a temporary pointer to the current string descriptor, and the third to
+hold the value of the string length.
+
+83            $53            FOUR6
+Constant for Garbage Collection
+
+The constant contained here lets the garbage collection routines know
+whether a three- or seven-byte string descriptor is being collected.
+
+84-86         $54-$56        JMPER
+Jump to Function Instruction
+
+The first byte is the 6502 JMP instruction ($4C), followed by the
+address of the required function taken from the table at 41042
+($A052).
+
+87-96         $57-$60
+BASIC Numeric Work Area
+
+This is a very busy work area, used by many routines.
+
+97-102        $61-$66        FAC1
+Floating Point Accumulator #1
+
+The Floating Point Accumulator is central to the execution of any
+BASIC mathematical operation.  It is used in the conversion of
+integers to floating point numbers, strings to floating point numbers,
+and vice versa.  The results of most evaluations are stored in this
+location.
+
+The internal format of floating point numbers is not particularly easy
+to understand (or explain).  Generally speaking, the number is broken
+into the normalized mantissa, which represents a number between 1 and
+1.99999..., and an exponent value, which represents a power of 2.
+Multiplying the mantissa by 2 raised to the value of the exponent
+gives you the value of the floating point number.
+
+Fortunately, the BASIC interpreter contains many routines for the
+manipulation and conversion of floating point number, and these
+routines can be called by the user.  See the entries for locations 3
+and 5
+
+Floating Point Accumulator #1 can be further divided into the
+following locations:
+
+97            $61            FACEXP
+Floating Point Accumulator #1: Exponent
+
+This exponent represents the closest power of two to the number, with
+129 added to take care of the sign problem for negative exponents.  An
+exponent of 128 is used for the value 0; an exponent of 129 represents
+2 to the 0 power, or 1; an exponent of 130 represents 2 to the first
+power, or 2; 131 is 2 squared, or 4; 132 is 2 cubed, or 8; and so on.
+
+98-101        $62-$65        FACHO
+Floating Point Accumulator #1: Mantissa
+
+The most significant digit can be assumed to be a 1 (remember that the
+range of the mantissa is from 1 to 1.99999...) when a floating point
+number is stored to a variable.  The first bit is used for the sign of
+the number, and the other 31 bits of the four-byte mantissa hold the
+other significant digits.
+
+The first two bytes (98-99, $62-$63) of this location will hold the
+signed integer result of a floating point to integer conversion, in
+high-byte, low- byte order.
+
+102           $66            FACSGN
+Floating Point Accumulator #1: Sign
+
+A value of 0 here indicates a positive number, while a value of 255
+($FF) indicates a negative number.
+
+103           $67            SGNFLG
+Number of Terms in a Series Evaluation
+
+This location is used by mathematical formula evaluation routines.  It
+indicates the number of separate evaluations that must be done to
+resolve a complex expression down to a single term.
+
+104           $68            BITS
+Floating Point Accumulator #1: Overflow Digit
+
+This location contains the overflow byte.  The overflow byte is used
+in an intermediate step of conversion from an integer or text string
+to a floating point number.
+
+105-110       $69-$6E        FAC2
+Floating Point Accumulator #2
+
+A second Floating Point Accumulator, used in conjunction with Floating
+Point Accumulator #1 in the evaluation of products, sums,
+differences--in short, any operation requiring more than one value.
+The format of this accumulator is the same as FAC1.
+
+105           $69            ARGEXP
+Floating Point Accumulator #2: Exponent
+
+106-109       $6A-$6D        ARGHO
+Floating Point Accumulator #2: Mantissa
+
+110           $6E            ARGSGN
+Floating Point Accumulator #2: Sign
+
+111           $6F            ARISGN
+Result of a Signed Comparison of Accumulator #1 to Accumulator #2
+
+Used to indicate whether the two Floating Point Accumulators have like
+or unlike signs.  A 0 indicates like signs, a 255 ($FF) indicates
+unlike signs.
+
+112           $70            FACOV
+Low Order Mantissa Byte of Floating Point Accumulator #1 (For
+Rounding)
+
+If the mantissa of the floating point number has more significant
+figures than can be held in four bytes, the least significant figures
+are placed here.  They are used to extend the accuracy of intermediate
+mathematical operations and to round to the final figure.
+
+113-114       $71-$72        FBUFPT
+Series Evaluation Pointer
+
+This location points to the address of a temporary table of values
+built in the free RAM area for the evaluation of formulas.  It is also
+used for such various purposes as a TI$ work area, string setup
+pointer, and work space for the evaluation of the size of an array.
+
+Although this is labeled a pointer to the tape buffer in the
+Programmer's Reference Guide, disassembly of the BASIC ROM reveals no
+reference to this location for that purpose (see 178 ($B2) for pointer
+to tape buffer).
+
+115-138       $73-$8A        CHRGET
+Subroutine: Get Next BASIC Text Character
+
+This is actually a machine language subroutine, which at the time of a
+BASIC cold start (such as when the power is turned on) is copied from
+MOVCHG (58274, $E3A2) in the ROM to this zero page location.
+
+CHRGET is a crucial routine which BASIC uses to read text characters,
+such as the text of the BASIC program which is being interpreted.  It
+is placed on zero page to make the routine run faster.  Since it keeps
+track of the address of the character being read within the routine
+itself, the routine must be in RAM in order to update that pointer.
+The pointer to the address of the byte currently being read is really
+the operand of a LDA instruction.  When entered from CHRGET, the
+routine increments the pointer by modifying the operand at TXTPTR
+(122, $7A), thus allowing the next character to be read.
+
+Entry at CHRGOT (121, $79) allows the current character to be read
+again.  The CHRGET routine skips spaces, sets the various flags or the
+status register (.P) to indicate whether the character read was a
+digit, statement terminator, or other type of character, and returns
+with the retrieved character in the Accumulator (.A).
+
+Since CHRGET is used to read every BASIC statement before it is
+executed, and since it is in RAM, and therefore changeable, it makes a
+handy place to intercept BASIC to add new features and commands (and
+in the older PET line, it was the only way to add such features).
+Diversion of the CHRGET routine for this purpose is generally referred
+to as a wedge.
+
+Since a wedge can greatly slow down execution speed, mose of the time
+it is set up so that it performs its preprocessing functions only when
+in direct or immediate mode.  The most well-known example of such a
+wedge is the "Universal DOS Support" program that allows easier
+communication with the disk drive command channel.
+
+As this is such a central routine, a disassembly listing is given
+below to provide a better understanding of how it works.
+
+115 $73   CHRGET  INC TXTPTR   ; increment low byte of TXTPTR
+117 $75           BNE CHRGOT   ; if low byte isn't 0, skip next
+119 $77           INC TXTPTR+1 ; increment high byte of TXTPTR
+121 $79   CHRGOT  LDA          ; load byte from where TXTPTR points
+                               ; entry here does not update TXTPTR,
+                               ; allowing you to readl the old byte again
+122 $7A   TXTPTR  $0207        ; pointer is really the LDA operand
+                               ; TXTPTR+1 points to 512-580 ($200-$250)
+                               ; when reading from the input buffer
+                               ; in direct mode
+124 $7C   POINTB  CMP #$3A     ; carry flag set if > ASCII numeral 9
+126 $7E           BCS EXIT     ; character is not a numeral--exit
+128 $80           CMP #$20     ; if it is an ASCI space...
+130 $82           BEQ CHRGET   ; ignore it and get next character
+132 $84           SEC          ; prepare to subtract
+133 $85           SBC #$30     ; ASCII 0-9 are between 48-57 ($30-$39)
+135 $87           SEC          ; prepare to subtract again
+136 $88           SBC #$D0     ; if < ASCII 0 (57, $39) then carry is set
+138 $8A   EXIT    RTS          ; carry is clear only for numeral on return
+
+The Accumulator (.A register) holds the character that was read on
+exit from the routine.  Status register (.P) bits which can be tested
+for on exit are:
+
+  Carry Clear if the character was an ASCII digit 0-9.
+  Carry Set, otherwise.
+  Zero Set only if the character was a statement terminator 0 or an
+ASCII colon, 58 ($3A).
+  Zero Clear, otherwise.
+
+
+One wedge insertion technique is to change CHRGET's INC $7A to a JMP
+WEDGE, have your wedge update TXTPTR itself, and then JSR CHRGOT.
+Another is to change the CMP #$3A at location 124 ($7C), which I have
+labeled POINTB, to a JMP WEDGE, do your wedge processing, and then
+exit through the ROM version of POINTB, which is located at 48283
+($E3AB).  For more detailed information about wedges, see Programming
+the PET/CBM, Raeto Collin West, pages 365-68.
+
+While the wedge is a good, quick technique for adding new commands, a
+much more elegant method exists for accomplishing this task on the
+VIC-20 and 64 withouth slowing BASIC down to the extent that the wedge
+does.  See the entries for the BASIC RAM vector area at 768-779
+($300-$30B) for more details.
+
+139-143       $8B-$8F        RNDX
+RND Function Seed Value
+
+This location holds the five-byte floating point value returned by the
+RND function.  It is initially set to a seed value copied from ROM
+(the five bytes are 128, 79, 199, 82, 88--$80, $4F, $C7, $52, $58).
+
+When the function RND(X) is called, the numeric value of X does not
+affect the number returned, but its sign does.  If X is equal to 0,
+RND generates a seed value from chip-level hardware timers.  If X is a
+positive number, RND(X) will return the next number in an arithmetic
+sequence.  This sequence continues for such a long time without
+repeating itself, and gives such an even distribution of numbers, that

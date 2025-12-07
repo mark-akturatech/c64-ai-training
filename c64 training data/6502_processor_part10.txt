@@ -1,0 +1,113 @@
+# 6502 Instruction Reference - ORA, PHA, PHP, PLA, PLP, ROL, ROR
+
+  PHA                   PHA Push accumulator on stack                   PHA
+
+  Operation:  A toS                                     N Z C I D V
+                                                        _ _ _ _ _ _
+                                 (Ref: 8.5)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   PHA                 |    48   |    1    |    3     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  PHP                 PHP Push processor status on stack                PHP
+
+  Operation:  P toS                                     N Z C I D V
+                                                        _ _ _ _ _ _
+                                 (Ref: 8.11)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   PHP                 |    08   |    1    |    3     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  PLA                 PLA Pull accumulator from stack                   PLA
+
+  Operation:  A fromS                                   N Z C I D V
+                                                        _ _ _ _ _ _
+                                 (Ref: 8.6)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   PLA                 |    68   |    1    |    4     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  PLP               PLP Pull processor status from stack                PLA
+
+  Operation:  P fromS                                   N Z C I D V
+                                                         From Stack
+                                 (Ref: 8.12)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   PLP                 |    28   |    1    |    4     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  ROL          ROL Rotate one bit left (memory or accumulator)          ROL
+
+               +------------------------------+
+               |         M or A               |
+               |   +-+-+-+-+-+-+-+-+    +-+   |
+  Operation:   +-< |7|6|5|4|3|2|1|0| <- |C| <-+         N Z C I D V
+                   +-+-+-+-+-+-+-+-+    +-+             / / / _ _ _
+                                 (Ref: 10.3)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Accumulator   |   ROL A               |    2A   |    1    |    2     |
+  |  Zero Page     |   ROL Oper            |    26   |    2    |    5     |
+  |  Zero Page,X   |   ROL Oper,X          |    36   |    2    |    6     |
+  |  Absolute      |   ROL Oper            |    2E   |    3    |    6     |
+  |  Absolute,X    |   ROL Oper,X          |    3E   |    3    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  ROR          ROR Rotate one bit right (memory or accumulator)         ROR
+
+               +------------------------------+
+               |                              |
+               |   +-+    +-+-+-+-+-+-+-+-+   |
+  Operation:   +-> |C| -> |7|6|5|4|3|2|1|0| >-+         N Z C I D V
+                   +-+    +-+-+-+-+-+-+-+-+             / / / _ _ _
+                                 (Ref: 10.4)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Accumulator   |   ROR A               |    6A   |    1    |    2     |
+  |  Zero Page     |   ROR Oper            |    66   |    2    |    5     |
+  |  Zero Page,X   |   ROR Oper,X          |    76   |    2    |    6     |
+  |  Absolute      |   ROR Oper            |    6E   |    3    |    6     |
+  |  Absolute,X    |   ROR Oper,X          |    7E   |    3    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+
+    Note: ROR instruction is available on MCS650X microprocessors after
+          June, 1976.
+
+
+  RTI                    RTI Return from interrupt                      RTI
+                                                        N Z C I D V
+  Operation:  P fromS PC fromS                           From Stack
+                                 (Ref: 9.6)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   RTI                 |    4D   |    1    |    6     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  RTS                    RTS Return from subroutine                     RTS
+                                                        N Z C I D V
+  Operation:  PC fromS, PC + 1 -> PC                    _ _ _ _ _ _
+                                 (Ref: 8.2)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   RTS                 |    60   |    1    |    6     |
+  +----------------+-----------------------+---------+---------+----------+
+
+

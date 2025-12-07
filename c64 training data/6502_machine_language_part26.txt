@@ -1,0 +1,195 @@
+# ML for C64 - Appendix B: Commodore Machine Characteristics
+
+monitor, and has a zero page architecture that differs significantly from all
+later PET/CBM's.  The BASIC language on this unit is also limited; arrays may
+not contain over 256 elements, for example.
+
+This early machine is becoming rare.
+
+
+PET/CBM--Upgrade ROM
+--------------------
+
+The first PET that can handle disk.  It can be recognized by the message seen
+at power up:
+
+  ### COMMODORE BASIC ###
+
+using the numbers sign (or octothorpe, if you like).
+
+This is much cleaner logic than the previous machine.  Its internal structure
+is similar to that of later PET/CBM units (the 4.0 machines), so that is has
+much in common with them.
+
+It does not have specialized disk commands such as CATALOG, SCRATCH, or DLOAD
+(the 4.0 disk commands); but these are "convenience" commands and the Upgrade
+ROM unit can do everything that the later units do.
+
+Upgrade ROM machines have a BASIC annoyance:  under some circumstances,
+string variables need to be tidied up using a technique called "garbage
+collection."  This takes place automatically when needed; but when it does,
+the machine will freeze and seemingly will be dead for a period that may last
+from a few seconds to as long as a half hour or more.
+
+
+PET/CBM--4.0 ROM and 80 Characters
+----------------------------------
+
+This class of machine has been a mainstay of the Commodore line for years.
+It may be recognized by the message seen at power up:
+
+  *** COMMODORE BASIC 4.0 ***
+
+For the first time, a number appears in the message.
+
+                                                                        :157:
+
+These machines are characterized by new BASIC disk commands (CATALOG, etc.)
+and elimination of garbage-collection delays.  Their internal architecture,
+especially zero page, is quite similar to the previous Upgrade ROM computers.
+
+Some time after the initial production of 40-column machines, 80-column
+machines were introduced, as well as a new 40-column version called the "fat
+40."  The later machines are distinguished by new screen/keyboard features,
+most noticeable of which is that the cursor movement keys repeat
+automatically.
+
+Subsequently, two memory-expanded machines became available.  The 8096 came
+fitted with 96K of RAM; the extra 64K was "bank switched" into memory as
+needed in blocks of 16K.  The SuperPET, too, had an extra 64K of RAM that was
+bank switched in 4K blocks; it also came with an additional microprocessor
+(the 6809) used primarily for implementing high-level languages.  Both the
+8096 and the SuperPET may be used as conventional CBM 8032 computers; the
+extra memory may be ignored.
+
+
+VIC-20
+------
+
+The VIC-20 was a new design concept for Commodore.  Color, graphics, and
+sound were built into the computer.  The memory architecture changed
+radically.  Zero-page locations were shifted significantly as compared to
+previous PET/CBM computers.
+
+BASIC reverted to Upgrade ROM style--no special disk commands and potentially
+slow garbage collection.  Other than that, BASIC was not trimmed.  All the
+functions and features remained, and some attractive new screen editing
+features were added, such as automatic repeating keys.
+
+The VIC comes with no machine language monitor; it's necessary to load one.
+The SYS command has a new attractive feature that allows registers A, X, and
+Y to be "preloaded" by POKEing values into address 780, 781, and 782.
+Location 783 could also be used to set the status register, but that's
+dangerous; unless it's done carefully, the decimal mode or interrupt disable
+flags might be set inadvertently.
+
+The VIC-20 is somewhat vexing for machine language programming work.
+Depending on the amount of extra memory fitted (none, 3K, or 8K and over),
+the location of start-of-BASIC and of screen memory will vary.
+
+
+Commodore 64
+------------
+
+The Commodore 64 has much in common with the VIC-20.  In particular, its zero
+page organization is almost identical to that of VIC.  The Commodore 64 comes
+with a 6510 microprocessor; addresses 0 and 1 are reserved for "bank
+switching" of memory.
+
+                                                                        :158:
+
+BASIC is identical to that of the VIC--no special disk commands and
+potentially slow garbage collection.  There's no built-in machine language
+monitor, so one must be loaded.  The SYS command, as with the VIC, allows
+preloading of registers A, X, and Y if desired.
+
+The Commodore 64 has a more stable architecture than the VIC.  BASIC starts
+in a consistent place, and the screen is always at hex 0400 unless you move
+it.  There's a bank of memory at $C000 to $CFFF that is not used by the
+computer system; it's useful for staging machine language coding.
+
+The Commodore 64 is the first Commodore machine in which it is sometimes
+desirable to write totally in machine language, with no BASIC at all.  BASIC
+can be swapped out to release extra RAM, and large applications (word
+processors, spread sheets, and so on) are likely to do this.
+
+
+Commodore PLUS/4
+----------------
+
+Similar to the Commodore 64 in many ways.  The processor is a 7501, which has
+the same instruction set as the 6502.  Screen memory and BASIC RAM have been
+moved a little higher.  BASIC itself is greatly expanded.
+
+Color and sound are implemented differently to the Commodore 64.
+
+There's a built-in machine language monitor with expanded features, such as
+assemble and disassemble.  This one is convenient for machine language
+programmers.
+
+The memory arrangement is more sophisticated than on previous machines;
+large implementations may require insight into the machine's detailed
+architecture.
+
+
+B Series
+--------
+
+The B-128, B-256, CBM-128, and CBM-256 were designed as successors to the
+80-column PET/CBM units.  Architecture has been radically changed:  the
+processor is a 6509, memory is bank switched, and zero page is significantly
+different from that of other models.
+
+The cassette buffer is no longer at $0330, so that the examples given in this
+book will need to be moved to a new part of RAM (addresses $0400 to $07FF are
+available).  Bank switching is more complex than on other models.  Beginners
+will find that there are more things to be kept track of in this machine.  If
+possible, beginners should try to find a simpler computer on which to take
+their first steps.
+
+                                                                        :159:
+
+Implementation of large-scale programs require setting up a "transfer
+sequence" program to link the program's memory bank to that of the kernal.
+Usually, a bootstrap program will be needed to set everything up.
+
+A machine language monitor is built into this line of machines.  A few new
+commands have been made available:  .V to switch banks, .@ to test disk
+status.
+
+                                                                        :160:
+                                                                        :161:
+
+
+
+                                                         Appendix C
+
+                                                             Memory
+                                                               Maps
+
+
+
+A word about memory maps:  they are always too big or too small for the use
+you have in mind.
+
+The beginner may feel swamped by the wealth of detail.  There's no threat,
+however.  The information is there when you're ready for it.  Browse through
+the information; it may be though-provoking.  Try reading or changing
+locations to see what happens.
+
+The advanced programmer may want more:  lengthy details on how each location
+is used, which parts of the system use these locations, and so on.  Time and
+space don't permit such detail.
+
+The maps are intended to be fairly complete.  Those who want more detail may
+find them cryptic; but at least each location will be associated with a type
+of activity.  Different machines may be compared by checking their respective
+maps.  In some cases, programs may be converted with their use, since they
+will help to find the corresponding memory location in the target machine.
+
+When you see a reference to a POKE or PEEK location--in this book or from
+other sources--check it in these maps.  They will help add perspective.
+
+                                                                        :162:
+
+"Original ROM" PET

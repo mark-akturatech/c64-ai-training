@@ -1,0 +1,284 @@
+# C64 PRG Chapter 2 - BASIC Keywords (PRINT#-RND)
+
+  72   BASIC LANGUAGE VOCABULARY
+~
+
+
+      KEY           COLOR                APPEARS AS
+
+   <CTRL+1>         Black
+   <CTRL+2>         White
+   <CTRL+3>         Red
+   <CTRL+4>         Cyan
+   <CTRL+5>         Purple
+   <CTRL+6>         Green
+   <CTRL+7>         Blue
+   <CTRL+8>         Yellow
+   <C=+1>           Orange
+   <C=+2>           Brown
+   <C=+3>           Light Red
+   <C=+4>           Grey 1
+   <C=+5>           Grey 2
+   <C=+6>           Light Green
+   <C=+7>           Light Blue
+   <C=+8>           Grey 3
+
+
+
+    If you wanted to PRINT the word HELLO in cyan and the word THERE
+  in white, type:
+
+    PRINT "<CTRL+4>HELLO <CTRL+2>THERE"
+
+
+  4. Insert Mode
+
+    The spaces created by using the <INST/DEL> key have some of the same
+  characteristics as quote mode. The cursor controls and color controls
+  show up as reversed characters. The only difference is in the <INST> and
+  <DEL>, which performs its normal function even in quote mode, now
+
+
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   73
+~
+
+
+  creates the <T>. And <INST>, which created a special character in quote
+  mode, inserts spaces normally.
+    Because of this, it is possible to create a PRINT statement containing
+  DELetes, which cannot be PRINTed in quote mode. Here is an example
+  of how this is done:
+
+    10 PRINT"HELLO"<DEL><INST><INST><DEL><DEL>P"
+
+
+    When the above line is RUN, the word displayed will be HELP, because
+  the last two letters are deleted and the P is put in their place.
+
+  +-----------------------------------------------------------------------+
+  | WARNING: The DELetes will work when LISTing as well as PRINTing, so   |
+  | editing a line with these characters will be difficult.               |
+  +-----------------------------------------------------------------------+
+
+
+    The "insert mode" condition is ended when the <RETURN> (or
+  <SHIFT+RETURN>) key is hit, or when as many characters have been typed as
+  spaces were inserted.
+
+
+  5. Other Special Characters
+
+    There are some other characters that can be PRINTed for special
+  functions, although they are not easily available from the keyboard. In
+  order to get these into quotes, you must leave empty spaces for them in
+  the line, hit <RETURN> or <SHIFT+RETURN>, and go back to the spaces with
+  the cursor controls. Now you must hit <RVS ON>, to start typing reversed
+  characters, and type the keys shown below:
+
+          Function                    Type               Appears As
+
+    <SHIFT+RETURN>                    <SHIFT+M>
+    switch to lower case              <N>
+    switch to upper case              <SHIFT+N>
+    disable case-switching keys       <H>
+    enable case-switching keys        <I>
+
+
+
+
+  74   BASIC LANGUAGE VOCABULARY
+~
+
+
+    The <SHIFT+RETURN> will work in the LISTing as well as PRINTing, so
+  editing will be almost impossible if this character is used. The LISTing
+  will also look very strange.
+
+
+  PRINT#
+
+  TYPE: I/O Statement
+  FORMAT: PRINT#<file-number>[<variable>][<,/;><variable>]...
+
+    Actions: The PRINT# statement is used to write data items to a logical
+  file. It must use the same number used to OPEN the file. Output goes to
+  the device-number used in the OPEN statement. The <variable> expressions
+  in the output-list can be of any type. The punctuation characters between
+  items are the same as with the PRINT statement and they can be used in
+  the same ways. The effects of punctuation are different in two
+  significant respects.
+    When PRINT# is used with tape files, the comma, instead of spacing
+  by print zones, has the same effect as a semicolon. Therefore, whether
+  blanks, commas, semicolons or no punctuation characters are used between
+  data items, the effect on spacing is the same. The data items are written
+  as a continuous stream of characters. Numeric items are followed by a
+  space and, if positive, are preceded by a space.
+    If no punctuation finishes the list, a carriage-return and a line-feed
+  are written at the end of the data. If a comma or semicolon terminates
+  the output-list, the carriage-return and line-feed are suppressed. Re-
+  gardless of the punctuation, the next PRINT# statement begins output in
+  the next available character position. The line-feed will act as a stop
+  when using the INPUT# statement, leaving an empty variable when the next
+  INPUT# is executed. The line-feed can be suppressed or compensated for as
+  shown in the examples below.
+    The easiest way to write more than one variable to a file on tape or
+  disk is to set a string variable to CHR$(13), and use that string in be-
+  tween all the other variables when writing the file.
+
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   75
+~
+
+
+  EXAMPLES of PRINT# Statement:
+
+
+  1)
+
+    10 OPEN 1,1,1,"TAPE FILE"
+    20 R$=CHR$(13)                      (By Changing the CHR$(13) to
+    30 PRINT#1,1;R$;2;R$;3;R$;4;R$;5     CHR$(44) you put a "," between
+    40 PRINT#1,6                         each variable. CHR$(59) would
+    50 PRINT# 1,7                        put a ";" between each variable.)
+
+
+  2)
+
+    10 CO$=CHR$(44):CR$=CHR$(13)
+    20 PRINT#1,"AAA"CO$"BBB",           AAA,BBB     CCCDDDEEE
+       "CCC";"DDD";"EEE"CR$             (carriage return)
+       "FFF"CR$;                        FFF(carriage return)
+    30 INPUT#1,A$,BCDE$,F$
+
+  3)
+
+     5 CR$=CHR$(13)
+    10 PRINT#2,"AAA";CR$;"BBB"          (10 blanks) AAA
+    20 PRINT#2,"CCC";                   BBB
+                                        (10 blanks)CCC
+    30 INPUT#2,A$,B$,DUMMY$,C$
+
+
+  READ
+
+  TYPE: Statement
+  FORMAT: READ <variable>[,<variable>]...
+
+    Action: The READ statement is used to fill variable names from con-
+  stants in DATA statements. The data actually read must agree with the
+  variable types specified or the BASIC error message ?SYNTAX ERROR will
+  result.(*) Variables in the DATA input-list must be separated by commas.
+    A single READ statement can access one or more DATA statements,
+  which will be accessed in order (see DATA), or several READ statements
+  can access the same DATA statement. If more READ statements are executed
+  than the number of elements in DATA statements(s) in the program, the
+
+  76   BASIC LANGUAGE VOCABULARY
+~
+
+
+  BASIC error message ?OUT OF DATA is printed. If the number of variables
+  specified is fewer than the number of elements in the DATA statement(s),
+  subsequent READ statements will continue reading at the next data
+  element. (See RESTORE.)
+
+  +-----------------------------------------------------------------------+
+  | *NOTE: The ?SYNTAX ERROR will appear with the line number from the    |
+  | DATA statement, NOT the READ statement.                               |
+  +-----------------------------------------------------------------------+
+
+  EXAMPLES of READ Statement:
+
+    110 READ A,B,C$
+    120 DATA 1,2,HELLO
+
+    100 FOR X=1 TO 10: READ A(X):NEXT
+
+    200 DATA 3.08, 5.19, 3.12, 3.98, 4.24
+    210 DATA 5.08, 5.55, 4.00, 3.16, 3.37
+
+    (Fills array items (line 1) in order of constants shown (line 5))
+
+    1 READ CITY$,STATE$,ZIP
+    5 DATA DENVER,COLORADO, 80211
+
+
+  REM
+
+  TYPE: Statement
+  FORMAT: REM [<remark>]
+
+    Action:The REM statement makes your programs more easily understood
+  when LISTed. It's a reminder to yourself to tell you what you had in
+  mind when you were writing each section of the program. For instance,
+  you might want to remember what a variable is used for, or some other
+  useful information. The REMark can be any text, word, or character
+  including the colon (:) or BASIC keywords.
+    The REM statement and anything following it on the same line-number
+  are ignored by BASIC, but REMarks are printed exactly as entered when
+  the program is listed. A REM statement can be referred to by a GOTO or
+  GOSUB statement, and the execution of the program will continue with
+  the next higher program line having executable statements.
+
+                                             BASIC LANGUAGE VOCABULARY   77
+~
+
+
+  EXAMPLES of REM Statement:
+
+    10 REM CALCULATE AVERAGE VELOCITY
+    20 FOR X= 1 TO 20 :REM LOOP FOR TWENTY VALUES
+    30 SUM=SUM + VEL(X): NEXT
+    40 AVG=SUM/20
+
+
+
+  RESTORE
+
+  TYPE: Statement
+  FORMAT: RESTORE
+
+
+    Action: BASIC maintains an internal pointer to the next DATA constant
+  to be READ. This pointer can be reset to the first DATA constant in a
+  program using the RESTORE statement. The RESTORE statement can be
+  used anywhere in the program to begin re-READing DATA.
+
+
+  EXAMPLES of RESTORE Statement:
+
+    100 FOR X=1 TO 10: READ A(X): NEXT
+    200 RESTORE
+    300 FOR Y=1 TO 10: READ B(Y): NEXT
+
+    4000 DATA 3.08, 5.19, 3.12, 3.98, 4.24
+    4100 DATA 5.08, 5.55, 4.00, 3.16, 3.37
+
+    (Fills the two arrays with identical data)
+
+    10 DATA 1,2,3,4
+    20 DATA 5,6,7,8
+    30 FOR L= 1 TO 8
+    40 READ A: PRINT A
+    50 NEXT
+    60 RESTORE
+    70 FOR L= 1 TO 8
+    80 READ A: PRINT A
+    90 NEXT
+
+

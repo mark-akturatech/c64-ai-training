@@ -1,0 +1,331 @@
+# C64 PRG Chapter 3 - VIC-II Chip Registers Detailed
+
+  176   PROGRAMMING GRAPHICS
+~
+
+
+  SPRITEMAKING NOTES
+
+            Alternative Sprite Memory Pointers and Memory Locations
+                            Using Cassette Buffer
+  +---------------+-------+-------+-------+-------------------------------+
+  | Put in Memory |SPRT 0 |SPRT 1 |SPRT 2 | If you're using 1 to 3 sprites|
+  | (Set pointers)|2040,13|2041,14|2042,15| you can use these memory      |
+  +---------------+-------+-------+-------+ locations in the cassette     |
+  | Sprite Pixel  | 832   | 896   | 960   | buffer (832 to 1023) but for  |
+  | Locations for | to 894| to 958|to 1022| more than 3 sprites we suggest|
+  | Blocks 13-15  |       |       |       | using locations from 12288 to |
+  +---------------+-------+-------+-------+ 12798 (see chart).            |
+  TURNING ON SPRITES:                     +-------------------------------+
+
+    You can turn on any individual sprite by using POKE V+21 and the number
+  from the chart... BUT... turning on just ONE sprite will turn OFF any
+  others. To turn on TWO OR MORE sprites, ADD TOGETHER the numbers of the
+  sprites you want to turn on (Example: POKE V+21, 6 turns on sprites 1 and
+  2). Here is a method you can use to turn one sprite off and on without
+  affecting any of the others (useful for animation).
+
+  EXAMPLE:
+
+    To turn off just sprite 0 type: POKE V+21,PEEK V+21AND(255-1). Change
+  the number 1 in (255-1) to 1,2,4,8,16,32,64, or 128 (for sprites 0-7). To
+  re-enable the sprite and not affect the other sprites currently turned
+  on, POKE V+21, PEEK(V+21)OR 1 and change the OR 1 to OR 2 (sprite 2), OR
+  4 (sprite 3), etc.
+
+  X POSITION VALUES BEYOND 255:
+
+    X positions run from 0 to 255... and then START OVER from 0 to 255. To
+  put a sprite beyond X position 255 on the far right side of the screen,
+  you must first POKE V+ 16 as shown, THEN POKE a new X valve from 0 to 63,
+  which will place the sprite in one of the X positions at the right side
+  of the screen. To get back to positions 0-255, POKE V+16,0 and POKE in an
+  X value from 0 to 255.
+
+  Y POSITION VALUES:
+
+    Y positions run from 0 to 255, including 0 to 49 off the TOP of the
+  viewing area, 50 to 229 IN the,viewing area, and 230 to 255 off the
+  BOTTOM of the viewing area.
+                                                 PROGRAMMING GRAPHICS   177
+~
+
+
+  SPRITE COLORS:
+
+    To make sprite 0 WHITE, type: POKE V+39,1 (use COLOR POKE SETTING shown
+  in chart, and INDIVIDUAL COLOR CODES shown below):
+
+    0-BLACK     4-PURPLE        8-ORANGE        12-MED. GREY
+    1-WHITE     5-GREEN         9-BROWN         13-LT. GREEN
+    2-RED       6-BLUE          10-LT. RED      14-LT. BLUE
+    3-CYAN      7-YELLOW        11-DARK GREY    15-LT. GREY
+
+  MEMORY LOCATION:
+
+    You must "reserve" a separate 64-BYTE BLOCK of numbers in the
+  computer's memory for each sprite of which 63 BYTES will be used for
+  sprite data. The memory settings shown below are recommended for the
+  "sprite pointer" settings in the chart above. Each sprite will be unique
+  and you'll have to define it as you wish. To make all sprites exactly the
+  same, point the sprites you want to look the same to the same register
+  for sprites.
+
+  DIFFERENT SPRITE POINTER SETTINGS:
+
+    These sprite pointer settings are RECOMMENDATIONS ONLY.
+    Caution: you can set your sprite pointers anywhere in RAM memory but if
+  you set them too "low" in memory a long BASIC program may overwrite your
+  sprite data, or vice versa. To protect an especially LONG BASIC PROGRAM
+  from overwriting sprite data, you may want to set the sprites at a higher
+  area of memory (for example, 2040,192 for sprite 0 at locations 12288 to
+  12350... 2041,193 at locations 12352 to 12414 for sprite 1 and so on...
+  by adjusting the memory locations from which sprites get their "data,"
+  you can define as many as 64 different sprites plus a sizable BASIC
+  program. To do this, define several sprite "shapes" in your DATA
+  statements and then redefine a particular sprite by changing the
+  "pointer" so the sprite you are using is "pointed" at different areas of
+  memory containing different sprite picture data. See the "Dancing Mouse"
+  to see how this works. If you want two or more sprites to have THE SAME
+  SHAPE (you can still change position and color of each sprite), use the
+  same sprite pointer and memory location for the sprites you want to match
+  (for example, you can point sprites 0 and 1 to the same location by using
+  POKE 2040,192 and POKE 2041, 192).
+
+
+
+  178   PROGRAMMING GRAPHICS
+~
+
+
+  PRIORITY:
+
+    Priority means one sprite will appear to move "in front of" or "behind"
+  another sprite on the display screen. Sprites with more priority always
+  appear to move "in front of" or "on top of" sprites with less priority.
+  The rule is that lower numbered sprites have priority over higher
+  numbered sprites. Sprite 0 has priority over all other sprites. Sprite 7
+  has no priority in relation to the other sprites. Sprite 1 has priority
+  over sprites 2-7, etc. If you put two sprites in the some position, the
+  sprite with the higher priority will appear IN FRONT OF the sprite with
+  the lower priority. The sprite with lower priority will either be
+  obscured, or will "show through" (from "behind") the sprite with higher
+  priority.
+
+  USING MULTI-COLOR:
+
+    You can create multi-colored sprites although using multi-color mode
+  requires that you use PAIRS of pixels instead of individual pixels in
+  your sprite picture (in other words each colored "dot" or "block" in the
+  sprite will consist of two pixels side by side). You have 4 colors to
+  choose from: Sprite Color (chart,above), Multi-Color 1, Multi-Color 2 and
+  "Background Color" (background is achieved by using zero settings which
+  let the background color "show through"). Consider one horizontal 8-pixel
+  block in a sprite picture. The color of each PAIR of pixels is determined
+  according to whether the left, right, or both pixels are solid, like
+  this:
+
+  +-+-+
+  | | | BACKGROUND      (Making BOTH PIXELS BLANK (zero) lets the
+  +-+-+                  INNER SCREEN COLOR (background)show through.)
+
+  +-+-+
+  | |@| MULTI-COLOR 1   (Making the RIGHT PIXEL SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Multi-Color 1.)
+
+  +-+-+
+  |@| | SPRITE COLOR    (Making the LEFT PIXEL SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Sprite Color.)
+
+  +-+-+
+  |@|@| MULTI-COLOR 2   (Making BOTH PIXELS SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Multi-Color 2.)
+
+                                                 PROGRAMMING GRAPHICS   179
+~
+
+
+  Look at the horizontal 8-pixel row shown below. This block sets the first
+  two pixels to background color, the second two pixels to Multi-Color 1,
+  the third two pixels to Sprite Color and the fourth two pixels to Multi-
+  Color 2. The color of each PAIR of pixels depends on which bits in each
+  pair are solid and which are blank, according to the illustration above.
+  After you determine which colors you want in each pair of pixels, the
+  next step is to add the values of the solid pixels in the 8-pixel block,
+  and POKE that number into the proper memory location. For example, if the
+  8-pixel row shown below is the first block in a sprite which begins at
+  memory location 832, the value of the solid pixels is 16+8+2+1 27, so you
+  would POKE 832,27.
+
+
+
+
+                     |128| 64| 32| 16|  8|  4|  2|  1|   16+8+2+1 = 27
+                     +---+---+---+---+---+---+---+---+
+                     |   |   |   |@@@|@@@|   |@@@|@@@|
+                     |   |   |   |@@@|@@@|   |@@@|@@@|
+                     +---+---+---+---+---+---+---+---+
+
+                         LOOKS LIKE THIS IN SPRITE
+
+                     +-------+-------+-------+-------+
+                     |BACKGR.|MULTI- |SPRITE |MULTI- |
+                     | COLOR |COLOR 1| COLOR |COLOR 2|
+                     +-------+-------+-------+-------+
+
+
+
+  COLLISION:
+
+    You can detect whether a sprite has collided with another sprite by
+  using this line: IF PEEK(V+30)ANDX=XTHEN [insert action here]. This line
+  checks to see if a particular sprite has collided with ANY OTHER SPRITE,
+  where X equals 1 for sprite 0, 2 for sprite 1, 4 for sprite 2, 8 for
+  sprite 3, 16 for sprite 4, 32 for sprite 5, 64 for sprite 6, and 128 for
+  sprite 7. To check to see if the sprite has collided with a "BACKGROUND
+  CHARACTER" use this line: IF PEEK(V+31)ANDX=XTHEN [insert action here].
+
+
+
+
+  180   PROGRAMMING GRAPHICS
+~
+
+
+  USING GRAPHIC CHARACTERS IN DATA STATEMENTS
+
+    The following program allows you to create a sprite using blanks and
+  solid circles <SHIFT+Q> in DATA statements. The sprite and the numbers
+  POKED into the sprite data registers are displayed.
+
+
+
+start tok64 page181.prg
+  10 print"{clear}":fori=0to63:poke832+i,0:next
+  20 gosub60000
+  999 end
+  60000 data"         QQQQQQQ        "
+  60001 data"       QQQQQQQQQQQ      "
+  60002 data"      QQQQQQQQQQQQQ     "
+  60003 data"      QQQQQ   QQQQQ     "
+  60004 data"     QQQQQ QQQ  QQQQ    "
+  60005 data"     QQQQQ QQQ QQQQQ    "
+  60006 data"     QQQQQ QQQ  QQQQ    "
+  60007 data"      QQQQQ   QQQQQ     "
+  60008 data"      QQQQQQQQQQQQQ     "
+  60009 data"      QQQQQQQQQQQQQ     "
+  60010 data"      Q QQQQQQQQQ Q     "
+  60011 data"       Q QQQQQQQ Q      "
+  60012 data"       Q  QQQQQ  Q      "
+  60013 data"        Q  QQQ  Q       "
+  60014 data"        Q  QQQ  Q       "
+  60015 data"         Q  Q  Q        "
+  60016 data"         Q  Q  Q        "
+  60017 data"          QQQQQ         "
+  60018 data"          QQQQQ         "
+  60019 data"          QQQQQ         "
+  60020 data"           QQQ          "
+  60100 v=53248:pokev,200:pokev+1,100:pokev+21,1:pokev+39,14:poke2040,13
+  60105 pokev+23,1:pokev+29,1
+  60110 fori=0to20:reada$:fork=0to2:t=0:forj=0to7:b=0
+  60140 ifmid$(a$,j+k*8+1,1)="Q"thenb=1
+  60150 t=t+b*2^(7-j):next:printt;:poke832+i*3+k,t:next:print:next
+  60200 return
+stop tok64
+
+
+
+                                                 PROGRAMMING GRAPHICS   181
+~~
+
+
+
+
+
+
+
+
+
+
+                                                 CHAPTER 4
+
+
+
+
+                                               PROGRAMMING
+                                                 SOUND AND
+                                             MUSIC ON YOUR
+                                              COMMODORE 64
+
+
+
+                           o Introduction
+                               Volume Control
+                               Frequencies of Sound Waves
+                           o Using Multiple Voices
+                           o Changing Waveforms
+                           o The Envelope Generator
+                           o Filtering
+                           o Advanced Techniques
+                           o Synchronization and Ring
+                             Modulation
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                     183
+~
+
+
+  INTRODUCTION
+
+    Your Commodore computer is equipped with one of the most sophisticated
+  electronic music synthesizers available on any computer. It comes
+  complete with three voices, totally addressable, ATTACK/DECAY/SUSTAIN/
+  RELEASE (ADSR), filtering, modulation, and "white noise." All of these
+  capabilities are directly available for you through a few easy to use
+  BASIC and/or assembly language statements and functions. This means that
+  you can make very complex sounds and songs using programs that are
+  relatively simple to design.
+    This section of your Programmer's Reference Guide has been created to
+  help you explore all the capabilities of the 6581 "SID" chip, the sound
+  and music synthesizer inside your Commodore computer. We'll explain both
+  the theory behind musical ideas and the practical aspects of turning
+  those ideas into real finished songs on your Commodore computer.
+    You need not be an experienced programmer nor a music expert to achieve
+  exciting results from the music synthesizer. This section is full of
+  programming examples with complete explanations to get you started.
+    You get to the sound generator by POKEing into specified memory
+  locations. A full list of the locations used is provided in Appendix O.
+  We will go through each concept, step by step. By the end you should be
+  able to create an almost infinite variety of sounds, and be ready to
+  perform experiments with sound on your own.
+    Each section of this chapter begins by giving you an example and a full
+  line-by-line description of each program, which will show you how to use
+  the characteristic being discussed. The technical explanation is for you
+  to read whenever you are curious about what is actually going on. The
+  workhorse of your sound programs is the POKE statement. POKE sets the
+  indicated memory location (MEM) equal to a specified value (NUM).
+
+    POKE MEM,NUM
+
+
+    The memory locations (MEM) used for music synthesis start at 54272
+  ($D400) in the Commodore 64. The memory locations 54272 to 54296
+  inclusive are the POKE locations you need to remember when you're using
+  the 6581 (SID) chip register map. Another way to use the locations above
+  is to remember only location 54272 and then add a number from 0 through
+  24 to it. By doing this you can POKE all the locations from 54272 to
+  54296 that you need from the SID chip. The numbers (NUM) that you use in
+  your POKE statement must be between 0 and 255, inclusive.
+
+

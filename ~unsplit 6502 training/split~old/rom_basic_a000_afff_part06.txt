@@ -1,0 +1,250 @@
+
+                                *** perform LET
+.,A9A5 20 8B B0 JSR $B08B       get variable address
+.,A9A8 85 49    STA $49         save variable address low byte
+.,A9AA 84 4A    STY $4A         save variable address high byte
+.,A9AC A9 B2    LDA #$B2        $B2 is "=" token
+.,A9AE 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,A9B1 A5 0E    LDA $0E         get data type flag, $80 = integer, $00 = float
+.,A9B3 48       PHA             push data type flag
+.,A9B4 A5 0D    LDA $0D         get data type flag, $FF = string, $00 = numeric
+.,A9B6 48       PHA             push data type flag
+.,A9B7 20 9E AD JSR $AD9E       evaluate expression
+.,A9BA 68       PLA             pop data type flag
+.,A9BB 2A       ROL             string bit into carry
+.,A9BC 20 90 AD JSR $AD90       do type match check
+.,A9BF D0 18    BNE $A9D9       branch if string
+.,A9C1 68       PLA             pop integer/float data type flag
+                                assign value to numeric variable
+.,A9C2 10 12    BPL $A9D6       branch if float
+                                expression is numeric integer
+.,A9C4 20 1B BC JSR $BC1B       round FAC1
+.,A9C7 20 BF B1 JSR $B1BF       evaluate integer expression, no sign check
+.,A9CA A0 00    LDY #$00        clear index
+.,A9CC A5 64    LDA $64         get FAC1 mantissa 3
+.,A9CE 91 49    STA ($49),Y     save as integer variable low byte
+.,A9D0 C8       INY             increment index
+.,A9D1 A5 65    LDA $65         get FAC1 mantissa 4
+.,A9D3 91 49    STA ($49),Y     save as integer variable high byte
+.,A9D5 60       RTS             
+.,A9D6 4C D0 BB JMP $BBD0       pack FAC1 into variable pointer and return
+                                assign value to numeric variable
+.,A9D9 68       PLA             dump integer/float data type flag
+.,A9DA A4 4A    LDY $4A         get variable pointer high byte
+.,A9DC C0 BF    CPY #$BF        was it TI$ pointer
+.,A9DE D0 4C    BNE $AA2C       branch if not
+                                else it's TI$ = <expr$>
+.,A9E0 20 A6 B6 JSR $B6A6       pop string off descriptor stack, or from top of string
+                                space returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,A9E3 C9 06    CMP #$06        compare length with 6
+.,A9E5 D0 3D    BNE $AA24       if length not 6 do illegal quantity error then warm start
+.,A9E7 A0 00    LDY #$00        clear index
+.,A9E9 84 61    STY $61         clear FAC1 exponent
+.,A9EB 84 66    STY $66         clear FAC1 sign (b7)
+.,A9ED 84 71    STY $71         save index
+.,A9EF 20 1D AA JSR $AA1D       check and evaluate numeric digit
+.,A9F2 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,A9F5 E6 71    INC $71         increment index
+.,A9F7 A4 71    LDY $71         restore index
+.,A9F9 20 1D AA JSR $AA1D       check and evaluate numeric digit
+.,A9FC 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,A9FF AA       TAX             copy FAC1 exponent
+.,AA00 F0 05    BEQ $AA07       branch if FAC1 zero
+.,AA02 E8       INX             increment index, * 2
+.,AA03 8A       TXA             copy back to A
+.,AA04 20 ED BA JSR $BAED       FAC1 = (FAC1 + (FAC2 * 2)) * 2 = FAC1 * 6
+.,AA07 A4 71    LDY $71         get index
+.,AA09 C8       INY             increment index
+.,AA0A C0 06    CPY #$06        compare index with 6
+.,AA0C D0 DF    BNE $A9ED       loop if not 6
+.,AA0E 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,AA11 20 9B BC JSR $BC9B       convert FAC1 floating to fixed
+.,AA14 A6 64    LDX $64         get FAC1 mantissa 3
+.,AA16 A4 63    LDY $63         get FAC1 mantissa 2
+.,AA18 A5 65    LDA $65         get FAC1 mantissa 4
+.,AA1A 4C DB FF JMP $FFDB       set real time clock and return
+
+                                *** check and evaluate numeric digit
+.,AA1D B1 22    LDA ($22),Y     get byte from string
+.,AA1F 20 80 00 JSR $0080       clear Cb if numeric. this call should be to $84
+                                as the code from $80 first comapres the byte with
+                                [SPACE] and does a BASIC increment and get if it is
+.,AA22 90 03    BCC $AA27       branch if numeric
+.,AA24 4C 48 B2 JMP $B248       do illegal quantity error then warm start
+.,AA27 E9 2F    SBC #$2F        subtract $2F + carry to convert ASCII to binary
+.,AA29 4C 7E BD JMP $BD7E       evaluate new ASCII digit and return
+
+                                *** assign value to numeric variable, but not TI$
+.,AA2C A0 02    LDY #$02        index to string pointer high byte
+.,AA2E B1 64    LDA ($64),Y     get string pointer high byte
+.,AA30 C5 34    CMP $34         compare with bottom of string space high byte
+.,AA32 90 17    BCC $AA4B       branch if string pointer high byte is less than bottom
+                                of string space high byte
+.,AA34 D0 07    BNE $AA3D       branch if string pointer high byte is greater than
+                                bottom of string space high byte
+                                else high bytes were equal
+.,AA36 88       DEY             decrement index to string pointer low byte
+.,AA37 B1 64    LDA ($64),Y     get string pointer low byte
+.,AA39 C5 33    CMP $33         compare with bottom of string space low byte
+.,AA3B 90 0E    BCC $AA4B       branch if string pointer low byte is less than bottom
+                                of string space low byte
+.,AA3D A4 65    LDY $65         get descriptor pointer high byte
+.,AA3F C4 2E    CPY $2E         compare with start of variables high byte
+.,AA41 90 08    BCC $AA4B       branch if less, is on string stack
+.,AA43 D0 0D    BNE $AA52       if greater make space and copy string
+                                else high bytes were equal
+.,AA45 A5 64    LDA $64         get descriptor pointer low byte
+.,AA47 C5 2D    CMP $2D         compare with start of variables low byte
+.,AA49 B0 07    BCS $AA52       if greater or equal make space and copy string
+.,AA4B A5 64    LDA $64         get descriptor pointer low byte
+.,AA4D A4 65    LDY $65         get descriptor pointer high byte
+.,AA4F 4C 68 AA JMP $AA68       go copy descriptor to variable
+.,AA52 A0 00    LDY #$00        clear index
+.,AA54 B1 64    LDA ($64),Y     get string length
+.,AA56 20 75 B4 JSR $B475       copy descriptor pointer and make string space A bytes long
+.,AA59 A5 50    LDA $50         copy old descriptor pointer low byte
+.,AA5B A4 51    LDY $51         copy old descriptor pointer high byte
+.,AA5D 85 6F    STA $6F         save old descriptor pointer low byte
+.,AA5F 84 70    STY $70         save old descriptor pointer high byte
+.,AA61 20 7A B6 JSR $B67A       copy string from descriptor to utility pointer
+.,AA64 A9 61    LDA #$61        get descriptor pointer low byte
+.,AA66 A0 00    LDY #$00        get descriptor pointer high byte
+.,AA68 85 50    STA $50         save descriptor pointer low byte
+.,AA6A 84 51    STY $51         save descriptor pointer high byte
+.,AA6C 20 DB B6 JSR $B6DB       clean descriptor stack, YA = pointer
+.,AA6F A0 00    LDY #$00        clear index
+.,AA71 B1 50    LDA ($50),Y     get string length from new descriptor
+.,AA73 91 49    STA ($49),Y     copy string length to variable
+.,AA75 C8       INY             increment index
+.,AA76 B1 50    LDA ($50),Y     get string pointer low byte from new descriptor
+.,AA78 91 49    STA ($49),Y     copy string pointer low byte to variable
+.,AA7A C8       INY             increment index
+.,AA7B B1 50    LDA ($50),Y     get string pointer high byte from new descriptor
+.,AA7D 91 49    STA ($49),Y     copy string pointer high byte to variable
+.,AA7F 60       RTS             
+
+                                *** perform PRINT#
+.,AA80 20 86 AA JSR $AA86       perform CMD
+.,AA83 4C B5 AB JMP $ABB5       close input and output channels and return
+
+                                *** perform CMD
+.,AA86 20 9E B7 JSR $B79E       get byte parameter
+.,AA89 F0 05    BEQ $AA90       branch if following byte is ":" or [EOT]
+.,AA8B A9 2C    LDA #$2C        set ","
+.,AA8D 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,AA90 08       PHP             save status
+.,AA91 86 13    STX $13         set current I/O channel
+.,AA93 20 18 E1 JSR $E118       open channel for output with error check
+.,AA96 28       PLP             restore status
+.,AA97 4C A0 AA JMP $AAA0       perform PRINT
+.,AA9A 20 21 AB JSR $AB21       print string from utility pointer
+.,AA9D 20 79 00 JSR $0079       scan memory
+
+                                *** perform PRINT
+.,AAA0 F0 35    BEQ $AAD7       if nothing following just print CR/LF
+.,AAA2 F0 43    BEQ $AAE7       exit if nothing following, end of PRINT branch
+.,AAA4 C9 A3    CMP #$A3        compare with token for TAB(
+.,AAA6 F0 50    BEQ $AAF8       if TAB( go handle it
+.,AAA8 C9 A6    CMP #$A6        compare with token for SPC(
+.,AAAA 18       CLC             flag SPC(
+.,AAAB F0 4B    BEQ $AAF8       if SPC( go handle it
+.,AAAD C9 2C    CMP #$2C        compare with ","
+.,AAAF F0 37    BEQ $AAE8       if "," go skip to the next TAB position
+.,AAB1 C9 3B    CMP #$3B        compare with ";"
+.,AAB3 F0 5E    BEQ $AB13       if ";" go continue the print loop
+.,AAB5 20 9E AD JSR $AD9E       evaluate expression
+.,AAB8 24 0D    BIT $0D         test data type flag, $FF = string, $00 = numeric
+.,AABA 30 DE    BMI $AA9A       if string go print string, scan memory and continue PRINT
+.,AABC 20 DD BD JSR $BDDD       convert FAC1 to ASCII string result in (AY)
+.,AABF 20 87 B4 JSR $B487       print " terminated string to utility pointer
+.,AAC2 20 21 AB JSR $AB21       print string from utility pointer
+.,AAC5 20 3B AB JSR $AB3B       print [SPACE] or [CURSOR RIGHT]
+.,AAC8 D0 D3    BNE $AA9D       go scan memory and continue PRINT, branch always
+
+                                *** set XY to $0200 - 1 and print [CR]
+.,AACA A9 00    LDA #$00        clear A
+.,AACC 9D 00 02 STA $0200,X     clear first byte of input buffer
+.,AACF A2 FF    LDX #$FF        $0200 - 1 low byte
+.,AAD1 A0 01    LDY #$01        $0200 - 1 high byte
+.,AAD3 A5 13    LDA $13         get current I/O channel
+.,AAD5 D0 10    BNE $AAE7       exit if not default channel
+
+                                *** print CR/LF
+.,AAD7 A9 0D    LDA #$0D        set [CR]
+.,AAD9 20 47 AB JSR $AB47       print the character
+.,AADC 24 13    BIT $13         test current I/O channel
+.,AADE 10 05    BPL $AAE5       if ?? toggle A, EOR #$FF and return
+.,AAE0 A9 0A    LDA #$0A        set [LF]
+.,AAE2 20 47 AB JSR $AB47       print the character
+                                toggle A
+.,AAE5 49 FF    EOR #$FF        invert A
+.,AAE7 60       RTS             
+                                was ","
+.,AAE8 38       SEC             set Cb for read cursor position
+.,AAE9 20 F0 FF JSR $FFF0       read/set X,Y cursor position
+.,AAEC 98       TYA             copy cursor Y
+.,AAED 38       SEC             set carry for subtract
+.,AAEE E9 0A    SBC #$0A        subtract one TAB length
+.,AAF0 B0 FC    BCS $AAEE       loop if result was +ve
+.,AAF2 49 FF    EOR #$FF        complement it
+.,AAF4 69 01    ADC #$01        +1, twos complement
+.,AAF6 D0 16    BNE $AB0E       always print A spaces, result is never $00
+.,AAF8 08       PHP             save TAB( or SPC( status
+.,AAF9 38       SEC             set Cb for read cursor position
+.,AAFA 20 F0 FF JSR $FFF0       read/set X,Y cursor position
+.,AAFD 84 09    STY $09         save current cursor position
+.,AAFF 20 9B B7 JSR $B79B       scan and get byte parameter
+.,AB02 C9 29    CMP #$29        compare with ")"
+.,AB04 D0 59    BNE $AB5F       if not ")" do syntax error
+.,AB06 28       PLP             restore TAB( or SPC( status
+.,AB07 90 06    BCC $AB0F       branch if was SPC(
+                                else was TAB(
+.,AB09 8A       TXA             copy TAB() byte to A
+.,AB0A E5 09    SBC $09         subtract current cursor position
+.,AB0C 90 05    BCC $AB13       go loop for next if already past requited position
+.,AB0E AA       TAX             copy [SPACE] count to X
+.,AB0F E8       INX             increment count
+.,AB10 CA       DEX             decrement count
+.,AB11 D0 06    BNE $AB19       branch if count was not zero
+                                was ";" or [SPACES] printed
+.,AB13 20 73 00 JSR $0073       increment and scan memory
+.,AB16 4C A2 AA JMP $AAA2       continue print loop
+.,AB19 20 3B AB JSR $AB3B       print [SPACE] or [CURSOR RIGHT]
+.,AB1C D0 F2    BNE $AB10       loop, branch always
+
+                                *** print null terminated string
+.,AB1E 20 87 B4 JSR $B487       print " terminated string to utility pointer
+
+                                *** print string from utility pointer
+.,AB21 20 A6 B6 JSR $B6A6       pop string off descriptor stack, or from top of string
+                                space returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,AB24 AA       TAX             copy length
+.,AB25 A0 00    LDY #$00        clear index
+.,AB27 E8       INX             increment length, for pre decrement loop
+.,AB28 CA       DEX             decrement length
+.,AB29 F0 BC    BEQ $AAE7       exit if done
+.,AB2B B1 22    LDA ($22),Y     get byte from string
+.,AB2D 20 47 AB JSR $AB47       print the character
+.,AB30 C8       INY             increment index
+.,AB31 C9 0D    CMP #$0D        compare byte with [CR]
+.,AB33 D0 F3    BNE $AB28       loop if not [CR]
+.,AB35 20 E5 AA JSR $AAE5       toggle A, EOR #$FF. what is the point of this ??
+.,AB38 4C 28 AB JMP $AB28       loop
+
+                                *** print [SPACE] or [CURSOR RIGHT]
+.,AB3B A5 13    LDA $13         get current I/O channel
+.,AB3D F0 03    BEQ $AB42       if default channel go output [CURSOR RIGHT]
+.,AB3F A9 20    LDA #$20        else output [SPACE]
+.:AB41 2C       .BYTE $2C       makes next line BIT $1DA9
+.,AB42 A9 1D    LDA #$1D        set [CURSOR RIGHT]
+.:AB44 2C       .BYTE $2C       makes next line BIT $3FA9
+
+                                *** print "?"
+.,AB45 A9 3F    LDA #$3F        set "?"
+
+                                *** print character
+.,AB47 20 0C E1 JSR $E10C       output character to channel with error check
+.,AB4A 29 FF    AND #$FF        set the flags on A
+.,AB4C 60       RTS             

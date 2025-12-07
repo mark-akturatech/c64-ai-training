@@ -1,0 +1,252 @@
+# C64 BASIC ROM Disassembly $AF00-$AFFF - Operators, Comparisons
+
+.,AF67 B1 64    LDA ($64),Y     get integer variable high byte
+.,AF69 A8       TAY             copy to Y
+.,AF6A 8A       TXA             copy loa byte to A
+.,AF6B 4C 91 B3 JMP $B391       convert fixed integer AY to float FAC1 and return
+                                variable name set-up, variable is float
+.,AF6E 20 14 AF JSR $AF14       check address range
+.,AF71 90 2D    BCC $AFA0       if not in BASIC ROM get pointer and unpack into FAC1
+.,AF73 E0 54    CPX #$54        compare variable name first character with "T"
+.,AF75 D0 1B    BNE $AF92       branch if not "T"
+.,AF77 C0 49    CPY #$49        compare variable name second character with "I"
+.,AF79 D0 25    BNE $AFA0       branch if not "I"
+                                variable name was "TI"
+.,AF7B 20 84 AF JSR $AF84       read real time clock into FAC1 mantissa, 0HML
+.,AF7E 98       TYA             clear A
+.,AF7F A2 A0    LDX #$A0        set exponent to 32 bit value
+.,AF81 4C 4F BC JMP $BC4F       set exponent = X and normalise FAC1
+
+                                *** read real time clock into FAC1 mantissa, 0HML
+.,AF84 20 DE FF JSR $FFDE       read real time clock
+.,AF87 86 64    STX $64         save jiffy clock mid byte as  FAC1 mantissa 3
+.,AF89 84 63    STY $63         save jiffy clock high byte as  FAC1 mantissa 2
+.,AF8B 85 65    STA $65         save jiffy clock low byte as  FAC1 mantissa 4
+.,AF8D A0 00    LDY #$00        clear Y
+.,AF8F 84 62    STY $62         clear FAC1 mantissa 1
+.,AF91 60       RTS             
+                                variable name set-up, variable is float and not "Tx"
+.,AF92 E0 53    CPX #$53        compare variable name first character with "S"
+.,AF94 D0 0A    BNE $AFA0       if not "S" go do normal floating variable
+.,AF96 C0 54    CPY #$54        compare variable name second character with "
+.,AF98 D0 06    BNE $AFA0       if not "T" go do normal floating variable
+                                variable name was "ST"
+.,AF9A 20 B7 FF JSR $FFB7       read I/O status word
+.,AF9D 4C 3C BC JMP $BC3C       save A as integer byte and return
+                                variable is float
+.,AFA0 A5 64    LDA $64         get variable pointer low byte
+.,AFA2 A4 65    LDY $65         get variable pointer high byte
+.,AFA4 4C A2 BB JMP $BBA2       unpack memory (AY) into FAC1
+
+                                *** get value from line continued
+                                only functions left so ..
+                                set up function references
+.,AFA7 0A       ASL             *2 (2 bytes per function address)
+.,AFA8 48       PHA             save function offset
+.,AFA9 AA       TAX             copy function offset
+.,AFAA 20 73 00 JSR $0073       increment and scan memory
+.,AFAD E0 8F    CPX #$8F        compare function offset to CHR$ token offset+1
+.,AFAF 90 20    BCC $AFD1       branch if < LEFT$ (can not be =)
+                                get value from line .. continued
+                                was LEFT$, RIGHT$ or MID$ so..
+.,AFB1 20 FA AE JSR $AEFA       scan for "(", else do syntax error then warm start
+.,AFB4 20 9E AD JSR $AD9E       evaluate, should be string, expression
+.,AFB7 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+.,AFBA 20 8F AD JSR $AD8F       check if source is string, else do type mismatch
+.,AFBD 68       PLA             restore function offset
+.,AFBE AA       TAX             copy it
+.,AFBF A5 65    LDA $65         get descriptor pointer high byte
+.,AFC1 48       PHA             push string pointer high byte
+.,AFC2 A5 64    LDA $64         get descriptor pointer low byte
+.,AFC4 48       PHA             push string pointer low byte
+.,AFC5 8A       TXA             restore function offset
+.,AFC6 48       PHA             save function offset
+.,AFC7 20 9E B7 JSR $B79E       get byte parameter
+.,AFCA 68       PLA             restore function offset
+.,AFCB A8       TAY             copy function offset
+.,AFCC 8A       TXA             copy byte parameter to A
+.,AFCD 48       PHA             push byte parameter
+.,AFCE 4C D6 AF JMP $AFD6       go call function
+                                get value from line .. continued
+                                was SGN() to CHR$() so..
+.,AFD1 20 F1 AE JSR $AEF1       evaluate expression within parentheses
+.,AFD4 68       PLA             restore function offset
+.,AFD5 A8       TAY             copy to index
+.,AFD6 B9 EA 9F LDA $9FEA,Y     get function jump vector low byte
+.,AFD9 85 55    STA $55         save functions jump vector low byte
+.,AFDB B9 EB 9F LDA $9FEB,Y     get function jump vector high byte
+.,AFDE 85 56    STA $56         save functions jump vector high byte
+.,AFE0 20 54 00 JSR $0054       do function call
+.,AFE3 4C 8D AD JMP $AD8D       check if source is numeric and RTS, else do type mismatch
+                                string functions avoid this by dumping the return address
+
+                                *** perform OR
+                                this works because NOT(NOT(x) AND NOT(y)) = x OR y
+.,AFE6 A0 FF    LDY #$FF        set Y for OR
+.:AFE8 2C       .BYTE $2C       makes next line BIT $00A0
+
+                                *** perform AND
+.,AFE9 A0 00    LDY #$00        clear Y for AND
+.,AFEB 84 0B    STY $0B         set AND/OR invert value
+.,AFED 20 BF B1 JSR $B1BF       evaluate integer expression, no sign check
+.,AFF0 A5 64    LDA $64         get FAC1 mantissa 3
+.,AFF2 45 0B    EOR $0B         EOR low byte
+.,AFF4 85 07    STA $07         save it
+.,AFF6 A5 65    LDA $65         get FAC1 mantissa 4
+.,AFF8 45 0B    EOR $0B         EOR high byte
+.,AFFA 85 08    STA $08         save it
+.,AFFC 20 FC BB JSR $BBFC       copy FAC2 to FAC1, get 2nd value in expression
+.,AFFF 20 BF B1 JSR $B1BF       evaluate integer expression, no sign check
+.,B002 A5 65    LDA $65         get FAC1 mantissa 4
+.,B004 45 0B    EOR $0B         EOR high byte
+.,B006 25 08    AND $08         AND with expression 1 high byte
+.,B008 45 0B    EOR $0B         EOR result high byte
+.,B00A A8       TAY             save in Y
+.,B00B A5 64    LDA $64         get FAC1 mantissa 3
+.,B00D 45 0B    EOR $0B         EOR low byte
+.,B00F 25 07    AND $07         AND with expression 1 low byte
+.,B011 45 0B    EOR $0B         EOR result low byte
+.,B013 4C 91 B3 JMP $B391       convert fixed integer AY to float FAC1 and return
+
+                                *** perform comparisons
+                                do < compare
+.,B016 20 90 AD JSR $AD90       type match check, set C for string
+.,B019 B0 13    BCS $B02E       branch if string
+                                do numeric < compare
+.,B01B A5 6E    LDA $6E         get FAC2 sign (b7)
+.,B01D 09 7F    ORA #$7F        set all non sign bits
+.,B01F 25 6A    AND $6A         and FAC2 mantissa 1 (AND in sign bit)
+.,B021 85 6A    STA $6A         save FAC2 mantissa 1
+.,B023 A9 69    LDA #$69        set pointer low byte to FAC2
+.,B025 A0 00    LDY #$00        set pointer high byte to FAC2
+.,B027 20 5B BC JSR $BC5B       compare FAC1 with (AY)
+.,B02A AA       TAXcopy the result
+.,B02B 4C 61 B0 JMP $B061       go evaluate result
+                                do string < compare
+.,B02E A9 00    LDA #$00        clear byte
+.,B030 85 0D    STA $0D         clear data type flag, $FF = string, $00 = numeric
+.,B032 C6 4D    DEC $4D         clear < bit in comparrison evaluation flag
+.,B034 20 A6 B6 JSR $B6A6       pop string off descriptor stack, or from top of string
+                                space returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B037 85 61    STA $61         save length
+.,B039 86 62    STX $62         save string pointer low byte
+.,B03B 84 63    STY $63         save string pointer high byte
+.,B03D A5 6C    LDA $6C         get descriptor pointer low byte
+.,B03F A4 6D    LDY $6D         get descriptor pointer high byte
+.,B041 20 AA B6 JSR $B6AA       pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B044 86 6C    STX $6C         save string pointer low byte
+.,B046 84 6D    STY $6D         save string pointer high byte
+.,B048 AA       TAX             copy length
+.,B049 38       SEC             set carry for subtract
+.,B04A E5 61    SBC $61         subtract string 1 length
+.,B04C F0 08    BEQ $B056       branch if str 1 length = string 2 length
+.,B04E A9 01    LDA #$01        set str 1 length > string 2 length
+.,B050 90 04    BCC $B056       branch if so
+.,B052 A6 61    LDX $61         get string 1 length
+.,B054 A9 FF    LDA #$FF        set str 1 length < string 2 length
+.,B056 85 66    STA $66         save length compare
+.,B058 A0 FF    LDY #$FF        set index
+.,B05A E8       INX             adjust for loop
+.,B05B C8       INY             increment index
+.,B05C CA       DEX             decrement count
+.,B05D D0 07    BNE $B066       branch if still bytes to do
+.,B05F A6 66    LDX $66         get length compare back
+.,B061 30 0F    BMI $B072       branch if str 1 < str 2
+.,B063 18       CLC             flag str 1 <= str 2
+.,B064 90 0C    BCC $B072       go evaluate result
+.,B066 B1 6C    LDA ($6C),Y     get string 2 byte
+.,B068 D1 62    CMP ($62),Y     compare with string 1 byte
+.,B06A F0 EF    BEQ $B05B       loop if bytes =
+.,B06C A2 FF    LDX #$FF        set str 1 < string 2
+.,B06E B0 02    BCS $B072       branch if so
+.,B070 A2 01    LDX #$01        set str 1 > string 2
+.,B072 E8       INX             x = 0, 1 or 2
+.,B073 8A       TXA             copy to A
+.,B074 2A       ROL             * 2 (1, 2 or 4)
+.,B075 25 12    AND $12         AND with the comparison evaluation flag
+.,B077 F0 02    BEQ $B07B       branch if 0 (compare is false)
+.,B079 A9 FF    LDA #$FFelse set result true
+.,B07B 4C 3C BC JMP $BC3C       save A as integer byte and return
+.,B07E 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+
+                                *** perform DIM
+.,B081 AA       TAX             copy "DIM" flag to X
+.,B082 20 90 B0 JSR $B090       search for variable
+.,B085 20 79 00 JSR $0079       scan memory
+.,B088 D0 F4    BNE $B07E       scan for "," and loop if not null
+.,B08A 60       RTS             
+
+                                *** search for variable
+.,B08B A2 00    LDX #$00        set DIM flag = $00
+.,B08D 20 79 00 JSR $0079       scan memory, 1st character
+.,B090 86 0C    STX $0C         save DIM flag
+.,B092 85 45    STA $45         save 1st character
+.,B094 20 79 00 JSR $0079       scan memory
+.,B097 20 13 B1 JSR $B113       check byte, return Cb = 0 if<"A" or >"Z"
+.,B09A B0 03    BCS $B09F       branch if ok
+.,B09C 4C 08 AF JMP $AF08       else syntax error then warm start
+                                was variable name so ...
+.,B09F A2 00    LDX #$00        clear 2nd character temp
+.,B0A1 86 0D    STX $0D         clear data type flag, $FF = string, $00 = numeric
+.,B0A3 86 0E    STX $0E         clear data type flag, $80 = integer, $00 = float
+.,B0A5 20 73 00 JSR $0073       increment and scan memory, 2nd character
+.,B0A8 90 05    BCC $B0AF       if character = "0"-"9" (ok) go save 2nd character
+                                2nd character wasn't "0" to "9" so ...
+.,B0AA 20 13 B1 JSR $B113       check byte, return Cb = 0 if<"A" or >"Z"
+.,B0AD 90 0B    BCC $B0BA       branch if <"A" or >"Z" (go check if string)
+.,B0AF AA       TAX             copy 2nd character
+                                ignore further (valid) characters in the variable name
+.,B0B0 20 73 00 JSR $0073       increment and scan memory, 3rd character
+.,B0B3 90 FB    BCC $B0B0       loop if character = "0"-"9" (ignore)
+.,B0B5 20 13 B1 JSR $B113       check byte, return Cb = 0 if<"A" or >"Z"
+.,B0B8 B0 F6    BCS $B0B0       loop if character = "A"-"Z" (ignore)
+                                check if string variable
+.,B0BA C9 24    CMP #$24        compare with "$"
+.,B0BC D0 06    BNE $B0C4       branch if not string
+                                type is string
+.,B0BE A9 FF    LDA #$FF        set data type = string
+.,B0C0 85 0D    STA $0D         set data type flag, $FF = string, $00 = numeric
+.,B0C2 D0 10    BNE $B0D4       branch always
+.,B0C4 C9 25    CMP #$25        compare with "%"
+.,B0C6 D0 13    BNE $B0DB       branch if not integer
+.,B0C8 A5 10    LDA $10         get subscript/FNX flag
+.,B0CA D0 D0    BNE $B09C       if ?? do syntax error then warm start
+.,B0CC A9 80    LDA #$80        set integer type
+.,B0CE 85 0E    STA $0E         set data type = integer
+.,B0D0 05 45    ORA $45         OR current variable name first byte
+.,B0D2 85 45    STA $45         save current variable name first byte
+.,B0D4 8A       TXA             get 2nd character back
+.,B0D5 09 80    ORA #$80        set top bit, indicate string or integer variable
+.,B0D7 AA       TAX             copy back to 2nd character temp
+.,B0D8 20 73 00 JSR $0073       increment and scan memory
+.,B0DB 86 46    STX $46         save 2nd character
+.,B0DD 38       SEC             set carry for subtract
+.,B0DE 05 10    ORA $10         or with subscript/FNX flag - or FN name
+.,B0E0 E9 28    SBC #$28        subtract "("
+.,B0E2 D0 03    BNE $B0E7       branch if not "("
+.,B0E4 4C D1 B1 JMP $B1D1       go find, or make, array
+                                either find or create variable
+                                variable name wasn't xx(.... so look for plain variable
+.,B0E7 A0 00    LDY #$00        clear A
+.,B0E9 84 10    STY $10         clear subscript/FNX flag
+.,B0EB A5 2D    LDA $2D         get start of variables low byte
+.,B0ED A6 2E    LDX $2E         get start of variables high byte
+.,B0EF 86 60    STX $60         save search address high byte
+.,B0F1 85 5F    STA $5F         save search address low byte
+.,B0F3 E4 30    CPX $30         compare with end of variables high byte
+.,B0F5 D0 04    BNE $B0FB       skip next compare if <>
+                                high addresses were = so compare low addresses
+.,B0F7 C5 2F    CMP $2F         compare low address with end of variables low byte
+.,B0F9 F0 22    BEQ $B11D       if not found go make new variable
+.,B0FB A5 45    LDA $45         get 1st character of variable to find
+.,B0FD D1 5F    CMP ($5F),Y     compare with variable name 1st character
+.,B0FF D0 08    BNE $B109       branch if no match
+                                1st characters match so compare 2nd character
+.,B101 A5 46    LDA $46         get 2nd character of variable to find
+.,B103 C8       INY             index to point to variable name 2nd character
+.,B104 D1 5F    CMP ($5F),Y     compare with variable name 2nd character
+.,B106 F0 7D    BEQ $B185       branch if match (found variable)
+.,B108 88       DEY             else decrement index (now = $00)

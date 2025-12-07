@@ -1,0 +1,357 @@
+61783         $F157          CHRIN
+Input a Character from the Current Device
+
+This is a documented Kernal routine whose jump table entry point is at
+65487 ($FFCF).
+
+The routine jumps through a RAM vector at 804 ($324).  Its function is
+to get a character from the current input device (whose device number
+is stored at 153 ($99)).  This device must first have been OPENed and
+then designated as the input channel by the CHKIN routine.
+
+When this routine is called, the next byte of data available from this
+device is returned in the Accumulator.  The only exception is the
+routine for the keyboard device (which is the default input device).
+It the keyboard is the current input device, this routine blinks the
+cursor, fetches characters from the keyboard buffer, and echoes them
+to the screen until a carriage return is encountered.  When a carriage
+return is round, the routine sets a flag to indicate the length of the
+last logical line before the return character, and reads the first
+character of this logical line from the screen.
+
+Subsequent calls to this routine will cause the next character in the
+line to be read from the screen and returned in the Accumulator, until
+the carriage return character is returned to indicate the end of the
+line.  Any call after this character is received will start the whole
+process over again.
+
+Note that only the last logical line before the carriage return is
+used.  Any time you type in more than 80 characters, a new logical
+line is started.  This routine will ignore any characters on the old
+logical line, and process only the most recent 80-character group.
+
+61898         $F1CA          CHROUT
+Output a Byte
+
+This is a documented Kernal routine whose jump table entry point is at
+65490 ($FFD2).  The routine jumps through a RAM vector at 806 ($326).
+It is probably one of the best known and most used Kernal routines,
+because it sends the character in the Accumulator to the current
+output device.  Unless a device has been OPENed and designated as the
+current output channel using the CHKOUT routine, the character is
+printed to the screen, which is the default output device.  If the
+cassette is the current device, outputting a byte will only add it to
+the buffer.  No actual transmission of data will occur until the
+192-byte buffer is full.
+
+61966         $F20E          CHKIN
+Designate a Logical File As the Current Input Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65478 ($FFC6).
+
+The routine jumps through a RAM vector at 798 ($31E).  If you wish to
+get data from any device other than the keyboard, this routine must be
+called after OPENing the device, before you can get a data byte with
+the CHRIN or GETIN routine.  When called, the routine will designate
+the logical file whose file number is in the .X register as the
+current file, its device as the current device, and its secondary
+address as the current secondary address.  If the device on the
+channel is a serial device, which requires a TALK command and
+sometimes a secondary address, this routine will send them over the
+serial bus.
+
+62032         $F250          CHKOUT
+Designate a Logical File As the Current Output Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65481 ($FFC9).
+
+The routine jumps through a RAM vector at 800 ($320).  If you wish to
+output data to any device other than the screen, this routine must be
+called after OPENing the device, and before you output a data byte
+with the CHROUT routine.  When called, the routine will designate the
+logical file whose file number is in the .X register as the current
+file, its device as the current device, and its secondary address as
+the current secondary address.  If the device on the channel uses the
+serial bus, and therefore requires a LISTEN command and possibly a
+secondary address, this information will be sent on the bus.
+
+62097         $F291          CLOSE
+Close a Logical I/O File
+
+CLOSE is a documented Kernal routine which can be entered via the jump
+table at 65475 ($FFC3).
+
+The routine jumps through a RAM vector at 796 ($31C).  It is used to
+close a logical file after all I/O operations involving that file have
+been completed.  This is accomplished by loading the Accumulator with
+the logical file number of the file to be closed, and calling this
+routine.
+
+Closing an RS-232 file will de-allocate space at the top of memory for
+the receiving and trasmit buffers.  Closing a cassette file that was
+opened for writing will force the last block to be written to
+cassette, even if it is not a full 192 bytes.  Closing a serial bus
+device will send an UNLISTEN command on the bus.  Remember, it is
+necessary to properly CLOSE a cassette or disk data file in order to
+retrieve the file later.
+
+For all types of files, CLOSE removes the file's entry from the tables
+of logical files, device, and secondary address at 601, 611, and 621
+($259, $263, $26D), and moves all higher entries in the table down one
+space.
+
+62223         $F30F
+Find the File in the Logical File Table
+
+This subroutine is used by many Kernal routines to find the position
+of the logical file in the logical file table at 601 ($259).
+
+62239         $F31F
+Set Current Logical File, Current Device, and Current Seconday Address
+
+This subroutine is used to update the Kernal variables at 184-186
+($B8-$BA) which holds the current logical file number, current device
+number, and current secondary address number.
+
+62255         $F32F          CLALL
+Close All Logical I/O Files
+
+CLALL is a documented Kernal routine whose entry point in the jump
+table is 65511 ($FFE7).
+
+The routine jumps through a RAM vector at 812 ($32C).  It closes all
+open files, by resetting the index into open files at 152 ($98) to
+zero.  It then falls through to the next routine, which restores the
+default I/O devices.
+
+62259         $F333          CLRCHN
+Restore Current Input and Output Devices to the Default Devices
+
+This is a documented Kernal Routine which can be entered at location
+65484 ($FFCC) in the jump table.
+
+The routine jumps through a RAM vector at 802 ($322).  It sets the
+current input device to the keyboard, and the current output device to
+the screen.  Also, if the current input device was formerly a serial
+device, the routine sends it an UNTALK command on the serial bus, and
+if a serial device was formerly the current output device, the routine
+sends it an UNLISTEN command.
+
+62282         $F34A          OPEN
+Open a Logical I/O File
+
+OPEN is a documented Kernal I/O routine.  It can be entered from the
+jump table at 65472 ($FFC0).
+
+The routine jumps through a RAM vector at 794 ($31A).  This routine
+assigns a logical file to a device, so that it can be used for
+Input/Output operations.  In order to specify the logical file number,
+the device number, and the secondary address if any, the SETLFS
+routine must first be called.  Likewise, in order to designate the
+filename, the SETNAM routine must be used first.  After these two
+routines are called, OPEN is then called.
+
+62622         $F49E          LOAD
+Load RAM from a Device
+
+This is a documented Kernal routine, whose entry in the jump table
+appears at 65493 ($FFD5).
+
+The routine jumps through a RAM vector at 816 ($330).  LOAD is used to
+transfer data froma device directly to RAM.  It can also be used to
+verify RAM, comparing its contents to those of a disk or tape file.
+To choose between these operations you must set the Accumulator with a
+0 for LOAD, or a 1 for VERIFY.
+
+Since the LOAD routine performs an OPEN, it must be preceded by a call
+to the SETLFS routine to specify the logical file number, device
+number, and secondary address, and a call to the SETNAM routine to
+specify the filename (a LOAD from tape can be performed without a
+filename being specified).  Then the .X and .Y registers should be set
+with the starting address for the load, and the LOAD routine called.
+If the secondary address specified was a 1, this starting address will
+be ignored, and the header information will be used to supply the load
+address.  If the secondary address was a 0, the address supplied by
+the call will be used.  In either case, upon return from the
+subroutine, the .X and .Y registers will contain the address of the
+highest RAM location that was loaded.
+
+62885         $F5A5
+Print SEARCHING Message if in Direct Mode
+
+62930         $F5D2
+Print LOADING or VERIFYING
+
+62941         $F5DD          SAVE
+Save RAM to a Device
+
+This is a documented Kernal routine, whose entry in the jump table
+appears at 65496 ($FFD8).
+
+The routine jumps through a RAM vector at 818 ($332).  SAVE is used to
+transfer data directly from RAM to an I/O device.  Since the SAVE
+routine performs an OPEN, it must be preceded by a call to the SETLFS
+routine to specify the logical file number, device number, and
+secondary address, and a call to the SETNAM routine to specify the
+filename (although a SAVE to the cassette can be performed without
+giving a filename).  A Page 0 pointer to the starting address of the
+area to be saved should be set up, with the low byte of the address
+first.  The accumulator should be loaded with the Page 0 offset of
+that pointer, then the .X and .Y registers should be set with the
+ending address for the save, and the SAVE routine called.
+
+63119         $F68F
+If in Direct Mode, Print SAVING and Filename
+
+63131         $F69B          UDTIM
+Update the Software Clock and Check for the STOP Key
+
+UDTIM is a documented Kernal routine which can be entered through the
+jump table at 65514 ($FFEA).
+
+It is normally called by the IRQ interrupt handler once every sixtieth
+of a second.  It adds one to the value in the three-byte software
+jiffy clock at 160-162 ($A0-$A2), and sets the clock back to zero when
+it reaches the 24 hour point.  In addition, it scans the keyboard row
+in which the STOP key is located, and stores the current value of that
+key in location 145 ($91).  This variable is used by the STOP routine
+which checks for the STOP key.
+
+63197         $F6DD          RDTIM
+Read the Time From the Software Clock into the .A, .X, and .Y
+Registers
+
+This is a documented Kernal routine whose entry point in the jump
+table is 65502 ($FFDE).
+
+It reads the software clock (which counts sixtieths of a second) into
+the internal registers.  The .Y register contains the most significant
+byte (from location 160 ($A0)), the .X register contains the middle
+byte (from location 161 ($A1)), and the Accumulator contains the least
+significant byte (from location 162 ($A2)).
+
+63204         $F6E4          SETTIM
+Set the Software Clock from the .A, .X, and .Y Registers
+
+This documented Kernal routine can be entered from location 65499
+($FFDB).
+
+It performs the reverse operation from RDTIM, storing the value in the
+.Y register into location 160 ($A0), the .X register into 161 ($A1),
+and the Accumulator into 162 ($A2).  Interrupts are first disabled, to
+make sure that the clock will not be updated while being set.
+
+63213         $F6ED          STOP
+Test STOP Key
+
+STOP is a documented Kernal routine which can be entered from the jump
+table at location 65505 ($FFE1).
+
+It is vectored through RAM at 808 ($328).  The routine checks to see
+if the STOP key was pressed during the last UDTIM call.  If it was,
+the Zero flag is set to 1, the CLRCHN routine is called to set the
+input and output devices back to the keyboard and screen, and the
+keyboard queue is emptied.
+
+63227         $F6FB
+Set Kernal I/O Error Messages
+
+This subroutine is used to handle I/O errors from Kernal I?O routines.
+It calls CLRCHN to restore default I/O devices.  If Bit 6 of the flag
+at 157 ($9D) is set, it prints I/O ERROR followed by the error number,
+and then sets the Carry flag to indicate an error, with the error
+number in the Accumulator.  The Kernal error messages are not used by
+BASIC, but may be used by machine language monitors and other
+applications.
+
+63276         $F72C
+Get Next Tape File Header from Cassette
+
+This routine reads in tape blocks until it finds a file header block.
+It then prints out the FOUND message along with the first 16
+characters of the filename.
+
+63338         $F76A
+Write Tape File Header Block
+
+63440         $F7D0
+Put Pointer to Tape Buffer in .X and .Y Registers
+
+63447         $F7D7
+Set I/O Area Start and End Pointers to Tape Buffer Start and End
+Address
+
+63466         $F7EA
+Search Tape for a Filename
+
+63511         $F817
+Test Cassette Buttons and Handle Messages for Tape Read
+
+This routine tests the sense switch, and if no buttons are depressed
+it prints the PRESS PLAY ON TAPE message, and loops until a cassette
+button is pressed, or until the STOP key is pressed.  If a button is
+pressed, it prints the message OK.
+
+Since the message printing routine is entered after the test for
+direct mode, these messages cannot be superseded by changing the flag
+at 157 ($9D).  You could have them harmlessly printed to ROM, however,
+by changing the value of HIBASE at 648 ($288) temporarily to 160, and
+then back to 4.
+
+63534         $F82E
+Check Cassette Switch
+
+This subroutine is used to check if a button on the recorder has been
+pressed.
+
+63544         $F838
+Test Cassette Buttons and Handle Messages for Tape Write
+
+This routine tests the sense switch, and if no buttons are depressed
+it prints the PRESS PLAY & RECORD message, and loops until a cassette
+button is pressed, or until the STOP key is pressed.  If a button is
+pressed, it prints the message OK.  These messages cannot be supressed
+by changing the flag at 157 ($9D).  See the entry for 63511 ($F817)
+for more information.
+
+63553         $F841
+Start Reading a Block of Data from the Cassette
+
+This subroutine tests the cassette switch and initializes various
+flags for reading a block of data from cassette.
+
+63588         $F864
+Start Writing a Block of Data to the Cassette
+
+This subroutine tests the cassette switch and initializes various
+flags for writing a block of data to cassette.
+
+63605         $F875
+Common Code for Reading a Data Block from Tape and Writing a Block to Tape
+
+This routine sets the actual reading or writing of a block of data.
+It sets CIA #1 Timer B to call the IRQ which drives the actual reading
+or writing routine, saves the old IRQ vector, and sets the new IRQ
+vector to the read or write routine.  It also blanks the screen so
+that the video chip's memory addressing (which normally takes away
+some of the 6510 microprocessor's addressing time) will not interfere
+with the timing of the routines.
+
+63696         $F8D0
+Test the STOP Key during Cassette I/O Operations
+
+This subroutine is used to test the STOP key during tape I/O
+oeprations, and to stop I/O if it is pressed.
+
+63714         $F8E2
+Adjust CIA #1 Timer A for Tape Bit Timing
+
+63788         $F92C
+Read Tape Data (IRQ)
+
+This is the IRQ handler routine that is used for reading data from the
+cassette.  At the end of the read, the IRQ vector is restored to the
+normal IRQ routine.
+

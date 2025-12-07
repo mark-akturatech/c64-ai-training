@@ -1,0 +1,302 @@
+# ML for C64 - Appendix A: 6502 Instruction Set Reference
+
+Often, the action required to turn an interrupt flag off is odd.  It looks
+like the kind of thing you should do to turn the flag on.  Keep in mind that
+a flag may be turned on only by the external activity to which it is linked.
+So, although it may seem odd to turn the flag in bit zero off by storing a
+value of 1 (which would seem to want to turn bit zero on), don't worry.
+You'll get used to it.
+
+The IER (interrupt enable register) is often a source of problems.  In many
+cases, the high bit of a value we are storing has a special meaning:  if it's
+set, the other bits will cause the appropriate interrupt connections to turn
+on; if it's clear, the other bits will cause the appropriate interrupt
+connections to be turned off.  You may recall that we shut off the Commodore
+64 interrupt by storing $7F into address $DC0D.  This may seem odd:  we're
+storing a binary value of $01111111, which might seem to be turning bits on.
+In fact, the high bit of zero signals that all the remaining bits are "turn
+off" signals; so the value causes all interrupts to be blocked.
+
+
+Infiltrating BASIC:  The Wedge
+------------------------------
+
+In zero-page, there's a subroutine that the BASIC interpreter uses frequently
+to obtain information from your BASIC program.  It's used to get a character
+from your BASIC program, and to check it for type (numeric, end-of-command,
+or other).
+
+The routine is normally entered at either of two points:  CHRGET, to get the
+next character from your BASIC program; and CHRGOT, to recheck the last
+character.  The subroutine is located at $0070 to $0087 in most PET/CBM
+computers, and at $0073 to $008A in VIC-20 or Commodore 64.  You may
+disassemble it there if you wish.  The coding is described below.
+
+                                                                        :123:
+
+Since CHRGET is in different locations, depending on the machine, the
+following code is shown with symbolic addresses.  That is, instead of showing
+the hex address value, the address is given a name, or symbol.  Thus, CHRGOT
+might represent address $0079, CHRGOT+1 would represent $007A, and so on.
+
+  CHRGET INC CHRGOT+1
+         BNE CHRGOT
+         INC CHRGOT+2
+  CHRGOT LDA $xxxx
+
+This subroutine is self-modifying, that is, it changes part of itself as it
+runs.  That's not always a good programming technique, but it works well
+here.
+
+The first part of the subroutine adds one to the address used by instruction
+CHRGOT.  This is a standard way of coding an address increment:  add one to
+the low byte of the address; if that makes it zero, the low byte must have
+gone from $FF to $00, in which case , add one to the high byte.
+
+The address loaded by CHRGOT is within your BASIC program, or within the
+input buffer if you have just typed a direct command.  Before we follow the
+next piece of code, let's look at our objectives:
+
+  1.  If we find a space, go back and get the next character.
+
+  2.  If we find a zero (BASIC end of line) or a colon (hex $3A, BASIC end-
+      of-statement), we wish to set the Z flag and exit.
+
+  3.  If we find a numeric, we wish the C flag to be clear; if we do not find
+      a numeric, we wish the C flag to be set.
+
+
+  CHRGOT  LDA $xxxx
+          CMP #$3A
+          BCS EXIT
+
+If the character is a colon ($3A), we'll leave the subroutine with the Z flag
+set.  That's one of our objectives.  Here's part of another one:  if the
+character is $3A or higher, it can't possibly be an ASCII numeric--numerics
+are in the range of $30 to $39.
+
+          CMP #$20
+          BEQ CHRGET
+
+If the character is a space, we go back and get another character.
+
+                                                                        :124:
+
+The following code looks rather strange, but it's correct.  After the two
+subtractions, the A register will be back where it started:
+
+          SEC
+          SBC #$30
+          SEC
+          SBC #$D0
+
+After this, the A register is not changed; but the C flag will be set if the
+number is less than $30, which means that it is not an ASCII numeric.
+Additionally, the Z flag will be set if A contains a binary zero.  We have
+met all of our objectives and may now return:
+
+  EXIT    RTS
+
+
+Breaking Into BASIC
+-------------------
+
+Since BASIC comes to this subroutine often, we can infiltrate BASIC by
+changing this subroutine.  Extra coding in this area is often called a
+"wedge" program.  We must be very careful:
+
+  o We must leave A, X, and Y unchanged; either we must not use them or we
+    must save them away and bring them back.
+
+  o We must not interfere with the flags.
+
+  o We must be careful not to slow BASIC down too much.
+
+This is a tall order.  The last requirement is often helped by two
+techniques:  use the wedge to implement extra commands in direct mode only;
+and make use of a special character to identify our special commands.
+
+In PET/CBM, we may choose to modify this subroutine in either of two places:
+near the beginning, in CHRGET; or after the LDA, in CHRGOT.  Each location
+has its advantages.  In the CHRGET area, we don't need to preserve the A
+register or status flags, since CHRGOT will fix them up for us.  In the area
+following CHRGOT, we have the character we wish to examine in the A register.
+
+But in either case, it's an exacting job.
+
+VIC-20 and Commodore 64 have made the job much more easy by providing a
+vector at address $0308/$0309 that will give us control of the computer, if
+we wish, immediately before each BASIC command is executed.  We still need to
+use due care, but we have much more latitude.
+
+                                                                        :125:
+
+The address of the instruction at CHRGOT is often referred to as TXTPTR, the
+text pointer.  This address always points to the BASIC command being executed
+at the moment.  If we want to participate in reading BASIC, we must learn to
+use TXTPTR to get information--usually by means of indirect, indexed
+addressing--and to leave this address pointing at a suitable place when we
+return control back to the normal BASIC handling programs.
+
+
+Project:  Adding a Command
+--------------------------
+
+Let's add a simple command to the VIC and Commodore 64 by using the $0308
+vector.  The ampersand (&) character isn't used in most BASIC programs, so
+we'll make it mean this:  whenever you see the code "&", print ten asterisk
+(*) characters to the computer screen, followed by a carriage return.
+
+As with our interrupt program, we'll copy the old address from $0308/$0309
+into an indirect address location, so that we can link up with the normal
+computer routines as necessary.
+
+An important point:  the vector will give us control, if we want it, with
+TXTPTR positioned immediately before the next instruction.  When we return
+control to BASIC, we must be sure that TXTPTR is similarly positioned.
+
+Here's our instruction "intercept":
+
+  .A 033C  LDY #$01
+
+We're going to use indirect, indexed addressing to "look ahead" at the
+instruction.  Let's look, using TXTPTR as an indirect address:
+
+  .A 033E  LDA ($7A),Y
+
+Since Y equals one, we'll look just beyond the address to which TXTPTR is
+pointing:
+
+  .A 0340  CMP #$26
+  .A 0342  BEQ $0347
+  .A 0344  JMP ($03A0)
+
+If the character is an ampersand, we'll branch ahead to $0347.  If not, we'll
+connect through the indirect vector to the regular BASIC interpreter code:
+
+  .A 0347  JSR $0073
+
+We may call CHRGET to move the pointer along.  Now TXTPTR points squarely at
+the ampersand character.  We are ready to print ten asterisks:
+
+                                                                        :126:
+
+  .A 034A  LDY #$00
+  .A 034C  LDA #$2A
+  .A 034E  JSR $FFD2
+  .A 0351  INY
+  .A 0352  CPY #$0A
+  .A 0354  BCC $034E
+  .A 0356  LDA #$0D
+  .A 0358  JSR $FFD2
+  .A 035B  JMP $0344
+
+The above code prints an asterisk ($2A) ten times and then prints a RETURN
+($0D).  It then goes to the regular BASIC interpreter, which will look behind
+the ampersand character for a new BASIC command.
+
+Now we need to set up the link to our program.  We'll write the code to do
+this starting at $035E, so that SYS 862 will put the new command (ampersand)
+into effect:
+
+  .A 035E  LDA $0308
+  .A 0361  STA $03A0
+  .A 0364  LDA $0309
+  .A 0367  STA $03A1
+  .A 036A  LDA #$3C
+  .A 036C  STA $0308
+  .A 036F  LDA #$03
+  .A 0371  STA $0309
+  .A 0374  RTS
+
+When you have completed and checked the code (remember this is for VIC and
+Commodore 64 only), return to BASIC.  Type NEW and write the following
+program:
+
+  100 PRINT 34:&:PRINT 5+6
+  110 &
+  120 PRINT "THAT'S ALL"
+
+If you type RUN, you will get a SYNTAX ERROR in line 100.  We have not yet
+implemented our "ampersand" command.  Type the command SYS 862.  Now type RUN
+again.  The ampersand command obediently prints ten asterisks each time it is
+invoked.
+
+Infiltrating BASIC isn't an easy job.  But it can be done.
+
+
+Things You Have Learned
+-----------------------
+
+- The stack is located in page 1, from $01FF moving down to $0100.  It is
+  used for holding temporary information.  A program may push information to
+  the stack, and the pull it back later.  The last item that has been pushed
+  onto the stack will be the first item to be pulled back off.
+
+                                                                        :127:
+
+- Great care must be taken to ensure that your program pulls exactly the same
+  number of items back from the stack as it pushed.  In particular, be sure
+  that a branch or jump does not inadvertently omit a needed stack activity.
+  A badly handled stack is often fatal to the program run.
+
+- PHA pushes the contents of A to the stack; PLA pulls from the stack into
+  the A register.  These two commands are often used to temporarily save A.
+  PHP pushes the status register (SR); PLP pulls it back.  These two commands
+  are often used for "deferred decisions."
+
+- JSR pushes a return address (minus 1) to the stack; RTS recalls this
+  address.  We may use JSR and RTS without needing to know the role the stack
+  plays, since the two commands take care of the details for us.
+
+- Interrupts, including the BRK instruction, push three items to the stack;
+  RTI brings them back so that the interrupted program may resume.
+
+- USR is a function, as opposed to SYS, which is a command.  USR goes to a
+  preset address, takes a numeric argument, and can return a value.  In
+  practice, USR and SYS are used in quite similar ways.
+
+- Commodore ROM systems contain coding for the interrupt sequences that cause
+  the data registers--A, X, and Y--to be pushed to the stack, and a branch to
+  be taken through an indirect address that the user can modify.  Since
+  interrupt is active virtually all the time, it may be used to create
+  activities that are active even when no BASIC program is running.
+
+- The various IA chips--PIA, VIA, and CIA--perform many different functions,
+  including:  recording events in latching flags and controlling interrupts;
+  timing; and connecting input/output ports.  The detailed specification
+  sheets must be studied for these rather complex details.
+
+- A subroutine called CHRGET is used frequently by the BASIC interpreter when
+  a BASIC program is running.  We may modify or add to this subroutine in
+  order to add to or modify the BASIC language itself.
+
+
+Questions and Projects
+----------------------
+
+If you redirect the interrupt vector to your own machine language program,
+you can copy all of zero page to the screen.  Use indexing; start X at zero;
+and walk through the whole of zero page, loading the memory contents and
+storing (indexed again, of course) to the screen.  Don't forget to connect up
+your code to the regular interrupt entry address.
+
+You'll get a fascinating screen.  There will be timers going, and as you type
+on the keyboard you'll see various inner values changing around.  Enjoy the
+view.
+
+                                                                        :128:
+
+It's sometimes suggested that a good way to pass information to a subroutine
+is to push the information onto the stack and call the subroutine.  The
+subroutine can pull the information from the stack.  What's wrong with this
+suggestion?
+
+The above suggestion can be implemented, but it takes a lot of careful stack
+work.  You might like to work through the logic needed to do this.
+
+There are some utility programs which, when placed in the computer, allow a
+listing to be "scrolled."  In other words, if the screen shows BASIC lines
+250 to 460, the user can take the cursor to the bottom of the screen and
+continue to press the cursor-down key.  New BASIC lines (following 460) will
+then appear.  This is not an easy thing to code, but here's the question:  do

@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 8: SID Chip, I/O Techniques
+
+
+- The start-of-variables pointer is intimately tied in with BASIC's SAVE and
+  LOAD commands.  It is extremely important to ensure that any LOAD sequence
+  leaves this pointer in a safe place, so that variables cannot write over
+  program code and thus cause program destruction.
+
+- Machine language monitor .S (save) and .L (load) commands can be used for
+  staging programs in various parts of memory.  Again, great care should be
+  taken to ensure that the pointers are sound after the use of such
+  instructions.
+
+- A BASIC program may contain LOAD commands that will bring in any of the
+  following:  a different BASIC program, a machine language program, or data.
+  Again, careful handling is needed.
+
+- BASIC variables are of three major types:  integer, real (floating point),
+  and string.  Machine language programs are capable of reading and using any
+  of them; in particular, integer variables are quite straightforward.
+
+                                                                        :109:
+
+- If we want, we can simplify the task of searching for BASIC variables by
+  deliberately creating them in a certain sequence.
+
+
+Questions and Projects
+----------------------
+
+Write a simple BASIC and machine language program set that allows BASIC to
+input a number less than 256; POKE it somewhere in memory; call machine
+language that will divide the number by two; PEEK it back and print it.
+
+A program that brings in other programs is called a "boot," or, more
+accurately, a bootstrap program.  Write a simple BASIC boot program to bring
+in a previous program exercise that was located in a cassette buffer (say,
+the program from Chapter 2 that printed HELLO), and then call it with a SYS.
+
+Bootstrap programs are especially popular with VIC, Commodore 64, and PLUS/4
+for bringing in chunks of data such as sprites, new character sets, or whole
+display screens of information.  You might like to try your hand at setting
+up such a system.
+
+Try your hand at this.  I have a BASIC program that reads
+
+  100 X=5
+  110 SYS ...
+  120 PRINT A
+
+Write the machine language to be called by the SYS so that it changes the
+name of the variable X to A.  Caution:  this may be fun, but it's dangerous
+in real programs since you may end up with two variables that have the same
+name.
+
+                                                                        :110:
+                                                                        :111:
+
+
+
+                                                          Chapter 7
+
+                                                         Stack, USR
+                                                         Interrupt,
+                                                          and Wedge
+
+
+          This chapter discusses:
+
+            o The stack for temporary storage
+
+            o USR:  an alternative to SYS
+
+            o Interrupts:  IRQ, NMI, and BRK
+
+            o The IA chips:  PIA and VIA
+
+            o Infiltrating BASIC:  the wedge
+
+
+                                                                        :112:
+
+A Brief Intermission
+--------------------
+
+If you have been following along and performing the various projects, you
+should know a great deal about the principles of machine language.  You
+should be capable of trying your hand at a number of small projects, and
+investigating areas that may be of special interest.
+
+This is a good time to stop and take stock.  The remaining chapters are
+"icing on the cake" ... they give extra detail and fine tuning on aspects of
+machine language.  If you feel uncertain about any material covered so far,
+go back.  Fix the fundamentals firmly in focus before you proceed and plunge
+into ponderous points of interest.
+
+
+Temporary Storage:  The Stack
+-----------------------------
+
+The stack is a convenient place to put temporary information.  It works like
+a stack of documents:  you may drop (or "push") an item onto the stack; when
+you take an item back again (or "pull"), you'll get the last one that you put
+there.  Formally, it's called a last-in, first-out (LIFO) discipline; it's
+natural and easy to understand.
+
+The important rule to keep in mind about the stack is:  "Leave these premises
+as clean as when you found them."  In other words, if you push three items
+onto the stack, be sure you pull those three items back off again.  Don't
+ever branch away and leave the stack littered.
+
+The stack is in memory at page 1.  The stack pointer (SP) is one of the items
+displayed in the register.  To look for the information on the stack, you
+must add $0100 to the value to get the next available stack position.  As an
+example, if the SP shows a value of $F8, the next item to go on the stack
+will go into address $01F8; the moment we put an item onto the stack, the
+pointer will move down so that it becomes $F7.
+
+As the stack is filled, the stack pointer goes down.  As the items are
+brought back out of the stack, the stack pointer goes up.  A low value in the
+stack pointer means a full stack:  a value below $40 signals trouble.
+
+The 650x chip itself doesn't give the stack any special treatment.  If a
+machine language program--probably because of a coding error--wanted to push
+one thousand items onto the stack, that would be OK as far as the micro-
+processor was concerned.  The stack would never leave page 1:  as the stack
+pointer went down beyond zero, it would wrap around to $FF and keep going.
+You'd never get those thousand distinct items back, of course,  Similarly, if
+a program wanted to pull a thousand items from the stack--whether or not they
+had been put there before--the processor would happily move the stack pointer
+round and round page 1, delivering bytes.  There would only be 256 different
+values delivered, of course, but the processor doesn't care.
+
+                                                                        :113:
+
+    SP
+    +----+              +------+
+    | F8 |-------.      | USED | 01FF
+    +----+       |      +------+
+                 |      | USED | 01FE
+                 |      +------+
+                 |      | USED | 01FD
+                 |      +------+
+                 |      | USED | 01FC
+                 |      +------+
+                 |      | USED | 01FB
+                 |      +------+
+                 |      | USED | 01FA
+                 |      +------+
+                 |      | USED | 01F9
+                 |      +------+
+                 `----->| FREE | 01F8
+                        +------+
+    NEXT ITEM           |      |
+    PUSHED WILL GO      :      :
+    TO ADDRESS $01F8    .      .
+
+    NEXT ITEM
+    PULLED WILL COME
+    FROM ADDRESS $01F9
+
+    Figure 7.1
+
+
+Within the BASIC environment, the stack pointer starts around $FA (the first
+item will go into the stack at address $01FA), and goes down from there.
+When the stack pointer goes below about $40, BASIC will signal OUT OF MEMORY.
+That's over 160 available locations on the stack, plenty of room for most
+applications.
+
+
+PHA (push A) and PLA (pull A)
+-----------------------------
+
+How may we use the stack?  Suppose we have a value in the A register and in a
+moment we will want to use it.  First we need to print something, and the
+character to be printed must be loaded into the A register.  How can we put
+away the value in A and bring it back later?  We could slip it into another
+register with a transfer function (TAX or TAY) and bring it back from there;
+or, we could store it into memory and load it back.  Alternatively, we could
+PUSH the A register (PHA) to the stack and PULL (PLA) the value back later.
+
+                                                                        :114:
+
+Again, let's do an example.  Suppose the A register contains 5, and the stack
+pointer is at $F3.  If the program says PHA, the value 5 is stored at address
+$01F3, and the stack pointer changes to $F2.  Later in the program, we
+encounter the instruction PLA:  the stack pointer moves back to $F3 and the
+value 5 is read from address $01F3 and placed into the A register.
+
+It's a handy way to put away a value in A for a moment.
+
+
+PHP (push processor status) and PLP
+
+Sometimes when we are writing a program, we want to test for a condition now
+but act on the result of that test later.  We can arrange to do this by
+putting the flags away for the time being, and then bringing them back when
+we want to test the flags.  We use the instruction PHP (push the processor
+status word) to place all the flags on the stack, and PLP (pull the processor
+status word) to restore the flags to the status register (SR).
+
+Why would we need to do this?  Perhaps an example will illustrate.  Suppose
+we are reading a file of customer purchases, and as we input a data item, we
+discover that this is the last one--it's the end of the file.  That means
+that we want to close the file and summarize the customer's activity--though
+not just yet.  First, we must handle the item of information that we have
+input.  So we can "stack" our end-of-file information, handle the last record
+in the same way as the previous records, then bring back the status to wee
+whether it's time to close the file and print the totals.  We'll be using the
+PHPH and PLP for exactly this kind of task in the next chapter.
+
+PHA and PHP both put exactly one item onto the stack; PLA and PLP pull one
+item.  There are other commands that handle more than one stack location.
+
+
+JSR and RTS
+-----------
+
+We know these commands.  What are they doing here?
+
+When a JSR command is executed, the return address is placed onto the stack.
+When an RTS command is executed, the return address is picked from the stack,
+and that's where the program returns to.
+
+More precisely, when a JSR occurs, the processor places onto the stack the
+return address minus one as two bytes; the high-order part of the address
+goes to the stack first.  When an RTS is encountered, the processor takes the
+two bytes from the stack, adds one, and then proceeds from the address so
+formed.
+
+                                                                        :115:
+
+Example:  If address $0352 contains the command JSR $033C, the following
+events occur.  The return address would be $0355, the instruction directly
+behind the JSR; but an address of $0354 is calculated--the 03 goes to the
+stack first, and the 54 below it.  The subroutine at $033C now starts to run.
+Eventually, it encounters an RTS.  The values 54 and 03 are pulled from the
+stack and formed into address $0354; one is added, and the processor resumes
+execution at address $0355.
+
+You hardly need to know this.  We have been using subroutines for some time
+without knowing that all this happened.  But sometimes, it's useful to be
+able to examine the stack, asking, "Who called this subroutine?"  The answer
+is there.
+
+
+Interrupts and RTI
+------------------
+
+There are three types of interrupt:  IRQ, NMI, and the BRK instruction.  IRQ
+(interrupt request) and NMI (non-maskable interrupt) are pins on the 650x.  A
+suitable signal is applied to the appropriate pin will cause the processor to
+stop what it's doing and run an interrupt routine.  The BRK instruction might
+be thought of as a fake interrupt--it behaves in a similar manner to IRQ.
+
+When an interrupt signal occurs, the processor completes the instruction it
+is currently working on.  Then it takes the PC (the program counter, which
+contains the address of the next instruction) and pushes it onto the stack,
+high byte first.  Finally, it pushes the status register to the stack.
+That's a total of three bytes that go to the stack.
+
+The processor then takes its execution address from one of the following
+locations:
+
+  IRQ or BRK - from $FFFE and $FFFF
+
+  NMI        - from $FFFA and $FFFB
+
+Whatever value is found in these pointers becomes the interrupt execution
+address:  the processor starts to run at that address.  Eventually, the
+processor encounters an RTI instruction.  The status register and the PC
+address are taken from the stack, and the interrupted program resumes where
+it left off.
+
+Note that the address on the stack is the return address.  This differs from
+JSR/RTS, where the return address minus one is stored.
+
+On all Commodore machines, the IRQ strikes about sixty times a second.  The
+NMI is unused (but available) on PET/CBM; it isn't available in the 264
+series; and on the VIC-20 and Commodore 64, it is used for the RESTORE key
+and for RS-232 communications.
+
+                                                                        :116:
+
+The BRK command can be distinguished from the IRQ signal by means of a bit in
+the status register.  Bit 4 is the B, or break flag; if it's set, the last
+interrupt was caused by a BRK and not by an IRQ.
+
+Later, we will discuss using the interrupt routines for our own programming.
+By the time we can "catch" the interrupt, several more things will have been
+pushed to the stack:  the A, X, and Y registers.  This is done by a ROM
+program, not the processor; but it will prove handy since we can use these
+registers, safe in the knowledge that they will be restored at the end of the
+interrupt.
+
+
+Mixing and Matching
+-------------------
+
+The processor uses the stack mechanically.  If we know how to manipulate the
+stack, we can use it for surprising things.  For example, an RTS can be given

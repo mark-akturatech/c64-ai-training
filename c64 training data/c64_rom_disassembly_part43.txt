@@ -1,0 +1,326 @@
+# C64 KERNAL ROM Disassembly $FC00-$FCFF - Memory Setup
+
+.,FC07 85 9B    STA $9B         save tape write byte parity bit
+.,FC09 4C BC FE JMP $FEBC       restore registers and exit interrupt
+                                the bit cycle phase is complete so shift out the just written bit and test for byte
+                                end
+.,FC0C 46 BD    LSR $BD         shift bit out of tape write byte
+.,FC0E C6 A3    DEC $A3         decrement tape write bit count
+.,FC10 A5 A3    LDA $A3         get tape write bit count
+.,FC12 F0 3A    BEQ $FC4E       if all the data bits have been written go setup for
+                                sending the parity bit next and exit the interrupt
+.,FC14 10 F3    BPL $FC09       if all the data bits are not yet sent just restore the
+                                registers and exit the interrupt
+                                do next tape byte
+                                the byte is complete. the start bit, data bits and parity bit have been written to
+                                the tape so setup for the next byte
+.,FC16 20 97 FB JSR $FB97       new tape byte setup
+.,FC19 58       CLI             enable the interrupts
+.,FC1A A5 A5    LDA $A5         get cassette synchronization character count
+.,FC1C F0 12    BEQ $FC30       if synchronisation characters done go do block data
+                                at the start of each block sent to tape there are a number of synchronisation bytes
+                                that count down to the actual data. the commodore tape system saves two copies of all
+                                the tape data, the first is loaded and is indicated by the synchronisation bytes
+                                having b7 set, and the second copy is indicated by the synchronisation bytes having b7
+                                clear. the sequence goes $09, $08, ..... $02, $01, data bytes
+.,FC1E A2 00    LDX #$00        clear X
+.,FC20 86 D7    STX $D7         clear checksum byte
+.,FC22 C6 A5    DEC $A5         decrement cassette synchronization byte count
+.,FC24 A6 BE    LDX $BE         get cassette copies count
+.,FC26 E0 02    CPX #$02        compare with load block indicator
+.,FC28 D0 02    BNE $FC2C       branch if not the load block
+.,FC2A 09 80    ORA #$80        this is the load block so make the synchronisation count
+                                go $89, $88, ..... $82, $81
+.,FC2C 85 BD    STA $BD         save the synchronisation byte as the tape write byte
+.,FC2E D0 D9    BNE $FC09       restore registers and exit interrupt, branch always
+                                the synchronization bytes have been done so now check and do the actual block data
+.,FC30 20 D1 FC JSR $FCD1       check read/write pointer, return Cb = 1 if pointer >= end
+.,FC33 90 0A    BCC $FC3F       if not all done yet go get the byte to send
+.,FC35 D0 91    BNE $FBC8       if pointer > end go flag block done and exit interrupt
+                                else the block is complete, it only remains to write the
+                                checksum byte to the tape so setup for that
+.,FC37 E6 AD    INC $AD         increment buffer pointer high byte, this means the block
+                                done branch will always be taken next time without having
+                                to worry about the low byte wrapping to zero
+.,FC39 A5 D7    LDA $D7         get checksum byte
+.,FC3B 85 BD    STA $BD         save checksum as tape write byte
+.,FC3D B0 CA    BCS $FC09       restore registers and exit interrupt, branch always
+                                the block isn't finished so get the next byte to write to tape
+.,FC3F A0 00    LDY #$00        clear index
+.,FC41 B1 AC    LDA ($AC),Y     get byte from buffer
+.,FC43 85 BD    STA $BD         save as tape write byte
+.,FC45 45 D7    EOR $D7         XOR with checksum byte
+.,FC47 85 D7    STA $D7         save new checksum byte
+.,FC49 20 DB FC JSR $FCDB       increment read/write pointer
+.,FC4C D0 BB    BNE $FC09       restore registers and exit interrupt, branch always
+                                set parity as next bit and exit interrupt
+.,FC4E A5 9B    LDA $9B         get parity bit
+.,FC50 49 01    EOR #$01        toggle it
+.,FC52 85 BD    STA $BD         save as tape write byte
+.,FC54 4C BC FE JMP $FEBC       restore registers and exit interrupt
+                                tape routine, block complete exit
+.,FC57 C6 BE    DEC $BE         decrement copies remaining to read/write
+.,FC59 D0 03    BNE $FC5E       branch if more to do
+.,FC5B 20 CA FC JSR $FCCA       stop the cassette motor
+.,FC5E A9 50    LDA #$50        set tape write leader count
+.,FC60 85 A7    STA $A7         save tape write leader count
+.,FC62 A2 08    LDX #$08        set index for write tape leader vector
+.,FC64 78       SEI             disable the interrupts
+.,FC65 20 BD FC JSR $FCBD       set the tape vector
+.,FC68 D0 EA    BNE $FC54       restore registers and exit interrupt, branch always
+
+                                *** write tape leader IRQ routine
+.,FC6A A9 78    LDA #$78        set time constant low byte for bit = leader
+.,FC6C 20 AF FB JSR $FBAF       write time constant and toggle tape
+.,FC6F D0 E3    BNE $FC54       if tape bit high restore registers and exit interrupt
+.,FC71 C6 A7    DEC $A7         decrement cycle count
+.,FC73 D0 DF    BNE $FC54       if not all done restore registers and exit interrupt
+.,FC75 20 97 FB JSR $FB97       new tape byte setup
+.,FC78 C6 AB    DEC $AB         decrement cassette leader count
+.,FC7A 10 D8    BPL $FC54       if not all done restore registers and exit interrupt
+.,FC7C A2 0A    LDX #$0A        set index for tape write vector
+.,FC7E 20 BD FC JSR $FCBD       set the tape vector
+.,FC81 58       CLI             enable the interrupts
+.,FC82 E6 AB    INC $AB         clear cassette leader counter, was $FF
+.,FC84 A5 BE    LDA $BE         get cassette block count
+.,FC86 F0 30    BEQ $FCB8       if all done restore everything for STOP and exit the
+                                interrupt
+.,FC88 20 8E FB JSR $FB8E       copy I/O start address to buffer address
+.,FC8B A2 09    LDX #$09        set nine synchronisation bytes
+.,FC8D 86 A5    STX $A5         save cassette synchronization byte count
+.,FC8F 86 B6    STX $B6         
+.,FC91 D0 83    BNE $FC16       go do the next tape byte, branch always
+
+                                *** restore everything for STOP
+.,FC93 08       PHP             save status
+.,FC94 78       SEI             disable the interrupts
+.,FC95 AD 11 D0 LDA $D011       read the vertical fine scroll and control register
+.,FC98 09 10    ORA #$10        mask xxx1 xxxx, unblank the screen
+.,FC9A 8D 11 D0 STA $D011       save the vertical fine scroll and control register
+.,FC9D 20 CA FC JSR $FCCA       stop the cassette motor
+.,FCA0 A9 7F    LDA #$7F        disable all interrupts
+.,FCA2 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FCA5 20 DD FD JSR $FDDD       
+.,FCA8 AD A0 02 LDA $02A0       get saved IRQ vector high byte
+.,FCAB F0 09    BEQ $FCB6       branch if null
+.,FCAD 8D 15 03 STA $0315       restore IRQ vector high byte
+.,FCB0 AD 9F 02 LDA $029F       get saved IRQ vector low byte
+.,FCB3 8D 14 03 STA $0314       restore IRQ vector low byte
+.,FCB6 28       PLP             restore status
+.,FCB7 60       RTS             
+
+                                *** reset vector
+.,FCB8 20 93 FC JSR $FC93       restore everything for STOP
+.,FCBB F0 97    BEQ $FC54       restore registers and exit interrupt, branch always
+
+                                *** set tape vector
+.,FCBD BD 93 FD LDA $FD93,X     get tape IRQ vector low byte
+.,FCC0 8D 14 03 STA $0314       set IRQ vector low byte
+.,FCC3 BD 94 FD LDA $FD94,X     get tape IRQ vector high byte
+.,FCC6 8D 15 03 STA $0315       set IRQ vector high byte
+.,FCC9 60       RTS             
+
+                                *** stop the cassette motor
+.,FCCA A5 01    LDA $01         read the 6510 I/O port
+.,FCCC 09 20    ORA #$20        mask xxxx xx1x, turn the cassette motor off
+.,FCCE 85 01    STA $01         save the 6510 I/O port
+.,FCD0 60       RTS             
+
+                                *** check read/write pointer
+                                return Cb = 1 if pointer >= end
+.,FCD1 38       SEC             set carry for subtract
+.,FCD2 A5 AC    LDA $AC         get buffer address low byte
+.,FCD4 E5 AE    SBC $AE         subtract buffer end low byte
+.,FCD6 A5 AD    LDA $AD         get buffer address high byte
+.,FCD8 E5 AF    SBC $AF         subtract buffer end high byte
+.,FCDA 60       RTS             
+
+                                *** increment read/write pointer
+.,FCDB E6 AC    INC $AC         increment buffer address low byte
+.,FCDD D0 02    BNE $FCE1       branch if no overflow
+.,FCDF E6 AD    INC $AD         increment buffer address low byte
+.,FCE1 60       RTS             
+
+                                *** RESET, hardware reset starts here
+.,FCE2 A2 FF    LDX #$FF        set X for stack
+.,FCE4 78       SEI             disable the interrupts
+.,FCE5 9A       TXS             clear stack
+.,FCE6 D8       CLD             clear decimal mode
+.,FCE7 20 02 FD JSR $FD02       scan for autostart ROM at $8000
+.,FCEA D0 03    BNE $FCEF       if not there continue startup
+.,FCEC 6C 00 80 JMP ($8000)     else call ROM start code
+.,FCEF 8E 16 D0 STX $D016       read the horizontal fine scroll and control register
+.,FCF2 20 A3 FD JSR $FDA3       initialise SID, CIA and IRQ
+.,FCF5 20 50 FD JSR $FD50       RAM test and find RAM end
+.,FCF8 20 15 FD JSR $FD15       restore default I/O vectors
+.,FCFB 20 5B FF JSR $FF5B       initialise VIC and screen editor
+.,FCFE 58       CLIenable the interrupts
+.,FCFF 6C 00 A0 JMP ($A000)     execute BASIC
+
+                                *** scan for autostart ROM at $8000, returns Zb=1 if ROM found
+.,FD02 A2 05    LDX #$05        five characters to test
+.,FD04 BD 0F FD LDA $FD0F,X     get test character
+.,FD07 DD 03 80 CMP $8003,X     compare wiith byte in ROM space
+.,FD0A D0 03    BNE $FD0F       exit if no match
+.,FD0C CA       DEX             decrement index
+.,FD0D D0 F5    BNE $FD04       loop if not all done
+.,FD0F 60       RTS             
+                                *** autostart ROM signature
+.:FD10 C3 C2 CD 38 30           'CBM80�
+
+                                *** restore default I/O vectors
+.,FD15 A2 30    LDX #$30        pointer to vector table low byte
+.,FD17 A0 FD    LDY #$FD        pointer to vector table high byte
+.,FD19 18       CLC             flag set vectors
+
+                                *** set/read vectored I/O from (XY), Cb = 1 to read, Cb = 0 to set
+.,FD1A 86 C3    STX $C3         save pointer low byte
+.,FD1C 84 C4    STY $C4         save pointer high byte
+.,FD1E A0 1F    LDY #$1F        set byte count
+.,FD20 B9 14 03 LDA $0314,Y     read vector byte from vectors
+.,FD23 B0 02    BCS $FD27       branch if read vectors
+.,FD25 B1 C3    LDA ($C3),Y     read vector byte from (XY)
+.,FD27 91 C3    STA ($C3),Y     save byte to (XY)
+.,FD29 99 14 03 STA $0314,Y     save byte to vector
+.,FD2C 88       DEY             decrement index
+.,FD2D 10 F1    BPL $FD20       loop if more to do
+.,FD2F 60       RTS             
+                                 The above code works but it tries to write to the ROM. while this is usually harmless
+                                 systems that use flash ROM may suffer. Here is a version that makes the extra write
+                                 to RAM instead but is otherwise identical in function. ##
+                                
+                                 set/read vectored I/O from (XY), Cb = 1 to read, Cb = 0 to set
+                                
+                                STX $C3         ; save pointer low byte
+                                STY $C4         ; save pointer high byte
+                                LDY #$1F        ; set byte count
+                                LDA ($C3),Y     ; read vector byte from (XY)
+                                BCC $FD29       ; branch if set vectors
+                                
+                                LDA $0314,Y     ; else read vector byte from vectors
+                                STA ($C3),Y     ; save byte to (XY)
+                                STA $0314,Y     ; save byte to vector
+                                DEY             ; decrement index
+                                BPL $FD20       ; loop if more to do
+                                
+                                RTS
+
+                                *** kernal vectors
+.:FD30 31 EA                    $0314 IRQ vector
+.:FD32 66 FE                    $0316 BRK vector
+.:FD34 47 FE                    $0318 NMI vector
+.:FD36 4A F3                    $031A open a logical file
+.:FD38 91 F2                    $031C close a specified logical file
+.:FD3A 0E F2                    $031E open channel for input
+.:FD3C 50 F2                    $0320 open channel for output
+.:FD3E 33 F3                    $0322 close input and output channels
+.:FD40 57 F1                    $0324 input character from channel
+.:FD42 CA F1                    $0326 output character to channel
+.:FD44 ED F6                    $0328 scan stop key
+.:FD46 3E F1                    $032A get character from the input device
+.:FD48 2F F3                    $032C close all channels and files
+.:FD4A 66 FE                    $032E user function
+                                Vector to user defined command, currently points to BRK.
+                                This appears to be a holdover from PET days, when the built-in machine language monitor
+                                would jump through the $032E vector when it encountered a command that it did not
+                                understand, allowing the user to add new commands to the monitor.
+                                Although this vector is initialized to point to the routine called by STOP/RESTORE and
+                                the BRK interrupt, and is updated by the kernal vector routine at $FD57, it no longer
+                                has any function.
+.:FD4C A5 F4                    $0330 load
+.:FD4E ED F5                    $0332 save
+
+                                *** test RAM and find RAM end
+.,FD50 A9 00    LDA #$00        clear A
+.,FD52 A8       TAY             clear index
+.,FD53 99 02 00 STA $0002,Y     clear page 0, don't do $0000 or $0001
+.,FD56 99 00 02 STA $0200,Y     clear page 2
+.,FD59 99 00 03 STA $0300,Y     clear page 3
+.,FD5C C8       INY             increment index
+.,FD5D D0 F4    BNE $FD53       loop if more to do
+.,FD5F A2 3C    LDX #$3C        set cassette buffer pointer low byte
+.,FD61 A0 03    LDY #$03        set cassette buffer pointer high byte
+.,FD63 86 B2    STX $B2         save tape buffer start pointer low byte
+.,FD65 84 B3    STY $B3         save tape buffer start pointer high byte
+.,FD67 A8       TAY             clear Y
+.,FD68 A9 03    LDA #$03        set RAM test pointer high byte
+.,FD6A 85 C2    STA $C2         save RAM test pointer high byte
+.,FD6C E6 C2    INC $C2         increment RAM test pointer high byte
+.,FD6E B1 C1    LDA ($C1),Y     
+.,FD70 AA       TAX             
+.,FD71 A9 55    LDA #$55        
+.,FD73 91 C1    STA ($C1),Y     
+.,FD75 D1 C1    CMP ($C1),Y     
+.,FD77 D0 0F    BNE $FD88       
+.,FD79 2A       ROL             
+.,FD7A 91 C1    STA ($C1),Y     
+.,FD7C D1 C1    CMP ($C1),Y     
+.,FD7E D0 08    BNE $FD88       
+.,FD80 8A       TXA             
+.,FD81 91 C1    STA ($C1),Y     
+.,FD83 C8       INY             
+.,FD84 D0 E8    BNE $FD6E       
+.,FD86 F0 E4    BEQ $FD6C       
+.,FD88 98       TYA             
+.,FD89 AA       TAX             
+.,FD8A A4 C2    LDY $C2         
+.,FD8C 18       CLC             
+.,FD8D 20 2D FE JSR $FE2D       set the top of memory
+.,FD90 A9 08    LDA #$08        
+.,FD92 8D 82 02 STA $0282       save the OS start of memory high byte
+.,FD95 A9 04    LDA #$04        
+.,FD97 8D 88 02 STA $0288       save the screen memory page
+.,FD9A 60       RTS             
+
+                                *** tape IRQ vectors
+.:FD9B 6A FC                    $08 write tape leader IRQ routine
+.:FD9D CD FB                    $0A tape write IRQ routine
+.:FD9F 31 EA                    $0C normal IRQ vector
+.:FDA1 2C F9                    $0E read tape bits IRQ routine
+
+                                *** initialise SID, CIA and IRQ
+.,FDA3 A9 7F    LDA #$7F        disable all interrupts
+.,FDA5 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FDA8 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FDAB 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,FDAE A9 08    LDA #$08        set timer single shot
+.,FDB0 8D 0E DC STA $DC0E       save VIA 1 CRA
+.,FDB3 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,FDB6 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,FDB9 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FDBC A2 00    LDX #$00        set all inputs
+.,FDBE 8E 03 DC STX $DC03       save VIA 1 DDRB, keyboard row
+.,FDC1 8E 03 DD STX $DD03       save VIA 2 DDRB, RS232 port
+.,FDC4 8E 18 D4 STX $D418       clear the volume and filter select register
+.,FDC7 CA       DEX             set X = $FF
+.,FDC8 8E 02 DC STX $DC02       save VIA 1 DDRA, keyboard column
+.,FDCB A9 07    LDA #$07        DATA out high, CLK out high, ATN out high, RE232 Tx DATA
+                                high, video address 15 = 1, video address 14 = 1
+.,FDCD 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,FDD0 A9 3F    LDA #$3F        set serial DATA input, serial CLK input
+.,FDD2 8D 02 DD STA $DD02       save VIA 2 DDRA, serial port and video address
+.,FDD5 A9 E7    LDA #$E7        set 1110 0111, motor off, enable I/O, enable KERNAL,
+                                enable BASIC
+.,FDD7 85 01    STA $01         save the 6510 I/O port
+.,FDD9 A9 2F    LDA #$2F        set 0010 1111, 0 = input, 1 = output
+.,FDDB 85 00    STA $00         save the 6510 I/O port direction register
+.,FDDD AD A6 02 LDA $02A6       get the PAL/NTSC flag
+.,FDE0 F0 0A    BEQ $FDEC       if NTSC go set NTSC timing
+                                else set PAL timing
+.,FDE2 A9 25    LDA #$25        
+.,FDE4 8D 04 DC STA $DC04       save VIA 1 timer A low byte
+.,FDE7 A9 40    LDA #$40        
+.,FDE9 4C F3 FD JMP $FDF3       
+.,FDEC A9 95    LDA #$95        
+.,FDEE 8D 04 DC STA $DC04       save VIA 1 timer A low byte
+.,FDF1 A9 42    LDA #$42        
+.,FDF3 8D 05 DC STA $DC05       save VIA 1 timer A high byte
+.,FDF6 4C 6E FF JMP $FF6E       
+
+                                *** set filename
+.,FDF9 85 B7    STA $B7         set file name length
+.,FDFB 86 BB    STX $BB         set file name pointer low byte
+.,FDFD 84 BC    STY $BC         set file name pointer high byte
+.,FDFF 60       RTS             
+
+                                *** set logical, first and second addresses

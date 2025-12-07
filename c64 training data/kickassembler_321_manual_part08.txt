@@ -1,0 +1,124 @@
+# KickAssembler Script Language - Math Library, Lists, Hashtables
+
+            lda #0
+   loop: sta charmem + 0*$100,x
+            sta charmem + 1*$100,x
+            sta charmem + 2*$100,x
+            sta charmem + 3*$100,x
+            inx
+            bne loop
+You can also use bitwise operators to perform and, or, exclusive or, and bit shifting operations.
+   .var x=$12345678
+   .word x & $00ff, [x>>16] & $00ff                     // (gives .word $0078, $0034)
+Special for 6510 assemblers are the high and low-byte operators (>,<) that are typically used like
+this:
+            lda #<interupt1
+            sta $0314
+            lda #>interupt1
+            sta $0315
+These are also available in Kick Assembler. Here is a list of numeric operators that returns a
+numeric value:
+Name                       Operator      Examples           Description
+Unary minus                -                                Inverts the sign of a number
+Plus                       +             10+2 = 12          Adds two numbers
+Minus                      -             10-8=2             Subtracts two numbers
+Multiply                   *             2*3 =6             Multiply two numbers
+Divide                     /             10/2 = 5           Divides two numbers
+High byte                  >             >$1020 = $10       Returns the second byte of a number
+Low byte                   <             <$1020 = $20       Returns the first byte of a number
+Bitshift left              <<            2<<2 = 8           Shifts the bits by a given number of
+                                                            spaces to the left.
+Bitshift right             >>            2>>1=1             Shifts the bits by a given number of
+                                                            spaces to the right.
+Bitwise and                &             $3f & $0f = $f     Performs bitwise and between two
+                                                                                                   20
+                                                              numbers
+Bitwise or                 |            $0f | $30 = $3f       Performs a bitwise or between two
+                                                              numbers
+Bitwise eor                ^            $ff ^ $f0 = $0f       Performs a bitwise exclusive or between
+                                                              two numbers
+You can get the number representation of an arbitrary value by using the general .number()
+function. Eg.
+           .print ‘x’.number()
+4.5 Parentheses
+Since traditional 6510 assembler notation has already used soft parenthesis to signal an indirect
+addressing mode, you will have to use hard parenthesis to specify a sub expression that must be
+evaluated before others.
+           lda #2+5*2                      // gives lda #12
+           lda #[2+5]*2                    // gives lda #14
+You can nest as many parentheses as you want, so [[[[2+4]]]*3]+25.5 is a legal expression.
+4.6 String Values
+Strings are used to contain text. You can define a string like this:
+  .var message = “Hello World”
+  .text message // Gives .text “Hello world”
+Every object has a string representation and you can concatenate strings with the + operator. For
+example:
+  .var x=25
+  .var myString= “X is “ + x               // Gives myString = “X is 25”
+You can use the .print directive to print a string to the console while assembling. This is useful
+when debugging. Printing x and y can be done like this:
+  .print “x=”+x
+  .print “y=”+y
+You can also print labels to see which location they refer to. If you do this, it’s best to convert the
+label value to hexadecimal notation first:
+  .print “int1=$”+toHexString(int1)
+  int1: sta regA+1
+           stx regX+1
+           sty regY+1
+           lsr $d019
+            // Etc.
+                                                                                                       21
+Here is a list of functions/operators defined on strings:
+Function/Operator        Description
++                        Appends two strings
+size()                   Returns the number of characters in the string
+charAt(n)                Returns the character at position n
+substring(i1,i2)         Returns the substring beginning at i1 and ending at i2 (char at i2 not
+                         included)
+asNumber()               Converts the string to a number value (eg, “35”.asNumber())
+asBoolean()              Converts the string to a boolean value (eg, “true”.asBoolean())
+Here are the functions that take a number value and convert it to a string:
+Function              Description
+toIntString(x)        Return x as a integer string (eg x=16.0 will return “16”)
+toBinaryString(x)     Return x as a binary string (eg x=16.0 will return “10000”)
+toOctalString(x)      Return x as a octal string (eg x=16.0 will return “20”)
+toHexString(x)        Return x as a hexadecimal string (eg x=16.0 will return “10”)
+You can get the number representation of an arbitrary value by using the general .string() function.
+Eg.
+            .print 1234.string().charAt(2)                // Prints 3
+4.7 Char Values
+Char values, or characters, are used like this:
+   lda #'H'
+   sta $0400
+   lda #'i'
+   sta $0401
+   lda #"?!#".charAt(1)
+   sta $0402
+   .byte 'H','e','l','l','o',' '
+   .text "World"+'!'
+In the above example, chars are used in two ways. In the first examples their numeric
+representation are used as arguments to the lda commands and in the final example, ‘!’’s string
+representation is appended to the “World” string.
+Char values is a subclass of number values, which means that it has all the functions that placed on
+the number values so you can do stuff like.
+                                                                                                   22
+lda #'H'+1 // Same as lda #'I'
+sta $0400
+lda #'A'+1 // Same as lda #'B'
+sta $0401
+lda #'L'+1 // Same as lda #'M'
+sta $0402
+                               23
+4.8 The Math Library
+Kick Assembler’s math library is built upon the Java 5.0 math library. This means that nearly every
+constant and command in Java’s math library is available in Kick Assembler. Here is a list of
+available constants and commands. For further explanation consult the Java 5.0 documentation at
+Suns homepage. The only non java math library function is mod (modulo).
+Constant Value
+PI          3.141592653589793
+E           2.718281828459045
+Function                 Description
+abs(x)                   Returns the absolute (positive) value of x
+acos(x)                  Returns the arc cosine of x
+asin(x)                  Returns the arc sine of x
+atan(x)                  Returns the arc tangent x

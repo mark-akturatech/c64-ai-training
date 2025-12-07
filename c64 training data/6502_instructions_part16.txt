@@ -1,0 +1,130 @@
+# 6502 Illegal Opcodes - NOP Variations and KIL Instructions
+
+                      $FF on the data bus. — Reset required.
+                      Instruction codes: 02, 12, 22, 32, 42, 52, 62, 72, 92, B2, D2, F2
+                 Have a look at this table of the instruction layout in order to see how most of these
+                 "illegal" instructions are a result of executing both instructions at c=1 and c=2 in
+                 a given slot (same column, rows immediately above) at once.
+                 Where c is the lowest two bits of the instruction code. E.g., "SAX abs", instruction
+                 code $8F, binary 10001111, is "STA abs", 10001101 ($8D) and "STX abs", 10001110 ($8E).
+          Rev. A 6502 (Pre-June 1976) "ROR Bug"
+                 Famously, the Rev. A 6502 as delivered from September 1975 to June 1976 had a
+                 "ROR bug". However, the "ROR" instruction isn't only missing from the original
+                 documentation, as it turns out, the chip is actually missing crucial control lines,
+                 which would have been required to make this instruction work. The instruction is
+                 simply not implemented and it wasn't even part of the design. (This was actually
+                 added on popular demand in Rev. B, as rumor has it, demand by Steve Wozniak. Even,
+                 if not true, this makes for a good story. And how could there be a page on the 6502
+                 without mentioning "Woz" once?) So, for all means, "ROR" is an undocumented or
+                 "illegal" instruction on the Rev. A 6502.
+                 And this is how ROR behaves on these Rev. A chips, much like ASL: it shifts all bits
+                 to the left, shifting in a zero bit at the LSB side, but, unlike ASL, it does not
+                 shift the high-bit into the carry. (So there are no connections to the carry at all.)
+                 ROR  Rev. A (pre-June 1976)
+                      As ASL, but does not update the carry.
+                      N and Z flags are set correctly for the operation
+                      performed.
+                      [76543210] <- 0
+                                                         N Z C I D V
+                                                         + + - - - -
+                                                                  6502 Instruction Set
+                      addressing     assembler       opc bytes cycles
+                      accumulator    ROR A            6A   1      2
+                      zeropage       ROR oper         66   2      5
+                      zeropage,X     ROR oper,X       76   2      6
+                      absolute       ROR oper         6E   3      6
+                      absolute,X     ROR oper,X       7E   3      7
+          Western Design Center (WDC) W65C02(S) Extensions
+                 The W65C02 features 69 instructions and 16 address modes (one of them a stack
+                 mode, which was previously considered as implied) and static CMOS ciruitry.
+                 There are two new address modes and 14 new instructions, as well as a few
+                 behavioral changes.
+                 (The G65SC02 by GTE Microcircuits is similar to W65C02 but doesn't implement
+                 any of the new instructions for bit manipulation.)
+                 Additional Address Modes (W65C02)
+                 The W65C02 adds the following address modes:
+                   zeropage indirect, (zeropage): OPC ($LL)
+                   operand is zeropage address; effective address is the word in (LL, LL + 1).
+                   This mode provides zeropage indirection without indexing, similar to
+                   "pre-indexed indirect" ('(zero-page,X)') and "post-indexed indirect"
+                   ('(zero-page),Y') with the indexing register set to zero. This mode extends
+                   accumulator instructions, like ADC, AND, CMP, EOR, LDA, ORA, SBC, STA.
+                   absolute indexed indirect, (absolute,X): OPC ($LLHH,X)
+                   operand is base address for indirect lookup;
+                   effective address is word in ($HHLL + X, $HHLL + 1 + X).
+                   This address mode is available for the JMP instruction only. This is similar
+                   to an indirect JMP instruction, but the X register is added to the absolute
+                   operand before the address lookup.
+                 Instructions with Additional Address Modes (W65C02)
+                 ADC  Add Memory to Accumulator with Carry
+                      A + (ZPG) + C -> A, C               N Z C I D V
+                                                          + + + - - +
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     ADC (oper)       72   2      5
+                                                      6502 Instruction Set
+                 AND  AND Memory with Accumulator
+                      A AND (ZPG) -> A                    N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     AND (oper)       32   2      5
+                 BIT  Test Bits in Memory with Accumulator
+                      A AND M -> Z, M7 -> N, M6 -> V      N Z C I D V
+                                                         M7 + - - - M6
+                      addressing     assembler       opc bytes cycles
+                      immediate      BIT #oper        89   3      2
+                      absolute,X     BIT oper,X       3C   3      4*
+                      zeropage       BIT oper         24   2      3
+                      zeropage,X     BIT oper,X       34   2      4
+                 CMP  Compare Memory with Accumulator
+                      A - (ZPG)                           N Z C I D V
+                                                          + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     CMP (oper)       D2   2      5
+                 DEC  Decrement by One (Accumulator)
+                      A - 1 -> A                          N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      accumulator    DEC A            3A   1      2
+                 EOR  Exclusive-OR Memory with Accumulator
+                      A EOR (ZPG) -> A                    N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     EOR (oper)       52   2      5
+                 INC  Increment by One (Accumulator)
+                      A + 1 -> A                          N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      accumulator    INC A            1A   1      2
+                 JMP  Jump to New Location
+                      N Z C I D V
+                                                                  6502 Instruction Set
+                      (operand + X) 1st byte -> PCL       - - - - - -
+                      (operand + X) 2nd byte -> PCH
+                      addressing     assembler       opc bytes cycles
+                      (absolute,X)   JMP (oper,X)     7C   3      6
+                      Note: The 2004 datasheet lists this (erroneously)
+                      with 5 cycles (and also as implemented on the
+                      original NMOS 6502).
+                 LDA  Load Accumulator with Memory
+                      (ZPG) -> A                          N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     LDA (oper)       B2   2      5
+                 ORA  OR Memory with Accumulator
+                      A OR (ZPG) -> A                     N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     ORA (oper)       12   2      5
+                 SBC  Subtract Memory from Accumulator with Borrow
+                      A - (ZPG) - C̅ -> A                 N Z C I D V
+                                                          + + + - - +
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     SBC (oper)       F2   2      5
+                 STA  Store Accumulator in Memory
+                      A -> (ZPG)                          N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     SBC (oper)       92   2      5
+                  *   add 1 to cycles if page boundary is crossed
+                 Additional Instructions (W65C02)
+                 Note: The bit manipulating instructions BBR, BBS, RMB and SMB were

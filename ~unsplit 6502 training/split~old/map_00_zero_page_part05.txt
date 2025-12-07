@@ -1,0 +1,373 @@
+138 $8A   EXIT    RTS          ; carry is clear only for numeral on return
+
+The Accumulator (.A register) holds the character that was read on
+exit from the routine.  Status register (.P) bits which can be tested
+for on exit are:
+
+  Carry Clear if the character was an ASCII digit 0-9.
+  Carry Set, otherwise.
+  Zero Set only if the character was a statement terminator 0 or an
+ASCII colon, 58 ($3A).
+  Zero Clear, otherwise.
+
+
+One wedge insertion technique is to change CHRGET's INC $7A to a JMP
+WEDGE, have your wedge update TXTPTR itself, and then JSR CHRGOT.
+Another is to change the CMP #$3A at location 124 ($7C), which I have
+labeled POINTB, to a JMP WEDGE, do your wedge processing, and then
+exit through the ROM version of POINTB, which is located at 48283
+($E3AB).  For more detailed information about wedges, see Programming
+the PET/CBM, Raeto Collin West, pages 365-68.
+
+While the wedge is a good, quick technique for adding new commands, a
+much more elegant method exists for accomplishing this task on the
+VIC-20 and 64 withouth slowing BASIC down to the extent that the wedge
+does.  See the entries for the BASIC RAM vector area at 768-779
+($300-$30B) for more details.
+
+139-143       $8B-$8F        RNDX
+RND Function Seed Value
+
+This location holds the five-byte floating point value returned by the
+RND function.  It is initially set to a seed value copied from ROM
+(the five bytes are 128, 79, 199, 82, 88--$80, $4F, $C7, $52, $58).
+
+When the function RND(X) is called, the numeric value of X does not
+affect the number returned, but its sign does.  If X is equal to 0,
+RND generates a seed value from chip-level hardware timers.  If X is a
+positive number, RND(X) will return the next number in an arithmetic
+sequence.  This sequence continues for such a long time without
+repeating itself, and gives such an even distribution of numbers, that
+it can be considered random.  If X is negative, the seed value is
+changed to a number that corresponds to a scrambled floating point
+representation of the number X itself.
+
+Given a particular seed value, the same pseudorandom series of numbers
+will always be returned.  This can be handy for debugging purposes,
+but not where you wish to have truly random numbers.
+
+The traditional Commodore method of selecting a random seed is by
+using the expression RND(-TI), mostly because RND(0) didn't function
+correctly on early PETs.  While the RND(0) form doesn't really work
+right on the 64 either (see location 57495 ($E097)), the expression
+RND(-RND(0)) may produce a more random seed value.
+
+Location Range: 144-255 ($90-$FF)
+Kernal Work Storage Area
+
+This is the zero-page storage area for the Kernal.  The user should
+take into account what effect changing a location here will have on
+the operation of the Kernal functions before making any such changes.
+
+At power-on, this range of locations is first filled with zeros, and
+then initialized from values stored in ROM as needed.
+
+144           $90            STATUS
+Kernal I/O Status Word (ST)
+
+The Kernal routines which open I/O channels or perform input/output
+functions check and update this location.  The value here is almost
+always the same as that returned to BASIC by use of the reserved
+variable ST.  Note that BASIC syntax will not allow an assignment such
+as ST=4.  A table of status codes for cassette and serial devices
+follows below:
+
+Cassette:
+Bit 2 (Bit Value of 4) = Short Block
+Bit 3 (Bit Value of 8) = Long Block
+Bit 4 (Bit Value of 16) = Unrecoverable error (Read), mismatch
+Bit 5 (Bit Value of 32) = Checksum error
+Bit 6 (Bit Value of 64) = End of file
+
+Serial Devices:
+Bit 0 (Bit Value of 1) = Time out (Write)
+Bit 1 (Bit Value of 2) = Time out (Read)
+Bit 6 (Bit Value of 64) = EOI (End or Identify)
+Bit 7 (Bit Value of 128) = Device not present
+
+Probably the most useful bit to test is Bit 6 (end of file).  When
+using the GET statement to read in individual bytes from a file, the
+statement IF ST AND 64 will be true if you have got to the end of the
+file.
+
+For status codes for the RS-232 device, see the entry for location 663
+($297).
+
+145           $91            STKEY
+Flag: Was STOP Key Pressed?
+
+This location is updated every 1/60 second during the execution of the
+IRQ routine that reads the keyboard and updates the jiffy clock.
+
+The value of the last row of the keyboard matrix is placed here.  That
+row contains the STOP key, and although this location is used
+primarily to detect when that key has been pressed, it can also detect
+when any of the other keys in that row of the matrix have been
+pressed.
+
+In reading the keyboard matrix, a bit set to 1 means that no key has
+been pressed, while a bit reset to 0 indicates that a key is pressed.
+Therefore, the following values indicate the keystrokes detailed
+below:
+
+255 $FF  = no key pressed
+254 $FE  = 1 key pressed
+253 $FD  = (left arrow) key pressed
+251 $FB  = CTRL key pressed
+247 $F7  = 2 key pressed
+239 $EF  = space bar pressed
+223 $DF  = Commodore logo key pressed
+191 $BF  = Q key pressed
+127 $7F  = STOP key pressed
+
+VIC owners will notice that the 64's keyboard matrix is very different
+from the VIC's.  One of the advantages of this difference is that you
+can test for the STOP key by following a read of this location with a
+BPL instruction, which will cause a branch to occur anytime that the
+STOP key is pressed.
+
+146           $92            SVXT
+Timing Constant for Tape Reads
+
+This location is used as an adjustable timing constant for tape reads,
+which can be changed to allow for the slight speed variation between
+tapes.
+
+147           $93            VERCK
+Flag for Load Routine: 0=LOAD, 1=VERIFY
+
+The same Kernal routine can perform either a LOAD or VERIFY, depending
+on the value stored in the Accumulator (.A) on entry to the routine.
+This location is used to determine which operation to perform.
+
+148           $94            C3PO
+Flag: Serial Bus--Output Character Was Buffered
+
+This location is used by the serial output routines to indicate that a
+character has been placed in the output buffer and is waiting to be
+sent.
+
+149           $95            BSOUR
+Buffered Character for Serial Bus
+
+This is the character waiting to be sent.  A 255 ($FF) indicates that
+no character is waiting for serial output.
+
+150           $96            SYNO
+Cassette Block Synchronization Number
+
+151           $97            XSAV
+Temporary .X Register Save Area
+
+This .X register save area is used by the routines that get and put an
+ASCII character.
+
+152           $98            LDTND
+Number of Open I/O Files/Index to the End of File Tables
+
+The number of currently open I/O files is stored here.  The maximum
+number that can be open at one time is ten.  The number stored here is
+used as the index to the end of the tables that hold the file numbers,
+device numbers, and secondary address numbers (see locations 601-631
+($259-$277) for more information about these tables).
+
+CLOSE decreases this number and removes entries from the tables
+referred to above, while OPEN increases it and adds the appropriate
+information to the end of the tables.  The Kernal routine CLALL closes
+all files by setting this number to 0, which effectively empties the
+table.
+
+153           $99            DFLTN
+Default Input Device (Set to 0 for Keyboard)
+
+The default value of this location is 0, which designates the keyboard
+as the current input device.  That value can be changed by the Kernal
+routine CHKIN (61966, $F20E), which uses this location to store the
+device number of the device whose file it defines as an input channel.
+
+BASIC calls CHKIN whenever the command INPUT# or GET# is executed, but
+clears the channel after the input operation has been completed.
+
+154           $9A            DFLTO
+Default Output (CMD) Device (Set to 3 for the Screen)
+
+The default value of this location is 3, which designates the screen
+as the current output device.  That value can be changed by the Kernal
+routine CHKOUT (62032, $F250), which uses this location to store the
+device number of the device whose file it defines as an output
+channel.
+
+BASIC calls CHKOUT whenever the command PRINT# or CMD is executed, but
+clears the channel after the PRINT# operation has been completed.
+
+155           $9B            PRTY
+Tape Character Parity
+
+This location is used to help detect when bits of information have
+been lost during transmission of tape data.
+
+156           $9C            DPSW
+Flag: Tape Byte Received
+
+This location is used as a flag to indicate whether a complete byte of
+tape data has been received, or whether it has only been partially
+received.
+
+157           $9D            MSGFLG
+Flag: Kernal Message Control
+
+This flag is set by the Kernal routine SETMSG (65048, $FE18), and it
+controls whether or not Kernal error messages or control messages will
+be displayed.
+
+A value of 192 ($C0) here means that both Kernal error and control
+messages will be displayed.  This will never normally occur when using
+BASIC, which prefers its own plain text error messages over the
+Kernal's perfunctory I/O ERROR (number).  The Kernal error messages
+might be used, however, when you are SAVEing or LOADing with a machine
+language monitor.
+
+A 128 ($80) means that control messages only will be displayed.  Such
+will be the case when you are in the BASIC direct or immediate mode.
+These messages include SEARCHING, SAVING, FOUND, etc.
+
+A value of 64 means that Kernal error messages only are on.  A 0 here
+suppresses the display of all Kernal messages.  This is the value
+placed here when BASIC enters the program or RUN mode.
+
+158           $9E            PTR1
+Tape Pass 1 Error Log Index
+
+This location is used in setting up an error log of bytes in which
+transmission parity errors occur the first time that the block is
+received (each tape block is sent twice to minimize data loss from
+transmission error).
+
+159           $9F            PTR2
+Tape Pass 2 Error Log Correction Index
+
+This location is used in correcting bytes of tape data which were
+transmitted incorrectly on the first pass.
+
+160-162       $A0-$A2        TIME
+Software Jiffy Clock
+
+These three locations are updated 60 times a second, and serve as a
+software clock which counts the number of jiffies (sixtieths of a
+second) that have elapsed since the computer was turned on.
+
+The value of location 162 ($A2) is increased every jiffy (0.1667
+second), 161 ($A1) is updated every 256 jiffies (4.2267 seconds), and
+160 ($A0) changes every 65536 jiffies (or every 18.2044 minutes).
+After 24 hours, these locations are set back to 0.
+
+The jiffy clock is used by the BASIC reserved variables TI and TI$.
+These are not ordinary variables that are stored in the RAM variable
+area, but are functions that call the Kernal routines RDTIM (63197,
+$F6DD), and SETTIM (63204, $F6E4).  Assigning the value of TI or TI$
+to another variable reads these locations, while assigning a given
+value to TI$ alters these locations.
+
+To illustrate the relationship between these locations and TI$, try
+the following program.  The program sets the jiffy clock to 23 hours,
+50 minutes.  After the program has been running for one minute, all
+these locations will be reset to 0.
+
+100 TI$="235900"
+110 PRINT TI$,PEEK(160),PEEK(161),PEEK(162)
+120 GOTO 110
+
+Since updating is done by the IRQ interrupt that reads the keyboard,
+anything which affects the operation of that interrupt routine will
+also interfere with this clock.  A typical example is tape I/O
+operations, which steal the IRQ vector for their own use, and restore
+it afterwards.  Obviously, user routines which redirect the IRQ and do
+not send it back to the normal routine will upset software clock
+operation as well.
+
+163-164       $A3-$A4
+Temporary Data Storage Area
+
+These locations are used temporarily by the tape and serial I/O
+routines.
+
+165           $A5            CNTDN
+Cassette Synchronization Character Countdown
+
+Used to count down the number of synchronization characters that are
+sent before the actual data in a tape block.
+
+166           $A6            BUFPNT
+Count of Characters in Tape I/O Buffer
+
+This location is used to count the number of bytes that have been read
+in or written to the tape buffer.  Since on a tape write, no data is
+sent until the 192 byte buffer is full, you can force output of the
+buffer with the statement POKE 166,191.
+
+167           $A7            INBIT
+RS-232 Input Bits/Cassette Temporary Storage Area
+
+This location is used to temporarily store each bit of serial data
+that is received, as well as for miscellaneous tasks by tape I/O.
+
+168           $A8            BITCI
+RS-232 Input Bit Count/Cassete Temporary Storage
+
+This location is used to count the number of bits of serial data that
+has been received.  This is necessary so that the serial routines will
+know when a full word has been received.  It is also used as an error
+flag during tape loads.
+
+169           $A9            RINONE
+RS-232 Flag: Check for Start Bit
+
+This flag is used when checking for a start bit.  A 144 ($90) here
+indicates that no start bit was received, while a 0 means that a start
+bit was received.
+
+170           $AA            RIDATA
+RS-232 Input Byte Buffer/Cassette Temporary Storage
+
+Serial routines use this area to reassemble the bits received into a
+byte that will be stored in the receiving buffer pointer to by 247
+($F7).  Tape routines use this as a flag to help determine whether a
+received character should be treated as data or as a synchronization
+character.
+
+171           $AB            RIPRTY
+RS-232 Input Parity/Cassete Leader Counter
+
+This location is used to help detect if data was lost during RS-232
+transmission, or if a tape leader is completed.
+
+172-173       $AC-$AD        SAL
+Pointer to the Starting Address of a Load/Screen Scrolling
+
+The pointer to the start of the RAM area to be SAVEd or LOADed at 193
+($C1) is copied here.  This pointer is used as a working version, to
+be increased as the data is received or transmitted.  At the end of
+the operation, the initial value is restored here.  Screen management
+routines temporarily use this as a work pointer.
+
+174-175       $AE-$AF        EAL
+Pointer to Ending Address of Load (End of Program)
+
+This location is set by the Kernal routine SAVE to point to the ending
+address for SAVE, LOAD, or VERIFY.
+
+176-177       $B0-$B1        CMP0
+Tape Timing
+
+Location 176 ($B0) is used to determine the value of the adjustable
+timing constant at 146 ($92).  Location 199 is also used in the timing
+of tape reads.
+
+178-179       $B2-$B3        TAPE1
+Pointer: Start of Tape Buffer
+
+On power-on, this pointer is set to the address of the cassette buffer
+(828, $33C).  This pointer must contain an address greater than or
+equal to 512 ($200), or an ILLEGAL DEVICE NUMBER error will be sent
+when tape I/O is tried.
+

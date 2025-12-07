@@ -1,0 +1,302 @@
+# ML for C64 - Appendix D: Character Sets, Screen Codes
+
+FDF9:  Save filename data
+FE00:  Save file details
+FE07:  Get status
+FE18:  Flag status
+FE1C:  Set status
+FE21:  Set timeout
+FE25:  Read/set top of memory
+FE27:  Read top of memory
+FE2D:  Set top of memory
+FE34:  Read/set bottom of memory
+FE43:  NMI entry
+FE66:  Warm start
+FEB6:  Reset IRQ and exit
+FEBC:  Interrupt exit
+FEC2:  RS-232 timing table
+FED6:  NMI RS-232 in
+FF07:  NMI RS-232 out
+FF43:  Fake IRQ
+FF48:  IRQ entry
+FF81:  Jumbo jump table
+FFFA:  Hardware vectors
+
+                                                                        :215:
+
+
+
+                                                         Appendix D
+
+                                                          Character
+                                                               Sets
+
+
+
+                                                                        :216:
+
+Superchart
+----------
+
+The "superchart" shows the PET character sets.  A byte may have any of
+several meanings, depending on how it is used.  The chart is constructed to
+reflect this.  "ASCII" is PET ASCII; these are the characters as they would
+be input or printed.  "Screen" is the Commodore screen codes, as they would
+be used in screen memory--POKEing to or PEEKing from the screen would yield
+these codes. Notice that the numeric character set is the same for both
+screen and PET ASCII.
+
+Within a program, the code changes again.  "BASIC" shows these codes; they
+are similar to ASCII in the range $20 to $5F.
+
+Machine language op codes are included for the sake of convenience and
+completeness.
+
+[any PETSCII character that can't be represented here will be replaced by a
+ tilde (~).  For ASCII and SCREEN columns, the first character displayed is
+ for the standard uppercase/graphics character set.  The second character, if
+ present, is that character in the lowercase character set.  Characters that
+ are prepended with "r" means they appear in reverse video.  A complete
+ graphical list of the PETSCII and screen codes are listed at my web page,
+ http://fly.to/theflame  -wf]
+
+
+DECIMAL HEX  ASCII       SCREEN     BASIC     6502      DECIMAL
+
+   0    00               @          end-line  BRK          0
+   1    01               A,a                  ORA(zp,X)    1
+   2    02               B,b                               2
+   3    03               C,c                               3
+   4    04               D,d                               4
+   5    05   white       E,e                  ORA zp       5
+   6    06               F,f                  ASL zp       6
+   7    07   bell        G,g                               7
+   8    08   lock        H,h                  PHP          8
+   9    09   unlock      I,i                  ORA #imm     9
+  10    0A               J,j                  ASL A       10
+  11    0B               K,k                              11
+  12    0C               L,l                              12
+  13    0D   car ret     M,m                  ORA abs     13
+  14    0E   text        N,n                  ASL abs     14
+  15    0F   top         O,o                              15
+  16    10               P,p                  BPL rel     16
+  17    11   cur down    Q,q                  ORA(zp),Y   17
+  18    12   reverse     R,r                              18
+  19    13   cur home    S,s                              19
+  20    14   delete      T,t                              20
+  21    15   del line    U,u                  ORA zp,X    21
+  22    16   ers begin   V,v                  ASL zp,X    22
+  23    17               W,w                              23
+  24    18               X,x                  CLC         24
+  25    19   scr up      Y,y                  ORA abs,Y   25
+  26    1A               Z,z                              26
+  27    1B               [                                27
+  28    1C   red         sterling                         28
+  29    1D   cur right   ]                    ORA abs,X   29
+
+                                                                        :217:
+
+DECIMAL HEX  ASCII       SCREEN     BASIC     6502      DECIMAL
+
+  30    1E   green       up arrow             ASL abs,X   30
+  31    1F   blue        left arrow                       31
+  32    20   space       space      space     JSR abs     32
+  33    21   !           !          !         AND (zp,X)  33
+  34    22   "           "          "                     34
+  35    23   #           #          #                     35
+  36    24   $           $          $         BIT zp      36
+  37    25   %           %          %         AND zp      37
+  38    26   &           &          &         ROL zp      38
+  39    27   '           '          '                     39
+  40    28   (           (          (         PLP         40
+  41    29   )           )          )         AND #imm    41
+  42    2A   *           *          *         ROL A       42
+  43    2B   +           +          +                     43
+  44    2C   ,           ,          ,         BIT abs     44
+  45    2D   -           -          -         AND abs     45
+  46    2E   .           .          .         ROL abs     46
+  47    2F   /           /          /                     47
+  48    30   0           0          0         BMI rel     48
+  49    31   1           1          1         AND(zp),Y   49
+  50    32   2           2          2                     50
+  51    33   3           3          3                     51
+  52    34   4           4          4                     52
+  53    35   5           5          5         AND zp,X    53
+  54    36   6           6          6         ROL zp,X    54
+  55    37   7           7          7                     55
+  56    38   8           8          8         SEC         56
+  57    39   9           9          9         AND abs,Y   57
+  58    3A   :           :          :         CLI         58
+  59    3B   ;           ;          ;                     59
+  60    3C   <           <          <                     60
+  61    3D   =           =          =         AND abs,X   61
+  62    3E   >           >          >         ROL abs,X   62
+  63    3F   ?           ?          ?                     63
+  64    40   @           ~          @         RTI         64
+  65    41   A,a         ~,A        A         EOR(zp,X)   65
+  66    42   B,b         ~,B        B                     66
+  67    43   C,c         ~,C        C                     67
+  68    44   D,d         ~,D        D                     68
+  69    45   E,e         ~,E        E         EOR zp      69
+  70    46   F,f         ~,F        F         LSR zp      70
+  71    47   G,g         ~,G        G                     71
+  72    48   H,h         ~,H        H         PHA         72
+  73    49   I,i         ~,I        I         EOR #imm    73
+  74    4A   J,j         ~,J        J         LSR A       74
+  75    4B   K,k         ~,K        K                     75
+  76    4C   L,l         ~,L        L         JMP abs     76
+  77    4D   M,m         ~,M        M         EOR abs     77
+  78    4E   N,n         ~,N        N         LSR abs     78
+
+                                                                        :218:
+
+DECIMAL HEX  ASCII       SCREEN     BASIC     6502      DECIMAL
+
+  79    4F   O,o         ~,O        O                     79
+  80    50   P,p         ~,P        P         BVC rel     80
+  81    51   Q,q         ~,Q        Q         EOR(zp),Y   81
+  82    52   R,r         ~,R        R                     82
+  83    53   S,s         ~,S        S                     83
+  84    54   T,t         ~,T        T                     84
+  85    55   U,u         ~,U        U         EOR zp,X    85
+  86    56   V,v         ~,V        V         LSR zp,X    86
+  87    57   W,w         ~,W        W                     87
+  88    58   X,x         ~,X        X         CLI         88
+  89    59   Y,y         ~,Y        Y         EOR abs,Y   89
+  90    5A   Z,z         ~,Z        Z                     90
+  91    5B   [           ~          [                     91
+  92    5C   sterling    ~          sterling              92
+  93    5D   ]           ~          ]         EOR abs,X   93
+  94    5E   up arrow    pi,~       up arrow  LSR abs,X   94
+  95    5F   left arrow  ~,~        left arrow            95
+  96    60   ~           space                RTS         96
+  97    61   ~,A         ~                    ADC(zp,X)   97
+  98    62   ~,B         ~                                98
+  99    63   ~,C         ~                                99
+ 100    64   ~,D         ~                               100
+ 101    65   ~,E         ~                    ADC zp     101
+ 102    66   ~,F         ~                    ROR zp     102
+ 103    67   ~,G         ~                               103
+ 104    68   ~,H         ~                    PLA        104
+ 105    69   ~,I         ~,~                  ADC #imm   105
+ 106    6A   ~,J         ~                    ROR A      106
+ 107    6B   ~,K         ~                               107
+ 108    6C   ~,L         ~                    JMP(ind)   108
+ 109    6D   ~,M         ~                    ADC abs    109
+ 110    6E   ~,N         ~                    ROR abs    110
+ 111    6F   ~,O         ~                               111
+ 112    70   ~,P         ~                    BVS rel    112
+ 113    71   ~,Q         ~                    ADC(zp),Y  113
+ 114    72   ~,R         ~                               114
+ 115    73   ~,S         ~                               115
+ 116    74   ~,T         ~                               116
+ 117    75   ~,U         ~                    ADC zp,X   117
+ 118    76   ~,V         ~                    ROR zp,X   118
+ 119    77   ~,W         ~                               119
+ 120    78   ~,X         ~                    SEI        120
+ 121    79   ~,Y         ~                    ADC abs,Y  121
+ 122    7A   ~,Z         ~,~                             122
+ 123    7B   ~           ~                               123
+ 124    7C   ~           ~                               124
+ 125    7D   ~           ~                    ADC abs,X  125
+ 126    7E   pi,~        ~                    ROR abs,X  126
+ 127    7F   ~,~         ~                               127
+
+                                                                        :219:
+
+DECIMAL HEX  ASCII       SCREEN     BASIC     6502      DECIMAL
+
+ 128    80               r@         END                  128
+ 129    81   orange      rA,a       FOR       STA(zp,X)  129
+ 130    82               rB,b       NEXT                 130
+ 131    83               rC,c       DATA                 131
+ 132    84               rD,d       INPUT#    STY zp     132
+ 133    85   F1          rE,e       INPUT     STA zp     133
+ 134    86   F3          rF,f       DIM       STX zp     134
+ 135    87   F5          rG,g       READ                 135
+ 136    88   F7          rH,h       LET       DEY        136
+ 137    89   F2          rI,i       GOTO                 137
+ 138    8A   F4          rJ,j       RUN       TXA        138
+ 139    8B   F6          rK,k       IF                   139
+ 140    8C   F8          rL,l       RESTORE   STY abs    140
+ 141    8D   car ret     rM,m       GOSUB     STA abs    141
+ 142    8E   graphic     rN,n       RETURN    STX abs    142
+ 143    8F   bottom      rO,o       REM                  143
+ 144    90   black       rP,p       STOP      BCC rel    144
+ 145    91   cur up      rQ,q       ON        STA(zp),Y  145
+ 146    92   rvx off     rR,r       WAIT                 146
+ 147    93   clear       rS,s       LOAD                 147
+ 148    94   insert      rT,t       SAVE      STY zp,X   148
+ 149    95   ins line/br rU,u       VERIFY    STA zp,X   149
+ 150    96   ers end/p   rV,v       DEF       STX zp,Y   150
+ 151    97   gray 1      rW,w       POKE                 151
+ 152    98   gray 2      rX,x       PRINT#    TYA        152
+ 153    99   scr down    rY,y       PRINT     STA abs,Y  153
+ 154    9A   lt blue     rZ,z       CONT      TXS        154
+ 155    9B   gray 3      r[         LIST                 155
+ 156    9C   purple      rSterling  CLR                  156
+ 157    9D   cur left    r]         CMD       STA abs,X  157
+ 158    9E   yellow      rUpArrow   SYS                  158
+ 159    9F   cyan        rLeftArrow OPEN                 159
+ 160    A0   space       rSpace     CLOSE     LDY #imm   160
+ 161    A1   ~           r!         GET       LDA(zp,X)  161
+ 162    A2   ~           r"         NEW       LDX #imm   162
+ 163    A3   ~           r#         TAB(                 163
+ 164    A4   ~           r$         TO        LDY zp     164
+ 165    A5   ~           r%         FN        LDA zp     165
+ 166    A6   ~           r&         SPC(      LDX zp     166
+ 167    A7   ~           r'         THEN                 167
+ 168    A8   ~           r(         NOT       TAY        168
+ 169    A9   ~,~         r)         STEP      LDA #imm   169
+ 170    AA   ~           r*         +         TAX        170
+ 171    AB   ~           r+         -                    171
+ 172    AC   ~           r,         *         LDY abs    172
+ 173    AD   ~           r-         /         LDA abs    173
+ 174    AE   ~           r.         UpArrow   LDX abs    174
+ 175    AF   ~           r/         AND                  175
+ 176    B0   ~           r0         OR        BCS rel    176
+                                                           
+                                                                        :220:
+
+DECIMAL HEX  ASCII       SCREEN     BASIC     6502      DECIMAL
+ 
+ 177    B1   ~           r1         >         LDA(zp),Y  177
+ 178    B2   ~           r2         =                    178
+ 179    B3   ~           r3         <                    179
+ 180    B4   ~           r4         SGN(      LDY zp,X   180
+ 181    B5   ~           r5         INT(      LDA zp,X   181
+ 182    B6   ~           r6         ABS(      LDX zp,Y   182
+ 183    B7   ~           r7         USR(                 183
+ 184    B8   ~           r8         FRE(      CLV        184
+ 185    B9   ~           r9         POS(      LDA abs,Y  185
+ 186    BA   ~,~         r:         SQR(      TSX        186
+ 187    BB   ~           r;         RND(                 187
+ 188    BC   ~           r<         LOG(      LDY abs,X  188
+ 189    BD   ~           r=         EXP(      LDA abs,X  189
+ 190    BE   ~           r>         COS(      LDX abs,Y  190
+ 191    BF   ~           r?         SIN(                 191
+ 192    C0   ~           r~         TAN(      CPY #imm   192
+ 193    C1   ~,A         r~,rA      ATN(      CMP(zp,X)  193
+ 194    C2   ~,B         r~,rB      PEEK(                194
+ 195    C3   ~,C         r~,rC      LEN(                 195
+ 196    C4   ~,D         r~,rD      STR$(     CPY zp     196
+ 197    C5   ~,E         r~,rE      VAL(      CMP zp     197
+ 198    C6   ~,F         r~,rF      ASC(      DEC zp     198
+ 199    C7   ~,G         r~,rG      CHR$(                199
+ 200    C8   ~,H         r~,rH      LEFT$(    INY        200
+ 201    C9   ~,I         r~,rI      RIGHT$(   CMP #imm   201
+ 202    CA   ~,J         r~,rJ      MID$(     DEX        202
+ 203    CB   ~,K         r~,rK      GO                   203
+ 204    CC   ~,L         r~,rL      CONCAT    CPY abs    204
+ 205    CD   ~,M         r~,rM      DOPEN     CMP abs    205
+ 206    CE   ~,N         r~,rN      DCLOSE    DEC abs    206
+ 207    CF   ~,O         r~,rO      RECORD               207
+ 208    D0   ~,P         r~,rP      HEADER    BNE rel    208
+ 209    D1   ~,Q         r~,rQ      COLLECT   CMP(zp),Y  209
+ 210    D2   ~,R         r~,rR      BACKUP               210
+ 211    D3   ~,S         r~,rS      COPY                 211
+ 212    D4   ~,T         r~,rT      APPEND               212
+ 213    D5   ~,U         r~,rU      DSAVE     CMP zp,X   213
+ 214    D6   ~,V         r~,rV      DLOAD     DEC zp,X   214
+ 215    D7   ~,W         r~,rW      CATALOG              215
+ 216    D8   ~,X         r~,rX      RENAME    CLD        216

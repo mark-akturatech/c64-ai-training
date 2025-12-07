@@ -1,0 +1,320 @@
+# ML for C64 - Appendix I: SID Chip Reference
+
+======================================
+
+The 6566/6567 are multi-purpose color video controller devices for use in
+both computer video terminals and video game applications.  Both devices
+contain 47 control registers which are accessed via a standard 8-bit
+microprocessor bus (65xx) and will access up to 16K of memory for display
+information.  The various operating modes and options within each mode are
+described.
+
+
+Character Display Mode
+----------------------
+
+In the character display mode, the 6566/6567 fetches CHARACTER POINTERs from
+the VIDEO MATRIX area of memory and translates the pointers to character dot
+location addresses in the 2048-byte CHARACTER BASE area of memory.  The
+video matrix is comprised of 1000 consecutive locations in memory which each
+contain an eight-bit character pointer.  The location of the video matrix
+within memory is defined by VM13-VM10 in register 24 ($18) which are used as
+the 4 MSB of the video matrix address.  The lower order 10 bits are provided
+by an internal counter (VC3-VC0) which steps through the 1000 character
+locations.  Note that the 6566/6567 provides 14 address outputs; therefore,
+additional system hardware may be required for complete system memory
+decodes.
+                                                                        :278:
+
+                          CHARACTER POINTER ADDRESS
+
+    A13 |A12 |A11 |A10 |A09 |A08 |A07 |A06 |A05 |A04 |A03 |A02 |A01 |A00
+    ----+----+----+----+----+----+----+----+----+----+----+----+----+----
+    VM13|VM12|VM11|VM10|VC9 |VC8 |VC7 |VC6 |VC5 |VC4 |VC3 |VC2 |VC1 |VC0
+
+
+The eight-bit character pointer permits up to 256 different character
+definitions to be available simultaneously.  Each character is an 8x8 dot
+matrix stored in the character base as eight consecutive bytes.  The location
+of the character base is defined by CB13-CB11, also in register 24 ($18)
+which are used for the 3 most significant bits (MSB) of the character base
+address.  The 11 lower order addresses are formed by the 8-bit character
+pointer from the video matrix (D7-D0) which selects a particular character,
+and a 3-bit raster counter (RC2-RC0) which selects one of the eight character
+bytes.  The resulting characters are formatted as 25 rows of 40 characters
+each.  In addition to the 8-bit character pointer, a 4-bit COLOR NYBBLE is
+associated with each video matrix location (the video matrix memory must be
+12 bits wide) which defines one of sixteen colors for each character.
+
+
+                            CHARACTER DATA ADDRESS
+
+    A13 |A12 |A11 |A10 |A09 |A08 |A07 |A06 |A05 |A04 |A03 |A02 |A01 |A00
+    ----+----+----+----+----+----+----+----+----+----+----+----+----+----
+    CB13|CB12|CB11| D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 |RC2 |RC1 |RC0
+
+
+
+Standard Character Mode (MCM = BMM = ECM = 0)
+---------------------------------------------
+
+In the standard character mode, the 8 sequential bytes from the character
+base are displayed directly on the 8 lines in each character region.  A "0"
+bit causes the background #0 color (from register 33 ($21)) to be displayed
+while the color selected by the color nybble (foreground) is displayed for a
+"1" bit (see Color Code Table).
+
+                                                                        :279:
+
+
+      FUNCTION  | CHARACTER BIT | COLOR DISPLAYED
+     -----------+---------------+----------------------------------------
+     Background |       0       | Background #0 Color (register 33 ($21))
+     Foreground |       1       | Color selected by 4-bit color nybble
+
+
+Therefore, each character has a unique color determined by the 4-bit color
+nybble (1 of 16) and all characters share the common background color.
+
+
+Multi-Color Character Mode (MCM = 1, BMM = ECM = 0)
+---------------------------------------------------
+
+Multi-color mode provides additional color flexibility allowing up to four
+colors within each character but with reduced resolution.  The multi-color
+mode is selected by setting the MCM bit in register 22 ($16) to "1", which
+causes the dot data stored in the character base to be interpreted in a
+different manner.  If the MSB of the color nybble is a "0", the character
+will be displayed as described in standard character mode, allowing the two
+modes to be inter-mixed (however, only the lower order 8 colors are
+available).  When the MSB of the color nybble is a "1" (if MCM:MSB(CM)=1) the
+character bits are interpreted in the multi-color mode:
+
+                 | CHARACTER |
+       FUNCTION  | BIT PAIR  | COLOR DISPLAYED
+      -----------+-----------+-----------------------------------------
+      Background |    00     | Background #0 Color (register 33 ($21))
+      Background |    01     | Background #1 Color (register 34 ($22))
+      Foreground |    10     | Background #2 Color (register 35 ($23))
+      Foreground |    11     | Color specified by 3 LSB of color nybble
+
+
+Since two bits are required to specify one dot color, the character is now
+displayed as a 4x8 matrix with each dot twice the horizontal size as in
+standard mode.  Note, however, that each character region can now contain 4
+different colors, two as foreground and two as background (see MOB priority).
+
+                                                                        :280:
+
+Extended Color Mode (ECM = 1, BMM = MCM = 0)
+--------------------------------------------
+
+The extended color mode allows the selection of individual background colors
+for each character region with the normal 8x8 character resolution.  This
+mode is selected by setting the ECM bit of register 17 ($11) to "1".  The
+character dot data is displayed as in the standard mode (foreground color
+determined by the color nybble is displayed for a "1" data bit), but the 2
+MSB of the character pointer are used to select the background color for each
+character region as follows:
+
+
+         CHARACTER POINTER |
+            BITS 7 & 6     | BACKGROUND COLOR DISPLAYED FOR 0 BIT
+         ------------------+----------------------------------------
+                 00        | Background #0 color (register 33 ($21))
+                 01        | Background #1 color (register 34 ($22))
+                 10        | Background #2 color (register 35 ($23))
+                 11        | Background #3 color (register 36 ($24))
+
+
+Since the two MSB of the character pointers are used for color information,
+only 64 different character definitions are available.  The 6566/6567 will
+force CB10 and CB9 to "0" regardless of the original pointer values, so that
+only the first 64 character definitions will be accessed.  With extended
+color mode each character has one of sixteen individually defined foreground
+colors and one of the four available background colors.
+
+                +--------------------------------------------+
+                | NOTE:  Extended color mode and multi-color |
+                | mode should not be enabled simultaneously. |
+                +--------------------------------------------+
+
+
+Bit Map Mode
+------------
+
+In bit map mode, the 6566/6567 fetches data from memory in a different
+fashion, so that a one-to-one correspondence exists between each displayed
+dot and a memory bit.  The bit map mode provides a screen resolution of
+320Hx200V individually controlled display dots.  Bit map mode is selected by
+setting the BMM bit in register 17 ($11) to a "1".  The VIDEO MATRIX is still
+accessed as in character mode, but the video matrix data is no longer
+interpreted as character pointers, but rather as color data.  The VIDEO
+MATRIX COUNTER is then also used as an address to fetch the dot data for
+display from the 8000-byte DISPLAY BASE.  The display base address is formed
+as follows:
+
+                                                                        :281:
+
+    A13 |A12 |A11 |A10 |A09 |A08 |A07 |A06 |A05 |A04 |A03 |A02 |A01 |A00
+    ----+----+----+----+----+----+----+----+----+----+----+----+----+----
+    CB13|VC9 |VC8 |VC7 |VC6 |VC5 |VC4 |VC3 |VC2 |VC1 |VC0 |RC2 |RC1 |RC0
+
+
+VCx denotes the video matrix counter outputs, RCx denotes the 3-bit raster
+line counter and CB13 is from register 24 ($18).  The video matrix counter
+steps through the same 40 locations for eight raster lines, continuing to the
+next 40 locations every eighth line, while the raster counter increments once
+for each horizontal video line (raster line).  This addressing results in
+eight sequential memory locations being formatted as an 8x8 dot block on the
+video display.
+
+
+Standard Bit Map Mode (BMM = 1, MCM = ECM = 0)
+----------------------------------------------
+
+When standard bit map mode is in use, the color information is derived only
+from the data stored in the video matrix (the color nybble is disregarded).
+The 8 bits are divided into two 4-bit nybbles which allow to colors to be
+independently selected in each 8x8 dot block.  When a bit in the display
+memory is a "0" the color of the output dot is set by the least significant
+(lower) nybble (LSN).  Similarly, a display memory bit of "1" selects the
+output color determined by the MSN (upper nybble).
+
+
+                  BIT | DISPLAY COLOR
+                  ----+-------------------------------------
+                   0  | Lower nybble of video matrix pointer
+                   1  | Upper nybble of video matrix pointer
+
+
+Multi-Color Bit Map Mode (BMM = MCM = 1, ECM = 0)
+-------------------------------------------------
+
+Multi-colored bit map mode is selected by setting the MCM bit in register 22
+($16) to a "1" in conjunction with the BMM bit.  Multi-color mode uses the
+same memory access sequences as standard bit map mode, but interprets the dot
+data as follows:
+
+
+              BIT PAIR | DISPLAY COLOR
+              ---------+----------------------------------------
+                 00    | Background #0 color (register 33 ($21))
+                 01    | Upper nybble of video matrix pointer
+                 10    | Lower nybble of video matrix pointer
+                 11    | Video matrix color nybble
+
+                                                                        :282:
+
+Note that the color nybble (CB11-CB8) IS used for multi-color bit map mode,
+again, as two bits are used to select one dot color, the horizontal dot size
+is doubled, resulting in a screen resolution of 160Hx200V.  Utilizing
+multi-color bit map mode, three independently selected colors can be
+displayed in each 8x8 block in addition to the background color.
+
+
+Movable Object Blocks
+---------------------
+
+The movable object block (MOB) is a special type of character which can be
+displayed at any one position on the screen without the block constraints
+inherent in character and bit map mode.  Up to 8 unique MOBs can be displayed
+simultaneously, each defined by 63 bytes in memory which are displayed as a
+24x21 dot array (shown below).  A number of special features make MOBs
+especially suited for video graphics and game applications.
+
+
+                              MOB DISPLAY BLOCK
+
+                            +------+------+------+
+                            | BYTE | BYTE | BYTE |
+                            +------+------+------+
+                            |  00  |  01  |  02  |
+                            |  03  |  04  |  05  |
+                            |  06  |  07  |  08  |
+                            |  ..  |  ..  |  ..  |
+                            |  ..  |  ..  |  ..  |
+                            |  54  |  55  |  56  |
+                            |  57  |  58  |  59  |
+                            |  60  |  61  |  62  |
+                            +------+------+------+
+
+
+Enable
+------
+
+Each MOB can be selectively enabled for display by setting its corresponding
+bit (MnE) to "1" in register 21 ($15).  If the MnE bit is "0", no MOB
+operations will occur involving the disabled MOB.
+
+
+Position
+--------
+
+Each MOB is positioned via its X and Y position register (see register map)
+with a resolution of 512 horizontal and 256 vertical positions.  The position
+of a MOB is determined by the upper-left corner of the array.  X locations 23
+to 347 ($017-$157) and Y locations 50 to 249 ($32-$F9) are visible.  Since
+not all available MOB positions are entirely visible on the screen, MOBs may
+be moved smoothly on and off the display screen.
+
+                                                                        :283:
+
+Color
+-----
+
+Each MOB has a separate 4-bit register to determine the MOB color.  The two
+MOB color modes are:
+
+
+  Standard MOB (MnMC = 0)
+  -----------------------
+
+  In the standard mode, a "0" bit of MOB data allows any background data to
+  show through (transparent) and a "1" bit is displayed as the MOB color
+  determined by the corresponding MOB Color register.
+
+
+  Multi-Color MOB (MnMC = 1)
+  --------------------------
+
+  Each MOB can be individually selected as a multi-color MOB via MnMC bits in
+  the MOB Multi-color register 28 ($1C).  When the MnMC bit is "1", the
+  corresponding MOB is displayed in the multi-color mode.  In the multi-color
+  mode, the MOB data is interpreted in pairs (similar to the other
+  multi-color modes) as follows:
+
+
+              BIT PAIR | COLOR DISPLAYED
+              ---------+---------------------------------------
+                 00    | Transparent
+                 01    | MOB Multi-color #0 (register 37 ($25))
+                 10    | MOB Color (registers 39-46 ($27-$2E))
+                 11    | MOB Multi-color #1 (register 38 ($26))
+
+
+  Since two bits of data are required for each color, the resolution of the
+  MOB is reduced to 12x21, with each horizontal dot expanded to twice
+  standard size so that the overall MOB size does not change.  Note that up
+  to 3 colors can be displayed in each MOB (in addition to the transparent)
+  but that two of the colors are shared among all the MOBs in the multi-color
+  mode.
+
+
+Magnification
+-------------
+
+Each MOB can be selectively expanded (2x) in both the horizontal and vertical
+directions.  Two registers contain the control bits (MnXE, MnYE) for the
+magnification control:
+
+
+        REGISTER | FUNCTION
+        ---------+----------------------------------------------------
+        23 ($17) | Horizontal expand MnXE - "1" = expand, "0" = normal
+        29 ($1D) | Vertical expand MnYE   - "1" = expand, "0" = normal
+
+                                                                        :284:
+
+When MOBs are expanded, no increase in resolution is realized.  The same
+24x21 array (12x21 if multi-colored) is displayed, but the overall MOB

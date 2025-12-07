@@ -1,0 +1,47 @@
+# KickAssembler - Technical Details: Parse Algorithm, Side Effects
+
+  .eval matrix.set(2,3,100)
+  .print “Matrix.get(2,3)=” + matrix.get(2,3)
+                                                                                                    50
+   .print “The entire matrix=“ + matrix
+In 3d graphics matrixes are usually used to describe a transformation of a vector space. That can be
+to move the coordinates, to scale them, to rotate then, etc. The Matrix() operator creates an identity
+matrix, which is one that leaves the coordinates unchanged. By using the set function you can
+construct any matrix you like. However, Kick Assembler has constructor functions that create the
+most common transformation matrixes:
+Function                           Description
+Matrix()                           Creates an identity matrix.
+RotationMatrix(aX,aY,aZ)           Creates a rotation matrix where aX, aY and aZ are the angles
+                                   rotated around the x, y and z axis. The angles are given in radians.
+ScaleMatrix(sX,sY,sZ)              Creates a scale matrix where the x coordinate is scaled by sX, the
+                                   y-coordinate by sY and the z-coordinate by sZ.
+MoveMatrix(mX,mY,mZ)               Creates a move matrix that moves mX along the x-axis, mY along
+                                   the y-axis and mZ along the z-axis.
+PerspectiveMatrix(zProj) Creates a perspective projection where the eye-point is placed in
+                                   (0,0,0) and coordinates are projected on the XY-plane where
+                                   z=zProj
+You can multiply the matrixes and thereby combine their transformations. The transformation is
+read from right to left, so if you want to move the space 10 along the x axis and then rotate it 45
+degrees around the z-axis, you write:
+   .var m = RotationMatrix(0,0,toRadians(45))*MoveMatrix(10,0,0)
+To transform a coordinate you multiply the matrix to transformed vector:
+   .var v = m*Vector(10,0,0)
+   .print “Transformed v=” + v
+The functions defined on matrixes are the following:
+Function/Operator Example                              Description
+get(n,m)                                               Gets the value at n,m
+set(n,m,value)                                         Sets the value at n,m
+*Vector                 Matrix()*Vector(1,2,3) Return the product of the matrix and a vector
+*Matrix                 Matrix()*Matrix()              Returns the product of two matrixes
+Here is a little program to illustrate how matrixes can be used. It pre calculates an animation of a
+cube that rotates around the x, y and z-axis and is projected on the plane where z=2.5. The data is
+placed at the label ‘cubeCoords’:
+                                                                                                      51
+//------------------------------------------------------------------------------------------
+// Objects
+//------------------------------------------------------------------------------------------
+.var Cube = List().add( Vector(1,1,1), Vector(1,1,-1), Vector(1,-1,1), Vector(1,-1,-1),
+                          Vector(-1,1,1), Vector(-1,1,-1), Vector(-1,-1,1), Vector(-1,-1,-1))
+//------------------------------------------------------------------------------------------
+// Macro for doing the precalculation
+//------------------------------------------------------------------------------------------

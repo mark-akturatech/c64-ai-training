@@ -1,0 +1,84 @@
+# 6502 Addressing Modes - Indirect, Pre-indexed, Post-indexed, Relative
+
+  8) Indirect
+  This mode applies only to the JMP instruction - JuMP to new location. It is
+  indicated by parenthesis around the operand. The operand is the address of
+  the bytes whose value is the new location.
+  eg.  JMP ($215F)
+  Assume the following -        byte      value
+                                $215F     $76
+                                $2160     $30
+  This instruction takes the value of bytes $215F, $2160 and uses that as the
+  address to jump to - i.e. $3076 (remember that addresses are stored with
+  low byte first).
+
+  9) Pre-indexed indirect
+  In this mode a zer0-page address is added to the contents of the X-register
+  to give the address of the bytes holding the address of the operand. The
+  indirection is indicated by parenthesis in assembly language.
+  eg.  LDA ($3E, X)
+       $A1 $3E
+  Assume the following -        byte      value
+                                X-reg.    $05
+                                $0043     $15
+                                $0044     $24
+                                $2415     $6E
+
+  Then the instruction is executed by:
+  (i)   adding $3E and $05 = $0043
+  (ii)  getting address contained in bytes $0043, $0044 = $2415
+  (iii) loading contents of $2415 - i.e. $6E - into accumulator
+
+  Note a) When adding the 1-byte address and the X-register, wrap around
+          addition is used - i.e. the sum is always a zero-page address.
+          eg. FF + 2 = 0001 not 0101 as you might expect.
+          DON'T FORGET THIS WHEN EMULATING THIS MODE.
+       b) Only the X register is used in this mode.
+
+  10) Post-indexed indirect
+  In this mode the contents of a zero-page address (and the following byte)
+  give the indirect addressm which is added to the contents of the Y-register
+  to yield the actual address of the operand. Again, inassembly language,
+  the instruction is indicated by parenthesis.
+  eg.  LDA ($4C), Y
+  Note that the parenthesis are only around the 2nd byte of the instruction
+  since it is the part that does the indirection.
+  Assume the following -        byte       value
+                                $004C      $00
+                                $004D      $21
+                                Y-reg.     $05
+                                $2105      $6D
+  Then the instruction above executes by:
+  (i)   getting the address in bytes $4C, $4D = $2100
+  (ii)  adding the contents of the Y-register = $2105
+  (111) loading the contents of the byte $2105 - i.e. $6D into the
+        accumulator.
+  Note: only the Y-register is used in this mode.
+
+  11) Relative
+  This mode is used with Branch-on-Condition instructions. It is probably
+  the mode you will use most often. A 1 byte value is added to the program
+  counter, and the program continues execution from that address. The 1
+  byte number is treated as a signed number - i.e. if bit 7 is 1, the number
+  given byt bits 0-6 is negative; if bit 7 is 0, the number is positive. This
+  enables a branch displacement of up to 127 bytes in either direction.
+  eg  bit no.  7 6 5 4 3 2 1 0    signed value          unsigned value
+      value    1 0 1 0 0 1 1 1    -39                   $A7
+      value    0 0 1 0 0 1 1 1    +39                   $27
+  Instruction example:
+    BEQ $A7
+    $F0 $A7
+  This instruction will check the zero status bit. If it is set, 39 decimal
+  will be subtracted from the program counter and execution continues from
+  that address. If the zero status bit is not set, execution continues from
+  the following instruction.
+  Notes:  a) The program counter points to the start of the instruction
+  after the branch instruction before the branch displacement is added.
+  Remember to take this into account when calculating displacements.
+          b) Branch-on-condition instructions work by checking the relevant
+  status bits in the status register. Make sure that they have been set or
+  unset as you want them. This is often done using a CMP instruction.
+          c) If you find you need to branch further than 127 bytes, use the
+  opposite branch-on-condition and a JMP.
+
+

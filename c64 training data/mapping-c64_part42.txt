@@ -1,0 +1,302 @@
+# C64 Kernal ROM - Editor, Screen Routines
+
+error message from the table at 41363 ($A193) or the READY prompt, and
+continues through the vector at 770 ($302) to the main BASIC loop.
+
+58260         $E394
+Cold Start BASIC
+
+This initialization routine is executed at the time of power-up.  The
+RAM vectors to important BASIC routines are set up starting at 768
+($300), the interpreter is initialized, the start-up messages are
+printed, and the main loop entered through the end of the warm start
+routine.
+
+58274         $E3A2          INITAT
+Text of the CHRGET Routine Which Runs at 115 ($73)
+
+The text of the CHRGET routine is stored here, and moved to Page 0 by
+the BASIC initialization routine.  When creating a wedge in CHRGET, it
+is possible to execute all or part of this code in place of the RAM
+version.
+
+59298         $E3BA
+Initial RND Seed Value
+
+At power-up time, this five-byte floating point constant is
+transferred to 139 ($8B), where it functions as the starting RND seed
+number.  Thus, if RND is not initialized with a negative or zero
+argument, it will always return the same sequence of numbers.
+
+58303         $E3BF          INIT
+Initialize BASIC
+
+This routine is called by the cold start routine to initialize all of
+the BASIC zero-page locations which have a fixed value.  This includes
+copying the CHRGET routine from the ROM location above, to 115 ($73).
+
+58402         $E422
+Print BASIC Start-Up Messages
+
+This routine prints the start-up message "**** COMMODORE 64 BASIC V2
+****", calculates the amount of free memory, and prints the BYTES FREE
+message.
+
+58439         $E447
+Table of Vectors to Important BASIC Routines
+
+This table contains the vectors which point to the addresses of some
+important BASIC routines.  The contents of this table are moved to the
+RAM table at 768 ($300).
+
+58451         $E453
+Copy BASIC Vectors to RAM
+
+The cold start routine calls this subroutine to copy the table of
+vectors to important BASIC routines to RAM, starting at location 768
+($300).
+
+58464         $E460          WORDS
+Power-Up Messages
+
+The ASCII text of the start-up messages "**** COMMODORE 64 BASIC V2
+****" and "BYTES FREE" is stored here.
+
+Location Range: 58551-58623 ($E4B7-E4FF)
+Patches Added to Later Kernal Versions
+
+This area contains code that was not found in the original version of
+the Kernal.  These additions were made to fix some bugs and to
+increase Kernal compatibility between U.S. and European 64s.
+
+58541         $E4AD
+Patch for BASIC Call of CHKOUT
+
+This patch was made to preserve the .A register if there was no error
+returned from BASIC's call of the Kernal CHKOUT routine.  Apparently,
+the first version could cause a malfunction of the CMD and PRINT#
+commands.
+
+58551         $E4B7
+35 Unused Bytes (all have the value of 170 ($AA)
+
+Locaiton Range: 58586-65535 ($E4DA-$FFFF)
+Kernal I/O Routines
+
+After the conclusion of BASIC comes the part of this ROM which can be
+considered the Kernal proper.  This part contains all of the vectored
+routines found in the jump table starting at 65409 ($FF81).
+
+58586         $E4DA
+Clear Color RAM to the Color in Background Color Register 0
+
+This routine is a patch added to the more recent versions of the
+Kernal.  It is called by the routine which clears a screen line
+(59903, $E9FF), and it places the color value in Background Color
+Register 0 (53281, $D021) into the current byte of Color RAM pointed
+to by USER (243, $F3).
+
+In the original version of the Kernal, the routine that cleared a
+screen line set the corresponding Color RAM to a value of 1, which
+gives text characters a white foreground color.  This was changed when
+the white color was found to sometimes cause light flashes during
+screen scrolling.  It was that white foreground color, however, that
+enabled the user to POKE the screen code for a character into screen
+RAM, and make that character appear on the screen in a color that
+contrasted the blue background.  This change to the Operating System
+causes colors POKEd to screen RAM to be the same color as the
+background, and thus they are invisible.
+
+This is a fairly serious problem, because the technique of POKEing
+characters to screen RAM has long been a staple of Commodore graphics
+programming.  Fortunately, the problem has an easy colution.  Since
+the Color RAM will be set to whatevere color is in Background Color
+Register 0, what you have to do to initialize Color RAM to the color
+you desire is change the background color to the desired foreground
+color, clear the screen, and then change the background color back
+again:
+
+C=PEEK(53281):POKE 53281,HUE:PRINT CHR$(147):POKE 53281,C
+
+58592         $E4E0
+Pause after Finding a File on Cassette
+
+This routine is a patch to the routine which finds a file on cassette.
+After the file is found, the message FILETITLE FOUND appears on the
+screen.  On the original versions of the Kernal, the user would then
+have to hit the Commodore key to continue the load.  On the newer
+versions, this patch causes a slight pause after the tape file is
+round, during which time a keypress is looked for.  If a key is
+pressed, the loading process continues immediately.  If it is not, the
+load continues by itself after the end of the pause.
+
+58604         $E4EC
+Baud Rate Table for European (PAL) Standard Monitors
+
+This table of prescaler values was added to later Kernal versions to
+allow the same Kernal software to be used with either U.S. or European
+64s.  It contains the values which are required to obtain interrupts
+at the proper frequency for the standard RS-232 baud rates, and
+corresponds exactly in format to the table of values for the U.S.
+(NTSC) monitor format at 65218 ($FEC2).  Separate tables are required
+because the prescaler values are derived from dividing the system
+clock rate by the baud rate, and PAL machines operate with a slightly
+slower clock frequency.
+
+58624         $E500          IOBASE
+Store Base Address of Memory-Mapped I/O Devices in .X and .Y Registers
+
+This is one of the documented Kernal routines for which there is a
+vector in the jump table at 65523 ($FFF3).
+
+When called, this routine sets the .X register to the low byte of the
+base address of the memory-mapped I/O devices, and puts the high byte
+in the .Y register.  This allows a user to set up a zero-page pointer
+to the device, and to load and store indirectly through that pointer.
+A program which uses this method, rather than directly accessing such
+devices could be made to function without change on future Commodore
+models, even though the I/O chips may be addressed at different
+locations.  This of course assumes that the CIA or a similar chip will
+be used.  This routine is of limited value for creating software that
+is compatible with both the VIC-20 and the 64 because of the
+differences in the VIA I/O chip that the VIC uses.
+
+The current version of this routine loads the .X register with a 0,
+and the .Y register with 220 ($DC), thus pointing to CIA #1, which is
+at 56320 ($DC00).
+
+58629         $E505          SCREEN
+Store Number of Screen Rows and Columns in .Y and .X
+
+This is a documented Kernal routine which is vectored in the jump
+table at 65517 ($FFED), and is provided to allow for program
+compatibility between computers.
+
+When called, this subroutine returns the number of screen columns in
+the .X register, and the number of screen rows in .Y.  Thus, a program
+can detect the screen format of the machine on which it is running,
+and make sure that text output is formatted accordingly.
+
+The present version of this routine loads the .X register with 40
+($28) and the .Y register with 25 ($19).
+
+58634         $E50A          PLOT
+Read/Set Location of the Cursor
+
+The jump table entry for this documented Kernal is at 65520 ($FFF0).
+
+The routine allows the user to read or set the position of the cursor.
+If the carry flag is set with the SEC instruction before calling this
+subroutine, cursor column (X position) will be returned in the .X
+register, and the cursor row (Y position) will be returned in the .Y
+register.  If the carry flag is cleared with a CLC instruction before
+entering this routine, and the .Y and .X registers are loaded with the
+desired row and column positions respectively, this routine will set
+the cursor position accordingly.
+
+The current read routine loads .X and .Y from locations 214 ($D6) and
+211 ($D3) respectively.  The cursor set routine stores .X and .Y in
+these locations, and calls the routine that sets the screen pointers
+at 58732 ($E56C).
+
+The user can access this routine from BASIC by loading the .X, .Y, and
+.P register values desired to the save area starting at 780 ($30C).
+
+58648         $E518
+Initialize Screen and Keyboard
+
+This is the original CINT Kernal routine, to which additions were made
+in later versions of the Kernal.
+
+After calling the routine at 58784 ($E5A0) to set up default I/O
+values, this routine initializes the cursor blink flags, the keyboard
+decode vector, the key repeat delay and frequency counters, the
+current color code, and maximum keyboard buffer size.  It then falls
+through to the next routine.
+
+58692         $E544
+Initialize the Screen Line Link Table and Clear the Screen
+
+This routine initializes the screen line link table at 217 ($D9),
+clears the screen, and clears the Color RAM to the background color.
+It falls through to the next routine.
+
+58726         $E566
+Home the Cursor
+
+This routine sets PNTR (211, $D3) and TBLX (214, $D6) to 0, and falls
+through to the next routine.
+
+58732         $E56C
+Set Pointer to Current Screen Line
+
+This routine sets the pointer PNT (209, $D1) to the address of the
+first byte of the current logical line.  In figuring this address, it
+takes into account the status of the screen line link table, which can
+indicate that two physical lines should be joined as one logical line.
+
+58784         $E5A0
+Set Default I/O Devices and Set Default Values for VIC-II Chip
+Registers
+
+This routine sets the keyboard and screen as the current input and
+output devices.  It then writes the default values found in the table
+at 60601 ($ECB9) to the VIC-II chip.
+
+58804         $E5B4          LP2
+Get a Character from the Keyboard Buffer
+
+This routine transfers the first character from the keybard buffer to
+the .A register, bumps the rest of the characters one place up in
+line, and decrements the pointer, showing how many characters are
+waiting in the buffer.
+
+58826         $E5CA
+Wait for a Carriage Return from the Keyboard
+
+This subroutine is called by the portion of the CHKIN routine that
+handles keyboard input.  It turns the cursor on, gets characters, and
+echoes them to the screen until a carriage return has been entered.
+It also looks for the shifted RUN/STOP key, and forces the output of
+the commands LOAD and RUN if it finds it.
+
+58930         $E632
+Input a Character from Screen or Keyboard
+
+This routine is the portion of the Kernal CHRIN routine that handles
+input from the keyboard and screen devices.  CHRIN gets one byte at a
+time from the current screen position, or inputs a whole line from the
+keyboard and returns it one byte at a time.
+
+59012         $E684
+Test for Quote Marks
+
+This subroutine checks if the current character is a quotation mark,
+and if it is, toggles the quote switch at 212 ($D4).
+
+59025         $E691
+Add a Character to the Screen
+
+This is part of the routine that outputs a character to the screen.
+It puts printable characters into screen memory.
+
+59048         $E6A8
+Return from Outputting a Character to the Screen
+
+This is the common exit point for the screen portion of the CHROUT
+routine.
+
+59062         $E6B6
+Advance the Cursor
+
+This routine advances the cursor, and provides for such things as
+scrolling at the end of the screen, and inserting a blank line in
+order to add another physical line to the current logical line.
+
+59137         $E701
+Move Cursor Back over a 40-Column Line Boundary
+
+59158         $E716
+Output to the Screen
+
+This is the main entry point for the part of CHROUT that handles

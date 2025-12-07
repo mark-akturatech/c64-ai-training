@@ -1,0 +1,289 @@
+43-44         $2B-$2C        TXTTAB
+Pointer to the Start of BASIC Program Text
+
+This two-byte pointer lets BASIC know where program text is stored.
+Ordinarily, such text is located beginning at 2049 ($801).  Using this
+pointer, it is possible to change the program text area.  Typical
+reasons for doing this include:
+
+1.  Conforming the memory configuration to that of other Commodore
+computers.  On 32K PET and CBM computers, for example, screen memory
+starts at 32768 ($8000), and BASIC text begins at 1025 ($401).  You
+can emulate this configuration with the 64 with the following short
+program:
+
+10 POKE 55,0:POKE 56,128: CLR: REM LOWER TOP OF MEMORY TO 32768
+20 POKE 56576,PEEK(56576) AND 253: REM ENABLE BANK 2
+30 POKE 53272,4: REM TEXT DISPLAY MEMORY NOW STARTS AT 32768
+40 POKE 648,128:REM OPERATING SYSTEM PRINTS TO SCREEN AT 32768 (128*256)
+50 POKE 44,4:POKE 1024,0: REM MOVE START OF BASIC TO 1025 (4*256+1)
+60 POKE 792,193: REM DISABLE RESTORE KEY
+70 PRINT CHR$(147);"NOW CONFIGURED LIKE PET":NEW
+80 REM ALSO SEE ENTRIES FOR LOCATION 55, 56576, AND 648
+
+Such reconfiguring can be helpful in transferring programs from the 64
+to the PET, or vice versa.  Since the 64 automatically relocates BASIC
+program text, it can load and list PET programs even though the
+program file indicates a loading addresss that is different from the
+64 start of BASIC.  The PET does not have this automatic relocation
+feature, however, and it loads all BASIC programs at the two-byte
+address indicated at the beginning of the disk or tape file.
+
+So if the PET loads a 64 program at its normal starting address of
+2049 ($801), it will not recognize its presence because it expects a
+BASIC program to start at 1025 ($401).  Therefore, if you want to let
+a PET and 64 share a program, you must either reconfigure the 64 to
+start BASIC where the PET does, or reconfigure the PET to start BASIC
+where the 64 does (with a POKE 41,8:POKE 2048,0).
+
+2.  Raising the lowest location used for BASIC text in order to create
+a safe area in low memory.  For example, if you wish to use the
+high-resolution graphics mode, you may want to put the start of screen
+memory at 8192 ($2000).  The high-resolution moe requires 8K of
+memory, and you cannot use the lowest 8K for this purpose because it
+is already being used for the zero-page assignments.
+
+Since BASIC program text normally starts at 2048 ($801), this means
+that you only have 6k for program text before your program runs over
+into screen memory.  One way around this is by moving the start of
+basic to 16385 ($4001) by typing in direct entry mode:
+
+POKE 44,64: POKE 64*256,0:NEW
+
+Other uses might include setting aside a storage area for sprite shape
+data, or user-defined character sets.
+
+3.  Keeping two or more programs in memory simultaneously.  By
+changing this pointer, you can keep more than one BASIC program in
+memory at one time, and switch back and forth betwenn them.  Examples
+of this application can be found in COMPUTE!'s First Book of PET/CBM,
+pages 66 and 163.
+
+This technique has a number of offshoots that are perhaps of more
+practical use.
+
+a) You can store two programs in memory simultaneously for the purpose
+of appending one to the other.  This technique requires that the line
+numbers of the two programs do not overlap.  (See Programming the
+PET/CBM by Raeto Collin West, pages 41-42, for a discussion of this
+technique).
+
+b) You can have two programs in memory at once and use the concept in
+(2) above to allow an easier way to create a safe area in low memory.
+The first program is just onw line that sets the start of BASIC
+pointer to the address of the second program which is located higher
+in memory, and then runs that second program.
+
+4. Since this address is used as the address of the first byte to
+SAVE, you can save any section of memory by changing this pointer to
+indicate the starting address, and the pointer 45-46 ($2D-$2D) to
+indicate the address of the byte after the last byte that you wish to
+save.
+
+45-46         $2D-$2E        VARTAB
+Pointer to the Start of the BASIC Variable Storage Area
+
+This location points to the address which marks the end of the BASIC
+program text area, and the beginning of the variable storage area.
+All nonarray variables are stored here, as are string descriptors (for
+the address of the area where the actual text of strings is stored,
+see location 51 ($33)).
+
+Seven bytes of memory are allocated for each variable.  The first two
+bytes are used for the variable name, which consists of the ASCII
+value of the first two letters of the variable name.  If the variable
+name is a single letter, the second byte will contain a zero.
+
+The seventh bit of one or both of these bytes can be set (which would
+add 128 to the ASCII value of the letter).  This indicates the
+variable type.  If neither byte has the seventh bit set, the variable
+is the regular floating point type.  If only the first byte has its
+seventh bit set, the variable is a string.  If only the second byte
+has its seventh bit set, the variable is a defined function (FN).  If
+both bytes have the seventh bit set, the variable is an integer.
+
+The use of the other five bytes depends on the type of variable.  A
+floating point variable will use the five bytes to store the value of
+the variable in floating point format.  An integer will have its value
+stored in the third and fourth bytes, high byte first, and the other
+three will be unused.
+
+A string variable will use the third byte for its length, and the
+fourth and fifth bytes for a pointer to the address of the string
+text, leaving the last two bytes unused.  Note that the acrual string
+text that is pointed to is located either in the part of the BASIC
+program where the string is first assigned a value, or in the string
+text storage area pointed to by location 51 ($33).
+
+A function definition will use the third and fourth bytes for a
+pointer to the address in the BASIC program text where the function
+definition starts.  It uses the fifth and sixth bytes for a pointer to
+the dependent variable (the X of FN A(X)).  The final byte is not
+used.
+
+Knowing something about how variables are created can help your BASIC
+programming.  For example, you can see that nonarray integer variables
+take up no less space than floating point variables, and since most
+BASIC commands convert the integers to floating point, they do not
+offer a speed advantage either, and in many cases will actually slow
+the program down.  As will be seen below, however, integer arrays can
+save a considerable amount of space.
+
+Variables are stored in the order in which they are created.
+Likewise, when BASIC goes looking for a variable, it starts its search
+at the beginning of this area.  If commonly used variables are defined
+at the end of the program, and are thus at the back of this area, it
+will take longer to find them.  It may help program execution speed to
+define the variables that will be used most frequently right at the
+beginning of the program.
+
+Also, remember that once created, variables do not go away during
+program execution.  Even if they are never used again, they still take
+up space in the variable storage area, and they slow down the routine
+that is used to search for variables that are referenced.
+
+Another point to consider about the order in which to define variables
+is that arrays are created in a separate area of memory which starts
+at the end of the nonarray variable area.  Therefore, every time a
+nonarray variable is created, all of the arrays must be moved seven
+bytes higher in memory in order to make room for the new variable.
+Therefore, it may help performance to avoid defining nonarray
+variables after defining arrays.
+
+This pointer will be reset to one byte past the end of the BASIC
+program text whenever you execute the statements CLR, NEW, RUN, or
+LOAD.  Adding or modifying a BASIC statement will have the same
+effect, because the higher numbered BASIC statements have to be moved
+up into memory to make room for the new statements, and can therefore
+overwrite the variable storage area.  This means that if you wish to
+check the value of a variable after stopping a program, you can only
+do so before modifying the program.
+
+The exception to the above is when the LOAD command is issued from a
+program.  The purpose of not resetting this pointer in such a case is
+to allow the chaining of programs by having one program load and then
+run the next (that is also why a LOAD issued from a program causes a
+RUN from the beginning of the program).  This allows the second
+program to share variables with the first.  There are problems with
+this, however.  Some string variable descriptors and function
+definitions have their pointers set to areas within the program text.
+When this text is replaced by a load, these pointers are no longer
+valid, which will lead to errors if the FN or string value is
+referenced.  And if the second program text area is larger than that
+of the first, the second program will overwrite some of the first
+program's variables, and their values will be lost.
+
+The ability to chain short programs is a holdover from the days of the
+8K PET, for which this BASIC was written, but with the vastly
+increased memory of the 64, program chaining should not be necessary.
+
+You should also note that SAVE uses this pointer as the address of the
+byte after the last byte to SAVE.
+
+47-48          $2F-$30       ARYTAB
+Pointer to the Start of the BASIC Array Storage Area
+
+This location points to the address of the end of nonarray variable
+storage, and the beginning of array variable storage.  The format for
+array storage is as follows:
+
+The first two bytes hold the array name.  The format and high-bit
+patterns are the same as for nonarray variables (see 45 ($2D) above),
+except that there is no equivalent to the function definition.
+
+Next comes a two-byte offset to the start of the next array, low byte
+first.  Then there is a one-byte value for the number of array
+dimensions (e.g., 2 for a two-dimensional array like A(x,y)).  That
+byte is followed by pairs of bytes which hold the value of each array
+dimension+1 (DIMensioning an array always makes space for 0, so A(0)
+can be used).
+
+Finally come the values of the variables themselves.  The format for
+these values is the same as with nonarray values, but each value only
+takes up the space required; that is, floating point variables use
+five bytes each, integers two bytes, and string descriptors three
+bytes each.
+
+Remember that as with nonarray string, the actual string text is
+stored elsewhere, in the area which starts at the location pointed to
+in 51-52 ($33- $34).
+
+49-50         $31-$32        STREND
+Pointer to End of the BASIC Array Storage Area (+1), and the Start of
+Free RAM
+
+This location points to the address of the end of BASIC array storage
+space and the start of free RAM.  Since string text starts at the top
+of memory and builds downwards, this location can also be thought of
+as the last possible address of the string storage area.  Defining new
+variables pushes this pointer upward, toward the last string text.
+
+If a string for which space is being allocated would cross over this
+boundary into the array storage area, garbage collection is performed,
+and if there still is not enough room, an OUT OF MEMORY error occurs.
+FRE performs garbage collection, and returns the difference between
+the addresses pointed to here and the address of the end of string
+text storage pointed to by location 51 ($33).
+
+51-52         $33-$34        FREETOP
+Pointer to the Bottom of the String Text Storage Area
+
+This pointer marks the current end of the string text area, and the
+top of free RAM (strings are built from the top of memory downward).
+Additional string texts are added, to the area below the address
+pointed to here.  After they are added, this pointer is lowered to
+point below the newly added string text.  The garbage collection
+routine (which is also called by FRE) readjusts this pointer upward.
+
+While the power-on/reset routines set this pointer to the top of RAM,
+the CLR command sets this pointer to the end of BASIC memory, as
+indicated in location 55 ($37).  This allows the user to set aside an
+area of BASIC memory that will not be disturbed by the program, as
+detailed at location 55 ($37).
+
+53-54         $35-$36        FRESPC
+Temporary Pointer for Strings
+
+This is used as a temporary pointer to the most current string added
+by the routines which build strings or move them in memory.
+
+55-56         $37-$38        MEMSIZ
+Pointer to the Highest Address Used by BASIC
+
+The power-on/reset routine tests each byte of RAM until it comes to
+the BASIC ROM, and sets this pointer to the adress of the highest byte
+of consecutive RAM found (40959, $9FFF).
+
+There are two circumstances under which this pointer may be changed
+after power-up to reflect an address lower than the actual top of
+consecutive RAM:
+
+1.  Users may wish to lower this pointer themselves, in order to set
+aside an area of free RAM that will not be disturbed by BASIC.  For
+example, to set aside a 1K area at the top of BASIC, start your
+program with the line:
+
+POKE 56,PEEK(56)-4:CLR
+
+The CLR is necessary to insure that the string text will start below
+your safe area.
+
+You may wish to store machine language programs, sprites, or alternate
+character sets in such an area.  For the latter two applications,
+however, keep in mind the 16K addressing range limitation of the
+VIC-II chip.  If you do not assign the VIC-II to a bank other than the
+default memory bank of 0-16383 ($0-$3FFF), you must lower the top of
+memory below 16383 ($3FFF) if you wish your sprite or character data
+area to be within its addressing range.
+
+2.  Then the RS-232 device (number 2) is opened, this pointer and the
+pointer to the end of user RAM at 643 are lowered by 512 bytes in
+order to create two 256-byte buffers, one for input and the other for
+output.
+
+Since the contents of these buffers will overwrite any variables at
+the top of memory, a CLR command is issued at the time device 2 is
+opened.  Therefore, the RS-232 device should be opened before defining
+any variables, and before setting aside a safe area for machine
+language programs or other uses, as described above.
+

@@ -1,0 +1,156 @@
+# C64 KERNAL ROM Disassembly $E600-$E6FF - Keyboard Handler
+
+.,E600 D0 C8    BNE $E5CA       if not [CR] print the character and get the next key
+                                else it was [CR]
+.,E602 A4 D5    LDY $D5         get the current screen line length
+.,E604 84 D0    STY $D0         input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,E606 B1 D1    LDA ($D1),Y     get the character from the current screen line
+.,E608 C9 20    CMP #$20        compare it with [SPACE]
+.,E60A D0 03    BNE $E60F       if not [SPACE] continue
+.,E60C 88       DEY             else eliminate the space, decrement end of input line
+.,E60D D0 F7    BNE $E606       loop, branch always
+.,E60F C8       INY             increment past the last non space character on line
+.,E610 84 C8    STY $C8         save the input [EOL] pointer
+.,E612 A0 00    LDY #$00        clear A
+.,E614 8C 92 02 STY $0292       clear the screen scrolling flag, $00 = scroll
+.,E617 84 D3    STY $D3         clear the cursor column
+.,E619 84 D4    STY $D4         clear the cursor quote flag, $xx = quote, $00 = no quote
+.,E61B A5 C9    LDA $C9         get the input cursor row
+.,E61D 30 1B    BMI $E63A       
+.,E61F A6 D6    LDX $D6         get the cursor row
+.,E621 20 ED E6 JSR $E6ED       find and set the pointers for the start of logical line
+.,E624 E4 C9    CPX $C9         compare with input cursor row
+.,E626 D0 12    BNE $E63A       
+.,E628 A5 CA    LDA $CA         get the input cursor column
+.,E62A 85 D3    STA $D3         save the cursor column
+.,E62C C5 C8    CMP $C8         compare the cursor column with input [EOL] pointer
+.,E62E 90 0A    BCC $E63A       if less, cursor is in line, go ??
+.,E630 B0 2B    BCS $E65D       else the cursor is beyond the line end, branch always
+
+                                *** input from screen or keyboard
+.,E632 98       TYA             copy Y
+.,E633 48       PHA             save Y
+.,E634 8A       TXA             copy X
+.,E635 48       PHA             save X
+.,E636 A5 D0    LDA $D0         input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,E638 F0 93    BEQ $E5CD       if keyboard go wait for key
+.,E63A A4 D3    LDY $D3         get the cursor column
+.,E63C B1 D1    LDA ($D1),Y     get character from the current screen line
+.,E63E 85 D7    STA $D7         save temporary last character
+.,E640 29 3F    AND #$3F        mask key bits
+.,E642 06 D7    ASL $D7         << temporary last character
+.,E644 24 D7    BIT $D7         test it
+.,E646 10 02    BPL $E64A       branch if not [NO KEY]
+.,E648 09 80    ORA #$80        
+.,E64A 90 04    BCC $E650       
+.,E64C A6 D4    LDX $D4         get the cursor quote flag, $xx = quote, $00 = no quote
+.,E64E D0 04    BNE $E654       if in quote mode go ??
+.,E650 70 02    BVS $E654       
+.,E652 09 40    ORA #$40        
+.,E654 E6 D3    INC $D3         increment the cursor column
+.,E656 20 84 E6 JSR $E684       if open quote toggle the cursor quote flag
+.,E659 C4 C8    CPY $C8         compare ?? with input [EOL] pointer
+.,E65B D0 17    BNE $E674       if not at line end go ??
+.,E65D A9 00    LDA #$00        clear A
+.,E65F 85 D0    STA $D0         clear input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,E661 A9 0D    LDA #$0D        set character [CR]
+.,E663 A6 99    LDX $99         get the input device number
+.,E665 E0 03    CPX #$03        compare the input device with the screen
+.,E667 F0 06    BEQ $E66F       if screen go ??
+.,E669 A6 9A    LDX $9A         get the output device number
+.,E66B E0 03    CPX #$03        compare the output device with the screen
+.,E66D F0 03    BEQ $E672       if screen go ??
+.,E66F 20 16 E7 JSR $E716       output the character
+.,E672 A9 0D    LDA #$0D        set character [CR]
+.,E674 85 D7    STA $D7         save character
+.,E676 68       PLA             pull X
+.,E677 AA       TAX             restore X
+.,E678 68       PLA             pull Y
+.,E679 A8       TAY             restore Y
+.,E67A A5 D7    LDA $D7         restore character
+.,E67C C9 DE    CMP #$DE        
+.,E67E D0 02    BNE $E682       
+.,E680 A9 FF    LDA #$FF        
+.,E682 18       CLC             flag ok
+.,E683 60       RTS             
+
+                                *** if open quote toggle cursor quote flag
+.,E684 C9 22    CMP #$22        comapre byte with "
+.,E686 D0 08    BNE $E690       exit if not "
+.,E688 A5 D4    LDA $D4         get cursor quote flag, $xx = quote, $00 = no quote
+.,E68A 49 01    EOR #$01        toggle it
+.,E68C 85 D4    STA $D4         save cursor quote flag
+.,E68E A9 22    LDA #$22        restore the "
+.,E690 60       RTS             
+
+                                *** insert uppercase/graphic character
+.,E691 09 40    ORA #$40        change to uppercase/graphic
+.,E693 A6 C7    LDX $C7         get the reverse flag
+.,E695 F0 02    BEQ $E699       branch if not reverse
+                                else ..
+                                insert reversed character
+.,E697 09 80    ORA #$80        reverse character
+.,E699 A6 D8    LDX $D8         get the insert count
+.,E69B F0 02    BEQ $E69F       branch if none
+.,E69D C6 D8    DEC $D8         else decrement the insert count
+.,E69F AE 86 02 LDX $0286       get the current colour code
+.,E6A2 20 13 EA JSR $EA13       print character A and colour X
+.,E6A5 20 B6 E6 JSR $E6B6       advance the cursor
+                                restore the registers, set the quote flag and exit
+.,E6A8 68       PLA             pull Y
+.,E6A9 A8       TAY             restore Y
+.,E6AA A5 D8    LDA $D8         get the insert count
+.,E6AC F0 02    BEQ $E6B0       skip quote flag clear if inserts to do
+.,E6AE 46 D4    LSR $D4         clear cursor quote flag, $xx = quote, $00 = no quote
+.,E6B0 68       PLA             pull X
+.,E6B1 AA       TAX             restore X
+.,E6B2 68       PLA             restore A
+.,E6B3 18       CLC             
+.,E6B4 58       CLI             enable the interrupts
+.,E6B5 60       RTS             
+
+                                *** advance the cursor
+.,E6B6 20 B3 E8 JSR $E8B3       test for line increment
+.,E6B9 E6 D3    INC $D3         increment the cursor column
+.,E6BB A5 D5    LDA $D5         get current screen line length
+.,E6BD C5 D3    CMP $D3         compare ?? with the cursor column
+.,E6BF B0 3F    BCS $E700       exit if line length >= cursor column
+.,E6C1 C9 4F    CMP #$4F        compare with max length
+.,E6C3 F0 32    BEQ $E6F7       if at max clear column, back cursor up and do newline
+.,E6C5 AD 92 02 LDA $0292       get the autoscroll flag
+.,E6C8 F0 03    BEQ $E6CD       branch if autoscroll on
+.,E6CA 4C 67 E9 JMP $E967       else open space on screen
+.,E6CD A6 D6    LDX $D6         get the cursor row
+.,E6CF E0 19    CPX #$19        compare with max + 1
+.,E6D1 90 07    BCC $E6DA       if less than max + 1 go add this row to the current
+                                logical line
+.,E6D3 20 EA E8 JSR $E8EA       else scroll the screen
+.,E6D6 C6 D6    DEC $D6         decrement the cursor row
+.,E6D8 A6 D6    LDX $D6         get the cursor row
+                                add this row to the current logical line
+.,E6DA 16 D9    ASL $D9,X       shift start of line X pointer high byte
+.,E6DC 56 D9    LSR $D9,X       shift start of line X pointer high byte back,
+                                make next screen line start of logical line, increment line length and set pointers
+                                clear b7, start of logical line
+.,E6DE E8       INX             increment screen row
+.,E6DF B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E6E1 09 80    ORA #$80        mark as start of logical line
+.,E6E3 95 D9    STA $D9,X       set start of line X pointer high byte
+.,E6E5 CA       DEX             restore screen row
+.,E6E6 A5 D5    LDA $D5         get current screen line length
+                                add one line length and set the pointers for the start of the line
+.,E6E8 18       CLC             clear carry for add
+.,E6E9 69 28    ADC #$28        add one line length
+.,E6EB 85 D5    STA $D5         save current screen line length
+.,E6ED B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E6EF 30 03    BMI $E6F4       exit loop if start of logical line
+.,E6F1 CA       DEX             else back up one line
+.,E6F2 D0 F9    BNE $E6ED       loop if not on first line
+.,E6F4 4C F0 E9 JMP $E9F0       fetch a screen address
+.,E6F7 C6 D6    DEC $D6         decrement the cursor row
+.,E6F9 20 7C E8 JSR $E87C       do newline
+.,E6FC A9 00    LDA #$00        clear A
+.,E6FE 85 D3    STA $D3         clear the cursor column

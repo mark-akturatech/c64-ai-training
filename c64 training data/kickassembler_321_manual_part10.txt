@@ -1,0 +1,128 @@
+# KickAssembler - Branching and Looping: Boolean, .if, .for
+
+signum(x)                Returns 1 if x>0, -1 if x<0 and 0 if x=0
+sin(r)                   Returns the sine of r
+sinh(x)                  Returns the hyperbolic sine of x
+sqrt(x)                  Returns the square root of x
+tan(r)                   Returns the tangent of r
+tanh(x)                  Returns the hyperbolic tangent of x
+toDegrees(r)             Converts a radian angle to degrees
+toRadians(d)             Converts a degree angle to radians
+                                                                                                    24
+Here are some examples of use.
+   // Load a with a random number
+   lda #random()*256
+   // Generate a sine curve
+   .fill 256,round(127.5+127.5*sin(toRadians(i*360/256)))
+4.9 List Values
+List values are used to hold a list of other values. To create a list you use the ‘List()’ function. It
+takes one argument that tells how many elements it contains. If it is left out, the created list will be
+empty. Use the get and set operations to retrieve and set elements.
+   .var myList = List(2)
+   .eval myList.set(0,25)
+   .eval myList.set(1, “Hello world”)
+            .byte myList.get(0)               // Will give .byte 25
+            .text myList.get(1)               // Will give .text “Hello world”
+You can determine the number of elements in a list with the size function and the add function adds
+additional elements.
+   .var greetingsList = List()
+   .eval greetingsList.add(”Maniacs of Noise”, ”Oxyron”, “etc.” )
+   .byte listSize = greetingsList.size()                   // gives .byte 3
+A compact way to fill a list with elements is:
+   .var greetingsList = List().add(”Maniacs of Noise”, ”Oxyron”, “etc.”)
+Here is a list of functions defined on list values:
+Functions                   Description
+get(n)                      Gets the n’th element (first element is no zero)
+set(n,value)                Sets the n’th element (first element is no zero)
+add(value1, value2, …)      Add elements to the end of the list
+size()                      Returns the size of the list
+remove(n)                   Removes the n’th element
+shuffle()                   Puts the elements of the list in random order
+reverse()                   Puts the elements of the list in reverse order
+sort()                      sorts the elements of the list (only numeric values are supported)
+4.10 Working with Mutable Values
+The list value described in the previous chapter is special since it is mutable, which means it can
+change its contents. At one point in time a list can contain the values [1,6,7] and at another time
+                                                                                                        25
+[1,4,8,9]. The values previously described in the manual (Numbers, Strings, Booleans) are
+immutable since instances like 1, false, or “Hello World” can’t change.
+In Kick Assembler 3, you will have to lock mutable values if you want to use them in a pass
+different from the one in which they were defined. When a value is locked, it becomes immutable
+and calling a function that modifies its content will cause an error. There are two ways to lock a
+mutable value. You can call its lock function:
+   // Locking a list with the lock function
+   .var list1 = List().add(1,3,5).lock()
+Or you can define it inside a .define directive:
+   // The define directive locks the defined variables outside its scope
+   .define list2, list3 {
+            .var list2 = List().add(1,2)
+            .var list3= List()
+            .eval list3.add("a")
+            .eval list3.add("b")
+   }
+//.eval list3.add(“c”) // This will give an error
+The .define directive defines the symbols that are listed after the .define keyword (list2 and list3).
+The directives inside {…} are executed in a new scope so any local defined variables can’t be seen
+from the outside. After executing the inner directives, the defined values are locked and inserted as
+constants in the outside scope.
+The inner directives are executed in ‘function mode’, which is a bit faster and requires less memory
+than ordinary execution. So if you are using for loops to do some heavy calculations, you can
+optimize performance by placing your loop inside a define directive. As the name ‘function mode’
+suggests, directives placed inside functions are also executed in ‘function mode’. In ‘function
+mode’ you can only use script directives (like .var, .const, .eval, .enum, etc) while byte output
+generating directives (like lda #10, byte $22, .word $33, .fill 10, 0) are not allowed .
+4.11 Hashtable Values
+Hashtables are tables that map keys to values. You can define a hashtable with the Hashtable
+function. To enter and retrieve values you use the put and get functions, and with the keys function
+you can retrieve a list of all keys in the table:
+   .define ht {
+            // Define the table
+            .var ht = Hashtable()
+            // Enter some values (put(key,value))
+            .eval ht.put(“ram”, 64)
+            .eval ht.put(“bits”, 8)
+            .eval ht.put(1, “Hello”)
+            .eval ht.put(2, “World”)
+            .eval ht.put(“directions”, List().add(“Up”,”Down”,”Left”,”Right”))
+   }
+                                                                                                       26
+  // Retrieve the values
+  .print ht.get(1)                            // Prints Hello
+  .print ht.get(2)                            // Prints World
+  .print “ram = “ + ht.get(“ram”) + “kb”                    // Prints ram=64kb
+  // Print all the keys
+  .var keys = ht.keys()
+  .for (var i=0; i<keys.size(); i++) {
+            .print keys.get(i)                // Prints “ram”, “bits”, 1, 2, directions
+  }
+When a value is used as a key then it is the value’s string representation that is used. This means
+that ht.get(“1.0”) and ht.get(1)returns the same element. If you try to get an element
+that isn’t present in the table, null is returned.
+Function                                    Description
+put(key,value)                              Maps ‘key’ to ‘value’. If the key is previously mapped to a
+                                            value, the previous mapping is lost.
+get(key)                                    Returns the value mapped to ‘key’. A null value is returned
+                                            if no value has been mapped to the key.
+keys()                                      Returns a list value of all the keys in the table
+containsKey(key)                            Returns true if the key is defined in the table, otherwise
+                                            false.
+remove(key)                                 Removes the key and its value from the table.
+4.12 Vector and Matrix Values
+Kick Assembler supports vector and matrix values. You can read about these in the section
+“Making 3D Calculations” in the special features chapter.
+                                                                                                       27
+5 User Defined Structures
+It’s possible to define your own structures. A structure is a collection of variables like for example
+a point that consist of an x and a y coordinate:
+   // Define a point structure
+   .struct Point {x,y}
+   // Create a point with x=1 and y=2 and print it
+   .var p1 = Point(1,2)
+   .print ”p1.x=” + p1.x
+   .print ”p1.y=” + p1.y
+   // Create a point with the default contructor and modify its arguments
+   .var p2 = Point()
+   .eval p2.x =3
+   .eval p2.y =4
+You define a structure with the .struct directive. The above structure has the name ‘Point’ and
+consists of the variables x and y. To create an instance of the structure, you use its name as a

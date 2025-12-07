@@ -1,0 +1,217 @@
+56577         $DD01          CI2PRB
+Data Port B
+
+Bit 0:  RS-232 data input (SIN)/ Pin C of User Port
+Bit 1:  RS-232 request to send (RTS)/ Pin D of User Port
+Bit 2:  RS-232 data terminal ready (DTR)/ Pin E of User Port
+Bit 3:  RS-232 ring indicator (RI)/ Pin F of User Port
+Bit 4:  RS-232 carrier detect (DCD)/ Pin H of User Port
+Bit 5:  Pin J of User Port
+Bit 6:  RS-232 clear to send (CTS)/ Pin K of User Port
+        Toggle or pulse data output for Timer A
+Bit 7:  RS-232 data set ready (DSR)/ Pin L of User Port
+        Toggle or pulse data output for Timer B
+
+Location Range: 56578-56579 ($DD02-$DD03)
+CIA #2 Data Direction Registers A and B
+
+These Data Direction registers control the direction of data flow over
+Data Ports A and B.  For more details on the operation of these
+registers, see the entry for the CIA #1 Data Direction Registers at
+56322 ($DC02).
+
+The default setting for Data Direction Register A is 63 (all bits
+except 6 and 7 are outputs), and for Data Direction Register B the
+default setting is 0 (all inputs).  Bits 1 and 2 of Port B are changed
+to output when the RS-232 device is opened.
+
+56578         $DD02          C2DDRA
+Data Direction Register A
+
+Bit 0:  Select Bit 0 of data Port A for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of data Port A for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of data Port A for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of data Port A for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of data Port A for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of data Port A for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of data Port A for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of data Port A for input or output (0=input, 1=output)
+
+56579         $DD03          C2DDRB
+Data Direction Register B
+
+Bit 0:  Select Bit 0 of data Port B for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of data Port B for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of data Port B for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of data Port B for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of data Port B for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of data Port B for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of data Port B for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of data Port B for input or output (0=input, 1=output)
+
+Location Range: 56580-56583 ($DD04-$DD07)
+Timer A and B Low and High Bytes
+
+These four timer registers are used to control Timers A and B.  For
+details on the operation of these timers, see the entry for Location
+Range 56324-56327 ($DC04-$DC07).
+
+The 64 Operating System uses the CIA #2 Timers A and B mostly for
+timing RS-232 send and receive operations.  Serial Bus timing uses CIA
+#1 Timer B.
+
+56580         $DD04          TI2ALO
+Timer A (low byte)
+
+56581         $DD05          TI2AHI
+Timer A (high byte)
+
+56582         $DD06          TI2BLO
+Timer B (low byte)
+
+56583         $DD07          TI2BHI
+Timer B (high byte)
+
+Location Range: 56584-56587 ($DD08-$DD0B)
+Time of Day Clock
+
+In addition to the two general purpose timers, the 6526 CIA chip has a
+special purpose Time of Day Clock, which keeps time in a format that
+humans can understand a little more easily than microseconds.  For
+more information about this clock, see the entry for Location Range
+56328-56331 ($DC08-$DC0B).  The 64's Operating system does not make
+use of these registers.
+
+56584         $DD08          TO2TEN
+Time of Day Clock Tenths of Seconds
+
+Bits 0-3:  Time of Day tenths of second digit (BCD)
+Bits 4-7:  Unused
+
+56585         $DD09          TO2SEC
+Time of Day Clock Seconds
+
+Bits 0-3:  Second digit of Time of Day seconds (BCD)
+Bits 4-6:  First digit of Time of Day seconds (BCD)
+Bit 7:  Unused
+
+56586         $DD0A          TO2MIN
+Time of Day Clock Minutes
+
+Bits 0-3:  Second digit of Time of Day minutes (BCD)
+Bits 4-6:  First digit of Time of Day minutes (BCD)
+Bit 7:  Unused
+
+56587         $DD0B          TO2HRS
+Time of Day Clock Hours
+
+Bits 0-3:  Second digit of Time of Day hours (BCD)
+Bit 4:  First digit of Time of Day hours (BCD)
+Bits 5-6:  Unused
+Bit 7:  AM/PM flag (1=PM, 0=AM)
+
+56588         $DD0C          CI2SDR
+Serial Data Port
+
+The CIA chip has an on-chip serial port, which allows you to send or
+receive a byte of data one bit at a time, with the most significant
+bit (Bit 7) being transferred first.  For more information about its
+use, see the entry for location 56332 ($DC0C).  The 64's Operating
+System does not use this facility.
+
+56589         $DD0D          CI2ICR
+Interrupt Control Register
+
+Bit 0:  Read / did Timer A count down to 0?  (1=yes)
+        Write/ enable or disable Timer A interrupt (1=enable, 0=disable)
+Bit 1:  Read / did Timer B count down to 0?  (1=yes)
+        Write/ enable or disable Timer B interrupt (1=enable, 0=disable)
+Bit 2:  Read / did Time of Day Clock reach the alarm time?  (1=yes)
+        Write/ enable or disable TOD clock alarm interrupt (1=enable,
+        0=disable)
+Bit 3:  Read / did the serial shift register finish a byte?  (1=yes)
+        Write/ enable or disable serial shift register interrupt (1=enable,
+        0=disable)
+Bit 4:  Read / was a signal sent on the FLAG line?  (1=yes)
+        Write/ enable or disable FLAG line interrupt (1=enable, 0=disable)
+Bit 5:  Not used
+Bit 6:  Not used
+Bit 7:  Read / did any CIA #2 source cause an interrupt?  (1=yes)
+        Write/ set or clear bits of this register (1=bits written with 1 will
+        be set, 0=bits written with 1 will be cleared)
+
+This register is used to control the five interrupt sources on the
+6526 CIA chip.  For details on its operation, see the entry for 56333
+($DC0D).  The main difference between these two chips pertaining to
+this register is that on CIA #2, the FLAG line is connected to Pin B
+of the User Port, and thus is available to the user who wishes to take
+advantage of its ability to cause interrupts for handshaking purposes.
+
+Location Range: 56590-$56591 ($DD0E-$DD0F)
+See locations 56334 and 56334 for details
+
+56590         $DD0E          CI2CRA
+Control Register A
+
+Bit 0:  Start Timer A (1=start, 0=stop)
+Bit 1:  Select Timer A output on Port B (1=Timer A output appears on
+        Bit 6 of Port B)
+Bit 2:  Port B output mode (1=toggle Bit 6, 0=pulse Bit 6 for one
+        cycle)
+Bit 3:  Timer A run mode (1=one-shot, 0=continuous)
+Bit 4:  Force latched value to be loaded to Timer A counter (1=force
+        load strobe)
+Bit 5:  Timer A input mode (1=count microprocessor cycles, 0=count
+        signals on CNT line at pin 4 of User Port)
+Bit 6:  Serial Port (56588, $DD0C) mode (1=output, 0=input)
+Bit 7:  Time of Day Clock frequency (1=50 Hz required on TOD pin,
+        0=60 Hz)
+
+56591         $DD0F          CI2CRB
+Control Register B
+
+Bit 0:  Start Timer B (1=start, 0=stop)
+Bit 1:  Select Timer B output on Port B (1=Timer B output appears on
+        Bit 7 of Port B)
+Bit 2:  Port B output mode (1=toggle Bit 7, 0=pulse Bit 7 for one
+        cycle)
+Bit 3:  Timer B run mode (1=one shot, 0=continuous)
+Bit 4:  Force latched value to be loaded to Timer B counter (1=force
+        load strobe)
+Bits 5-6:  Timer B input mode
+           00 = Timer B counts microprocessor cycles
+           01 = Count signals on CNT line at pin 4 of User Port
+           10 = Count each time that Timer A counts down to 0
+           11 = Count Timer A 0's when CNT pulses are also present
+Bit 7:  Select Time of Day write (0=writing to TOD registers sets
+           alarm, 1=writing to ROD registers sets clock)
+
+Location Range: 56592-56831 ($DD10-$DDFF)
+CIA #2 Register Images
+
+Since the CIA chip requires only enough addressing lines to handle 16
+registers, none of the higher bits are decoded when addressing the
+256-byte area that has been assigned to it.  The result is that every
+16-byte area in this 256-byte block is a mirror of every other.  For
+the sake of clarity in your programs, it is advisable not to use these
+addresses.
+
+Location Range: 56832-57087 ($DE00-$DEFF)
+Reserved for I/O Expansion
+
+This range of locations is not used directly by the 64's internal
+hardware.  It is, however, accessible via pin 7 of the Expansion Port.
+It can be used to control cartridges which are connected to this port.
+For example, the CP/M module uses this space to control which
+microprocessor is in control of the system.  The Z-80 microprocessor
+is turned on and off by writing to 56832 ($DE00).
+
+Another cartridge which uses this space is Simon's BASIC.  This 16K
+cartridge is addressed at memory locations 32768-49151 ($8000-$BFFF),
+which means that it overlaps the regular BASIC ROM at 40960-49151
+($A000-$BFFF).  But since it contains additions to BASIC, it must use
+the BASIC ROM as well.  This problem is solved by copying the
+cartridge at 32768-40959 ($8000-$9FFF) to RAM, and turning the
+cartridge on and off by writing to or reading from location 56832
+($DE00).
+

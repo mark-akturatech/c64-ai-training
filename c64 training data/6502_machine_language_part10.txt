@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 5: Address Modes - Zero Page, Absolute
+
+if it is on or off, we might mask out all the other bits with the AND
+instruction (changing unwanted bits to zero); if the remaining bit is zero,
+the whole byte will now be zero and the Z flag will be set.
+
+Why would we want to flip bits over?  Many "oscillating" effects--screen
+flashing or musical notes--can be accomplished this way.
+
+Finally the logical operators can be useful in code translation.  For
+example, here are the values for ASCII 5 and binary 5:
+
+  ASCII   %00110101
+  Binary  %00000101
+
+We must use the ASCII value for input or output.  We must use the binary
+value for arithmetic, particularly addition and subtraction.  How could we
+get from one to the other?  By taking bits out (AND) or putting bits in
+(ORA).  Alternatively, we could use addition or subtraction; the logical
+operators, however, are simpler.
+
+
+Input:  The GETIN Subroutine
+----------------------------
+
+We have seen how we can use CHROUT at $FFD2 to produce output to the screen.
+Now we'll look at the input side--how to use the GETIN subroutine at $FFE4 to
+get characters from the keyboard buffer.
+
+                                                                         :51:
+
+You may be familiar with the GET statement in BASIC.  If so, you'll find the
+same characteristics in GETIN:
+
+  o Input is taken from the keyboard buffer, not the screen.
+
+  o If a key is held down, it will still be detected once only.
+
+  o The subroutine returns immediately.
+
+  o If no key is found, a binary zero is returned in A.
+
+  o If a key is found, its ASCII value will be in A.
+
+  o Special keys, such as RETURN, RVS, or color codes, will be detected.
+
+To call for a key from the keyboard, code JSR $FFE4.  Values in X and Y are
+not guaranteed to be preserved, so if you have important information in
+either register, put it away into memory.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   GETIN                                                       |
+| Address:      $FFE4                                                       |
+| Action:       Takes a character from the input channel and places it into |
+|               the A register.  The input channel is the keyboard input    |
+|               buffer unless arrangements have been made to switch it.     |
+|                                                                           |
+| The character received is usually ASCII (or PET ASCII).  When read from   |
+| the keyboard, the action is similar to a BASIC GET statement:  one        |
+| character will be taken from the buffer; it will not be shown on the      |
+| screen.  If no character is available from the keyboard input buffer, a   |
+| value of binary zero will be put into the A register.  The subroutine     |
+| will not wait for a key to be pressed but will always return immediately. |
+|                                                                           |
+| Registers:  The A register will or course always be affected.  X and Y    |
+| are likely to be changed; do not have data in these when calling GETIN.   |
+|                                                                           |
+| Status:  Status flags may be changed.  In the VIC and Commodore 64, the C |
+| (carry) flag indicates some type of problem with output.                  |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+If we want keyboard input to appear on the screen, we should follow a call to
+GETIN, $FFE4, with a call to CHROUT, $FFD2, so that the received character is
+printed.
+
+
+STOP
+----
+
+Machine language programs will ignore the RUN/STOP key...unless the program
+checks this key itself.  It may do so with a call to STOP, address $FFE1.
+This checks the RUN/STOP key at that moment.  To make the key operational,
+$FFE1 must be called frequently.
+
+                                                                         :52:
+
+A call to FFE1 should be followed by a BEQ to a program exit so that the
+program will terminate when RUN/STOP is pressed.
+
+The RUN/STOP key is often brought into play while programs are being tested,
+so that unexpected "hang-ups" can still allow the program to be terminated.
+Coding to test the RUN/STOP key is often removed once testing is complete, on
+the assumption that no one will want to top a perfect program.  Incidentally,
+if you plan to write nothing but 100 percent perfect programs, you will not
+need to use this subroutines.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   STOP                                                        |
+| Address:      $FFE1                                                       |
+| Action:       Check the RUN/STOP key.  If RUN/STOP is being pressed at    |
+|               that instant, the Z flag will be set when the subroutine    |
+|               returns.                                                    |
+|                                                                           |
+| In PET/CBM, the system will exit to BASIC and say READY if the RUN/STOP   |
+| key is being pressed.  In this case, it will not return to the calling    |
+| machine language program.                                                 |
+|                                                                           |
+| Registers:  A will be affected.  X will be affected only if the RUN/STOP  |
+| key is being pressed.                                                     |
+|                                                                           |
+| Status:  Z signals whether RUN/STOP is being pressed.                     |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+
+Programming Project
+-------------------
+
+Here's our task:  we wish to write a subroutine that will wait for a numeric
+key to be pressed.  All other keys (except RUN/STOP) will be ignored.
+
+When a numeric key is pressed, it will be echoed to the screen, and then the
+subroutine will be finished.  One more thing.  The numeric character will
+arrive in ASCII from the keyboard:  we wish to change it to a binary value
+before giving the final RTS statement.  This last operation has no useful
+purpose yet, except as an exercise, but we'll connect it up in the next
+chapter.
+
+Coding sheets ready?  Here we go.
+
+  .A 033C  JSR $FFE1
+
+We will check the RUN/STOP key first.  But wait.  Where will we go if we find
+that the key is pressed?  To the RTS, of course; but we don't know where that
+is, yet.  In these circumstances, we usually make a rough guess and correct
+it later.  Make a note to check this one...
+
+                                                                         :53:
+
+  .A 033F  BEQ $0351
+  .A 0341  JSR $FFE4
+
+Now we've gotten a character; we must check that it's a legitimate numeric.
+The ASCII number set 0 to 9 has hexadecimal values $30 to $39.  So if the
+value is less than $30, it's not a number.  How do we say "less than?"  After
+a compare, it's BCC (branch carry clear).  So we code
+
+  .A 0344  CMP #$30
+  .A 0346  BCC $033C
+
+Did you spot the use of immediate mode at address $0344?  Make sure you
+follow the logic on this.  Another point:  what if no key has been pressed?
+We're safe.  There will be a zero in the A register, which is less than hex
+30; this will cause us to go back and try again.
+
+Now for the high side.  If the number is greater than hex 39, we must reject
+it since it cannot be an ASCII numeric.  Our first instinct is to code CMP
+#$39 and BCS.  But wait!  BCS (branch carry set) means "branch if greater
+than or equal to."  Our proposed coding would reject the digit 9, since the
+carry flag would be set when we compared to a value of hex 39.
+
+We must check against a value that is one higher than $39.  Be careful,
+though, for we're in hexadecimal.  The next value is $3A.  Code it:
+
+  .A 0348  CMP #$3A
+  .A 034A  BCS $033C
+
+If we get this far, we must have an ASCII character from 0 to 9; let's print
+it to the screen so that the user gets visual feedback that the right key has
+been pressed:
+
+  .A 034C  JSR $FFD2
+
+Now for our final task.  We are asked to change the ASCII character into true
+binary.  We may do this by knocking off the high bits.  We remember, of
+course, that to turn bits off we must use AND:
+
+  .A 034F  AND #$0F
+  .A 0351  RTS
+
+It's a good thing that we printed the character first, and then converted to
+binary; the character must be ASCII to print correctly.
+
+One last thing.  We had a branch (on the RUN/STOP key) that needed to connect
+up with the RTS.  Did you make that note about going back and fixing up the
+branch?  Now is the time to do it, but before you go back, terminate the
+assembly with an extra RETURN on the keyboard (the assembler gets confused if
+it prompts you for one address and you give another; get out before you go
+back).
+
+                                                                         :54:
+
+By a fortunate stroke of luck, we happen to have guessed the right address
+for the BEQ at address $033F.  But if we hadn't, you know how to change it,
+don't you?
+
+Check your coding, disassemble, go back to BASIC and run with a SYS 828.  Tap
+a few letter keys and note that nothing happens.  Press a number, and see it
+appear on the screen.  The program will terminate.  SYS it again and see if
+the RUN/STOP works.  Try a BASIC loop to confirm that BASIC and machine
+language work together.
+
+Project for enthusiasts:  Try modifying the program so that it checks for
+alphabetic characters only.  Alphabetic characters run from $41 to $5A,
+inclusive.
+
+
+Things You Have Learned
+-----------------------
+
+- Flags are used to link instructions together.  This might be an activity
+  such as load or compare, followed by a test such as branch on a given
+  condition.
+
+- Some instructions affect one or more flags, and some do not affect flags.
+  Thus, and instruction that sets a flag might not be followed immediately
+  with the instruction that tests or uses that flag.
+
+- There are four testable flags:  Z (zero, or equals); C (carry, or greater/
+  equal); N (negative, or high bit); and V (signed arithmetic overflow).  The
+  flags are checked by means of "branch" instructions such as BEQ (branch
+  equal) or BNE (branch not equal).
+
+- Flags are stored in the status register, sometimes called the processor
+  status word.  The SR contains the four testable flags, plus three other
+  flags:  B (break indicator); D (decimal mode for add/subtract); and I
+  (interrupt lockout).  The hexadecimal value in SR can be changed to binary
+  and used to determine the exact condition of all flags.
+
+- Usually, the processor is interrupted sixty times a second to do special
+  high-priority jobs.  Everything, including the status register flags, is
+  carefully preserved so that the main program can continue as though nothing
+  had happened.
+
+- A number stored in memory can be considered as signed if we decide to
+  handle it that way.  The value of a signed number is held in two's-
+  complement form.  The high bit of the number is zero if the number is
+  positive, one if the number is negative.  The computer doesn't care.  It
+  handles the bits whether the number is considered signed or not, but we
+  must write our program keeping in mind the type of number being used.
+
+                                                                         :55:
+
+- There are three logical operator instructions:  AND, ORA, and EOR.  These
+  allow us to modify bits selectively within the A register.  AND turns bits
+  off; ORA turns bits on; and EOR inverts bits, or flips them over.
+
+
+Questions and Projects
+----------------------
+
+Write extra coding to allow both numeric and alphabetic characters, but
+nothing else.
+
+Write a program to accept only alphabetic characters.  As each ASCII
+character is received, turn on its high bit with ORA #$80 and then print it.
+How has the character been changed?
+
+Write a program to accept only numeric digits.  As each ASCII character is
+received, turn off its lowest bit with AND #$FE and then print it.  What
+happens to the numbers?  Can you see why?
+
+                                                                         :56:
+                                                                         :57:
+
+
+
+                                                          Chapter 4
+
+                                                           Numbers,
+                                                        Arithmetic,
+                                                                and
+                                                        Subroutines
+
+
+          This chapter discusses:
+
+            o Numbers:  signed and unsigned
+
+            o Big numbers:  multiple bytes
+
+            o Arithmetic:  add and subtract
+
+            o Rotate and shift instructions
+
+            o Multiplication
+
+            o Home grown subroutines
+
+
+                                                                         :58:
+
+Numbers:  Signed and Unsigned
+-----------------------------
+
+We have looked briefly at the question of signed versus unsigned numbers.
+The most important concept is that you, the programmer, choose whether or not
+a number is to be considered a signed number (for a single byte, in the
+decimal range -128 to +127) or an unsigned integer (single-byte range 0 to

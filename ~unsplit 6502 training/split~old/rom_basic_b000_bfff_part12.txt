@@ -1,0 +1,72 @@
+
+                                *** perform SQR()
+.,BF71 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BF74 A9 11    LDA #$11        set 0.5 pointer low address
+.,BF76 A0 BF    LDY #$BF        set 0.5 pointer high address
+.,BF78 20 A2 BB JSR $BBA2       unpack memory (AY) into FAC1
+
+                                *** perform power function
+.,BF7B F0 70    BEQ $BFED       perform EXP()
+.,BF7D A5 69    LDA $69         get FAC2 exponent
+.,BF7F D0 03    BNE $BF84       branch if FAC2<>0
+.,BF81 4C F9 B8 JMP $B8F9       clear FAC1 exponent and sign and return
+.,BF84 A2 4E    LDX #$4E        set destination pointer low byte
+.,BF86 A0 00    LDY #$00        set destination pointer high byte
+.,BF88 20 D4 BB JSR $BBD4       pack FAC1 into (XY)
+.,BF8B A5 6E    LDA $6E         get FAC2 sign (b7)
+.,BF8D 10 0F    BPL $BF9E       branch if FAC2>0
+                                else FAC2 is -ve and can only be raised to an
+                                integer power which gives an x + j0 result
+.,BF8F 20 CC BC JSR $BCCC       perform INT()
+.,BF92 A9 4E    LDA #$4E        set source pointer low byte
+.,BF94 A0 00    LDY #$00        set source pointer high byte
+.,BF96 20 5B BC JSR $BC5B       compare FAC1 with (AY)
+.,BF99 D0 03    BNE $BF9E       branch if FAC1 <> (AY) to allow Function Call error
+                                this will leave FAC1 -ve and cause a Function Call
+                                error when LOG() is called
+.,BF9B 98       TYA             clear sign b7
+.,BF9C A4 07    LDY $07         get FAC1 mantissa 4 from INT() function as sign in
+                                Y for possible later negation, b0 only needed
+.,BF9E 20 FE BB JSR $BBFE       save FAC1 sign and copy ABS(FAC2) to FAC1
+.,BFA1 98       TYA             copy sign back ..
+.,BFA2 48       PHA             .. and save it
+.,BFA3 20 EA B9 JSR $B9EA       perform LOG()
+.,BFA6 A9 4E    LDA #$4E        set pointer low byte
+.,BFA8 A0 00    LDY #$00        set pointer high byte
+.,BFAA 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,BFAD 20 ED BF JSR $BFED       perform EXP()
+.,BFB0 68       PLA             pull sign from stack
+.,BFB1 4A       LSR             b0 is to be tested
+.,BFB2 90 0A    BCC $BFBE       if no bit then exit
+                                do - FAC1
+.,BFB4 A5 61    LDA $61         get FAC1 exponent
+.,BFB6 F0 06    BEQ $BFBE       exit if FAC1_e = $00
+.,BFB8 A5 66    LDA $66         get FAC1 sign (b7)
+.,BFBA 49 FF    EOR #$FF        complement it
+.,BFBC 85 66    STA $66         save FAC1 sign (b7)
+.,BFBE 60       RTS             
+
+                                *** exp(n) constant and series
+.:BFBF 81 38 AA 3B 29           1.44269504 = 1/LOG(2)
+.:BFC4 07                       series count
+.:BFC5 71 34 58 3E 56           2.14987637E-5
+.:BFCA 74 16 7E B3 1B           1.43523140E-4
+.:BFCF 77 2F EE E3 85           1.34226348E-3
+.:BFD4 7A 1D 84 1C 2A           9.61401701E-3
+.:BFD9 7C 63 59 58 0A           5.55051269E-2
+.:BFDE 7E 75 FD E7 C6           2.40226385E-1
+.:BFE3 80 31 72 18 10           6.93147186E-1
+.:BFE8 81 00 00 00 00           1.00000000
+
+                                *** perform EXP()
+.,BFED A9 BF    LDA #$BF        set 1.443 pointer low byte
+.,BFEF A0 BF    LDY #$BF        set 1.443 pointer high byte
+.,BFF1 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,BFF4 A5 70    LDA $70         get FAC1 rounding byte
+.,BFF6 69 50    ADC #$50        +$50/$100
+.,BFF8 90 03    BCC $BFFD       skip rounding if no carry
+.,BFFA 20 23 BC JSR $BC23       round FAC1 (no check)
+.,BFFD 4C 00 E0 JMP $E000       continue EXP()
+
+                                *** start of the kernal ROM
+                                EXP() continued

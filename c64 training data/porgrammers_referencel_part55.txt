@@ -1,0 +1,284 @@
+# C64 PRG Chapter 5 - Kernal: CLOSE, CLRCHN, GETIN, IOBASE
+
+  294   BASIC TO MACHINE LANGUAGE
+~
+
+
+  B-25. Function Name: SCNKEY
+
+    Purpose: Scan the keyboard
+    Call address: $FF9F (hex) 65439 (decimal)
+    Communication registers: None
+    Preparatory routines: IOINIT
+    Error returns: None
+    Stack requirements: 5
+    Registers affected: A, X, Y
+
+    Description: This routine scans the Commodore 64 keyboard and checks
+  for pressed keys. It is the same routine called by the interrupt handler.
+  If a key is down, its ASCII value is placed in the keyboard queue. This
+  routine is called only if the normal IRQ interrupt is bypassed.
+
+  How to Use:
+
+  1) Call this routine.
+
+  EXAMPLE:
+
+    GET  JSR SCNKEY      ;SCAN KEYBOARD
+         JSR GETIN       ;GET CHARACTER
+         CMP #0          ;IS IT NULL?
+         BEQ GET         ;YES... SCAN AGAIN
+         JSR CHROUT      ;PRINT IT
+
+
+  B-26. Function Name: SCREEN
+
+    Purpose: Return screen format
+    Call address: $FFED (hex) 65517 (decimal)
+    Communication registers: X, Y
+    Preparatory routines: None
+    Stack requirements: 2
+    Registers affected: X, Y
+
+    Description: This routine returns the format of the screen, e.g., 40
+  columns in X and 25 lines in Y. The routine can be used to determine what
+  machine a program is running on. This function has been implemented on
+  the Commodore 64 to help upward compatibility of your programs.
+
+
+                                            BASIC TO MACHINE LANGUAGE   295
+~
+
+
+  How to Use:
+
+    1) Call this routine.
+
+  EXAMPLE:
+
+    JSR SCREEN
+    STX MAXCOL
+    STY MAXROW
+
+
+  B-27. Function Name: SECOND
+
+    Purpose: Send secondary address for LISTEN
+    Call address: $FF93 (hex) 65427 (decimal)
+    Communication registers: A
+    Preparatory routines: LISTEN
+    Error returns: See READST
+    Stack requirements: 8
+    Registers affected: A
+
+    Description: This routine is used to send a secondary address to an
+  I/O device after a call to the LISTEN routine is made, and the device is
+  commanded to LISTEN. The routine canNOT be used to send a secondary
+  address after a call to the TALK routine.
+    A secondary address is usually used to give setup information to a
+  device before I/O operations begin.
+    When a secondary address is to be sent to a device on the serial bus,
+  the address must first be ORed with $60.
+
+  How to Use:
+
+    1) load the accumulator with the secondary address to be sent.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    ;ADDRESS DEVICE #8 WITH COMMAND (SECONDARY ADDRESS) #15
+    LDA #8
+    JSR LISTEN
+    LDA #15
+    JSR SECOND
+
+  296   BASIC TO MACHINE LANGUAGE
+~
+
+
+  B-28. Function Name: SETLFS
+
+    Purpose: Set up a logical file
+    Call address: $FFBA (hex) 65466 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: None
+
+
+    Description: This routine sets the logical file number, device address,
+  and secondary address (command number) for other KERNAL routines.
+    The logical file number is used by the system as a key to the file
+  table created by the OPEN file routine. Device addresses can range from 0
+  to 31. The following codes are used by the Commodore 64 to stand for the
+  CBM devices listed below:
+
+
+                  ADDRESS          DEVICE
+
+                     0            Keyboard
+                     1            Datassette(TM)
+                     2            RS-232C device
+                     3            CRT display
+                     4            Serial bus printer
+                     8            CBM serial bus disk drive
+
+
+    Device numbers 4 or greater automatically refer to devices on the
+  serial bus.
+    A command to the device is sent as a secondary address on the serial
+  bus after the device number is sent during the serial attention
+  handshaking sequence. If no secondary address is to be sent, the Y index
+  register should be set to 255.
+
+  How to Use:
+
+    1) Load the accumulator with the logical file number.
+    2) Load the X index register with the device number.
+    3) Load the Y index register with the command.
+
+
+                                            BASIC TO MACHINE LANGUAGE   297
+~
+
+
+  EXAMPLE:
+
+    FOR LOGICAL FILE 32, DEVICE #4, AND NO COMMAND:
+    LDA #32
+    LDX #4
+    LDY #255
+    JSR SETLFS
+
+
+  B-29. Function Name: SETMSG
+
+    Purpose: Control system message output
+    Call address: $FF90 (hex) 65424 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A
+
+    Description: This routine controls the printing of error and control
+  messages by the KERNAL. Either print error messages or print control mes-
+  sages can be selected by setting the accumulator when the routine is
+  called. FILE NOT FOUND is an example of an error message. PRESS PLAY ON
+  CASSETTE is an example of a control message.
+    Bits 6 and 7 of this value determine where the message will come from.
+  If bit 7 is 1, one of the error messages from the KERNAL is printed. If
+  bit 6 is set, control messages are printed.
+
+  How to Use:
+
+    1) Set accumulator to desired value.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    LDA #$40
+    JSR SETMSG          ;TURN ON CONTROL MESSAGES
+    LDA #$80
+    JSR SETMSG          ;TURN ON ERROR MESSAGES
+    LDA #0
+    JSR SETMSG          ;TURN OFF ALL KERNAL MESSAGES
+
+
+  298   BASIC TO MACHINE LANGUAGE
+~
+
+
+  B-30. Function Name: SETNAM
+
+    Purpose: Set file name
+    Call address: $FFBD (hex) 65469 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines:
+    Stack requirements: 2
+    Registers affected:
+
+    Description: This routine is used to set up the file name for the OPEN,
+  SAVE, or LOAD routines. The accumulator must be loaded with the length of
+  the file name. The X and Y registers must be loaded with the address of
+  the file name, in standard 6502 low-byte/high-byte format. The address
+  can be any valid memory address in the system where a string of
+  characters for the file name is stored. If no file name is desired, the
+  accumulator must be set to 0, representing a zero file length. The X and
+  Y registers can be set to any memory address in that case.
+
+  How to Use:
+
+    1) Load the accumulator with the length of the file name.
+    2) Load the X index register with the low order address of the file
+       name.
+    3) Load the Y index register with the high order address.
+    4) Call this routine.
+
+  EXAMPLE:
+
+    LDA #NAME2-NAME     ;LOAD LENGTH OF FILE NAME
+    LDX #<NAME          ;LOAD ADDRESS OF FILE NAME
+    LDY #>NAME
+    JSR SETNAM
+
+  B-31. Function Name: SETTIM
+
+    Purpose: Set the system clock
+    Call address: $FFDB (hex) 65499 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: None
+
+                                            BASIC TO MACHINE LANGUAGE   299
+~
+
+
+    Description: A system clock is maintained by an interrupt routine that
+  updates the clock every 1/60th of a second (one "jiffy"). The clock is
+  three bytes long, which gives it the capability to count up to 5,184,000
+  jiffies (24 hours). At that point the clock resets to zero. Before
+  calling this routine to set the clock, the accumulator must contain the
+  most significant byte, the X index register the next most significant
+  byte, and the Y index register the least significant byte of the initial
+  time setting (in jiffies).
+
+  How to Use:
+    1) Load the accumulator with the MSB of the 3-byte number to set the
+       clock.
+    2) Load the X register with the next byte.
+    3) Load the Y register with the LSB.
+    4) Call this routine.
+
+  EXAMPLE:
+   ;SET THE CLOCK TO 10 MINUTES = 3600 JIFFIES
+   LDA #0               ;MOST SIGNIFICANT
+   LDX #>3600
+   LDY #<3600           ;LEAST SIGNIFICANT
+   JSR SETTIM
+
+  B-32. Function  Name: SETTMO
+
+    Purpose: Set IEEE bus card timeout flag
+    Call address: $FFA2 (hex) 65442 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: None
+  +-----------------------------------------------------------------------+
+  | NOTE: This routine is used ONLY with an IEEE add-on card!             |
+  +-----------------------------------------------------------------------+
+    Description: This routine sets the timeout flag for the IEEE bus. When
+  the timeout flag is set, the Commodore 64 will wait for a device on the
+  IEEE port for 64 milliseconds. If the device does not respond to the
+  Commodore 64's Data Address Valid (DAV) signal within that time the
+  Commodore 64 will recognize an error condition and leave the handshake
+  sequence. When this routine is called when the accumulator contains a 0
+  in bit 7, timeouts are enabled. A 1 in bit 7 will disable the timeouts.
+

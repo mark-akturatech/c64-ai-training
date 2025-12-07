@@ -1,0 +1,284 @@
+# C64 PRG Chapter 2 - BASIC Keywords (ABS-CLR)
+
+  36   BASIC LANGUAGE VOCABULARY
+~
+
+
+    When evaluating a number for truth or falsehood, the computer assumes
+  the number is true as long as its value isn't 0. When evaluating a
+  comparison, it assigns a value of -I if the result is true, while false
+  has a value of 0. In binary format, -1 is all 1's and 0 is all 0's.
+  Therefore, when ANDing true/false evaluations, the result will be true if
+  any bits in the result are true.
+
+  EXAMPLES of Using AND with True/False Evaluations:
+
+    50 IF X=7 AND W=3 THEN GOTO 10: REM ONLY TRUE IF BOTH X=7
+       AND W=3 ARE TRUE
+    60 IF A AND Q=7 THEN GOTO 10: REM TRUE IF A IS NON-ZERO
+       AND Q=7 IS TRUE
+
+
+   ASC
+
+  TYPE: Function-Numeric
+  FORMAT: ASC(<string>)
+
+    Action: ASC will return a number from 0 to 255 which corresponds to
+  the Commodore ASCII value of the first character in the string. The table
+  of Commodore ASCII values is shown in Appendix C.
+
+  EXAMPLES OF ASC Function:
+
+    10 PRINT ASC("Z")
+    20 X = ASC("ZEBRA")
+    30 J = ASC(J$)
+
+    If there are no characters in the string, an ?ILLEGAL QUANTITY error
+  results. In the third example above, if J$="", the ASC function will not
+  work. The GET and GET# statement read a CHR$(0) as a null string. To
+  eliminate this problem, you should add a CHR$(0) to the end of the
+  string as shown below.
+
+  EXAMPLE of ASC Function Avoiding ILLEGAL QUANTITY ERROR:
+
+    30 J = ASC(J$ + CHR$(0))
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   37
+~
+
+
+  ATN
+
+  TYPE: Function-Numeric
+  FORMAT: ATN(<number>)
+
+    Action: This mathematical function returns the arctangent of the
+  number. The result is the angle (in radians) whose tangent is the number
+  given. The result is always in the range -pi/2 to +pi/2.
+
+  EXAMPLES of ATN Function:
+
+    10 PRINT ATN(0)
+    20 X = ATN(J)*180/ {pi} : REM CONVERT TO DEGREES
+
+
+  CHR$
+
+  TYPE: Function-String
+  FORMAT: CHR$ (<number>)
+
+    Action: This function converts a Commodore ASCII code to its character
+  equivalent. See Appendix C for a list of characters and their codes. The
+  number must have a value between 0 and 255, or an ?ILLEGAL QUANTITY error
+  message results.
+
+  EXAMPLES of CHR$ Function:
+
+    10 PRINT CHR$(65) : REM 65 = UPPER CASE A
+    20 A$=CHR$(13) : REM 13 = RETURN KEY
+    50 A=ASC(A$) : A$ = CHR$(A) : REM CONVERTS TO C64 ASCII CODE AND BACK
+
+
+
+
+
+
+
+
+
+
+
+
+
+  38   BASIC LANGUAGE VOCABULARY
+~
+
+
+  CLOSE
+
+  TYPE: I/O Statement
+  FORMAT: CLOSE <file number>
+
+    Action: This statement shuts off any data file or channel to a device.
+  The file number is the same as when the file or device was OPENed (see
+  OPEN statement and the section on INPUT/OUTPUT programming).
+    When working with storage devices like cassette tape and disks, the
+  CLOSE operation stores any incomplete buffers to the device. When this
+  is not performed, the file will be incomplete on the tape and unreadable
+  on the disk. The CLOSE operation isn't as necessary with other devices,
+  but it does free up memory for other files. See your external device
+  manual for more details.
+
+  EXAMPLES of CLOSE Statement:
+
+    10 CLOSE 1
+    20 CLOSE X
+    30 CLOSE 9*(1+J)
+
+
+  CLR
+
+  TYPE: Statement
+  FORMAT: CLR
+
+    Action: This statement makes available RAM memory that had been used
+  but is no longer needed. Any BASIC program in memory is untouched, but
+  all variables, arrays, GOSUB addresses, FOR...NEXT loops, user-defined
+  functions, and files are erased from memory, and their space is mode
+  available to new variables, etc.
+
+
+
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   39
+~
+
+
+    In the case of files to the disk and cassette tape, they are not
+  properly CLOSED by the CLR statement. The information about the files is
+  lost to the computer, including any incomplete buffers. The disk drive
+  will still think the file is OPEN. See the CLOSE statement for more
+  information on this.
+
+  EXAMPLE of CLR Statement:
+
+
+    10 X=25
+    20 CLR
+    30 PRINT X
+
+    RUN
+    0
+
+    READY
+
+
+
+
+
+
+  CMD
+
+
+  TYPE: I/O Statement
+  FORMAT: <file number> [,string]
+
+    Action: This statement switches the primary- output device from the TV
+  screen to the file specified. This file could be on disk, tape, printer,
+  or an I/O device like the modem. The file number must be specified in a
+  prior OPEN statement. The string, when specified, is sent to the file.
+  This is handy for titling printouts, etc.
+    When this command is in effect, any PRINT statements and LIST commands
+  will not display on the screen, but will send the text in the same
+  format to the file.
+    To re-direct the output back to the screen, the PRINT# command should
+  send a blank line to the CMD device before CLOSEing, so it will
+  stop expecting data (called "un-listening" the device).
+
+
+
+  40   BASIC LANGUAGE VOCABULARY
+~
+
+
+    Any system error (like ?SYNTAX ERROR) will cause output to return to
+  the screen. Devices aren't un-listened by this, so you should send a
+  blank line after an error condition. (See your printer or disk manual for
+  more details.)
+
+  EXAMPLES of CMD Statement:
+
+    OPEN 4,4: CMD 4,"TITLE" : LIST: REM LISTS PROGRAM ON PRINTER
+    PRINT#4: CLOSE 4: REM UN-LISTENS AND CLOSES PRINTER
+
+    10 OPEN 1,1,1,"TEST" : REM CREATE SEQ FILE
+    20 CMD 1 : REM OUTPUT TO TAPE FILE, NOT SCREEN
+    30 FOR L = 1 TO 100
+    40 PRINT L: REM PUTS NUMBER IN TAPE BUFFER
+    50 NEXT
+    60 PRINT#1 : REM UNLISTEN
+    70 CLOSE 1 : REM WRITE UNFINISHED BUFFER, PROPERLY FINISH
+
+
+  CONT
+
+  TYPE: Command
+  FORMAT: CONT
+
+    Action: This command re-starts the execution of a program which was
+  halted by a STOP or END statement or the <RUN/STOP> key being pressed.
+  The program will re-start at the exact place from which it left off.
+    While the program is stopped, the user can inspect or change any
+  variables or look at the program. When debugging or examining a program,
+  STOP statements can be placed at strategic locations to allow examination
+  of variables and to check the flow of the program.
+    The error message CAN'T CONTINUE will result from editing the program
+  (even just hitting <RETURN> with the cursor on an unchanged line), or if
+  the program halted due to an error, or if you caused an error before
+  typing CONT to re-start the program.
+
+  EXAMPLE of CONT Command:
+
+    10 PI=0:C=1
+    20 PI=PI+4/C-4/(C+2)
+    30 PRINT PI
+    40 C=C+4:GOTO 20
+
+                                             BASIC LANGUAGE VOCABULARY   41
+~
+
+
+    This program calculates the value of PI. RUN this program, and after
+  a short while hit the <RUN/STOP> key. You will see the display:
+
+                 +----------------------------------+
+    BREAK IN 20  | NOTE: Might be different number. |
+                 +----------------------------------+
+
+    Type the command PRINT C to see how far the Commodore 64 has gotten.
+  Then use CONT to resume from where the Commodore 64 left off.
+
+
+  COS
+
+  TYPE: Function
+  FORMAT: COS (<number>)
+
+    Action: This mathematical function calculates the cosine of the number,
+  where the number is an angle in radians.
+
+  EXAMPLES of COS Function:
+
+    10 PRINT COS(0)
+    20 X = COS(Y* {pi} /180) : REM CONVERT DEGREES TO RADIANS
+
+
+  DATA
+
+  TYPE: Statement
+  FORMAT: DATA <list of constants>
+
+    Action: DATA statements store information within a program. The program
+  uses the information by means of the READ statement, which pulls
+  successive constants from the DATA statements.
+    The DATA statements don't have to be executed by the program, they
+  only have to be present. Therefore, they are usually placed at the end of
+  the program.
+    All data statements in a program are treated as a continuous list. Data
+  is READ from left to right, from the lowest numbered line to the highest.
+  If the READ statement encounters data that doesn't fit the type requested
+  (if it needs a number and finds a string) an error message occurs.
+
+
+

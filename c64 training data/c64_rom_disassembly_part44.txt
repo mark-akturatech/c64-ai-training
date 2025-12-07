@@ -1,0 +1,278 @@
+# C64 KERNAL ROM Disassembly $FE00-$FFFF - NMI, IRQ, Reset Vectors
+
+.,FE00 85 B8    STA $B8         save the logical file
+.,FE02 86 BA    STX $BA         save the device number
+.,FE04 84 B9    STY $B9         save the secondary address
+.,FE06 60       RTS             
+
+                                *** read I/O status word
+.,FE07 A5 BA    LDA $BA         get the device number
+.,FE09 C9 02    CMP #$02        compare device with RS232 device
+.,FE0B D0 0D    BNE $FE1A       if not RS232 device go ??
+                                get RS232 device status
+.,FE0D AD 97 02 LDA $0297       get the RS232 status register
+.,FE10 48       PHA             save the RS232 status value
+.,FE11 A9 00    LDA #$00        clear A
+.,FE13 8D 97 02 STA $0297       clear the RS232 status register
+.,FE16 68       PLA             restore the RS232 status value
+.,FE17 60       RTS             
+
+                                *** control kernal messages
+.,FE18 85 9D    STA $9D         set message mode flag
+.,FE1A A5 90    LDA $90         read the serial status byte
+
+                                *** OR into the serial status byte
+.,FE1C 05 90    ORA $90         OR with the serial status byte
+.,FE1E 85 90    STA $90         save the serial status byte
+.,FE20 60       RTS             
+
+                                *** set timeout on serial bus
+.,FE21 8D 85 02 STA $0285       save serial bus timeout flag
+.,FE24 60       RTS             
+
+                                *** read/set the top of memory, Cb = 1 to read, Cb = 0 to set
+.,FE25 90 06    BCC $FE2D       if Cb clear go set the top of memory
+
+                                *** read the top of memory
+.,FE27 AE 83 02 LDX $0283       get memory top low byte
+.,FE2A AC 84 02 LDY $0284       get memory top high byte
+
+                                *** set the top of memory
+.,FE2D 8E 83 02 STX $0283       set memory top low byte
+.,FE30 8C 84 02 STY $0284       set memory top high byte
+.,FE33 60       RTS             
+
+                                *** read/set the bottom of memory, Cb = 1 to read, Cb = 0 to set
+.,FE34 90 06    BCC $FE3C       if Cb clear go set the bottom of memory
+.,FE36 AE 81 02 LDX $0281       get the OS start of memory low byte
+.,FE39 AC 82 02 LDY $0282       get the OS start of memory high byte
+.,FE3C 8E 81 02 STX $0281       save the OS start of memory low byte
+.,FE3F 8C 82 02 STY $0282       save the OS start of memory high byte
+.,FE42 60       RTS             
+
+                                *** NMI vector
+.,FE43 78       SEI             disable the interrupts
+.,FE44 6C 18 03 JMP ($0318)     do NMI vector
+
+                                *** NMI handler
+.,FE47 48       PHA             save A
+.,FE48 8A       TXA             copy X
+.,FE49 48       PHA             save X
+.,FE4A 98       TYA             copy Y
+.,FE4B 48       PHA             save Y
+.,FE4C A9 7F    LDA #$7F        disable all interrupts
+.,FE4E 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FE51 AC 0D DD LDY $DD0D       save VIA 2 ICR
+.,FE54 30 1C    BMI $FE72       
+.,FE56 20 02 FD JSR $FD02       scan for autostart ROM at $8000
+.,FE59 D0 03    BNE $FE5E       branch if no autostart ROM
+.,FE5B 6C 02 80 JMP ($8002)     else do autostart ROM break entry
+.,FE5E 20 BC F6 JSR $F6BC       increment real time clock
+.,FE61 20 E1 FF JSR $FFE1       scan stop key
+.,FE64 D0 0C    BNE $FE72       if not [STOP] restore registers and exit interrupt
+
+                                *** user function default vector
+                                BRK handler
+.,FE66 20 15 FD JSR $FD15       restore default I/O vectors
+.,FE69 20 A3 FD JSR $FDA3       initialise SID, CIA and IRQ
+.,FE6C 20 18 E5 JSR $E518       initialise the screen and keyboard
+.,FE6F 6C 02 A0 JMP ($A002)     do BASIC break entry
+
+                                *** RS232 NMI routine
+.,FE72 98       TYA             
+.,FE73 2D A1 02 AND $02A1       AND with the RS-232 interrupt enable byte
+.,FE76 AA       TAX             
+.,FE77 29 01    AND #$01        
+.,FE79 F0 28    BEQ $FEA3       
+.,FE7B AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,FE7E 29 FB    AND #$FB        mask xxxx x0xx, clear RS232 Tx DATA
+.,FE80 05 B5    ORA $B5         OR in the RS232 transmit data bit
+.,FE82 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,FE85 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FE88 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FE8B 8A       TXA             
+.,FE8C 29 12    AND #$12        
+.,FE8E F0 0D    BEQ $FE9D       
+.,FE90 29 02    AND #$02        
+.,FE92 F0 06    BEQ $FE9A       
+.,FE94 20 D6 FE JSR $FED6       
+.,FE97 4C 9D FE JMP $FE9D       
+.,FE9A 20 07 FF JSR $FF07       
+.,FE9D 20 BB EE JSR $EEBB       
+.,FEA0 4C B6 FE JMP $FEB6       
+.,FEA3 8A       TXA             get active interrupts back
+.,FEA4 29 02    AND #$02        mask ?? interrupt
+.,FEA6 F0 06    BEQ $FEAE       branch if not ?? interrupt
+                                was ?? interrupt
+.,FEA8 20 D6 FE JSR $FED6       
+.,FEAB 4C B6 FE JMP $FEB6       
+.,FEAE 8A       TXA             get active interrupts back
+.,FEAF 29 10    AND #$10        mask CB1 interrupt, Rx data bit transition
+.,FEB1 F0 03    BEQ $FEB6       if no bit restore registers and exit interrupt
+.,FEB3 20 07 FF JSR $FF07       
+.,FEB6 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FEB9 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FEBC 68       PLA             pull Y
+.,FEBD A8       TAY             restore Y
+.,FEBE 68       PLA             pull X
+.,FEBF AA       TAX             restore X
+.,FEC0 68       PLA             restore A
+.,FEC1 40       RTI             
+
+                                *** baud rate word is calculated from ..
+                                
+                                (system clock / baud rate) / 2 - 100
+                                
+                                    system clock
+                                    ------------
+                                PAL        985248 Hz
+                                NTSC     1022727 Hz
+                                baud rate tables for NTSC C64
+.:FEC2 C1 27                      50   baud   1027700
+.:FEC4 3E 1A                      75   baud   1022700
+.:FEC6 C5 11                     110   baud   1022780
+.:FEC8 74 0E                     134.5 baud   1022200
+.:FECA ED 0C                     150   baud   1022700
+.:FECC 45 06                     300   baud   1023000
+.:FECE F0 02                     600   baud   1022400
+.:FED0 46 01                    1200   baud   1022400
+.:FED2 B8 00                    1800   baud   1022400
+.:FED4 71 00                    2400   baud   1022400
+
+                                *** ??
+.,FED6 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,FED9 29 01    AND #$01        mask 0000 000x, RS232 Rx DATA
+.,FEDB 85 A7    STA $A7         save the RS232 received data bit
+.,FEDD AD 06 DD LDA $DD06       get VIA 2 timer B low byte
+.,FEE0 E9 1C    SBC #$1C        
+.,FEE2 6D 99 02 ADC $0299       
+.,FEE5 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FEE8 AD 07 DD LDA $DD07       get VIA 2 timer B high byte
+.,FEEB 6D 9A 02 ADC $029A       
+.,FEEE 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FEF1 A9 11    LDA #$11        set timer B single shot, start timer B
+.,FEF3 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FEF6 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FEF9 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FEFC A9 FF    LDA #$FF        
+.,FEFE 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF01 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF04 4C 59 EF JMP $EF59       
+.,FF07 AD 95 02 LDA $0295       nonstandard bit timing low byte
+.,FF0A 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF0D AD 96 02 LDA $0296       nonstandard bit timing high byte
+.,FF10 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF13 A9 11    LDA #$11        set timer B single shot, start timer B
+.,FF15 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FF18 A9 12    LDA #$12        
+.,FF1A 4D A1 02 EOR $02A1       EOR with the RS-232 interrupt enable byte
+.,FF1D 8D A1 02 STA $02A1       save the RS-232 interrupt enable byte
+.,FF20 A9 FF    LDA #$FF        
+.,FF22 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF25 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF28 AE 98 02 LDX $0298       
+.,FF2B 86 A8    STX $A8         
+.,FF2D 60       RTS             
+
+                                *** ??
+.,FF2E AA       TAX             
+.,FF2F AD 96 02 LDA $0296       nonstandard bit timing high byte
+.,FF32 2A       ROL             
+.,FF33 A8       TAY             
+.,FF34 8A       TXA             
+.,FF35 69 C8    ADC #$C8        
+.,FF37 8D 99 02 STA $0299       
+.,FF3A 98       TYA             
+.,FF3B 69 00    ADC #$00        add any carry
+.,FF3D 8D 9A 02 STA $029A       
+.,FF40 60       RTS             
+
+                                *** unused bytes
+.,FF41 EA       NOP             waste cycles
+.,FF42 EA       NOP             waste cycles
+
+                                *** save the status and do the IRQ routine
+.,FF43 08       PHP             save the processor status
+.,FF44 68       PLA             pull the processor status
+.,FF45 29 EF    AND #$EF        mask xxx0 xxxx, clear the break bit
+.,FF47 48       PHA             save the modified processor status
+
+                                *** IRQ vector
+.,FF48 48       PHA             save A
+.,FF49 8A       TXA             copy X
+.,FF4A 48       PHA             save X
+.,FF4B 98       TYA             copy Y
+.,FF4C 48       PHA             save Y
+.,FF4D BA       TSX             copy stack pointer
+.,FF4E BD 04 01 LDA $0104,X     get stacked status register
+.,FF51 29 10    AND #$10        mask BRK flag
+.,FF53 F0 03    BEQ $FF58       branch if not BRK
+.,FF55 6C 16 03 JMP ($0316)     else do BRK vector (iBRK)
+.,FF58 6C 14 03 JMP ($0314)     do IRQ vector (iIRQ)
+
+                                *** initialise VIC and screen editor
+.,FF5B 20 18 E5 JSR $E518       initialise the screen and keyboard
+.,FF5E AD 12 D0 LDA $D012       read the raster compare register
+.,FF61 D0 FB    BNE $FF5E       loop if not raster line $00
+.,FF63 AD 19 D0 LDA $D019       read the vic interrupt flag register
+.,FF66 29 01    AND #$01        mask the raster compare flag
+.,FF68 8D A6 02 STA $02A6       save the PAL/NTSC flag
+.,FF6B 4C DD FD JMP $FDDD       
+
+                                *** ??
+.,FF6E A9 81    LDA #$81        enable timer A interrupt
+.,FF70 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FF73 AD 0E DC LDA $DC0E       read VIA 1 CRA
+.,FF76 29 80    AND #$80        mask x000 0000, TOD clock
+.,FF78 09 11    ORA #$11        mask xxx1 xxx1, load timer A, start timer A
+.,FF7A 8D 0E DC STA $DC0E       save VIA 1 CRA
+.,FF7D 4C 8E EE JMP $EE8E       set the serial clock out low and return
+
+                                *** unused
+.:FF80 03
+
+                                *** initialise VIC and screen editor
+.,FF81 4C 5B FF JMP $FF5B       initialise VIC and screen editor
+
+                                *** initialise SID, CIA and IRQ, unused
+.,FF84 4C A3 FD JMP $FDA3       initialise SID, CIA and IRQ
+
+                                *** RAM test and find RAM end
+.,FF87 4C 50 FD JMP $FD50       RAM test and find RAM end
+
+                                *** restore default I/O vectors
+                                this routine restores the default values of all system vectors used in KERNAL and
+                                BASIC routines and interrupts.
+.,FF8A 4C 15 FD JMP $FD15       restore default I/O vectors
+
+                                *** read/set vectored I/O
+                                this routine manages all system vector jump addresses stored in RAM. Calling this
+                                routine with the carry bit set will store the current contents of the RAM vectors
+                                in a list pointed to by the X and Y registers. When this routine is called with
+                                the carry bit clear, the user list pointed to by the X and Y registers is copied
+                                to the system RAM vectors.
+                                NOTE: This routine requires caution in its use. The best way to use it is to first
+                                read the entire vector contents into the user area, alter the desired vectors and
+                                then copy the contents back to the system vectors.
+.,FF8D 4C 1A FD JMP $FD1A       read/set vectored I/O
+
+                                *** control kernal messages
+                                this routine controls the printing of error and control messages by the KERNAL.
+                                Either print error messages or print control messages can be selected by setting
+                                the accumulator when the routine is called.
+                                FILE NOT FOUND is an example of an error message. PRESS PLAY ON CASSETTE is an
+                                example of a control message.
+                                bits 6 and 7 of this value determine where the message will come from. If bit 7
+                                is set one of the error messages from the KERNAL will be printed. If bit 6 is set
+                                a control message will be printed.
+.,FF90 4C 18 FE JMP $FE18       control kernal messages
+
+                                *** send secondary address after LISTEN
+                                this routine is used to send a secondary address to an I/O device after a call to
+                                the LISTEN routine is made and the device commanded to LISTEN. The routine cannot
+                                be used to send a secondary address after a call to the TALK routine.
+                                A secondary address is usually used to give set-up information to a device before
+                                I/O operations begin.
+                                When a secondary address is to be sent to a device on the serial bus the address
+                                must first be ORed with $60.
+.,FF93 4C B9 ED JMP $EDB9       send secondary address after LISTEN

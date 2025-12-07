@@ -1,0 +1,284 @@
+# C64 PRG Chapter 3 - Multi-Color Mode Graphics
+
+  124   PROGRAMMING GRAPHICS
+~
+
+
+     However, what you actually have is something like this:
+
+
+  ----- BYTE 0   BYTE 8   BYTE 16    BYTE 24 ..................... BYTE 312
+        BYTE 1   BYTE 9      .          .                          BYTE 313
+        BYTE 2   BYTE 10     .          .                          BYTE 314
+        BYTE 3   BYTE 11     .          .                          BYTE 315
+        BYTE 4   BYTE 12     .          .                          BYTE 316
+        BYTE 5   BYTE 13     .          .                          BYTE 317
+        BYTE 6   BYTE 14     .          .                          BYTE 318
+  ----- BYTE 7   BYTE 15     .          .                          BYTE 319
+
+  ----- BYTE 320 BYTE 328 BYTE 336 BYTE 344....................... BYTE 632
+        BYTE 321 BYTE 329    .          .                          BYTE 633
+        BYTE 322 BYTE 330    .          .                          BYTE 634
+        BYTE 323 BYTE 331    .          .                          BYTE 635
+        BYTE 324 BYTE 332    .          .                          BYTE 636
+        BYTE 325 BYTE 333    .          .                          BYTE 637
+        BYTE 326 BYTE 334    .          .                          BYTE 638
+  ----- BYTE 327 BYTE 335    .          .                          BYTE 639
+
+
+    The programmable characters which make up the bit map are arranged in
+  25 rows of 40 columns each. While this is a good method of organization
+  for text, it makes bit mapping somewhat difficult. (There is a good
+  reason for this method. See the section on MIXED MODES.)
+    The following formula will make it easier to control a dot on the bit
+  map screen:
+    The start of the display memory area is known as the BASE, The row
+  number (from 0 to 24) of your dot is:
+
+    ROW = INT(Y/8) (There are 320 bytes per line.)
+
+  The character position on that line (from 0 to 39) is:
+
+    CHAR = INT(X/8) (There are 8 bytes per character.)
+
+  The line of that character position (from 0 to 7) is:
+
+    LINE = Y AND 7
+
+
+
+                                                 PROGRAMMING GRAPHICS   125
+~
+
+
+  The bit of that byte is:
+
+    BIT = 7-(X AND 7)
+
+
+    Now we put these formulas together. The byte in which character memory
+  dot (X,Y) is located is calculated by:
+
+    BYTE = BASE + ROW*320+ CHAR*8 + LINE
+
+
+    To turn on any bit on the grid with coordinates (X,Y), use this line:
+
+  POKE BYTE, PEEK(BYTE) OR 2^BIT
+
+
+    Let's add these calculations to the program. In the following example,
+  the COMMODORE 64 will plot a sine curve:
+
+  50 FORX=0TO319STEP.5:REM WAVE WILL FILL THE SCREEN
+  60 Y=INT(90+80*SIN(X/10))
+  70 CH=INT(X/8)
+  80 RO=INT(Y/8)
+  85 LN=YAND7
+  90 BY=BASE+RO*320+8*CH+LN
+  100 BI=7-(XAND7)
+  110 POKEBY,PEEK(BY)OR(2^BI)
+  120 NEXTX
+  125 POKE1024,16
+  130 GOTO130
+
+
+    The calculation in line 60 will change the values for the sine function
+  from a range of +1 to -1 to a range of 10 to 170. Lines 70 to 100
+  calculate the character, row, byte, and bit being affected, using the
+  formulae as shown above. Line 125 signals the program is finished by
+  changing the color of the top left corner of the screen. Line 130 freezes
+  the program by putting it into an infinite loop. When you have finished
+  looking at the display, just hold down <RUN/STOP> and hit <RESTORE>.
+
+
+
+
+  126   PROGRAMMING GRAPHICS
+~
+
+
+    As a further example, you can modify the sine curve program to display
+  a semicircle. Here are the lines to type to make the changes:
+
+
+  50 FORX=0TO160:REM DO HALF THE SCREEN
+  55 Y1=100+SQR(160*X-X*X)
+  56 Y2=100-SQR(160*X-X*X)
+  60 FORY=Y1TOY2STEPY1-Y2
+  70 CH=INT(X/()
+  80 RO=INT(Y/X)
+  85 LNYAND7
+  90 BY=BASE+RO*320+8*CH+LN
+  100 BI=7-(XAND7)
+  110 POKEBY,PEEK(BY)OR(2^BI)
+  114 NEXT
+
+  This will create a semicircle in the HI-RES area of the screen.
+
+  +-----------------------------------------------------------------------+
+  | WARNING: BASIC variables can overlay your high-resolution screen. If  |
+  | you need more memory space you must move the bottom of BASIC above the|
+  | high-resolution screen area. Or, you must move your high-resolution   |
+  | screen area. This problem will NOT occur in machine language. It ONLY |
+  | happens when you're writing programs in BASIC.                        |
+  +-----------------------------------------------------------------------+
+
+  MULTI-COLOR BET MAP MODE
+
+    Like multi-color mode characters, multi-color bit map mode allows you
+  to display up to four different colors in each 8 by 8 section of bit map.
+  And as in multi-character mode, there is a sacrifice of horizontal
+  resolution (from 320 dots to 160 dots).
+    Multi-color bit map mode uses an 8K section of memory for the bit map.
+  You select your colors for multi-color bit map mode from (1) the
+  background color register 0, (the screen background color), (2) the video
+  matrix (the upper 4 bits give one possible color, the lower 4 bits an-
+  other), and (3) color memory.
+    Multi-color bit mapped mode is turned ON by setting bit 5 of 53265
+  ($D011) and bit 4 at location 53270 ($D016) to a 1. The following POKE
+  does this:
+
+    POKE 53265,PEEK(53625)OR 32: POKE 53270,PEEK(53270)OR 16
+
+                                                 PROGRAMMING GRAPHICS   127
+~
+
+
+    Multi-color bit mapped mode is turned OFF by setting bit 5 of 53265
+  ($D011) and bit 4 at location 53270 ($D016) to a 0. The following POKE
+  does this:
+
+    POKE 53265,PEEK(53265)AND 223: POKE 53270,PEEK(53270)AND 239
+
+
+    As in standard (HI-RES) bit mapped mode, there is a one to one cor-
+  respondence between the 8K section of memory being used for the display,
+  and what is shown on the screen. However, the horizontal dots are two
+  bits wide. Each 2 bits in the display memory area form a dot, which can
+  have one of 4 colors.
+
+
+
+    BITS    COLOR INFORMATION COMES FROM
+
+     00     Background color #0 (screen color)
+     01     Upper 4 bits of screen memory
+     10     Lower 4 bits of screen memory
+     11     Color nybble (nybble = 1/2 byte = 4 bits)
+
+
+
+  SMOOTH SCROLLING
+
+    The VIC-II chip supports smooth scrolling in both the horizontal and
+  vertical directions. Smooth scrolling is a one pixel movement of the
+  entire screen in one direction. It can move either UP, or down, or left,
+  or right. It is used to move new information smoothly onto the screen,
+  while smoothly removing characters from the other side.
+    While the VIC-II chip does much of the task for you, the actual scroll-
+  ing must be done by a machine language program. The VIC-II chip features
+  the ability to place the video screen in any of 8 horizontal positions,
+  and 8 vertical positions. Positioning is controlled by the VIC-II
+  scrolling registers. The VIC-II chip also has a 38 column mode, and a 24
+  row mode. the smaller screen sizes are used to give you a place for your
+  new data to scroll on from.
+
+  The following are the steps for SMOOTH SCROLLING:
+
+
+
+  128   PROGRAMMING GRAPHICS
+~
+
+
+  1) Shrink the screen (the border will expand).
+  2) Set the scrolling register to maximum (or minimum value depending upon
+     the direction of your scroll).
+  3) Place the new data on the proper (covered) portion of the screen.
+  4) Increment (or decrement) the scrolling register until it reaches the
+     maximum (or minimum) value.
+  5) At this point, use your machine language routine to shift the entire
+     screen one entire character in the direction of the scroll.
+  6) Go back to step 2.
+
+    To go into 38 column mode, bit 3 of location 53270 ($D016) must be set
+  to a 0. The following POKE does this:
+
+    POKE 53270,PEEK(53270)AND 247
+
+    To return to 40 column mode, set bit 3 of location 53270 ($D016) to a
+  1.The following POKE does this:
+
+    POKE 53270,PEEK(53270)OR 8
+
+    To go into 24 row mode, bit 3 of location 53265 ($D011) must be set to
+  a 0. The following POKE will do this:
+
+    POKE 53265,PEEK(53265)AND 247
+
+    To return to 25 row mode, set bit 3 of location 53265 ($D011) to a 1.
+  The following POKE does this:
+
+    POKE 53265,PEEK(53265)OR 8
+
+    When scrolling in the X direction, it is necessary to place the VIC-II
+  chip into 38 column mode. This gives new data a place to scroll from.
+  When scrolling LEFT, the new data should be placed on the right. When
+  scrolling RIGHT the new data should be placed on the left. Please note
+  that there are still 40 columns to screen memory, but only 38 are
+  visible.
+    When scrolling in the Y direction, it is necessary to place the VIC-II
+  chip into 24 row mode. When scrolling UP, place the new data in the LAST
+  row. When scrolling DOWN, place the new data on the FIRST row. Unlike X
+  scrolling, where there are covered areas on each side of the screen,
+  there is only one covered area in Y scrolling. When the Y scrolling
+
+
+                                                 PROGRAMMING GRAPHICS   129
+~
+
+
+  register is set to 0, the first line is covered, ready for new data. When
+  the Y scrolling register is set to 7 the last row is covered.
+    For scrolling in the X direction, the scroll register is located in
+  bits 2 to 0 of the VIC-II control register at location 53270 ($D016 in
+  HEX). As always, it is important to affect only those bits. The following
+  POKE does this:
+
+    POKE 53270,(PEEK(53270)AND 248)+X
+
+  where X is the X position of the screen from 0 to 7.
+    For scrolling in the Y direction, the scroll register is located in
+  bits 2 to 0 of the VIC-II control register at location 53265 ($D011 in
+  HEX). As always, it is important to affect only those bits. The following
+  POKE does this:
+
+    POKE 53265,(PEEK(53265)AND 248)+Y
+
+  where Y is the Y position of the screen from 0 to 7.
+    To scroll text onto the screen from the bottom, you would step the low-
+  order 3 bits of location 53265 from 0-7, put more data on the covered
+  line at the bottom of the screen, and then repeat the process. To scroll
+  characters onto the screen from left to right, you would step the low-
+  order 3 bits of location 53270 from 0 to 7, print or POKE another column
+  of new data into column 0 of the screen, then repeat the process.
+    If you step the scroll bits by -1, your text will move in the opposite
+  direction.
+
+  EXAMPLE: Text scrolling onto the bottom of the screen:
+
+start tok64 page130.prg
+  10 poke53265,peek(53265)and247        :rem go into 24 row mode
+  20 printchr$(147)                     :rem clear the screen
+  30 forx=1to24:printchr$(17);:next     :rem move the cursor to the bottom
+  40 poke53265,(peek(53265)and248)+7:print :rem position for 1st scroll
+  50 print"     hello";
+  60 forp=6to0step-1
+  70 poke53265,(peek(53265)and248)+p
+  80 forx=1to50:next                    :rem delay loop
+  90 next:goto40
+stop tok64
+
+
+

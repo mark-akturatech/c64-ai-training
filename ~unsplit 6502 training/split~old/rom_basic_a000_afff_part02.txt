@@ -1,0 +1,230 @@
+
+                                *** check available memory, do out of memory error if no room
+.,A408 C4 34    CPY $34         compare with bottom of string space high byte
+.,A40A 90 28    BCC $A434       if less then exit (is ok)
+.,A40C D0 04    BNE $A412       skip next test if greater (tested <)
+                                high byte was =, now do low byte
+.,A40E C5 33    CMP $33         compare with bottom of string space low byte
+.,A410 90 22    BCC $A434       if less then exit (is ok)
+                                address is > string storage ptr (oops!)
+.,A412 48       PHA             push address low byte
+.,A413 A2 09    LDX #$09        set index to save $57 to $60 inclusive
+.,A415 98       TYA             copy address high byte (to push on stack)
+                                save misc numeric work area
+.,A416 48       PHA             push byte
+.,A417 B5 57    LDA $57,X       get byte from $57 to $60
+.,A419 CA       DEX             decrement index
+.,A41A 10 FA    BPL $A416       loop until all done
+.,A41C 20 26 B5 JSR $B526       do garbage collection routine
+                                restore misc numeric work area
+.,A41F A2 F7    LDX #$F7        set index to restore bytes
+.,A421 68       PLA             pop byte
+.,A422 95 61    STA $61,X       save byte to $57 to $60
+.,A424 E8       INX             increment index
+.,A425 30 FA    BMI $A421       loop while -ve
+.,A427 68       PLA             pop address high byte
+.,A428 A8       TAY             copy back to Y
+.,A429 68       PLA             pop address low byte
+.,A42A C4 34    CPY $34         compare with bottom of string space high byte
+.,A42C 90 06    BCC $A434       if less then exit (is ok)
+.,A42E D0 05    BNE $A435       if greater do out of memory error then warm start
+                                high byte was =, now do low byte
+.,A430 C5 33    CMP $33         compare with bottom of string space low byte
+.,A432 B0 01    BCS $A435       if >= do out of memory error then warm start
+                                ok exit, carry clear
+.,A434 60       RTS             
+
+                                *** do out of memory error then warm start
+.,A435 A2 10    LDX #$10        error code $10, out of memory error
+                                do error #X then warm start
+.,A437 6C 00 03 JMP ($0300)     do error message
+
+                                *** do error #X then warm start, the error message vector is initialised to point here
+.,A43A 8A       TXA             copy error number
+.,A43B 0A       ASL             *2
+.,A43C AA       TAX             copy to index
+.,A43D BD 26 A3 LDA $A326,X     get error message pointer low byte
+.,A440 85 22    STA $22         save it
+.,A442 BD 27 A3 LDA $A327,X     get error message pointer high byte
+.,A445 85 23    STA $23         save it
+.,A447 20 CC FF JSR $FFCC       close input and output channels
+.,A44A A9 00    LDA #$00        clear A
+.,A44C 85 13    STA $13         clear current I/O channel, flag default
+.,A44E 20 D7 AA JSR $AAD7       print CR/LF
+.,A451 20 45 AB JSR $AB45       print "?"
+.,A454 A0 00    LDY #$00        clear index
+.,A456 B1 22    LDA ($22),Y     get byte from message
+.,A458 48       PHA             save status
+.,A459 29 7F    AND #$7F        mask 0xxx xxxx, clear b7
+.,A45B 20 47 AB JSR $AB47       output character
+.,A45E C8       INY             increment index
+.,A45F 68       PLA             restore status
+.,A460 10 F4    BPL $A456       loop if character was not end marker
+.,A462 20 7A A6 JSR $A67A       flush BASIC stack and clear continue pointer
+.,A465 A9 69    LDA #$69        set " ERROR" pointer low byte
+.,A467 A0 A3    LDY #$A3        set " ERROR" pointer high byte
+
+                                *** print string and do warm start, break entry
+.,A469 20 1E AB JSR $AB1E       print null terminated string
+.,A46C A4 3A    LDY $3A         get current line number high byte
+.,A46E C8       INY             increment it
+.,A46F F0 03    BEQ $A474       branch if was in immediate mode
+.,A471 20 C2 BD JSR $BDC2       do " IN " line number message
+
+                                *** do warm start
+.,A474 A9 76    LDA #$76        set "READY." pointer low byte
+.,A476 A0 A3    LDY #$A3        set "READY." pointer high byte
+.,A478 20 1E AB JSR $AB1E       print null terminated string
+.,A47B A9 80    LDA #$80        set for control messages only
+.,A47D 20 90 FF JSR $FF90       control kernal messages
+.,A480 6C 02 03 JMP ($0302)     do BASIC warm start
+
+                                *** BASIC warm start, the warm start vector is initialised to point here
+.,A483 20 60 A5 JSR $A560       call for BASIC input
+.,A486 86 7A    STX $7A         save BASIC execute pointer low byte
+.,A488 84 7B    STY $7B         save BASIC execute pointer high byte
+.,A48A 20 73 00 JSR $0073       increment and scan memory
+.,A48D AA       TAX             copy byte to set flags
+.,A48E F0 F0    BEQ $A480       loop if no input
+                                got to interpret the input line now ....
+.,A490 A2 FF    LDX #$FF        current line high byte to -1, indicates immediate mode
+.,A492 86 3A    STX $3A         set current line number high byte
+.,A494 90 06    BCC $A49C       if numeric character go handle new BASIC line
+                                no line number .. immediate mode
+.,A496 20 79 A5 JSR $A579       crunch keywords into BASIC tokens
+.,A499 4C E1 A7 JMP $A7E1       go scan and interpret code
+
+                                *** handle new BASIC line
+.,A49C 20 6B A9 JSR $A96B       get fixed-point number into temporary integer
+.,A49F 20 79 A5 JSR $A579       crunch keywords into BASIC tokens
+.,A4A2 84 0B    STY $0B         save index pointer to end of crunched line
+.,A4A4 20 13 A6 JSR $A613       search BASIC for temporary integer line number
+.,A4A7 90 44    BCC $A4ED       if not found skip the line delete
+                                line # already exists so delete it
+.,A4A9 A0 01    LDY #$01        set index to next line pointer high byte
+.,A4AB B1 5F    LDA ($5F),Y     get next line pointer high byte
+.,A4AD 85 23    STA $23         save it
+.,A4AF A5 2D    LDA $2D         get start of variables low byte
+.,A4B1 85 22    STA $22         save it
+.,A4B3 A5 60    LDA $60         get found line pointer high byte
+.,A4B5 85 25    STA $25         save it
+.,A4B7 A5 5F    LDA $5F         get found line pointer low byte
+.,A4B9 88       DEY             decrement index
+.,A4BA F1 5F    SBC ($5F),Y     subtract next line pointer low byte
+.,A4BC 18       CLC             clear carry for add
+.,A4BD 65 2D    ADC $2D         add start of variables low byte
+.,A4BF 85 2D    STA $2D         set start of variables low byte
+.,A4C1 85 24    STA $24         save destination pointer low byte
+.,A4C3 A5 2E    LDA $2E         get start of variables high byte
+.,A4C5 69 FF    ADC #$FF        -1 + carry
+.,A4C7 85 2E    STA $2E         set start of variables high byte
+.,A4C9 E5 60    SBC $60         subtract found line pointer high byte
+.,A4CB AA       TAX             copy to block count
+.,A4CC 38       SEC             set carry for subtract
+.,A4CD A5 5F    LDA $5F         get found line pointer low byte
+.,A4CF E5 2D    SBC $2D         subtract start of variables low byte
+.,A4D1 A8       TAY             copy to bytes in first block count
+.,A4D2 B0 03    BCS $A4D7       branch if no underflow
+.,A4D4 E8       INX             increment block count, correct for = 0 loop exit
+.,A4D5 C6 25    DEC $25         decrement destination high byte
+.,A4D7 18       CLC             clear carry for add
+.,A4D8 65 22    ADC $22         add source pointer low byte
+.,A4DA 90 03    BCC $A4DF       branch if no overflow
+.,A4DC C6 23    DEC $23         else decrement source pointer high byte
+.,A4DE 18       CLC             clear carry
+                                close up memory to delete old line
+.,A4DF B1 22    LDA ($22),Y     get byte from source
+.,A4E1 91 24    STA ($24),Y     copy to destination
+.,A4E3 C8       INY             increment index
+.,A4E4 D0 F9    BNE $A4DF       while <> 0 do this block
+.,A4E6 E6 23    INC $23         increment source pointer high byte
+.,A4E8 E6 25    INC $25         increment destination pointer high byte
+.,A4EA CA       DEX             decrement block count
+.,A4EB D0 F2    BNE $A4DF       loop until all done
+                                got new line in buffer and no existing same #
+.,A4ED 20 59 A6 JSR $A659       reset execution to start, clear variables, flush stack
+                                and return
+.,A4F0 20 33 A5 JSR $A533       rebuild BASIC line chaining
+.,A4F3 AD 00 02 LDA $0200       get first byte from buffer
+.,A4F6 F0 88    BEQ $A480       if no line go do BASIC warm start
+                                else insert line into memory
+.,A4F8 18       CLC             clear carry for add
+.,A4F9 A5 2D    LDA $2D         get start of variables low byte
+.,A4FB 85 5A    STA $5A         save as source end pointer low byte
+.,A4FD 65 0B    ADC $0B         add index pointer to end of crunched line
+.,A4FF 85 58    STA $58         save as destination end pointer low byte
+.,A501 A4 2E    LDY $2E         get start of variables high byte
+.,A503 84 5B    STY $5B         save as source end pointer high byte
+.,A505 90 01    BCC $A508       branch if no carry to high byte
+.,A507 C8       INY             else increment high byte
+.,A508 84 59    STY $59         save as destination end pointer high byte
+.,A50A 20 B8 A3 JSR $A3B8       open up space in memory
+                                most of what remains to do is copy the crunched line into the space opened up in memory,
+                                however, before the crunched line comes the next line pointer and the line number. the
+                                line number is retrieved from the temporary integer and stored in memory, this
+                                overwrites the bottom two bytes on the stack. next the line is copied and the next line
+                                pointer is filled with whatever was in two bytes above the line number in the stack.
+                                this is ok because the line pointer gets fixed in the line chain re-build.
+.,A50D A5 14    LDA $14         get line number low byte
+.,A50F A4 15    LDY $15         get line number high byte
+.,A511 8D FE 01 STA $01FE       save line number low byte before crunched line
+.,A514 8C FF 01 STY $01FF       save line number high byte before crunched line
+.,A517 A5 31    LDA $31         get end of arrays low byte
+.,A519 A4 32    LDY $32         get end of arrays high byte
+.,A51B 85 2D    STA $2D         set start of variables low byte
+.,A51D 84 2E    STY $2E         set start of variables high byte
+.,A51F A4 0B    LDY $0B         get index to end of crunched line
+.,A521 88       DEY             -1
+.,A522 B9 FC 01 LDA $01FC,Y     get byte from crunched line
+.,A525 91 5F    STA ($5F),Y     save byte to memory
+.,A527 88       DEY             decrement index
+.,A528 10 F8    BPL $A522       loop while more to do
+                                reset execution, clear variables, flush stack, rebuild BASIC chain and do warm start
+.,A52A 20 59 A6 JSR $A659       reset execution to start, clear variables and flush stack
+.,A52D 20 33 A5 JSR $A533       rebuild BASIC line chaining
+.,A530 4C 80 A4 JMP $A480       go do BASIC warm start
+
+                                *** rebuild BASIC line chaining
+.,A533 A5 2B    LDA $2B         get start of memory low byte
+.,A535 A4 2C    LDY $2C         get start of memory high byte
+.,A537 85 22    STA $22         set line start pointer low byte
+.,A539 84 23    STY $23         set line start pointer high byte
+.,A53B 18       CLC             clear carry for add
+.,A53C A0 01    LDY #$01        set index to pointer to next line high byte
+.,A53E B1 22    LDA ($22),Y     get pointer to next line high byte
+.,A540 F0 1D    BEQ $A55F       exit if null, [EOT]
+.,A542 A0 04    LDY #$04        point to first code byte of line
+                                there is always 1 byte + [EOL] as null entries are deleted
+.,A544 C8       INY             next code byte
+.,A545 B1 22    LDA ($22),Y     get byte
+.,A547 D0 FB    BNE $A544       loop if not [EOL]
+.,A549 C8       INY             point to byte past [EOL], start of next line
+.,A54A 98       TYA             copy it
+.,A54B 65 22    ADC $22         add line start pointer low byte
+.,A54D AA       TAX             copy to X
+.,A54E A0 00    LDY #$00        clear index, point to this line's next line pointer
+.,A550 91 22    STA ($22),Y     set next line pointer low byte
+.,A552 A5 23    LDA $23         get line start pointer high byte
+.,A554 69 00    ADC #$00        add any overflow
+.,A556 C8       INY             increment index to high byte
+.,A557 91 22    STA ($22),Y     set next line pointer high byte
+.,A559 86 22    STX $22         set line start pointer low byte
+.,A55B 85 23    STA $23         set line start pointer high byte
+.,A55D 90 DD    BCC $A53C       go do next line, branch always
+.,A55F 60       RTS             
+                                call for BASIC input
+.,A560 A2 00    LDX #$00        set channel $00, keyboard
+.,A562 20 12 E1 JSR $E112       input character from channel with error check
+.,A565 C9 0D    CMP #$0D        compare with [CR]
+.,A567 F0 0D    BEQ $A576       if [CR] set XY to $200 - 1, print [CR] and exit
+                                character was not [CR]
+.,A569 9D 00 02 STA $0200,X     save character to buffer
+.,A56C E8       INX             increment buffer index
+.,A56D E0 59    CPX #$59        compare with max+1
+.,A56F 90 F1    BCC $A562       branch if < max+1
+.,A571 A2 17    LDX #$17        error $17, string too long error
+.,A573 4C 37 A4 JMP $A437       do error #X then warm start
+.,A576 4C CA AA JMP $AACA       set XY to $200 - 1 and print [CR]
+
+                                *** crunch BASIC tokens vector
+.,A579 6C 04 03 JMP ($0304)     do crunch BASIC tokens

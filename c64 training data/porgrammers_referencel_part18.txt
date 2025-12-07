@@ -1,0 +1,284 @@
+# C64 PRG Chapter 2 - BASIC Keywords (RUN-STR$)
+
+  78   BASIC LANGUAGE VOCABULARY
+~
+
+
+  RETURN
+
+  TYPE: Statement
+  FORMAT: RETURN
+
+    Action: The RETURN statement is used to exit from a subroutine called
+  for by a GOSUB statement. RETURN restarts the rest of your program at
+  the next executable statement following the GOSUB. If you are nesting
+  subroutines, each GOSUB must be paired with at least one RETURN
+  statement. A subroutine can contain any number of RETURN statements,
+  but the first one encountered will exit the subroutine.
+
+  EXAMPLE of RETURN Statement:
+
+    10 PRINT"THIS IS THE PROGRAM"
+    20 GOSUB 1000
+    30 PRINT"PROGRAM CONTINUES"
+    40 GOSUB 1000
+    50 PRINT"MORE PROGRAM"
+    60 END
+    1000 PRINT"THIS IS THE GOSUB":RETURN
+
+
+  RIGHT$
+
+  TYPE: String Function
+  FORMAT: RIGHT$ (<string>,<numeric>)
+
+    Action: The RIGHT$ function returns a sub-string taken from the right-
+  most end of the <string> argument. The length of the sub-string is
+  defined by the <numeric> argument which can be any integer in the range
+  of 0 to 255. If the value of the numeric expression is zero, then a null
+  string ("") is returned. If the value you give in the <numeric> argument
+  is greater than the length of the <string> then the entire string is
+  returned.
+
+  EXAMPLE of RIGHT$ Function:
+
+    10 MSG$="COMMODORE COMPUTERS"
+    20 PRINT RIGHT$(MSG$,9)
+    RUN
+
+    COMPUTERS
+                                             BASIC LANGUAGE VOCABULARY   79
+~
+
+
+  RND
+
+  TYPE: Floating-Point Function
+  FORMAT: RND (<numeric>)
+
+    Action: RND creates a floating-point random from 0.0 to 1.0. The
+  computer generates a sequence of random numbers by performing cal-
+  culations on a starting number, which in computer jargon is called a
+  seed. The RND function is seeded on system power-up. The <numeric>
+  argument is a dummy, except for its sign (positive, zero, or negative).
+    If the <numeric> argument is positive, the same "pseudorandom"
+  sequence of numbers is returned, starting from a given seed value. Dif-
+  ferent number sequences will result from different seeds, but any se-
+  quence is repeatable by starting from the same seed number. Having a
+  known sequence of "random" numbers is useful in testing programs.
+    If you choose a <numeric> argument of zero, then RND generates a
+  number directly from a free-running hardware clock (the system "jiffy
+  clock"). Negative arguments cause the RND function to be re-seeded
+  with each function call.
+
+
+  EXAMPLES of RND Function:
+
+    220 PRINT INT(RND(0)*50)               (Return random integers 0-49)
+
+    100 X=INT(RND(1)*6)+INT(RND(1)*6)+2    (Simulates 2 dice)
+
+    100 X=INT(RND(1)*1000)+1               (Random integers from 1-1000)
+
+    100 X=INT(RND(1)*150)+100              (Random numbers from 100-249)
+
+    100 X=RND(1)*(U-L)+L                   (Random numbers between
+                                            upper (U) and lower (L) limits)
+
+
+
+
+
+
+
+
+
+
+  80   BASIC LANGUAGE VOCABULARY
+~
+
+
+  RUN
+
+  TYPE: Command
+  FORMAT: RUN [<line-number>]
+
+    Action: The system command RUN is used to start the program currently
+  in memory. The RUN command causes an implied CLR operation to be
+  performed before starting the program. You can avoid the CLeaRing
+  operation by using CONT or GOTO to restart a program instead of RUN. If
+  a <line-number> is specified, your program will start on that line.
+  Otherwise, the RUN command starts at first line of the program. The RUN
+  command can also be used within a program. If the <line-number> you
+  specify doesn't exist, the BASIC error message UNDEF'D STATEMENT occurs.
+    A RUNning program stops and BASIC returns to direct mode when an END or
+  STOP statement is reached, when the last line of the program is finished,
+  or when a BASIC error occurs during execution.
+
+  EXAMPLES of RUN Command:
+
+    RUN           (Starts at first line of program)
+
+    RUN 500       (Starts at line-number 500)
+    RUN X         (Starts at line X, or UNDEF'D STATEMENT ERROR
+                   if there is no line X)
+
+
+  SAVE
+
+  TYPE: Command
+  FORMAT: SAVE ["<file-name>"][,<device-number>][,<address>]
+
+    Action: The SAVE command is used to store the program that is cur-
+  rently in memory onto a tape or diskette file. The program being SAVED
+  is only affected by the command while the SAVE is happening. The program
+  remains in the current computer memory even after the SAVE operation is
+  completed until you put something else there by using another command.
+  The file type will be "prg" (program). If the <device-number> is left
+  out, then the C64 will automatically assume that you want the program
+  saved on cassette, device number 1. If the <device-number> is an <8>,
+  then the program is written onto disk. The SAVE statement can be used
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   81
+~
+
+
+  be used in your programs and execution will continue with the next
+  statement after the SAVE is completed.
+    Programs on tape are automatically stored twice, so that your Com-
+  modore 64 can check for errors when LOADing the program back in. When
+  saving programs to tape, the <file-name> and secondary <address> are
+  optional. But following a SAVE with a program name in quotes ("") or
+  by a string variable (---$) helps your Commodore 64 find each program
+  more easily. If the file-name is left out it can NOT be LOADed by name
+  later on.
+    A secondary address of I will tell the KERNAL to LOAD the tape at a
+  later time, with the program currently in memory instead of the normal
+  2048 location. A secondary address of 2 will cause an end-of-tape marker
+  to follow the program. A secondary address of 3 combines both functions.
+    When saving programs onto a disk, the <file-name> must be present.
+
+
+  EXAMPLES of SAVE Command.
+
+    SAVE               (Write to tape without a name)
+
+    SAVE"ALPHA",1      (Store on tape as file-name "alpha")
+
+    SAVE"ALPHA",1,2    (Store "alpha" with end-of-tape marker)
+
+    SAVE"FUN.DISK",8   (SAVES on disk (device 8 is the disk))
+
+    SAVE A$            (Store on tape with the name A$)
+
+    10 SAVE"HI"        (SAVEs program and then move to next program line)
+
+    SAVE"ME",1,3       (Stores at same memory location and puts an
+                        end-of-tope marker on)
+
+
+
+
+
+
+
+
+
+
+
+  82   BASIC LANGUAGE VOCABULARY
+~
+
+
+  SGN
+
+  TYPE: Integer Function
+  FORMAT: SGN (<numeric>)
+
+    Action: SGN gives you an integer value depending upon the sign of the
+  <numeric> argument. If the argument is positive the result is 1, if zero
+  the result is also 0, if negative the result is -1.
+
+  EXAMPLE of SGN Function:
+
+    90 ON SGN(DV)+2 GOTO 100, 200, 300
+    (jump to 100 if DV=negative, 200 if DV=0, 300 if DV=positive)
+
+
+  SIN
+
+  TYPE: Floating-Point Function
+  FORMAT: SIN (<numeric>)
+
+    Action: SIN gives you the sine of the <numeric> argument, in radians.
+  The value of COS(X) is equal to SIN(x+3.14159265/2).
+
+  EXAMPLE of SIN Function:
+
+    235 AA=SIN(1.5):PRINT AA
+     .997494987
+
+
+  SPC
+
+  TYPE: String Function
+  FORMAT: SPC (<numeric>)
+
+    Action: The SPC function is used to control the formatting of data, as
+  either an output to the screen or into a logical file. The number of
+  SPaCes given by the <numeric> argument are printed, starting at the first
+  available position. For screen or tape files the value of the argument
+  is in the range of 0 to 255 and for disk files up to 254. For printer
+  files, an automatic carriage-return and line-feed will be performed by
+  the printer if a SPaCe is printed in the last character position of a
+  line. No SPaCes are printed on the following line.
+
+                                             BASIC LANGUAGE VOCABULARY   83
+~
+
+
+  EXAMPLE of SPC Function:
+
+    10 PRINT"RIGHT "; "HERE &";
+    20 PRINT SPC(5)"OVER" SPC(14)"THERE"
+    RUN
+
+    RIGHT HERE &     OVER              THERE
+
+
+  SQR
+
+  TYPE: Floating-Point Function
+  FORMAT: SQR (<numeric>)
+
+    Action: SQR gives you the value of the SQuare Root of the <numeric>
+  argument. The value of the argument must not be negative, or the BASIC
+  error message ?ILLEGAL QUANTITY will happen.
+
+  EXAMPLE of SQR Function:
+
+    FOR J = 2 TO 5: PRINT J*S, SQR(J*5): NEXT
+
+    10   3.16227766
+    15   3.87298335
+    20   4.47213595
+    25   5
+
+    READY
+
+
+
+  STATUS
+
+  TYPE: Integer Function
+  FORMAT: STATUS
+
+    Action: Returns a completion STATUS for the last input/output operation
+  which was performed on an open file. The STATUS can be read from any
+  peripheral device. The STATUS (or simply ST) keyword is a system defined
+
+
+
+

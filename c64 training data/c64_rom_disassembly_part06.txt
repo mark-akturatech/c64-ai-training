@@ -1,0 +1,260 @@
+# C64 BASIC ROM Disassembly $A500-$A6FF - Line Linking, NEW, CLR
+
+.,A57C A6 7A    LDX $7A         get BASIC execute pointer low byte
+.,A57E A0 04    LDY #$04        set save index
+.,A580 84 0F    STY $0F         clear open quote/DATA flag
+.,A582 BD 00 02 LDA $0200,X     get a byte from the input buffer
+.,A585 10 07    BPL $A58E       if b7 clear go do crunching
+.,A587 C9 FF    CMP #$FF        compare with the token for PI, this toke is input
+                                directly from the keyboard as the PI character
+.,A589 F0 3E    BEQ $A5C9       if PI save byte then continue crunching
+                                this is the bit of code that stops you being able to enter
+                                some keywords as just single shifted characters. If this
+                                dropped through you would be able to enter GOTO as just
+                                [SHIFT]G
+.,A58B E8       INX             increment read index
+.,A58C D0 F4    BNE $A582       loop if more to do, branch always
+.,A58E C9 20    CMP #$20        compare with [SPACE]
+.,A590 F0 37    BEQ $A5C9       if [SPACE] save byte then continue crunching
+.,A592 85 08    STA $08         save buffer byte as search character
+.,A594 C9 22    CMP #$22        compare with quote character
+.,A596 F0 56    BEQ $A5EE       if quote go copy quoted string
+.,A598 24 0F    BIT $0F         get open quote/DATA token flag
+.,A59A 70 2D    BVS $A5C9       branch if b6 of Oquote set, was DATA
+                                go save byte then continue crunching
+.,A59C C9 3F    CMP #$3F        compare with "?" character
+.,A59E D0 04    BNE $A5A4       if not "?" continue crunching
+.,A5A0 A9 99    LDA #$99        else the keyword token is $99, PRINT
+.,A5A2 D0 25    BNE $A5C9       go save byte then continue crunching, branch always
+.,A5A4 C9 30    CMP #$30        compare with "0"
+.,A5A6 90 04    BCC $A5AC       branch if <, continue crunching
+.,A5A8 C9 3C    CMP #$3C        compare with "<"
+.,A5AA 90 1D    BCC $A5C9       if <, 0123456789:; go save byte then continue crunching
+                                gets here with next character not numeric, ";" or ":"
+.,A5AC 84 71    STY $71         copy save index
+.,A5AE A0 00    LDY #$00        clear table pointer
+.,A5B0 84 0B    STY $0B         clear word index
+.,A5B2 88       DEYadjust for pre increment loop
+.,A5B3 86 7A    STX $7A         save BASIC execute pointer low byte, buffer index
+.,A5B5 CA       DEX             adjust for pre increment loop
+.,A5B6 C8       INY             next table byte
+.,A5B7 E8       INX             next buffer byte
+.,A5B8 BD 00 02 LDA $0200,X     get byte from input buffer
+.,A5BB 38       SEC             set carry for subtract
+.,A5BC F9 9E A0 SBC $A09E,Y     subtract table byte
+.,A5BF F0 F5    BEQ $A5B6       go compare next if match
+.,A5C1 C9 80    CMP #$80        was it end marker match ?
+.,A5C3 D0 30    BNE $A5F5       branch if not, not found keyword
+                                actually this works even if the input buffer byte is the
+                                end marker, i.e. a shifted character. As you can't enter
+                                any keywords as a single shifted character, see above,
+                                you can enter keywords in shorthand by shifting any
+                                character after the first. so RETURN can be entered as
+                                R[SHIFT]E, RE[SHIFT]T, RET[SHIFT]U or RETU[SHIFT]R.
+                                RETUR[SHIFT]N however will not work because the [SHIFT]N
+                                will match the RETURN end marker so the routine will try
+                                to match the next character.
+                                else found keyword
+.,A5C5 05 0B    ORA $0B         OR with word index, +$80 in A makes token
+.,A5C7 A4 71    LDY $71         restore save index
+                                save byte then continue crunching
+.,A5C9 E8       INXincrement buffer read index
+.,A5CA C8       INY             increment save index
+.,A5CB 99 FB 01 STA $01FB,Y     save byte to output
+.,A5CE B9 FB 01 LDA $01FB,Y     get byte from output, set flags
+.,A5D1 F0 36    BEQ $A609       branch if was null [EOL]
+                                A holds the token here
+.,A5D3 38       SEC             set carry for subtract
+.,A5D4 E9 3A    SBC #$3A        subtract ":"
+.,A5D6 F0 04    BEQ $A5DC       branch if it was (is now $00)
+                                A now holds token-':'
+.,A5D8 C9 49    CMP #$49        compare with the token for DATA-':'
+.,A5DA D0 02    BNE $A5DE       if not DATA go try REM
+                                token was : or DATA
+.,A5DC 85 0F    STA $0F         save the token-$3A
+.,A5DE 38       SEC             set carry for subtract
+.,A5DF E9 55    SBC #$55        subtract the token for REM-':'
+.,A5E1 D0 9F    BNE $A582       if wasn't REM crunch next bit of line
+.,A5E3 85 08    STA $08         else was REM so set search for [EOL]
+                                loop for "..." etc.
+.,A5E5 BD 00 02 LDA $0200,X     get byte from input buffer
+.,A5E8 F0 DF    BEQ $A5C9       if null [EOL] save byte then continue crunching
+.,A5EA C5 08    CMP $08         compare with stored character
+.,A5EC F0 DB    BEQ $A5C9       if match save byte then continue crunching
+.,A5EE C8       INY             increment save index
+.,A5EF 99 FB 01 STA $01FB,Y     save byte to output
+.,A5F2 E8       INX             increment buffer index
+.,A5F3 D0 F0    BNE $A5E5       loop while <> 0, should never reach 0
+                                not found keyword this go
+.,A5F5 A6 7A    LDX $7A         restore BASIC execute pointer low byte
+.,A5F7 E6 0B    INC $0B         increment word index (next word)
+                                now find end of this word in the table
+.,A5F9 C8       INY             increment table index
+.,A5FA B9 9D A0 LDA $A09D,Y     get table byte
+.,A5FD 10 FA    BPL $A5F9       loop if not end of word yet
+.,A5FF B9 9E A0 LDA $A09E,Y     get byte from keyword table
+.,A602 D0 B4    BNE $A5B8       go test next word if not zero byte, end of table
+                                reached end of table with no match
+.,A604 BD 00 02 LDA $0200,X     restore byte from input buffer
+.,A607 10 BE    BPL $A5C7       branch always, all unmatched bytes in the buffer are
+                                $00 to $7F, go save byte in output and continue crunching
+                                reached [EOL]
+.,A609 99 FD 01 STA $01FD,Y     save [EOL]
+.,A60C C6 7B    DEC $7B         decrement BASIC execute pointer high byte
+.,A60E A9 FF    LDA #$FF        point to start of buffer-1
+.,A610 85 7A    STA $7A         set BASIC execute pointer low byte
+.,A612 60       RTS             
+
+                                *** search BASIC for temporary integer line number
+.,A613 A5 2B    LDA $2B         get start of memory low byte
+.,A615 A6 2C    LDX $2C         get start of memory high byte
+
+                                *** search Basic for temp integer line number from AX
+                                returns carry set if found
+.,A617 A0 01    LDY #$01        set index to next line pointer high byte
+.,A619 85 5F    STA $5F         save low byte as current
+.,A61B 86 60    STX $60         save high byte as current
+.,A61D B1 5F    LDA ($5F),Y     get next line pointer high byte from address
+.,A61F F0 1F    BEQ $A640       pointer was zero so done, exit
+.,A621 C8       INY             increment index ...
+.,A622 C8       INY             ... to line # high byte
+.,A623 A5 15    LDA $15         get temporary integer high byte
+.,A625 D1 5F    CMP ($5F),Y     compare with line # high byte
+.,A627 90 18    BCC $A641       exit if temp < this line, target line passed
+.,A629 F0 03    BEQ $A62E       go check low byte if =
+.,A62B 88       DEY             else decrement index
+.,A62C D0 09    BNE $A637       branch always
+.,A62E A5 14    LDA $14         get temporary integer low byte
+.,A630 88       DEY             decrement index to line # low byte
+.,A631 D1 5F    CMP ($5F),Y     compare with line # low byte
+.,A633 90 0C    BCC $A641       exit if temp < this line, target line passed
+.,A635 F0 0A    BEQ $A641       exit if temp = (found line#)
+                                not quite there yet
+.,A637 88       DEY             decrement index to next line pointer high byte
+.,A638 B1 5F    LDA ($5F),Y     get next line pointer high byte
+.,A63A AA       TAX             copy to X
+.,A63B 88       DEY             decrement index to next line pointer low byte
+.,A63C B1 5F    LDA ($5F),Y     get next line pointer low byte
+.,A63E B0 D7    BCS $A617       go search for line # in temporary integer
+                                from AX, carry always set
+.,A640 18       CLC             clear found flag
+.,A641 60       RTS             
+
+                                *** perform NEW
+.,A642 D0 FD    BNE $A641       exit if following byte to allow syntax error
+.,A644 A9 00    LDA #$00        clear A
+.,A646 A8       TAY             clear index
+.,A647 91 2B    STA ($2B),Y     clear pointer to next line low byte
+.,A649 C8       INY             increment index
+.,A64A 91 2B    STA ($2B),Y     clear pointer to next line high byte, erase program
+.,A64C A5 2B    LDA $2B         get start of memory low byte
+.,A64E 18       CLC             clear carry for add
+.,A64F 69 02    ADC #$02        add null program length
+.,A651 85 2D    STA $2D         set start of variables low byte
+.,A653 A5 2C    LDA $2C         get start of memory high byte
+.,A655 69 00    ADC #$00        add carry
+.,A657 85 2E    STA $2E         set start of variables high byte
+
+                                *** reset execute pointer and do CLR
+.,A659 20 8E A6 JSR $A68E       set BASIC execute pointer to start of memory - 1
+.,A65C A9 00    LDA #$00        set Zb for CLR entry
+
+                                *** perform CLR
+.,A65E D0 2D    BNE $A68D       exit if following byte to allow syntax error
+.,A660 20 E7 FF JSR $FFE7       close all channels and files
+.,A663 A5 37    LDA $37         get end of memory low byte
+.,A665 A4 38    LDY $38         get end of memory high byte
+.,A667 85 33    STA $33         set bottom of string space low byte, clear strings
+.,A669 84 34    STY $34         set bottom of string space high byte
+.,A66B A5 2D    LDA $2D         get start of variables low byte
+.,A66D A4 2E    LDY $2E         get start of variables high byte
+.,A66F 85 2F    STA $2F         set end of variables low byte, clear variables
+.,A671 84 30    STY $30         set end of variables high byte
+.,A673 85 31    STA $31         set end of arrays low byte, clear arrays
+.,A675 84 32    STY $32         set end of arrays high byte
+
+                                *** do RESTORE and clear stack
+.,A677 20 1D A8 JSR $A81D       perform RESTORE
+
+                                *** flush BASIC stack and clear the continue pointer
+.,A67A A2 19    LDX #$19        get the descriptor stack start
+.,A67C 86 16    STX $16         set the descriptor stack pointer
+.,A67E 68       PLA             pull the return address low byte
+.,A67F A8       TAY             copy it
+.,A680 68       PLA             pull the return address high byte
+.,A681 A2 FA    LDX #$FA        set the cleared stack pointer
+.,A683 9A       TXS             set the stack
+.,A684 48       PHA             push the return address high byte
+.,A685 98       TYA             restore the return address low byte
+.,A686 48       PHA             push the return address low byte
+.,A687 A9 00    LDA #$00        clear A
+.,A689 85 3E    STA $3E         clear the continue pointer high byte
+.,A68B 85 10    STA $10         clear the subscript/FNX flag
+.,A68D 60       RTS             
+
+                                *** set BASIC execute pointer to start of memory - 1
+.,A68E 18       CLC             clear carry for add
+.,A68F A5 2B    LDA $2B         get start of memory low byte
+.,A691 69 FF    ADC #$FF        add -1 low byte
+.,A693 85 7A    STA $7A         set BASIC execute pointer low byte
+.,A695 A5 2C    LDA $2C         get start of memory high byte
+.,A697 69 FF    ADC #$FF        add -1 high byte
+.,A699 85 7B    STA $7B         save BASIC execute pointer high byte
+.,A69B 60       RTS             
+
+                                *** perform LIST
+.,A69C 90 06    BCC $A6A4       branch if next character not token (LIST n...)
+.,A69E F0 04    BEQ $A6A4       branch if next character [NULL] (LIST)
+.,A6A0 C9 AB    CMP #$AB        compare with token for -
+.,A6A2 D0 E9    BNE $A68D       exit if not - (LIST -m)
+                                LIST [[n][-m]]
+                                this bit sets the n , if present, as the start and end
+.,A6A4 20 6B A9 JSR $A96B       get fixed-point number into temporary integer
+.,A6A7 20 13 A6 JSR $A613       search BASIC for temporary integer line number
+.,A6AA 20 79 00 JSR $0079       scan memory
+.,A6AD F0 0C    BEQ $A6BB       branch if no more chrs
+                                this bit checks the - is present
+.,A6AF C9 AB    CMP #$AB        compare with token for -
+.,A6B1 D0 8E    BNE $A641       return if not "-" (will be SN error)
+                                LIST [n]-m
+                                the - was there so set m as the end value
+.,A6B3 20 73 00 JSR $0073       increment and scan memory
+.,A6B6 20 6B A9 JSR $A96B       get fixed-point number into temporary integer
+.,A6B9 D0 86    BNE $A641       exit if not ok
+.,A6BB 68       PLA             dump return address low byte, exit via warm start
+.,A6BC 68       PLA             dump return address high byte
+.,A6BD A5 14    LDA $14         get temporary integer low byte
+.,A6BF 05 15    ORA $15         OR temporary integer high byte
+.,A6C1 D0 06    BNE $A6C9       branch if start set
+.,A6C3 A9 FF    LDA #$FF        set for -1
+.,A6C5 85 14    STA $14         set temporary integer low byte
+.,A6C7 85 15    STA $15         set temporary integer high byte
+.,A6C9 A0 01    LDY #$01        set index for line
+.,A6CB 84 0F    STY $0F         clear open quote flag
+.,A6CD B1 5F    LDA ($5F),Y     get next line pointer high byte
+.,A6CF F0 43    BEQ $A714       if null all done so exit
+.,A6D1 20 2C A8 JSR $A82C       do CRTL-C check vector
+.,A6D4 20 D7 AA JSR $AAD7       print CR/LF
+.,A6D7 C8       INY             increment index for line
+.,A6D8 B1 5F    LDA ($5F),Y     get line number low byte
+.,A6DA AA       TAX             copy to X
+.,A6DB C8       INY             increment index
+.,A6DC B1 5F    LDA ($5F),Y     get line number high byte
+.,A6DE C5 15    CMP $15         compare with temporary integer high byte
+.,A6E0 D0 04    BNE $A6E6       branch if no high byte match
+.,A6E2 E4 14    CPX $14         compare with temporary integer low byte
+.,A6E4 F0 02    BEQ $A6E8       branch if = last line to do, < will pass next branch
+                                else
+.,A6E6 B0 2C    BCS $A714       if greater all done so exit
+.,A6E8 84 49    STY $49         save index for line
+.,A6EA 20 CD BD JSR $BDCD       print XA as unsigned integer
+.,A6ED A9 20    LDA #$20        space is the next character
+.,A6EF A4 49    LDY $49         get index for line
+.,A6F1 29 7F    AND #$7F        mask top out bit of character
+.,A6F3 20 47 AB JSR $AB47       go print the character
+.,A6F6 C9 22    CMP #$22        was it " character
+.,A6F8 D0 06    BNE $A700       if not skip the quote handle
+                                we are either entering or leaving a pair of quotes
+.,A6FA A5 0F    LDA $0F         get open quote flag
+.,A6FC 49 FF    EOR #$FF        toggle it
+.,A6FE 85 0F    STA $0F         save it back

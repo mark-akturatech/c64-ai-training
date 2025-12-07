@@ -1,0 +1,302 @@
+# C64 PRG Appendix - VIC-II Register Summary
+
+
+
+
+
+
+
+
+
+
+                                                           APPENDIX M   425
+~
+
+
+  6526 INTERFACE SIGNALS
+
+  02-Clock Input
+
+    The 02 clock is a TTL compatible input used for internal device opera-
+  tion and as a timing reference for communicating with the system data
+  bus.
+
+  /CS-Chip Select Input
+
+    The /CS input controls the activity of the 6526. A low level on /CS
+  while 02 is high causes the device to respond to signals on the R/W and
+  address (RS) lines. A high on /CS prevents these lines from controlling
+  the 6526. The /CS line is normally activated (low) at 02 by the
+  appropriate address combination.
+
+  R/W-Read/Write Input
+
+    The R/W signal is normally supplied by the microprocessor and controls
+  the direction of data transfers of the 6526. A high on R/W indicates
+  a read (data transfer out of the 6526), while a low indicates a write
+  (data transfer into the 6526).
+
+  RS3-RS0-Address Inputs
+
+    The address inputs select the internal registers as described by the
+  Register Map.
+
+  DB7-DB0-Data Bus Inputs/Outputs
+
+    The eight data bus pins transfer information between the 6526 and the
+  system data bus. These pins are high impedance inputs unless CS is low
+  and R/W and 02 are high to read the device. During this read, the data
+  bus output buffers are enabled, driving the data from the selected
+  register onto the system data bus.
+
+  IRQ-Interrupt Request Output
+
+    IRQ is an open drain output normally connected to the processor inter-
+  rupt input. An external pullup resistor holds the signal high, allowing
+  multiple IRQ outputs to be connected together. The IRQ output is normally
+
+
+  426   APPENDIX M
+~
+
+
+  off (high impedance) and is activated low as indicated in the functional
+  description.
+
+  /RES-Reset Input
+
+    A low on the RES pin resets all internal registers. The port pins are
+  set as inputs and port registers to zero (although a read of the ports
+  will return all highs because of passive pullups). The timer control
+  registers are set to zero and the timer latches to all ones. All other
+  registers are reset to zero.
+
+                        6526 TIMING CHARACTERISTICS
+  +--------+-----------------------+---------------+---------------+------+
+  |        |                       |      1MHz     |      2MHz     |      |
+  |        |                       +-------+-------+-------+-------+      |
+  | Symbol |    Characteristic     |  MIN  |  MAX  |  MIN  |  MAX  | Unit |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | 02 CLOCK              |       |       |       |       |      |
+  | Tcyc   | Cycle Time            |  1000 |20,000 |   500 |20,000 |  ns  |
+  | Tr, Tf | Rise and Fall Time    |   -   |    25 |   -   |    25 |  ns  |
+  | Tchw   | Clock Pulse Width     |       |       |       |       |      |
+  |        |   (High)              |   420 |10,000 |   200 |10,000 |  ns  |
+  | Tclw   | Clock Pulse Width     |       |       |       |       |      |
+  |        |   (Low)               |   420 |10,000 |   200 |10,000 |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | WRITE CYCLE           |       |       |       |       |      |
+  | Tpd    | Output Delay From 02  |    -  |  1000 |   -   |   500 |  ns  |
+  | Twcs   | /CS low while 02 high |   420 |   -   |   200 |   -   |  ns  |
+  | Tads   | Address Setup Time    |     0 |   -   |     0 |   -   |  ns  |
+  | Tadh   | Address Hold Time     |    10 |   -   |     5 |   -   |  ns  |
+  | Trws   | R/W Setup Time        |     0 |   -   |     0 |   -   |  ns  |
+  | Trwh   | R/W Hold Time         |     0 |   -   |     0 |   -   |  ns  |
+  | Tds    | Data Bus Setup Time   |   150 |   -   |    75 |   -   |  ns  |
+  | Tdh    | Data Bus Hold Time    |     0 |   -   |     0 |   -   |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | READ CYCLE            |       |       |       |       |      |
+  | Tps    | Port Setup Time       |   300 |   -   |   150 |   -   |  ns  |
+  | Twcs(2)| /CS low while 02 high |   420 |   -   |    20 |   -   |  ns  |
+  | Tads   | Address Setup Time    |     0 |   -   |     0 |   -   |  ns  |
+  | Tadh   | Address Hold Time     |    10 |   -   |     5 |   -   |  ns  |
+  | Trws   | R/W Setup Time        |     0 |   -   |     0 |   -   |  ns  |
+  | Trwh   | R/W Hold Time         |     0 |   -   |     0 |   -   |  ns  |
+
+                                                           APPENDIX M   427
+~
+
+
+  +--------+-----------------------+---------------+---------------+------+
+  |        |                       |      1MHz     |      2MHz     |      |
+  |        |                       +-------+-------+-------+-------+      |
+  | Symbol |    Characteristic     |  MIN  |  MAX  |  MIN  |  MAX  | Unit |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  | Tacc   | Data Access from      |       |       |       |       |      |
+  |        | RS3-RS0               |   -   |   550 |   -   |   275 |  ns  |
+  | Tco(3) | Data Access from /CS  |   -   |   320 |   -   |   150 |  ns  |
+  | Tdr    | Data Release Time     |    50 |   -   |    25 |   -   |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+
+
+  +-----------------------------------------------------------------------+
+  | NOTES: 1 -All timings are referenced from Vil max and Vih min on      |
+  | inputs and Vol max and Voh min on outputs.                            |
+  |        2 -Twcs is measured from the later of 02 high or /CS low. /CS  |
+  | must be low at least until the end of 02 high.                        |
+  |        3 -Tco is measured from the later of 02 high or /CS low.       |
+  |        Valid data is available only after the later of Tacc or Tco.   |
+  +-----------------------------------------------------------------------+
+
+                                REGISTER MAP
+  +---+---+---+---+---+----------+----------------------------------------+
+  |RS3|RS2|RS1|RS0|REG|   NAME   |                                        |
+  +---+---+---+---+---+----------+----------------------------------------+
+  | 0 | 0 | 0 | 0 | 0 | PRA      |  PERIPHERAL DATA REG A                 |
+  | 0 | 0 | 0 | 1 | 1 | PRB      |  PERIPHERAL DATA REG B                 |
+  | 0 | 0 | 1 | 0 | 2 | DDRA     |  DATA DIRECTION REG A                  |
+  | 0 | 0 | 1 | 1 | 3 | DDRB     |  DATA DIRECTION REG B                  |
+  | 0 | 1 | 0 | 0 | 4 | TA LO    |  TIMER A LOW REGISTER                  |
+  | 0 | 1 | 0 | 1 | 5 | TA HI    |  TIMER A HIGH REGISTER                 |
+  | 0 | 1 | 1 | 0 | 6 | TB LO    |  TIMER B LOW REGISTER                  |
+  | 0 | 1 | 1 | 1 | 7 | TB HI    |  TIMER B HIGH REGISTER                 |
+  | 1 | 0 | 0 | 0 | 8 | TOD 10THS|  10THS OF SECONDS REGISTER             |
+  | 1 | 0 | 0 | 1 | 9 | TOD SEC  |  SECONDS REGISTER                      |
+  | 1 | 0 | 1 | 0 | A | TOD MIN  |  MINUTES REGISTER                      |
+  | 1 | 0 | 1 | 1 | B | TOD HR   |  HOURS-AM/PM REGISTER                  |
+  | 1 | 1 | 0 | 0 | C | SDR      |  SERIAL DATA REGISTER                  |
+  | 1 | 1 | 0 | 1 | 0 | ICR      |  INTERRUPT CONTROL REGISTER            |
+  | 1 | 1 | 1 | 0 | E | CRA      |  CONTROL REG A                         |
+  | 1 | 1 | 1 | 1 | F | CRB      |  CONTROL REG B                         |
+  +---+---+---+---+---+----------+----------------------------------------+
+
+  428   APPENDIX M
+~
+
+
+  6526 FUNCTIONAL DESCRIPTION
+
+  I/O Ports (PRA, PRB, DDRA, DDRB).
+
+    Ports A and B each consist of an 8-bit Peripheral Data Register (PR)
+  and an 8-bit Data Direction Register (DDR). If a bit in the DDR is set to
+  a one, the corresponding bit in the PR is an output; if a DDR bit is set
+  to a zero, the corresponding PR bit is defined as an input. On a READ,
+  the PR reflects the information present on the actual port pins (PA0-PA7,
+  PB0-PB7) for both input and output bits. Port A and Port B have passive
+  pull-up devices as well as active pull-ups, providing both CMOS and TTL
+  compatibility. Both ports have two TTL load drive capability. In addition
+  to normal I/O operation, PB6 and PB7 also provide timer output functions.
+
+  Handshaking
+
+    Handshaking on data transfers can be accomplished using the /PC output
+  pin and the FLAG input pin. PC will go low for one cycle following a read
+  or write of PORT B. This signal can be used to indicate "data ready" at
+  PORT B or "data accepted" from PORT B. Handshaking on 16-bit data
+  transfers (using both PORT A and PORT B) is possible by always reading or
+  writing PORT A first. /FLAG is a negative edge sensitive input which can
+  be used for receiving the /PC output from another 6526, or as a general
+  purpose interrupt input. Any negative transition of /FLAG will set the
+  /FLAG interrupt bit.
+  +-----+---------+------+------+------+------+------+------+------+------+
+  | REG |  NAME   |  D7  |  D6  |  D5  |  D4  |  D3  |  D2  |  D1  |  D0  |
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  0  |   PRA   |  PA7 |  PA6 |  PA5 |  PA4 |  PA3 |  PA2 |  PA1 |  PA0 |
+  |  1  |   PRB   |  PB7 |  PB6 |  PB5 |  PB4 |  PB3 |  PB2 |  PB1 |  PB0 |
+  |  2  |  DDRA   | DPA7 | DPA6 | DPA5 | DPA4 | DPA3 | DPA2 | DPA1 | DPA0 |
+  |  3  |  DDRB   | DPB7 | DPB6 | DPB5 | DPB4 | DPB3 | DPB2 | DPB1 | DPB0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  Interval Timers (Timer A, Timer B)
+
+    Each interval timer consists of a 16-bit read-only Timer Counter and a
+  16-bit write-only Timer Latch. Data written to the timer are latched in
+  the Timer Latch, while data read from the timer are the present contents
+  of the Time Counter. The timers can be used independently or linked for
+  extended operations. The various timer modes allow generation of long
+  time delays, variable width pulses, pulse trains and variable frequency
+
+                                                           APPENDIX M   429
+~
+
+
+  waveforms. Utilizing the CNT input, the timers can count external pulses
+  or measure frequency, pulse width and delay times of external signals.
+  Each timer has an associated control register, providing independent
+  control of the following functions:
+
+  Start/Stop
+
+    A control bit allows the timer to be started or stopped by the micro-
+  processor at any time.
+
+  PB On/Off:
+
+    A control bit allows the timer output to appear on a PORT B output line
+  (PB6 for TIMER A and PB7 for TIMER B). This function overrides the DDRB
+  control bit and forces the appropriate PB line to an output.
+
+  Toggle/Pulse
+
+    A control bit selects the output applied to PORT B. On every timer
+  underflow the output can either toggle or generate a single positive
+  pulse of one cycle duration. The Toggle output is set high whenever the
+  timer is started and is set low by /RES.
+
+  One-Shot/Continuous
+
+    A control bit selects either timer mode. In one-shot mode, the timer
+  will count down from the latched value to zero, generate an interrupt,
+  reload the latched value, then stop. In continuous mode, the timer will
+  count from the latched value to zero, generate' an interrupt, reload the
+  latched value and repeat the procedure continuously.
+
+  Force Load
+
+    A strobe bit allows the timer latch to be loaded into the timer counter
+  at any time, whether the timer is running or not.
+
+  Input Mode:
+
+    Control bits allow selection of the clock used to decrement the timer.
+  TIMER A can count 02 clock pulses or external pulses applied to the CNT
+  pin. TIMER B can count (02 pulses, external CNT pulses, TIMER A underflow
+  pulses or TIMER A underflow pulses while the CNT pin is held high.
+
+  430   APPENDIX M
+~
+
+
+    The timer latch is loaded into the timer on any timer underflow, on a
+  force load or following a write to the high byte of the prescaler while
+  the timer is stopped. If the timer is running, a write to the high byte
+  will load the timer latch, but not reload the counter.
+
+  READ (TIMER)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  4  |  TA LO  | TAL7 | TAL6 | TAL5 | TAL4 | TAL3 | TAL2 | TAL1 | TAL0 |
+  |  5  |  TA HI  | TAH7 | TAH6 | TAH5 | TAH4 | TAH3 | TAH2 | TAH1 | TAH0 |
+  |  6  |  TB LO  | TBL7 | TBL6 | TBL5 | TBL4 | TBL3 | TBL2 | TBL1 | TBL0 |
+  |  7  |  TB HI  | TBH7 | TBH6 | TBH5 | TBH4 | TBH3 | TBH2 | TBH1 | TBH0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+  WRITE (PRESCALER)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  4  |  TA LO  | PAL7 | PAL6 | PAL5 | PAL4 | PAL3 | PAL2 | PAL1 | PAL0 |
+  |  5  |  TA HI  | PAH7 | PAH6 | PAH5 | PAH4 | PAH3 | PAH2 | PAH1 | PAH0 |
+  |  6  |  TB LO  | PBL7 | PBL6 | PBL5 | PBL4 | PBL3 | PBL2 | PBL1 | PBL0 |
+  |  7  |  TB HI  | PBH7 | PBH6 | PBH5 | PBH4 | PBH3 | PBH2 | PBH1 | PBH0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  Time of Day Clock (TOD)
+
+    The TOD clock is a special purpose timer for real-time applications.
+  TOD consists of a 24-hour (AM/PM) clock with 1/10th second resolution. It
+  is organized into 4 registers: 10ths of seconds, Seconds, Minutes and
+  Hours. The AM/PM flag is in the MSB of the Hours register for easy bit
+  testing. Each register reads out in BCD format to simplify conversion for
+  driving displays, etc. The clock requires an external 60 Hz or 50 Hz
+  (programmable) TTL level input on the TOD pin for accurate time-keeping.
+  In addition to time-keeping, a programmable ALARM is provided for
+  generating an interrupt at a desired time. The ALARM registers or located
+  at the same addresses as the corresponding TOD registers. Access to the
+  ALARM is governed by a Control Register bit. The ALARM is write-only; any
+  read of a TOD address will read time regardless of the state of the ALARM
+  access bit.
+    A specific sequence of events must be followed for proper setting and
+  reading of TOD. TOD is automatically stopped whenever a write to the
+  Hours register occurs. The clock will not start again until after a write
+  to the 10ths of seconds register. This assures TOD will always start at
+  the desired time. Since a carry from one stage to the next can occur at
+
+                                                           APPENDIX M   431
+~
+
+
+  any time with respect to a read operation, a latching function is
+  included to keep all Time Of Day information constant during a read
+  sequence. All four TOD registers latch on a read of Hours and remain
+  latched until after a read of 10ths of seconds. The TOD clock continues
+  to count when the output registers are latched. If only one register is

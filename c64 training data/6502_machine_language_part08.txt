@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 4: Numbers, Arithmetic, Two's Complement
+
+
+- Immediate mode is signaled by use of the # symbol.  The computer is asked
+  to take the value given, instead of going to a specified address for its
+  data.
+
+- X and Y are called index registers.  We may add the contents of X or Y to a
+  specified address, to create an effective address that changes as the
+  program runs.  This addition is called indexing.
+
+- X and Y also have special instructions that increase or decrease the
+  selected register by one.  These are called increment and decrement
+  instructions, and are coded INX, INY, DEX, and DEY.
+
+
+Questions and Projects
+----------------------
+
+Look through the table of ASCII characters in Appendix D.  note that hex 93
+is "clear screen."  Write a program to clear the screen and print "HO HO!".
+
+You may have noticed that in our example, we had register X counting up from
+zero to the desired value.  What would happen if you started X at 5 and
+counted down?  Try it if you like.
+
+Remember that you can also include cursor movements, color codes (if your
+machine has color), and other special ASCII characters.  Could you lay out
+the coding to draw a box?  (Try it in BASIC first).  Draw a box with the word
+HELLO inside it.
+
+                                                                         :37:
+                                                                         :38:
+                                                                         :39:
+
+
+
+                                                          Chapter 3
+
+                                                      Flags, Logic,
+                                                          and Input
+
+
+          This chapter discusses:
+
+            o Flags that hold status information
+
+            o Testable flags:  Z, C, N, and V
+
+            o Signed numbers
+
+            o The status register
+
+            o First concepts of interrupt
+
+            o Logical operators:  OR, AND, EOR
+
+            o The GETIN subroutine for input
+
+            o The STOP subroutine
+
+
+                                                                         :40:
+
+Flags
+-----
+
+Near the end of Chapter 2, we coded a program that had the seemingly natural
+sequence
+
+  CPX #$06
+  BNE $....
+
+It made sense:  compare X for a value of 6, and if not equal, branch back.
+Yet it implies something extraordinary; the two instructions are somehow
+linked.
+
+Let's flash forward for a moment.  Even when you have a machine language
+program running, the computer "freezes" sixty times a second.  The computer
+undertakes a special activity, called interrupt processing.  It stops
+whatever it was doing, and switches to a new set of programs that do several
+tasks:  flashing the cursor, checking the keyboard, keeping the clock up to
+date, and checking to see whether the cassette motor needs power.  When it's
+finished, it "unfreezes" the main program and lets it continue where it left
+off.
+
+This interrupt might take place between the two instructions shown above,
+that is, after the CPX and before the BNE.  Hundreds of interrupt
+instructions might be executed between the two, yet nothing is harmed.  The
+two instructions work together perfectly to achieve the desired effect.  How
+can the computer do this?
+
+The two instructions are linked by means of a flag--a part of the 650x that
+records that something has happened.  The CPX instruction tests X and turns a
+special flag on or off to signal how the comparison turned out:  equal or
+unequal.  The BNE instruction tests that flag.  If it's on (meaning equal),
+no branch will take place and the program will continue with the next
+instruction; if it's off (meaning not equal), a branch will take place.
+
+In other words, some instructions leave a "trail" of status information;
+other instructions can check this information.  The status information is
+called "flags."  There are four flags that may be tested:  Z, C, N, and V.
+They are discussed below.
+
+
+Z Flag
+------
+
+The Z (zero) flag is probably misnamed, and should have been called the E
+flag (for "equals").  After any comparison (CPX to compare X, CPY to compare
+Y, or CMP to compare A), the Z flag will be set to "on" if the compared
+values are equal; otherwise it will be reset to "off."
+
+                                                                         :41:
+
+Sometimes the X flag checks for equal to zero, hence its name, Z for zero.
+This happens for every activity that may change one of the three data
+registers.  Thus, any load command will affect the Z flag status.  The same
+is true of increment and decrement instructions, which obviously change
+registers.  And later, when we meet other operations such as addition and
+subtraction, they too will affect the Z flag.
+
+There are many instructions that don't affect the Z flag (or any flag, for
+that matter).  Store instructions (STA, STX, STY), never change a flag.
+Branch instructions test flags but don't change them.
+
+An example will help illustrate the way that some instructions change flags
+and others do not.  Examine the following coding:
+
+  LDA #$23   (Load 23 to A)
+  LDX #$00   (Load zero to X)
+  STA $1234  (store 23 to address $1234)
+  BEQ $....
+
+Will the branch (BEQ) be taken, or will the 650x continue with the next
+instruction?  Let's analyze the Z flag's activity step by step.  The first
+instruction (LDA #$23) resets the Z flag, since 23 is not equal to zero.  The
+second instruction (LDX #$00) sets the Z flag because of the zero value.  The
+third instruction (STA $1234) does not affect the Z flag; in fact, store
+instructions do not affect any flags.  Thus, by the time we reach the BEQ
+instruction, the Z flag is set "on" and the branch will be taken.
+
+650x reference manuals show the specific flags that are affected by each
+instruction.  In case of doubt, they are easy to check.
+
+The Z flag is quite busy--it clicks on and off very often since many
+instructions affect it.  It's an important flag.
+
+If the Z flag is set "on," the BEQ (branch equals) instruction will branch to
+the specified address; otherwise it will be ignored and the next instruction
+in sequence will be executed.  If the Z flag is reset "off," the BNE (branch
+not equals) instruction will branch.
+
+We can see in more detail how our program from Chapter 2 worked.  CPX #$06
+causes the Z flag to be set "on" if X contains the value 6; otherwise it
+causes the Z flag to be reset "off."  BNE tests this flag, and branches back
+to the loop if the Z flag is off--in other words, only if the contents of X
+is not equal to six.
+
+                                                                         :42:
+
+C Flag
+------
+
+The C (carry) flag is probably misnamed, too.  It should have been called the
+GE (greater/equal) flag, since after a comparison (CPX, CPY or CMP), the C
+flag is set "on" if the register (X, Y, or A) is greater than or equal to the
+value compared.  If the register concerned is smaller, the C flag will be
+reset "off."
+
+The C flag is not as busy as the Z flag.  The C flag is affected only by
+comparison instructions and by arithmetic activities (add, subtract, and a
+type of multiplication and division called rotate or shift).  When used in
+arithmetic, the C flag is properly named, since it acts as a "carry" bit
+between various columns as they are calculated.  For example, an LDA
+instruction always affects the Z flag since a register is being changed, but
+never affects the C flag since no arithmetic or comparison is being
+performed.
+
+If the C flag is set "on," the BCS (branch carry set) instruction will branch
+to the specified address; otherwise it will be ignored and the next
+instruction in sequence will be executed.  If the C flag is reset "off," the
+BCC (branch carry clear) instruction will branch.
+
+The C flag may be directly set or reset by means of the instructions SEC (set
+carry) and CLC (clear carry).  We will use these instructions when we begin
+to deal with addition and subtraction.
+
+If you examine the last program of Chapter 2, you will see that the BNE
+instruction could be replaced by BCC.  Instead of "branch back if not equal
+to 6," we could code "branch back if less than 6."  The operation would be
+the same in either case.
+
+
+N Flag
+------
+
+The N (negative) flag is also probably misnamed.  It should have been called
+the HB (high bit) flag, since numbers are positive or negative only if they
+are used in a certain way.  The N flag is set to indicate that a register has
+been given a value whose high bit is set.
+
+The N flag is as busy as the Z flag; it changes with every instruction that
+affects a register.  The N flag is affected by comparisons, but in this case
+its condition is not usually meaningful to the computer.
+
+To sort out the operation of the N flag, it's important to become familiar
+with hexadecimal-to-binary conversion.  For example, will LDA #$65 set the N
+flag?  Rewrite it into binary:  $65 equals %01100101.  We can see that the
+high bit is not set, meaning that the N flag will be off after loading this
+value.  As another example, suppose we LDX #$DA.  Hex DA is 11011010 binary.
+We see that the high bit is on and thus the N flag is set.
+
+                                                                         :43:
+
+If the N flag is set "on," the BMI (branch minus) instruction will branch to
+the specified address; otherwise it will be ignored and the next instruction
+in sequence will be executed.  If the N flag is reset "off," the BPL (branch
+plus) instruction will branch.
+
+
+A Brief Diversion:  Signed Numbers
+----------------------------------
+
+How can a location--which is usually thought to contain a decimal value from
+0 to 255--contain a negative number?  It's up to the programmer to decide
+whether a memory value is unsigned, having a value range from 0 to 255, or
+signed, having a value range from -128 to +127.  There are still a total of
+256 possibilities.  The computer's memory simply holds bits, while the
+programmer decides how the bits are to be used in a specific case.
+
+Mathematically, it's described this way:  signed numbers, if desired, are
+held in two's-complement form.  We can hold -1 as hex FF, and -2 as hex FE,
+all the way down to -128 as hex 80.  You may have noticed that in all the
+examples, the high bit is set for these negative numbers.
+
+We may need more intuitive help, however.  If the computer loads the decimal
+value 200 into the A register with LDA #$C8, the N flag will be set and will
+seemingly indicate that 200 is a negative number.  It may be more comfortable
+to simply think of 200 as a number with the high bit set.  But in a sense,
+200 could be a negative number if we wanted it to be.  Let's examine the
+situation by means of examples.
+
+If I were asked to count down in hexadecimal from 10, I'd start out with $10,
+$0F, $0E, and $0D, continuing down to $02, $01, and $00.  If I needed to keep
+going, I'd continue past $00 with $FF; in this case, hex FF would clearly
+represent negative one.  Continuing, FE, FD, and FC would represent -2, -3,
+and -4.  And the high bit is set on all these "negative" numbers.
+
+Let's discuss a decimal analogy.  Suppose you have a cassette recorder with a
+counter device attached, and the counter reads 0025.  If you rewind the unit
+a distance of 30 units, you would not be surprised to see a value of 9995 on
+the counter and would understand that it meant a position of -5.  If you had
+a car with 1,500 miles on the odometer, and "rolled back" the mileage by
+1,501 miles, you'd see a reading of 99999, which would mean -1.  (The author
+does not know this from personal experience, but is assured by many machine
+language students that it is so.)  In these cases, based on the decimal
+system, the negative numbers are called "ten's complement."
+
+                                                                         :44:
+
+V Flag
+------
+
+As with the other flags, the V (overflow) flag is probably misnamed.  It
+should have been called the SAO (signed arithmetic overflow) flag, since it
+is affected only by addition and subtraction commands, and is meaningful only
+if the numbers concerned are considered to be signed.
+
+The V flag is used only occasionally in typical 650x coding.  Many machine
+language programs don't use signed numbers at all.  The most typical use of
+the V flag is in conjunction with a rather specialized command, BIT (bit
+test).  For this instruction, the V flag signals the condition of bit 6 of
+the memory location being tested.  In this case, V and N work in a similar
+way:  N reflects the high bit, bit 7, and V represents the "next bit down,"
+bit 6.  The BIT command is used primarily for testing input/output ports on
+IA (interface adapter) chips.
+
+If the V flag is set "on," the BVS (branch overflow set) instruction will
+branch to the specified address; otherwise it will be ignored and the next
+instruction in sequence will be executed.  If the V flag is reset "off," the
+BVC (branch overflow clear) instruction will branch.
+
+The V flag may be directly reset by means of the CLV (clear overflow)
+instruction.  Oddly, there is no equivalent instruction to set the flag.
+
+One special feature of the V flag:  on some 650x chips, the V flag can be set
+by hardware.  There is a pin on the chip that can be used so that an external
+logic signal will trigger the V flag.
+
+
+A Brief Diversion:  Overflow
+----------------------------
+
+The term overflow means "the result is too big to fit."  For example, if I
+add 200 to 200, the result is 400...but this won't fit in a single byte.  If
+we have only a single byte to store the result, we say that the addition has
+encountered overflow, and we can't produce a meaningful answer.
+
+If we are using unsigned numbers, the C flag tells us about overflow.  If we
+are using signed numbers, V tells the story.  We'll take this up again in the
+next chapter.

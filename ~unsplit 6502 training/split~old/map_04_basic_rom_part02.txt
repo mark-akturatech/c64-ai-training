@@ -1,0 +1,365 @@
+42089-42099   $A474-$A47F    READY
+Print READY
+
+This routine displays the word READY, sets the Kernal message flag to
+show that direct mode is operative, and falls through to the main
+BASIC loop.
+
+42112-42139   $A480-$A49B    MAIN
+Main Loop, Receives Input and Executes Immediately or Stores as
+Program Line
+
+This is the main BASIC program loop.  It jumps through the RAM vector
+at 770 ($302), so this routine can be diverted.  The routine gets a
+line of input from the keyboard, and checks for a line number.  If
+there is a line number, the program branches to the routine that
+stores a line of program text.  If there is no line number, it
+branches to the routine that executes statements.
+
+42140         $A49C          MAIN1
+Add or Replace a Line of Program Text
+
+This routine calls subroutines to get the line number, tokenize
+keywords, and then looks for a line with the same line number.
+
+If it finds a line with the same number, the routine deletes that line
+by moving all higher program text and variables down to where it
+started.  The new line is then added.  Since the CLR routine is
+called, the value of all current program variables is lost.
+
+42291         $A533          LINKPRG
+Relink Lines of Tokenized Program Text
+
+Each line of program text starts with a pointer to the address of the
+next line (link address).  This routine scans each line to the end
+(which is marked with a 0), and calculates the new link address by
+adding the offset to the address of the current statement.
+
+42336         $A560          INLIN
+Input a Line to Buffer from Keyboard
+
+This subroutine calls the Kernal CHRIN routine (61783, $F157) to
+obtain a line of input from the current input device (usually the
+keyboard).  It stores the characters in the BASIC text input buffer at
+512 ($200) until a carriage return or 89 characters have been
+received.  The keyboard device will never return more than 80
+characters before a carriage return, but other devices can output a
+longer line.  An error will occur if the line goes over 80 characters.
+
+42361         $A579          CRUNCH
+Tokenize Line in Input Buffer
+
+When a line of program text has been input into the BASIC text buffer
+at 512 ($200), this routine goes through the line and changes any
+keywords or their abbreviations, which do not appear in quotes, into
+their corresponding token.  This command is vectored through RAM at
+772 ($304), so it can be diverted in order to add new commands.
+
+42515         $A613          FINDLN
+Search for Line Number
+
+This routine searches through the program text, trying to match the
+two-byte integer line number that is stored in 20-21 ($14-$15).  If it
+is found, 95-96 ($5F-$60) will be set as a pointer to the address of
+the link field for that line, and the Carry flag will be set.  If it
+is not found, the Carry flag will be cleared.
+
+42562         $A642          SCRTCH
+Perform NEW
+
+The NEW command stores two zeros in the link address of the first
+program line to indicate the end of program, and sets the end of
+program pointer at 45-46 ($2D-$2E) to point to the byte past those
+zeros.  It continues through to the CLR command code.
+
+42590         $A65E          CLEAR
+Perform CLR
+
+The CLR command closes all I/O files with the Kernal CLALL routine
+(62255, $F32F).  It eliminates string variables by copying the end of
+memory pointer at 55-56 ($37-$38) to the bottom of strings pointer at
+51-52 ($33-$34).  It also copies the pointer to the end of BASIC
+program text at 49-50 ($31-$31) to the pointer to the start of
+nonarray variables at 45-46 ($2D-$2E) and the start of array variables
+at 47-48 ($2F-$30).  This makes these variables unusable (although the
+contents of these areas are not actually erased).  RESTORE is called
+to set the data pointer back to the beginning, and the stack is
+cleared.
+
+42638         $A68E          RUNC
+Reset Pointer to Current Text Character to the Beginning of Program
+Text
+
+This routine resets the CHRGET pointer TXTPTR (122-123, $7A-$7B) so
+that the next byte of text that the interpreter will read comes from
+the beginning of program text.
+
+52652         $A69C          LIST
+Perform LIST
+
+This routine saves the range of lines to be printed in pointers at
+95-96 ($5F- $60) and 20-21 ($14-$15), and then prints them out,
+translating any tokens back to their ASCII equivalent.
+
+42775         $A717          QPLOP
+Print BASIC Tokens as ASCII Characters
+
+This is the part of the LIST routine that chagnes one-byte program
+tokens back to their ASCII text characters.  The routine is vectored
+through RAM at 774 ($306), so it is possible to list out new command
+words that you have added by changing this vector to detour through
+your own routine.
+
+42818         $A742          FOR
+Perform FOR
+
+FOR is performed mostly by saving the needed information for the NEXT
+part of the command on the stack (see the entry for 256 ($100) for
+details).  This includes the TO termination value, so if the upper
+limit is a variable, the current value of the variable will be stored,
+and you cannot end the loop early by decreasing the value of the TO
+variable within the loop (although you can end it early by increasing
+the value of the FOR variable within the loop).
+
+Also, since the TO expression is evaluated only once, at the time FOR
+is performed, a statement such as FOR I=1 TO I+100 is valid.  The
+terminating value is not checked until NEXT is executed, so the loop
+statements always execute at least once.  The variable used by FOR
+must be a nonarray floating point variable.  Reusing the same FOR
+variable in a loop that is still active will cause the previous FOR
+loop and all intervening loops to be cancelled.
+
+42926         $A7AE          NEWSTT
+Set Up Next Statement for Execution
+
+This routine tests for the STOP key, updates the pointer to the
+current line number, and positions the text pointer to read the
+beginning of the statement.
+
+42980         $A7E4          GONE
+Read and Execute the Next Statement
+
+This is the routine which gets the next token and executes the
+statement.  It is vectored through RAM at 776 ($308) to allow the
+addition and execution of new statement tokens.
+
+Since a statement must always start with a token or an implied LET
+statement, this routine checks to see if the first character is a
+valid token.  If it is, the address is placed on the stack, so that a
+call to CHRGET will return to the address of the code that executes
+the statement (see the table of statement tokens at 40972 ($A00C)).
+
+An invalid token will cause a SYNTAX ERROR.  A character whose ASCII
+value is less that 128 will cause LET to be executed.
+
+43037         $A81D          RESTOR
+Perform RESTORE
+
+The RESTORE command simply resetes the DATA pointer at 65-66 ($41-$42)
+from the start of BASIC pointer at 43-44 ($2B-$2V).
+
+43052         $A82C
+Test STOP Key for Break in Program
+
+The Kernal STOP routine is called from here, and if the key is
+pressed, the STOP (63213, $F6ED) command, below, is executed.
+
+43055         $A831          END
+Perform END
+
+The current line number and text pointers are preserved for a possible
+CONT command, and the READY prompt is printed.  If a STOP key break
+occured, the BREAK message is printed first.
+
+43095         $A857          CONT
+Perform CONT
+
+The CONT statement is performed by moving the saved pointers back to
+the current statement and current text character pointers.  If the
+saved pointers cannot be retrieved, the CAN'T CONTINUE error statement
+is printed.
+
+43121         $A871          RUN
+Perform RUN
+
+RUN is executed by calling the Kernal SETMSG (65048, $FE18) routine to
+set the message flag for RUN mode and performing a CLR to start the
+program.  If a line followed RUN, a GOTO is executed after the CLR.
+
+43139         $A883          GOSUB
+Perform GOSUB
+
+This statement pushes the pointers to the current text character and
+current line onto the stack, along with a constant 141 ($8D) which
+identifies the block as saved GOSUB information to be used by RETURN.
+The GOTO is called.
+
+43168         $A8A0          GOTO
+Perform GOTO
+
+This statement scans BASIC for the target line number (the scan starts
+with the current line if the target line number is higher, otherwise
+it starts with the first line).  When the line is found, the pointers
+to the current statement and text character are changed, so that the
+target statement will be executed next.
+
+43218         $A8D2          RETURN
+Perform RETURN
+
+The RETURN statement finds the saved GOSUB data on the stack, and uses
+it to restore the pointers to the current line and current character.
+This will cause execution to continue where it left off when GOSUB was
+executed.
+
+43256         $A8F8          DATA
+Perform DATA
+
+DATA uses the next subroutine to find the offset to the next
+statement, and adds the offset to the current pointers so that the
+next statement will be executed.  If effect, it skips the statement,
+much like REM.
+
+43270         $A906          DATAN
+Search Program Text for the End of the Current BASIC Statement
+
+This routine starts at the current byte of program text and searches
+until it finds a zero character (line delimiter) or a colon character
+that is not in quotes (statement delimiter).
+
+43304         $A928          IF
+Perform IF
+
+IF uses the FRMEVL routine at 44446 ($AD9E) to reduce the expression
+which follows to a single term.  If the expression evaluates to 0
+(false), the routine falls through to REM.  If it is not 0, GOTO or
+the statement following THEN is executed.
+
+43323         $A93B          REM
+Perform REM
+
+The REM statement is executed by skipping all program text until the
+beginning of the next statement.  It is actually a part of the IF
+statement, which continues for a few bytes after the REM part.
+
+43339         $A94B          ONGOTO
+Perform ON GOTO or ON GOSUB
+
+ON is performed by converting the argument to an integer, and then
+skipping a number between commas each time that the integer is
+decremented until the argument reaches 0.  If a GOTO or GOSUB is the
+next token, the current number between commas is used to execute one
+of those statements.  If the numbers between commas are used up before
+the argument reaches 0, the statement has no effect, and the next
+statement is executed.
+
+43371         $A96B          LINGET
+Convert an ASCII Decimal Number to a Two-Byte Binary Line Nmumber
+
+This subroutine is used by several statements to read a decimal
+number, convert it to a two-byte integer line number (in low-byte,
+high-byte format), and check that it is in the correct range of
+0-63999.
+
+43429         $A9A5          LET
+Perform LET
+
+The LET command causes variables to be created and initialized, or to
+have a new value assigned.  It handles all types of array or nonarray
+variables:  strings, floating point, integers, ST, TI, and TI$.  The
+routine is composed of several subroutines that evaluate the variable,
+evaluate the assigned expression, check that the assigned value is
+suitable for a variable of that type, and then assign a value to the
+existing variable, or create a new variable.
+
+43648         $AA80          PRINTN
+Perform PRINT#
+
+The PRINT# statement calls CMD and then closes the output channel with
+the Kernal CLRCHN routine (62259, $F333).
+
+43654         $AA86          CMD
+Perform CMD
+
+This routine calls the Kernal CHKOUT routine (62032, $F250), and calls
+PRINT to send any included text to the device.  Unlike PRINT# it
+leaves the output channel open, so that output continues to go to that
+device.
+
+43680         $AAA0          PRINT
+Perform PRINT
+
+The PRINT routine has many segments, which are required for the
+various options which can be added to it:  TAB, SPC, comman,
+semicolon, variables, PI, ST, TI, and TI$.  Eventually, all output is
+converted to strings, and the Kernal CHROUT routine is called to print
+each character.
+
+43806         $AB1E          STROUT
+Print Message from a String Whose Address Is in the .Y and .A
+Registers
+
+This part of the PRINT routine outputs a string whose address is in
+the Accumulator (low byte) and .Y register (high byte), and which ends
+in a zero byte.
+
+43853         $AB4D          DOAGIN
+Error Message Formatting Routines for GET, INPUT, and READ
+
+43899         $AB7B          GET
+Perform GET and GET#
+
+The GET routine first makes sure that the program is not in direct
+mode.  It opens an input channel using the Kernal CHKIN routine
+(61966, $F20E) if a number sign was added to make GET#.  Then it calls
+the common I/O routines in READ to get a single character, and causes
+the input channel to be closed if one was opened.
+
+43941         $ABA5          INPUTN
+Perform INPUT#
+
+This routine opens an input channel with the Kernal CHKIN routine,
+calls INPUT, and then closes the channel with a CHKOUT routine (62032,
+$F250).  Extra data is discarded without an EXTRA IGNORED message, and
+a FILE DATA ERROR message is issued when the data type is not suitable
+for the type of variable used.
+
+43967         $ABBF          INPUT
+Perform INPUT
+
+The INPUT routine checks to make sure that direct mode is not active,
+prints prompts, receives a line of input from the device, and jumps to
+the common code in READ that assigns the input to the variables which
+were named.
+
+44038         $AC06          READ
+Perform READ
+
+This routine includes the READ command and common code for GET and
+INPUT.  The READ command locates the next piece of DATA, reads the
+text, and converts it to the appropriate type of data to be assigned
+to a numeric or string variable.
+
+44284         $ACFC          EXIGNT
+ASCII Text for Input Error Messages
+
+The text stored here is ?EXTRA IGNORED and ?REDO FROM START, each
+followed by a carriage return and a zero byte.
+
+44318         $AD1E          NEXT
+Perform NEXT
+
+NEXT is executed by finding the appropriate FOR data on the stack,
+adding the STEP value to the FOR variable, and comparing the result to
+the TO value.  If the loop is done, the stack entries for that FOR
+command are removed from the stack.  If the loop hasn't reached its
+limit, the pointers to the current statement and text character are
+updated from the FOR stack entry, which causes execution to continue
+with the statement after the FOR statement.
+
+44426         $AD8A          FRMNUM
+Evaluate a Numeric Expression and/or Check for Data Type Mismatch
+
+This routine can be called from different entry points to check the
+current data against the desired data type (string or numeric) to see
+if they match.  If they don't, a TYPE MISMATCH error will result.
+

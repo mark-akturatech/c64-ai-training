@@ -1,0 +1,157 @@
+# C64 KERNAL ROM Disassembly $EE00-$EEFF - Serial Bus Continued
+
+.,EE00 20 11 ED JSR $ED11       send a control character
+.,EE03 20 BE ED JSR $EDBE       set serial ATN high
+                                1ms delay, clock high then data high
+.,EE06 8A       TXA             save the device number
+.,EE07 A2 0A    LDX #$0A        short delay
+.,EE09 CA       DEX             decrement the count
+.,EE0A D0 FD    BNE $EE09       loop if not all done
+.,EE0C AA       TAX             restore the device number
+.,EE0D 20 85 EE JSR $EE85       set the serial clock out high
+.,EE10 4C 97 EE JMP $EE97       set the serial data out high and return
+
+                                *** input a byte from the serial bus
+.,EE13 78       SEI             disable the interrupts
+.,EE14 A9 00    LDA #$00        set 0 bits to do, will flag EOI on timeour
+.,EE16 85 A5    STA $A5         save the serial bus bit count
+.,EE18 20 85 EE JSR $EE85       set the serial clock out high
+.,EE1B 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,EE1E 10 FB    BPL $EE1B       loop if the serial clock is low
+.,EE20 A9 01    LDA #$01        set the timeout count high byte
+.,EE22 8D 07 DC STA $DC07       save VIA 1 timer B high byte
+.,EE25 A9 19    LDA #$19        load timer B, timer B single shot, start timer B
+.,EE27 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,EE2A 20 97 EE JSR $EE97       set the serial data out high
+.,EE2D AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,EE30 AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,EE33 29 02    AND #$02        mask 0000 00x0, timer A interrupt
+.,EE35 D0 07    BNE $EE3E       if timer A interrupt go ??
+.,EE37 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,EE3A 30 F4    BMI $EE30       loop if the serial clock is low
+.,EE3C 10 18    BPL $EE56       else go set 8 bits to do, branch always
+                                timer A timed out
+.,EE3E A5 A5    LDA $A5         get the serial bus bit count
+.,EE40 F0 05    BEQ $EE47       if not already EOI then go flag EOI
+.,EE42 A9 02    LDA #$02        else error $02, read timeour
+.,EE44 4C B2 ED JMP $EDB2       set the serial status and exit
+.,EE47 20 A0 EE JSR $EEA0       set the serial data out low
+.,EE4A 20 85 EE JSR $EE85       set the serial clock out high
+.,EE4D A9 40    LDA #$40        set EOI
+.,EE4F 20 1C FE JSR $FE1C       OR into the serial status byte
+.,EE52 E6 A5    INC $A5         increment the serial bus bit count, do error on the next
+                                timeout
+.,EE54 D0 CA    BNE $EE20       go try again, branch always
+.,EE56 A9 08    LDA #$08        set 8 bits to do
+.,EE58 85 A5    STA $A5         save the serial bus bit count
+.,EE5A AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EE5D CD 00 DD CMP $DD00       compare it with itself
+.,EE60 D0 F8    BNE $EE5A       if changing go try again
+.,EE62 0A       ASL             shift the serial data into the carry
+.,EE63 10 F5    BPL $EE5A       loop while the serial clock is low
+.,EE65 66 A4    ROR $A4         shift the data bit into the receive byte
+.,EE67 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EE6A CD 00 DD CMP $DD00       compare it with itself
+.,EE6D D0 F8    BNE $EE67       if changing go try again
+.,EE6F 0A       ASL             shift the serial data into the carry
+.,EE70 30 F5    BMI $EE67       loop while the serial clock is high
+.,EE72 C6 A5    DEC $A5         decrement the serial bus bit count
+.,EE74 D0 E4    BNE $EE5A       loop if not all done
+.,EE76 20 A0 EE JSR $EEA0       set the serial data out low
+.,EE79 24 90    BIT $90         test the serial status byte
+.,EE7B 50 03    BVC $EE80       if EOI not set skip the bus end sequence
+.,EE7D 20 06 EE JSR $EE06       1ms delay, clock high then data high
+.,EE80 A5 A4    LDA $A4         get the receive byte
+.,EE82 58       CLI             enable the interrupts
+.,EE83 18       CLC             flag ok
+.,EE84 60       RTS             
+
+                                *** set the serial clock out high
+.,EE85 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EE88 29 EF    AND #$EF        mask xxx0 xxxx, set serial clock out high
+.,EE8A 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EE8D 60       RTS             
+
+                                *** set the serial clock out low
+.,EE8E AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EE91 09 10    ORA #$10        mask xxx1 xxxx, set serial clock out low
+.,EE93 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EE96 60       RTS             
+
+                                *** set the serial data out high
+.,EE97 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EE9A 29 DF    AND #$DF        mask xx0x xxxx, set serial data out high
+.,EE9C 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EE9F 60       RTS             
+
+                                *** set the serial data out low
+.,EEA0 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EEA3 09 20    ORA #$20        mask xx1x xxxx, set serial data out low
+.,EEA5 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EEA8 60       RTS             
+
+                                *** get the serial data status in Cb
+.,EEA9 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EEAC CD 00 DD CMP $DD00       compare it with itself
+.,EEAF D0 F8    BNE $EEA9       if changing got try again
+.,EEB1 0A       ASL             shift the serial data into Cb
+.,EEB2 60       RTS             
+
+                                *** 1ms delay
+.,EEB3 8A       TXA             save X
+.,EEB4 A2 B8    LDX #$B8        set the loop count
+.,EEB6 CA       DEX             decrement the loop count
+.,EEB7 D0 FD    BNE $EEB6       loop if more to do
+.,EEB9 AA       TAX             restore X
+.,EEBA 60       RTS             
+
+                                *** RS232 Tx NMI routine
+.,EEBB A5 B4    LDA $B4         get RS232 bit count
+.,EEBD F0 47    BEQ $EF06       if zero go setup next RS232 Tx byte and return
+.,EEBF 30 3F    BMI $EF00       if -ve go do stop bit(s)
+                                else bit count is non zero and +ve
+.,EEC1 46 B6    LSR $B6         shift RS232 output byte buffer
+.,EEC3 A2 00    LDX #$00        set $00 for bit = 0
+.,EEC5 90 01    BCC $EEC8       branch if bit was 0
+.,EEC7 CA       DEX             set $FF for bit = 1
+.,EEC8 8A       TXA             copy bit to A
+.,EEC9 45 BD    EOR $BD         EOR with RS232 parity byte
+.,EECB 85 BD    STA $BD         save RS232 parity byte
+.,EECD C6 B4    DEC $B4         decrement RS232 bit count
+.,EECF F0 06    BEQ $EED7       if RS232 bit count now zero go do parity bit
+                                save bit and exit
+.,EED1 8A       TXA             copy bit to A
+.,EED2 29 04    AND #$04        mask 0000 0x00, RS232 Tx DATA bit
+.,EED4 85 B5    STA $B5         save the next RS232 data bit to send
+.,EED6 60       RTS             
+
+                                *** do RS232 parity bit, enters with RS232 bit count = 0
+.,EED7 A9 20    LDA #$20        mask 00x0 0000, parity enable bit
+.,EED9 2C 94 02 BIT $0294       test the pseudo 6551 command register
+.,EEDC F0 14    BEQ $EEF2       if parity disabled go ??
+.,EEDE 30 1C    BMI $EEFC       if fixed mark or space parity go ??
+.,EEE0 70 14    BVS $EEF6       if even parity go ??
+                                else odd parity
+.,EEE2 A5 BD    LDA $BD         get RS232 parity byte
+.,EEE4 D0 01    BNE $EEE7       if parity not zero leave parity bit = 0
+.,EEE6 CA       DEX             make parity bit = 1
+.,EEE7 C6 B4    DEC $B4         decrement RS232 bit count, 1 stop bit
+.,EEE9 AD 93 02 LDA $0293       get pseudo 6551 control register
+.,EEEC 10 E3    BPL $EED1       if 1 stop bit save parity bit and exit
+                                else two stop bits ..
+.,EEEE C6 B4    DEC $B4         decrement RS232 bit count, 2 stop bits
+.,EEF0 D0 DF    BNE $EED1       save bit and exit, branch always
+                                parity is disabled so the parity bit becomes the first,
+                                and possibly only, stop bit. to do this increment the bit
+                                count which effectively decrements the stop bit count.
+.,EEF2 E6 B4    INC $B4         increment RS232 bit count, = -1 stop bit
+.,EEF4 D0 F0    BNE $EEE6       set stop bit = 1 and exit
+                                do even parity
+.,EEF6 A5 BD    LDA $BD         get RS232 parity byte
+.,EEF8 F0 ED    BEQ $EEE7       if parity zero leave parity bit = 0
+.,EEFA D0 EA    BNE $EEE6       else make parity bit = 1, branch always
+                                fixed mark or space parity
+.,EEFC 70 E9    BVS $EEE7       if fixed space parity leave parity bit = 0
+.,EEFE 50 E6    BVC $EEE6       else fixed mark parity make parity bit = 1, branch always
+                                decrement stop bit count, set stop bit = 1 and exit. $FF is one stop bit, $FE is two
+                                stop bits

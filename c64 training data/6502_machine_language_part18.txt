@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 8: Input/Output, VIC Chip
+
+program--BASIC and machine language together--will be saved.  A little
+thought will reveal that memory from start-of-BASIC to just before start-of-
+variables contains everything we need.  A subsequent load will bring
+everything back in, and position SOV to exactly the right place.  We now have
+a "unit" program--BASIC and machine language working together, loading and
+saving as one program.
+
+There's one small problem in this arrangement.  once we have married the
+BASIC and machine language programs, we must not change the BASIC program.
+If we added to or subtracted from this program, the machine language program
+would move up or down--the relocation of memory goes right up to SOV.  The
+program might not be able to work in the new place, and, of course, our SYS
+commands would be wrong.
+
+                                                                        :103:
+
+BASIC Variables
+---------------
+
+There are four types of entry in the BASIC variable table.  All variables,
+regardless of type, occupy seven bytes; the first two bytes are the name, and
+the remaining five bytes (not always fully used) contain the value or
+definition.  The variable type is signaled as part of the name:  high bits
+are set over one or both letters of the name to signal a specific type.
+
+
+    SOV                                                               SOA
+     |                                                                 |
+     v                                                                 v
+  --+----------+----------+----------+----------+----------+----------+----
+    |          |          |          |          |          |          |
+  --+----------+----------+----------+----------+----------+----------+----
+
+  EACH VARIABLE IS EXACTLY 7 BYTES LONG.
+  VARIABLES APPEAR IN THE ORDER IN WHICH
+  THEY ARE USED.
+
+  Figure 6.5
+
+
+For example, if a floating point variable had a name AB, the name would be
+stored in the two bytes as $41, $42--the ASCII codes for A and B.  The same
+would be true if the variable were named ABACUS, since only the first two
+letters of the name are kept.  In contrast, if the variable were named AB%,
+meaning that it was an integer variable, the name would be stored as $C1,
+$C2.  The ASCII codes are the same, but the high bit has been set over them.
+To complete the picture, a string variable named AB$ would be coded with the
+name $41, $C2--the high bit is set over the second character only.
+
+
+    ,-----------> HIGH BIT SET FOR INTEGER VARIABLES AND FUNCTIONS
+    |
+    |   ,-------> HIGH BIT SET FOR INTEGER AND STRING VARIABLES
+    |   |
+  +-------+-------------------+
+  | NAME  |       VALUE       |
+  |       |                   |
+  |2 BYTES|      5 BYTES      |
+  |       |                   |
+  |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+
+
+  Figure 6.6
+
+
+There's a fourth type of entry that can go into the variable table, but it's
+not a variable:  it's a function definition.  If we give the variable command
+DEF FNA(... an entry will be made in this table.  It will be distinguished by
+the high bit being set over the first character only.
+
+String variables use only three of the five bytes provided; the first byte
+signals the length of the string, and the next two bytes give the string's
+address.  This group of three bytes is called a descriptor.
+
+                                                                        :104:
+
+There are two types of numeric variables:  floating point and integer.
+Floating point variables use all five bytes; integer variables use the first
+two bytes only.  It's possible to extract the value from a floating point
+variable and put it to work, but it's not a simple procedure.  A description
+of how to do this is given in Appendix F.  In contrast, it's quite easy to
+take the value from an integer variable and use it.
+
+Let's try an example.  Type NEW, followed by A=5:B%=5.  This creates two
+different variables:  A and B%.  Now go to the machine language monitor.  The
+variables should be near the start-of-BASIC, but if you wish you can find
+their exact address by examining the SOV pointer ($2A/$2B on PET/CBM, or $2D/
+$2E on VIC, Commodore 64 or PLUS/4).  On the Commodore 64, we might find that
+the variables start at $0803; to display both of them, we type .M 0803 0810.
+We see the floating point variable, A:
+
+  41 00 83 20 00 00 00
+
+The first two bytes are the name--41 is ASCII for A, and the zero signifies
+no second letter--but where's the 5?  Embedded within the 83 20 00 00 00,
+that's where; and it's a good deal of work to extract the 5 for further
+processing.
+
+Behind this variable, we can see the integer variable, B%:
+
+  C2 80 00 05 00 00 00
+
+Hex C2 is the ASCII for the letter B (42) with the high bit set.  80 is zero
+with the high bit set--again, there's no second letter.  The value is in the
+next two bytes, and it's easy to read.  The last three bytes are not used.
+
+Which is easier for machine language to interface with?  Obviously the
+integer variable.  It's often quite suitable for the program work at hand:
+counting characters, setting pointers, and similar tasks.
+
+
+Exchanging Data:  BASIC and Machine Language
+--------------------------------------------
+
+If BASIC and machine language wish to pass data back and forth, there are
+several approaches.  Perhaps the simplest is to have BASIC POKE the values
+into a given location, and machine language load them as needed; in the
+opposite direction, machine language will store the values and BASIC will
+PEEK them.
+
+                                                                        :105:
+
+Another method is more sophisticated.  BASIC variables are stored in memory;
+why can't a machine language program go after the variables exactly where
+they lie and extract their value or change them?  It sounds like a good idea.
+
+By now, we know how to ask machine language to search for a specific BASIC
+variable.  Given the name, we can get the address of the first variable from
+the SOV pointer and store it as an indirect address.  Using indirect, indexed
+addressing and stepping the Y register from 0 to 1 we can see if the name
+matches.  If not, we add seven to the indirect address to take us to the next
+variable.  If it does match, our indirect address is set up at the start of
+the variable; we can set Y to 2, 3, 4, 5, and 6 and extract the whole value.
+If the variable type is integer, we need only extract the first two bytes
+(Y=2 and 3).  If the variable is not in the variable table, we'll step our
+indirect address until it matches the start-of-arrays; at that point, we know
+that we have missed the variable.
+
+For a small number of variables, there's a short cut.  Variables are placed
+into the variable table in the order in which they are defined:  whichever
+variable is defined first in the BASIC program will be first in the variable
+table.  So if we arrange for our variables to be defined in a certain order,
+we can streamline our machine language to "first variable," "second
+variable," and so on, with no need to examine the names.
+
+Let's take this one step further.  If we want to use the first variable, all
+we need to have is the address of the first variable somewhere in zero-page
+so that we may use it as an indirect address.  We already have that address--
+it's the SOV, the start-of-variables, and it's there pointing helpfully at
+the first variable for us.  By increasing the value of Y appropriately, we
+can reach beyond the first variable and into the second, or for that matter,
+the third or the thirty-sixth.
+
+Project:  We plan to place the machine language program behind the end-of-
+BASIC.  This will vary, depending on the machine being used.  The following
+code shows the correct addresses for the Commodore 64.  Refer to Appendix E
+for other machines.
+
+First, let's do our BASIC coding to estimate its size.  We need to guess at
+the location of the end-of-BASIC so as to place our machine language program.
+This program will ask machine language to take a value, V%, and multiply it
+by ten.  Remember to say NEW.  We write the BASIC program as follows:
+
+  100 V%=0
+  110 FOR J=1 TO 5
+  120 INPUT "VALUE";V%
+  130 SYS ++++
+  140 PRINT "TIMES TEN =";V%
+  150 NEXT J
+
+                                                                        :106:
+
+It seems likely that our BASIC program will occupy less than 127 bytes.  We
+may check this later, but it seems safe to plan to start our machine language
+program around 2049+127, or 2176 (hexadecimal 880).  On that basis, we may
+change line 130 to SYS 2176.  Do not try to run the program yet.
+
+At this point, we could save the BASIC program to tape or disk and develop
+the machine language program.  This would allow us to refine each of the two
+parts independently.  For the sake of brevity--and because our example is an
+easy one and won't need touching up--we'll write the machine code directly
+into memory.
+
+Switch into the machine language monitor.  Assemble the following code:
+
+  .A 0880  LDY #$02
+  .A 0882  LDA ($2D),Y
+  .A 0884  STA $033C
+  .A 0887  STA $033E
+  .A 088A  LDY #$03
+  .A 088C  LDA ($2D),Y
+  .A 088E  STA $033D
+  .A 0891  STA $033F
+
+We have now extracted two bytes from the first variable, V%.  The high byte
+has been stored at both $033C and $033E; we'll see why in a moment.  The low
+byte of the value has gone to $033D and $033F.
+
+Project for enthusiasts:  You might be able to code the above more compactly
+by more effective use of indexing.
+
+  .A 0894  ASL $033D
+  .A 0897  ROL $033C
+  .A 089A  ASL $033D
+  .A 089D  ROL $033C
+
+We have multiplied the contents of $033D/$033C by two, and then we have
+multiplied it by two again.  These locations now contain the original value
+times four.  Note that we ASL the low byte and then ROL the high byte.
+Perhaps we should be checking for overflow; but let's trust the number to be
+in range for now.
+
+                                                                        :107:
+
+Since we have the original number times four in $033D/$033C, we can add it to
+the original number in $033F/$033E to get the original number times five:
+
+  .A 08A0  CLC
+  .A 08A1  LDA $033D
+  .A 08A4  ADC $033F
+  .A 08A7  STA $033D
+  .A 08AA  LDA $033C
+  .A 08AD  ADC $033E
+  .A 08B0  STA $033C
+
+Now locations $033C/$033D contain the original number times five.  If we
+double the number one last time, we'll have the value times ten.
+
+  .A 08B3  ASL $033D
+  .A 08B6  ROL $033C
+
+We have multiplied the number by ten.  Now let's put it back into the
+variable
+
+  .A 08B9  LDY #$02
+  .A 08BB  LDA $033C
+  .A 08BE  STA ($2D),Y
+  .A 08C0  LDY #$03
+  .A 08C2  LDA $033D
+  .A 08C5  STA ($2D),Y
+  .A 08C7  RTS
+
+The numbers go back exactly the same way we drew them out.  We must be
+careful to keep the high and low bytes correct.  Integer variables have the
+high-order byte first, followed by the low-order byte; this is exactly the
+reverse way of the way we use 650x addresses.
+
+We must perform one more task before wrapping up the program.  We must change
+the start-of-variables pointer to a location above the machine language
+program.  That would be $08C8, and so we display the SOV pointer with .M 002D
+002E and change the pointer to
+
+  .:002D C8 08 .. .. .. .. .. ..
+
+Check...disassemble...and then back to BASIC.  LIST, and you'll see your
+BASIC program again.  There's no sign of the machine language program, of
+course, but SAVE will now save everything together.
+
+RUN the BASIC program.  Enter the numbers as requested.  Confirm that they
+are multiplied by ten.
+
+                                                                        :108:
+
+You may recall that our machine language program does not check for overflow.
+RUN the program again, and see if you can find the highest number that can be
+multiplied by ten without error.  What happens at time of overflow?  Is that
+what you expected?
+
+Project for enthusiasts:  Can you add checks for overflow to the above
+program?  You must decide what to do if overflow occurs:  print a message;
+set the value to zero; or whatever you decide.  But you shouldn't stop the
+program or break to the monitor.  Such a thing would upset the program user.
+Your program will be longer.  Don't forget, therefore, to change the SOV
+pointer at $2D/$2E so that your program is safe from variables.
+
+
+Things You Have Learned
+-----------------------
+
+- Small machine language programs can be conveniently written and checked out
+  in the cassette buffer.  We have been doing this during the exercises.
+  This area is not satisfactory for large programs, or programs we want to
+  save on tape.
+
+- Programs can take up semi-permanent residence near the top-of-BASIC memory;
+  the top-of-memory pointer needs to be moved down to protect it.  These
+  programs often need a separate "setup" to place them.
+
+- Programs can be placed behind the end-of-BASIC, which is marked by three
+  consecutive zero bytes in memory.  The start-of-variables pointer must be
+  increased so that variables don't write over the program.  Care must be
+  taken not to change the BASIC program after this is done.
+
+- The VIC-20 frequently has the start-of-BASIC pointer moved up to make room
+  for video information in lower memory.  As long as we're moving this
+  pointer, we might move it a little further and make room for some machine
+  code.
+
+- The Commodore 64 has an unused block of RAM at addresses $C000 to $CFFF;
+  check to see that no other programs are using this area.

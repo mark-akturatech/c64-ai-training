@@ -1,0 +1,243 @@
+
+                                *** garbage collection routine
+.,B526 A6 37    LDX $37         get end of memory low byte
+.,B528 A5 38    LDA $38         get end of memory high byte
+                                re-run routine from last ending
+.,B52A 86 33    STX $33         set bottom of string space low byte
+.,B52C 85 34    STA $34         set bottom of string space high byte
+.,B52E A0 00    LDY #$00        clear index
+.,B530 84 4F    STY $4F         clear working pointer high byte
+.,B532 84 4E    STY $4E         clear working pointer low byte
+.,B534 A5 31    LDA $31         get end of arrays low byte
+.,B536 A6 32    LDX $32         get end of arrays high byte
+.,B538 85 5F    STA $5F         save as highest uncollected string pointer low byte
+.,B53A 86 60    STX $60         save as highest uncollected string pointer high byte
+.,B53C A9 19    LDA #$19        set descriptor stack pointer
+.,B53E A2 00    LDX #$00        clear X
+.,B540 85 22    STA $22         save descriptor stack pointer low byte
+.,B542 86 23    STX $23         save descriptor stack pointer high byte ($00)
+.,B544 C5 16    CMP $16         compare with descriptor stack pointer
+.,B546 F0 05    BEQ $B54D       branch if =
+.,B548 20 C7 B5 JSR $B5C7       check string salvageability
+.,B54B F0 F7    BEQ $B544       loop always
+                                done stacked strings, now do string variables
+.,B54D A9 07    LDA #$07        set step size = $07, collecting variables
+.,B54F 85 53    STA $53         save garbage collection step size
+.,B551 A5 2D    LDA $2D         get start of variables low byte
+.,B553 A6 2E    LDX $2E         get start of variables high byte
+.,B555 85 22    STA $22         save as pointer low byte
+.,B557 86 23    STX $23         save as pointer high byte
+.,B559 E4 30    CPX $30         compare end of variables high byte,
+                                start of arrays high byte
+.,B55B D0 04    BNE $B561       branch if no high byte match
+.,B55D C5 2F    CMP $2F         else compare end of variables low byte,
+                                start of arrays low byte
+.,B55F F0 05    BEQ $B566       branch if = variable memory end
+.,B561 20 BD B5 JSR $B5BD       check variable salvageability
+.,B564 F0 F3    BEQ $B559       loop always
+                                done string variables, now do string arrays
+.,B566 85 58    STA $58         save start of arrays low byte as working pointer
+.,B568 86 59    STX $59         save start of arrays high byte as working pointer
+.,B56A A9 03    LDA #$03        set step size, collecting descriptors
+.,B56C 85 53    STA $53         save step size
+.,B56E A5 58    LDA $58         get pointer low byte
+.,B570 A6 59    LDX $59         get pointer high byte
+.,B572 E4 32    CPX $32         compare with end of arrays high byte
+.,B574 D0 07    BNE $B57D       branch if not at end
+.,B576 C5 31    CMP $31         else compare with end of arrays low byte
+.,B578 D0 03    BNE $B57D       branch if not at end
+.,B57A 4C 06 B6 JMP $B606       collect string, tidy up and exit if at end ??
+.,B57D 85 22    STA $22         save pointer low byte
+.,B57F 86 23    STX $23         save pointer high byte
+.,B581 A0 00    LDY #$00        set index
+.,B583 B1 22    LDA ($22),Y     get array name first byte
+.,B585 AA       TAX             copy it
+.,B586 C8       INY             increment index
+.,B587 B1 22    LDA ($22),Y     get array name second byte
+.,B589 08       PHP             push the flags
+.,B58A C8       INY             increment index
+.,B58B B1 22    LDA ($22),Y     get array size low byte
+.,B58D 65 58    ADC $58         add start of this array low byte
+.,B58F 85 58    STA $58         save start of next array low byte
+.,B591 C8       INY             increment index
+.,B592 B1 22    LDA ($22),Y     get array size high byte
+.,B594 65 59    ADC $59         add start of this array high byte
+.,B596 85 59    STA $59         save start of next array high byte
+.,B598 28       PLP             restore the flags
+.,B599 10 D3    BPL $B56E       skip if not string array
+                                was possibly string array so ...
+.,B59B 8A       TXA             get name first byte back
+.,B59C 30 D0    BMI $B56E       skip if not string array
+.,B59E C8       INY             increment index
+.,B59F B1 22    LDA ($22),Y     get # of dimensions
+.,B5A1 A0 00    LDY #$00        clear index
+.,B5A3 0A       ASL             *2
+.,B5A4 69 05    ADC #$05        +5 (array header size)
+.,B5A6 65 22    ADC $22         add pointer low byte
+.,B5A8 85 22    STA $22         save pointer low byte
+.,B5AA 90 02    BCC $B5AE       branch if no rollover
+.,B5AC E6 23    INC $23         else increment pointer hgih byte
+.,B5AE A6 23    LDX $23         get pointer high byte
+.,B5B0 E4 59    CPX $59         compare pointer high byte with end of this array high byte
+.,B5B2 D0 04    BNE $B5B8       branch if not there yet
+.,B5B4 C5 58    CMP $58         compare pointer low byte with end of this array low byte
+.,B5B6 F0 BA    BEQ $B572       if at end of this array go check next array
+.,B5B8 20 C7 B5 JSR $B5C7       check string salvageability
+.,B5BB F0 F3    BEQ $B5B0       loop
+                                check variable salvageability
+.,B5BD B1 22    LDA ($22),Y     get variable name first byte
+.,B5BF 30 35    BMI $B5F6       add step and exit if not string
+.,B5C1 C8       INY             increment index
+.,B5C2 B1 22    LDA ($22),Y     get variable name second byte
+.,B5C4 10 30    BPL $B5F6       add step and exit if not string
+.,B5C6 C8       INY             increment index
+                                check string salvageability
+.,B5C7 B1 22    LDA ($22),Y     get string length
+.,B5C9 F0 2B    BEQ $B5F6       add step and exit if null string
+.,B5CB C8       INY             increment index
+.,B5CC B1 22    LDA ($22),Y     get string pointer low byte
+.,B5CE AA       TAX             copy to X
+.,B5CF C8       INY             increment index
+.,B5D0 B1 22    LDA ($22),Y     get string pointer high byte
+.,B5D2 C5 34    CMP $34         compare string pointer high byte with bottom of string
+                                space high byte
+.,B5D4 90 06    BCC $B5DC       if bottom of string space greater go test against highest
+                                uncollected string
+.,B5D6 D0 1E    BNE $B5F6       if bottom of string space less string has been collected
+                                so go update pointers, step to next and return
+                                high bytes were equal so test low bytes
+.,B5D8 E4 33    CPX $33         compare string pointer low byte with bottom of string
+                                space low byte
+.,B5DA B0 1A    BCS $B5F6       if bottom of string space less string has been collected
+                                so go update pointers, step to next and return
+                                else test string against highest uncollected string so far
+.,B5DC C5 60    CMP $60         compare string pointer high byte with highest uncollected
+                                string high byte
+.,B5DE 90 16    BCC $B5F6       if highest uncollected string is greater then go update
+                                pointers, step to next and return
+.,B5E0 D0 04    BNE $B5E6       if highest uncollected string is less then go set this
+                                string as highest uncollected so far
+                                high bytes were equal so test low bytes
+.,B5E2 E4 5F    CPX $5F         compare string pointer low byte with highest uncollected
+                                string low byte
+.,B5E4 90 10    BCC $B5F6       if highest uncollected string is greater then go update
+                                pointers, step to next and return
+                                else set current string as highest uncollected string
+.,B5E6 86 5F    STX $5F         save string pointer low byte as highest uncollected string
+                                low byte
+.,B5E8 85 60    STA $60         save string pointer high byte as highest uncollected
+                                string high byte
+.,B5EA A5 22    LDA $22         get descriptor pointer low byte
+.,B5EC A6 23    LDX $23         get descriptor pointer high byte
+.,B5EE 85 4E    STA $4E         save working pointer high byte
+.,B5F0 86 4F    STX $4F         save working pointer low byte
+.,B5F2 A5 53    LDA $53         get step size
+.,B5F4 85 55    STA $55         copy step size
+.,B5F6 A5 53    LDA $53         get step size
+.,B5F8 18       CLC             clear carry for add
+.,B5F9 65 22    ADC $22         add pointer low byte
+.,B5FB 85 22    STA $22         save pointer low byte
+.,B5FD 90 02    BCC $B601       branch if no rollover
+.,B5FF E6 23    INC $23         else increment pointer high byte
+.,B601 A6 23    LDX $23         get pointer high byte
+.,B603 A0 00    LDY #$00        flag not moved
+.,B605 60       RTS             
+                                collect string
+.,B606 A5 4F    LDA $4F         get working pointer low byte
+.,B608 05 4E    ORA $4E         OR working pointer high byte
+.,B60A F0 F5    BEQ $B601       exit if nothing to collect
+.,B60C A5 55    LDA $55         get copied step size
+.,B60E 29 04    AND #$04        mask step size, $04 for variables, $00 for array or stack
+.,B610 4A       LSR             >> 1
+.,B611 A8       TAY             copy to index
+.,B612 85 55    STA $55         save offset to descriptor start
+.,B614 B1 4E    LDA ($4E),Y     get string length low byte
+.,B616 65 5F    ADC $5F         add string start low byte
+.,B618 85 5A    STA $5A         set block end low byte
+.,B61A A5 60    LDA $60         get string start high byte
+.,B61C 69 00    ADC #$00        add carry
+.,B61E 85 5B    STA $5B         set block end high byte
+.,B620 A5 33    LDA $33         get bottom of string space low byte
+.,B622 A6 34    LDX $34         get bottom of string space high byte
+.,B624 85 58    STA $58         save destination end low byte
+.,B626 86 59    STX $59         save destination end high byte
+.,B628 20 BF A3 JSR $A3BF       open up space in memory, don't set array end. this
+                                copies the string from where it is to the end of the
+                                uncollected string memory
+.,B62B A4 55    LDY $55         restore offset to descriptor start
+.,B62D C8       INY             increment index to string pointer low byte
+.,B62E A5 58    LDA $58         get new string pointer low byte
+.,B630 91 4E    STA ($4E),Y     save new string pointer low byte
+.,B632 AA       TAX             copy string pointer low byte
+.,B633 E6 59    INC $59         increment new string pointer high byte
+.,B635 A5 59    LDA $59         get new string pointer high byte
+.,B637 C8       INY             increment index to string pointer high byte
+.,B638 91 4E    STA ($4E),Y     save new string pointer high byte
+.,B63A 4C 2A B5 JMP $B52A       re-run routine from last ending, XA holds new bottom
+                                of string memory pointer
+
+                                *** concatenate
+                                add strings, the first string is in the descriptor, the second string is in line
+.,B63D A5 65    LDA $65         get descriptor pointer high byte
+.,B63F 48       PHA             put on stack
+.,B640 A5 64    LDA $64         get descriptor pointer low byte
+.,B642 48       PHA             put on stack
+.,B643 20 83 AE JSR $AE83       get value from line
+.,B646 20 8F AD JSR $AD8F       check if source is string, else do type mismatch
+.,B649 68       PLA             get descriptor pointer low byte back
+.,B64A 85 6F    STA $6F         set pointer low byte
+.,B64C 68       PLA             get descriptor pointer high byte back
+.,B64D 85 70    STA $70         set pointer high byte
+.,B64F A0 00    LDY #$00        clear index
+.,B651 B1 6F    LDA ($6F),Y     get length of first string from descriptor
+.,B653 18       CLC             clear carry for add
+.,B654 71 64    ADC ($64),Y     add length of second string
+.,B656 90 05    BCC $B65D       branch if no overflow
+.,B658 A2 17    LDX #$17        else error $17, string too long error
+.,B65A 4C 37 A4 JMP $A437       do error #X then warm start
+.,B65D 20 75 B4 JSR $B475       copy descriptor pointer and make string space A bytes long
+.,B660 20 7A B6 JSR $B67A       copy string from descriptor to utility pointer
+.,B663 A5 50    LDA $50         get descriptor pointer low byte
+.,B665 A4 51    LDY $51         get descriptor pointer high byte
+.,B667 20 AA B6 JSR $B6AA       pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B66A 20 8C B6 JSR $B68C       store string from pointer to utility pointer
+.,B66D A5 6F    LDA $6F         get descriptor pointer low byte
+.,B66F A4 70    LDY $70         get descriptor pointer high byte
+.,B671 20 AA B6 JSR $B6AA       pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B674 20 CA B4 JSR $B4CA       check space on descriptor stack then put string address
+                                and length on descriptor stack and update stack pointers
+.,B677 4C B8 AD JMP $ADB8       continue evaluation
+
+                                *** copy string from descriptor to utility pointer
+.,B67A A0 00    LDY #$00        clear index
+.,B67C B1 6F    LDA ($6F),Y     get string length
+.,B67E 48       PHA             save it
+.,B67F C8       INY             increment index
+.,B680 B1 6F    LDA ($6F),Y     get string pointer low byte
+.,B682 AA       TAX             copy to X
+.,B683 C8       INY             increment index
+.,B684 B1 6F    LDA ($6F),Y     get string pointer high byte
+.,B686 A8       TAY             copy to Y
+.,B687 68       PLA             get length back
+.,B688 86 22    STX $22         save string pointer low byte
+.,B68A 84 23    STY $23         save string pointer high byte
+                                store string from pointer to utility pointer
+.,B68C A8       TAY             copy length as index
+.,B68D F0 0A    BEQ $B699       branch if null string
+.,B68F 48       PHA             save length
+.,B690 88       DEY             decrement length/index
+.,B691 B1 22    LDA ($22),Y     get byte from string
+.,B693 91 35    STA ($35),Y     save byte to destination
+.,B695 98       TYA             copy length/index
+.,B696 D0 F8    BNE $B690       loop if not all done yet
+.,B698 68       PLA             restore length
+.,B699 18       CLC             clear carry for add
+.,B69A 65 35    ADC $35         add string utility ptr low byte
+.,B69C 85 35    STA $35         save string utility ptr low byte
+.,B69E 90 02    BCC $B6A2       branch if no rollover
+.,B6A0 E6 36    INC $36         increment string utility ptr high byte
+.,B6A2 60       RTS             

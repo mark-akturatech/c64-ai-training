@@ -1,0 +1,284 @@
+# C64 PRG Chapter 5 - Arithmetic, Logical Instructions
+
+  240   BASIC TO MACHINE LANGUAGE
+~
+
+
+  CMP                CMP Compare memory and accumulator                 CMP
+
+  Operation:  A - M                                     N Z C I D V
+                                                        / / / _ _ _
+                                (Ref: 4.2.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   CMP #Oper           |    C9   |    2    |    2     |
+  |  Zero Page     |   CMP Oper            |    C5   |    2    |    3     |
+  |  Zero Page,X   |   CMP Oper,X          |    D5   |    2    |    4     |
+  |  Absolute      |   CMP Oper            |    CD   |    3    |    4     |
+  |  Absolute,X    |   CMP Oper,X          |    DD   |    3    |    4*    |
+  |  Absolute,Y    |   CMP Oper,Y          |    D9   |    3    |    4*    |
+  |  (Indirect,X)  |   CMP (Oper,X)        |    C1   |    2    |    6     |
+  |  (Indirect),Y  |   CMP (Oper),Y        |    D1   |    2    |    5*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 if page boundary is crossed.
+
+  CPX                  CPX Compare Memory and Index X                   CPX
+                                                        N Z C I D V
+  Operation:  X - M                                     / / / _ _ _
+                                 (Ref: 7.8)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   CPX *Oper           |    E0   |    2    |    2     |
+  |  Zero Page     |   CPX Oper            |    E4   |    2    |    3     |
+  |  Absolute      |   CPX Oper            |    EC   |    3    |    4     |
+  +----------------+-----------------------+---------+---------+----------+
+
+  CPY                  CPY Compare memory and index Y                   CPY
+                                                        N Z C I D V
+  Operation:  Y - M                                     / / / _ _ _
+                                 (Ref: 7.9)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   CPY *Oper           |    C0   |    2    |    2     |
+  |  Zero Page     |   CPY Oper            |    C4   |    2    |    3     |
+  |  Absolute      |   CPY Oper            |    CC   |    3    |    4     |
+  +----------------+-----------------------+---------+---------+----------+
+
+                                            BASIC TO MACHINE LANGUAGE   241
+~
+
+
+  DEC                   DEC Decrement memory by one                     DEC
+
+  Operation:  M - 1 -> M                                N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 10.7)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Zero Page     |   DEC Oper            |    C6   |    2    |    5     |
+  |  Zero Page,X   |   DEC Oper,X          |    D6   |    2    |    6     |
+  |  Absolute      |   DEC Oper            |    CE   |    3    |    6     |
+  |  Absolute,X    |   DEC Oper,X          |    DE   |    3    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  DEX                   DEX Decrement index X by one                    DEX
+
+  Operation:  X - 1 -> X                                N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 7.6)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   DEX                 |    CA   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  DEY                   DEY Decrement index Y by one                    DEY
+
+  Operation:  X - 1 -> Y                                N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 7.7)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   DEY                 |    88   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+
+
+
+
+  242   BASIC TO MACHINE LANGUAGE
+~
+
+
+  EOR            EOR "Exclusive-Or" memory with accumulator             EOR
+
+  Operation:  A EOR M -> A                              N Z C I D V
+                                                        / / _ _ _ _
+                               (Ref: 2.2.3.2)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   EOR #Oper           |    49   |    2    |    2     |
+  |  Zero Page     |   EOR Oper            |    45   |    2    |    3     |
+  |  Zero Page,X   |   EOR Oper,X          |    55   |    2    |    4     |
+  |  Absolute      |   EOR Oper            |    4D   |    3    |    4     |
+  |  Absolute,X    |   EOR Oper,X          |    5D   |    3    |    4*    |
+  |  Absolute,Y    |   EOR Oper,Y          |    59   |    3    |    4*    |
+  |  (Indirect,X)  |   EOR (Oper,X)        |    41   |    2    |    6     |
+  |  (Indirect),Y  |   EOR (Oper),Y        |    51   |    2    |    5*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 if page boundary is crossed.
+
+  INC                    INC Increment memory by one                    INC
+                                                        N Z C I D V
+  Operation:  M + 1 -> M                                / / _ _ _ _
+                                 (Ref: 10.6)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Zero Page     |   INC Oper            |    E6   |    2    |    5     |
+  |  Zero Page,X   |   INC Oper,X          |    F6   |    2    |    6     |
+  |  Absolute      |   INC Oper            |    EE   |    3    |    6     |
+  |  Absolute,X    |   INC Oper,X          |    FE   |    3    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+
+  INX                    INX Increment Index X by one                   INX
+                                                        N Z C I D V
+  Operation:  X + 1 -> X                                / / _ _ _ _
+                                 (Ref: 7.4)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   INX                 |    E8   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+                                            BASIC TO MACHINE LANGUAGE   243
+~
+
+
+  INY                    INY Increment Index Y by one                   INY
+
+  Operation:  X + 1 -> X                                N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 7.5)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   INY                 |    C8   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  JMP                     JMP Jump to new location                      JMP
+
+  Operation:  (PC + 1) -> PCL                           N Z C I D V
+              (PC + 2) -> PCH   (Ref: 4.0.2)            _ _ _ _ _ _
+                                (Ref: 9.8.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Absolute      |   JMP Oper            |    4C   |    3    |    3     |
+  |  Indirect      |   JMP (Oper)          |    6C   |    3    |    5     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  JSR          JSR Jump to new location saving return address           JSR
+
+  Operation:  PC + 2 toS, (PC + 1) -> PCL               N Z C I D V
+                          (PC + 2) -> PCH               _ _ _ _ _ _
+                                 (Ref: 8.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Absolute      |   JSR Oper            |    20   |    3    |    6     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+
+
+
+
+
+
+  244   BASIC TO MACHINE LANGUAGE
+~
+
+
+  LDA                  LDA Load accumulator with memory                 LDA
+
+  Operation:  M -> A                                    N Z C I D V
+                                                        / / _ _ _ _
+                                (Ref: 2.1.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   LDA #Oper           |    A9   |    2    |    2     |
+  |  Zero Page     |   LDA Oper            |    A5   |    2    |    3     |
+  |  Zero Page,X   |   LDA Oper,X          |    B5   |    2    |    4     |
+  |  Absolute      |   LDA Oper            |    AD   |    3    |    4     |
+  |  Absolute,X    |   LDA Oper,X          |    BD   |    3    |    4*    |
+  |  Absolute,Y    |   LDA Oper,Y          |    B9   |    3    |    4*    |
+  |  (Indirect,X)  |   LDA (Oper,X)        |    A1   |    2    |    6     |
+  |  (Indirect),Y  |   LDA (Oper),Y        |    B1   |    2    |    5*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 if page boundary is crossed.
+
+
+  LDX                   LDX Load index X with memory                    LDX
+
+  Operation:  M -> X                                    N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 7.0)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   LDX #Oper           |    A2   |    2    |    2     |
+  |  Zero Page     |   LDX Oper            |    A6   |    2    |    3     |
+  |  Zero Page,Y   |   LDX Oper,Y          |    B6   |    2    |    4     |
+  |  Absolute      |   LDX Oper            |    AE   |    3    |    4     |
+  |  Absolute,Y    |   LDX Oper,Y          |    BE   |    3    |    4*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 when page boundary is crossed.
+
+
+
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   245
+~
+
+
+  LDY                   LDY Load index Y with memory                    LDY
+                                                        N Z C I D V
+  Operation:  M -> Y                                    / / _ _ _ _
+                                 (Ref: 7.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Immediate     |   LDY #Oper           |    A0   |    2    |    2     |
+  |  Zero Page     |   LDY Oper            |    A4   |    2    |    3     |
+  |  Zero Page,X   |   LDY Oper,X          |    B4   |    2    |    4     |
+  |  Absolute      |   LDY Oper            |    AC   |    3    |    4     |
+  |  Absolute,X    |   LDY Oper,X          |    BC   |    3    |    4*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 when page boundary is crossed.
+
+
+  LSR          LSR Shift right one bit (memory or accumulator)          LSR
+
+                   +-+-+-+-+-+-+-+-+
+  Operation:  0 -> |7|6|5|4|3|2|1|0| -> C               N Z C I D V
+                   +-+-+-+-+-+-+-+-+                    0 / / _ _ _
+                                 (Ref: 10.1)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Accumulator   |   LSR A               |    4A   |    1    |    2     |
+  |  Zero Page     |   LSR Oper            |    46   |    2    |    5     |
+  |  Zero Page,X   |   LSR Oper,X          |    56   |    2    |    6     |
+  |  Absolute      |   LSR Oper            |    4E   |    3    |    6     |
+  |  Absolute,X    |   LSR Oper,X          |    5E   |    3    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+  NOP                         NOP No operation                          NOP
+                                                        N Z C I D V
+  Operation:  No Operation (2 cycles)                   _ _ _ _ _ _
+
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   NOP                 |    EA   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+

@@ -1,0 +1,226 @@
+
+                                *** save
+.,F5ED A5 BA    LDA $BA         get the device number
+.,F5EF D0 03    BNE $F5F4       if not keyboard go ??
+                                else ..
+.,F5F1 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F5F4 C9 03    CMP #$03        compare device number with screen
+.,F5F6 F0 F9    BEQ $F5F1       if screen do illegal device number and return
+.,F5F8 90 5F    BCC $F659       branch if < screen
+                                is greater than screen so is serial bus
+.,F5FA A9 61    LDA #$61        set secondary address to $01
+                                when a secondary address is to be sent to a device on
+                                the serial bus the address must first be ORed with $60
+.,F5FC 85 B9    STA $B9         save the secondary address
+.,F5FE A4 B7    LDY $B7         get the file name length
+.,F600 D0 03    BNE $F605       if filename not null continue
+.,F602 4C 10 F7 JMP $F710       else do 'missing file name' error and return
+.,F605 20 D5 F3 JSR $F3D5       send secondary address and filename
+.,F608 20 8F F6 JSR $F68F       print saving <file name>
+.,F60B A5 BA    LDA $BA         get the device number
+.,F60D 20 0C ED JSR $ED0C       command devices on the serial bus to LISTEN
+.,F610 A5 B9    LDA $B9         get the secondary address
+.,F612 20 B9 ED JSR $EDB9       send secondary address after LISTEN
+.,F615 A0 00    LDY #$00        clear index
+.,F617 20 8E FB JSR $FB8E       copy I/O start address to buffer address
+.,F61A A5 AC    LDA $AC         get buffer address low byte
+.,F61C 20 DD ED JSR $EDDD       output byte to serial bus
+.,F61F A5 AD    LDA $AD         get buffer address high byte
+.,F621 20 DD ED JSR $EDDD       output byte to serial bus
+.,F624 20 D1 FC JSR $FCD1       check read/write pointer, return Cb = 1 if pointer >= end
+.,F627 B0 16    BCS $F63F       go do UNLISTEN if at end
+.,F629 B1 AC    LDA ($AC),Y     get byte from buffer
+.,F62B 20 DD ED JSR $EDDD       output byte to serial bus
+.,F62E 20 E1 FF JSR $FFE1       scan stop key
+.,F631 D0 07    BNE $F63A       if stop not pressed go increment pointer and loop for next
+                                else ..
+                                close the serial bus device and flag stop
+.,F633 20 42 F6 JSR $F642       close serial bus device
+.,F636 A9 00    LDA #$00        
+.,F638 38       SEC             flag stop
+.,F639 60       RTS             
+.,F63A 20 DB FC JSR $FCDB       increment read/write pointer
+.,F63D D0 E5    BNE $F624       loop, branch always
+.,F63F 20 FE ED JSR $EDFE       command serial bus to UNLISTEN
+                                close serial bus device
+.,F642 24 B9    BIT $B9         test the secondary address
+.,F644 30 11    BMI $F657       if already closed just exit
+.,F646 A5 BA    LDA $BA         get the device number
+.,F648 20 0C ED JSR $ED0C       command devices on the serial bus to LISTEN
+.,F64B A5 B9    LDA $B9         get the secondary address
+.,F64D 29 EF    AND #$EF        mask the channel number
+.,F64F 09 E0    ORA #$E0        OR with the CLOSE command
+.,F651 20 B9 ED JSR $EDB9       send secondary address after LISTEN
+.,F654 20 FE ED JSR $EDFE       command serial bus to UNLISTEN
+.,F657 18       CLC             flag ok
+.,F658 60       RTS             
+.,F659 4A       LSR             
+.,F65A B0 03    BCS $F65F       if not RS232 device ??
+.,F65C 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F65F 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F662 90 8D    BCC $F5F1       if < $0200 do illegal device number and return
+.,F664 20 38 F8 JSR $F838       wait for PLAY/RECORD
+.,F667 B0 25    BCS $F68E       exit if STOP was pressed
+.,F669 20 8F F6 JSR $F68F       print saving <file name>
+.,F66C A2 03    LDX #$03        set header for a non relocatable program file
+.,F66E A5 B9    LDA $B9         get the secondary address
+.,F670 29 01    AND #$01        mask non relocatable bit
+.,F672 D0 02    BNE $F676       if non relocatable program go ??
+.,F674 A2 01    LDX #$01        else set header for a relocatable program file
+.,F676 8A       TXA             copy header type to A
+.,F677 20 6A F7 JSR $F76A       write tape header
+.,F67A B0 12    BCS $F68E       exit if error
+.,F67C 20 67 F8 JSR $F867       do tape write, 20 cycle count
+.,F67F B0 0D    BCS $F68E       exit if error
+.,F681 A5 B9    LDA $B9         get the secondary address
+.,F683 29 02    AND #$02        mask end of tape flag
+.,F685 F0 06    BEQ $F68D       if not end of tape go ??
+.,F687 A9 05    LDA #$05        else set logical end of the tape
+.,F689 20 6A F7 JSR $F76A       write tape header
+.:F68C 24       .BYTE $24       makes next line BIT $18 so Cb is not changed
+.,F68D 18       CLC             flag ok
+.,F68E 60       RTS             
+
+                                *** print saving <file name>
+.,F68F A5 9D    LDA $9D         get message mode flag
+.,F691 10 FB    BPL $F68E       exit if control messages off
+.,F693 A0 51    LDY #$51        
+                                index to "SAVING "
+.,F695 20 2F F1 JSR $F12F       display kernel I/O message
+.,F698 4C C1 F5 JMP $F5C1       print file name and return
+
+                                *** increment the real time clock
+.,F69B A2 00    LDX #$00        clear X
+.,F69D E6 A2    INC $A2         increment the jiffy clock low byte
+.,F69F D0 06    BNE $F6A7       if no rollover ??
+.,F6A1 E6 A1    INC $A1         increment the jiffy clock mid byte
+.,F6A3 D0 02    BNE $F6A7       branch if no rollover
+.,F6A5 E6 A0    INC $A0         increment the jiffy clock high byte
+                                now subtract a days worth of jiffies from current count
+                                and remember only the Cb result
+.,F6A7 38       SEC             set carry for subtract
+.,F6A8 A5 A2    LDA $A2         get the jiffy clock low byte
+.,F6AA E9 01    SBC #$01        subtract $4F1A01 low byte
+.,F6AC A5 A1    LDA $A1         get the jiffy clock mid byte
+.,F6AE E9 1A    SBC #$1A        subtract $4F1A01 mid byte
+.,F6B0 A5 A0    LDA $A0         get the jiffy clock high byte
+.,F6B2 E9 4F    SBC #$4F        subtract $4F1A01 high byte
+.,F6B4 90 06    BCC $F6BC       if less than $4F1A01 jiffies skip the clock reset
+                                else ..
+.,F6B6 86 A0    STX $A0         clear the jiffy clock high byte
+.,F6B8 86 A1    STX $A1         clear the jiffy clock mid byte
+.,F6BA 86 A2    STX $A2         clear the jiffy clock low byte
+                                this is wrong, there are $4F1A00 jiffies in a day so
+                                the reset to zero should occur when the value reaches
+                                $4F1A00 and not $4F1A01. this would give an extra jiffy
+                                every day and a possible TI value of 24:00:00
+.,F6BC AD 01 DC LDA $DC01       read VIA 1 DRB, keyboard row port
+.,F6BF CD 01 DC CMP $DC01       compare it with itself
+.,F6C2 D0 F8    BNE $F6BC       loop if changing
+.,F6C4 AA       TAX             
+.,F6C5 30 13    BMI $F6DA       
+.,F6C7 A2 BD    LDX #$BD        set c6
+.,F6C9 8E 00 DC STX $DC00       save VIA 1 DRA, keyboard column drive
+.,F6CC AE 01 DC LDX $DC01       read VIA 1 DRB, keyboard row port
+.,F6CF EC 01 DC CPX $DC01       compare it with itself
+.,F6D2 D0 F8    BNE $F6CC       loop if changing
+.,F6D4 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,F6D7 E8       INX             
+.,F6D8 D0 02    BNE $F6DC       
+.,F6DA 85 91    STA $91         save the stop key column
+.,F6DC 60       RTS             
+
+                                *** read the real time clock
+.,F6DD 78       SEI             disable the interrupts
+.,F6DE A5 A2    LDA $A2         get the jiffy clock low byte
+.,F6E0 A6 A1    LDX $A1         get the jiffy clock mid byte
+.,F6E2 A4 A0    LDY $A0         get the jiffy clock high byte
+
+                                *** set the real time clock
+.,F6E4 78       SEI             disable the interrupts
+.,F6E5 85 A2    STA $A2         save the jiffy clock low byte
+.,F6E7 86 A1    STX $A1         save the jiffy clock mid byte
+.,F6E9 84 A0    STY $A0         save the jiffy clock high byte
+.,F6EB 58       CLI             enable the interrupts
+.,F6EC 60       RTS             
+
+                                *** scan the stop key, return Zb = 1 = [STOP]
+.,F6ED A5 91    LDA $91         read the stop key column
+.,F6EF C9 7F    CMP #$7F        compare with [STP] down
+.,F6F1 D0 07    BNE $F6FA       if not [STP] or not just [STP] exit
+                                just [STP] was pressed
+.,F6F3 08       PHP             save status
+.,F6F4 20 CC FF JSR $FFCC       close input and output channels
+.,F6F7 85 C6    STA $C6         save the keyboard buffer index
+.,F6F9 28       PLP             restore status
+.,F6FA 60       RTS             
+
+                                *** file error messages
+.,F6FB A9 01    LDA #$01        'too many files' error
+.:F6FD 2C       .BYTE $2C       makes next line BIT $02A9
+.,F6FE A9 02    LDA #$02        'file already open' error
+.:F700 2C       .BYTE $2C       makes next line BIT $03A9
+.,F701 A9 03    LDA #$03        'file not open' error
+.:F703 2C       .BYTE $2C       makes next line BIT $04A9
+.,F704 A9 04    LDA #$04        'file not found' error
+.:F706 2C       .BYTE $2C       makes next line BIT $05A9
+.,F707 A9 05    LDA #$05        'device not present' error
+.:F709 2C       .BYTE $2C       makes next line BIT $06A9
+.,F70A A9 06    LDA #$06        'not input file' error
+.:F70C 2C       .BYTE $2C       makes next line BIT $07A9
+.,F70D A9 07    LDA #$07        'not output file' error
+.:F70F 2C       .BYTE $2C       makes next line BIT $08A9
+.,F710 A9 08    LDA #$08        'missing file name' error
+.:F712 2C       .BYTE $2C       makes next line BIT $09A9
+.,F713 A9 09    LDA #$09        do 'illegal device number'
+.,F715 48       PHA             save the error #
+.,F716 20 CC FF JSR $FFCC       close input and output channels
+.,F719 A0 00    LDY #$00
+                                index to "I/O ERROR #"
+.,F71B 24 9D    BIT $9D         test message mode flag
+.,F71D 50 0A    BVC $F729       exit if kernal messages off
+.,F71F 20 2F F1 JSR $F12F       display kernel I/O message
+.,F722 68       PLA             restore error #
+.,F723 48       PHA             copy error #
+.,F724 09 30    ORA #$30        convert to ASCII
+.,F726 20 D2 FF JSR $FFD2       output character to channel
+.,F729 68       PLA             pull error number
+.,F72A 38       SEC             flag error
+.,F72B 60       RTS             
+
+                                *** find the tape header, exit with header in buffer
+.,F72C A5 93    LDA $93         get load/verify flag
+.,F72E 48       PHA             save load/verify flag
+.,F72F 20 41 F8 JSR $F841       initiate tape read
+.,F732 68       PLA             restore load/verify flag
+.,F733 85 93    STA $93         save load/verify flag
+.,F735 B0 32    BCS $F769       exit if error
+.,F737 A0 00    LDY #$00        clear the index
+.,F739 B1 B2    LDA ($B2),Y     read first byte from tape buffer
+.,F73B C9 05    CMP #$05        compare with logical end of the tape
+.,F73D F0 2A    BEQ $F769       if end of the tape exit
+.,F73F C9 01    CMP #$01        compare with header for a relocatable program file
+.,F741 F0 08    BEQ $F74B       if program file header go ??
+.,F743 C9 03    CMP #$03        compare with header for a non relocatable program file
+.,F745 F0 04    BEQ $F74B       if program file header go  ??
+.,F747 C9 04    CMP #$04        compare with data file header
+.,F749 D0 E1    BNE $F72C       if data file loop to find the tape header
+                                was a program file header
+.,F74B AA       TAX             copy header type
+.,F74C 24 9D    BIT $9D         get message mode flag
+.,F74E 10 17    BPL $F767       exit if control messages off
+.,F750 A0 63    LDY #$63        
+                                index to "FOUND "
+.,F752 20 2F F1 JSR $F12F       display kernel I/O message
+.,F755 A0 05    LDY #$05        index to the tape filename
+.,F757 B1 B2    LDA ($B2),Y     get byte from tape buffer
+.,F759 20 D2 FF JSR $FFD2       output character to channel
+.,F75C C8       INY             increment the index
+.,F75D C0 15    CPY #$15        compare it with end+1
+.,F75F D0 F6    BNE $F757       loop if more to do
+.,F761 A5 A1    LDA $A1         get the jiffy clock mid byte
+.,F763 20 E0 E4 JSR $E4E0       wait ~8.5 seconds for any key from the STOP key column
+.,F766 EA       NOP             waste cycles
+.,F767 18       CLC             flag no error
+.,F768 88       DEY             decrement the index
+.,F769 60       RTS             

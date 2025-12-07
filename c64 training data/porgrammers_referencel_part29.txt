@@ -1,0 +1,190 @@
+# C64 PRG Chapter 3 - Multi-Color Bit Map, Smooth Scrolling
+
+  142   PROGRAMMING GRAPHICS
+~
+
+
+  The charts in Figure 3-3 explain sprite positioning.
+    By using these values, you can position each sprite anywhere. By moving
+  the sprite a single dot position at a time, very smooth movement is easy
+  to achieve.
+
+
+  SPRITE POSITIONING SUMMARY
+
+    Unexpanded sprites are at least partially visible in the 40 column, by
+  25 row mode within the following parameters:
+
+                            1 < X < 343
+
+                           30 < Y < 249
+
+  In the 38 column mode, the X parameters change to she following:
+
+                           8 <= X <= 334
+
+  In the 24 row mode, the Y parameters change to the following:
+
+                          34 <= Y <= 245
+
+    Expanded sprites are at least partially visible in the 40 column, by 25
+  row mode within the following parameters:
+
+                         489 >= X <= 343
+                           9 >= Y <= 249
+
+  In the 38 column mode, the X parameters change to the following:
+
+                         496 >= X <= 334
+
+  In the 24 row mode, the Y parameters change to the following:
+
+                          13 <= Y <= 245
+
+
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   143
+~
+
+
+  SPRITE DISPLAY PRIORITIES
+
+    Sprites have the ability to cross each other's paths, as well as cross
+  in front of, or behind other objects on the screen. This can give you a
+  truly three dimensional effect for games.
+    Sprite to sprite priority is fixed. That means that sprite 0 has the
+  highest priority, sprite 1 has the next priority, and so on, until we get
+  to sprite 7, which has the lowest priority. In other words, if sprite 1
+  and sprite 6 are positioned so that they cross each other, sprite 1 will
+  be in front of sprite 6.
+    So when you're planning which sprites will appear to be in the fore-
+  ground of the picture, they must be assigned lower sprite numbers than
+  those sprites you want to put towards the back of the scene. Those
+  sprites will be given higher sprite numbers,
+
+  +-----------------------------------------------------------------------+
+  | NOTE: A "window" effect is possible. If a sprite with higher priority |
+  | has "holes" in it (areas where the dots are not set to 1 and thus     |
+  | turned ON), the sprite with the lower priority will show through. This|
+  | also happens with sprite and background data.                         |
+  +-----------------------------------------------------------------------+
+
+    Sprite to background priority is controllable by the SPRITE-BACK-
+  GROUND priority register located at 53275 ($D01B). Each sprite has a bit
+  in this register. If that bit is 0, that sprite has a higher priority
+  than the background on the screen. In other words, the sprite appears in
+  front of background data. If that bit is a 1, that sprite has a lower
+  priority than the background. Then the sprite appears behind the back-
+  ground data.
+
+
+  COLLISION DETECTS
+
+    One of the more interesting aspects of the VIC-II chip is its collision
+  detection abilities. Collisions can be detected between sprites, or be-
+  tween sprites and background data. A collision occurs when a non-zero
+  part of a sprite overlaps a non-zero portion of another sprite or char-
+  acters on the screen.
+
+
+
+
+
+  144   PROGRAMMING GRAPHICS
+~
+
+
+  SPRITE TO SPRITE COLLISIONS
+
+    Sprite to sprite collisions are recognized by the computer, or flagged,
+  in the sprite to sprite collision register at location 53278 ($D01E in
+  HEX) in the VIC-II chip control register. Each sprite has a bit in this
+  register. If that bit is a 1, then that sprite is involved in a
+  collision. The bits in this register will remain set until read (PEEKed).
+  Once read, the register is automatically cleared, so it is a good idea to
+  save the value in a variable until you are finished with it.
+
+
+  +-----------------------------------------------------------------------+
+  | NOTE: Collisions can take place even when the sprites are off screen. |
+  +-----------------------------------------------------------------------+
+
+
+  SPRITE TO DATA COLLISIONS
+
+    Sprite to data collisions are detected in the sprite to data collision
+  register at location 53279 ($D01F in HEX) of the VIC-II chip control
+  register.
+    Each sprite has a bit in this register. If that bit is a 1 , then that
+  sprite is involved in a collision. The bits in this register remain set
+  until read (PEEKed). Once read, the register is automatically cleared, so
+  it is a good idea to save the value in a variable until you are finished
+  with it.
+
+
+  +-----------------------------------------------------------------------+
+  | NOTE: MULTI-COLOR data 01 is considered transparent for collisions,   |
+  | even though it shows up on the screen. When setting up a background   |
+  | screen, it is a good idea to make everything that should not cause a  |
+  | collision 01 in multi-color mode.                                     |
+  +-----------------------------------------------------------------------+
+
+
+
+
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   145
+~
+
+
+start tok64 page146.prg
+  10 rem sprite example 1... the hot air balloon
+  30 vic=13*4096:rem this is where the vic registers begin
+  35 pokevic+21,1:rem enable sprite 0
+  36 pokevic+33,14:rem set background color to light blue
+  37 pokevic+23,1:rem expand sprite 0 in y
+  38 pokevic+29,1:rem expand sprite 0 in x
+  40 poke2040,192:rem set sprite 0's pointer
+  180 pokevic+0,100:rem set sprite 0's x position
+  190 pokevic+1,100:rem set sprite 0's y position
+  220 pokevic+39,1:rem set sprite 0's color
+  250 fory=0to63:rem byte counter with sprite loop
+  300 reada:rem read in a byte
+  310 poke192*64+y,a:rem store the data in sprite area
+  320 nexty:rem close loop
+  330 dx=1:dy=1
+  340 x=peek(vic):rem look at sprite 0's x position
+  350 y=peek(vic+1):rem look at sprite 0's y position
+  360 ify=50ory=208thendy=-dy:rem if y is on the edge of the...
+  370 rem screen, then reverse delta y
+  380 ifx=24and(peek(vic+16)and1)=0thendx=-dx:rem if sprite is touching...
+  390 rem the left edge(x=24 and the msb for sprite 0 is 0), reverse it
+  400 ifx=40and(peek(vic+16)and1)=1thendx=-dx:rem if sprite is touching...
+  410 rem the right edge (x=40 and the msb for sprite 0 is 1), reverse it
+  420 ifx=255anddx=1thenx=-1:side=1
+  430 rem switch to other side of the screen
+  440 ifx=0anddx=-1thenx=256:side=0
+  450 rem switch to other side of the screen
+  460 x=x+dx:rem add delta x to x
+  470 x=xand255:rem make sure x is in allowed range
+  480 y=y+dy:rem add delta y to y
+  485 pokevic+16,side
+  490 pokevic,x:rem put new x value into sprite 0's x position
+  510 pokevic+1,y:rem put new y value into sprite 0's y position
+  530 goto340
+  600 rem ***** sprite data *****
+  610 data0,127,0,1,255,192,3,255,224,3,231,224
+  620 data7,217,240,7,223,240,7,217,240,3,231,224
+  630 data3,255,224,3,255,224,2,255,160,1,127,64
+  640 data1,62,64,0,156,128,0,156,128,0,73,0,0,73,0
+  650 data0,62,0,0,62,0,0,62,0,0,28,0,0
+stop tok64
+

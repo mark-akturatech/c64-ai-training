@@ -1,0 +1,210 @@
+# C64 BASIC ROM Disassembly $BA00-$BBFF - Multiply, Divide
+
+.,BAB0 B1 22    LDA ($22),Y     get exponent byte
+.,BAB2 85 69    STA $69         save FAC2 exponent
+.,BAB4 A5 61    LDA $61         get FAC1 exponent
+.,BAB6 60       RTS             
+
+                                *** test and adjust accumulators
+.,BAB7 A5 69    LDA $69         get FAC2 exponent
+.,BAB9 F0 1F    BEQ $BADA       branch if FAC2 = $00 (handle underflow)
+.,BABB 18       CLC             clear carry for add
+.,BABC 65 61    ADC $61         add FAC1 exponent
+.,BABE 90 04    BCC $BAC4       branch if sum of exponents < $0100
+.,BAC0 30 1D    BMI $BADF       do overflow error
+.,BAC2 18       CLC             clear carry for the add
+.:BAC3 2C       .BYTE $2C       makes next line BIT $1410
+.,BAC4 10 14    BPL $BADA       if +ve go handle underflow
+.,BAC6 69 80    ADC #$80        adjust exponent
+.,BAC8 85 61    STA $61         save FAC1 exponent
+.,BACA D0 03    BNE $BACF       branch if not zero
+.,BACC 4C FB B8 JMP $B8FB       save FAC1 sign and return
+.,BACF A5 6F    LDA $6F         get sign compare (FAC1 EOR FAC2)
+.,BAD1 85 66    STA $66         save FAC1 sign (b7)
+.,BAD3 60       RTS             
+                                handle overflow and underflow
+.,BAD4 A5 66    LDA $66         get FAC1 sign (b7)
+.,BAD6 49 FF    EOR #$FF        complement it
+.,BAD8 30 05    BMI $BADF       do overflow error
+                                handle underflow
+.,BADA 68       PLA             pop return address low byte
+.,BADB 68       PLA             pop return address high byte
+.,BADC 4C F7 B8 JMP $B8F7       clear FAC1 exponent and sign and return
+.,BADF 4C 7E B9 JMP $B97E       do overflow error then warm start
+
+                                *** multiply FAC1 by 10
+.,BAE2 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BAE5 AA       TAX             copy exponent (set the flags)
+.,BAE6 F0 10    BEQ $BAF8       exit if zero
+.,BAE8 18       CLC             clear carry for add
+.,BAE9 69 02    ADC #$02        add two to exponent (*4)
+.,BAEB B0 F2    BCS $BADF       do overflow error if > $FF
+                                FAC1 = (FAC1 + FAC2) * 2
+.,BAED A2 00    LDX #$00        clear byte
+.,BAEF 86 6F    STX $6F         clear sign compare (FAC1 EOR FAC2)
+.,BAF1 20 77 B8 JSR $B877       add FAC2 to FAC1 (*5)
+.,BAF4 E6 61    INC $61         increment FAC1 exponent (*10)
+.,BAF6 F0 E7    BEQ $BADF       if exponent now zero go do overflow error
+.,BAF8 60       RTS             
+
+                                *** 10 as a floating value
+.:BAF9 84 20 00 00 00           10
+
+                                *** divide FAC1 by 10
+.,BAFE 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BB01 A9 F9    LDA #$F9        set 10 pointer low byte
+.,BB03 A0 BA    LDY #$BA        set 10 pointer high byte
+.,BB05 A2 00    LDX #$00        clear sign
+
+                                *** divide by (AY) (X=sign)
+.,BB07 86 6F    STX $6F         save sign compare (FAC1 EOR FAC2)
+.,BB09 20 A2 BB JSR $BBA2       unpack memory (AY) into FAC1
+.,BB0C 4C 12 BB JMP $BB12       do FAC2/FAC1
+                                Perform divide-by
+
+                                *** convert AY and do (AY)/FAC1
+.,BB0F 20 8C BA JSR $BA8C       unpack memory (AY) into FAC2
+.,BB12 F0 76    BEQ $BB8A       if zero go do /0 error
+.,BB14 20 1B BC JSR $BC1B       round FAC1
+.,BB17 A9 00    LDA #$00        clear A
+.,BB19 38       SEC             set carry for subtract
+.,BB1A E5 61    SBC $61         subtract FAC1 exponent (2s complement)
+.,BB1C 85 61    STA $61         save FAC1 exponent
+.,BB1E 20 B7 BA JSR $BAB7       test and adjust accumulators
+.,BB21 E6 61    INC $61         increment FAC1 exponent
+.,BB23 F0 BA    BEQ $BADF       if zero do overflow error
+.,BB25 A2 FC    LDX #$FC        set index to FAC temp
+.,BB27 A9 01    LDA #$01        set byte
+.,BB29 A4 6A    LDY $6A         get FAC2 mantissa 1
+.,BB2B C4 62    CPY $62         compare FAC1 mantissa 1
+.,BB2D D0 10    BNE $BB3F       branch if <>
+.,BB2F A4 6B    LDY $6B         get FAC2 mantissa 2
+.,BB31 C4 63    CPY $63         compare FAC1 mantissa 2
+.,BB33 D0 0A    BNE $BB3F       branch if <>
+.,BB35 A4 6C    LDY $6C         get FAC2 mantissa 3
+.,BB37 C4 64    CPY $64         compare FAC1 mantissa 3
+.,BB39 D0 04    BNE $BB3F       branch if <>
+.,BB3B A4 6D    LDY $6D         get FAC2 mantissa 4
+.,BB3D C4 65    CPY $65         compare FAC1 mantissa 4
+.,BB3F 08       PHP             save FAC2-FAC1 compare status
+.,BB40 2A       ROL             shift byte
+.,BB41 90 09    BCC $BB4C       skip next if no carry
+.,BB43 E8       INX             increment index to FAC temp
+.,BB44 95 29    STA $29,X       
+.,BB46 F0 32    BEQ $BB7A       
+.,BB48 10 34    BPL $BB7E       
+.,BB4A A9 01    LDA #$01        
+.,BB4C 28       PLP             restore FAC2-FAC1 compare status
+.,BB4D B0 0E    BCS $BB5D       if FAC2 >= FAC1 then do subtract
+                                FAC2 = FAC2*2
+.,BB4F 06 6D    ASL $6D         shift FAC2 mantissa 4
+.,BB51 26 6C    ROL $6C         shift FAC2 mantissa 3
+.,BB53 26 6B    ROL $6B         shift FAC2 mantissa 2
+.,BB55 26 6A    ROL $6A         shift FAC2 mantissa 1
+.,BB57 B0 E6    BCS $BB3F       loop with no compare
+.,BB59 30 CE    BMI $BB29       loop with compare
+.,BB5B 10 E2    BPL $BB3F       loop with no compare, branch always
+.,BB5D A8       TAY             save FAC2-FAC1 compare status
+.,BB5E A5 6D    LDA $6D         get FAC2 mantissa 4
+.,BB60 E5 65    SBC $65         subtract FAC1 mantissa 4
+.,BB62 85 6D    STA $6D         save FAC2 mantissa 4
+.,BB64 A5 6C    LDA $6C         get FAC2 mantissa 3
+.,BB66 E5 64    SBC $64         subtract FAC1 mantissa 3
+.,BB68 85 6C    STA $6C         save FAC2 mantissa 3
+.,BB6A A5 6B    LDA $6B         get FAC2 mantissa 2
+.,BB6C E5 63    SBC $63         subtract FAC1 mantissa 2
+.,BB6E 85 6B    STA $6B         save FAC2 mantissa 2
+.,BB70 A5 6A    LDA $6A         get FAC2 mantissa 1
+.,BB72 E5 62    SBC $62         subtract FAC1 mantissa 1
+.,BB74 85 6A    STA $6A         save FAC2 mantissa 1
+.,BB76 98       TYA             restore FAC2-FAC1 compare status
+.,BB77 4C 4F BB JMP $BB4F       
+.,BB7A A9 40    LDA #$40        
+.,BB7C D0 CE    BNE $BB4C       branch always
+                                do A<<6, save as FAC1 rounding byte, normalise and return
+.,BB7E 0A       ASL             
+.,BB7F 0A       ASL             
+.,BB80 0A       ASL             
+.,BB81 0A       ASL             
+.,BB82 0A       ASL             
+.,BB83 0A       ASL             
+.,BB84 85 70    STA $70         save FAC1 rounding byte
+.,BB86 28       PLP             dump FAC2-FAC1 compare status
+.,BB87 4C 8F BB JMP $BB8F       copy temp to FAC1, normalise and return
+                                do "Divide by zero" error
+.,BB8A A2 14    LDX #$14        error $14, divide by zero error
+.,BB8C 4C 37 A4 JMP $A437       do error #X then warm start
+.,BB8F A5 26    LDA $26         get temp mantissa 1
+.,BB91 85 62    STA $62         save FAC1 mantissa 1
+.,BB93 A5 27    LDA $27         get temp mantissa 2
+.,BB95 85 63    STA $63         save FAC1 mantissa 2
+.,BB97 A5 28    LDA $28         get temp mantissa 3
+.,BB99 85 64    STA $64         save FAC1 mantissa 3
+.,BB9B A5 29    LDA $29         get temp mantissa 4
+.,BB9D 85 65    STA $65         save FAC1 mantissa 4
+.,BB9F 4C D7 B8 JMP $B8D7       normalise FAC1 and return
+
+                                *** unpack memory (AY) into FAC1
+.,BBA2 85 22    STA $22         save pointer low byte
+.,BBA4 84 23    STY $23         save pointer high byte
+.,BBA6 A0 04    LDY #$04        5 bytes to do
+.,BBA8 B1 22    LDA ($22),Y     get fifth byte
+.,BBAA 85 65    STA $65         save FAC1 mantissa 4
+.,BBAC 88       DEY             decrement index
+.,BBAD B1 22    LDA ($22),Y     get fourth byte
+.,BBAF 85 64    STA $64         save FAC1 mantissa 3
+.,BBB1 88       DEY             decrement index
+.,BBB2 B1 22    LDA ($22),Y     get third byte
+.,BBB4 85 63    STA $63         save FAC1 mantissa 2
+.,BBB6 88       DEY             decrement index
+.,BBB7 B1 22    LDA ($22),Y     get second byte
+.,BBB9 85 66    STA $66         save FAC1 sign (b7)
+.,BBBB 09 80    ORA #$80        set 1xxx xxxx (add normal bit)
+.,BBBD 85 62    STA $62         save FAC1 mantissa 1
+.,BBBF 88       DEY             decrement index
+.,BBC0 B1 22    LDA ($22),Y     get first byte (exponent)
+.,BBC2 85 61    STA $61         save FAC1 exponent
+.,BBC4 84 70    STY $70         clear FAC1 rounding byte
+.,BBC6 60       RTS             
+
+                                *** pack FAC1 into $5C
+.,BBC7 A2 5C    LDX #$5C        set pointer low byte
+.:BBC9 2C       .BYTE $2C       makes next line BIT $57A2
+
+                                *** pack FAC1 into $57
+.,BBCA A2 57    LDX #$57        set pointer low byte
+.,BBCC A0 00    LDY #$00        set pointer high byte
+.,BBCE F0 04    BEQ $BBD4       pack FAC1 into (XY) and return, branch always
+
+                                *** pack FAC1 into variable pointer
+.,BBD0 A6 49    LDX $49         get destination pointer low byte
+.,BBD2 A4 4A    LDY $4A         get destination pointer high byte
+
+                                *** pack FAC1 into (XY)
+.,BBD4 20 1B BC JSR $BC1B       round FAC1
+.,BBD7 86 22    STX $22         save pointer low byte
+.,BBD9 84 23    STY $23         save pointer high byte
+.,BBDB A0 04    LDY #$04        set index
+.,BBDD A5 65    LDA $65         get FAC1 mantissa 4
+.,BBDF 91 22    STA ($22),Y     store in destination
+.,BBE1 88       DEY             decrement index
+.,BBE2 A5 64    LDA $64         get FAC1 mantissa 3
+.,BBE4 91 22    STA ($22),Y     store in destination
+.,BBE6 88       DEY             decrement index
+.,BBE7 A5 63    LDA $63         get FAC1 mantissa 2
+.,BBE9 91 22    STA ($22),Y     store in destination
+.,BBEB 88       DEY             decrement index
+.,BBEC A5 66    LDA $66         get FAC1 sign (b7)
+.,BBEE 09 7F    ORA #$7F        set bits x111 1111
+.,BBF0 25 62    AND $62         AND in FAC1 mantissa 1
+.,BBF2 91 22    STA ($22),Y     store in destination
+.,BBF4 88       DEY             decrement index
+.,BBF5 A5 61    LDA $61         get FAC1 exponent
+.,BBF7 91 22    STA ($22),Y     store in destination
+.,BBF9 84 70    STY $70         clear FAC1 rounding byte
+.,BBFB 60       RTS             
+
+                                *** copy FAC2 to FAC1
+.,BBFC A5 6E    LDA $6E         get FAC2 sign (b7)
+                                save FAC1 sign and copy ABS(FAC2) to FAC1
+.,BBFE 85 66    STA $66         save FAC1 sign (b7)

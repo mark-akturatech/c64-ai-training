@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 8: Timing, Cycle Counting
+
+49152 to 53247).  That's 4k of RAM not being used; you may write your
+programs there.  Before you do so, check to make sure that the memory is not
+being used by any other programs.  It's a popular place in the Commodore 64,
+and many utilities and commercial programs zero in on this available memory.
+
+If you intend to write programs entirely in machine language, with no BASIC
+content at all, you may completely remove BASIC from the Commodore 64 system
+and claim the space as available RAM.  This gives you the whole block from
+$0801 up to $CFFF for programs and data--a whopping 50K--and even more could
+be liberated if necessary.  BASIC may be made to disappear from the Commodore
+64 with the equivalent of POKE 1,54 (LDA #$36, STA $01).  It may be
+reinstated with the equivalent of POKE 1,55 (LDA #$37, STA $01).  Be very
+careful.  With BASIC gone, the computer doesn't even know how to say READY.
+
+On all Commodore machines it's possible to move up the start-of-BASIC pointer
+and use the space freed below.  To do so, it's essential to store a value of
+zero in the location immediately before the new start-of-BASIC, and to align
+all other pointers, usually by going to BASIC and commanding NEW.
+
+This works, and will make as much space available as is needed.  BASIC
+programs will relocate as they load.  But since the computer needs to be
+reconfigured before the main program is loaded, and often needs to be
+restored to its original configuration after the program is run, the method
+is not popular in most Commodore machines.  It's used fairly often in the
+VIC-20, however.
+
+The video chip in the VIC-20 can "see" RAM memory only in the memory space
+$0000 to $1FFF (decimal 0 to 8191).  Whatever variable information appears on
+the screen must be taken from this memory area.  The VIC-20 can also get
+information from $8000 to $9FFF, but there's no RAM there; we can't
+manipulate this memory area.
+
+                                                                         :97:
+
+If we want to perform special visual effects on the VIC-20, we must
+manipulate data in the area $0000 to $1FFF.  Let's look at what's available.
+$0000 to $03FF is used by the "system;" other than the cassette buffer, we
+must leave it alone.  $0400 to $0FFF contains no memory unless a 3K RAM
+expansion is added.  $1000 to $1DFF contains the BASIC program, and $1E00 to
+$1FFF is screen memory.  Details may vary, but the answer always comes out
+the same:  there's no space to do our video effects.
+
+A popular VIC-20 solution, especially where 8K or more of RAM expansion has
+been added, is to increase the start-of-BASIC pointer, thus liberating space
+in low memory.  This may now be used for visual effects and for machine
+language programming, too, if any space is left over.  In the VIC-20, this
+approach is necessary, but it's still a bit clumsy.
+
+
+The Wicked SOV
+--------------
+
+The start-of-variables pointer can be the cause of many troubles, if it's not
+understood.  The rules covering it are as follows:
+
+  1.  Variables are written starting at the SOV.
+
+  2.  BASIC SAVEs will save from memory beginning at start-of-BASIC and
+      stopping at SOV.
+
+  3.  Direct command BASIC LOADs will bring a program into memory, relocating
+      if appropriate, and then set the SOV pointer to the location following
+      the last byte loaded.
+
+  4.  Changes to BASIC programs cause memory to be moved--up or down--
+      starting from the point where the change is made and stopping at the
+      SOV.  The SOV will then be moved the appropriate distance up or down.
+
+These seem to be innocent rules.  Rule 1 defines the purpose of the SOV.
+Rule 2 shows how the SOV controls the SAVE command so that the entire BASIC
+program is saved, but not the variables.  Rule 3 arranges that short programs
+will have a large amount of variable space available; long ones will have
+less.  Rule 4 ensures that a BASIC change makes extra room in memory or
+reclaims memory space.
+
+But if the SOV gets the wrong address, we're in trouble.  The rules work
+against us.  Variables may be written into disastrous places.  SAVEs will
+cause too much or too little to be saved.  LOADs may fix things, since SOV
+will be changed by the load action.  An attempt to change a program with a
+bad SOV may cause too little or far too much memory to be moved around.  We
+must get the SOV right.
+
+                                                                         :98:
+
+How can the SOV go bad on us?  Let's take three examples, corresponding to
+the three major places that we might put machine language programs:
+
+We have a program in the cassette buffer, and a BASIC program that goes with
+it.  We enter or load the BASIC program (the SOV is all right so far), and
+then we LOAD the machine language program; the SOV ends up disastrously
+somewhere in the cassette buffer area.
+
+We're in trouble.  The program seems to list correctly, but it's sick.  If we
+RUN, variables will start to be placed in the cassette buffer area; as more
+variables area created, they are placed in progressively higher memory
+locations.  Eventually, the variables start to write over the BASIC program.
+Everything stops.  The poor programmer says LIST to see what's happening; his
+BASIC program is gone, and all that's left is gibberish.
+
+We're in more trouble.  Alternatively, the programmer decides to save his
+BASIC program and commands SAVE.  BASIC starts to save memory beginning at
+start-of-BASIC...and keeps saving, and saving, and saving.  It won't stop
+until it reaches the SOV, but that's below where we started.  We won't get
+there until the address "wraps around" and comes back up through zero.  The
+poor programmer--if he or she waits long enough--discovers that the tiny
+five-line BASIC program has been saved as over 250 blocks on disk, or fifteen
+minutes worth of tape.  And the saved program is useless.
+
+We're in still more trouble.  Alternatively, the programmer lists the
+program, and decides to delete one character from a line of BASIC.  BASIC
+immediately starts to move memory, starting at the change point.  It won't
+stop moving memory until it reaches SOV, but that, again, is below where we
+started.  It will move everything that can be moved.  RAM will be moved
+along, which may not hurt anything; then the IA chips will be moved, which
+may scramble colors or make the display go crazy; then it will try to move
+ROM, which won't work because ROM can't be changed; then it will wrap around
+to zero-page and move everything there, which is fatal to the system.
+Eventually, it will collapse before reaching SOV since it destroys its own
+working pointers.
+
+
+Quiet Interlude
+---------------
+
+It's easy to see how the problem occurs, once you understand about the SOV
+and its role.  But if you don't understand the SOV, the results can shake
+your self-confidence.  Many programmers have given up on machine language
+because of a bad experience with SOV.
+
+                                                                         :99:
+
+It works this way.  The student writes a perfect program into the cassette
+buffer and saves it using the machine language monitor.  Later, with a BASIC
+program in place, the student recalls the program and inadvertently moves SOV
+to an impossible location.  When BASIC runs, the variables will start to be
+written behind the machine language program, ahead of the BASIC program.  As
+more and more variables come into play, they creep relentlessly toward the
+BASIC coding.
+
+Our eager student--with a perfect machine language program and a perfect
+BASIC program--now decides to say RUN.  The BASIC program runs for a while,
+and then grinds to a halt, usually with a crazy screen or reporting an error
+in a nonexistent line.  We know what's happened, of course:  the variables
+have started to write over the BASIC program.  But our unfortunate student
+doesn't know that.  The command LIST is entered, and out comes nonsense.
+
+What goes through the programmer's mind at this time?  "I was so sure that
+the program is correct [in fact, it is]; but it's so bad that it's destroyed
+memory!  I suppose that machine language is much more difficult than I
+thought."
+
+And the student loses hope and gives up, not knowing that there's only one
+small piece of information needed to fix everything up.  This is only one of
+the things that might go wrong when the SOV pointer is improperly placed;
+even an attempt to change or save a BASIC program can cause system failure.
+
+Such experiences destroy confidence.  They are responsible for the myth that
+machine language is hard and only super-clever programmers can cope with it.
+
+
+The Machine Language Monitor SAVE
+---------------------------------
+
+Now that we're becoming aware of the SOV pitfall, we're ready to discuss how
+to save a program in machine language.  You probably understand why I've
+been delaying this command until this time.  The MLM save command typically
+goes
+
+  .S"PROGRAM",01,033C,0361
+
+This would be the tape format.  The command is .S and is followed by the
+program name.  The device is tape, so we type 01--be sure to give two digits.
+Next comes the beginning address (in the example $033C) followed by the end
+address plus one.  In the last example, the last location saved will be
+$0360.  For disk saves, we might want to add the drive number:
+
+                                                                        :100:
+
+  .S"0:PROGRAM",08,033C,0361
+
+These programs, once saved, may be loaded directly from BASIC, but watch the
+SOV carefully.  VIC-20 and Commodore 64 BASIC LOAD commands should contain
+the extra field to defeat relocation:  LOAD"PROGRAM",8,1 will insist that the
+program load back into the same memory locations from which it was saved.
+
+
+More on LOAD
+------------
+
+There is a machine language .S command to do a program load without changing
+any pointer (especially SOV).  There are a number of different machine
+language monitors around, and the .L command does not work the same way on
+all of them.  You might check out the one you are using:  ideally, the .L
+command (format:  .L"PROGRAM",01) should bring back the program without
+relocation.
+
+The .L command is of limited value.  A program user often cannot be expected
+to load up a machine language monitor and use it to go through a .L sequence.
+The program should take care of things for the user.
+
+We have been careful to say that the BASIC LOAD command changes the SOV when
+given as a direct command.  If a LOAD command is given from within a program,
+SOV is not changed; but there's a new item to be taken care of.
+
+Programmed LOAD has been carefully designed to perform a function called
+"chaining."  That's a BASIC technique, and not within the scope of this book.
+Chaining, however, has two important characteristics:
+
+  1.  No pointers are affected.  The program will not lose any variables when
+      it performs a LOAD.  That's good:  we will not lose any of our
+      computations.
+
+  2.  Once a LOAD is complete, the BASIC program will resume execution at the
+      first statement.  It will not continue from where it left off; it will
+      go back to the beginning.  For our application, that's bad; we seem to
+      have lost our place in BASIC.
+
+If we understand the problem that item 2 creates, we can easily fix it by
+using item 1.  Here's an example to illustrate the problem:  we have a
+program on disk written for the cassette buffer called "ML", and we want to
+have a BASIC program bring it in.  We could code as a first line:  100 LOAD
+"ML",8--but we'd have a problem.  First, the program would load ML.  Then it
+would go back to the beginning and load ML.  Then it would go back to the
+beginning...and so on.  This is not satisfactory.  Let's use rule 1 to fix
+everything:
+
+                                                                        :101:
+  100 IF A=1 GOTO 130
+  110 A=1
+  120 LOAD"ML",8,1
+  130 ... continues
+
+When we say RUN, the first line is executed.  A is not equal to one, so we
+continue on line 110.  A is set to one, and line 120 causes a load of the
+desired program.  BASIC goes back to the beginning, but all variables are
+preserved, so A is still equal to 1.  Line 100 tests A and goes to line 130,
+the next statement beyond the load.  Everything works as required.  If there
+are multiple LOADs, line 100 might be changed to 100 ON A GOTO 130,150,170...
+as necessary.
+
+Caution:  we are discussing the programmed LOAD command only in the context
+of loading machine language modules.  If you want to have a program load in
+another BASIC program (chaining or loading) the above rules still apply but
+may need to be used differently.
+
+
+Other SOV Blunders
+------------------
+
+We have discussed the horrible results of loading a machine language program
+into the cassette buffer (using a direct command) after BASIC has been
+loaded.  By now, we should have learned to avoid making this mistake.  What
+about programs stored in other areas, such as high memory or after BASIC?
+
+Suppose we want to place a program into high memory, either by moving the
+top-of-memory pointer down to make room, or by using the spare RAM at $C000
+to $CFFF of the Commodore 64.  We also have a BASIC program to load.  Will
+loading in the wrong order harm SOV?
+
+The answer is yes, although the problem is not so severe.  You can see that
+after loading a program to high memory using a direct command, SOV will be
+positioned immediately above it.  But that's too high--there's no room for
+variables and we'll get an OUT OF MEMORY error for almost anything we do.
+
+Obviously, we can't leave SOV in the upper stratosphere.  We must load the
+high memory first, and then the BASIC program.  The second load will
+straighten out the SOV pointer.  If you try this, you'll find that it is
+necessary to fix up the top-of-memory pointer and command NEW between the two
+loads; you cannot even give the next LOAD command if you're apparently out of
+memory.
+
+                                                                        :102:
+
+Review:  Fixing Pointers
+------------------------
+
+If in doubt, examine the pointers by displaying them with a .M command.  For
+VIC/64/PLUS/4, the command would be .M 002B 003A; with PET/CBM, use .M 0028
+0037; in either case, be sure that the start-of-variables pointer is set to a
+"sound" value.
+
+As always, you can change an incorrect memory value--in this case, an
+incorrect vector--by moving the cursor back, typing over the values to be
+changed, and pressing RETURN.
+
+
+After End-of-BASIC--Harmony
+---------------------------
+
+Suppose we place the machine language program behind the end-of-BASIC--that's
+the three zeros in memory--and move up the SOV so that variables don't
+disturb this program.  How will everything work now?
+
+Things will work very well indeed.  This time, we need to load our BASIC
+program first; the SOV will go immediately behind BASIC.  Then we may load
+our machine language program, and the SOV moves right behind it.  The SOV is
+in exactly the right place, assuming we load in the right order.  (If we
+don't, the variables will destroy our machine language program.)
+
+Once our two programs are together, and we say SAVE, the combination

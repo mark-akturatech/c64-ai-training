@@ -1,0 +1,362 @@
+650           $28A           RPTFLAG
+Flag: Which Keys Will Repeat?
+
+The flag at this location is used to determine whether to continue
+printing a character as long as its key is held down, or whether to
+wait until the key is let up before allowing it to be printed again.
+The default value here is 0, which allows only the cursor movement
+keys, insert/delete key, and the space bar to repeat.
+
+POKEing this location with 128 ($80) will make all keys repeating,
+while a value of 64 ($40) will disable all keys from repeating.
+
+651           $28B           KOUNT
+Counter for Timing the Delay Between Key Repeats
+
+This location is used as a delay counter to determine how long to wait
+while a key is being held down until the next repeat printing of that
+key.
+
+The value here starts at 6.  If location 652 ($28C) contains a 0, the
+value in this location is counted down once every 1/60 second, so long
+as the same key is held down.  When this counter gets to 0, and if the
+repeat flag at 650 ($28A) allows that key to repeat, its ASCII
+equivalent will once again be placed in the keyboard buffer.  A value
+of 4 is then placed in location 651, allowing subsequent repeats to
+occur at a rate of 15 per second.
+
+652           $28C           DELAY
+Counter for Timing the Delay Until the First Key Repeat Begins
+
+This location is used as a delay counter to determine how long a key
+must be held down before the entry of that key should be repeated.
+
+The initial value of 16 is counted down every 1/60 second, as long as
+the same key remains pressed.  When the value gets to 0, location 651
+($28B) is counted down from 6, and the key is repeated when the value
+there reaches 0.  Thus a total of 22/60, or approximately 1/3, second
+will elapse before the first repeat of a key.  The value here will be
+held to 0 after the first repeat, so that subsequent keystroke
+repititions occur much more quickly.
+
+653           $28D           SHFLAG
+Flag: SHIFT/CTRL/Logo Keypress
+
+This flag signals which of the SHIFT, CTRL, or Commodore logo keys are
+currently being pressed, if any.
+
+A value of 1 signifies that one of the SHIFT keys is being pressed, a
+2 shows that the Commodore logo key is down, and 4 means that the CTRL
+key is being pressed.  If more than one key is held down, these values
+will be added; for example, a 3 indicates that SHIFT and logo are both
+held down.
+
+The value here is used by the Operating System when determining how to
+convert a keypress into a PETASCII character.  There are four
+different tables used to translate one of the 64 keys on the keyboard
+matrix into a PETASCII character, and the combination of special SHIFT
+keys determines which of these tables will be used (see the entry for
+location 245 ($F5) for more details on the keyboard tables).
+
+Pressing the SHIFT and Commodore logo keys at the same time will
+toggle the character set that is presently being used between the
+uppercase/graphics set, and the lowercase/uppercase set (provided that
+the flag at 657 ($291) has not been set to disable this switch).
+
+This changes the appearance of all of the characters on the screen at
+once.  It has nothing whatever to do with the keyboard shift tables,
+however, and should not be confused with the printing of SHIFTed
+characters, which affects only one character at a time.  Rather, it is
+the result of the value of the character dot data table base address
+in 53272 ($D018) being changed.  The came result may be obtained by
+POKEing that address directly.
+
+654           $28E           LSTSHF
+Last Pattern of SHIFT/CTRL/Logo Keypress
+
+This location is used in combination with the one above to debounce
+the special SHIFT keys.  This will keep the SHIFT/logo combination
+from changing character sets back and forth during a single pressing
+of both keys.
+
+655-656       $28F-$290      KEYLOG
+Vector to Keyboard Table Setup Routine
+
+This location points to the address of the Operating System routine
+which actually determines which keyboard matrix lookup table will be
+used.
+
+The routine looks at the value of the SHIFT flag at 653 ($28D), and
+based on what value it finds there, stores the address of the correct
+table to use at location 245 ($F5).
+
+The interrupt driven keyboard-scanning routine jumps through this RAM
+vector to get to the table setup routine.  Therefore, it is possible
+to alter the address contained in this vector, and direct the keyscan
+routine to your own routine, which can check the keypress and SHIFT
+combination, and act before a character is printed.
+
+Since this routine comes after the keypress, but before it is printed,
+this is a very good place to have your preprocessor routine check for
+a particular keypress.  An excellent example of such a program is the
+"VICword" program by Mark Niggemann, COMPUTE!'s Second Book of VIC.
+This program adds a machine language routine that checks if the SHIFT
+or Commodore logo key is pressed while not in quote mode.  If it finds
+one of these keypresses, it substitutes an entire BASIC keyword for
+the letter (A-Z) of the key that was pressed.  An adaptation of that
+program for the 64 appears below.
+
+100 IF PEEK(PEEK(56)*256)<>120THENPOKE56,PEEK(56)-1:CLR
+110 HI=PEEK(56):BASE=HI*256
+120 PRINTCHR$(147)"READING DATA"
+130 FOR AD=0 TO 211:READ BY
+140 POKE BASE+AD,BY:NEXT AD
+150 :
+200 REM RELOCATION ADJUSTMENTS
+210 POKE BASE+26,HI:POKE BASE+81,HI
+220 POKE BASE+123,HI:POKE BASE+133,HI
+230 :
+240 PRINT CHR$(147) TAB(15)"***64WORD***":PRINT
+250 PRINT"TO TOGGLE THE PROGRAM ON/OFF:":PRINT:PRINT:PRINT "SYS";BASE;
+260 PRINT CHR$(145);CHR$(145);
+270 DATA 120,173,143,2,201,32
+280 DATA 208,12,169,220,141,143
+290 DATA 2,169,72,141,144,2
+300 DATA 88,96,169,32,141,143
+310 DATA 2,169,0,141,144,2
+320 DATA 88,96,165,212,208,117
+330 DATA 173,141,2,201,3,176
+340 DATA 110,201,0,240,106,169
+350 DATA 194,133,245,169,235,133
+360 DATA 246,165,215,201,193,144
+370 DATA 95,201,219,176,91,56
+380 DATA 233,193,174,141,2,224
+390 DATA 2,208,3,24,105,26
+400 DATA 170,189,159,0,162,0
+410 DATA 134,198,170,160,158,132
+420 DATA 34,160,160,132,35,160
+430 DATA 0,10,240,16,202,16
+440 DATA 12,230,34,208,2,230
+450 DATA 35,177,34,16,246,48
+460 DATA 241,200,177,34,48,17
+470 DATA 8,142,211,0,230,198
+480 DATA 166,198,157,119,2,174
+490 DATA 211,0,40,208,234,230
+500 DATA 198,166,198,41,127,157
+510 DATA 199,2,230,198,169,20
+520 DATA 141,119,2,76,72,235
+530 DATA 76,224,234
+550 REM TOKENS FOR SHIFT KEY
+570 DATA 153,175,199,135,161,129
+580 DATA 141,164,133,137,134,147
+590 DATA 202,181,159,151,163,201
+600 DATA 196,139,192,149,150,155
+610 DATA 191,138
+630 REM TOKENS FOR COMMODORE KEY
+650 DATA 152,165,198,131,128,130
+660 DATA 142,169,132,145,140,148
+670 DATA 195,187,160,194,166,200
+680 DATA 197,167,186,157,165,184
+690 DATA 190,158,0
+
+Commodore 64word: Keys into BASIC Commands
+
+Key   SHIFT   Commodore
+A     PRINT   PRINT#
+B     AND     OR
+C     CHR$    ASC
+D     READ    DATA
+E     GET     END
+F     FOR     NEXT
+G     GOSUB   RETURN
+H     TO      STEP
+I     INPUT   INPUT#
+J     GOTO    ON
+K     DIM     RESTORE
+L     LOAD    SAVE
+M     MID$    LEN
+N     INT     RND
+O     OPEN    CLOSE
+P     POKE    PEEK
+Q     TAB(    SPC(
+R     RIGHT$  LEFT$
+S     STR$    VAL
+T     IF      THEN
+U     TAN     SQR
+V     VERIFY  CMD
+W     DEF     FN
+X     LIST    FRE
+Y     SIN     COS
+Z     RUN     SYS
+
+657           $291           MODE
+Flag: Enable or Disable Changing Character Sets with SHIFT/Logo
+Keypress
+
+This flag is used to enable or disable the feature which lets you
+switch between the uppercase/graphics and upper/lowercase character
+sets by pressing the SHIFT and Commodore logo keys simultaneously.
+
+This flag affects only this special SHIFT key function, and does not
+affect the printing of SHIFTed characters.  POKEing a value of 128
+($80) here will disable this feature, while POKEing a value of 0 will
+enable it once more.  The same effect can be achieved by PRINTing
+CHR$(8) or CTRL-H to disable the switching of character sets, and
+CHR$(9) or CTRL-I to enable it.  See entries for locations 53272
+($D018) and 49152 ($C000) for more information on switching character
+sets.
+
+658           $292           AUTODN
+Flag: Screen Scrolling Enabled
+
+This location is used to determine whether moving the cursor past the
+fortieth column of a logical line will cause another physical line to
+be added to the logical line.
+
+A value of 0 enables the screen to scroll the following lines down in
+order to add that line; any nonzero value will disable the scroll.
+This flag is set to disable the scroll temporarily when there are
+characters waiting in the keyboard buffer (these may include cursor
+movement characters that would eliminate the need for a scroll).
+
+Location Range: 659-663 ($293-$297)
+RS-232 Pseudo 6551 Registers
+
+For serial Input/Output via the RS-232 port, the internal software of
+the Commodore 64 emulates the operation of a 6551 UART chip (that's
+Universal Asynchronous Receiver/Transmitter, for you acronym buffs),
+also known as an ACIA (Asynchronous Communications Interface Adapter).
+
+These RAM locations are used to mimic the functions of that chip's
+hardware command, control, and status registers.  Although RAM
+locations are allocated for mimicking the 6551's ability to use either
+an on-board baud rate generator or an external clock crystal, this
+function is not implemented by the internal software.
+
+Provisions have been made for the user to communicate with these
+registers through the RS-232 OPEN command.  When device 2 is opened, a
+filename of up to four characters may be appended.  These four
+characters are copied to locations 659-662 ($293-$296), although the
+last two, which specify a nonstandard baud rate, are not used because
+that feature is not implemented.
+
+659           $293           M51CTR
+RS-232: Mock 6551 Control Register
+
+This location is used to control the RS-232 serial I/O baud rate
+(speed at which data is transmitted and received), the word length
+(number of bits per data character), and the number of stop bits used
+to mark the end of a transmitted character.  It uses the same format
+as that of the 6551 UART control register to set these parameters,
+although, as you will see, some of the 6551 configurations are not
+implemented by the software that emulates the UART device.  For
+example, the standard baud rates which are higher than 2400 baud are
+not implemented, presumably because the software cannot keep up at
+higher rates.  The meanings of the various bit patterns are as
+follows:
+
+Bit 7: STOP Bits
+0    (bit value of 0)   = 1 STOP Bit
+1    (bit value of 128) = 0 STOP Bits
+
+Bits 6-5: WORD LENGTH
+00   (bit value of 0)   = 8 DATA Bits
+01   (bit value of 32)  = 7 DATA Bits
+10   (bit value of 64)  = 6 DATA Bits
+11   (bit value of 96)  = 5 DATA Bits
+
+Bit 4: Unused
+
+Bits 3-0: BAUD RATE
+0000 (bit value of 0)   = Nonstandard (User-Defined) Rate (Not Implemented)
+0001 (bit value of 1)   = 50 Baud
+0010 (bit value of 2)   = 75 Baud
+0011 (bit value of 3)   = 110 Baud
+0100 (bit value of 4)   = 134.5 Baud
+0101 (bit value of 5)   = 150 Baud
+0110 (bit value of 6)   = 300 Baud
+0111 (bit value of 7)   = 600 Baud
+1000 (bit value of 8)   = 1200 Baud
+1001 (bit value of 9)   = 1800 Baud
+1010 (bit value of 10)  = 2400 Baud
+1011 (bit value of 11)  = 3600 Baud (Not Implemented on the Commodore 64)
+1100 (bit value of 12)  = 4800 Baud (Not Implemented on the Commodore 64)
+1101 (bit value of 13)  = 7200 Baud (Not Implemented on the Commodore 64)
+1110 (bit value of 14)  = 9600 Baud (Not Implemented on the Commodore 64)
+1111 (bit value of 15)  = 19200 Baud (Not Implemented on the Commodore 64)
+
+This register is the only one which must be set when opening RS-232
+device (number 2).  The first character of the filename will be stored
+here.  For example, the statement OPEN 2,2,0,CHR$(6+32) will set the
+value of this location to 38.  As you can see from the above chart,
+this sets up the RS-232 device for a data transfer rate of 300 baud,
+using seven data bits per character and one stop bit.
+
+660           $294           M51CDR
+RS-232: Mock 6551 Command Register
+
+This location performs the same function as the 6551 UART chip's
+command register, which specifies type of parity, duplex mode, and
+handshaking protocol.
+
+The type of parity used determines how the 64 will check that RS-232
+data is received correctly.
+
+The duplex mode can be either full duplex (the 64 will be able to
+transmit at the same time it is receiving) or half duplex (it will
+take turns sending and receiving).
+
+The handshaking protocol has to do with the manner in which the
+sending device lets the receiver know that it is ready to send data,
+and the receiver lets the sender know that it has gotten the data
+correctly.  The meanings of the bit patterns in this register are as
+follows:
+
+Bits 7-5: Parity
+XX0 (bit value of
+     0,64,128, or 192) = No Parity Generated or Received
+001 (bit value of 32)  = Odd Parity Transmitted and Received
+011 (bit value of 96)  = Even Parity Transmitted and Received
+101 (bit value of 160) = Mark Parity Transmitted and Received
+111 (bit value of 224) = Space Parity Transmitted and Received
+
+Bit 4: Duplex
+0 (bit value of 0)  = Full Duplex
+1 (bit value of 16) = Half Duplex
+
+Bits 3-1: Unused
+
+Bit 0: Handshake Protocol
+0 (bit value of 0) = 3 Line
+1 (bit value of 1) = X Line
+
+This register can be set at the user's option when opening RS-232
+device (number 2).  The second character of the filename will be
+stored here.  For example, the statement
+
+OPEN 2,2,0,CHR$(6+32)+CHR$(32+16)
+
+will set the value of this location to 48, which is the value of the
+second character in the filename portion of the statement.  As you can
+see from the above chart, this configures the RS-232 device for half
+duplex data transfer using odd parity and three-line handshaking.
+
+661-662       $295-$296      M51AJB
+RS-232: Nonstandard Bit Timing
+
+These locations are provided for storing a nonstandard user-defined
+baud rate, to be used when the low nybble of the control register at
+659 ($293) is set to 0.  They were presumable provided to conform to
+the nodel of the 6551 UART device, which allows a nonstandard baud
+rate to be generated from an external reference crystal.  However, the
+software emulation of that feature is not provided in the current
+version of the Kernal, and thus these locations are currently
+nonfunctional.
+
+Nonetheless, Commodore has specified that if the nonstandard baud rate
+feature is implemented, the value placed here should equal the system
+clock frequency divided by the baud rate divided by 2 minus 100,
+stored in low byte, high byte order.  The system clock frequency for
+American television monitors (NTSC standard) is 1.02273 MHz, and for
+European monitors (PAL standard) .98525 MHz.
+

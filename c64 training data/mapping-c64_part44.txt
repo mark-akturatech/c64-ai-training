@@ -1,0 +1,302 @@
+# C64 Kernal ROM - I/O Routines
+
+
+This subroutine is used in common by many Kernal routines to send the
+command code in the Accumulator to a device on the serial bus.
+
+60736         $ED40
+Send a Byte on the Serial Bus
+
+This subroutine is used in common by several Kernal routines to send
+the byte in the serial bus character buffer at 149 ($95) on the serial
+bus.
+
+60848         $EDB0
+Time-Out Error on Serial Bus
+
+This subroutine handles the case when the device does not respond by
+setting the DEVICE NOT PRESENT error code and exiting.
+
+60857         $EDB9          SECOND
+Send a Secondary Address to a Device on the Serial Bus after LISTEN
+
+This is a documented Kernal routine that can be entered from the jump
+table at 65427 ($FF93).  It sends a secondary address from the
+Accumulator to the device on the serial bus that has just been
+commanded to LISTEN.  This is usually done to give the device more
+particular instructions on how the I/O is to be carried out before
+information is sent.
+
+60871         $EDC7          TKSA
+Send a Secondary Address to a Device on the Serial Bus after TALK
+
+This is a documented Kernal routine that can be entered from the jump
+table at 65430 ($FF96).  It sends a secondary address from the
+Accumulator to the device on the serial bus that has just been
+commanded to TALK.  This is usually done to give the device more
+particular instructions on how the I/O is to be carried out before
+information is sent.
+
+60893         $EDDD          CIOUT
+Send a Byte to an I/O Device over the Serial Bus
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65448 ($FFA8).  Its purpose is to send a byte of data over
+the serial bus.  In order for the data to be received, the serial
+device must have first been commanded to LISTEN and been given a
+secondary address if necessary.  This routine always buffers the
+current character, and defers sending it until the next byte is
+buffered.  When the UNLISTEN command is sent, the last byte will be
+sent with an End or Identify (EOI).
+
+60911         $EDEF          UNTLK
+Send UNTALK to a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry in the jump table is
+65451 ($FFAB).  When called, it sends the UNTALK code (95, $5F) on the
+serial bus.  This commands any TALKer on the bus to stop sending data.
+
+60926         $EDFE          UNLSN
+Send UNLISTED to a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry in the jump table is
+65454 ($FFAE).  It sends the UNLISTEN code (63, $3F) on the serial
+bus.  This commands any LISTENers to get off the serial bus, and frees
+up the bus for other users.
+
+60947         $EE13          ACPTR
+Receive a Byte of Data from a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry point in the jump
+table is 65445 ($FFA5).  When called, it will get a byte of data from
+the current TALKer on the serial bus and store it in the Accumulator.
+In order to receive the data, the device must have previously been
+sent a command to TALK and a secondary address if it needs one.
+
+61061         $EE85
+Set the Serial Clock Line Low (Active)
+
+This subroutine clears the serial bus clock pulse output bit (Bit 4 of
+CIA #2 Data Port A at 56576 ($DD00)).
+
+61070         $EE8E
+Set the Serial Clock Line High (Inactive)
+
+This subroutine sets the serial bus clock pulse output bit to 1 (Bit 4
+of CIA #2 Data Port A at 56576 ($DD00)).
+
+61079         $EE97
+Set Serial Bus Data Output Line Low
+
+This subroutine clears the serial bus data output to 0 (Bit 5 of CIA
+#2 Data Port A at 56576 ($DD00)).
+
+61097         $EEA9
+Get Serial Bus Data Input Bit and Clock Pulse Input Bit
+
+This subroutine reads the serial bus data input bit and clock pulse
+input bit (Bits 7 and 6 of CIA #2 Data Port A at 56576 ($DD00)), and
+returns the data bit in the Carry flag and the clock bit in the
+Negative flag.
+
+61107         $EEB3
+Perform a One-Millisecond Delay
+
+61115         $EEBB
+Send Next RS-232 Bit (NMI)
+
+This subroutine is called by the NMI interrupt handler routine to send
+the next bit of data to the RS-232 device.
+
+61230         $EF2E
+Handle RS-232 Errors
+
+This subroutine sets the appropriate error bits in the status register
+at 663 ($297).
+
+61258         $#F4A
+Set the Word Length For the Current RS-232 Character
+
+This routine takes the number of data bits to send per RS-232
+character from the control register and puts it into the .X register
+for use by the RS-232 routines.
+
+61273         $EF59
+Receive Next RS-232 Bit (NMI)
+
+This routine is called by the NMI interrupt handler routine to receive
+the next bit of data from the RS-232 device.
+
+61310         $EF7E
+Setup to Receive a New Byte from RS-232
+
+61328         $EF90
+Test If Start Bit Received from RS-232
+
+61335         $EF97
+Put a Byte of Received Data into RS-232 Receive Buffer
+
+This routine checks for a Receive Buffer Overrun, stores the byte just
+received in the RS-232 receive buffer, and checks for Parity Error,
+Framing Error, or Break Detected Error.  It then sets up to receive
+the next byte.
+
+61409         $EFE1
+CHKOUT for the RS-232 device
+
+The Kernal CHKOUT routine calls this subroutine to define the RS-232
+device's logical file as an output channel.  Before this can be done,
+the logical file must first be OPENed.
+
+61460         $F014
+CHROUT for the RS-232 Device
+
+The Kernal CHROUT routine calls this subroutine to output a character
+to the RS-232 device.  After the logical file has been OPENed and set
+for output using CHKOUT, the CHROUT routine is used to actually send a
+byte of data.
+
+61517         $F04D
+CHKIN for the RS-232 Device
+
+The Kernal CHKIN routine calls this subroutine to define the RS-232
+device's logical file as an input channel.  A prerequisite for this is
+that the logical file first be OPENed.
+
+61574         $F086
+GETIN for the RS-232 Device
+
+The Kernal GETIN routine calls this subroutine to remove the next byte
+of data from the RS-232 receive buffer and return it in the
+Accumulator.  The routine checks for the Receive Buffer Empty Error.
+It is also called by the Kernal CHRIN routine, which essentially does
+the same thing as GETIN for the RS-232 device.
+
+61604         $F0A4
+Stop CIA #2 RS-232 NMIs for Serial/Cassette Routines
+
+This subroutine turns off the NMIs that drive the RS-232 routines
+before any I/O is done using the serial bus or cassette device.  Such
+interrupts could throw off the timing of those I/O routines, and
+interfere with the transmission of data.
+
+61629         $F0BD
+Kernal Control Messages
+
+The ASCII text of the Kernal I/O control messages is stored here.  The
+last byte of every message has Bit 7 set to 1 (ASCII value + 128).
+The messages are:
+
+I/O ERROR
+SEARCHING
+FOR
+PRESS PLAY ON TAPE
+PRESS RECORD & PLAY ON TAPE
+LOADING
+SAVING
+VERIFYING
+FOUND
+OK
+
+61739         $F12B
+Print Kernal Error Message if in Direct Mode
+
+This routine first checks location 157 ($9D) to see if the messages
+are enabled.  If they are, it prints the message indexed by the .Y
+register.
+
+61758         $F13E          GETIN
+Get One Byte from the Input Device
+
+This is a documented Kernal routine whose jump table entry point is at
+65508 ($FFE4).  The routine jumps through a RAM vector at 810 ($32A).
+Its function is to get a character from the current input device
+(whose device number is stored at 153 ($99)).  In practive, it
+operates identically to the CHRIN routine below for all devices except
+for the keyboard.  If the keyboard is the current input device, this
+routine gets one character from the keyboard buffer at 631 ($277).  It
+depends on the IRQ interrupt routine to rad the keyboard and put
+characters into the buffer.
+
+61783         $F157          CHRIN
+Input a Character from the Current Device
+
+This is a documented Kernal routine whose jump table entry point is at
+65487 ($FFCF).
+
+The routine jumps through a RAM vector at 804 ($324).  Its function is
+to get a character from the current input device (whose device number
+is stored at 153 ($99)).  This device must first have been OPENed and
+then designated as the input channel by the CHKIN routine.
+
+When this routine is called, the next byte of data available from this
+device is returned in the Accumulator.  The only exception is the
+routine for the keyboard device (which is the default input device).
+It the keyboard is the current input device, this routine blinks the
+cursor, fetches characters from the keyboard buffer, and echoes them
+to the screen until a carriage return is encountered.  When a carriage
+return is round, the routine sets a flag to indicate the length of the
+last logical line before the return character, and reads the first
+character of this logical line from the screen.
+
+Subsequent calls to this routine will cause the next character in the
+line to be read from the screen and returned in the Accumulator, until
+the carriage return character is returned to indicate the end of the
+line.  Any call after this character is received will start the whole
+process over again.
+
+Note that only the last logical line before the carriage return is
+used.  Any time you type in more than 80 characters, a new logical
+line is started.  This routine will ignore any characters on the old
+logical line, and process only the most recent 80-character group.
+
+61898         $F1CA          CHROUT
+Output a Byte
+
+This is a documented Kernal routine whose jump table entry point is at
+65490 ($FFD2).  The routine jumps through a RAM vector at 806 ($326).
+It is probably one of the best known and most used Kernal routines,
+because it sends the character in the Accumulator to the current
+output device.  Unless a device has been OPENed and designated as the
+current output channel using the CHKOUT routine, the character is
+printed to the screen, which is the default output device.  If the
+cassette is the current device, outputting a byte will only add it to
+the buffer.  No actual transmission of data will occur until the
+192-byte buffer is full.
+
+61966         $F20E          CHKIN
+Designate a Logical File As the Current Input Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65478 ($FFC6).
+
+The routine jumps through a RAM vector at 798 ($31E).  If you wish to
+get data from any device other than the keyboard, this routine must be
+called after OPENing the device, before you can get a data byte with
+the CHRIN or GETIN routine.  When called, the routine will designate
+the logical file whose file number is in the .X register as the
+current file, its device as the current device, and its secondary
+address as the current secondary address.  If the device on the
+channel is a serial device, which requires a TALK command and
+sometimes a secondary address, this routine will send them over the
+serial bus.
+
+62032         $F250          CHKOUT
+Designate a Logical File As the Current Output Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65481 ($FFC9).
+
+The routine jumps through a RAM vector at 800 ($320).  If you wish to
+output data to any device other than the screen, this routine must be
+called after OPENing the device, and before you output a data byte
+with the CHROUT routine.  When called, the routine will designate the
+logical file whose file number is in the .X register as the current
+file, its device as the current device, and its secondary address as
+the current secondary address.  If the device on the channel uses the
+serial bus, and therefore requires a LISTEN command and possibly a
+secondary address, this information will be sent on the bus.
+
+62097         $F291          CLOSE
+Close a Logical I/O File
+

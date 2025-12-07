@@ -1,0 +1,60 @@
+12/7/25, 10:42 AM                                                                            6502 Instruction Set
+          6502 Instruction Set
+           TOC: Description / Instructions by Type / Address Modes in Detail / Instructions in Detail / "Illegal" Opcodes / WDC Extensions / Rockwell Extensions /
+                 Comparisons & BIT / A Primer of 6502 Arithmetic Operations / Jump Vectors and Stack Operations / Instruction Layout / Pinout / 65xx-Family
+           Tools: 6502 Emulator / 6502 Assembler / 6502 Disassembler
+              HI                                                                               LO-NIBBLE
+                        ‐0         ‐1       ‐2       ‐3        ‐4        ‐5          ‐6       ‐7        ‐8          ‐9       ‐A      ‐B         ‐C          ‐D             ‐E      ‐F
+              0‐     BRK impl  ORA X,ind  ---     ---      ---       ORA zpg     ASL zpg   ---       PHP impl   ORA #     ASL A    ---      ---        ORA abs        ASL abs   ---
+              1‐     BPL rel   ORA ind,Y  ---     ---      ---       ORA zpg,X   ASL zpg,X ---       CLC impl   ORA abs,Y ---      ---      ---        ORA abs,X      ASL abs,X ---
+              2‐     JSR abs   AND X,ind  ---     ---      BIT zpg   AND zpg     ROL zpg   ---       PLP impl   AND #     ROL A    ---      BIT abs    AND abs        ROL abs   ---
+              3‐     BMI rel   AND ind,Y  ---     ---      ---       AND zpg,X   ROL zpg,X ---       SEC impl   AND abs,Y ---      ---      ---        AND abs,X      ROL abs,X ---
+              4‐     RTI impl  EOR X,ind  ---     ---      ---       EOR zpg     LSR zpg   ---       PHA impl   EOR #     LSR A    ---      JMP abs    EOR abs        LSR abs   ---
+              5‐     BVC rel   EOR ind,Y  ---     ---      ---       EOR zpg,X   LSR zpg,X ---       CLI impl   EOR abs,Y ---      ---      ---        EOR abs,X      LSR abs,X ---
+              6‐     RTS impl  ADC X,ind  ---     ---      ---       ADC zpg     ROR zpg   ---       PLA impl   ADC #     ROR A    ---      JMP ind    ADC abs        ROR abs   ---
+              7‐     BVS rel   ADC ind,Y  ---     ---      ---       ADC zpg,X   ROR zpg,X ---       SEI impl   ADC abs,Y ---      ---      ---        ADC abs,X      ROR abs,X ---
+              8‐     ---       STA X,ind  ---     ---      STY zpg   STA zpg     STX zpg   ---       DEY impl   ---       TXA impl ---      STY abs    STA abs        STX abs   ---
+              9‐     BCC rel   STA ind,Y  ---     ---      STY zpg,X STA zpg,X   STX zpg,Y ---       TYA impl   STA abs,Y TXS impl ---      ---        STA abs,X      ---       ---
+              A‐     LDY #     LDA X,ind  LDX #   ---      LDY zpg   LDA zpg     LDX zpg   ---       TAY impl   LDA #     TAX impl ---      LDY abs    LDA abs        LDX abs   ---
+              B‐     BCS rel   LDA ind,Y  ---     ---      LDY zpg,X LDA zpg,X   LDX zpg,Y ---       CLV impl   LDA abs,Y TSX impl ---      LDY abs,X  LDA
+                                                                                                                                                        $ ADabs,X     LDX abs,Y ---
+              C‐     CPY #     CMP X,ind  ---     ---      CPY zpg   CMP zpg     DEC zpg   ---       INY impl   CMP #     DEX impl ---      CPY abs     Sym.:
+                                                                                                                                                       CMP   absLDA DEC abs     ---
+                                                                                                                                                        Instr.: Load accumulator
+              D‐     BNE rel   CMP ind,Y  ---     ---      ---       CMP zpg,X   DEC zpg,X ---       CLD impl   CMP abs,Y ---      ---      ---        CMP abs,X DEC abs,X ---
+                                                                                                                                                        Addr.: absolute
+              E‐     CPX #     SBC X,ind  ---     ---      CPX zpg   SBC zpg     INC zpg   ---       INX impl   SBC #     NOP impl ---      CPX abs    SBC
+                                                                                                                                                        Clickabs      INC abs
+                                                                                                                                                              for details…      ---
+              F‐     BEQ rel   SBC ind,Y  ---     ---      ---       SBC zpg,X   INC zpg,X ---       SED impl   SBC abs,Y ---      ---      ---        SBC abs,X      INC abs,X ---
+          View:      standard set only      illegal opcodes (NMOS)     WDC extensions (65C02)
+          Description
+          Address Modes
+          A        .... Accumulator           OPC A         operand is AC (implied single byte instruction)
+          abs      .... absolute              OPC $LLHH     operand is address $HHLL *
+          abs,X .... absolute, X-indexed      OPC $LLHH,X   operand is address; effective address is address incremented by X with carry **
+          abs,Y .... absolute, Y-indexed      OPC $LLHH,Y   operand is address; effective address is address incremented by Y with carry **
+          #        .... immediate             OPC #$BB      operand is byte BB
+          impl     .... implied               OPC           operand implied
+          ind      .... indirect              OPC ($LLHH)   operand is address; effective address is contents of word at address: C.w($HHLL)
+                                                                           6502 Instruction Set
+          X,ind .... X-indexed, indirect     OPC ($LL,X)    operand is zeropage address; effective address is word in (LL + X, LL + X + 1), inc. without carry: C.w($00LL + X)
+          ind,Y .... indirect, Y-indexed     OPC ($LL),Y    operand is zeropage address; effective address is word in (LL, LL + 1) incremented by Y with carry: C.w($00LL) + Y
+          rel    .... relative               OPC $BB        branch target is PC + signed offset BB ***
+          zpg    .... zeropage               OPC $LL        operand is zeropage address (hi-byte is zero, address = $00LL)
+          zpg,X .... zeropage, X-indexed     OPC $LL,X      operand is zeropage address; effective address is address incremented by X without carry **
+          zpg,Y .... zeropage, Y-indexed     OPC $LL,Y      operand is zeropage address; effective address is address incremented by Y without carry **
+          *    16-bit address words are little endian, lo(w)-byte first, followed by the hi(gh)-byte.
+               (An assembler will use a human readable, big-endian notation as in $HHLL.)
+          **   The available 16-bit address space is conceived as consisting of pages of 256 bytes each, with
+               address hi-bytes represententing the page index. An increment with carry may affect the hi-byte
+               and may thus result in a crossing of page boundaries, adding an extra cycle to the execution.
+               Increments without carry do not affect the hi-byte of an address and no page transitions do occur.
+               Generally, increments of 16-bit addresses include a carry, increments of zeropage addresses don't.
+               Notably this is not related in any way to the state of the carry flag in the status register.
+          ***  Branch offsets are signed 8-bit values, -128 ... +127, negative offsets in two's complement.
+               Page transitions may occur and add an extra cycle to the exucution.
+          Extended Address Modes (WDC 65C02)
+          (zpg)    .... zeropage indirect             OPC $LL,X       operand is zeropage address; effective address is the word in (LL, LL + 1
+          (abs,X) .... absolute indexed indirect      JMP ($LLHH,X)   operand is base address for indirect lookup;
+                                                                      effective address is word in ($HHLL + X, $HHLL + 1 + X)

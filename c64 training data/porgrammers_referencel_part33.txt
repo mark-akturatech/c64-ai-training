@@ -1,0 +1,284 @@
+# C64 PRG Chapter 3 - Sprites: Display Priorities, Collision
+
+  164   PROGRAMMING GRAPHICS
+~
+
+
+  STEP 8:
+
+  CRUNCH YOUR PROGRAM INTO A SMALLER SPACE BY RUNNING TOGETHER ALL THE DATA
+  STATEMENTS, AS SHOWN IN THE SAMPLE PROGRAM BELOW. Note that we asked you
+  to write your sprite program on a piece of paper. We did this for a good
+  reason. The DATA STATEMENT LINES 100-120 in the program in STEP 1 are
+  only there to help you see which numbers relate to which groups of pixels
+  in your sprite. Your final program should be "crunched" like this:
+
+start tok64 page165.prg
+  10 print"{clear}":poke53280,5:poke53281,6
+  20 v=53248:pokev+34,3
+  30 poke 53269,4:poke2042,13
+  40 forn=0to62:readq:poke832+n,q:next
+  100 data255,255,255,128,0,1,128,0,1,128,0,1,144,0,1,144,0,1,144,0,1,144,0
+  101 data1,144,0,1,144,0,1,144,0,1,144,0,1,144,0,1,144,0,1,128,0,1,128,0,1
+  102 data128,0,1,128,0,1,128,0,1,128,0,1,255,255,255
+  200 x=200:y=100:poke53252,x:poke53253,y
+stop tok64
+
+  MOVING YOUR SPRITE ON THE SCREEN
+
+    Now that you've created your sprite, let's do some interesting things
+  with it. To move your sprite smoothly across the screen, add these two
+  lines to your program:
+
+    50 POKE V+5,100:FOR X=24TO255:POKE V+4,X:NEXT:POKE V+16,4
+    55 FOR X=0TO65:POKE V+4,X:NEXT X:POKE V+16,0:GOTO 50
+
+    LINE 50 POKEs the Y POSITION at 100 (try 50 or 229 instead for
+  variety). Then it sets up a FOR... NEXT loop which POKEs the sprite into
+  X position 0 to X position 255, in order. When it reaches the 255th
+  position, it POKEs the RIGHT X POSITION (POKE V+16,4) which is required
+  to cross to the right side of the screen.
+
+    LINE 55 has a FOR... NEXT loop which continues to POKE the sprite in
+  the last 65 positions on the screen. Note that the X value was reset to
+  zero but because you used the RIGHT X setting (POKE V+16,2) X starts over
+  on the right side of the screen.
+    This line keeps going back to itself (GOTO 50). If you just want the
+  sprite to move ONCE across the screen and disappear, then take out
+  GOTO50.
+
+                                                 PROGRAMMING GRAPHICS   165
+~
+
+
+    Here's a line which moves the sprite BACK AND FORTH:
+
+    50 POKE V+5,100:FOR X=24TO255:POKE V+4,X:NEXT:POKE V+16,4:
+       FOR X=0TO65: POKE V+4,X: NEXT X
+    55 FOR X=65TO0 STEP-1:POKE V+4,X:NEXT:POKE V+16,0: FOR
+       X=255TO24 STEP-1: POKE V+4,X:NEXT
+    60 GOTO 50
+
+  Do you see how these programs work? This program is the same as the
+  previous one, except when it reaches the end of the right side of the
+  screen, it REVERSES ITSELF and goes back in the other direction. That is
+  what the STEP-1 accomplishes... it tells the program to POKE the sprite
+  into X values from 65 to 0 on the right side of the screen, then from 255
+  to 0 on the left side of the screen, STEPping backwards minus-1 position
+  at a time.
+
+  VERTICAL SCROLLING
+
+    This type of sprite movement is called "scrolling." To scroll your
+  sprite up or down in the Y position, you only have to use ONE LINE. ERASE
+  LINES 50 and 55 by typing the line numbers by themselves and hitting
+  <RETURN> like this:
+
+    50 <RETURN>
+    60 <RETURN>
+
+  Now enter LINE 50 again as follows:
+
+    50 POKE V+4,24:FOR Y=0TO255:POKE V+5,Y:NEXT
+
+
+
+  THE DANCING MOUSE-A SPRITE PROGRAM EXAMPLE
+
+    Sometimes the techniques described in a programmer's reference manual
+  are difficult to understand, so we've put together a fun sprite program
+  called "Michael's Dancing Mouse." This program uses three different
+  sprites in a cute animation with sound effects-and to help you understand
+  how it works we've included an explanation of EACH COMMAND so you can see
+  exactly how the program is constructed:
+
+
+
+  166   PROGRAMMING GRAPHICS
+~
+
+
+start tok64 page167.prg
+  5 s=54272:pokes+24,15:pokes,220:pokes+1,68:pokes+5,15:pokes+6,215
+  10 pokes+7,120:pokes+8,100:pokes+12,15:pokes+13,215
+  15 print"{clear}":v=53248:pokev+21,1
+  20 fors1=12288to12350:readq1:pokes1,q1:next
+  25 fors2=12352to12414:readq2:pokes2,q2:next
+  30 fors3=12416to12478:readq3:pokes3,q3:next
+  35 pokev+39,15:pokev+1,68
+  40 printtab(160)"{white}i am the dancing mouse!{light blue}"
+  45 p=192
+  50 forx=0to347step3
+  55 rx=int(x/256):lx=x-rx*256
+  60 pokev,lx:pokev+16,rx
+  70 ifp=192thengosub200
+  75 ifp=193thengosub300
+  80 poke2040,p:fort=1to60:next
+  85 p=p+1:ifp>194thenp=192
+  90 next
+  95 end
+  100 data30,0,120,63,0,252,127,129,254,127,129,254,127,189,254,127,255,254
+  101 data63,255,252,31,187,248,3,187,192,1,255,128,3,189,192,1,231,128,1,
+  102 data255,0,31,255,0,0,124,0,0,254,0,1,199,32,3,131,224,7,1,192,1,192,0
+  103 data3,192,0,30,0,120,63,0,252,127,129,254,127,129,254,127,189,254,127
+  104 data255,254,63,255,252,31,221,248,3,221,192,1,255,128,3,255,192,1,195
+  105 data128,1,231,3,31,255,255,0,124,0,0,254,0,1,199,0,7,1,128,7,0,204,1
+  106 data128,124,7,128,5630,0,120,63,0,252,127,129,254,127,129,254,127,189
+  107 data254,127,255,25463,255,252,31,221,248,3,221,192,1,255,134,3,189
+  108 data204,1,199,152,1,255,48,1,255,224,1,252,0,3,254,0
+  109 data7,14,0,204,14,0,248,56,0,112,112,0,0,60,0,-1
+  200 pokes+4,129:pokes+4,128:return
+  300 pokes+11,129:pokes+11,128:return
+stop tok64
+
+
+
+
+
+
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   167
+~
+
+
+  LINE 5:
+
+    S=54272             Sets the variable 5 equal to 54272, which is the
+                        beginning memory location of the SOUND CHIP.
+                        From now on, instead of poking a direct memory
+                        location, we will POKE S plus a value.
+    POKES+24,15         Same as POKE 54296,15 which sets VOLUME to
+                        highest level.
+    POKES,220           Same as POKE 54272,220 which sets Low Fre-
+                        quency in Voice 1 for a note which approximates
+                        high C in Octave 6.
+    POKES+1,68          Same as POKE 54273,68 which sets High Fre-
+                        quency in Voice I for a note which approximates
+                        high C in Octave 6.
+    POKES+5,15          Same as POKE 54277,15 which sets Attack/Decay
+                        for Voice 1 and in this case consists of the
+                        maximum DECAY level with no attack, which pro-
+                        duces the "echo" effect.
+    POKES+6,215         Same as POKE 54278,215 which sets Sustain/Re-
+                        lease for Voice 1 (215 represents a combination
+                        of sustain and release values).
+  LINE 10:
+
+    POKES+7,120         Same as POKE 54279,120 which sets the Low Fre-
+                        quency for Voice 2.
+    POKES+8,100         Same as POKE 54280,100 which sets the High
+                        Frequency for Voice 2.
+    POKES+12,15         Same as POKE 54284,15 which sets Attack/Decay
+                        for Voice 2 to same level as Voice 1 above.
+    POKES+13,215        Same as POKE 54285,215 which sets Sustain/Re-
+                        lease for Voice 2 to same level as Voice 1 above.
+
+  LINE 15:
+
+    PRINT"<SHIFT+CLR/HOME>" Clears the screen when the program begins.
+
+    V=53248             Defines the variable "V" as the starting location
+                        of the VIC chip which controls sprites. From now
+                        on we will define sprite locations as V plus a
+                        value.
+
+    POKEV+21,1          Turns on (enables) sprite number 1.
+
+  168   PROGRAMMING GRAPHICS
+~
+
+
+  LINE 20:
+
+    FORS1=12288         We are going to use ONE SPRITE (sprite 0) in this
+    TO 12350            animation, but we are going to use THREE sets of
+                        sprite data to define three separate shapes. To
+                        get our animation, we will switch the POINTERS
+                        for sprite 0 to the three places in memory where
+                        we have stored the data which defines our three
+                        different shapes. The same sprite will be rede-
+                        fined rapidly over and over again as 3 different
+                        shapes to produce the dancing mouse animation.
+                        You can define dozens of sprite shapes in DATA
+                        STATEMENTS, and rotate those shapes through
+                        one or more sprites. So you see, you don't have to
+                        limit one sprite to one shape or vice-versa. One
+                        sprite can have many different shapes, simply by
+                        changing the POINTER SETTING FOR THAT SPRITE to
+                        different places in memory where the sprite data
+                        for different shapes is stored. This line means we
+                        have put the DATA for "sprite shape 1" at memory
+                        locations 12288 to 12350.
+
+    READ Q1             Reads 63 numbers in order from the DATA state-
+                        ments which begin at line 100. Q1 is an arbitrary
+                        variable name. It could just as easily be A, Z1 or
+                        another numeric variable.
+
+    POKES1,Q1           Pokes the first number from the DATA statements
+                        (the first "Q1" is 30) into the first memory
+                        location (the first memory location is 12288). This
+                        is the same as POKE12288,30.
+
+    NEXT                This tells the computer to look BETWEEN the FOR and
+                        NEXT parts of the loop and perform those in-between
+                        commands (READQ1 and POKES1,Q1 using the NEXT
+                        numbers in order). In other words, the NEXT
+                        statement makes the computer READ the NEXT Q1 from
+                        the DATA STATEMENTS, which is 0, and also
+                        increments S1 by 1 to the next value, which is
+                        12289. The result is POKE12289,0... the NEXT
+                        command makes the loop keep going back until the
+                        last values in the series, which are POKE 12350,0.
+
+                                                 PROGRAMMING GRAPHICS   169
+~
+
+
+  LINE 25:
+
+    FORS2=12352         The second shape of sprite zero is defined by the
+    TO 12414            DATA which is located at locations 12352 to 12414.
+                        NOTE that location 12351 is SKIPPED... this is the
+                        64th location which is used in the definition of
+                        the first sprite group but does not contain any of
+                        the sprite data numbers. Just remember when
+                        defining sprites in consecutive locations that you
+                        will use 64 locations, but only POKE sprite data
+                        into the first 63 locations.
+
+    READQ2              Reads the 63 numbers which follow the numbers we
+                        used for the first sprite shape. This READ simply
+                        looks for the very next number in the DATA area and
+                        starts reading 63 numbers, one at a time.
+
+    POKES2,Q2           Pokes the data (Q2) into the memory locations (S2)
+                        for our second sprite shape, which begins at
+                        location 12352.
+
+    NEXT                Same use as line 20 above.
+
+
+  LINE 30:
+
+    FORS3=12416         The third shape of sprite zero is defined by the
+    TO 12478            DATA to be located at locations 12416 to 12478.
+    READQ3              Reads last 63 numbers in order as Q3.
+    POKES3,Q3           Pokes those numbers into locations 12416 to 12478.
+    NEXT                Same as lines 20 and 25.
+
+  LINE 35:
+
+    POKEV+39,15         Sets color for sprite 0 to light grey.
+
+    POKEV+1,68          Sets the upper right hand corner of the sprite
+                        square to vertical (Y) position 68. For the sake of
+                        comparison, position 50 is the top lefthand corner
+                        Y position on the viewing screen.
+
+
+

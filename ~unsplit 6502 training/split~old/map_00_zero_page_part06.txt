@@ -1,0 +1,342 @@
+180           $B4            BITTS
+RS-232 Output Bit Count/Cassette Temporary Storage
+
+RS-232 routines use this to count the number of bits transmitted, and
+for parity and stop bit manipulation.  Tape load routines use this
+location to flag when they are ready to receive data bytes.
+
+181           $B5            NXTBIT
+RS-232 Next Bit to Send/Tape EOT Flag
+
+This location is used by the RS-232 routines to hold the next bit to
+be sent, and by the tape routines to indicate what part of a block the
+read routine is currently reading.
+
+182           $B6            RODATA
+RS-232 Output Byte Buffer
+
+RS-232 routines use this area to disassemble each byte to be sent from
+the transmission buffer pointed to by 249 ($F9).
+
+183           $B7            FNLEN
+Length of Current Filename
+
+This location holds the number of characters in the current filename.
+Disk filenames may have from 1 to 16 characters, while tape filenames
+range from 0 to 187 characters in length.
+
+If the tape name is longer than 16 characters, the excess will be
+truncated by the SEARCHING and FOUND messages, but will still be
+present on the tape.  This means that machine language programs meant
+to run in the cassette buffer may be saved as tape filenames.
+
+A disk file is always referred to be a name, whether full or generic
+(containing the wildcard characters * or ?).  This location will
+always be greater than 0 if the current file is a disk file.  Tape
+LOAD, SAVE, and VERIFY operations do not require that a name be
+specified, and this location can therefore contain a 0.  If this is
+the case, the contents of the pointer to the filename at 187 will be
+irrelevant.
+
+An RS-232 OPEN command may specify a filename of up to four
+characters.  These characters are copied to locations 659-662
+($293-$296), and determine baud rate, word length, and parity.
+
+184           $B8            LA
+Current Logical File Number
+
+This location holds the logical file number of the device currently
+being used.  A maximum of five disk files, and ten files in total, may
+be open at any one time.
+
+File numbers range from 1 to 255 (a 0 is used to indicate system
+defaults).  When printing to a device with a file number greater than
+127, an ASCII linefeed character will be sent following each carriage
+return, which is useful for devices like serial printers that require
+linefeeds in addition to carriage returns.
+
+The BASIC OPEN command calls the Kernal OPEN routine, which sets the
+value of this location.  In the BASIC statement OPEN 4,8,15, the
+logical file number corresponds to the first parameter 4.
+
+185           $B9            SA
+Current Secondary Address
+
+This location holds the secondary address of the device currently
+being used.  The range of valid secondary address numbers is 0 through
+31 for serial devices, and 0 through 127 for other devices.
+
+Secondary device numbers mean something different to each device that
+they are used with.  The keyboard and screen devices ignore the
+secondary address completely.  But any device which can have more than
+one file open at the same time, such as the disk drive, distinguishes
+between these files by using the secondary address when opening a disk
+file.  Secondary address numbers 0, 1, and 15-31 have a special
+significance to the disk drive, and therefore device numbers 2-14 only
+should be used as secondary addresses when opening a disk file.
+
+OPENing a disk file with a secondary address of 15 enables the user to
+communicate with the Disk Operating System through that channel.  A
+LOAD command which specifies a secondary address of 0 (for example,
+LOAD "AT BASIC",8,0) results in the program being loaded not to the
+address specified on the file as the starting address, but rather to
+the address pointed to by the start of BASIC pointer (43, $2B).
+
+A LOAD with a secondary address of 1 (for example, LOAD "HERE",8,1)
+results in the contents of the file being loaded to the address
+specified in the file.  A disk file that has been LOADed using a
+secondary address of 1 can be successfully SAVEd in the same manner
+(SAVE "DOS 5.1",8,1).
+
+LOADs and SAVEs that do not specify a secondary address will default
+to a secondary address of 0.
+
+When OPENing a Datasette recorder file, a secondary address of 0
+signifies that the file will be read, while a secondary address of 1
+signifies that the file will be written to.  A value of 2 can be added
+to indicate that an End of Tape marker should be written as well.
+This marker tells the Datasette not to search past it for any more
+files on the tape, though more files can be written to the tape if
+desired.
+
+As with the disk drive, the LOAD and SAVE commands use secondary
+addresses of 0 and 1 respectively to indicate whether the operation
+should be relocating or nonrelocating.
+
+When the 1515 or 1525 Printer is opened with a secondary address of 7,
+the uppercase/lowercase character set is used.  If it is openend with
+a secondary address of 0, or without a secondary address, the
+uppercase/graphics character set will be used.
+
+186           $BA            FA
+Current Device Number
+
+This location holds the number of the device that is currently being
+used.  Device number assignments are as follows:
+
+0    = Keyboard
+1    = Datasette Recorder
+2    = RS-232/User Port
+3    = Screen
+4-5  = Printer
+8-11 = Disk
+
+187-188       $BB-$BC        FNADR
+Pointer: Current Filename
+
+This location holds a pointer to the address of the current filename.
+If an operation which OPENs a tape file does not specify a filename,
+this pointer is not used.
+
+When a disk filename contains a shifted space character, the remainder
+of the name will appear outside the quotes in the directory, and may
+be used for comments.  For example, if you SAVE "ML[shifted
+space]SYS828", the directory entry will read "ML"SYS 828.  You may
+reference the program either by the portion of the name that appears
+within quotes, or by the full name, including the shifted space.  A
+program appearing later in the directory as "ML"SYS 900 would not be
+found just by reference to "ML", however.
+
+A filename of up to four characters may be used when opening the
+RS-232 device.  These four characters will be copied to 659-662
+($293-$296), where they are used to control such parameters as baud
+rate, parity, and word length.
+
+189           $BD            ROPRTY
+RS-232 Output Parity/Cassette Temporary Storage
+
+This location is used by the RS-232 routines as an output parity work
+byte, and by the tape as temporary storage for the current character
+being read or sent.
+
+190           $BE            FSBLK
+Cassette Read/Write Block Count
+
+Used by the tape routines to count the number of copies of a data
+block remaining to be read or written.
+
+191           $BF            MYCH
+Tape Input Byte Buffer
+
+This is used by the tape routines as a work area in which incoming
+characters area assembled.
+
+192           $C0            CAS1
+Tape Motor Interlock
+
+This location is maintained by the IRQ interrupt routine that scans
+the keyboard.  Whenever a button is pressed on the recorder, this
+location is checked.  If it contains a 0, the motor is turned on by
+setting Bit 5 of location 1 to 0.  When the button is let up, the tape
+motor is turned off, and this location is set to 0.
+
+Since the interrupt routine is executed 60 times per second, you will
+not be able to keep the motor bit set to keep the motor on if no
+buttons are pushed.  Likewise, if you try to turn the motor off when a
+button is pressed and this location is set to 0, the interrupt routine
+will turn it back on.
+
+To control the motor via software, you must set this location to a
+nonzero value after one of the buttons on the recorder has been
+pressed.
+
+193-194       $C1-$C2        STAL
+I/O Start Address
+
+This location points to the beginning address of the area in RAM which
+is currently being LOADed or SAVEd.  For tape I/O, it will point to
+the cassette buffer, and the rest of the data is LOADed or SAVEd
+directly to or from RAM.  This location points to the beginning
+address of the area of RAM to be used for the blocks of data that come
+after the initial header.
+
+197           $C5            LSTX
+Matrix Coordinate of Last Key Pressed, 64=None Pressed
+
+During every normal IRQ interrput this location is set with the value
+of the last keypress, to be used in keyboard debouncing.  The
+Operating System can check if the current keypress is the same as the
+last one, and will not repeat the character if it is.
+
+The value returned here is based on the keyboard matrix values as set
+forth in the explanation of location 56320 ($DC00).  The values
+returned for each key pressed are shown at the entry for location 203
+($CB).
+
+198           $C6            NDX
+Number of Characters in Keyboard Buffer (Queue)
+
+The value here indicates the number of charracters waiting in the
+keyboard buffer at 631 ($277).  The maximum number of characters in
+the keyboard buffer at any one time is determined by the value in
+location 649 ($289), which defaults to 10.
+
+If INPUT or GET is executed while there are already characters in the
+buffer, those characters will be read as part of the data stream.  You
+can prevent this by POKEing a 0 to this location before those
+operations, which will always cause any character in the buffer to be
+ignored.  This technique can be handy when using the joystick in
+Controller Port #1, which sometimes causes fake keypresses to be
+registered, placing unwanted characters in the keyboard buffer.
+
+Not only is this location handy for taking unwanted characters out of
+the keyboard buffer, but it can also be used to put desired characters
+into the buffer, and thus to program the keyboard buffer.  This
+technique (dynamic keyboard) allows you to simulate keyboard input in
+direct mode from a program.
+
+The dynamic keyboard technique is an extremely useful one, as it
+enables you to add, delete, or modify program lines while the program
+is running.  The basic scheme is to POKE the PETASCII character values
+that you wish to be printed (including cursor control characters and
+carriage returns) into the buffer.  Then, when an END statement is
+executed, the characters in the buffer will be printed, and entered by
+the carriage return.
+
+This technique can help with the problem of trying to use data
+separation and terminator characters with INPUT statements.  If you
+try to INPUT a string that has a comma or colon, the INPUT will read
+only up to that character and issue an EXTRA IGNORED error message.
+You can avoid this by entering the input string in quotes, but this
+places on the user the burder of remembering the quote marks.  One
+solution is to use the statements:
+
+POKE 198,3:POKE 631,34: POKE 632,34: POKE 633,20
+
+before the input.  This will force two quote marks and a delete into
+the buffer.  The first quote mark allows the comma or colon to be
+INPUT, the second is used to get the editor out of quote mode, and the
+delete removes that second quote.
+
+For more specific information and programming examples, see the
+description of location 631 ($277), the keyboard buffer.
+
+199           $C7            RVS
+Flag: Print Reverse Characters? 0=No
+
+When the [CTRL][RVS-ON] characters are printer (CHR$(18)), this flag
+is set to 18 ($12), and the print routines will add 128 ($80) to the
+screen code of each character which is printed, so that the caracter
+will appear on the screen with its colors reversed.
+
+POKEing this location directly with a nonzero number will achieve the
+same results.  You should remember, however, that the contents of this
+location are returned to 0 not only upon entry of a [CTRL][RVS-OFF]
+character (CHR$(146)), but also at every carriage return.  When this
+happens, characters printed thereafter appear with the normal
+comination of colors.
+
+200           $C8            INDX
+Pointer: End of Logical Line for Input
+
+This pointer indicates the column number of the last nonblank
+character on the logical line that is to be input.  Since a logical
+line can be up to 80 characters long, this number can range from 0-79.
+
+201-202       $C9-$CA        LXSP
+Cursor X,Y Position at Start of Input
+
+These locations keep track of the logical line that the cursor is on,
+and its column position on that logical line (in line, column format).
+
+Each logical line may contain one or two 40-column physical lines.
+Thus there may be as many as 25 logical lines, or as few as 13 at any
+one time.  Therefore, the logical line number might be anywhere from
+1-25.  Depending on the length of the logical line, the cursor column
+may be from 1-40 or 1-80.
+
+For a more detailed exaplanation of logical lines, see the description
+of the screen line link talbe, 217 ($D9).
+
+203           $CB            SFDX
+Matrix Coordinate of Current Key Pressed
+
+The keyscan interrupt routine uses this location to indicate which key
+is currently being pressed.  The value here is then used as an index
+into the appropriate keyboard table to determine which character to
+print when a key is struck.
+
+The correspondence between the key pressed and the number stored here
+is as follows:
+
+0  = INST/DEL                34 = J
+1  = RETURN                  35 = 0
+2  = CRSR RIGHT              36 = M
+3  = F7                      37 = K
+4  = F1                      38 = O
+5  = F3                      39 = N
+6  = F5                      40 = +
+7  = CRSR DOWN               41 = P
+8  = 3                       42 = L
+9  = W                       43 = -
+10 = A                       44 = .
+11 = 4                       45 = :
+12 = Z                       46 = @
+13 = S                       47 = ,
+14 = E                       48 = LIRA (BRITISH POUND SIGN)
+15 = NOT USED                49 = *
+  (WOULD BE LEFT SHIFT)      50 = ;
+16 = 5                       51 = CLR/HOME
+17 = R                       52 = NOT USED
+18 = D                         (WOULD BE RIGHT SHIFT)
+19 = 6                       53 = =
+20 = C                       54 = UP ARROW
+21 = F                         (EXPONENTATION SIGN)
+22 = T                       55 = /
+23 = X                       56 = 1
+24 = 7                       57 = LEFT ARROW
+25 = Y                       58 = NOT USED
+26 = G                         (WOULD BE CTRL)
+27 = 8                       59 = 2
+28 = B                       60 = SPACE BAR
+29 = H                       61 = NOT USED
+30 = U                         (WOULD BE COMMODORE LOGO)
+31 = V                       62 = Q
+32 = 9                       63 = RUN/STOP
+33 = I                       64 = NO KEY PRESSED
+
+The RESTORE key is not accounted for, because it is not part of the
+normal keyboard matrix.  Instead, it is connected directly to the
+microprocessor NMI line, and causes an NMI interrupt whenever it is
+pressed.
+

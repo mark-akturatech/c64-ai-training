@@ -1,0 +1,284 @@
+# C64 PRG Chapter 4 - SID: Filter, Music Programming
+
+  202   PROGRAMMING SOUND AND MUSIC
+~
+
+
+    Register 25 gives you access to the output of the envelope generator
+  of oscillator 3. It functions in much the same fashion that the output of
+  oscillator 3 does. The oscillator must be turned on to produce any output
+  from this register.
+    Vibrato (a rapid variation in frequency) can be achieved by adding the
+  output of oscillator 3 to the frequency of another oscillator. Example
+  Program 6 illustrates this idea.
+
+
+  EXAMPLE PROGRAM 6:
+
+
+start tok64 page203.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+3,8
+  40 pokes+5,41:pokes+6,89
+  50 pokes+14,117
+  60 pokes+18,16
+  70 pokes+24,143
+  80 readfr,dr
+  90 iffr=0thenend
+  100 pokes+4,65
+  110 fort=1todr*2
+  120 fq=fr+peek(s+27)/2
+  130 hf=int(fq/256):lf=lqand255
+  140 pokes+0,lf:pokes+1,hf
+  150 next
+  160 pokes+4,64
+  170 goto80
+  500 data4817,2,5103,2,5407,2
+  510 data8583,4,5407,2,8583,4
+  520 data5407,4,8583,12,9634,2
+  530 data10207,2,10814,2,8583,2
+  540 data9634,4,10814,2,8583,2
+  550 data8583,12
+  560 data0,0
+stop tok64
+
+
+
+
+
+                                          PROGRAMMING SOUND AND MUSIC   203
+~
+
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 6:
+
+  +----------+------------------------------------------------------------+
+  | Lines(s) |                        Description                         |
+  +----------+------------------------------------------------------------+
+  | 10       | Set S to beginning of sound chip.                          |
+  | 20       | Clear all sound chip locations.                            |
+  | 30       | Set high pulse width for voice 1.                          |
+  | 40       | Set Attack/Decay for voice 1 (A=2, D=9).                   |
+  |          | Set Sustain/Release for voice 1 (S=5, R=9).                |
+  | 50       | Set low frequency for voice 3.                             |
+  | 60       | Set triangle waveform for voice 3.                         |
+  | 70       | Set volume 15, turn off audio output of voice 3.           |
+  | 80       | Read frequency and duration of note.                       |
+  | 90       | If frequency equals zero, stop.                            |
+  | 100      | POKE start pulse waveform control voice 1.                 |
+  | 110      | Start timing loop for duration.                            |
+  | 120      | Get new frequency using oscillator 3 output.               |
+  | 130      | Get high and low frequency.                                |
+  | 140      | POKE high and low frequency for voice 1.                   |
+  | 150      | End of timing loop.                                        |
+  | 160      | POKE stop pulse waveform control voice 1.                  |
+  | 170      | Go back for next note.                                     |
+  | 500-550  | Frequencies and durations for song,                        |
+  | 560      | Zeros signal end of song.                                  |
+  +----------+------------------------------------------------------------+
+
+
+
+
+
+
+    A wide variety of sound effects can also be achieved using dynamic
+  effects. For example, the following siren program dynamically changes the
+  frequency output of oscillator 1 when it's based on the output of
+  oscillator 3's triangular wave:
+
+
+
+
+
+
+
+  204   PROGRAMMING SOUND AND MUSIC
+~
+
+
+  EXAMPLE PROGRAM 7:
+
+start tok64 page205.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+14,5
+  40 pokes+18,16
+  50 pokes+3,1
+  60 pokes+24,143
+  70 pokes+6,240
+  80 pokes+4,65
+  90 fr=5389
+  100 fort=1to200
+  110 fq=fr+peek(s+27)*3.5
+  120 hf=int(fq/256):lf=fq-hf*256
+  130 pokes+0,lf:pokes+1,hf
+  140 next
+  150 pokes+24,0
+stop tok64
+
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 7:
+
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                         Description                         |
+  +---------+-------------------------------------------------------------+
+  | 10      | Set S to start of sound chip.                               |
+  | 20      | Clear sound chip registers.                                 |
+  | 30      | Set low frequency of voice 3.                               |
+  | 40      | Set triangular waveform voice 3.                            |
+  | 50      | Set high pulse width for voice 1.                           |
+  | 60      | Set volume 15, turn off audio output of voice 3.            |
+  | 70      | Set Sustain/Release for voice I (S=15, R=0).                |
+  | 80      | POKE start pulse waveform control voice 1.                  |
+  | 90      | Set lowest frequency for siren.                             |
+  | 100     | Begin timing loop.                                          |
+  | 110     | Get new frequency using output of oscillator 3.             |
+  | 120     | Get high and low frequencies.                               |
+  | 130     | POKE high.and low frequencies for voice 1.                  |
+  | 140     | End timing loop.                                            |
+  | 150     | Turn off volume.                                            |
+  +---------+-------------------------------------------------------------+
+
+                                          PROGRAMMING SOUND AND MUSIC   205
+~
+
+
+    The noise waveform can be used to provide a wide range of sound
+  effects. This example mimics a hand clap using a filtered noise waveform:
+
+  EXAMPLE PROGRAM 8:
+
+start tok64 page206.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+0,240:pokes+1,33
+  40 pokes+5,8
+  50 pokes+22,104
+  60 pokes+23,1
+  70 pokes+24,79
+  80 forn=1to15
+  90 pokes+4,129
+  100 fort=1to250:next:pokes+4,128
+  110 fort=1to30:next:next
+  120 pokes+24,0
+stop tok64
+
+
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 8:
+
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                         Description                         |
+  +---------+-------------------------------------------------------------+
+  |    10   | Set S to start of sound chip.                               |
+  |    20   | Clear all sound chip registers.                             |
+  |    30   | Set high and low frequencies for voice 1.                   |
+  |    40   | Set Attack/Decay for voice I (A=0, D=8).                    |
+  |    50   | Set high cutoff frequency for filter.                       |
+  |    60   | Turn on filter for voice 1.                                 |
+  |    70   | Set volume 15, high-pass filter.                            |
+  |    80   | Count 15 claps.                                             |
+  |    90   | Set start noise waveform control.                           |
+  |   100   | Wait, then set stop noise waveform control.                 |
+  |   110   | Wait, then start next clap-                                 |
+  |   120   | Turn off volume.                                            |
+  +---------+-------------------------------------------------------------+
+
+
+
+  206   PROGRAMMING SOUND AND MUSIC
+~
+
+
+  SYNCHRONIZATION AND RING MODULATION
+
+    The 6581 SID chip lets you create more complex harmonic structures
+  through synchronization or ring modulation of two voices.
+    The process of synchronization is basically a logical ANDing of two
+  wave forms. When either is zero, the output is zero. The following
+  example uses this process to create an imitation of a mosquito:
+
+  EXAMPLE PROGRAM 9:
+
+start tok64 page207.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+1,100
+  40 pokes+5,219
+  50 pokes+15,28
+  60 pokes+24,15
+  70 pokes+4,19
+  80 fort=1to5000:next
+  90 pokes+4,18
+  100 fort=1to1000:next:pokes+24,0
+stop tok64
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 9:
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                     Description                             |
+  +---------+-------------------------------------------------------------+
+  |   10    | Set S to start of sound chip.                               |
+  |   20    | Clear sound chip registers.                                 |
+  |   30    | Set high frequency voice 1.                                 |
+  |   40    | Set Attack/Decay for voice 1 (A=13, D=11).                  |
+  |   50    | Set high frequency voice 3.                                 |
+  |   60    | Set volume 15.                                              |
+  |   70    | Set start triangle, sync waveform control for voice 1.      |
+  |   80    | Timing loop.                                                |
+  |   90    | Set stop triangle, sync waveform control for voice 1.       |
+  |  100    | Wait, then turn off volume.                                 |
+  +-----------------------------------------------------------------------+
+    The synchronization feature is enabled (turned on) in line 70, where
+  bits 0, 1, and 4 of register 4 are set. Bit 1 enables the syncing
+  function between voice 1 and voice 3. Bits 0 and 4 have their usual
+  functions of gating voice 1 and setting the triangular waveform.
+
+                                          PROGRAMMING SOUND AND MUSIC   207
+~
+
+
+    Ring modulation (accomplished for voice 1 by setting bit 3 of register
+  4 in line 70 of the program below) replaces the triangular output of
+  oscillator I with a "ring modulated" combination of oscillators 1 and 3.
+  This produces non-harmonic overtone structures for use in mimicking bell
+  or gong sounds. This program produces a clock chime imitation:
+
+  EXAMPLE PROGRAM 10:
+start tok64 page208.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+1,130
+  40 pokes+5,9
+  50 pokes+15,30
+  60 pokes+24,15
+  70 forl=1to12:pokes+4,21
+  80 fort=1to1000:next:pokes+4,20
+  90 fort=1to1000:next:next
+stop tok64
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 10:
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                     Description                             |
+  +---------+-------------------------------------------------------------+
+  |   10    | Set S to start of sound chip.                               |
+  |   20    | Clear sound chip registers.                                 |
+  |   30    | Set high frequency for voice 1.                             |
+  |   40    | Set Attack/Decay for voice 1 (A=0, D=9).                    |
+  |   50    | Set high frequency for voice 3.                             |
+  |   60    | Set volume 15.                                              |
+  |   70    | Count number of clings, set start triangle, ring mod        |
+  |         | waveform control voice 1.                                   |
+  |   80    | Timing loop, set stop triangle, ring mod.                   |
+  |   90    | Timing loop, next ding.                                     |
+  +---------+-------------------------------------------------------------+
+    The effects available through the use of the parameters of your
+  Commodore 64's SID chip are numerous and varied. Only through ex-
+  perimentation on your own will you fully appreciate the capabilities of
+  your machine. The examples in this section of the Programmer's Reference
+  Guide merely scratch the surface.
+    Watch for the book MAKING MUSIC ON YOUR COMMODORE COMPUTER for
+  everything from simple fun and games to professional-type musical
+  instruction.
+

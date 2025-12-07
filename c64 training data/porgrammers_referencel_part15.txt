@@ -1,0 +1,284 @@
+# C64 PRG Chapter 2 - BASIC Keywords (LEN-OPEN)
+
+  60   BASIC LANGUAGE VOCABULARY
+~
+
+
+  LOG
+
+  TYPE: Floating-Point Function
+  FORMAT: LOG(<numeric>)
+
+    Action: Returns the natural logarithm (log to the base of e) of the
+  argument. If the value of the argument is zero or negative the BASIC
+  error message ?ILLEGAL QUANTITY will occur.
+
+  EXAMPLES of LOG Function:
+
+    25 PRINT LOG(45/7)
+     1.86075234
+
+    10 NUM=LOG(ARG)/LOG(10)  (Calculates the LOG of ARG to the base 10)
+
+
+  MID$
+
+  TYPE: String Function
+  FORMAT: MID$(<string>,<numeric-1>[,<numeric-2>])
+
+    Action: The MID$ function returns a sub-string which is taken from
+  within a larger <string> argument. The starting position of the sub-
+  string is defined by the <numeric-1> argument and the length of the
+  sub-string by the <numeric-2> argument. Both of the numeric arguments
+  can have values ranging from 0 to 255.
+    If the <numeric-1> value is greater than the length of the <string>,
+  or if the <numeric-2> value is zero, then MID$ gives a null string value.
+  If the <numeric-2> argument is left out, then the computer will assume
+  that a length of the rest of the string is to be used. And if the source
+  string has fewer characters than <numeric-2>, from the starting position
+  to the end of the string argument, then the whole rest of the string is
+  used.
+
+  EXAMPLE of MID$ Function:
+
+    10 A$="GOOD"
+    20 B$="MORNING EVENING AFTERNOON"
+    30 PRINT A$ + MID$(B$,8,8)
+
+    GOOD EVENING
+
+                                             BASIC LANGUAGE VOCABULARY   61
+~
+
+
+  NEW
+
+  TYPE: Command
+  FORMAT: NEW
+
+    Action: The NEW command is used to delete the program currently in
+  memory and clear all variables. Before typing in a new program, NEW
+  should be used in direct mode to clear memory. NEW can also be used in
+  a program, but you should be aware of the fact that it will erase
+  everything that has gone before and is still in the computer's memory.
+  This can be particularly troublesome when you're trying to debug your
+  program.
+
+  +-----------------------------------------------------------------------+
+  | BE CAREFUL: Not clearing out an old program before typing a new one   |
+  | can result in a confusing mix of the two programs.                    |
+  +-----------------------------------------------------------------------+
+
+  EXAMPLES of NEW Command:
+
+    NEW             (Clears the program and all variables)
+    10 NEW          (Performs a NEW operation and STOPs the program.)
+
+
+  NEXT
+
+  TYPE: Statement
+  FORMAT: NEXT[<counter>][,<counter>]...
+
+    Action: The NEXT statement is used with FOR to establish the end of a
+  FOR...NEXT loop. The NEXT need not be physically the last statement
+  in the loop, but it is always the last statement executed in a loop. The
+  <counter> is the loop index's variable name used with FOR to start the
+  loop. A single NEXT can stop several nested loops when it is followed by
+  each FOR's <counter> variable name(s). To do this each name must appear
+  in the order of inner-most nested loop first, to outer-most nested loop
+  last. When using a single NEXT to increment and stop several variable
+  names, each variable name must be separated by commas. Loops can be
+  nested to 9 levels. If the counter variable(s) are omitted, the counter
+  associated with the FOR of the current level (of the nested loops) is
+  incremented.
+
+
+  62   BASIC LANGUAGE VOCABULARY
+~
+
+
+    When the NEXT is reached, the counter value is incremented by 1 or by
+  an optional STEP value. It is then tested against an end-value to see if
+  it's time to stop the loop. A loop will be stopped when a NEXT is found
+  which has its counter value greater than the end-value.
+
+  EXAMPLES of NEXT Statement:
+
+    10 FOR J=1 TO 5: FOR K=10 TO 20: FOR N=5 TO -5 STEP - 1
+
+    20 NEXT N,K,J            (Stopping Nested Loops)
+
+
+
+    10 FOR L=1 TO 100
+    20 FOR M=1 TO 10
+    30 NEXT M
+    400 NEXT L               (Note how the loops do NOT cross each other)
+
+
+    10 FOR A=1 TO 10
+    20 FOR B=1 TO 20
+    30 NEXT
+    40 NEXT                  (Notice that no variable names are needed)
+
+
+
+  NOT
+
+  TYPE: Logical Operator
+  FORMAT: NOT <expression>
+
+    Action: The NOT logical operator "complements" the value of each bit
+  in its single operand, producing an integer "twos-complement" result. In
+  other words, the NOT is really saying, "if it isn't. When working with a
+  floating-point number, the operands are converted to integers and any
+  fractions are lost. The NOT operator can also be used in a comparison to
+  reverse the true/false value which was the result of a relationship test
+  and therefore it will reverse the meaning of the comparison. In the first
+  example below, if the "twos-complement" of "AA" is equal to "BB" and if
+  "BB" is NOT equal to "CC" then the expression is true.
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   63
+~
+
+
+  EXAMPLES of NOT Operator:
+
+    10 IF NOT AA = BB AND NOT(BB = CC) THEN...
+
+    NN% = NOT 96: PRINT NN%
+    -97
+
+  +-----------------------------------------------------------------------+
+  | NOTE: TO find the value of NOT use the expression X=(-(X+1)). (The    |
+  | two's complement of any integer is the bit complement plus one.)      |
+  +-----------------------------------------------------------------------+
+
+
+
+  ON
+
+  TYPE: Statement
+  FORMAT: ON <variable> GOTO / GOSUB <line-number>[,<line-number>]...
+
+    Action: The ON statement is used to GOTO one of several given line-
+  numbers, depending upon the value of a variable. The value of the
+  variables can range from zero through the number of lines given. if the
+  value is a non-integer, the fractional portion is left off. For example,
+  if the variable value is 3, ON will GOTO the third line-number in the
+  list.
+    If the value of the variable is negative, the BASIC error message
+  ?ILLEGAL QUANTITY occurs. If the number is zero, or greater than the
+  number of items in the list, the program just "ignores" the statement and
+  continues with the statement following the ON statement.
+    ON is really an underused variant of the IF...THEN...statement. Instead
+  of using a whole lot of IF statements each of which sends the program to
+  1 specific line, 1 ON statement can replace a list of IF statements. When
+  you look at the first example you should notice that the 1 ON statement
+  replaces 4 IF...THEN... statements.
+
+    EXAMPLES of ON Statement:
+
+  ON -(A=7)-2*(A=3)-3*(A<3)-4*(A>7)GOTO 400,900,1000,100
+  ON X GOTO 100,130,180,220
+  ON X+3 GOSUB 9000,20,9000
+  100 ON NUM GOTO 150,300,320,390
+  500 ON SUM/2 + 1 GOSUB 50,80,20
+
+  64   BASIC LANGUAGE VOCABULARY
+~
+
+
+  OPEN
+
+  TYPE: I/O Statement
+  FORMAT: OPEN <file-num>,[<device>][,<address>]
+           [,"<File-name> [,<type>] [,<mode>]"]
+
+    Action: This statement OPENs a channel for input and/or output to a
+  peripheral device. However, you may NOT need all those parts for every
+  OPEN statement. Some OPEN statements require only 2 codes:
+
+    1) LOGICAL FILE NUMBER
+    2) DEVICE NUMBER
+
+    The <file-num> is the logical file number, which relates the OPEN,
+  CLOSE, CMD, GET#, INPUT#, and PRINT# statements to each other and
+  associates them with the file-name and the piece of equipment being used.
+  The logical file number can range from 1 to 255 and you can assign it any
+  number you want in that range.
+
+
+  +-----------------------------------------------------------------------+
+  | NOTE: File numbers over 128 were really designed for other uses so    |
+  | it's good practice to use only numbers below 127 for file numbers.    |
+  +-----------------------------------------------------------------------+
+
+
+    Each peripheral device (printer, disk drive, cassette) in the system
+  has its own number which it answers to. The <device> number is used with
+  OPEN to specify on which device the data file exists. Peripherals like
+  cassette decks, disk drives or printers also answer to several secondary
+  addresses. Think of these as codes which tell each device what operation
+  to perform. The device logical file number is used with every GET#,
+  INPUT#, and PRINT#.
+    If the <device> number is left out the computer will automatically
+  assume that you want your information to be sent to and received from
+  the Datassette(TM), which is device number 1. The file-name can also be
+  left out, but later on in your program, you can NOT call the file by name
+  if you have not already given it one. When you are storing files on cas-
+  sette tape, the computer will assume that the secondary <address> is
+  zero (0) if you omit the secondary address (a READ operation).
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   65
+~
+
+
+    A secondary address value of one (1) OPENs cassette tape files for
+  writing. A secondary address value of two (2) causes an end-of-tape
+  marker to be written when the file is later closed. The end-of-tape
+  marker prevents accidentally reading past the end of data which results
+  in the BASIC error message ?DEVICE NOT PRESENT.
+    For disk files, the secondary addresses 2 thru 14 are available for
+  data-files, but other numbers have special meanings in DOS commands.
+  You must use a secondary address when using your disk drive(s). (See
+  your disk drive manual for DOS command details.)
+    The <file-name> is a string of 1-16 characters and is optional for
+  cassette or printer files. If the file <type> is left out the type of
+  file will automatically default to the Program file unless the <mode> is
+  given.
+  Sequential files are OPENed for reading <mode>=R unless you specify that
+  files should be OPENed for writing <mode> =W is specified. A file <type>
+  can be used to OPEN an existing Relative file. Use REL for <type> with
+  Relative files. Relative and Sequential files are for disk only.
+    If you try to access a file before it is OPENed the BASIC error message
+  ?FILE NOT OPEN will occur. If you try to OPEN a file for reading which
+  does not exist the BASIC error message ?FILE NOT FOUND will occur. If
+  a file is OPENed to disk for writing and the file-name already exists,
+  the DOS error message FILE EXISTS occurs. There is no check of this type
+  available for tape files, so be sure that the tape is properly positioned
+  or you might accidentally write over some data that had previously been
+  SAVED. If a file is OPENed that is already OPEN, the BASIC error message
+  FILE OPEN occurs. (See Printer Manual for further details.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

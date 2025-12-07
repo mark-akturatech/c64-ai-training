@@ -1,0 +1,415 @@
+46848         $B700          LEFTD
+Perform LEFT$
+
+LEFT$ creates a temporary string descriptor for a new string which
+contains the number of characters from the left side of the string
+that is specified in the command.
+
+46892         $B72C          RIGHTD
+Perform RIGHT$
+
+RIGHT$ manipulates its parameters so that the tail end of LEFT$ can be
+used to create a temporary string descriptor for a new string.  This
+new string contains the number of characters from the right side of
+the string that is specified in the command.
+
+46903         $B737          MIDD
+Perform MID$
+
+MID$ manipulates its parameters so that the tail end of LEFT$ can be
+used to create a temporary string descriptor for a new string.  This
+new string contains the number of characters from the position in the
+middle of the string that is specified in the command.
+
+46945         $B761          PREAM
+Pull String Function Parameters from Stack for LEFT$, RIGHT$, and MID$
+
+This routine is used to obtain the first two parameters for all three
+of these commands.
+
+46972         $B77C          LEN
+Perform LEN
+
+The LEN function is performed by obtaining the string length from the
+descriptor and converting it to a floating point number.
+
+46987         $B78B          ASC
+Perform ASC
+
+This routine gets the first character of the string in the .Y register
+(if it's not a null string).  Then it calls the part of POS that
+converts a one- byte integer in .Y to a floating point number.
+
+47003         $B79B          GETBYTC
+Input a Parameter Whose Value Is Between 0 and 255
+
+This routine reads numeric ASCII program text, converts it to an
+integer, checks that it is in the range 0-255, and stores it in the .X
+register.  This routine can be useful for reading parameters from a
+USR statement or new commands.
+
+47021         $B7AD          VAL
+Perform VAL
+
+The VAL routine obtains the string pointer, and reads the string one
+character at a time until an invalid character is found (ASCII
+numbers, sign character, a single decimal point, exponent, and spaces
+are all valid).  Then the string is changed to floating point.  If no
+valid characters are found, a 0 is returned.
+
+47083         $B7EB          GETNUM
+Get a 16-Bit Address Parameter and an 8-Bit Parameter (for POKE and WAIT)
+
+This routine gets the next numeric parameter from the current place in
+program text.  The routine evaluates it, checks that it is a positive
+integer within the range 0-65535, and changes it from floating point
+to a two-byte integer in 20-21 ($14-$15).  It checks for and skips a
+comma, then gets a one-byte integer parameter in the .X register.  The
+routine is used to get the parameters for POKE an WAIT.
+
+47095         $B7F7          GETADR
+Convert a Floating Point Number to an Unsigned Two-Byte Integer
+
+This routine checks the number in the Floating Point Accumulator to
+make sure that it is a positive number less than 65536, and then calls
+the subroutine which conerts floatin point to integer.  It is used to
+get address parameters, for commands such as PEEK.
+
+47117         $B80D          PEEK
+Perform PEEK
+
+PEEK reads the address parameter and converts it to a pointer.  Then
+it gets the byte pointed to into the .Y register, and calls the part
+of POS that converts a single integer in .Y to a floating point
+number.
+
+47140         $B824          POKE
+Perform POKE
+
+POKE gets a pointer to the address parameter, and stores the next
+parameter there.
+
+47149         $B82D          FUWAIT
+Perform WAIT
+
+WAIT gets an address parameter and an integer parameter to use as a
+mask.  WAIT then looks for an optional parameter to use as a pattern
+for the exclusive OR.  Then, the address location is read, its value
+is exclusive ORed with the optional pattern value (or 0 if there is
+none).  This value is ANDed with the mask value.  The command loops
+continuously until the result is not- zero.
+
+The purpose of this command is to allow the program to watch a
+location which can be changed by the system or by outside hardware
+(such as the software clock or keycode value locations).
+
+The AND function lets you check if a bit changes from 0 to 1, while
+the EOR function allows you to check if a bit changes from 1 to 0.
+For more information, see the article "All About the Wait
+Instruction," by Louis Sander and Doug Ferguson, in COMPUTE!'s First
+Book of Commodore 64.
+
+47177         $B849          FADDH
+Add .5 to Contents of Floating Point Accumulator #1
+
+47184         $B850          FSUB
+Subtract FAC1 from a Number in Memory
+
+This routine is used to subtract the Floating Point Accumulator from a
+number in memory.  It moves the number in memory into FAC2, and falls
+through to the next routine.
+
+47187         $B853          FSUBT
+BASIC's Subtraction Operation
+
+This routine subtracts the contents of FAC2 from FAC1 by complementing
+its sign and adding.
+
+47207         $B867          FADD
+Add FAC1 to a Number in Memory
+
+This routine is used to add the contents of the Floating Point
+Accumulator (FAC1) to a number in memory, by moving that number into
+FAC2, and falling through to the next routine.
+
+47210         $B86A          FADDT
+Perform BASIC's Addition Operation
+
+This routine adds the contents of FAC1 and FAC2 and stores the results
+in FAC1.
+
+47271         $B8A7          FADD4
+Make the Result Negative If a Borrow Was Done
+
+47358         $B8FE          NORMAL
+Normalize Floating Point Accumulator #1
+
+47431         $B947          NEGFAC
+Replace FAC1 with Its 2's Complement
+
+47486         $B97E          OVERR
+Print Overflow Error Message
+
+47491         $B983          MULSHF
+SHIFT Routine
+
+47548         $B9BC          FONE
+Floating Point Constant with a Value of 1
+
+This five-byte floating point representation of the number 1 is stored
+here for use by the floating point routines.  It is also used as the
+default STEP value for the FOR statement.
+
+47553         $B9C1          LOGCN2
+Table of Floating Point Constants for the LOG Function
+
+This table of eight numeric constants in five-byte floating point
+representation is used by the LOG function.
+
+47594         $B9EA          LOG
+Perform LOG to Base E
+
+The LOG to the base e of the number in FAC1 is performed here, and the
+result left in FAC1.
+
+47656         $BA28          FMULT
+Multiply FAC1 with FAC2
+
+This routine multiplies the contents of FAC1 by the contents of FAC2
+and stores the result in FAC1
+
+47705         $BA59          MLTPLY
+Multiply a Byte Subroutine
+
+This subroutine is used to repetitively add a mantissa byte of FAC2 to
+FAC1 the number of times specified in the .A register.
+
+47756         $BA8C          CONUPK
+Move a Floating Point Number from Memory into FAC2
+
+This subroutine loads FAC2 from the four-byte number (three mantissa
+and one sign) pointed to by the .A and .Y registers.
+
+47799         $BAB7          MULDIV
+Add Exponent of FAC1 to Exponent of FAC2
+
+47828         $BAD4          MLDVEX
+Handle Underflow or Overflow
+
+47842         $BAE2          MUL10
+Multiply FAC1 by 10
+
+This subroutine is called to help convert a floating point number to a
+series of ASCII numerals.
+
+47865         $BAF9          TENC
+The Constant 10 in Five-Byte Floating Format
+
+47870         $BAFE          DIV10
+Divide FAC1 by 10
+
+47887         $BB0F          FDIV
+Divide a Number in Memory by FAC1
+
+This number in memory is stored to FAC2, and this routine falls
+through to the next.
+
+47890         $BB12          FDIVT
+Divide FAC2 by FAC1
+
+This routine is used to divide the contents of FAC2 by the contents of
+FAC1, with the result being stored in FAC1.  A check for division by 0
+is made before dividing.
+
+48034         $BBA2          MOVFM
+Move a Floating Point Number from Memory to FAC1
+
+This routine loads FAC1 with the five-byte floating point number
+pointed to by the address stored in the Accumulator (low byte) and the
+.Y register (high byte).
+
+48071         $BBC7          MOV2F
+Move a Floating Point Number from FAC1 to Memory
+
+This routine is used to move a number from the Floating Point
+Accumulator (FAC1) to memory at either 92-96 ($5C-$60) or 87-91
+($57-$5B), depending on the entry point to the routine.
+
+48124         $BBFC          MOVFA
+Move a Floating Point Number from FAC2 to FAC1
+
+48140         $BC0C          MOVAF
+Round and Move a Floating Point Number from FAC1 to FAC2
+
+48143         $BC0F          MOVEF
+Copy FAC1 to FAC2 Without Rounding
+
+48155         $BC1B          ROUND
+Round Accumulator #1 by Adjusting the Rounding Byte
+
+If doubling the rounding byte at location 112 ($70) makes it greater
+than 128, the value of FAC1 is increased by 1.
+
+48171         $BC2B          SIGN
+Put the Sign of Accumulator #1 into .A Register
+
+On exit from this routine the Accumulator will hold a 0 if FAC1 is 0,
+a 1 if it is positive, and a value of 255 ($FF) if it is negative.
+
+48185         $BC39          SGN
+Perform SGN
+
+The SGN routine calls the above routine to put the sign of FAC1 into
+.A, and then converts that value into a floating point number in FAC1.
+
+48216         $BC58          ABS
+Perform ABS
+
+The FAC1 sign byte at 102 ($66) is shifted right by this command, so
+that the top bit is a 0 (positive).
+
+48219         $BC5B          FCOMP
+Compare FAC1 to Memory
+
+On entry to this routine, .A and .Y point to a five-byte floating
+point number to be compared to FAC1.  After the comparison, .A holds 0
+if the two are equal, a 1 if the value of FAC1 is greater than that in
+the memory location, and 255 ($FF) if the value of FAC1 is less than
+that in the memory location.
+
+48283         $BC9B          QINT
+Convert FAC1 into Integer Within FAC1
+
+This routine converts the value in FAC1 into a four-byte signed
+integer in 98- 101 ($62-$65), with the most significant byte first.
+
+48332         $BCCC          INT
+Perform INT
+
+This routine removes the fractional part of a floating point number by
+calling the routine above to change it to an integer, and then
+changing the integer back to floating point format.
+
+48371         $BCF3          FIN
+Convert an ASCII String to a Floating Point Number FAC1
+
+This routine is called by VAL to evaluate and convert an ASCII string
+to a floating point number.
+
+48510         $BD7E          FINLOG
+Add Signed Integer to FAC1
+
+This routine is used to add an ASCII digit that has been converted to
+a signed integer to FAC1.
+
+48563         $BDB3          NO999
+
+This table of three floating point constants holds the values
+99,999,999.5, 999,999,999.5 and 1,000,000,000.  These values are used
+in converting strings to floating point numbers.
+
+48576         $BDC0          INPRT
+Print IN Followed by a Line Number
+
+48589         $BDCD          LINPRT
+Output a Number in ASCII Decimal Digits
+
+This routine is used to output the line number for the routine above.
+It converts thenumber whose high byte is in .A and whose low byte is
+in .X to a floating point number.  It also calls the routine below,
+which converts the floating point number to an ASCII string.
+
+48605         $BDDD          FOUT
+Convert Contents of FAC1 to ASCII String
+
+This routine converts a floating point number to a string of ASCII
+digits, and sets a pointer to the string in .A and .Y.
+
+48913         $BF11          FHALF
+The Constant Value 1/2 in Five-Byte Floating Point Notation
+
+This constant is used for rounding and SQR.
+
+48924         $BF1C          FOUTBL
+Powers of Minus Ten Constants Table
+
+This table contains the powers of -10 expressed as four-byte floating
+point numbers (that is, -1; +10; -100; +1000; -10,000; +100,000;
+-1,000,000; +10,000,000; and -100,000,000).
+
+48954         $BF3A          FDCEND
+Table of Constants for TI$ Conversion
+
+This table contains the floating point representation of the powers of
+-60 multiplied by 1 or 10.  These constants are used for converting
+TI$ to ASCII.
+
+48978         $BF52
+Unused area
+
+This unused area is filled with byts of 170 ($AA).
+
+49009         $BF71          SQR
+Perform SQR
+
+This routine moves the contents of FAC1 to FAC2, moves the constant
+0.5 to FAC1, and falls through to the exponentation routine.
+
+49019         $BF7B          FPWRT
+Performs Exponentation (Power Calculation Called for by UPARROW)
+
+This routine raises the value in FAC2 to the power in FAC1 and leaves
+the result in FAC1.
+
+49076         $BFB4          NEGOP
+Perform NOT and >
+
+This negates the Floating Point Accumulator by exclusive ORing the
+sign byte with a constant of 255 ($FF).  Zero is left unchanged.  The
+results of this command follow rom the formula NOT X=-(X+1).
+Therefore, if you NOT a tatement that is true (-1), you get 0 (false).
+
+49087         $BFBF          EXPCON
+Table of Constants for EXP and LOG in Five-Byte Floating Point Format
+
+These tables are used to calculate 2 to the N power.
+
+49133         $BFED          EXP
+Perform EXP
+
+This routine calculates the natural logarithm e (2.718281828...)
+raised to the power in FAC1.  The result is left in FAC1.
+
+This routine is split between the BASIC ROM wich ends at 49151 ($BFFF)
+and the Kernal ROM which begins at 57344 ($E000).  Therefore, a JMP
+$E000 instruction is tacked on to the end, which makes the BASIC
+routines in the 64 Kernal ROM three bytes higher in memory than the
+corresponding VIC-20 routines.
+
+
+49152-53247   $C000-$CFFF
+4K Free RAM
+
+Locations 49152 to 53247 ($C000 to $CFFF) are free RAM.  Since this
+area is not contiguous with the BASIC program text RAM area, it is not
+available for BASIC program or variable storage (it is not counted in
+the FRE(0) total).
+
+This area is fully available for any other use, however, sudh as
+storing machine language subroutines for use with BASIC, alternate I/O
+drivers for parallel or IEEE devices, character graphics or sprite
+data, etc.
+
+This large free area is such a tempting spot for system additions that
+many such applications may be competing for the same RAM space.  For
+example, the Universal Wedge DOS Support program that adds easy access
+to the disk communications channel is usually loaded at 52224 ($CC00).
+Programs that use that part of RAM will therefore overwrite the DOS
+support program, with the result that they may not run correctly, or
+even at all.  Likewise, Simon's BASIC, the extended language which
+Commodore has released on cartridge, uses several locations in this
+range.  Be aware of this potential problem when you buy hardware
+additions that use this spot to hook into the system.
+
+
+::::::::::::::::::::

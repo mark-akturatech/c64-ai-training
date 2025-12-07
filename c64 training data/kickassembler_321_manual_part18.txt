@@ -1,0 +1,55 @@
+# KickAssembler - Testing: Assert Expressions and Code
+
+   start:
+            inc $d020
+            :break()
+            jmp start
+When running VICE with the breakpoint file (use the -moncommands switch), VICE will run until
+the break and then exit to the monitor.
+Here is a list of the functions on a file value:
+Attribute/Function Description
+writeln(text)            Writes the ‘text’ to the file and insert a line shift.
+writeln()                Insert a line shift
+9.9 Passing Command Line Arguments to the Script
+From the command line you can assign string values to variables which can be read from the script.
+This is done with the ‘:’ notation like this;
+   java -jar KickAss.jar mySource.asm :x=27 :sound=true :title=”Beta 2”
+The three variables x, sound and beta2 and their string values will now be placed in a hashtable that
+can be accessed by the global variable cmdLineVars:
+                                                                                                   49
+  .print “version =” + cmdLineVars.get(“version”)
+  .var x= cmdLineVars.get(“x”).asNumber()
+  .var y= 2*x
+  .var sound = cmdLineVars.get(”sound”).asBoolean()
+  .if (sound) jsr $1000
+9.10 Making 3D Calculations
+To make it easy to calculate vector data, such as coordinates for a vector object or a pre calculated
+vector animation, Kick Assembler supports vector and matrix values.
+Vector values are used to hold 3D vectors. They are created by the Vector function that takes x, y
+and z as argument:
+  .var v1 = Vector(1,2,3)
+  .var v2 = Vector(0,0,2)
+You can access the coordinates of the vector by its get functions and do the most common vector
+operations by the assigned functions. Here are some examples:
+  .var v1PlusV2 = v1+v2
+  .print ”V1 scaled by 10 is ” +            [v1*10]
+  .var dotProduct = v1*v2
+Here is a list of vector functions and operators:
+Function/Operator Example                                Decription
+get(n)                                                   Returns the n’th coordinate (x=0, y=1, z=2)
+getX()                                                   Returns the x coordinate
+getY()                                                   Returns the y coordinate
+getZ()                                                   Returns the z coordinate
++                        Vector(1,2,3)+Vector(2,3,4)     Returns the sum of two vectors
+-                        Vector(1,2,3)-Vector(2,3,4)     Returns the result of a subtraction between
+                                                         the two vectors
+* Number                 Vector(1,2,3)* 4.2              Return the vector scaled by a number
+* Vector                 Vector(1,2,3)*Vector(2,3,4)     Returns the dot product
+/                        Vector(1,2,3)/2                 Divides each coordinate by a factor and
+                                                         returns the result
+X(v)                     Vector(0,1,0).X(Vector(1,0,0)) Returns the cross product between two
+                                                         vectors
+The matrix value represents a 4x4 matrix. You create it by using the Matrix function, or one of the
+other constructor functions described later. You access the entries of the matrix by using its get and
+set functions:
+  .var matrix = Matrix()                   // Creates an identity matrix

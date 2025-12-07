@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 2: Controlling Output, PRINT Subroutine
+
+                         |      |  Y | |
+                         |      +----+ | DATA BUS
+                         |      | SR | |-------------
+                         |      +----+ |     <->
+                         |      | SP | |-------------
+                         |      +----+ |
+                         |             |
+                         +-------------+
+                            650x CHIP
+
+                         Figure 1.5
+
+
+
+Instruction Execution
+---------------------
+
+Suppose that the 650x is stopped (not an easy trick), and that there is a
+certain address, say $1234, in the PC.  The moment we start the micro-
+computer, that address will be put out to the address bus as a read address,
+and the processor will add one to the value in the PC.
+
+Thus, the contents of address $1234 will be called for, and the PC will
+change to $1235.  Whatever information comes in on the data bus will be taken
+to be an instruction.
+
+The microprocessor now has the instruction, which tells it to do something.
+The action is performed, and the whole action now repeats for the next
+instruction.  In other words, address $1235 will be sent to memory, and the
+PC will be incremented to $1236.
+
+
+              +-----------+             +--------------+
+              |    PC     |             |    PC        |
+              | +-------+ |             | +-------+    |
+              | | $1234 | |ADDRESS      | | $1235 |    |ADDRESS
+              | +-------+ |BUS          | +-------+    |BUS
+              |     \     |--------     |              |--------
+              |      ---> |   ->        |     $1234--->|   ->
+              |           |--------     |              |--------
+              |           |             |              |
+              |           |             |              |DATA
+              |           |             |              |BUS
+              |           |             |              |--------
+              |           |             |INSTRUCTION<--|   <-
+              |           |             |              |--------
+              |           |             |              |
+              +-----------+             +--------------+
+
+              Figure 1.6  Arrow to address bus
+
+                                                                         :11:
+
+You can see that the processor works in the same way that most computer
+languages do:  an instruction is executed, and then the computer proceeds to
+the next instruction, and then the next, and so on.  We can change the
+sequence of execution by means of a "jump" or "branch" to a new location, but
+normally, it's one instruction after another.
+
+
+Data Registers:  A, X, and Y
+----------------------------
+
+Any of three registers can be used to hold and manipulate eight bits of data.
+We may load information from memory into A, X, or Y; and we may store
+information into memory from any of A, X, or Y.
+
+Both "load" and "store" are copying actions.  If I load A (LDA) from address
+$2345, I make a copy of the contents of hex 2345 into A; but 2345 still
+contains its previous value.  Similarly, if I store Y into $3456, I make a
+copy of the contents of Y into that address; Y does not change.
+
+The 650x has no way of moving information directly from one memory address to
+another.  Thus, this information must pass via A, X, or Y; we load it from
+the old address, and store it to the new address.
+
+Later, the three registers will take on individual identities.  For example,
+the A register is sometimes called the accumulator, since we perform addition
+and subtraction there.  For the moment, they are interchangeable:  we may
+load to any of the three, and we may store from any of them.
+
+
+First Program Project
+---------------------
+
+Here's a programming task:  locations $0380 and $0381 contain information.
+We wish to write a program to exchange the contents of the two locations.
+How can we do this?
+
+We must make up a plan.  We know that we cannot transfer information directly
+from memory to memory.  We must load to a register, and then store.  But
+there's more.  We must not store and destroy data in memory until that data
+has been safely put away.  How can we do this?
+
+Here's our plan.  We may load one value into A (say, the contents of $0380),
+and load the other value into X (the contents of $0381).  Then we could store
+A and  X back, the other way around.
+
+                                                                         :12:
+
+We could have chosen a different pair of registers for our plan, of course:
+A and Y, or X and Y.  But let's stay with the original plan.  We can code our
+plan in a more formal way:
+
+LDA $0380  (bring in first value)
+LDX $0381  (bring in second value)
+STA $0381  (store in opposite place)
+STX $0380  (and again)
+
+You will notice that we have coded "load A" as LDA, "load X" as LDX, "store
+A" as STA, and "store X" as STX.  Every command has a standard three-letter
+abbreviation called a mnemonic.  Had we used the Y register, we might have
+needed to use LDY and STY.
+
+One more command is needed.  We must tell the computer to stop when it has
+finished the four instructions.  In fact, we can't stop the computer, but if
+we use the command BRK (break), the computer will go to the machine language
+monitor (MLM) and wait for further instructions.  We'll talk about the MLM in
+a few moments.
+
+We have written our program in a notation styled for human readability,
+called assembly language.  But the computer doesn't understand this notation.
+We must translate it into machine language.
+
+The binary code for LDA is %10101101, or hexadecimal AD.  That's what the
+computer recognizes; that's the instruction we must place in memory.  So we
+code the first line:
+
+  AD 80 03     LDA $0380
+
+It's traditional to write the machine code on the left, and the source code
+on the right.  Let's look closely at what has happened.
+
+LDA has been translated into $AD.  This is the operation code, or op code,
+which says what to do.  It will occupy one byte of memory.  But we need to
+follow the instruction with the address from which we want the load to take
+place.  That's address $0380; it's sixteen bits long, and so it will take two
+bytes to hold the address.   We place the address of the instruction, called
+the operand, in memory immediately behind the instruction.  But there's a
+twist.  The last byte comes first, so that address $0380 is stored as two
+bytes:  80 first, and the 03.
+
+This method of storing addresses--low byte first--is standard in the 650x.
+It seems unusual, but it's there for good reason.  That is, the computer gets
+extra speed from this "backwards" address.  Get used to it; you'll see it
+again, many times.
+
+                                                                         :13:
+
+Here are some machine language op codes for the instructions we may use.  You
+do not need to memorize them:
+
+  LDA - AD     LDX - AE     LDY - AC     BRK - 00
+  STA - 8D     STX - 8E     STY - 8C
+
+Now we can compete the translation of our program:
+
+  AD 80 03     LDA $0380
+  AE 81 03     LDX $0381
+  8D 81 03     STA $0381
+  8E 80 03     STX $0380
+  00           BRK
+
+On the right, we have our plan.  On the left, we have the actual program that
+will be stored in the computer.  We may call the right side assembly code and
+the left side machine code, to distinguish between them.  Some users call the
+right-hand information source code, since that's where we start to plan the
+program, and the left-hand program object code, since that's the object of
+the exercise--to get code into the computer.  The job of translating source
+code to object code is called assembly.  We performed this translation by
+looking up the op codes and translating by hand; this is called hand
+assembly.
+
+The code must be placed into the computer.  It will consist of 13 bytes:  AD
+80 08 AE 81 03 8D 81 03 8E 80 03 00.  That's the whole program.  But we have
+a new question:  where do we put it?
+
+
+Choosing a Location
+-------------------
+
+We must find a suitable location for our program.  It must be placed into RAM
+memory, of course, but where?
+
+For the moment, we'll place our program into the cassette buffer, starting at
+address $033C (decimal 828).  That's a good place to put short test programs,
+which is what we will be writing for a while.
+
+Now that we've made that decision, we face a new hurdle: how do we get the
+program in there?  To do that, we need to use a machine language monitor.
+
+                                                                         :14:
+
+Monitors:  What They Are
+------------------------
+
+All computers have a built-in set of programs called an operating system that
+gives the machine its style and basic capabilities.  The operating system
+takes care of communications--reading the keyboard, making the proper things
+appear on the screen, and translating data between the computer and other
+devices, such as a disk, tape, or printer.
+
+When we type on the computer keyboard, we use the operating system, which
+detects the characters we type.  But there's an extra set of programs built
+into the computer that must decide what we mean.  When we are using the BASIC
+language, we'll be communicating with the BASIC monitor, which understands
+BASIC commands such as NEW, LOAD, LIST, or RUN.  It contains editing features
+that allow us to change the BASIC program that we are writing.
+
+But when we switch to another system--often another language--we'll need to
+use a different monitor.  Commands such as NEW or LIST don't have any meaning
+for a machine language program.  We must leave the BASIC monitor and enter a
+new environment:  the machine language monitor.  We'll need to learn some new
+commands because we will be communicating with the computer in a different
+way.
+
+
+The Machine Language Monitor
+----------------------------
+
+Most PET/CBM computers have a simple MLM (machine language monitor) built in.
+It may be extended with extra commands.  The Commodore PLUS/4 contains a very
+powerful MLM.  The VIC-20 and Commodore 64 do not have a built-in MLM, but
+one can be added.  Such a monitor may be either loaded into RAM or plugged in
+as a cartridge.  Monitors may be purchased or obtained from user clubs.
+
+Most machine language monitors work in a similar way, and have about the same
+commands.  To proceed, you'll need an MLM in your computer.  Use the built-in
+one, plug it in, load it in, or load and run...whatever the instructions tell
+you.  On a PET/CBM machine, typing the command SYS 4 will usually switch you
+to the built-in monitor.  After an MLM has been added to a VIC or Commodore
+64, the command SYS 8 will usually get you there.  On the Commodore PLUS/4,
+the BASIC command MONITOR will bring the monitor into play.
+
+                                                                         :15:
+
+Monitor Display
+---------------
+
+The moment you enter the MLM, you'll see a display that looks something like
+this:
+
+  B*
+      PC  SR AC XR YR SP
+  .; 0005 20 54 23 6A F8
+  .
+
+The cursor will be flashing to the right of the period on the bottom line.
+The exact appearance of the screen information may vary according to the
+particular monitor you are using.  Other material may be displayed--in
+particular, a value called IRQ--which we will ignore for the time being.
+
+The information you see may be interpreted as follows:
+
+  B*--we have reached the MLM by means of a "break."  More about that later.
+
+  PC--The value shown below this title is the contents of the program
+  counter.  This indicates where the program "stopped."  In other words, if
+  the value shown is address 0005, the program stopped at address 0004, since
+  the PC is ready to continue at the following address.  The exact value
+  (0004 versus 0005) may vary depending on the particular MLM.
+
+  SR--The value shown below shows the status register, which tells us the
+  results of recent tests and data operations.  We'd need to split apart the
+  eight bits and look at them individually to establish all the information
+  here; we will do this at a later time.
+
+  AC, XR, and YR--The values shown below these three titles are the contents
+  of our three data registers:  A, X, and Y.
+
+  SP--The value shown below is that of the stack pointer, which indicates a
+  temporary storage area that the program might use.  A value of F8, for
+  example, tells us that the next item to be dropped into the stack would go
+  to address $01F8 in memory.  More on this later.
+
+The period is roughly the equivalent of the READY statement in BASIC.  It
+indicates that the computer is ready to receive a command from you.
+
+You will notice that the display printed by the monitor (called the register
+display) shows the internal registers within the 650x chip.  Sometimes there
+is another term of information, titled IRQ, in this display.  It doesn't
+belong, since it does not represent a microprocessor register.  IRQ tells us
+to what address the computer will go to if an interrupt occurs; this
+information is stored in memory, not within the 650x.
+
+
+MLM Commands
+------------
+
+The machine language monitor is now waiting for you to enter a new command.
+The old BASIC commands don't work any more; LIST or NEW or SYS are not known
+to the MLM.  We'll list some popular commands in a moment.  First, let's
+discuss the command that takes us back to BASIC.
+
+                                                                         :16:
+
+.X exits the MLM and returns to the BASIC monitor.  Try it.  Remember to
+press RETURN after you've typed the X, of course.  You will return to the
+BASIC system, and the BASIC monitor will type READY.  You're back in familiar
+territory.  Now go back to the monitor with SYS4 or SYS8 or MONITOR as the

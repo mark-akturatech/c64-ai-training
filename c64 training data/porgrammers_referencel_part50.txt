@@ -1,0 +1,284 @@
+# C64 PRG Chapter 5 - Opcode Reference Tables
+
+  264   BASIC TO MACHINE LANGUAGE
+~
+
+
+    Legend: Kernal      E000-FFFF       Kernal ROM.
+
+	    IO/C        D000-DFFF       I/O address space or Character
+					generator ROM, selected by -CHAREN.
+					If the CHAREN bit is clear,
+					the character generator ROM is
+					chosen. If it is set, the
+					I/O chips are accessible.
+
+	    IO/RAM      D000-DFFF       I/O address space or RAM,
+					selected by -CHAREN.
+					If the CHAREN bit is clear,
+					the character generator ROM is
+					chosen. If it is set, the
+					internal RAM is accessible.
+
+	    I/O         D000-DFFF       I/O address space.
+					The -CHAREN line has no effect.
+
+	    BASIC       A000-BFFF       BASIC ROM.
+
+	    ROMH        A000-BFFF or    External ROM with the -ROMH line
+			E000-FFFF       connected to its -CS line.
+
+	    ROML        8000-9FFF       External ROM with the -ROML line
+					connected to its -CS line.
+
+	    RAM         various ranges  Commodore 64's internal RAM.
+
+	    -           1000-7FFF and   Open address space.
+			A000-CFFF       The Commodore 64's memory chips
+					do not detect any memory accesses
+					to this area except the VIC-II's
+					DMA and memory refreshes.
+
+
+
+
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   265
+~
+
+
+
+
+        (1)   This is the default BASIC memory map which provides
+              BASIC 2.0 and 38K contiguous bytes of user RAM.
+
+        (2)   This map provides 60K bytes of RAM and I/O devices.
+              The user must write his own I/O driver routines.
+
+        (3)   The same as 2, but the character ROM is not
+              accessible by the CPU in this map.
+
+        (4)   This map is intended for use with softload languages
+              (including CP/M), providing 52K contiguous bytes of
+              user RAM, I/O devices, and I/O driver routines.
+
+        (5)   This map gives access to all 64K bytes of RAM. The
+              I/O devices must be banked back into the processor's
+              address space for any I/O operation.
+
+        (6)   This is the standard configuration for a BASIC system
+              with a BASIC expansion ROM. This map provides 32K
+              contiguous bytes of user RAM and up to 8K bytes of
+              BASIC "enhancement".
+
+        (7)   This map provides 40K contiguous bytes of user RAM
+              and up to 8K bytes of plug-in ROM for special ROM-
+              based applications which don't require BASIC.
+
+        (8)   This map provides 32K contiguous bytes of user RAM
+              and up to 16K bytes of plug-in ROM for special
+              applications which don't require BASIC (word
+              processors, other languages, etc.).
+
+        (9)   This is the ULTIMAX video game memory map. Note that
+              the 2K byte "expansion RAM" for the ULTIMAX, if
+              required, is accessed out of the COMMODORE 64 and
+              any RAM in the cartridge is ignored.
+
+
+
+
+
+
+  266   BASIC TO MACHINE LANGUAGE
+~
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   267
+~
+
+
+  THE KERNAL
+
+
+    One of the problems facing programmers in the microcomputer field is
+  the question of what to do when changes are made to the operating system
+  of the computer by the company. Machine language programs which took much
+  time to develop might no longer work, forcing major revisions in the
+  program. To alleviate this problem, Commodore has developed a method of
+  protecting software writers called the KERNAL.
+    Essentially, the KERNAL is a standardized JUMP TABLE to the input,
+  output, and memory management routines in the operating system. The
+  locations of each routine in ROM may change as the system is upgraded.
+  But the KERNAL jump table will always be changed to match. If your
+  machine language routines only use the system ROM routines through the
+  KERNAL, it will take much less work to modify them, should that need ever
+  arise.
+    The KERNAL is the operating system of the Commodore 64 computer. All
+  input, output, and memory management is controlled by the KERNAL.
+    To simplify the machine language programs you write, and to make sure
+  that future versions of the Commodore 64 operating system don't make your
+  machine language programs obsolete, the KERNAL contains a jump table for
+  you to use. By taking advantage of the 39 input/output routines and other
+  utilities available to you from the table, not only do you save time, you
+  also make it easier to translate your programs from one Commodore
+  computer to another.
+    The jump table is located on the last page of memory, in read-only
+  memory (ROM).
+    To use the KERNAL jump table, first you set up the parameters that the
+  KERNAL routine needs to work. Then JSR (Jump to SubRoutine) to the proper
+  place in the KERNAL jump table. After performing its function, the KERNAL
+  transfers control back to your machine language program. Depending on
+  which KERNAL routine you are using, certain registers may pass parameters
+  back to your program. The particular registers for each KERNAL routine
+  may be found in the individual descriptions of the KERNAL subroutines.
+
+
+
+
+
+
+
+
+
+  268   BASIC TO MACHINE LANGUAGE
+~
+
+
+    A good question at this point is why use the jump table at all? Why not
+  just JSR directly to the KERNAL subroutine involved? The jump table is
+  used so that if the KERNAL or BASIC is changed, your machine language
+  programs will still work. In future operating systems the routines may
+  have their memory locations moved around to a different position in the
+  memory map... but the jump table will still work correctly!
+
+
+  KERNAL POWER-UP ACTIVITIES
+
+  1) On power-up, the KERNAL first resets the stack pointer, and clears
+     decimal mode.
+  2) The KERNAL then checks for the presence of an autostart ROM cartridge
+     at location $8000 HEX (32768 decimal). If this is present, normal
+     initialization is suspended, and control is transferred to the car-
+     tridge code. If an autostart ROM is not present, normal system ini-
+     tialization continues.
+  3) Next, the KERNAL initializes all INPUT/OUTPUT devices. The serial bus
+     is initialized. Both 6526 CIA chips are set to the proper values for
+     keyboard scanning, and the 60-Hz timer is activated. The SID chip is
+     cleared. The BASIC memory map is selected and the cassette motor is
+     switched off.
+  4) Next, the KERNAL performs a RAM test, setting the top and bottom of
+     memory pointers. Also, page zero is initialized, and the tape buffer
+     is set up.
+       The RAM TEST routine is a nondestructive test starting at location
+     $0300 and working upward. Once the test has found the first non-RAM
+     location, the top of RAM has its pointer set. The bottom of memory is
+     always set to $0800, and the screen setup is always set at $0400.
+  5) Finally, the KERNAL performs these other activities. I/O vectors are
+     set to default values. The indirect jump table in low memory is estab-
+     lished. The screen is then cleared, and all screen editor variables
+     reset. Then the indirect at $A000 is used to start BASIC.
+
+
+
+
+
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   269
+~
+
+
+  HOW TO USE THE KERNAL
+
+
+    When writing machine language programs it is often convenient to use
+  the routines which are already part of the operating system for input/
+  output, access to the system clock, memory management, and other similar
+  operations. It is an unnecessary duplication of effort to write these
+  routines over and over again, so easy access to the operating system
+  helps speed machine language programming.
+    As mentioned before, the KERNAL is a jump table. This is just a col-
+  lection of JMP instructions to many operating system routines.
+    To use a KERNAL routine you must first make all of the preparations
+  that the routine demands. If one routine says that you must call another
+  KERNAL routine first, then that routine must be called. If the routine
+  expects you to put a number in the accumulator, then that number must be
+  there. Otherwise your routines have little chance of working the way you
+  expect them to work.
+    After all preparations are made, you must call the routine by means of
+  the JSR instruction. All KERNAL routines you can access are structured as
+  SUBROUTINES, and must end with an RTS instruction. When the KERNAL
+  routine has finished its task, control is returned to your program at the
+  instruction after the JSR.
+    Many of the KERNAL routines return error codes in the status word or
+  the accumulator if you have problems in the routine. Good programming
+  practice and the success of your machine language programs demand that
+  you handle this properly. If you ignore an error return, the rest of your
+  program might "bomb."
+    That's all there is to do when you're using the KERNAL. Just these
+  three simple steps:
+
+    1) Set up
+    2) Call the routine
+    3) Error handling
+
+
+
+
+
+
+
+
+
+

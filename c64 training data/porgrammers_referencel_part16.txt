@@ -1,0 +1,284 @@
+# C64 PRG Chapter 2 - BASIC Keywords (OR-PRINT)
+
+  66   BASIC LANGUAGE VOCABULARY
+~
+
+
+  EXAMPLES of OPEN Statements:
+
+
+    10 OPEN 2,8,4,"DISK-OUTPUT,SEQ,W"  (Opens sequential file on disk)
+
+    10 OPEN 1,1,2,"TAPE-WRITE"         (Write End-of-File on Close)
+
+    10 OPEN 50,0                       (Keyboard input)
+
+    10 OPEN 12,3                       (Screen output)
+
+    10 OPEN 130,4                      (Printer output)
+
+    10 OPEN 1,1,0,"NAME"               (Read from cassette)
+
+    10 OPEN 1,1,1,"NAME"               (Write to cassette)
+
+    10 OPEN 1,2,0,CHR$(10)             (open channel to RS-232 device)
+
+    10 OPEN 1,4,0,"STRING"             (Send upper case/graphics to
+                                        the printer)
+
+    10 OPEN 1,4,7,"STRING"             (Send upper/lower case to
+                                        printer)
+
+    10 OPEN 1,5,7,"STRING"             (Send upper/lower case to
+                                        printer with device # 5)
+
+    10 OPEN 1,8,15,"COMMAND"           (Send a command to disk)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   67
+~
+
+
+  OR
+
+  TYPE: Logical Operator
+  FORMAT: <operand> OR <operand>
+
+
+  Action: Just as the relational operators can be used to make decisions
+  regarding program flow, logical operators can connect two or more re-
+  lations and return a true or false value which can then be used in a
+  decision. When used in calculations, the logical OR gives you a bit
+  result of I if the corresponding bit of either or both operands is 1.
+  This will produce an integer as a result depending on the values of the
+  operands. When used in comparisons the logical OR operator is also used
+  to link two expressions into a single compound expression. If either of
+  the expressions are true, the combined expression value is true (-1). In
+  the first example below if AA is equal to BB OR if XX is 20, the
+  expression is true.
+    Logical operators work by converting their operands to 16-bit, signed,
+  two's complement integers in the range of -32768 to +32767. If the
+  operands are not in the range an error message results. Each bit of the
+  result is determined by the corresponding bits in the two operands.
+
+
+
+  EXAMPLES of OR Operator:
+
+
+    100 IF (AA=BB) OR (XX=20) THEN...
+
+    230 KK%=64 OR 32: PRINT KK%         (You typed this with a bit
+                                         value of 1000000 for 64
+                                         and 100000 for 32)
+
+    96                                  (The computer responded with
+                                         bit value 1100000.
+                                         1100000=96.)
+
+
+
+
+
+
+
+  68   BASIC LANGUAGE VOCABULARY
+~
+
+
+  PEEK
+
+  TYPE: Integer Function
+  FORMAT: PEEK(<numeric>)
+
+    Action: Returns an integer in the range of 0 to 255, which is read
+  from a memory location. The <numeric> expression is a memory location
+  which must be in the range of 0 to 65535. If it isn't then the BASIC
+  error message ?ILLEGAL QUANTITY occurs.
+
+  EXAMPLES of PEEK Function:
+
+    10 PRINT PEEK(53280) AND 15   (Returns value of screen border color)
+
+    5 A%=PEEK(45)+PEEK(46)*256    (Returns address of BASIC variable table)
+
+
+  POKE
+
+  TYPE: Statement
+  FORMAT: POKE <location>,<value>
+
+  Action: The POKE statement is used to write a one-byte (8-bits) binary
+  value into a given memory location or input/output register. The
+  <location> is an arithmetic expression which must equal a value in the
+  range of 0 to 65535. The <value> is an expression which can be reduced to
+  an integer value of 0 to 255. If either value is out of its respective
+  range, the BASIC error message ?ILLEGAL QUANTITY occurs.
+    The POKE statement and PEEK statement (which is a built-in function
+  that looks at a memory location) are useful for data storage, controlling
+  graphics displays or sound generation, loading assembly language sub-
+  routines, and passing arguments and results to and from assembly language
+  subroutines. In addition, Operating System parameters can be examined
+  using PEEK statements or changed and manipulated using POKE statements.
+  A complete memory map of useful locations is given in Appendix G.
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   69
+~
+
+
+  EXAMPLES of POKE Statement:
+
+    POKE 1024, 1         (Puts an "A" at position 1 on the screen)
+    POKE 2040, PTR       (Updates Sprite #0 data pointer)
+    10 POKE RED,32
+    20 POKE 36879,8
+    2050 POKE A,B
+
+
+  POS
+
+  TYPE: Integer Function
+  FORMAT: POS (<dummy>)
+
+    Action: Tells you the current cursor position which, of course, is in
+  the range of 0 (leftmost character) though position 79 on an 80-character
+  logical screen line. Since the Commodore 64 has a 40-column screen, any
+  position from 40 through 79 will refer to the second screen line. The
+  dummy argument is ignored.
+
+  EXAMPLE of POS Function:
+
+    1000 IF POS(0)>38 THEN PRINT CHR$(13)
+
+
+  PRINT
+
+  TYPE: Statement
+  FORMAT: PRINT [<variable>][<,/;><variable>]...
+
+    Action: The PRINT statement is normally used to write data items to
+  the screen. However, the CMD statement may be used to re-direct that
+  output to any other device in the system. The <variable(s)> in the
+  output-list are expressions of any type. If no output-list is present, a
+  blank line is printed. The position of each printed item is determined by
+  the punctuation used to separate items in the output-list.
+    The punctuation characters that you can use are blanks, commas, or
+  semicolons. The 80-character logical screen line is divided into 8 print
+  zones of 10 spaces each. In the list of expressions, a comma causes the
+  next value to be printed at the beginning of the next zone. A semicolon
+  causes the next value to be printed immediately following the previous
+  value. However, there are two exceptions to this rule:
+
+  70   BASIC LANGUAGE VOCABULARY
+~
+
+
+    1) Numeric items are followed by an added space.
+    2) Positive numbers have a space preceding them.
+
+    When you use blanks or no punctuation between string constants or
+  variable names it has the same effect as a semicolon. However, blanks
+  between a string and a numeric item or between two numeric items will
+  stop output without printing the second item.
+    If a comma or a semicolon is at the end of the output-list, the next
+  PRINT statement begins printing on the same line, and spaced accord-
+  ingly. If no punctuation finishes the list, a carriage-return and a line-
+  feed are printed at the end of the data. The next PRINT statement will
+  begin on the next line. If your output is directed to the screen and the
+  data printed is longer than 40 columns, the output is continued on the
+  next screen line.
+    There is no statement in BASIC with more variety than the PRINT
+  statement. There are so many symbols, functions, and parameters
+  associated with this statement that it might almost be considered as a
+  language of its own within BASIC; a language specially designed for
+  writing on the screen.
+
+  EXAMPLES of PRINT Statement:
+
+  1)
+     5 X = 5
+    10 PRINT -5*X,X-5,X+5,X^5
+
+    -25     0     10     3125
+
+
+  2)
+     5 X=9
+    10 PRINT X;"SQUARED IS";X*X;"AND";
+    20 PRINT X "CUBED IS" X^3
+
+    9 SQUARED IS 81 AND 9 CUBED IS 729
+
+
+  3)
+     90 AA$="ALPHA":BB$="BAKER":CC$="CHARLIE":DD$="DOG":EE$="ECHO"
+    100 PRINT AA$BB$;CC$ DD$,EE$
+
+    ALPHABAKERCHARLIEDOG     ECHO
+
+                                             BASIC LANGUAGE VOCABULARY   71
+~
+
+
+  Quote Mode
+
+    Once the quote mark <SHIFT+2> is typed, the cursor controls stop
+  operating and start displaying reversed characters which actually stand
+  for the cursor control you are hitting. This allows you to program these
+  cursor controls, because once the text inside the quotes is PRINTed they
+  perform their functions. The <INST/DEL> key is the only cursor control
+  not affected by "quote mode."
+
+  1. Cursor Movement
+
+    The cursor controls which can be "programmed" in quote mode are:
+
+          KEY                             APPEARS AS
+
+        <CLR/HOME>
+        <SHIFT+CLR/HOME>
+        <CRSR UP/DOWN>
+        <SHIFT+CRSR UP/DOWN>
+        <CRSR LEFT/RIGHT>
+        <SHIFT+CRSR LEFT/RIGHT>
+
+
+    If you wanted the word HELLO to PRINT diagonally from the upper left
+  corner of the screen, you would type:
+
+  PRINT"<HOME>H<DOWN>E<DOWN>L<DOWN>L<DOWN>O"
+
+  2. Reverse Characters
+
+    Holding down the <CTRL> key and hitting <9> will cause <R> to appear
+  inside the quotes. This will make all characters start printing in
+  reverse video (like a negative of a picture). To end the reverse printing
+  hit <CTRL+0>, or else PRINT a <RETURN> (CHR$(13)). (Just ending the PRINT
+  statement without a semicolon or comma will take care of this.)
+
+  3.Color Controls
+
+    Holding down the <CTRL> key or <C=> key with any of the 8 color keys
+  will make a special reversed character appear in the quotes. When the
+  character is PRINTed, then the color change will occur.
+
+

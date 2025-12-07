@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 1: Memory Layout, First Commands
+
+           |      o---o+++-++++------o+++-++++------o+++-++++-----
+           |      |   |||| ||||      |||| ||||      |||| ||||
+           +------+  ^|||| ||||     ^|||| ||||     ^|||| ||||
+                     ||||| ||||     ||||| ||||     ||||| ||||
+                     v|||| ||||     v|||| ||||     v|||| ||||
+                      |||| ||||      |||| ||||      |||| ||||
+                   +--oooo-oooo-+  +-oooo-oooo-+  +-oooo-oooo-+
+                   |            |  |           |  |           |
+                   |   Memory   |  |  Memory   |  |  Memory   |
+                   |    Chip    |  |   Chip    |  |   Chip    |
+                   |("Selected")|  |   (not    |  |   (not    |
+                   |            |  | selected) |  | selected) |
+                   +------------+  +-----------+  +-----------+
+
+           Figure 1.2  Two-way data bus
+
+
+All other chips are still connected to the data bus, but they have not been
+selected, so they ignore the information.
+
+The address bus is accompanied by a few extra wires (sometimes called the
+control bus) that control such things as data timing and the direction in
+which the data should flow:  read or write.
+
+                                                                          :5:
+
+Number Ranges
+-------------
+
+The address bus has sixteen bits, each of which might be on or off.  The
+possible combinations number 65536 (two raised to the sixteenth power).  We
+then have 65536 different possibilities of voltages, or 65536 different
+addresses.
+
+The data bus has eight bits, which allows for 256 possibilities of voltages.
+Each memory location can store only 256 distinct values.
+
+It is often convenient to refer to an address as a decimal number.  This is
+especially true for PEEK and POKE statements in the BASIC language.  We may
+do this by giving each bit a "weight."  Bit zero (at the right) has a weight
+of 1; each bit to the left has a weight of double the amount, so that bit 15
+(at the left) has a weight of 32768.  Thus, a binary address such as
+
+  0001001010101100
+
+has a value of 4096 + 512 + 128 + 32 + 8 + 4 or 4780.  A POKE to 4780 decimal
+would use the above binary address to reach the correct part of memory.
+
+
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+              | 128 |  64 |  32 |  16 |  8  |  4  |  2  |  1  |
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+
+                                 EIGHT BITS
+
+  +-----+-----+----+====+----+----+===+---+===+---+===+---+===+===+---+---+
+  |32768|16384|8192|4096|2048|1024|512|256|128| 64| 32| 16| 8 | 4 | 2 | 1 |
+  +-----+-----+----+====+----+----+===+---+===+---+===+---+===+===+---+---+
+
+                                SIXTEEN BITS
+
+  Figure 1.3
+
+
+Direct conversion between decimal and binary is seldom needed.  Such
+conversions usually pass through an intermediate number system, called
+hexadecimal.
+
+                                                                          :6:
+
+Hexadecimal Notation
+--------------------
+
+Binary is an excellent system for the computer, but it is inconvenient for
+most programmers.  If one programmer asks another, "What address should I use
+for some activity?", an answer such as "Address %0001001010101100" might be
+correct but would probably be unsatisfactory.  There are too many digits.
+
+Hexadecimal is a code used by humans to conveniently represent binary
+numbers.  The computer uses binary, not hexadecimal; programmers use
+hexadecimal because binary is cumbersome.
+
+To represent a binary number in hexadecimal, the bits must be grouped
+together four at a time.  If we take the binary value given above and split
+it into groups of four, we get
+
+  0001 0010 1010 1100
+
+Now each group of four bits is represented by a digit as shown in the
+following table:
+
+  0000 - 0     0100 - 4     1000 - 8     1100 - C
+  0001 - 1     0101 - 5     1001 - 9     1101 - D
+  0010 - 2     0110 - 6     1010 - A     1110 - E
+  0011 - 3     0111 - 7     1011 - B     1111 - F
+
+Thus, the number would be represented as hexadecimal 12AC.  A dollar sign is
+often prefixed to a hexadecimal number so that it may be clearly recognized:
+$12AC.
+
+The same type of weighting is applied to each bit of the group of four as was
+described before.  In other words, the rightmost bit (bit zero) has a weight
+of 1, the next left a weight of 2, the next a weight of 4, and the leftmost
+bit (bit three) a weight of 8.  If the total of the weighted bits exceeds
+nine, an alphabetic letter is used as a digit:  A represents ten; B, eleven;
+C, twelve; and F, fifteen.
+
+Eight-bit numbers are represented with two hexadecimal digits.  Thus,
+%01011011 may be written as $5B.
+
+
+Hexadecimal to Decimal
+----------------------
+
+As we have seen, hexadecimal and binary numbers are easily interchangeable.
+Although we will usually write values in "hex," occasionally we will need to
+examine them in their true binary state to see a particular information bit.
+
+Hexadecimal isn't hard to translate into decimal.  You may recall that in
+early arithmetic we were taught that the number 24 meant, "two tens and four
+units."  Similarly, hexadecimal 24 means "two sixteens and four units," or a
+decimal value of 36.  By the way, it's better to say hex numbers as "two
+four" rather than "twenty-four," to avoid confusion with decimal values.
+
+                                                                          :7:
+
+The formal procedure, or algorithm, to go from hex to decimal is as follows.
+
+  Step 1:  Take the leftmost digit; if it's a letter A to F, convert it to
+           the appropriate numeric value (A equals 10, B equals 11, and so
+           on).
+
+  Step 2:  If there are no more digits, you're finished; you have the number.
+           Stop.
+
+  Step 3:  Multiply the value so far by sixteen.  Add the next digit to the
+           result, converting letters if needed.  Go back to step 2.
+
+Using the above steps, let's convert the hexadecimal number $12AC.
+
+  Step 1:  The leftmost digit is 1.
+
+  Step 2:  There are more digits, so we'll continue.
+
+  Step 3:  1 times 16 is 16, plus 2 gives 18.
+
+  Step 2:  More digits to come.
+
+  Step 3:  18 times 16 is 288, plus 10 (for A) gives 298.
+
+  Step 2:  More digits to come
+
+  Step 3:  298 x 16 is 4768, plus 12 (for C) gives 4780.
+
+  Step 2:  No more digits:  4780 is the decimal value.
+
+This is easy to do by hand or with a calculator.
+
+
+Decimal to Hexadecimal
+----------------------
+
+The most straightforward method to convert from decimal to hexadecimal is to
+divide repeatedly by 16; after each division, the remainder is the next
+hexadecimal digit, working from right to left.  This method is not too well
+suited to small calculators, which usually don't give remainders.  The
+following fraction table may offer some help:
+
+  .0000 - 0    .2500 - 4    .5000 - 8    .7500 - C
+  .0625 - 1    .3125 - 5    .5625 - 9    .8125 - D
+  .1250 - 2    .3750 - 6    .6250 - A    .8750 - E
+  .1875 - 3    .4375 - 7    .6875 - B    .9375 - F
+
+If we were to translate 4780 using this method, we would divide by 16, giving
+298.75.  The fraction tells us the last digit is C; we now divide 298 by 16,
+giving 18.625.  The fraction corresponds to A, making the last two digits AC.
+Next we divide 18 by 16, getting 1.125--now the last three digits are 2AC.
+We don't need to divide the one by 16, although that would work; we just put
+it on the front of the number to get an answer of $12AC.
+
+                                                                          :8:
+
+There are other methods of performing decimal-to-hexadecimal conversions.
+You may wish to look them up in a book on number systems.  Alternatively, you
+may wish to buy a calculator that does the job electronically.  Some
+programmers get so experienced that they can do conversion in their heads; I
+call them "hex nuts."  [ groan... ;-) -wf]
+
+Do not get fixed on the idea of numbers.  Memory locations can always be
+described as binary numbers, and thus may be converted to decimal or
+hexadecimal at will.  But they may not mean anything numeric:  the memory
+location may contain an ASCII coded character, an instruction, or any of
+several other things.
+
+
+Memory Elements
+---------------
+
+There are generally three types of devices attached to the memory buses
+(address, data, and control buses):
+
+ o RAM:  Random access memory.  This is the read and write memory, where we
+   will store the programs we write, along with values used by the program.
+   We may store information into RAM, and may recall the information at any
+   time.
+
+ o ROM:  Read only memory.  This is where the fixed routines are kept within
+   the computer.  We may not store information into ROM; its contents were
+   fixed when the ROM was made.  We will use program units (subroutines)
+   stored in ROM to do special tasks for us, such as input and output.
+
+
+    +------+ ADDRESS BUS
+    |      |-------------------------------------------------------
+    |      |      ->              ->              ->            ->
+    |      |-------------+ +-------------+ +-------------+ +-------  TO
+    | 650x |             | |             | |             | |         OTHER
+    |      | MEMORY BUS  | |             | |             | |         CHIPS
+    |      |-------------|||-------------|||-------------|||-------
+    |      |  <->        |v|  <->        |v|  <->        |v|  <->
+    |      |-------+ +---| |-------+ +---| |-------+ +---| |-------
+    +------+       | |   | |       | |   | |       | |   | |
+                   |^|   | |       |^|   | |       |^|   | |
+                   |||   | |       |||   | |       |||   | |
+                   |v|   | |       | |   | |       |v|   | |
+                   | |   | |       | |   | |       | |   | |
+                 +-----------+   +-----------+   +-----------+
+                 |    RAM    |   |    ROM    |   |    IA     |
+                 | (read and |   |(read only)|   | (special) |
+                 |   write)  |   |           |   |           |
+                 +-----------+   +-----------+   +-----------+
+                                                    |||||||
+                                                    ^^^^^^^
+                                                    |||||||
+                                                    vvvvvvv
+                                                    |||||||
+                                                  CONNECTIONS
+                                               TO "OUTSIDE WORLD"
+    Figure 1.4
+
+                                                                          :9:
+
+ o IA:  Interface adapter chips.  These are not memory in the usual sense;
+   but, these chips are assigned addresses on the address bus, so we call
+   them "memory-mapped" devices.  Information may be passed to and from these
+   devices, but the information is generally not stored in the conventional
+   sense.  IA chips contain such functions as:  input/output (I/O) interfaces
+   that serve as connections to the "outside world"; timing devices;
+   interrupt control system; and sometimes specialized functions, such as
+   video control or sound generation.  IA chips come in a wide variety of
+   designs, including the PIA (peripheral interface adapter), the VIA
+   (versatile interface adapter), the CIA (complex interface adapter), the
+   VIC (video interface chip), and the SID (sound interface device).
+
+Within a given computer, some addresses may not be used at all.  Some devices
+may respond to more than one address, so that they seem to be in two places
+in memory.
+
+An address may be thought of as split in two parts.  One part, usually the
+high part of the address, selects the specific chip.  The other part of the
+address selects a particular part of memory within the chip.  For example, in
+the Commodore 64, the hex address $D020 (decimal 53280) sets the border color
+of the video screen.  The first part of the address (roughly, $D0...) selects
+the video chip; the last part of the address (...20) selects the part of the
+chip that controls the border color.
+
+
+Microprocessor Registers
+------------------------
+
+Within the 650x chip are several storage areas called registers.  Even though
+they hold information, they are not considered "memory" since they don't have
+an address.  Six of these registers are important to us.  Briefly, they are:
+
+PC:  (16 bits)              The program counter tells where the next
+                            instruction will come from.
+
+A, X and Y:  (8 bits each)  These registers hold data.
+
+SR:                         The status register, sometimes called the PSW
+                            (processor status word), tells about the results
+                            of recent tests, data handling, and so on.
+
+SP:                         The stack pointer keeps track of a temporary
+                            storage area.
+
+We will talk about each of these registers in more detail later.  At the
+moment, we will concentrate on the PC (program counter).
+
+                                                                         :10:
+
+                         +-------------+
+                         |             |
+                         | +---------+ | ADDRESS BUS
+                         | |   PC    | |-------------
+                         | +----+----+ |      ->
+                         |      |  A | |-------------
+                         |      +----+ |
+                         |      |  X | |
+                         |      +----+ |

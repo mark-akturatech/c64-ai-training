@@ -1,0 +1,270 @@
+# ROM KERNAL F000 F7FF
+# Source: C64 ROM Disassembly
+
+.,F001 09 02    ORA #$02        mask xxxx xx1x, set RTS high
+.,F003 8D 01 DD STA $DD01       save VIA 2 DRB, RS232 port
+.,F006 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,F009 70 07    BVS $F012       exit if CTS high
+.,F00B 30 F9    BMI $F006       loop while DSR high
+                                set no DSR and exit
+.,F00D A9 40    LDA #$40        set DSR signal not present
+.,F00F 8D 97 02 STA $0297       save the RS232 status register
+.,F012 18       CLC             flag ok
+.,F013 60       RTS             
+
+                                *** send byte to the RS232 buffer
+.,F014 20 28 F0 JSR $F028       setup for RS232 transmit
+                                send byte to the RS232 buffer, no setup
+.,F017 AC 9E 02 LDY $029E       get index to Tx buffer end
+.,F01A C8       INY             + 1
+.,F01B CC 9D 02 CPY $029D       compare with index to Tx buffer start
+.,F01E F0 F4    BEQ $F014       loop while buffer full
+.,F020 8C 9E 02 STY $029E       set index to Tx buffer end
+.,F023 88       DEY             index to available buffer byte
+.,F024 A5 9E    LDA $9E         read the RS232 character buffer
+.,F026 91 F9    STA ($F9),Y     save the byte to the buffer
+
+                                *** setup for RS232 transmit
+.,F028 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F02B 4A       LSR             shift the enable bit to Cb
+.,F02C B0 1E    BCS $F04C       if interrupts are enabled just exit
+.,F02E A9 10    LDA #$10        start timer A
+.,F030 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,F033 AD 99 02 LDA $0299       get the baud rate bit time low byte
+.,F036 8D 04 DD STA $DD04       save VIA 2 timer A low byte
+.,F039 AD 9A 02 LDA $029A       get the baud rate bit time high byte
+.,F03C 8D 05 DD STA $DD05       save VIA 2 timer A high byte
+.,F03F A9 81    LDA #$81        enable timer A interrupt
+.,F041 20 3B EF JSR $EF3B       set VIA 2 ICR from A
+.,F044 20 06 EF JSR $EF06       setup next RS232 Tx byte
+.,F047 A9 11    LDA #$11        load timer A, start timer A
+.,F049 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,F04C 60       RTS             
+
+                                *** input from RS232 buffer
+.,F04D 85 99    STA $99         save the input device number
+.,F04F AD 94 02 LDA $0294       get pseudo 6551 command register
+.,F052 4A       LSR             shift the handshake bit to Cb
+.,F053 90 28    BCC $F07D       if 3 line interface go ??
+.,F055 29 08    AND #$08        mask the duplex bit, pseudo 6551 command is >> 1
+.,F057 F0 24    BEQ $F07D       if full duplex go ??
+.,F059 A9 02    LDA #$02        mask 0000 00x0, RTS out
+.,F05B 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,F05E 10 AD    BPL $F00D       if DSR = 0 set no DSR and exit
+.,F060 F0 22    BEQ $F084       if RTS = 0 just exit
+.,F062 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F065 4A       LSR             shift the timer A interrupt enable bit to Cb
+.,F066 B0 FA    BCS $F062       loop while the timer A interrupt is enabled
+.,F068 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,F06B 29 FD    AND #$FD        mask xxxx xx0x, clear RTS out
+.,F06D 8D 01 DD STA $DD01       save VIA 2 DRB, RS232 port
+.,F070 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,F073 29 04    AND #$04        mask xxxx x1xx, DTR in
+.,F075 F0 F9    BEQ $F070       loop while DTR low
+.,F077 A9 90    LDA #$90        enable the FLAG interrupt
+.,F079 18       CLC             flag ok
+.,F07A 4C 3B EF JMP $EF3B       set VIA 2 ICR from A and return
+.,F07D AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F080 29 12    AND #$12        mask 000x 00x0
+.,F082 F0 F3    BEQ $F077       if FLAG or timer B bits set go enable the FLAG inetrrupt
+.,F084 18       CLC             flag ok
+.,F085 60       RTS             
+
+                                *** get byte from RS232 buffer
+.,F086 AD 97 02 LDA $0297       get the RS232 status register
+.,F089 AC 9C 02 LDY $029C       get index to Rx buffer start
+.,F08C CC 9B 02 CPY $029B       compare with index to Rx buffer end
+.,F08F F0 0B    BEQ $F09C       return null if buffer empty
+.,F091 29 F7    AND #$F7        clear the Rx buffer empty bit
+.,F093 8D 97 02 STA $0297       save the RS232 status register
+.,F096 B1 F7    LDA ($F7),Y     get byte from Rx buffer
+.,F098 EE 9C 02 INC $029C       increment index to Rx buffer start
+.,F09B 60       RTS             
+.,F09C 09 08    ORA #$08        set the Rx buffer empty bit
+.,F09E 8D 97 02 STA $0297       save the RS232 status register
+.,F0A1 A9 00    LDA #$00        return null
+.,F0A3 60       RTS             
+
+                                *** check RS232 bus idle
+.,F0A4 48       PHA             save A
+.,F0A5 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F0A8 F0 11    BEQ $F0BB       if no interrupts enabled just exit
+.,F0AA AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F0AD 29 03    AND #$03        mask 0000 00xx, the error bits
+.,F0AF D0 F9    BNE $F0AA       if there are errors loop
+.,F0B1 A9 10    LDA #$10        disable FLAG interrupt
+.,F0B3 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,F0B6 A9 00    LDA #$00        clear A
+.,F0B8 8D A1 02 STA $02A1       clear the RS-232 interrupt enable byte
+.,F0BB 68       PLA             restore A
+.,F0BC 60       RTS             
+
+                                *** kernel I/O messages
+.:F0BD 0D 49 2F 4F 20 45 52 52  I/O ERROR #
+.:F0C6 52 20 A3 0D 53 45 41 52
+.:F0C9 0D 53 45 41 52 43 48 49  SEARCHING
+.:F0D1 4E 47 A0 46 4F 52 A0 0D
+.:F0D4 46 4F 52 A0 0D 50 52 45  FOR
+.:F0D8 0D 50 52 45 53 53 20 50  PRESS PLAY ON TAPE
+.:F0E0 4C 41 59 20 4F 4E 20 54
+.:F0E8 41 50 C5 50 52 45 53 53
+.:F0EB 50 52 45 53 53 20 52 45  PRESS RECORD & PLAY ON TAPE
+.:F0F3 43 4F 52 44 20 26 20 50
+.:F0FB 4C 41 59 20 4F 4E 20 54
+.:F103 41 50 C5 0D 4C 4F 41 44
+.:F106 0D 4C 4F 41 44 49 4E C7  LOADING
+.:F10E 0D 53 41 56 49 4E 47 A0  SAVING
+.:F116 0D 56 45 52 49 46 59 49  VERIFYING
+.:F11E 4E C7 0D 46 4F 55 4E 44
+.:F120 0D 46 4F 55 4E 44 A0 0D  FOUND
+.:F127 0D 4F 4B 8D              OK
+
+                                *** display control I/O message if in direct mode
+.,F12B 24 9D    BIT $9D         test message mode flag
+.,F12D 10 0D    BPL $F13C       exit if control messages off
+                                display kernel I/O message
+.,F12F B9 BD F0 LDA $F0BD,Y     get byte from message table
+.,F132 08       PHP             save status
+.,F133 29 7F    AND #$7F        clear b7
+.,F135 20 D2 FF JSR $FFD2       output character to channel
+.,F138 C8       INY             increment index
+.,F139 28       PLP             restore status
+.,F13A 10 F3    BPL $F12F       loop if not end of message
+.,F13C 18       CLC             
+.,F13D 60       RTS             
+
+                                *** get character from the input device
+.,F13E A5 99    LDA $99         get the input device number
+.,F140 D0 08    BNE $F14A       if not the keyboard go handle other devices
+                                the input device was the keyboard
+.,F142 A5 C6    LDA $C6         get the keyboard buffer index
+.,F144 F0 0F    BEQ $F155       if the buffer is empty go flag no byte and return
+.,F146 78       SEI             disable the interrupts
+.,F147 4C B4 E5 JMP $E5B4       get input from the keyboard buffer and return
+                                the input device was not the keyboard
+.,F14A C9 02    CMP #$02        compare the device with the RS232 device
+.,F14C D0 18    BNE $F166       if not the RS232 device go ??
+                                the input device is the RS232 device
+.,F14E 84 97    STY $97         save Y
+.,F150 20 86 F0 JSR $F086       get a byte from RS232 buffer
+.,F153 A4 97    LDY $97         restore Y
+.,F155 18       CLC             flag no error
+.,F156 60       RTS             
+
+                                *** input a character from channel
+.,F157 A5 99    LDA $99         get the input device number
+.,F159 D0 0B    BNE $F166       if not the keyboard continue
+                                the input device was the keyboard
+.,F15B A5 D3    LDA $D3         get the cursor column
+.,F15D 85 CA    STA $CA         set the input cursor column
+.,F15F A5 D6    LDA $D6         get the cursor row
+.,F161 85 C9    STA $C9         set the input cursor row
+.,F163 4C 32 E6 JMP $E632       input from screen or keyboard
+                                the input device was not the keyboard
+.,F166 C9 03    CMP #$03        compare device number with screen
+.,F168 D0 09    BNE $F173       if not screen continue
+                                the input device was the screen
+.,F16A 85 D0    STA $D0         input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,F16C A5 D5    LDA $D5         get current screen line length
+.,F16E 85 C8    STA $C8         save input [EOL] pointer
+.,F170 4C 32 E6 JMP $E632       input from screen or keyboard
+                                the input device was not the screen
+.,F173 B0 38    BCS $F1AD       if input device > screen go do IEC devices
+                                the input device was < screen
+.,F175 C9 02    CMP #$02        compare the device with the RS232 device
+.,F177 F0 3F    BEQ $F1B8       if RS232 device go get a byte from the RS232 device
+                                only the tape device left ..
+.,F179 86 97    STX $97         save X
+.,F17B 20 99 F1 JSR $F199       get a byte from tape
+.,F17E B0 16    BCS $F196       if error just exit
+.,F180 48       PHA             save the byte
+.,F181 20 99 F1 JSR $F199       get the next byte from tape
+.,F184 B0 0D    BCS $F193       if error just exit
+.,F186 D0 05    BNE $F18D       if end reached ??
+.,F188 A9 40    LDA #$40        set EOI
+.,F18A 20 1C FE JSR $FE1C       OR into the serial status byte
+.,F18D C6 A6    DEC $A6         decrement tape buffer index
+.,F18F A6 97    LDX $97         restore X
+.,F191 68       PLA             restore the saved byte
+.,F192 60       RTS             
+.,F193 AA       TAX             copy the error byte
+.,F194 68       PLA             dump the saved byte
+.,F195 8A       TXA             restore error byte
+.,F196 A6 97    LDX $97         restore X
+.,F198 60       RTS             
+
+                                *** get byte from tape
+.,F199 20 0D F8 JSR $F80D       bump tape pointer
+.,F19C D0 0B    BNE $F1A9       if not end get next byte and exit
+.,F19E 20 41 F8 JSR $F841       initiate tape read
+.,F1A1 B0 11    BCS $F1B4       exit if error flagged
+.,F1A3 A9 00    LDA #$00        clear A
+.,F1A5 85 A6    STA $A6         clear tape buffer index
+.,F1A7 F0 F0    BEQ $F199       loop, branch always
+.,F1A9 B1 B2    LDA ($B2),Y     get next byte from buffer
+.,F1AB 18       CLC             flag no error
+.,F1AC 60       RTS             
+                                input device was serial bus
+.,F1AD A5 90    LDA $90         get the serial status byte
+.,F1AF F0 04    BEQ $F1B5       if no errors flagged go input byte and return
+.,F1B1 A9 0D    LDA #$0D        else return [EOL]
+.,F1B3 18       CLC             flag no error
+.,F1B4 60       RTS             
+.,F1B5 4C 13 EE JMP $EE13       input byte from serial bus and return
+                                input device was RS232 device
+.,F1B8 20 4E F1 JSR $F14E       get byte from RS232 device
+.,F1BB B0 F7    BCS $F1B4       branch if error, this doesn't get taken as the last
+                                instruction in the get byte from RS232 device routine
+                                is CLC ??
+.,F1BD C9 00    CMP #$00        compare with null
+.,F1BF D0 F2    BNE $F1B3       exit if not null
+.,F1C1 AD 97 02 LDA $0297       get the RS232 status register
+.,F1C4 29 60    AND #$60        mask 0xx0 0000, DSR detected and ??
+.,F1C6 D0 E9    BNE $F1B1       if ?? return null
+.,F1C8 F0 EE    BEQ $F1B8       else loop, branch always
+
+                                *** output character to channel
+.,F1CA 48       PHA             save the character to output
+.,F1CB A5 9A    LDA $9A         get the output device number
+.,F1CD C9 03    CMP #$03        compare the output device with the screen
+.,F1CF D0 04    BNE $F1D5       if not the screen go ??
+.,F1D1 68       PLA             else restore the output character
+.,F1D2 4C 16 E7 JMP $E716       go output the character to the screen
+.,F1D5 90 04    BCC $F1DB       if < screen go ??
+.,F1D7 68       PLA             else restore the output character
+.,F1D8 4C DD ED JMP $EDDD       go output the character to the serial bus
+.,F1DB 4A       LSR             shift b0 of the device into Cb
+.,F1DC 68       PLA             restore the output character
+
+                                *** output the character to the cassette or RS232 device
+.,F1DD 85 9E    STA $9E         save the character to the character buffer
+.,F1DF 8A       TXA             copy X
+.,F1E0 48       PHA             save X
+.,F1E1 98       TYA             copy Y
+.,F1E2 48       PHA             save Y
+.,F1E3 90 23    BCC $F208       if Cb is clear it must be the RS232 device
+                                output the character to the cassette
+.,F1E5 20 0D F8 JSR $F80D       bump the tape pointer
+.,F1E8 D0 0E    BNE $F1F8       if not end save next byte and exit
+.,F1EA 20 64 F8 JSR $F864       initiate tape write
+.,F1ED B0 0E    BCS $F1FD       exit if error
+.,F1EF A9 02    LDA #$02        set data block type ??
+.,F1F1 A0 00    LDY #$00        clear index
+.,F1F3 91 B2    STA ($B2),Y     save type to buffer ??
+.,F1F5 C8       INY             increment index
+.,F1F6 84 A6    STY $A6         save tape buffer index
+.,F1F8 A5 9E    LDA $9E         restore character from character buffer
+.,F1FA 91 B2    STA ($B2),Y     save to buffer
+.,F1FC 18       CLC             flag no error
+.,F1FD 68       PLA             pull Y
+.,F1FE A8       TAY             restore Y
+.,F1FF 68       PLA             pull X
+.,F200 AA       TAX             restore X
+.,F201 A5 9E    LDA $9E         get the character from the character buffer
+.,F203 90 02    BCC $F207       exit if no error
+.,F205 A9 00    LDA #$00        else clear A
+.,F207 60       RTS             
+                                output the character to the RS232 device
+.,F208 20 17 F0 JSR $F017       send byte to the RS232 buffer, no setup
+.,F20B 4C FC F1 JMP $F1FC       do no error exit

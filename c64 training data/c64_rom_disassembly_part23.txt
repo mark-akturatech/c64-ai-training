@@ -1,0 +1,144 @@
+# C64 BASIC ROM Disassembly $BD00-$BDFF - EXP, Power
+
+.,BD00 D0 04    BNE $BD06       branch if not "-"
+.,BD02 86 67    STX $67         set flag for -ve n (negnum = $FF)
+.,BD04 F0 04    BEQ $BD0A       branch always
+.,BD06 C9 2B    CMP #$2B        else compare with "+"
+.,BD08 D0 05    BNE $BD0F       branch if not "+"
+.,BD0A 20 73 00 JSR $0073       increment and scan memory
+.,BD0D 90 5B    BCC $BD6A       branch if numeric character
+.,BD0F C9 2E    CMP #$2E        else compare with "."
+.,BD11 F0 2E    BEQ $BD41       branch if "."
+.,BD13 C9 45    CMP #$45        else compare with "E"
+.,BD15 D0 30    BNE $BD47       branch if not "E"
+                                was "E" so evaluate exponential part
+.,BD17 20 73 00 JSR $0073       increment and scan memory
+.,BD1A 90 17    BCC $BD33       branch if numeric character
+.,BD1C C9 AB    CMP #$AB        else compare with token for -
+.,BD1E F0 0E    BEQ $BD2E       branch if token for -
+.,BD20 C9 2D    CMP #$2D        else compare with "-"
+.,BD22 F0 0A    BEQ $BD2E       branch if "-"
+.,BD24 C9 AA    CMP #$AA        else compare with token for +
+.,BD26 F0 08    BEQ $BD30       branch if token for +
+.,BD28 C9 2B    CMP #$2B        else compare with "+"
+.,BD2A F0 04    BEQ $BD30       branch if "+"
+.,BD2C D0 07    BNE $BD35       branch always
+.,BD2E 66 60    ROR $60         set exponent -ve flag (C, which=1, into b7)
+.,BD30 20 73 00 JSR $0073       increment and scan memory
+.,BD33 90 5C    BCC $BD91       branch if numeric character
+.,BD35 24 60    BIT $60         test exponent -ve flag
+.,BD37 10 0E    BPL $BD47       if +ve go evaluate exponent
+                                else do exponent = -exponent
+.,BD39 A9 00    LDA #$00        clear result
+.,BD3B 38       SEC             set carry for subtract
+.,BD3C E5 5E    SBC $5E         subtract exponent byte
+.,BD3E 4C 49 BD JMP $BD49       go evaluate exponent
+.,BD41 66 5F    ROR $5F         set decimal point flag
+.,BD43 24 5F    BIT $5F         test decimal point flag
+.,BD45 50 C3    BVC $BD0A       branch if only one decimal point so far
+                                evaluate exponent
+.,BD47 A5 5E    LDA $5E         get exponent count byte
+.,BD49 38       SEC             set carry for subtract
+.,BD4A E5 5D    SBC $5D         subtract numerator exponent
+.,BD4C 85 5E    STA $5E         save exponent count byte
+.,BD4E F0 12    BEQ $BD62       branch if no adjustment
+.,BD50 10 09    BPL $BD5B       else if +ve go do FAC1*10^expcnt
+                                else go do FAC1/10^(0-expcnt)
+.,BD52 20 FE BA JSR $BAFE       divide FAC1 by 10
+.,BD55 E6 5E    INC $5E         increment exponent count byte
+.,BD57 D0 F9    BNE $BD52       loop until all done
+.,BD59 F0 07    BEQ $BD62       branch always
+.,BD5B 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,BD5E C6 5E    DEC $5E         decrement exponent count byte
+.,BD60 D0 F9    BNE $BD5B       loop until all done
+.,BD62 A5 67    LDA $67         get -ve flag
+.,BD64 30 01    BMI $BD67       if -ve do - FAC1 and return
+.,BD66 60       RTS             
+
+                                *** do - FAC1 and return
+.,BD67 4C B4 BF JMP $BFB4       do - FAC1
+                                do unsigned FAC1*10+number
+.,BD6A 48       PHA             save character
+.,BD6B 24 5F    BIT $5F         test decimal point flag
+.,BD6D 10 02    BPL $BD71       skip exponent increment if not set
+.,BD6F E6 5D    INC $5D         else increment number exponent
+.,BD71 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,BD74 68       PLA             restore character
+.,BD75 38       SEC             set carry for subtract
+.,BD76 E9 30    SBC #$30        convert to binary
+.,BD78 20 7E BD JSR $BD7E       evaluate new ASCII digit
+.,BD7B 4C 0A BD JMP $BD0A       go do next character
+                                evaluate new ASCII digit
+                                multiply FAC1 by 10 then (ABS) add in new digit
+.,BD7E 48       PHA             save digit
+.,BD7F 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BD82 68       PLA             restore digit
+.,BD83 20 3C BC JSR $BC3C       save A as integer byte
+.,BD86 A5 6E    LDA $6E         get FAC2 sign (b7)
+.,BD88 45 66    EOR $66         toggle with FAC1 sign (b7)
+.,BD8A 85 6F    STA $6F         save sign compare (FAC1 EOR FAC2)
+.,BD8C A6 61    LDX $61         get FAC1 exponent
+.,BD8E 4C 6A B8 JMP $B86A       add FAC2 to FAC1 and return
+                                evaluate next character of exponential part of number
+.,BD91 A5 5E    LDA $5E         get exponent count byte
+.,BD93 C9 0A    CMP #$0A        compare with 10 decimal
+.,BD95 90 09    BCC $BDA0       branch if less
+.,BD97 A9 64    LDA #$64        make all -ve exponents = -100 decimal (causes underflow)
+.,BD99 24 60    BIT $60         test exponent -ve flag
+.,BD9B 30 11    BMI $BDAE       branch if -ve
+.,BD9D 4C 7E B9 JMP $B97E       else do overflow error then warm start
+.,BDA0 0A       ASL             *2
+.,BDA1 0A       ASL             *4
+.,BDA2 18       CLC             clear carry for add
+.,BDA3 65 5E    ADC $5E         *5
+.,BDA5 0A       ASL             *10
+.,BDA6 18       CLC             clear carry for add
+.,BDA7 A0 00    LDY #$00        set index
+.,BDA9 71 7A    ADC ($7A),Y     add character (will be $30 too much!)
+.,BDAB 38       SEC             set carry for subtract
+.,BDAC E9 30    SBC #$30        convert character to binary
+.,BDAE 85 5E    STA $5E         save exponent count byte
+.,BDB0 4C 30 BD JMP $BD30       go get next character
+
+                                *** limits for scientific mode
+.:BDB3 9B 3E BC 1F FD           99999999.90625, maximum value with at least one decimal
+.:BDB8 9E 6E 6B 27 FD           999999999.25, maximum value before scientific notation
+.:BDBD 9E 6E 6B 28 00           1000000000
+
+                                *** do " IN " line number message
+.,BDC2 A9 71    LDA #$71        set " IN " pointer low byte
+.,BDC4 A0 A3    LDY #$A3        set " IN " pointer high byte
+.,BDC6 20 DA BD JSR $BDDA       print null terminated string
+.,BDC9 A5 3A    LDA $3A         get the current line number high byte
+.,BDCB A6 39    LDX $39         get the current line number low byte
+
+                                *** print XA as unsigned integer
+.,BDCD 85 62    STA $62         save high byte as FAC1 mantissa1
+.,BDCF 86 63    STX $63         save low byte as FAC1 mantissa2
+.,BDD1 A2 90    LDX #$90        set exponent to 16d bits
+.,BDD3 38       SEC             set integer is +ve flag
+.,BDD4 20 49 BC JSR $BC49       set exponent = X, clear mantissa 4 and 3 and normalise
+                                FAC1
+.,BDD7 20 DF BD JSR $BDDF       convert FAC1 to string
+.,BDDA 4C 1E AB JMP $AB1E       print null terminated string
+
+                                *** convert FAC1 to ASCII string result in (AY)
+.,BDDD A0 01    LDY #$01        set index = 1
+.,BDDF A9 20    LDA #$20        character = " " (assume +ve)
+.,BDE1 24 66    BIT $66         test FAC1 sign (b7)
+.,BDE3 10 02    BPL $BDE7       branch if +ve
+.,BDE5 A9 2D    LDA #$2D        else character = "-"
+.,BDE7 99 FF 00 STA $00FF,Y     save leading character (" " or "-")
+.,BDEA 85 66    STA $66         save FAC1 sign (b7)
+.,BDEC 84 71    STY $71         save index
+.,BDEE C8       INY             increment index
+.,BDEF A9 30    LDA #$30        set character = "0"
+.,BDF1 A6 61    LDX $61         get FAC1 exponent
+.,BDF3 D0 03    BNE $BDF8       branch if FAC1<>0
+                                exponent was $00 so FAC1 is 0
+.,BDF5 4C 04 BF JMP $BF04       save last character, [EOT] and exit
+                                FAC1 is some non zero value
+.,BDF8 A9 00    LDA #$00        clear (number exponent count)
+.,BDFA E0 80    CPX #$80        compare FAC1 exponent with $80 (<1.00000)
+.,BDFC F0 02    BEQ $BE00       branch if 0.5 <= FAC1 < 1.0
+.,BDFE B0 09    BCS $BE09       branch if FAC1=>1

@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 4: ADC/SBC, Subroutines
+
+
+                                                                         :45:
+
+Flag Summary
+------------
+
+A brief table may help review the four testable flags.
+
+
+Flag    Brief                          Activity    Branch taken if:
+Name    Meaning                        Level       Set    Not Set
+------------------------------------------------------------------
+ Z      Zero, equal                    Busy        BEQ    BNE
+ C      Carry, greater/equal           Quiet       BCS    BCC
+ N      Negative, high-bit             Busy        BMI    BPL
+ V      Signed arithmetic overflow     Quiet       BVS    BVC
+
+
+The Status Register
+-------------------
+
+The preceding flags--and three others--may be viewed within the status
+register (SR).  You may recall that the machine language monitor gives an SR
+display.  If you know how to read it, you can see the condition of all flags.
+
+Each flag is a bit within the status register.  Again, it's useful to be able
+to easily translate the hexadecimal display, so as to view the individual
+flags.  Here's a chart of the flags within the status register:
+
+  7 6 5 4 3 2 1 0
+  N V - B D I Z C
+
+Taking the bits one at a time, starting at the high bit:
+
+  N--the N flag, as above.
+
+  V--the V flag, as above.
+
+  Bit 5--unused.  You'll often find that this bit is "on."
+
+  B--"Break" indicator.  When an interrupt occurs, this signals whether or
+  not the interrupt was caused by a BRK instruction.
+
+  D--Decimal mode indicator.  This changes the manner in which the add and
+  subtract instructions operate.  In Commodore machines, this flag will
+  always be off.  Don't turn it on unless you know exactly what you're doing.
+  This flag may be turned on with the SED (set decimal) instruction, and
+  turned off with the CLD (clear decimal) instruction.
+
+  I--Interrupt disable.  More exactly, this bit disables the IRQ (interrupt
+  request) pin activity.  More on this control bit much later.  This flag may
+  be turned on with the SEI (set interrupt disable) instruction, and turned
+  off with the CLI (clear interrupt disable) instruction.
+
+  Z--the Z flag, as above.
+
+  C--the C flag, as above.
+
+                                                                         :46:
+
+  Flags B, D, and I are not testable flags in that there are no branch
+  instructions that test them directly.  D, the decimal mode flag, and I, the
+  interrupt lockout flag, may be considered "control" flags.  Instead of
+  reporting conditions found as the program runs, they control how the
+  program operates.
+
+When we see a value displayed in the SR, or status register, we may examine
+it to determine the condition of the flags, especially the testable flags Z,
+C, N, and V.  For example, if wee see an SR value of $B1, we translate to
+binary %10110001 an know that the N flag is on, the V flag is off, the Z flag
+is off, and the C flag is on.
+
+You may change these flags by typing over the displayed value in the machine
+language monitor.  Be careful you don't accidentally set the D or I flags.
+
+
+A Note on Comparison
+--------------------
+
+If we wish to compare two bytes with each other, we must perform a
+comparison.  One value must be in a register (A, X, or Y); the other must be
+either stored in memory, or must be an immediate value we use in the
+instruction.
+
+We will use the appropriate compare instruction depending on the register
+involved; CMP for the A register, CPX for the X register, and CPY for the Y
+register.  Following the comparison, we may use any of the following branch
+tests:
+
+  BEQ--branches if the two bytes are equal.
+  BNE--branches if the two bytes are not equal.
+  BCS--branches if the value in the register is greater than or equal to the
+       other value.
+  BCC--branches if the value in the register is less than the other value.
+
+We can use more than one branch instruction after a comparison.  Suppose our
+program wanted to test the Y register for a value equal or less than 5.  We
+might code
+
+  CPY #$05
+  BEQ ..somewhere
+  BCC ..somewhere
+
+We can see that our code will branch if the value is equal to 5 (using the
+BEQ) or less than 5 (using the BCC); otherwise it will continue without
+branching.  In this case, we could make the coding more efficient by changing
+it to read
+
+                                                                         :47:
+
+  CPY #$06
+  BCC ..somewhere
+
+A little common sense will tell us that testing a number to see if it is less
+than 6 is the same as testing it to see if it is less than or equal to 5.
+Common sense is a valuable programming tool.
+
+
+Instructions:  A Review
+-----------------------
+
+We have looked at the three data registers--A, X, and Y--and have seen three
+types of operation we can perform with them:
+
+  Load:     LDA  LDX  LDY
+
+  Store:    STA  STX  STY
+
+  Compare:  CMP  CPX  CPY
+
+Up to this point, the registers have identical functions, and we can use any
+of them for any of these functions.  But new instructions are creeping in
+that give a different personality to each of the three.
+
+We have noted that INX, INY, DEX, and DEY for increment and decrement are
+restricted to X and Y only; and we've also mentioned that X and Y can be used
+for indexing.  Soon, we'll start to examine some of the functions of the A
+register, which is often called the accumulator because of its ability to do
+arithmetic.
+
+We have seen JSR, which allows us to call a subroutine of prewritten
+instructions.  We've used RTS, which says, "Go back to the calling point,"
+even if the calling point is a BASIC program.  And we've almost abandoned the
+BRK instruction, which stops the program and goes to the machine language
+monitor.  BRK will be useful in checking out programs.  Specifically, we can
+stop a program at any time by inserting a BRK instruction, allowing us to see
+whether the program is behaving correctly and whether it has done the things
+we planned.
+
+There are eight branch instructions.  They have already been discussed, but
+there is one additional piece of information that is important to keep in
+mind.  All branches are good only for short hops of up to a hundred memory
+locations or so.  So long as we write short program, that won't be a
+limitation; but we'll look at this more closely in Chapter 5.
+
+
+Logical Operations
+------------------
+
+Three instructions perform what are called logical operations.  They are:
+AND (Logical AND); ORA (Logical OR); and EOR (Exclusive OR).  These
+instructions work on the A register only.
+
+                                                                         :48:
+
+Mathematicians describe these operations as commutative.  For example, a
+value of $3A "AND" $57 gives exactly the same result as $57 "AND" $3A.  The
+order doesn't matter.  But we often use these functions--and think of them--
+in a particular order.  It's the same as with addition, where we think of a
+"total" to which is added an "amount" to make a "new total."  With the
+logical operators we often think of a "value," which we manipulate with a
+"mask" to make a "modified value."
+
+Logical operators work in such a way that each bit within a byte is treated
+independently of all the other bits.  This makes these instructions ideal for
+extracting bits, or manipulating certain bits while leaving others alone.
+
+We'll look at formal definitions, but the following intuitive concepts are
+useful to programmers:
+
+  AND--turns bits off.
+
+  ORA--turns bits on.
+
+  EOR--flips bits over.
+
+
+AND--Logical AND to A
+---------------------
+
+For each bit in the A register, AND performs the following action:
+
+
+Original A Bit    Mask     Resulting A Bit
+------------------------------------------
+      0            0             0
+      1            0             0
+      0            1             0
+      1            1             1
+
+
+Examine the upper half of this table.  When the mask is zero, the original
+bit in A is changed to zero.  Examine the lower half.  When the mask is one,
+the original bit is left unchanged.  Hence, AND can selectively turn bits
+off.
+
+Example:  Turn off bits 4, 5, and 6 in the following value:  $C7
+
+  Original value:      11000111
+  Mask:            AND 10001111 (hex 8F)
+                   ------------
+  Result:              10000111
+                        ^^^
+
+Note that the bits marked have been forced to "off," while all the other bits
+remain unchanged.
+
+                                                                         :49:
+
+ORA--Logical OR to A
+--------------------
+
+For each bit in the A register, ORA performs the following action:
+
+
+Original A Bit    Mask     Resulting A Bit
+------------------------------------------
+      0            0             0
+      1            0             1
+      0            1             1
+      1            1             1
+
+
+Examine the upper half of this table.  When the mask is zero, the original
+bit in A is left unchanged.  Examine the lower half.  When the mask is one,
+the original bit is forced to "on."  Hence, ORA can selectively turn bits on.
+
+Example:  Turn on bits 4, 5, and 6 in the following value:  $C7
+
+  Original value:      11000111
+  Mask:            ORA 01110000 (hex 70)
+                   ------------
+  Result:              11110111
+                        ^^^
+
+Note that the bits marked have been forced to "on," while all the other bits
+remain unchanged.
+
+
+EOR--Exclusive OR to A
+----------------------
+
+For each bit in the A register, EOR performs the following action:
+
+
+Original A Bit    Mask     Resulting A Bit
+------------------------------------------
+      0            0             0
+      1            0             1
+      0            1             1
+      1            1             0
+
+
+Examine the upper half of this table.  When the mask is zero, the original
+bit in A is left unchanged.  Examine the lower half.  When the mask is one,
+the original bit is inverted; zero becomes one and one becomes zero.  Hence,
+EOR can selectively flip bits over.
+
+Example:  Invert bits 4, 5, and 6 in the following value:  $C7
+
+  Original value:      11000111
+  Mask:            EOR 01110000 (hex 70)
+                   ------------
+  Result:              10110111
+                        ^^^
+
+                                                                         :50:
+
+Note that the bits marked have been flipped to the opposite value, while all
+the other bits remain unchanged.
+
+
+Why Logical Operations?
+-----------------------
+
+We use these three commands--AND, ORA, and EOR--to change to control
+individual bits within a byte of information.  The commands are unusual in
+that each bit may be manipulated independently of the others.
+
+We don't seem to be working with numbers when we use these commands.  Rather,
+we're working with each individual bit, turning it on or off as we wish.
+
+Why would we turn individual bits on or off?  There are several possible
+reasons.  For example, we might wish to control external devices through the
+IA's (interface adapters).  Within the IA's input and output ports each of
+the eight bits might control a different signal; we might want to switch one
+control line on or off without affecting other lines.
+
+When we're looking at input from an IA port, we often read several input
+lines mixed together within a byte.  If we want to test a specific bit to see

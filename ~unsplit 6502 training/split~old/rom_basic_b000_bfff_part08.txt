@@ -1,0 +1,260 @@
+
+                                *** perform POKE
+.,B824 20 EB B7 JSR $B7EB       get parameters for POKE/WAIT
+.,B827 8A       TXA             copy byte to A
+.,B828 A0 00    LDY #$00        clear index
+.,B82A 91 14    STA ($14),Y     write byte
+.,B82C 60       RTS             
+
+                                *** perform WAIT
+.,B82D 20 EB B7 JSR $B7EB       get parameters for POKE/WAIT
+.,B830 86 49    STX $49         save byte
+.,B832 A2 00    LDX #$00        clear mask
+.,B834 20 79 00 JSR $0079       scan memory
+.,B837 F0 03    BEQ $B83C       skip if no third argument
+.,B839 20 F1 B7 JSR $B7F1       scan for "," and get byte, else syntax error then
+                                warm start
+.,B83C 86 4A    STX $4A         save EOR argument
+.,B83E A0 00    LDY #$00        clear index
+.,B840 B1 14    LDA ($14),Y     get byte via temporary integer (address)
+.,B842 45 4A    EOR $4A         EOR with second argument       (mask)
+.,B844 25 49    AND $49         AND with first argument        (byte)
+.,B846 F0 F8    BEQ $B840       loop if result is zero
+.,B848 60       RTS             
+
+                                *** add 0.5 to FAC1 (round FAC1)
+.,B849 A9 11    LDA #$11        set 0.5 pointer low byte
+.,B84B A0 BF    LDY #$BF        set 0.5 pointer high byte
+.,B84D 4C 67 B8 JMP $B867       add (AY) to FAC1
+
+                                *** perform subtraction, FAC1 from (AY)
+.,B850 20 8C BA JSR $BA8C       unpack memory (AY) into FAC2
+
+                                *** perform subtraction, FAC1 from FAC2
+.,B853 A5 66    LDA $66         get FAC1 sign (b7)
+.,B855 49 FF    EOR #$FF        complement it
+.,B857 85 66    STA $66         save FAC1 sign (b7)
+.,B859 45 6E    EOR $6E         EOR with FAC2 sign (b7)
+.,B85B 85 6F    STA $6F         save sign compare (FAC1 EOR FAC2)
+.,B85D A5 61    LDA $61         get FAC1 exponent
+.,B85F 4C 6A B8 JMP $B86A       add FAC2 to FAC1 and return
+.,B862 20 99 B9 JSR $B999       shift FACX A times right (>8 shifts)
+.,B865 90 3C    BCC $B8A3       go subtract mantissas
+
+                                *** add (AY) to FAC1
+.,B867 20 8C BA JSR $BA8C       unpack memory (AY) into FAC2
+
+                                *** add FAC2 to FAC1
+.,B86A D0 03    BNE $B86F       branch if FAC1 is not zero
+.,B86C 4C FC BB JMP $BBFC       FAC1 was zero so copy FAC2 to FAC1 and return
+                                FAC1 is non zero
+.,B86F A6 70    LDX $70         get FAC1 rounding byte
+.,B871 86 56    STX $56         save as FAC2 rounding byte
+.,B873 A2 69    LDX #$69        set index to FAC2 exponent address
+.,B875 A5 69    LDA $69         get FAC2 exponent
+.,B877 A8       TAY             copy exponent
+.,B878 F0 CE    BEQ $B848       exit if zero
+.,B87A 38       SEC             set carry for subtract
+.,B87B E5 61    SBC $61         subtract FAC1 exponent
+.,B87D F0 24    BEQ $B8A3       if equal go add mantissas
+.,B87F 90 12    BCC $B893       if FAC2 < FAC1 then go shift FAC2 right
+                                else FAC2 > FAC1
+.,B881 84 61    STY $61         save FAC1 exponent
+.,B883 A4 6E    LDY $6E         get FAC2 sign (b7)
+.,B885 84 66    STY $66         save FAC1 sign (b7)
+.,B887 49 FF    EOR #$FF        complement A
+.,B889 69 00    ADC #$00        +1, twos complement, carry is set
+.,B88B A0 00    LDY #$00        clear Y
+.,B88D 84 56    STY $56         clear FAC2 rounding byte
+.,B88F A2 61    LDX #$61        set index to FAC1 exponent address
+.,B891 D0 04    BNE $B897       branch always
+                                FAC2 < FAC1
+.,B893 A0 00    LDY #$00        clear Y
+.,B895 84 70    STY $70         clear FAC1 rounding byte
+.,B897 C9 F9    CMP #$F9        compare exponent diff with $F9
+.,B899 30 C7    BMI $B862       branch if range $79-$F8
+.,B89B A8       TAY             copy exponent difference to Y
+.,B89C A5 70    LDA $70         get FAC1 rounding byte
+.,B89E 56 01    LSR $01,X       shift FAC? mantissa 1
+.,B8A0 20 B0 B9 JSR $B9B0       shift FACX Y times right
+                                exponents are equal now do mantissa subtract
+.,B8A3 24 6F    BIT $6F         test sign compare (FAC1 EOR FAC2)
+.,B8A5 10 57    BPL $B8FE       if = add FAC2 mantissa to FAC1 mantissa and return
+.,B8A7 A0 61    LDY #$61        set the Y index to FAC1 exponent address
+.,B8A9 E0 69    CPX #$69        compare X to FAC2 exponent address
+.,B8AB F0 02    BEQ $B8AF       if = continue, Y = FAC1, X = FAC2
+.,B8AD A0 69    LDY #$69        else set the Y index to FAC2 exponent address
+                                subtract the smaller from the bigger (take the sign of
+                                the bigger)
+.,B8AF 38       SEC             set carry for subtract
+.,B8B0 49 FF    EOR #$FF        ones complement A
+.,B8B2 65 56    ADC $56         add FAC2 rounding byte
+.,B8B4 85 70    STA $70         save FAC1 rounding byte
+.,B8B6 B9 04 00 LDA $0004,Y     get FACY mantissa 4
+.,B8B9 F5 04    SBC $04,X       subtract FACX mantissa 4
+.,B8BB 85 65    STA $65         save FAC1 mantissa 4
+.,B8BD B9 03 00 LDA $0003,Y     get FACY mantissa 3
+.,B8C0 F5 03    SBC $03,X       subtract FACX mantissa 3
+.,B8C2 85 64    STA $64         save FAC1 mantissa 3
+.,B8C4 B9 02 00 LDA $0002,Y     get FACY mantissa 2
+.,B8C7 F5 02    SBC $02,X       subtract FACX mantissa 2
+.,B8C9 85 63    STA $63         save FAC1 mantissa 2
+.,B8CB B9 01 00 LDA $0001,Y     get FACY mantissa 1
+.,B8CE F5 01    SBC $01,X       subtract FACX mantissa 1
+.,B8D0 85 62    STA $62         save FAC1 mantissa 1
+
+                                *** do ABS and normalise FAC1
+.,B8D2 B0 03    BCS $B8D7       branch if number is +ve
+.,B8D4 20 47 B9 JSR $B947       negate FAC1
+
+                                *** normalise FAC1
+.,B8D7 A0 00    LDY #$00        clear Y
+.,B8D9 98       TYA             clear A
+.,B8DA 18       CLC             clear carry for add
+.,B8DB A6 62    LDX $62         get FAC1 mantissa 1
+.,B8DD D0 4A    BNE $B929       if not zero normalise FAC1
+.,B8DF A6 63    LDX $63         get FAC1 mantissa 2
+.,B8E1 86 62    STX $62         save FAC1 mantissa 1
+.,B8E3 A6 64    LDX $64         get FAC1 mantissa 3
+.,B8E5 86 63    STX $63         save FAC1 mantissa 2
+.,B8E7 A6 65    LDX $65         get FAC1 mantissa 4
+.,B8E9 86 64    STX $64         save FAC1 mantissa 3
+.,B8EB A6 70    LDX $70         get FAC1 rounding byte
+.,B8ED 86 65    STX $65         save FAC1 mantissa 4
+.,B8EF 84 70    STY $70         clear FAC1 rounding byte
+.,B8F1 69 08    ADC #$08        add x to exponent offset
+.,B8F3 C9 20    CMP #$20        compare with $20, max offset, all bits would be = 0
+.,B8F5 D0 E4    BNE $B8DB       loop if not max
+
+                                *** clear FAC1 exponent and sign
+.,B8F7 A9 00    LDA #$00        clear A
+.,B8F9 85 61    STA $61         set FAC1 exponent
+
+                                *** save FAC1 sign
+.,B8FB 85 66    STA $66         save FAC1 sign (b7)
+.,B8FD 60       RTS             
+
+                                *** add FAC2 mantissa to FAC1 mantissa
+.,B8FE 65 56    ADC $56         add FAC2 rounding byte
+.,B900 85 70    STA $70         save FAC1 rounding byte
+.,B902 A5 65    LDA $65         get FAC1 mantissa 4
+.,B904 65 6D    ADC $6D         add FAC2 mantissa 4
+.,B906 85 65    STA $65         save FAC1 mantissa 4
+.,B908 A5 64    LDA $64         get FAC1 mantissa 3
+.,B90A 65 6C    ADC $6C         add FAC2 mantissa 3
+.,B90C 85 64    STA $64         save FAC1 mantissa 3
+.,B90E A5 63    LDA $63         get FAC1 mantissa 2
+.,B910 65 6B    ADC $6B         add FAC2 mantissa 2
+.,B912 85 63    STA $63         save FAC1 mantissa 2
+.,B914 A5 62    LDA $62         get FAC1 mantissa 1
+.,B916 65 6A    ADC $6A         add FAC2 mantissa 1
+.,B918 85 62    STA $62         save FAC1 mantissa 1
+.,B91A 4C 36 B9 JMP $B936       test and normalise FAC1 for C=0/1
+.,B91D 69 01    ADC #$01        add 1 to exponent offset
+.,B91F 06 70    ASL $70         shift FAC1 rounding byte
+.,B921 26 65    ROL $65         shift FAC1 mantissa 4
+.,B923 26 64    ROL $64         shift FAC1 mantissa 3
+.,B925 26 63    ROL $63         shift FAC1 mantissa 2
+.,B927 26 62    ROL $62         shift FAC1 mantissa 1
+                                normalise FAC1
+.,B929 10 F2    BPL $B91D       loop if not normalised
+.,B92B 38       SEC             set carry for subtract
+.,B92C E5 61    SBC $61         subtract FAC1 exponent
+.,B92E B0 C7    BCS $B8F7       branch if underflow (set result = $0)
+.,B930 49 FF    EOR #$FF        complement exponent
+.,B932 69 01    ADC #$01        +1 (twos complement)
+.,B934 85 61    STA $61         save FAC1 exponent
+                                test and normalise FAC1 for C=0/1
+.,B936 90 0E    BCC $B946       exit if no overflow
+                                normalise FAC1 for C=1
+.,B938 E6 61    INC $61         increment FAC1 exponent
+.,B93A F0 42    BEQ $B97E       if zero do overflow error then warm start
+.,B93C 66 62    ROR $62         shift FAC1 mantissa 1
+.,B93E 66 63    ROR $63         shift FAC1 mantissa 2
+.,B940 66 64    ROR $64         shift FAC1 mantissa 3
+.,B942 66 65    ROR $65         shift FAC1 mantissa 4
+.,B944 66 70    ROR $70         shift FAC1 rounding byte
+.,B946 60       RTS             
+
+                                *** negate FAC1
+.,B947 A5 66    LDA $66         get FAC1 sign (b7)
+.,B949 49 FF    EOR #$FF        complement it
+.,B94B 85 66    STA $66         save FAC1 sign (b7)
+                                twos complement FAC1 mantissa
+.,B94D A5 62    LDA $62         get FAC1 mantissa 1
+.,B94F 49 FF    EOR #$FF        complement it
+.,B951 85 62    STA $62         save FAC1 mantissa 1
+.,B953 A5 63    LDA $63         get FAC1 mantissa 2
+.,B955 49 FF    EOR #$FF        complement it
+.,B957 85 63    STA $63         save FAC1 mantissa 2
+.,B959 A5 64    LDA $64         get FAC1 mantissa 3
+.,B95B 49 FF    EOR #$FF        complement it
+.,B95D 85 64    STA $64         save FAC1 mantissa 3
+.,B95F A5 65    LDA $65         get FAC1 mantissa 4
+.,B961 49 FF    EOR #$FF        complement it
+.,B963 85 65    STA $65         save FAC1 mantissa 4
+.,B965 A5 70    LDA $70         get FAC1 rounding byte
+.,B967 49 FF    EOR #$FF        complement it
+.,B969 85 70    STA $70         save FAC1 rounding byte
+.,B96B E6 70    INC $70         increment FAC1 rounding byte
+.,B96D D0 0E    BNE $B97D       exit if no overflow
+                                increment FAC1 mantissa
+.,B96F E6 65    INC $65         increment FAC1 mantissa 4
+.,B971 D0 0A    BNE $B97D       finished if no rollover
+.,B973 E6 64    INC $64         increment FAC1 mantissa 3
+.,B975 D0 06    BNE $B97D       finished if no rollover
+.,B977 E6 63    INC $63         increment FAC1 mantissa 2
+.,B979 D0 02    BNE $B97D       finished if no rollover
+.,B97B E6 62    INC $62         increment FAC1 mantissa 1
+.,B97D 60       RTS             
+
+                                *** do overflow error then warm start
+.,B97E A2 0F    LDX #$0F        error $0F, overflow error
+.,B980 4C 37 A4 JMP $A437       do error #X then warm start
+
+                                *** shift FCAtemp << A+8 times
+.,B983 A2 25    LDX #$25        set the offset to FACtemp
+.,B985 B4 04    LDY $04,X       get FACX mantissa 4
+.,B987 84 70    STY $70         save as FAC1 rounding byte
+.,B989 B4 03    LDY $03,X       get FACX mantissa 3
+.,B98B 94 04    STY $04,X       save FACX mantissa 4
+.,B98D B4 02    LDY $02,X       get FACX mantissa 2
+.,B98F 94 03    STY $03,X       save FACX mantissa 3
+.,B991 B4 01    LDY $01,X       get FACX mantissa 1
+.,B993 94 02    STY $02,X       save FACX mantissa 2
+.,B995 A4 68    LDY $68         get FAC1 overflow byte
+.,B997 94 01    STY $01,X       save FACX mantissa 1
+                                shift FACX -A times right (> 8 shifts)
+.,B999 69 08    ADC #$08        add 8 to shift count
+.,B99B 30 E8    BMI $B985       go do 8 shift if still -ve
+.,B99D F0 E6    BEQ $B985       go do 8 shift if zero
+.,B99F E9 08    SBC #$08        else subtract 8 again
+.,B9A1 A8       TAY             save count to Y
+.,B9A2 A5 70    LDA $70         get FAC1 rounding byte
+.,B9A4 B0 14    BCS $B9BA       
+.,B9A6 16 01    ASL $01,X       shift FACX mantissa 1
+.,B9A8 90 02    BCC $B9AC       branch if +ve
+.,B9AA F6 01    INC $01,X       this sets b7 eventually
+.,B9AC 76 01    ROR $01,X       shift FACX mantissa 1 (correct for ASL)
+.,B9AE 76 01    ROR $01,X       shift FACX mantissa 1 (put carry in b7)
+                                shift FACX Y times right
+.,B9B0 76 02    ROR $02,X       shift FACX mantissa 2
+.,B9B2 76 03    ROR $03,X       shift FACX mantissa 3
+.,B9B4 76 04    ROR $04,X       shift FACX mantissa 4
+.,B9B6 6A       ROR             shift FACX rounding byte
+.,B9B7 C8       INY             increment exponent diff
+.,B9B8 D0 EC    BNE $B9A6       branch if range adjust not complete
+.,B9BA 18       CLC             just clear it
+.,B9BB 60       RTS             
+
+                                *** constants and series for LOG(n)
+.:B9BC 81 00 00 00 00           1
+.:B9C1 03                       series counter
+.:B9C2 7F 5E 56 CB 79            .434255942
+.:B9C7 80 13 9B 0B 64            .576584541
+.:B9CC 80 76 38 93 16            .961800759
+.:B9D1 82 38 AA 3B 20           2.88539007
+.:B9D5 80 35 04 F3 34            .707106781 = 1/SQR(2)
+.:B9DB 81 35 04 F3 34           1.41421356 = SQR(2)
+.:B9E0 80 80 00 00 00           -.5
+.:B9E5 80 31 72 17 F8            .693147181  =  LOG(2)

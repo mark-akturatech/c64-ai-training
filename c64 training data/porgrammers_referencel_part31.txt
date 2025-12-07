@@ -1,0 +1,284 @@
+# C64 PRG Chapter 3 - Sprites: Colors, Multi-Color Mode
+
+  152   PROGRAMMING GRAPHICS
+~
+
+
+  PROGRAMMING SPRITES - ANOTHER LOOK
+
+    For those of you having trouble with graphics, this section has been
+  designed as a more elementary tutorial approach to sprites.
+
+  MAKING SPRITES IN BASIC - A SHORT PROGRAM
+
+    There are at least three different BASIC programming techniques which
+  let you create graphic images and cartoon animations on the Commodore 64.
+  You can use the computer's built-in graphics character set (see Page
+  376). You can program your own characters (see Page 108) or... best of
+  all... you can use the computer's built-in "sprite graphics. To
+  illustrate how easy it is, here's one of the shortest spritemaking
+  programs you can write in BASIC:
+
+start tok64 page153.prg
+  10 print"{clear}"
+  20 poke2040,13
+  30 fors=832to832+62:pokes,255:next
+  40 v=53248
+  50 pokev+21,1
+  60 pokev+39,1
+  70 pokev,24
+  80 pokev+1,100
+stop tok64
+
+    This program includes the key "ingredients" you need to create any
+  sprite. The POKE numbers come from the SPRITEMAKING CHART on Page 176.
+  This program defines the first sprite... sprite 0... as a solid white
+  square on the screen. Here's a line-by-line explanation of the program:
+
+    LINE 10 clears the screen.
+
+    LINE 20 sets the "sprite pointer" to where the Commodore 64 will read
+  its sprite data from. Sprite 0 is set at 2040, sprite 1 at 2041, sprite
+  2 at 2042, and so on up to sprite 7 at 2047. You can set all 8 sprite
+  pointers to 13 by using this line in place of line 20:
+
+    20 FOR SP=2040TO2047:POKE SP,13:NEXT SP
+
+    LINE 30 puts the first sprite (sprite 0) into 63 bytes of the Commodore
+  64's RAM memory starting at location 832 (each sprite requires 63 bytes
+
+                                                 PROGRAMMING GRAPHICS   153
+~
+
+
+  of memory). The first sprite (sprite 0) is "addressed" at memory
+  locations 832 to 894.
+
+    LINE 40 sets the variable "V" equal to 53248, the starting address of
+  the VIDEO CHIP. This entry lets us use the form (V+number) for sprite
+  settings. 're using the form (V+number) when POKEing sprite settings
+  because this format conserves memory and lets us work with smaller
+  numbers. For example, in line 50 we typed POKE V+21. This is the same as
+  typing POKE 53248+21 or POKE 53269... but V+21 requires less space than
+  53269, and is easier to remember.
+
+    LINE 50 enables or "turns on" sprite 0. There are 8 sprites, numbered
+  from 0 to 7. To turn on an individual sprite, or a combination of
+  sprites, all you have to do is POKE V+21 followed by a number from 0
+  (turn all sprites off) to 255 (turn all 8 sprites on). You can turn on
+  one or more sprites by POKEing the following numbers:
+  +------+------+------+------+------+------+------+------+------+-------+
+  |ALL ON|SPRT 0|SPRT 1|SPRT 2|SPRT 3|SPRT 4|SPRT 5|SPRT 6|SPRT 7|ALL OFF|
+  |  255 |   1  |   2  |   4  |   8  |  16  |  32  |  64  |  128 |   0   |
+  +------+------+------+------+------+------+------+------+------+-------+
+
+    POKE V+21,1 turns on sprite 0. POKE V+21,128 turns on sprite 7. You
+  can also turn on combinations of sprites. For example, POKE V+21,129
+  turns on both sprite 0 and sprite 7 by adding the two "turn on" numbers
+  (1+128) together. (See SPRITEMAKING CHART, Page 176.)
+
+    LINE 60 sets the COLOR of sprite 0. There are 16 possible sprite
+  colors, numbered from 0 (black) to 15 (grey). Each sprite requires a
+  different POKE to set its color, from V+39 to V+46. POKE V+39,1 colors
+  sprite 0 white. POKE V+46,15 colors sprite 7 grey. (See the SPRITEMAKING
+  CHART for more information.)
+    When you create a sprite, as you just did, the sprite will STAY IN
+  MEMORY until you POKE it off, redefine it, or turn off your computer.
+  This lets you change the color, position and even shape of the sprite in
+  DIRECT or IMMEDIATE mode, which is useful for editing purposes. As an
+  example, RUN the program above, then type this line in DIRECT mode
+  (without a line number) and hit the <RETURN> key:
+
+    POKE V+39,8
+
+    The sprite on the screen is now ORANGE. Try POKEing some other numbers
+  from 0 to 15 to see the other sprite colors. Because you did this in
+
+  154   PROGRAMMING GRAPHICS
+~
+
+
+  DIRECT mode, if you RUN your program the sprite will return to its origi-
+  nal color (white).
+
+    LINE 70, determines the HORIZONTAL or "X" POSITION of the sprite on the
+  screen. This number represents the location of the UPPER LEFT CORNER of
+  the sprite. The farthest left horizontal (X) position which you can see
+  on your television screen is position number 24, although you can move
+  the sprite OFF THE SCREEN to position number 0.
+
+    LINE 80 determines the VERTICAL or "Y" POSITION of the sprite. In this
+  program, we placed the sprite at X (horizontal) position 24, and Y
+  (vertical) position 100. To try another location, type this POKE in
+  DIRECT mode and hit <RETURN>:
+
+    POKE V,24:POKE V+1,50
+
+    This places the sprite at the upper left corner of the screen. To move
+  the sprite to the lower left corner, type this:
+
+    POKE V,24:POKE V+1,229
+
+    Each number from 832 to 895 in our sprite 0 address represents one
+  block of 8 pixels, with three 8-pixel blocks in each horizontal row of
+  the sprite. The loop in line 80 tells the computer to POKE 832,255 which
+  makes the first 8 pixels solid . . . then POKE 833,255 to make the second
+  8 pixels solid, and so on to location 894 which is the last group of 8
+  pixels in the bottom right corner of the sprite. To better see how this
+  works, try typing the following in DIRECT r-node, and notice that the
+  second group of 8 pixels is erased:
+
+    POKE 833,0 (to put it back type POKE 833,255 or RUN your program)
+
+    The following line, which you can add to your program. erases the
+  blocks in the MIDDLE of the sprite you created:
+
+    90 FOR A=836 TO 891 STEP 3:POKE A,O:NEXT A
+
+    Remember, the pixels that make up the sprite are grouped in blocks of
+  eight. This line erases the 5th group of eight pixels (block 836) and
+  every third block up to block 890. Try POKEing any of the other numbers
+  from 832 to 894 with either a 255 to make them solid or 0 to make them
+  blank.
+
+                                                 PROGRAMMING GRAPHICS   155
+~
+
+
+  +-----------------------------------------------------------------------+
+  | CRUNCHING YOUR SPRITE PROGRAMS                                        |
+  |                                                                       |
+  | Here's a helpful "crunching" tip: The program described above is      |
+  | already short, but it can be made even shorter by "crunching" it      |
+  | smaller. In our example we list the key sprite settings on separate   |
+  | program lines so you can see what's happening in the program. In      |
+  | actual practice, a good programmer would probably write this program  |
+  | as a TWO LINE PROGRAM... by "crunching" it as follows:                |
+  |                                                                       |
+  | 10 PRINTCHR$(147):V=53248:POKEV+21,1:POKE2040.13:POKEV+39,1           |
+  | 20 FORS=832TO894:POKES,255:NEXT:POKEV,24:POKEV+1,100                  |
+  |                                                                       |
+  | For more tips on how to crunch your programs so they fit in less      |
+  | memory and run more efficiently, see the "crunching guide" on Page 24.|
+  +-----------------------------------------------------------------------+
+
+                                  TV SCREEN
+            +---------------------------------------------------+
+            |        ^                                          |
+            |        |                                          |
+            |<-------+---- X POSITION = HORIZONTAL ------------>|
+            |        |                                          |
+            |        |                                          |
+            |        |                                          |
+            |        |                                          |
+            |        |                                          |
+            |        |                          +-+             |
+            |        |                          | |             |
+            |        |                          +-+             |
+            |        |                          /               |
+            |        |                         /                |
+            |        |                        /                 |
+            |        |                       /                  |
+            +-------------------------------/-------------------+
+                                           /
+    A sprite located here must have both its X-position (horizontal) and
+    Y-position (vertical) set so it can be displayed on the screen.
+
+  Figure 3-4. The display screen is divided into a grid of X and Y coor-
+  dinates.
+
+
+  156   PROGRAMMING GRAPHICS
+~
+
+
+  POSITIONING SPRITES ON THE SCREEN
+
+    The entire display screen is divided into a grid of X and Y coordi-
+  nates, like a graph. The X COORDINATE is the HORIZONTAL position across
+  the screen and the Y COORDINATE is the VERTICAL position up and down (see
+  Figure 3-4).
+    To position any sprite on the screen, you must POKE TWO SETTINGS...
+  the X position and the Y position... these tell the computer where to
+  display the UPPER LEFT HAND CORNER of the sprite. Remember that a sprite
+  consists of 504 individual pixels, 24 across by 21 down... so if you POKE
+  a sprite onto the upper left corner of your screen, the sprite will be
+  displayed as a graphic image 24 pixels ACROSS and 21 pixels DOWN starting
+  at the X-Y position you defined. The sprite will be displayed based on
+  the upper left corner of the entire sprite, even if you define the sprite
+  using only a small part of the 24X21-pixel sprite area.
+    To understand how X-Y positioning works, study the following diagram
+  (Figure 3-5), which shows the X and Y numbers in relation to your display
+  screen. Note that the GREY AREA in the diagram shows your television
+  viewing area... the white area represents positions which are OFF your
+  viewing screen...
+
+
+
+
+
+
+
+
+
+
+                         [THE PICTURE IS MISSING!]
+
+
+
+
+
+
+
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   157
+~
+
+
+    To display a sprite in a given location, You must POKE the X and Y
+  settings for each SPRITE... remembering that every sprite has its own
+  unique X POKE and Y POKE. The X and Y settings for ail 8 sprites are
+  shown here:
+
+  POKE THESE VALUES TO SET X-Y SPRITE POSITIONS
+
+  +------+-------+-------+-------+-------+-------+-------+-------+--------+
+  |      |SPRT 0 |SPRT 1 |SPRT 2 |SPRT 3 |SPRT 4 |SPRT 5 |SPRT 6 |SPRT 7  |
+  +------+-------+-------+-------+-------+-------+-------+-------+--------+
+  |SET X |V,X    |V+2,X  |V+4,X  |V+6,X  |V+8,X  |V+10,X |V+12,X |V+14,X  |
+  |SET Y |V+1,Y  |V+3,Y  |V+5,Y  |V+7,Y  |V+9,Y  |V+11,Y |V+13,Y |V+15,Y  |
+  |RIGHTX|V+16,1 |V+16,2 |V+16,4 |V+16,8 |V+16,16|V+16,32|V+16,64|V+16,128|
+  +------+-------+-------+-------+-------+-------+-------+-------+--------+
+
+    POKEING AN X POSITION: The possible values of X are 0 to 255, counting
+  from left to right. Values 0 to 23 place all or part of the sprite OUT OF
+  THE VIEWING AREA off the left side of the screen... values 24 to 255
+  place the sprite IN THE VIEWING AREA up to the 255th position (see next
+  paragraph for settings beyond the 255th X position). To place the sprite
+  at one of these positions, just type the X-POSITION POKE for the sprite
+  you're using. For example, to POKE sprite I at the farthest left X
+  position IN THE VIEWING AREA, type: POKE V+2,24.
+
+    X VALUES BEYOND THE 255TH POSITION: To get beyond the 255th position
+  across the screen, you need to make a SECOND POKE using the numbers in
+  the "RIGHT X" row of the chart (Figure 3-5). Normally, the horizontal (X)
+  numbering would continue past the 255th position to 256, 257, etc., but
+  because registers only contain 8 bits we must use a "second register" to
+  access the RIGHT SIDE of the screen and start our X numbering over again
+  at 0. So to get beyond X position 255, you must POKE V+16 and a number
+  (depending on the sprite). This gives you 65 additional X positions
+  (renumbered from 0 to 65) in the viewing area on the RIGHT side of the
+  viewing screen. (You can actually POKE the right side X value as high as
+  255, which takes you off the right edge of the viewing screen.)
+
+    POKEING A Y POSITION: The possible values of Y are 0 to 255, counting
+  from top to bottom. Values 0 to 49 place all or part of the sprite OUT
+  OF THE VIEWING AREA off the TOP of the screen. Values 50 to 229 place the
+  sprite IN THE VIEWING AREA. Values 230 to 255 place all or part of the
+  sprite OUT OF THE VIEWING AREA off the BOTTOM of the screen.
+
+

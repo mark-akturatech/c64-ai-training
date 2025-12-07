@@ -1,0 +1,367 @@
+58586         $E4DA
+Clear Color RAM to the Color in Background Color Register 0
+
+This routine is a patch added to the more recent versions of the
+Kernal.  It is called by the routine which clears a screen line
+(59903, $E9FF), and it places the color value in Background Color
+Register 0 (53281, $D021) into the current byte of Color RAM pointed
+to by USER (243, $F3).
+
+In the original version of the Kernal, the routine that cleared a
+screen line set the corresponding Color RAM to a value of 1, which
+gives text characters a white foreground color.  This was changed when
+the white color was found to sometimes cause light flashes during
+screen scrolling.  It was that white foreground color, however, that
+enabled the user to POKE the screen code for a character into screen
+RAM, and make that character appear on the screen in a color that
+contrasted the blue background.  This change to the Operating System
+causes colors POKEd to screen RAM to be the same color as the
+background, and thus they are invisible.
+
+This is a fairly serious problem, because the technique of POKEing
+characters to screen RAM has long been a staple of Commodore graphics
+programming.  Fortunately, the problem has an easy colution.  Since
+the Color RAM will be set to whatevere color is in Background Color
+Register 0, what you have to do to initialize Color RAM to the color
+you desire is change the background color to the desired foreground
+color, clear the screen, and then change the background color back
+again:
+
+C=PEEK(53281):POKE 53281,HUE:PRINT CHR$(147):POKE 53281,C
+
+58592         $E4E0
+Pause after Finding a File on Cassette
+
+This routine is a patch to the routine which finds a file on cassette.
+After the file is found, the message FILETITLE FOUND appears on the
+screen.  On the original versions of the Kernal, the user would then
+have to hit the Commodore key to continue the load.  On the newer
+versions, this patch causes a slight pause after the tape file is
+round, during which time a keypress is looked for.  If a key is
+pressed, the loading process continues immediately.  If it is not, the
+load continues by itself after the end of the pause.
+
+58604         $E4EC
+Baud Rate Table for European (PAL) Standard Monitors
+
+This table of prescaler values was added to later Kernal versions to
+allow the same Kernal software to be used with either U.S. or European
+64s.  It contains the values which are required to obtain interrupts
+at the proper frequency for the standard RS-232 baud rates, and
+corresponds exactly in format to the table of values for the U.S.
+(NTSC) monitor format at 65218 ($FEC2).  Separate tables are required
+because the prescaler values are derived from dividing the system
+clock rate by the baud rate, and PAL machines operate with a slightly
+slower clock frequency.
+
+58624         $E500          IOBASE
+Store Base Address of Memory-Mapped I/O Devices in .X and .Y Registers
+
+This is one of the documented Kernal routines for which there is a
+vector in the jump table at 65523 ($FFF3).
+
+When called, this routine sets the .X register to the low byte of the
+base address of the memory-mapped I/O devices, and puts the high byte
+in the .Y register.  This allows a user to set up a zero-page pointer
+to the device, and to load and store indirectly through that pointer.
+A program which uses this method, rather than directly accessing such
+devices could be made to function without change on future Commodore
+models, even though the I/O chips may be addressed at different
+locations.  This of course assumes that the CIA or a similar chip will
+be used.  This routine is of limited value for creating software that
+is compatible with both the VIC-20 and the 64 because of the
+differences in the VIA I/O chip that the VIC uses.
+
+The current version of this routine loads the .X register with a 0,
+and the .Y register with 220 ($DC), thus pointing to CIA #1, which is
+at 56320 ($DC00).
+
+58629         $E505          SCREEN
+Store Number of Screen Rows and Columns in .Y and .X
+
+This is a documented Kernal routine which is vectored in the jump
+table at 65517 ($FFED), and is provided to allow for program
+compatibility between computers.
+
+When called, this subroutine returns the number of screen columns in
+the .X register, and the number of screen rows in .Y.  Thus, a program
+can detect the screen format of the machine on which it is running,
+and make sure that text output is formatted accordingly.
+
+The present version of this routine loads the .X register with 40
+($28) and the .Y register with 25 ($19).
+
+58634         $E50A          PLOT
+Read/Set Location of the Cursor
+
+The jump table entry for this documented Kernal is at 65520 ($FFF0).
+
+The routine allows the user to read or set the position of the cursor.
+If the carry flag is set with the SEC instruction before calling this
+subroutine, cursor column (X position) will be returned in the .X
+register, and the cursor row (Y position) will be returned in the .Y
+register.  If the carry flag is cleared with a CLC instruction before
+entering this routine, and the .Y and .X registers are loaded with the
+desired row and column positions respectively, this routine will set
+the cursor position accordingly.
+
+The current read routine loads .X and .Y from locations 214 ($D6) and
+211 ($D3) respectively.  The cursor set routine stores .X and .Y in
+these locations, and calls the routine that sets the screen pointers
+at 58732 ($E56C).
+
+The user can access this routine from BASIC by loading the .X, .Y, and
+.P register values desired to the save area starting at 780 ($30C).
+
+58648         $E518
+Initialize Screen and Keyboard
+
+This is the original CINT Kernal routine, to which additions were made
+in later versions of the Kernal.
+
+After calling the routine at 58784 ($E5A0) to set up default I/O
+values, this routine initializes the cursor blink flags, the keyboard
+decode vector, the key repeat delay and frequency counters, the
+current color code, and maximum keyboard buffer size.  It then falls
+through to the next routine.
+
+58692         $E544
+Initialize the Screen Line Link Table and Clear the Screen
+
+This routine initializes the screen line link table at 217 ($D9),
+clears the screen, and clears the Color RAM to the background color.
+It falls through to the next routine.
+
+58726         $E566
+Home the Cursor
+
+This routine sets PNTR (211, $D3) and TBLX (214, $D6) to 0, and falls
+through to the next routine.
+
+58732         $E56C
+Set Pointer to Current Screen Line
+
+This routine sets the pointer PNT (209, $D1) to the address of the
+first byte of the current logical line.  In figuring this address, it
+takes into account the status of the screen line link table, which can
+indicate that two physical lines should be joined as one logical line.
+
+58784         $E5A0
+Set Default I/O Devices and Set Default Values for VIC-II Chip
+Registers
+
+This routine sets the keyboard and screen as the current input and
+output devices.  It then writes the default values found in the table
+at 60601 ($ECB9) to the VIC-II chip.
+
+58804         $E5B4          LP2
+Get a Character from the Keyboard Buffer
+
+This routine transfers the first character from the keybard buffer to
+the .A register, bumps the rest of the characters one place up in
+line, and decrements the pointer, showing how many characters are
+waiting in the buffer.
+
+58826         $E5CA
+Wait for a Carriage Return from the Keyboard
+
+This subroutine is called by the portion of the CHKIN routine that
+handles keyboard input.  It turns the cursor on, gets characters, and
+echoes them to the screen until a carriage return has been entered.
+It also looks for the shifted RUN/STOP key, and forces the output of
+the commands LOAD and RUN if it finds it.
+
+58930         $E632
+Input a Character from Screen or Keyboard
+
+This routine is the portion of the Kernal CHRIN routine that handles
+input from the keyboard and screen devices.  CHRIN gets one byte at a
+time from the current screen position, or inputs a whole line from the
+keyboard and returns it one byte at a time.
+
+59012         $E684
+Test for Quote Marks
+
+This subroutine checks if the current character is a quotation mark,
+and if it is, toggles the quote switch at 212 ($D4).
+
+59025         $E691
+Add a Character to the Screen
+
+This is part of the routine that outputs a character to the screen.
+It puts printable characters into screen memory.
+
+59048         $E6A8
+Return from Outputting a Character to the Screen
+
+This is the common exit point for the screen portion of the CHROUT
+routine.
+
+59062         $E6B6
+Advance the Cursor
+
+This routine advances the cursor, and provides for such things as
+scrolling at the end of the screen, and inserting a blank line in
+order to add another physical line to the current logical line.
+
+59137         $E701
+Move Cursor Back over a 40-Column Line Boundary
+
+59158         $E716
+Output to the Screen
+
+This is the main entry point for the part of CHROUT that handles
+output to the screen device.  It takes an ASCII character number, and
+tests if the character is printable.  If it is, it prints it (taking
+into consideration the reverse flag, if any inserts are left, etc.).
+If it is a nonprinting character, the routine performs the appropriate
+cursor movement, color change, screen clearing, or whatever else might
+be indicated.
+
+59516         $E87C
+Move Cursor to Next Line
+
+This subroutine moves the cursor down to the next line if possible, or
+scrolls the screen if the cursor is on the last line.
+
+59537         $E891
+Output a Carriage Return
+
+A carriage return is performed by clearing insert mode, reverse video,
+and quote mode, and moving the cursor to the next line.
+
+59553         $E8A1
+If at the Beginning of a Screen Line, Move Cursor to Previous Line
+
+59571         $E8B3
+If at the End of a Screen Line, Move Cursor to the Next Line
+
+59595         $E8CB
+Check for a Color Change
+
+This routine is used by the screen CHROUT routine to check if the
+character to be printed is one that causes the current foreground
+color to change (such as the CTRL-1 combination).
+
+59601         $E8D1
+PETASCII Color Code Equivalent Table
+
+This table gives the PETASCII values of the color change characters
+for each of the 16 possible colors.  These values are:
+
+144 ($90)  Change to color 0 (black)
+  5 ($05)  Change to color 0 (white)
+ 28 ($1C)  Change to color 0 (red)
+159 ($9F)  Change to color 0 (cyan)
+156 ($9C)  Change to color 0 (purple)
+ 30 ($1E)  Change to color 0 (green)
+ 31 ($1F)  Change to color 0 (blue)
+158 ($9E)  Change to color 0 (yellow)
+129 ($81)  Change to color 0 (orange)
+149 ($95)  Change to color 0 (brown)
+150 ($96)  Change to color 0 (light red)
+151 ($97)  Change to color 0 (dark gray)
+152 ($98)  Change to color 0 (medium gray)
+153 ($99)  Change to color 0 (light green)
+154 ($9A)  Change to color 0 (light blue)
+155 ($9B)  Change to color 0 (light gray)
+
+59626         $E8EA
+Scroll Screen
+
+This subroutine moves all of the screen lines up, so that a blank line
+is created at the bottom of the screen and the top screen line is
+lost.  If the top logical line is two physical lines long, all lines
+are moved up two lines.  Holding down the CTRL key will cause a brief
+pause after the scroll.
+
+59749         $E965
+Insert a Blank Line on the Screen
+
+This subroutine is used when INSERTing to add a blank physical line to
+a logical line.
+
+59848         $E9C8
+Move Screen Line
+
+This subroutine is used by the scroll routine to move one screen line
+(and its associated Color RAM) up a line.
+
+59872         $E9E0
+Set Temporary Color Pointer for Scrolling
+
+This subrouting sets up a pointer in 17-175 ($AE-$AF) to the Color RAM
+address that corresponds to the temporary screen line address in
+172-173 ($AC-$AD).
+
+59888         $E9F0
+Set Pointer to Screen Address of Start of Line
+
+This subroutine puts the address of the first byte of the screen line
+designated by the .X register into locations 209-210 ($D1-$D2).
+
+59903         $E9FF
+Clear Screen Line
+
+This subroutine writes space characters to an entire line of screen
+memory, and clears the corresponding line of color memory to color in
+Background Color Register 0 (53281, $D021).
+
+59923         $EA13
+Set Cursor Blink Timing and Color Memory Address for Print to Screen
+
+This subroutine sets the cursor blink countdown and sets the pointer
+to Color RAM.  It then falls through to the next routine.
+
+59932         $EA1C
+Store to Screen
+
+This routine stores the character in the .A register to the screen
+address pointed to by 209 ($D1), and stores the color in the .X
+register to the address pointed to by 243 ($F3).
+
+59940         $EA24
+Synchronize Color RAM Pointer to Screen Line Pointer
+
+This subroutine sets the pointer at 243 ($F3) to the address of the
+beginning of the line of Color RAM which corresponds to the current
+line of screen RAM (whose pointer is at 209 ($D1)).
+
+59953         $EA31
+IRQ Interrupt Entry
+
+This is the entry point to the standard IRQ interrupt handler.  Timer
+A of CIA #1 is set at power-on to cause an IRQ interrupt to occur
+every 1/60 second.  When the interrupt occurs, program flow is
+transferred here via the CINV vector at 788 ($314).  This routine
+updates the software clock at 160-162 ($A0-$A2), handles the cursor
+flash, and maintains the tape interlock which keeps the cassette motor
+on if a button is pushed and the interlock flag is on.  Finally, it
+calls the keyboard scan routine, which checks the keyboard and puts
+any character it finds into the keyboard buffer.
+
+60039         $EA87          SCNKEY
+Read the Keyboard
+
+This subroutine is called by the IRQ interrupt handler above to read
+the keyboard device which is connected to CIA #1 (see entry for 56320
+($DC00) for details on how to read the keyboard).
+
+It is the Kernal routine SCNKEY which can be entered from the jump
+table at 65439 ($FF9F).  This routine returns the keycode of the key
+currently being pressed in 203 ($CB), sets the shift/control flag if
+appropriate, and jumps through the vector at 655 ($28F) to the routine
+that sets up the proper table to translate the keycode to PETASCII.
+It concludes with the next routine, which places the PETASCII value of
+the character in the keyboard buffer.
+
+60128         $EAE0
+Decode the Keystroke and Place its ASCII Value in the Keyboard Buffer
+
+This is the continuation of the IRQ keyscan routine.  It decodes the
+keycode with the proper PETASCII table, and compares it with the last
+keystroke.  If if is the same, it checks to see if it is okay to
+repeat the character without waiting for the key to be let up.  If the
+character should be printed, it is moved to the end of the keyboard
+buffer at 631 ($277).
+

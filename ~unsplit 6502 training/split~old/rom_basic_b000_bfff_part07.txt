@@ -1,0 +1,260 @@
+
+                                *** evaluate string
+.,B6A3 20 8F AD JSR $AD8F       check if source is string, else do type mismatch
+                                pop string off descriptor stack, or from top of string space
+                                returns with A = length, X = pointer low byte, Y = pointer high byte
+.,B6A6 A5 64    LDA $64         get descriptor pointer low byte
+.,B6A8 A4 65    LDY $65         get descriptor pointer high byte
+                                pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte, Y = pointer high byte
+.,B6AA 85 22    STA $22         save string pointer low byte
+.,B6AC 84 23    STY $23         save string pointer high byte
+.,B6AE 20 DB B6 JSR $B6DB       clean descriptor stack, YA = pointer
+.,B6B1 08       PHP             save status flags
+.,B6B2 A0 00    LDY #$00        clear index
+.,B6B4 B1 22    LDA ($22),Y     get length from string descriptor
+.,B6B6 48       PHA             put on stack
+.,B6B7 C8       INY             increment index
+.,B6B8 B1 22    LDA ($22),Y     get string pointer low byte from descriptor
+.,B6BA AA       TAX             copy to X
+.,B6BB C8       INY             increment index
+.,B6BC B1 22    LDA ($22),Y     get string pointer high byte from descriptor
+.,B6BE A8       TAY             copy to Y
+.,B6BF 68       PLA             get string length back
+.,B6C0 28       PLP             restore status
+.,B6C1 D0 13    BNE $B6D6       branch if pointer <> last_sl,last_sh
+.,B6C3 C4 34    CPY $34         compare with bottom of string space high byte
+.,B6C5 D0 0F    BNE $B6D6       branch if <>
+.,B6C7 E4 33    CPX $33         else compare with bottom of string space low byte
+.,B6C9 D0 0B    BNE $B6D6       branch if <>
+.,B6CB 48       PHA             save string length
+.,B6CC 18       CLC             clear carry for add
+.,B6CD 65 33    ADC $33         add bottom of string space low byte
+.,B6CF 85 33    STA $33         set bottom of string space low byte
+.,B6D1 90 02    BCC $B6D5       skip increment if no overflow
+.,B6D3 E6 34    INC $34         increment bottom of string space high byte
+.,B6D5 68       PLA             restore string length
+.,B6D6 86 22    STX $22         save string pointer low byte
+.,B6D8 84 23    STY $23         save string pointer high byte
+.,B6DA 60       RTS             
+                                clean descriptor stack, YA = pointer
+                                checks if AY is on the descriptor stack, if so does a stack discard
+.,B6DB C4 18    CPY $18         compare high byte with current descriptor stack item
+                                pointer high byte
+.,B6DD D0 0C    BNE $B6EB       exit if <>
+.,B6DF C5 17    CMP $17         compare low byte with current descriptor stack item
+                                pointer low byte
+.,B6E1 D0 08    BNE $B6EB       exit if <>
+.,B6E3 85 16    STA $16         set descriptor stack pointer
+.,B6E5 E9 03    SBC #$03        update last string pointer low byte
+.,B6E7 85 17    STA $17         save current descriptor stack item pointer low byte
+.,B6E9 A0 00    LDY #$00        clear high byte
+.,B6EB 60       RTS             
+
+                                *** perform CHR$()
+.,B6EC 20 A1 B7 JSR $B7A1       evaluate byte expression, result in X
+.,B6EF 8A       TXA             copy to A
+.,B6F0 48       PHA             save character
+.,B6F1 A9 01    LDA #$01        string is single byte
+.,B6F3 20 7D B4 JSR $B47D       make string space A bytes long
+.,B6F6 68       PLA             get character back
+.,B6F7 A0 00    LDY #$00        clear index
+.,B6F9 91 62    STA ($62),Y     save byte in string - byte IS string!
+.,B6FB 68       PLA             dump return address (skip type check)
+.,B6FC 68       PLA             dump return address (skip type check)
+.,B6FD 4C CA B4 JMP $B4CA       check space on descriptor stack then put string address
+                                and length on descriptor stack and update stack pointers
+
+                                *** perform LEFT$()
+.,B700 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B703 D1 50    CMP ($50),Y     compare byte parameter with string length
+.,B705 98       TYA             clear A
+.,B706 90 04    BCC $B70C       branch if string length > byte parameter
+.,B708 B1 50    LDA ($50),Y     else make parameter = length
+.,B70A AA       TAX             copy to byte parameter copy
+.,B70B 98       TYA             clear string start offset
+.,B70C 48       PHA             save string start offset
+.,B70D 8A       TXA             copy byte parameter (or string length if <)
+.,B70E 48       PHA             save string length
+.,B70F 20 7D B4 JSR $B47D       make string space A bytes long
+.,B712 A5 50    LDA $50         get descriptor pointer low byte
+.,B714 A4 51    LDY $51         get descriptor pointer high byte
+.,B716 20 AA B6 JSR $B6AA       pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B719 68       PLA             get string length back
+.,B71A A8       TAY             copy length to Y
+.,B71B 68       PLA             get string start offset back
+.,B71C 18       CLC             clear carry for add
+.,B71D 65 22    ADC $22         add start offset to string start pointer low byte
+.,B71F 85 22    STA $22         save string start pointer low byte
+.,B721 90 02    BCC $B725       branch if no overflow
+.,B723 E6 23    INC $23         else increment string start pointer high byte
+.,B725 98       TYA             copy length to A
+.,B726 20 8C B6 JSR $B68C       store string from pointer to utility pointer
+.,B729 4C CA B4 JMP $B4CA       check space on descriptor stack then put string address
+                                and length on descriptor stack and update stack pointers
+
+                                *** perform RIGHT$()
+.,B72C 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B72F 18       CLC             clear carry for add-1
+.,B730 F1 50    SBC ($50),Y     subtract string length
+.,B732 49 FF    EOR #$FF        invert it (A=LEN(expression$)-l)
+.,B734 4C 06 B7 JMP $B706       go do rest of LEFT$()
+
+                                *** perform MID$()
+.,B737 A9 FF    LDA #$FF        set default length = 255
+.,B739 85 65    STA $65         save default length
+.,B73B 20 79 00 JSR $0079       scan memory
+.,B73E C9 29    CMP #$29        compare with ")"
+.,B740 F0 06    BEQ $B748       branch if = ")" (skip second byte get)
+.,B742 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+.,B745 20 9E B7 JSR $B79E       get byte parameter
+.,B748 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B74B F0 4B    BEQ $B798       if null do illegal quantity error then warm start
+.,B74D CA       DEX             decrement start index
+.,B74E 8A       TXA             copy to A
+.,B74F 48       PHA             save string start offset
+.,B750 18       CLC             clear carry for sub-1
+.,B751 A2 00    LDX #$00        clear output string length
+.,B753 F1 50    SBC ($50),Y     subtract string length
+.,B755 B0 B6    BCS $B70D       if start>string length go do null string
+.,B757 49 FF    EOR #$FF        complement -length
+.,B759 C5 65    CMP $65         compare byte parameter
+.,B75B 90 B1    BCC $B70E       if length>remaining string go do RIGHT$
+.,B75D A5 65    LDA $65         get length byte
+.,B75F B0 AD    BCS $B70E       go do string copy, branch always
+
+                                *** pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B761 20 F7 AE JSR $AEF7       scan for ")", else do syntax error then warm start
+.,B764 68       PLA             pull return address low byte
+.,B765 A8       TAY             save return address low byte
+.,B766 68       PLA             pull return address high byte
+.,B767 85 55    STA $55         save return address high byte
+.,B769 68       PLA             dump call to function vector low byte
+.,B76A 68       PLA             dump call to function vector high byte
+.,B76B 68       PLA             pull byte parameter
+.,B76C AA       TAX             copy byte parameter to X
+.,B76D 68       PLA             pull string pointer low byte
+.,B76E 85 50    STA $50         save it
+.,B770 68       PLA             pull string pointer high byte
+.,B771 85 51    STA $51         save it
+.,B773 A5 55    LDA $55         get return address high byte
+.,B775 48       PHA             back on stack
+.,B776 98       TYA             get return address low byte
+.,B777 48       PHA             back on stack
+.,B778 A0 00    LDY #$00        clear index
+.,B77A 8A       TXA             copy byte parameter
+.,B77B 60       RTS             
+
+                                *** perform LEN()
+.,B77C 20 82 B7 JSR $B782       evaluate string, get length in A (and Y)
+.,B77F 4C A2 B3 JMP $B3A2       convert Y to byte in FAC1 and return
+
+                                *** evaluate string, get length in Y
+.,B782 20 A3 B6 JSR $B6A3       evaluate string
+.,B785 A2 00    LDX #$00        set data type = numeric
+.,B787 86 0D    STX $0D         clear data type flag, $FF = string, $00 = numeric
+.,B789 A8       TAY             copy length to Y
+.,B78A 60       RTS             
+
+                                *** perform ASC()
+.,B78B 20 82 B7 JSR $B782       evaluate string, get length in A (and Y)
+.,B78E F0 08    BEQ $B798       if null do illegal quantity error then warm start
+.,B790 A0 00    LDY #$00        set index to first character
+.,B792 B1 22    LDA ($22),Y     get byte
+.,B794 A8       TAY             copy to Y
+.,B795 4C A2 B3 JMP $B3A2       convert Y to byte in FAC1 and return
+
+                                *** do illegal quantity error then warm start
+.,B798 4C 48 B2 JMP $B248       do illegal quantity error then warm start
+
+                                *** scan and get byte parameter
+.,B79B 20 73 00 JSR $0073       increment and scan memory
+
+                                *** get byte parameter
+.,B79E 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+
+                                *** evaluate byte expression, result in X
+.,B7A1 20 B8 B1 JSR $B1B8       evaluate integer expression, sign check
+.,B7A4 A6 64    LDX $64         get FAC1 mantissa 3
+.,B7A6 D0 F0    BNE $B798       if not null do illegal quantity error then warm start
+.,B7A8 A6 65    LDX $65         get FAC1 mantissa 4
+.,B7AA 4C 79 00 JMP $0079       scan memory and return
+
+                                *** perform VAL()
+.,B7AD 20 82 B7 JSR $B782       evaluate string, get length in A (and Y)
+.,B7B0 D0 03    BNE $B7B5       branch if not null string
+                                string was null so set result = $00
+.,B7B2 4C F7 B8 JMP $B8F7       clear FAC1 exponent and sign and return
+.,B7B5 A6 7A    LDX $7A         get BASIC execute pointer low byte
+.,B7B7 A4 7B    LDY $7B         get BASIC execute pointer high byte
+.,B7B9 86 71    STX $71         save BASIC execute pointer low byte
+.,B7BB 84 72    STY $72         save BASIC execute pointer high byte
+.,B7BD A6 22    LDX $22         get string pointer low byte
+.,B7BF 86 7A    STX $7A         save BASIC execute pointer low byte
+.,B7C1 18       CLC             clear carry for add
+.,B7C2 65 22    ADC $22         add string length
+.,B7C4 85 24    STA $24         save string end low byte
+.,B7C6 A6 23    LDX $23         get string pointer high byte
+.,B7C8 86 7B    STX $7B         save BASIC execute pointer high byte
+.,B7CA 90 01    BCC $B7CD       branch if no high byte increment
+.,B7CC E8       INX             increment string end high byte
+.,B7CD 86 25    STX $25         save string end high byte
+.,B7CF A0 00    LDY #$00        set index to $00
+.,B7D1 B1 24    LDA ($24),Y     get string end byte
+.,B7D3 48       PHA             push it
+.,B7D4 98       TYA             clear A
+.,B7D5 91 24    STA ($24),Y     terminate string with $00
+.,B7D7 20 79 00 JSR $0079       scan memory
+.,B7DA 20 F3 BC JSR $BCF3       get FAC1 from string
+.,B7DD 68       PLA             restore string end byte
+.,B7DE A0 00    LDY #$00        clear index
+.,B7E0 91 24    STA ($24),Y     put string end byte back
+
+                                *** restore BASIC execute pointer from temp
+.,B7E2 A6 71    LDX $71         get BASIC execute pointer low byte back
+.,B7E4 A4 72    LDY $72         get BASIC execute pointer high byte back
+.,B7E6 86 7A    STX $7A         save BASIC execute pointer low byte
+.,B7E8 84 7B    STY $7B         save BASIC execute pointer high byte
+.,B7EA 60       RTS             
+
+                                *** get parameters for POKE/WAIT
+.,B7EB 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+.,B7EE 20 F7 B7 JSR $B7F7       convert FAC_1 to integer in temporary integer
+.,B7F1 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+.,B7F4 4C 9E B7 JMP $B79E       get byte parameter and return
+
+                                *** convert FAC_1 to integer in temporary integer
+.,B7F7 A5 66    LDA $66         get FAC1 sign
+.,B7F9 30 9D    BMI $B798       if -ve do illegal quantity error then warm start
+.,B7FB A5 61    LDA $61         get FAC1 exponent
+.,B7FD C9 91    CMP #$91        compare with exponent = 2^16
+.,B7FF B0 97    BCS $B798       if >= do illegal quantity error then warm start
+.,B801 20 9B BC JSR $BC9B       convert FAC1 floating to fixed
+.,B804 A5 64    LDA $64         get FAC1 mantissa 3
+.,B806 A4 65    LDY $65         get FAC1 mantissa 4
+.,B808 84 14    STY $14         save temporary integer low byte
+.,B80A 85 15    STA $15         save temporary integer high byte
+.,B80C 60       RTS             
+
+                                *** perform PEEK()
+.,B80D A5 15    LDA $15         get line number high byte
+.,B80F 48       PHA             save line number high byte
+.,B810 A5 14    LDA $14         get line number low byte
+.,B812 48       PHA             save line number low byte
+.,B813 20 F7 B7 JSR $B7F7       convert FAC_1 to integer in temporary integer
+.,B816 A0 00    LDY #$00        clear index
+.,B818 B1 14    LDA ($14),Y     read byte
+.,B81A A8       TAY             copy byte to A
+.,B81B 68       PLA             pull byte
+.,B81C 85 14    STA $14         restore line number low byte
+.,B81E 68       PLA             pull byte
+.,B81F 85 15    STA $15         restore line number high byte
+.,B821 4C A2 B3 JMP $B3A2       convert Y to byte in FAC_1 and return

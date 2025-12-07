@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 2: Immediate Addressing, Indexed Addressing
+
+case may be.  BASIC ignores spaces:  it doesn't matter if you type SYS8 or
+SYS 8; just use the right number for your machine  (4 for PET/CBM, 8 for
+VIC/64).
+
+Remember:  BASIC commands are no good in the MLM, and machine language
+monitor commands (such as .X) are no good in BASIC.  At first, you'll give
+the wrong commands at the wrong time because it's hard to keep track of which
+monitor system is active.  If you type in an MLM command when you're in
+BASIC, you'll probably get a ?SYNTAX ERROR reply.  If you type in a BASIC
+command when you're in the machine language monitor, you'll probably get a
+question mark in the line you typed.
+
+Some other MLM commands are as follows (the prompting period is included):
+
+  .M 1000 1010   (display memory from hex 1000 to 1010)
+  .R             (display registers ... again!)
+  .G 033C        (go to 033C and start running a program)
+
+Do not enter this last (.G) command.  There is no program at address 033C
+yet, so the computer would execute random instructions and we would lose
+control.
+
+There are two other fundamental instructions what we won't use yet:  they are
+.S for save and .L for load.  These are tricky.  Until you learn about BASIC
+pointers (Chapter 6), leave them alone.
+
+
+Displaying Memory Contents
+--------------------------
+
+You'll notice that there is a command for displaying the contents of memory,
+but there doesn't seem to be one for changing memory.  You can do both, of
+course.
+
+Suppose we ask to display memory from $1000 to $1010 with the command
+
+  .M 1000 1010
+
+Be careful that you have exactly one space before each address.  You might
+get a display that looks something like this:
+
+                                                                         :17:
+
+  .:1000 11 3A E4 00 21 32 04 AA
+  .:1008 20 4A 49 4D 20 42 55 54
+  .:1010 54 45 52 46 49 45 4C 44
+
+The four-digit number at the start of each line represents the address in
+memory being displayed.  The two-digit numbers to the right represent the
+contents of memory.  Keep in mind that all numbers used by the machine
+language monitor are hexadecimal.
+
+In the example above, $1000 contains a value of $11; $1001 contains a value
+of $3A, and so on, until $1007, which contains a value of $AA.  We continue
+with address $1008 on the next line.  Most monitors show eight memory
+locations on each line, although some VIC-20 monitors show only five because
+of the narrow screen.
+
+We asked for memory locations up to address $1010 only; but we get the
+contents of locations up to $1017 in this case.  The monitor always fills out
+a line, even if you don't ask for the extra values.
+
+
+Changing Memory Contents
+------------------------
+
+Once we have displayed the contents of part of memory, we can change that
+part of memory easily.  All we need to do is to move the cursor until it is
+positioned over the memory contents in question, type over the value
+displayed, and then press RETURN.
+
+This is quite similar to the way BASIC programs may be changed; you may type
+over on the screen, and when you press RETURN, the new line replaces the old.
+The general technique is called screen editing.
+
+If you have displayed the contents of memory, as in the example above, you
+might like to change a number of locations to zero.  Don't forget to strike
+RETURN so that the change on the screen will take effect in memory.  Give
+another .M memory display command to confirm that memory has indeed been
+changed.
+
+
+Changing Registers
+------------------
+
+We may also change the contents of registers by typing over and pressing
+RETURN.  You may take a register display with command .R, and then change the
+contents of PC, AC, XR, and YR.  Leave the contents of SR and SP unchanged--
+tricky things could happen unexpectedly if you experiment with these two.
+
+                                                                         :18:
+
+Entering the Program
+--------------------
+
+We might rewrite our program one last time, marking in the addresses that
+each instruction will occupy.  You will recall that we have decided to put
+our program into memory starting at address $033C (part of the cassette
+buffer).
+
+  033C AD 80 03     LDA $0380
+  033F AE 81 03     LDX $0381
+  0342 8D 81 03     STA $0381
+  0345 8E 80 03     STX $0380
+  0348 00           BRK
+
+Remember that most of the above listing is cosmetic.  The business end of the
+program is the set of two-digit hex numbers shown to the left.  At the
+extreme left, we have addresses--that's information, but not the program.  At
+the right, we have the "source code"--our notes on what the program means.
+
+How do we put it in?  Easy.  We must change memory.  So, we go to the MLM,
+and display memory with
+
+  .M 033C 0348
+
+We might have anything in that part of memory, but we'll get a display that
+looks something like
+
+  .:033C xx xx xx xx xx xx xx xx
+  .:0344 xx xx xx xx xx xx xx xx
+
+You won't see "xx," of course; there will be some hexadecimal value printed
+for each location.  Let's move the cursor back and change this display so
+that it looks like this:
+
+  .:033C AD 80 03 AE 81 03 8D 81
+  .:0344 03 8E 80 03 00 xx xx xx
+
+Don't type in the "xx"--just leave whatever was there before.  And be sure to
+press RETURN to activate each line; if you move the cursor down to get to the
+next line without pressing RETURN, the memory change would not happen.
+
+Display memory again (.M 033C 0348) and make sure that the program is in
+place correctly.  Check the memory display against the program listing, and
+be sure you understand how the program is being transcribed into memory.
+
+                                                                         :19:
+
+If everything looks in order, you're ready to run your first machine language
+program.
+
+
+Preparation
+-----------
+
+There's one more thing that we need to do.  If we want to swap the contents
+of addresses $0380 and $0381, we'd better put something into those two
+locations so that we'll know that the swap has taken place correctly.
+
+Display memory with .M 0380 0381 and set the resulting display so that the
+values are
+
+  .:0380 11 99 xx xx xx xx xx xx
+
+Remember to press RETURN.  Now we may run our program; we start it up with
+
+  .G 033C
+
+The program runs so quickly that it seems instantaneous (the run time is less
+that one fifty thousandth of a second).  The last instruction in our program
+was BRK for break, and that sends us straight to the MLM with a display of B*
+(for break, of course) plus all the registers.
+
+Nothing seems to have changed.  But wait.  Look carefully at the register
+display.  Can you explain the values you see in the AC and XR registers?  Can
+you explain the PC value?
+
+Now you may display the data values we planned to exchange.  Give the memory
+display command .M 0380 0831--have the contents of the two locations changed?
+
+They'd better have changed.  Because that's what the writing of our program
+was all about.
+
+
+Things You Have Learned
+-----------------------
+
+- Computers use binary.  If we want to work with the inner fabric of the
+  computer, we must come to terms with binary values.
+
+- Hexadecimal notation is for humans, not for computers.  It's a less clumsy
+  way for people to cope with binary numbers.
+
+- The 650x microprocessor chip communicates with memory by sending an address
+  over its memory bus.
+
+- The 650x has internal work areas called registers.
+
+- The program counter tells us the address from which the processor will get
+  its next instruction.
+
+                                                                         :20:
+
+- Three registers, called A, X, and Y, are used to hold and manipulate data.
+  They may be loaded from memory, and stored into memory.
+
+- Addresses used in 650x instructions are "flipped:" the low byte comes
+  first, followed by the high byte.
+
+- The machine language monitor gives us a new type of communications path
+  into the computer.  Among other things, it allows us to inspect and change
+  memory in hexadecimal.
+
+
+Detail:  Program Execution
+--------------------------
+
+When we say .G 033C to start up our program, the microprocessor goes through
+the following steps:
+
+  1.  It asks for the contents of $03cc; it receives $AD, which it recognizes
+      as the op code "load A."  It realizes that it will need a two-byte
+      address to go with this instruction.
+
+  2.  It asks for the contents of $033D, and then $033E.  As it receives the
+      values of $80 and $03 it gathers them into an "instruction address."
+
+  3.  The microprocessor now has the whole instruction.  The PC has moved
+      along to $033F.  The 650x now executes the instruction.  It sends
+      address $0380 to the address bus; when it gets to the contents (perhaps
+      $11), it delivers this to the A register.  The A register now contains
+      $11.
+
+  4.  The 650x is ready to take on the next instruction; the address $033F
+      goes from the PC out to the address bus; and the program continues.
+
+
+Questions and Projects
+----------------------
+
+Do you know that your computer has a part of memory called "screen memory"?
+Whatever you put into that part of memory appears on the screen.  You'll find
+this described in BASIC texts as "screen POKE-ing."
+
+The screen on the PET/CBM is at $8000 and up; on the VIC, it's often (but not
+always) at $1E00 and up; on the Commodore 64, it's usually at $0400; and on
+the PLUS/4, it may be found at $0C00.
+
+If you write a program to store information in the screen memory address, the
+appropriate characters will appear on the screen.  You might like to try
+this.  You can even "swap" characters around on the screen, if you wish.
+
+Two pitfalls may arise.  First, you might write a perfect program that places
+information near the top of the screen; then, when the program finishes, the
+screen might scroll, and the results would disappear.  Second, the VIC and
+Commodore 64 use color, and you might inadvertently produce white-on-white
+characters; these are hard to see.
+
+                                                                         :21:
+
+Here's another question.  Suppose I asked you to write a program to move the
+contents of five locations, $0380 to $0384, in an "end-around" fashion, so
+that the contents of $0380 moved to $0381, $0381 to $0382, and so on, with
+the contents of $0384 moved to $0380.  At first glance, we seem to have a
+problem:  we don't have five data registers, we have only three (A, X, and
+Y).  Can you think of a way of doing the job?
+
+                                                                         :22:
+                                                                         :23:
+
+
+
+                                                          Chapter 2
+
+                                                        Controlling
+                                                             Output
+
+
+          This chapter discusses:
+
+            o Calling machine language subroutines
+
+            o The PRINT subroutine
+
+            o Immediate addressing
+
+            o Calling machine language from BASIC
+
+            o Tiny assembler programs
+
+            o Indexed addressing
+
+            o Simple loops
+
+            o Disassembly
+
+
+                                                                         :24:
+
+Calling Machine Language Subroutines
+------------------------------------
+
+In BASIC, a "package" of program statements called a subroutine may be
+brought into action with a GOSUB command.  The subroutine ends with a RETURN
+statement, which causes the program to return to the calling point, i.e., the
+statement immediately following GOSUB.
+
+The same mechanism is available in machine language.  A group of instructions
+may be invoked with a jump subroutine (JSR) command.  The 650x goes to the

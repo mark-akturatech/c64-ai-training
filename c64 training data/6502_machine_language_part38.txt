@@ -1,0 +1,261 @@
+# ML for C64 - Appendix G: Uncrashing Techniques
+
+==========================
+
+
+PET/CBM Version
+---------------
+
+It's not possible to write a comparable program to add a command to the
+PET/CBM.  This machine doesn't have a "link" neatly waiting for us at address
+$0308/9.  Equivalent code would need to be somewhat longer and less elegant.
+
+The equivalent program for PET/CBM won't be given here.  It would involve
+writing over part of the CHRGET program (at $0070 to $0087), supplying
+replacement code for the part we have destroyed, and then adding the new
+features.
+
+                                                                        :231:
+
+
+
+                                                         Appendix F
+
+                                                           Floating
+                                                              Point
+                                                     Representation
+
+
+
+                                                                        :232:
+
+Packed:  5 bytes (as found in variable or array)
+
++--------+   +--------+--------+--------+--------+
+|eeeeeeee|   |smmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|
++--------+   +--------+--------+--------+--------+
+
+Zero Flag/           Mantissa (value)
+Exponent                  4 bytes
+             High bit represents sign of mantissa
+
+
+Unpacked:  6 bytes (as found in floating point accumulators)
+
++--------+   +--------+--------+--------+--------+   +--------+
+|eeeeeeee|   |1mmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|   |sxxxxxxx|
++--------+   +--------+--------+--------+--------+   +--------+
+
+Zero Flag/           Mantissa (value)                Sign (High
+Exponent                  4 bytes                    Order Bit
+             High bit represents sign of mantissa      Only)
+
+
+- If exponent = 0, the whole number = 0
+- If exponent > $80, the decimal point is to be set as many places to the
+  right as the exponent exceeds $80.
+- Example:  Exponent:  $83, mantissa:  11000000... binary.  Set the point
+  three positions over:  110.000... to give a value of 6.
+- If exponent <= $80, the number is a fraction less than 1.
+
+
+Exercise:  Represent +27 in Floating Point
+
+27 decimal = 11011 binary; mantissa = 11011000... the point is to be
+positioned 5 places in (11011.000...) so we get:
+
+  Exponent:  $85
+  Mantissa:  %11011000 00000000 00000000 00000000
+             $D8 00 00 00
+
+To pack, we replace the first bit of the mantissa with a sign bit (0 for
+positive) and arrive at:
+
+  85 58 00 00 00
+
+                                                                        :233:
+
+
+
+                                                         Appendix G
+
+                                                         Uncrashing
+
+
+
+It's best to write a program that doesn't fail (or "crash").  Not all of us
+succeed in doing this.
+
+If a program gives us trouble, it should be tested using breakpoint
+techniques.  The BRK (break) instruction is inserted at several strategic
+points within the program.  The program stops (or "breaks") at these points,
+and the programmer has an opportunity to confirm correct behavior of the
+program at selected points.  Using this technique, a fault can be pinned down
+quite closely.
+
+Occasionally, usually because of bad planning, a program crashes and the
+cause of the crash cannot be identified.  Worse still, a lengthy program
+crashes and the user has forgotten to save a copy of it; the user is then
+faced with the task of putting it in all over again.
+
+In such cases, uncrashing techniques are sometimes available to bring the
+computer back from limbo.  They are never entirely satisfactory, and should
+be thought of as a last resort.
+
+The technique differs from computer to computer.
+
+                                                                        :234:
+
+PET/CBM
+-------
+
+Original ROM PETs cannot be uncrashed.
+
+Subsequent models can be uncrashed, though hardware additions are necessary.
+The reader should find someone with computer hardware knowledge to assist in
+fitting the switches to the computer.
+
+A toggle switch is needed, to be connected to the "diagnostic sense" line of
+the parallel user port; that's pin 5 of the PUP.  The other side of the
+toggle switch should connect to ground (pin 12).
+
+Additionally, a momentary pushbutton is required.  This must connect the
+reset line of the computer to ground.  Technically speaking, it's better to
+trigger the input of the computer's power-on reset chip (a 555 one-shot),
+using a resistor to guard against accidentally grounding a live circuit.
+
+To uncrash, set the toggle switch to "on" and press the pushbutton; the
+machine will come back to life in the machine language monitor.  Set the
+toggle switch off.  There's more work to do.
+
+The computer is still in an unstable state.  To correct this, either of two
+actions may be taken.  You may return to BASIC with .X and immediately give
+the command CLR; alternatively, you may type .; followed by the RETURN key.
+
+Whatever investigation or other action is needed should be performed quickly
+and the computer reset to its normal state.
+
+
+VIC/Commodore 64
+----------------
+
+You might try holding down the RUN/STOP key and tapping the RESTORE key to
+see if that will bring the machine to its senses.  Otherwise, you must do a
+more serious reset.
+
+You must depend on the fact that the computer does a nondestructive memory
+test during reset.  There are various commercially available interfaces for
+the cartridge port--usually "mother boards" that are fitted with reset
+switches.
+
+When the reset switch is pressed, the computer starts from the beginning; but
+memory is not disturbed.  If you have logged the entry location of the
+machine language monitor, you can bring it back with the appropriate SYS
+command.
+
+                                                                        :235:
+
+Commodore PLUS/4
+----------------
+
+There's a reset button next to the power switch.  Before you press it, hold
+down the RUN/STOP and CTRL keys.  Now press the reset button and you'll find
+yourself in the machine language monitor.
+
+                                                                        :236:
+                                                                        :237:
+
+
+
+                                                         Appendix H
+
+                                                           Supermon
+                                                       Instructions
+
+
+
+Program Supermon is not a monitor; it is a monitor generator that will make a
+machine language monitor for you.  There's a reason for this.  Supermon finds
+a likely spot in memory and then plunks the MLM there so as to fit it into
+the most suitable place.
+
+Load Supermon and say RUN.  It will write an MLM for you, and call it up.
+Now, exit back to BASIC and command NEW.  You do not want the MLM builder any
+more (it's done the job) and you do not want the danger of building two--or
+more--MLM's.  Get rid of the generator program.  Any time you need to use the
+MLM, give SYS4 or SYS8, as appropriate.
+
+Supermon contains the following "essential" commands:
+
+  .R - to display (and change) registers
+  .M - to display (and change) memory
+  .S - to save memory to disk or tape
+  .L - to load from disk or tape
+  .G - go to a ML program
+  .X - to exit to BASIC
+
+Supermon also contains the following extra commands:
+
+  .A - to assemble
+  .D - to disassemble
+
+                                                                        :238:
+
+Most versions of Supermon (not the "do-it-yourself" below [which is omitted
+-wf]) contain the following commands.  Though not used by this book, they are
+useful:
+
+  .F - fills memory with fixed constants
+       .F 1800 18FF 00
+  .H - hunts for a memory pattern:
+       .H 0800 1800 20 D2 FF
+  .T - transfers a block of memory to a new location
+       .T 0800 0BFF 8000
+
+A few versions of Supermon contain the command .I which causes machine
+language single stepping.
+
+
+A Do-It-Yourself Supermon
+-------------------------
+
+[I am NOT about to type in 6 pages of raw numbers.  Many monitors are
+ available for download from the internet, and many options are available for
+ transferring files from more internet-enabled platforms to the C64.  -wf]
+
+                                                                        :239:
+                                                                        :240:
+                                                                        :241:
+                                                                        :242:
+                                                                        :243:
+                                                                        :244:
+                                                                        :245:
+
+
+
+                                                         Appendix I
+
+                                                            IA Chip
+                                                        Information
+
+
+
+The following material has been adapted from manufacturer's specifications.
+The information is not essential to machine language programming, but can be
+a great help for further study.  Some of these specifications are not widely
+published and contain "hard to get" information.
+
+  6520 PIA, peripheral interface adapter
+  6522 VIA, versatile interface adapter
+  6525 TPA, tri port adapter
+  6526 CIA, complex interface adapter
+  6545 CRTC, CRT controller
+  6560 VIC, video interface chip
+  6566 VIC-2, video interface chip
+  6581 SID, sound interface device
+
+[Essentially manufacturer's specs, less hardware details]
+
+                                                                        :246:
+
+6520 Peripheral interface Adapter (PIA)

@@ -1,0 +1,243 @@
+
+                                *** perform LIST
+.,A69C 90 06    BCC $A6A4       branch if next character not token (LIST n...)
+.,A69E F0 04    BEQ $A6A4       branch if next character [NULL] (LIST)
+.,A6A0 C9 AB    CMP #$AB        compare with token for -
+.,A6A2 D0 E9    BNE $A68D       exit if not - (LIST -m)
+                                LIST [[n][-m]]
+                                this bit sets the n , if present, as the start and end
+.,A6A4 20 6B A9 JSR $A96B       get fixed-point number into temporary integer
+.,A6A7 20 13 A6 JSR $A613       search BASIC for temporary integer line number
+.,A6AA 20 79 00 JSR $0079       scan memory
+.,A6AD F0 0C    BEQ $A6BB       branch if no more chrs
+                                this bit checks the - is present
+.,A6AF C9 AB    CMP #$AB        compare with token for -
+.,A6B1 D0 8E    BNE $A641       return if not "-" (will be SN error)
+                                LIST [n]-m
+                                the - was there so set m as the end value
+.,A6B3 20 73 00 JSR $0073       increment and scan memory
+.,A6B6 20 6B A9 JSR $A96B       get fixed-point number into temporary integer
+.,A6B9 D0 86    BNE $A641       exit if not ok
+.,A6BB 68       PLA             dump return address low byte, exit via warm start
+.,A6BC 68       PLA             dump return address high byte
+.,A6BD A5 14    LDA $14         get temporary integer low byte
+.,A6BF 05 15    ORA $15         OR temporary integer high byte
+.,A6C1 D0 06    BNE $A6C9       branch if start set
+.,A6C3 A9 FF    LDA #$FF        set for -1
+.,A6C5 85 14    STA $14         set temporary integer low byte
+.,A6C7 85 15    STA $15         set temporary integer high byte
+.,A6C9 A0 01    LDY #$01        set index for line
+.,A6CB 84 0F    STY $0F         clear open quote flag
+.,A6CD B1 5F    LDA ($5F),Y     get next line pointer high byte
+.,A6CF F0 43    BEQ $A714       if null all done so exit
+.,A6D1 20 2C A8 JSR $A82C       do CRTL-C check vector
+.,A6D4 20 D7 AA JSR $AAD7       print CR/LF
+.,A6D7 C8       INY             increment index for line
+.,A6D8 B1 5F    LDA ($5F),Y     get line number low byte
+.,A6DA AA       TAX             copy to X
+.,A6DB C8       INY             increment index
+.,A6DC B1 5F    LDA ($5F),Y     get line number high byte
+.,A6DE C5 15    CMP $15         compare with temporary integer high byte
+.,A6E0 D0 04    BNE $A6E6       branch if no high byte match
+.,A6E2 E4 14    CPX $14         compare with temporary integer low byte
+.,A6E4 F0 02    BEQ $A6E8       branch if = last line to do, < will pass next branch
+                                else
+.,A6E6 B0 2C    BCS $A714       if greater all done so exit
+.,A6E8 84 49    STY $49         save index for line
+.,A6EA 20 CD BD JSR $BDCD       print XA as unsigned integer
+.,A6ED A9 20    LDA #$20        space is the next character
+.,A6EF A4 49    LDY $49         get index for line
+.,A6F1 29 7F    AND #$7F        mask top out bit of character
+.,A6F3 20 47 AB JSR $AB47       go print the character
+.,A6F6 C9 22    CMP #$22        was it " character
+.,A6F8 D0 06    BNE $A700       if not skip the quote handle
+                                we are either entering or leaving a pair of quotes
+.,A6FA A5 0F    LDA $0F         get open quote flag
+.,A6FC 49 FF    EOR #$FF        toggle it
+.,A6FE 85 0F    STA $0F         save it back
+.,A700 C8       INY             increment index
+.,A701 F0 11    BEQ $A714       line too long so just bail out and do a warm start
+.,A703 B1 5F    LDA ($5F),Y     get next byte
+.,A705 D0 10    BNE $A717       if not [EOL] (go print character)
+                                was [EOL]
+.,A707 A8       TAY             else clear index
+.,A708 B1 5F    LDA ($5F),Y     get next line pointer low byte
+.,A70A AA       TAX             copy to X
+.,A70B C8       INY             increment index
+.,A70C B1 5F    LDA ($5F),Y     get next line pointer high byte
+.,A70E 86 5F    STX $5F         set pointer to line low byte
+.,A710 85 60    STA $60         set pointer to line high byte
+.,A712 D0 B5    BNE $A6C9       go do next line if not [EOT]
+                                else ...
+.,A714 4C 86 E3 JMP $E386       do warm start
+.,A717 6C 06 03 JMP ($0306)     do uncrunch BASIC tokens
+
+                                *** uncrunch BASIC tokens, the uncrunch BASIC tokens vector is initialised to point here
+.,A71A 10 D7    BPL $A6F3       just go print it if not token byte
+                                else was token byte so uncrunch it
+.,A71C C9 FF    CMP #$FF        compare with the token for PI. in this case the token
+                                is the same as the PI character so it just needs printing
+.,A71E F0 D3    BEQ $A6F3       just print it if so
+.,A720 24 0F    BIT $0F         test the open quote flag
+.,A722 30 CF    BMI $A6F3       just go print character if open quote set
+.,A724 38       SEC             else set carry for subtract
+.,A725 E9 7F    SBC #$7F        reduce token range to 1 to whatever
+.,A727 AA       TAX             copy token # to X
+.,A728 84 49    STY $49         save index for line
+.,A72A A0 FF    LDY #$FF        start from -1, adjust for pre increment
+.,A72C CA       DEX             decrement token #
+.,A72D F0 08    BEQ $A737       if now found go do printing
+.,A72F C8       INY             else increment index
+.,A730 B9 9E A0 LDA $A09E,Y     get byte from keyword table
+.,A733 10 FA    BPL $A72F       loop until keyword end marker
+.,A735 30 F5    BMI $A72C       go test if this is required keyword, branch always
+                                found keyword, it's the next one
+.,A737 C8       INY             increment keyword table index
+.,A738 B9 9E A0 LDA $A09E,Y     get byte from table
+.,A73B 30 B2    BMI $A6EF       go restore index, mask byte and print if
+                                byte was end marker
+.,A73D 20 47 AB JSR $AB47       else go print the character
+.,A740 D0 F5    BNE $A737       go get next character, branch always
+
+                                *** perform FOR
+.,A742 A9 80    LDA #$80        set FNX
+.,A744 85 10    STA $10         set subscript/FNX flag
+.,A746 20 A5 A9 JSR $A9A5       perform LET
+.,A749 20 8A A3 JSR $A38A       search the stack for FOR or GOSUB activity
+.,A74C D0 05    BNE $A753       branch if FOR, this variable, not found
+                                FOR, this variable, was found so first we dump the old one
+.,A74E 8A       TXA             copy index
+.,A74F 69 0F    ADC #$0F        add FOR structure size-2
+.,A751 AA       TAX             copy to index
+.,A752 9A       TXS             set stack (dump FOR structure (-2 bytes))
+.,A753 68       PLA             pull return address
+.,A754 68       PLA             pull return address
+.,A755 A9 09    LDA #$09        we need 18d bytes !
+.,A757 20 FB A3 JSR $A3FB       check room on stack for 2*A bytes
+.,A75A 20 06 A9 JSR $A906       scan for next BASIC statement ([:] or [EOL])
+.,A75D 18       CLC             clear carry for add
+.,A75E 98       TYA             copy index to A
+.,A75F 65 7A    ADC $7A         add BASIC execute pointer low byte
+.,A761 48       PHA             push onto stack
+.,A762 A5 7B    LDA $7B         get BASIC execute pointer high byte
+.,A764 69 00    ADC #$00        add carry
+.,A766 48       PHA             push onto stack
+.,A767 A5 3A    LDA $3A         get current line number high byte
+.,A769 48       PHA             push onto stack
+.,A76A A5 39    LDA $39         get current line number low byte
+.,A76C 48       PHA             push onto stack
+.,A76D A9 A4    LDA #$A4        set "TO" token
+.,A76F 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,A772 20 8D AD JSR $AD8D       check if source is numeric, else do type mismatch
+.,A775 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+.,A778 A5 66    LDA $66         get FAC1 sign (b7)
+.,A77A 09 7F    ORA #$7F        set all non sign bits
+.,A77C 25 62    AND $62         and FAC1 mantissa 1
+.,A77E 85 62    STA $62         save FAC1 mantissa 1
+.,A780 A9 8B    LDA #$8B        set return address low byte
+.,A782 A0 A7    LDY #$A7        set return address high byte
+.,A784 85 22    STA $22         save return address low byte
+.,A786 84 23    STY $23         save return address high byte
+.,A788 4C 43 AE JMP $AE43       round FAC1 and put on stack, returns to next instruction
+.,A78B A9 BC    LDA #$BC        set 1 pointer low address, default step size
+.,A78D A0 B9    LDY #$B9        set 1 pointer high address
+.,A78F 20 A2 BB JSR $BBA2       unpack memory (AY) into FAC1
+.,A792 20 79 00 JSR $0079       scan memory
+.,A795 C9 A9    CMP #$A9        compare with STEP token
+.,A797 D0 06    BNE $A79F       if not "STEP" continue
+                                was step so ....
+.,A799 20 73 00 JSR $0073       increment and scan memory
+.,A79C 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+.,A79F 20 2B BC JSR $BC2B       get FAC1 sign, return A = $FF -ve, A = $01 +ve
+.,A7A2 20 38 AE JSR $AE38       push sign, round FAC1 and put on stack
+.,A7A5 A5 4A    LDA $4A         get FOR/NEXT variable pointer high byte
+.,A7A7 48       PHA             push on stack
+.,A7A8 A5 49    LDA $49         get FOR/NEXT variable pointer low byte
+.,A7AA 48       PHA             push on stack
+.,A7AB A9 81    LDA #$81        get FOR token
+.,A7AD 48       PHA             push on stack
+
+                                *** interpreter inner loop
+.,A7AE 20 2C A8 JSR $A82C       do CRTL-C check vector
+.,A7B1 A5 7A    LDA $7A         get the BASIC execute pointer low byte
+.,A7B3 A4 7B    LDY $7B         get the BASIC execute pointer high byte
+.,A7B5 C0 02    CPY #$02        compare the high byte with $02xx
+.,A7B7 EA       NOP             unused byte
+.,A7B8 F0 04    BEQ $A7BE       if immediate mode skip the continue pointer save
+.,A7BA 85 3D    STA $3D         save the continue pointer low byte
+.,A7BC 84 3E    STY $3E         save the continue pointer high byte
+.,A7BE A0 00    LDY #$00        clear the index
+.,A7C0 B1 7A    LDA ($7A),Y     get a BASIC byte
+.,A7C2 D0 43    BNE $A807       if not [EOL] go test for ":"
+.,A7C4 A0 02    LDY #$02        else set the index
+.,A7C6 B1 7A    LDA ($7A),Y     get next line pointer high byte
+.,A7C8 18       CLC             clear carry for no "BREAK" message
+.,A7C9 D0 03    BNE $A7CE       branch if not end of program
+.,A7CB 4C 4B A8 JMP $A84B       else go to immediate mode,was immediate or [EOT] marker
+.,A7CE C8       INY             increment index
+.,A7CF B1 7A    LDA ($7A),Y     get line number low byte
+.,A7D1 85 39    STA $39         save current line number low byte
+.,A7D3 C8       INY             increment index
+.,A7D4 B1 7A    LDA ($7A),Y     get line # high byte
+.,A7D6 85 3A    STA $3A         save current line number high byte
+.,A7D8 98       TYA             A now = 4
+.,A7D9 65 7A    ADC $7A         add BASIC execute pointer low byte, now points to code
+.,A7DB 85 7A    STA $7A         save BASIC execute pointer low byte
+.,A7DD 90 02    BCC $A7E1       branch if no overflow
+.,A7DF E6 7B    INC $7B         else increment BASIC execute pointer high byte
+.,A7E1 6C 08 03 JMP ($0308)     do start new BASIC code
+
+                                *** start new BASIC code, the start new BASIC code vector is initialised to point here
+.,A7E4 20 73 00 JSR $0073       increment and scan memory
+.,A7E7 20 ED A7 JSR $A7ED       go interpret BASIC code from BASIC execute pointer
+.,A7EA 4C AE A7 JMP $A7AE       loop
+
+                                *** go interpret BASIC code from BASIC execute pointer
+.,A7ED F0 3C    BEQ $A82B       if the first byte is null just exit
+.,A7EF E9 80    SBC #$80        normalise the token
+.,A7F1 90 11    BCC $A804       if wasn't token go do LET
+.,A7F3 C9 23    CMP #$23        compare with token for TAB(-$80
+.,A7F5 B0 17    BCS $A80E       branch if >= TAB(
+.,A7F7 0A       ASL             *2 bytes per vector
+.,A7F8 A8       TAY             copy to index
+.,A7F9 B9 0D A0 LDA $A00D,Y     get vector high byte
+.,A7FC 48       PHA             push on stack
+.,A7FD B9 0C A0 LDA $A00C,Y     get vector low byte
+.,A800 48       PHA             push on stack
+.,A801 4C 73 00 JMP $0073       increment and scan memory and return. the return in
+                                this case calls the command code, the return from
+                                that will eventually return to the interpreter inner
+                                loop above
+.,A804 4C A5 A9 JMP $A9A5       perform LET
+                                was not [EOL]
+.,A807 C9 3A    CMP #$3A        comapre with ":"
+.,A809 F0 D6    BEQ $A7E1       if ":" go execute new code
+                                else ...
+.,A80B 4C 08 AF JMP $AF08       do syntax error then warm start
+                                token was >= TAB(
+.,A80E C9 4B    CMP #$4B        compare with the token for GO
+.,A810 D0 F9    BNE $A80B       if not "GO" do syntax error then warm start
+                                else was "GO"
+.,A812 20 73 00 JSR $0073       increment and scan memory
+.,A815 A9 A4    LDA #$A4        set "TO" token
+.,A817 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,A81A 4C A0 A8 JMP $A8A0       perform GOTO
+
+                                *** perform RESTORE
+.,A81D 38       SEC             set carry for subtract
+.,A81E A5 2B    LDA $2B         get start of memory low byte
+.,A820 E9 01    SBC #$01        -1
+.,A822 A4 2C    LDY $2C         get start of memory high byte
+.,A824 B0 01    BCS $A827branch if no rollunder
+.,A826 88       DEY             else decrement high byte
+.,A827 85 41    STA $41         set DATA pointer low byte
+.,A829 84 42    STY $42         set DATA pointer high byte
+.,A82B 60       RTS             
+
+                                *** do CRTL-C check vector
+.,A82C 20 E1 FF JSR $FFE1       scan stop key
+
+                                *** perform STOP
+.,A82F B0 01    BCS $A832       if carry set do BREAK instead of just END

@@ -1,0 +1,252 @@
+# C64 CIA #1 - Timers, Interrupt Control
+
+
+Bit 0:  Read keyboard row 0
+        Read joystick 1 up direction
+Bit 1:  Read keyboard row 1
+        Read joystick 1 down direction
+Bit 2:  Read keyboard row 2
+        Read joystick 1 left direction
+        Read paddle 1 fire button
+Bit 3:  Read keyboard row 3
+        Read joystick 1 right direction
+        Read paddle 2 fire button
+Bit 4:  Read keyboard row 4
+        Read joystick 1 fire button
+Bit 5:  Read keyboard row 5
+Bit 6:  Read keyboard row 6
+        Toggle or pulse data output for Timer A
+Bit 7:  Read keyboard row 7
+        Toggle or pulse data output for Timer B
+
+Location Range: 56322-56323 ($DC02-$DC03)
+CIA #1 Data Direction Registers A and B
+
+These Data Direction Registers control the direction of data flow over
+Data Ports A and B.  Each bit controls the direction of the data on
+the corresponding bit of the port.  If teh bit of the Direction
+Register is set to a 1, the corresponding Data Port bit will be used
+for data output.  If the bit is set to a 0, the corresponding Data
+Port bit will be used for data input.  For example, Bit 7 of Data
+Direction Register A controls Bit 7 of Data Port A, and if that
+direction bit is set to 0, Bit 7 of Data Port A will be used for data
+input.  If the direction bit is set to 1, however, data Bit 7 on Port
+A will be used for data output.
+
+The default setting for Data Direction Register A is 255 (all
+outputs), and for Data Direction Register B it is 0 (all inputs).
+This corresponds to the setting used when reading the keyboard (the
+keyboard column number is written to Data Port A, and the row number
+is then read in Data Port B).
+
+56322         $DC02          CIDDRA
+Data Direction Register A
+
+Bit 0:  Select Bit 0 of Data Port A for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of Data Port A for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of Data Port A for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of Data Port A for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of Data Port A for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of Data Port A for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of Data Port A for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of Data Port A for input or output (0=input, 1=output)
+
+56323         $DC03          CIDDRB
+Data Direction Register B
+
+Bit 0:  Select Bit 0 of Data Port B for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of Data Port B for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of Data Port B for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of Data Port B for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of Data Port B for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of Data Port B for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of Data Port B for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of Data Port B for input or output (0=input, 1=output)
+
+Location Range: 56324-56327 ($DC04-$DC07)
+Timers A and B Low and High Bytes
+
+These four timer registers (two for each timer) have different
+functions depending on whether you are reading from them or writing to
+them.  When you read from these registers, you get the present value
+of the Timer Counter (which counts down from its initial value to 0).
+When you write data to these registers, it is stored in the Timer
+Latch, and from there it can be used to load the Timer Counter using
+the Force Load bit of Control Register A or B (see 56334-5 ($DC0E-F)
+below).
+
+These interval timers can hold a 16-bit number from 0 to 65535, in
+normal 6510 low-byte, high-byte format (VALUE=LOW BYTE+256*HIGH BYTE).
+Once the Timer Counter is set to an initial value, and the timer is
+started, the timer will count down one number every microprocessor
+clock cycle.  Since the clock speed of the 64 (using the American NTSC
+television standard) is 1,022,730 cycles per second, every count takes
+approximately a millionth of a second.  The formula for calculating
+the amount of time it will take for the timer to count down from its
+latch value to 0 is:
+
+TIME=LATCH VALUE/CLOCK SPEED
+
+where LATCH VALUE is the value written to the low and high timer
+registers (LATCH VALUE=TIMER LOW+256*TIMER HIGH), and CLOCK SPEED is
+1,022,370 cycles per second for American (NTSC) standard television
+monitors, or 985,250 for European (PAL) monitors.
+
+When Timer Counter A or B gets to 0, it will set Bit 0 or 1 in the
+Interrupt Control Register at 56333 ($DC0D).  If the timer interrupt
+has been enabled (see 56333 ($DC0D)), an IRQ will take place, and the
+high bit of the Interrupt Control Register will be set to 1.
+Alternately, if the Port B output bit is set, the timer will write
+data to Bit 6 or 7 of Port B.  After the timer gets to 0, it will
+reload the Timer Latch Value, and either stop or count down again,
+depending on whether it is in one-shot or continuous mode (determined
+by Bit 3 of the Control Register).
+
+Although usually a timer will be used to count the microprocessor
+cycles, Timer A can count either the microprocessor clock cycles or
+external pulses on the CTN line, which is connected to pin 4 of the
+User Port.
+
+Timer B is even more versatile.  In addition to these two sources,
+Timer B can count the number of times that Timer A goes to 0.  By
+setting Timer A to count the microprocessor clock, and setting Timer B
+to count the number of times that Timer A zeros, you effectively link
+the two timers into one 32-bit timer that can count up to 70 minutes
+with accuracy within 1/15 second.
+
+In the 64, CIA #1 Timer A is used to generate the interrupt which
+drives the routine for reading the keyboard and updating the software
+clock.  Both Timers A and B are also used for the timing of the
+routines that read and write tape data.  Normally, Timer A is set for
+continuous operation, and latched with a value of 149 in the low byte
+and 66 in the high byte, for a total Latch Value of 17045.  This means
+that it is set to count to 0 every 17045/1022730 seconds, or
+approximately 1/60 second.
+
+For tape reads and writes, the tape routines take over the IRQ
+vectors.  Even though the tape write routines use the on-chip I/O port
+at location 1 for the actual data output to the cassette, reading and
+writing to the cassette uses both CIA #1 Timer A and Timer B for
+timing the I/O routines.
+
+56324         $DC04          TIMALO
+Timer A (low byte)
+
+56325         $DC05          TIMAHI
+Timer A (high byte)
+
+56326         $DC06          TIMBLO
+Timer B (low byte)
+
+56327         $DC07          TIMBHI
+Timer B (high byte)
+
+Location Range: 56328-56331 ($DC08-$DC0B)
+Time of Day Clock (TOD)
+
+In addition to the two general-purpose timers, the 6526 CIA chip has a
+special-purpose Time of Day Clock, which keeps time in a format that
+humans can understand a little more easily than microseconds.
+
+This Time of Day Clock even has an alarm, which can cause an interrupt
+at a specific time.  It is organized in four registers, one each for
+hours, minutes, seconds, and tenths of seconds.  Each register reads
+out in Binary Coded Decimal (BCD) format, for easier conversion to
+ASCII digits.  A BCD byte is divided into two nybbles, each of which
+represents a single digit in base 10.  Even though a four-bit nybble
+can hold a number from 0 to 15, only the base 10 digits of 0-9 are
+used.  Therefore, 10 0'clock would be represented by a byte in the
+hours register with the nybbles 0001 and 0000, which stand for the
+digits 1 and 0.  The binary value of this byte would be 16 (16 times
+the high nybble plus the low nybble).  Each of the other registers
+operates in the same manner.  In addition, Bit 7 of the hours register
+is used as an AM/PM flag.  If that bit is set to 1, it indicates PM,
+and if it is set to 0, the time is AM.
+
+The Time of Day Clock Registers can be used for two purposes,
+depending on whether you are reading them or writing to them.  If you
+are reading them, you will always be reading the time.  There is a
+latching feature associated with reading the hours register in order
+to solve the problem of the time changing while you are reading the
+registers.  For example, if you were reading the hours register just
+as the time was changing from 10:59 to 11:00, it is possible that you
+would read the 10 in the hours register, and by the time you read the
+minutes register it would have changed from 59 to 00.  Therefore, you
+would read 10:00 instead of either 10:59 or 11:00.
+
+To prevent this kind of mistake, the Time of Day Clock Registers stop
+updating as soon as you read the hours register, and do not start
+again until you read the tenths of seconds register.  Of course, the
+clock continues to keep time internally even though it does not update
+the registers.  If you want to read only minutes, or seconds or tenths
+of seconds, there is no problem, and no latching will occur.  But
+anytime you read hours, you must follow it by reading tenths of
+seconds, even if you don't care about them, or else the registers will
+not continue to update.
+
+Writing to these registers either sets the time or the alarm,
+depending on the setting of Bit 7 of Control Register B (56335,
+$DC0F).  If that bit is set to 1, writing to the Time of Day registers
+sets the alarm.  If the bit is set to 0, writing to the Time of Day
+registers sets the Time of Day clock.  In either case, as with reading
+the registers, there is a latch function.  This function stops the
+clock from updating when you write to the hours register.  The clock
+will not start again until you write to the tenths of seconds
+registers.
+
+The only apparent use of the Time of Day Clock by the 64's Operating
+System is in the BASIC RND statement.  There, the seconds and tenths
+of seconds registers are read and their values used as part of the
+seed value for the RND(0) command.
+
+Nonetheless, this clock can be an invaluable resource for the 64 user.
+It will keep time more accurately than the software clock maintained
+at locations 60-162 ($A0-$A2) by the Timer A interrupt routine.  And
+unlike that software clock, the Time of Day Clock will not be
+disturbed when I/O operations disrupt the Timer A IRQ, or when the IRQ
+vector is diverted elsewhere.  Not even a cold start RESET will
+disrupt the time.  For game timers, just set the time for 00:00:00:0
+and it will keep track of elapsed time in hours, minutes, seconds and
+tenths of seconds format.
+
+The following digital clock program, written in BASIC, will
+demonstrate the use of these timers:
+
+10 PRINT CHR$(147):GOSUB 200
+20 H=PEEK(56331):POKE 1238,(H AND 16)/16+48:POKE 1239,(H AND 15)+48
+30 M=PEEK(56330):POKE 1241,(M AND 240)/16+48:POKE 1242,(M AND 15)+48
+40 S=PEEK(56329):POKE 1244,(S AND 240)/16+48:POKE 1245,(S AND 15)+48
+50 T=PEEK(56328)AND15:POKE 1247,T+48:GOTO 20
+200 INPUT"WHAT IS THE HOUR";H$:IF H$="" THEN 200
+210 H=0:IF LEN(H$)>1 THEN H=16
+220 HH=VAL(RIGHT$(H$,1)):H=H+HH:POKE56331,H
+230 INPUT "WHAT IS THE MINUTE";M$:IF M$=""THEN 200
+240 M=0:IF LEN(M$)>1 THEN M=16*VAL(LEFT$(M$,1))
+250 MM=VAL(RIGHT$(M$,1)):M=M+MM:POKE56330,M
+260 INPUT "WHAT IS THE SECOND";S$:IF S$=""THEN 200
+270 S=0:IF LEN(S$)>1 THEN S=16*VAL(LEFT$(S$,1))
+280 SS=VAL(RIGHT$(S$,1)):S=S+SS:POKE56329,S:POKE56328,0
+290 POKE 53281,1:PRINT CHR$(147):POKE 53281,6
+300 POKE 1240,58:POKE 1243,58:POKE 1246,58:GOTO 20
+
+56328         $DC08          TODTEN
+Time of Day Clock Tenths of Seconds
+
+Bits 0-3:  Time of Day tenths of second digit (BCD)
+Bits 4-7:  Unused
+
+56329         $DC09          TODSEC
+Time of Day Clock Seconds
+
+Bits 0-3:  Second digit of Time of Day seconds (BCD)
+Bits 4-6:  First digit of Time of Day seconds (BCD)
+Bit 7:  Unused
+
+56330         $DC0A          TODMIN
+Time of Day Clock Minutes
+
+Bits 0-3:  Second digit of Time of Day minutes (BCD)
+Bits 4-6:  First digit of Time of Day minutes (BCD)
+Bit 7:  Unused
+
+56331         $DC0B          TODHRS

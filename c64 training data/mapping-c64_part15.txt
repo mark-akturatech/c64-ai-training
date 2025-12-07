@@ -1,0 +1,252 @@
+# C64 Memory $300-$3FF - I/O Channel Tables
+
+baud rates which the control register at 659 ($293) makes available
+are stored in a table at 65218 ($FEC2), starting with the two-byte
+value used for 50 baud.  The European (PAL standard) version of that
+table is located at 58604 ($E4EC).
+
+Location Range: 667-670 ($29B-$29E)
+Byte Indices to the Beginning and End of Receive and Transmit Buffers
+
+The two 256-byte First In, First Out (FIFO) buffers for RS-232 data
+reception and transmission are dynamic wraparound buffers.  This means
+that the starting point and the ending point of the buffer can change
+over time, and either point can be anywhere withing the buffer.  If,
+for example, the starting point is at byte 100, the buffer will fill
+towards byte 255, at which point it will wrap around to byte 0 again.
+To maintain this system, the following four locations are used as
+indices to the starting and the ending point of each buffer.
+
+667           $29B           RIDBE
+RS-232: Index to End of Receive Buffer
+
+This index points to the ending byte within the 256-byte RS-232
+receive buffer, and is used to add data to that buffer.
+
+668           $29C           RIDBS
+RS-232: Index to Start of Receive Buffer
+
+This index points to the starting byte within the 256-byte RS-232
+receive buffer, and is used to remove data from that buffer.
+
+669           $29D           RODBS
+RS-232: Index to Start of Transmit Buffer
+
+This index points to the starting byte within the 256-byte RS-232
+transmit buffer, and is used to remove data from that buffer.
+
+670           $29E           RODBE
+RS-232: Index to End of Transmit Buffer
+
+This index points to the ending byte within the 256-byte RS-232
+transmit buffer, and is used to add data to that buffer.
+
+671-672       $29F-$2A0      IRQTMP
+SAve Area for IRQ Vector During Cassette I/O
+
+The routines that read and write tape data are driven by an IRQ
+interrupt.  In order to hook one of these routines into the interrupt,
+the RAM IRQ vector at 788-789 ($314-$315) must be changed to point to
+the address at which it starts.  Before that change is made, the old
+IRQ vector address is saved at these locations, so that after the tape
+I/O is finished, the interrupt that is used for scanning the keyboard,
+checking the stop key, and updating the clock can be restored.
+
+You will note that all of the above functions will be suspended during
+tape I/O.
+
+673           $2A1           ENABL
+RS-232 Interrupts Enabled
+
+This location holds the active NMI interrupt flag byte from CIA #2
+Interrupt Control Register (56589, $DD0D).  The bit values for this
+flag are as follows:
+
+Bit 4: 1 (bit value of 16) = System is Waiting for Receiver Edge
+Bit 1: 1 (bit value of 2)  = System is Receiving Data
+Bit 0: 1 (bit value of 1)  = System is Transmitting Data
+
+674           $2A2
+Indicator of CIA #1 Control Register B Activity During Cassette I/O
+
+675           $2A3
+Save Area for CIA #1 Interrupt Control Register During Cassette Read
+
+676           $2A4
+Save Area for CIA #1 Control Register A During Cassette Read
+
+677           $2A5
+Temporary Index to the Next 40-Column Line for Screen Scrolling
+
+678           $2A6
+PAL/NTSC Flag
+
+At power-on, a test is performed to see if the monitor uses the NTSC
+(North American) or PAL (European) television standard.
+
+This test is accomplished by setting a raster interrupt for scan line
+311, and testing if the interrupt occurs.  Since NTSC monitors have
+only 262 raster scan lines per screen, the interrupt will occur only
+if a PAL monitor is used.  The results of that test are stored here,
+with a 0 indicating an NTSC system in use, and one signifying a PAL
+system.
+
+This information is used by the routines which set the prescaler
+values for the system IRQ timer, so that the IRQ occurs every 1/60
+second.  Since the PAL system 02 clock runs a bit slower than the NTSC
+version, this prescaler value must be adjusted accordingly.
+
+679-767       $2A7-$2FF
+Unused
+
+The programmer may use this area for machine language subroutines, or
+for graphics data storage.
+
+If the VIC-II ship is using the bottom 16K for graphics and memory
+(the default setting when the system is turned on), this is one of the
+few free areas available for storing sprite or character data.
+Locaitons 704-767 could be used for sprite data block number 11,
+without interfering with BASIC program text or variables.
+
+Location Range: 768-779 ($300-$30B)
+BASIC Indirect Vector Table
+
+Several important BASIC routines are vectored through RAM.  This means
+that the first instruction executed by the routine is an indirect jump
+to a location pointed to by one of the vectors in this table.
+
+On power up, the system sets these vectors to point to the next
+instruction past the original JuMP instruction.  The routine then
+continues with that instruction as if the jump never took place.  For
+example, the BASIC error message routine starts at 42039 ($A437) with
+the instruction JMP ($300).  The indirect vector at 768 ($300) points
+to 42042 ($A43A), which is the instruction immediately following JMP
+($300).
+
+Although this may seem like a fancy way of accomplishing nothing,
+using these indirect vectors serves two important purposes.  First, it
+allows you to use these important BASIC routines without knowing their
+addresses in the BASIC ROM.
+
+For example, the routine to LIST the ASCII text of the single-byte
+BASIC program token that is currently in the Accumulator (.A) is
+located at one address in the VIC, and another in the 64.  On future
+Commodore computers it may be found at still another location.  Yet as
+long as the routine is vectored in RAM at 774 ($306), the statement
+QP=PEEK(774)+256*PEEK(775) would find the address of that routine on
+any of the machines.  Thus, entering such routines through RAM vectors
+rather than a direct jump into the ROMs helps to keep your programs
+compatible with different machines.
+
+The other important effect of having these vectors in RAM is that you
+can alter them.  In that way, you can redirect these important BASIC
+routines to execute your own preprocessing routines first.
+
+If you wanted to add commands to BASIC, for example, how would you go
+about it?  First, you would need to change the BASIC routines that
+convert ASCII program text to tokenized program format, so that when a
+line of program text was entered, the new keyword would be stored as a
+token.
+
+Next, you would need to change the routine that executes tokens, so
+that when the interpreter comes to your new keyword token, it will
+take the proper action.
+
+You would also have to change the routine that converts tokens back to
+ASCII text, so that your program would LIST the token out correctly.
+And you might want to alter the routine that prints error messages, to
+add new messages for your keyword.
+
+As you will see, vectors to all of these routines can be found in the
+following indirect vector table.  Changing these vectors is a much
+more elegant and efficient solution than the old wedge technique
+discussed at location 115 ($73)
+
+768-769       $300-$301      IERROR
+Vector to the Print BASIC Error Message Routine
+
+This vector points to the address of the ERROR routine at 58251
+($E38B).
+
+770-771       $302-$303      IMAIN
+Vector to the Main BASIC Program Loop
+
+This vector points to the address of the main BASIC program loop at
+42115 ($A483).  This is the routine that is operating when you are in
+the direct mode (READY).  It executes statements, or stores them as
+program lines.
+
+772-773       $304-$305      ICRNCH
+Vector to the Routine That Crunches the ASCII Text of Keywords into
+Tokens
+
+This vector points to the address of the CRUNCH routine at 42364
+($A57C).
+
+774-775       $306-$307      IQPLOP
+Vector to the Routine That Lists BASIC Program Token as ASCII Text
+
+This vector points to the address of the QPLOP routine at 42778
+($A71A).
+
+776-777       $308-$309      IGONE
+Vector to the Routine That Executes the Next BASIC Program Token
+
+This vector points to the address of the GONE routine at 42980 ($A7E4)
+that executes the next program token.
+
+778-779       $30A-$30B      IEVAL
+Vector to the Routine That Evaluates a Single-Term Arithmetic
+Expression
+
+This vector points to the address of the EVAL routinea t 44678 ($AE86)
+which, among other things, is used to evaluate BASIC functions such as
+INT and ABS.
+
+Location Range: 780-783 ($30C-$30F)
+Register Storage Area
+
+The BASIC SYS command uses this area to store 6510 internal
+registers--the Accumulator (.A), the .X and .Y index registers, and
+the status register, .P.
+
+Before every SYS command, each of the registers is loaded with the
+value found in the corresponding storage address.  After the ML
+program finished executing, and returns to BASIC with an RTS
+instruction, the new value of each register is stored in the
+appropriate storage address.  This is only true of SYS, not of the
+similar USR command.
+
+This feature allows you to place the necessary preentry values into
+the registers from BASIC before you SYS to a Kernal or BASIC ML
+routine.  It also enables you to examine the resulting effect of the
+routine on the registers, and to preserve the condition of the
+registers on exit for subsequent SYS calls.
+
+An extremely practical application comes immediately to mind.
+Although the 64's BASIC 2 has many commands for formatting printed
+characters on the monitor screen (for example, TAB, SPC, PRINT A$,B),
+there is none to adjust the vertical cursor position.
+
+There is a Kernal routine, PLOT (58634, $E50A), which will allow you
+to position the cursor anywhere on the screen.  In order to use it,
+you must first clear the carry flag (set it to 0), and then place the
+desired horizontal column number in the .Y register and the vertical
+row number in the .X register before entering the routine with a SYS
+65520.  Using the register storage area, we can print the work HELLO
+at row 10, column 5 with the following BASIC line:
+
+POKE 781,10:POKE 782,5:POKE 783,0:SYS 65520:PRINT "HELLO"
+
+You can also use these locations to help you take advantage of Kernal
+routines that return information in the register.  For example, the
+SCREEN routine (58629,$E505) returns the number of screen rows int he
+.Y register, and the number of columns in the .X register.  Using this
+routine, a BASIC program could be written to run on machines with
+different screen formats (for example, the 64 and the VIC-20).  Just
+PEEK(781) after a SYS 65517 to see how many screen columns the
+computer display has.
+
+780           $30C           SAREG
+Storage Area for .A Register (Accumulator)
+

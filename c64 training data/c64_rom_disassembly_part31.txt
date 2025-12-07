@@ -1,0 +1,166 @@
+# C64 KERNAL ROM Disassembly $E800-$E8FF - Screen Input/Output
+
+.,E800 F0 24    BEQ $E826       if at line end just exit
+.,E802 20 65 E9 JSR $E965       else open up a space on the screen
+                                now open up space on the line to insert a character
+.,E805 A4 D5    LDY $D5         get current screen line length
+.,E807 20 24 EA JSR $EA24       calculate the pointer to colour RAM
+.,E80A 88       DEY             decrement the index to previous character
+.,E80B B1 D1    LDA ($D1),Y     get the character from the current screen line
+.,E80D C8       INY             increment the index to next character
+.,E80E 91 D1    STA ($D1),Y     save the character to the current screen line
+.,E810 88       DEY             decrement the index to previous character
+.,E811 B1 F3    LDA ($F3),Y     get the current screen line colour RAM byte
+.,E813 C8       INY             increment the index to next character
+.,E814 91 F3    STA ($F3),Y     save the current screen line colour RAM byte
+.,E816 88       DEY             decrement the index to the previous character
+.,E817 C4 D3    CPY $D3         compare the index with the cursor column
+.,E819 D0 EF    BNE $E80A       loop if not there yet
+.,E81B A9 20    LDA #$20        set [SPACE]
+.,E81D 91 D1    STA ($D1),Y     clear character at cursor position on current screen line
+.,E81F AD 86 02 LDA $0286       get current colour code
+.,E822 91 F3    STA ($F3),Y     save to cursor position on current screen line colour RAM
+.,E824 E6 D8    INC $D8         increment insert count
+.,E826 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E829 A6 D8    LDX $D8         get the insert count
+.,E82B F0 05    BEQ $E832       branch if no insert space
+.,E82D 09 40    ORA #$40        change to uppercase/graphic
+.,E82F 4C 97 E6 JMP $E697       insert reversed character
+.,E832 C9 11    CMP #$11        compare with [CURSOR UP]
+.,E834 D0 16    BNE $E84C       branch if not [CURSOR UP]
+.,E836 A6 D6    LDX $D6         get the cursor row
+.,E838 F0 37    BEQ $E871       if on the top line go restore the registers, set the
+                                quote flag and exit
+.,E83A C6 D6    DEC $D6         decrement the cursor row
+.,E83C A5 D3    LDA $D3         get the cursor column
+.,E83E 38       SEC             set carry for subtract
+.,E83F E9 28    SBC #$28        subtract one line length
+.,E841 90 04    BCC $E847       branch if stepped back to previous line
+.,E843 85 D3    STA $D3         else save the cursor column ..
+.,E845 10 2A    BPL $E871       .. and exit, branch always
+.,E847 20 6C E5 JSR $E56C       set the screen pointers for cursor row, column ..
+.,E84A D0 25    BNE $E871       .. and exit, branch always
+.,E84C C9 12    CMP #$12        compare with [RVS OFF]
+.,E84E D0 04    BNE $E854       if not [RVS OFF] continue
+.,E850 A9 00    LDA #$00        else clear A
+.,E852 85 C7    STA $C7         clear the reverse flag
+.,E854 C9 1D    CMP #$1D        compare with [CURSOR LEFT]
+.,E856 D0 12    BNE $E86A       if not [CURSOR LEFT] go ??
+.,E858 98       TYA             copy the cursor column
+.,E859 F0 09    BEQ $E864       if at start of line go back onto the previous line
+.,E85B 20 A1 E8 JSR $E8A1       test for line decrement
+.,E85E 88       DEY             decrement the cursor column
+.,E85F 84 D3    STY $D3         save the cursor column
+.,E861 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E864 20 01 E7 JSR $E701       back onto the previous line if possible
+.,E867 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E86A C9 13    CMP #$13        compare with [CLR]
+.,E86C D0 06    BNE $E874       if not [CLR] continue
+.,E86E 20 44 E5 JSR $E544       clear the screen
+.,E871 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E874 09 80    ORA #$80        restore b7, colour can only be black, cyan, magenta
+                                or yellow
+.,E876 20 CB E8 JSR $E8CB       set the colour code
+.,E879 4C 4F EC JMP $EC4F       go check for special character codes except fro switch
+                                to lower case
+
+                                *** do newline
+.,E87C 46 C9    LSR $C9         shift >> input cursor row
+.,E87E A6 D6    LDX $D6         get the cursor row
+.,E880 E8       INX             increment the row
+.,E881 E0 19    CPX #$19        compare it with last row + 1
+.,E883 D0 03    BNE $E888       if not last row + 1 skip the screen scroll
+.,E885 20 EA E8 JSR $E8EA       else scroll the screen
+.,E888 B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E88A 10 F4    BPL $E880       loop if not start of logical line
+.,E88C 86 D6    STX $D6         save the cursor row
+.,E88E 4C 6C E5 JMP $E56C       set the screen pointers for cursor row, column and return
+
+                                *** output [CR]
+.,E891 A2 00    LDX #$00        clear X
+.,E893 86 D8    STX $D8         clear the insert count
+.,E895 86 C7    STX $C7         clear the reverse flag
+.,E897 86 D4    STX $D4         clear the cursor quote flag, $xx = quote, $00 = no quote
+.,E899 86 D3    STX $D3         save the cursor column
+.,E89B 20 7C E8 JSR $E87C       do newline
+.,E89E 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+
+                                *** test for line decrement
+.,E8A1 A2 02    LDX #$02        set the count
+.,E8A3 A9 00    LDA #$00        set the column
+.,E8A5 C5 D3    CMP $D3         compare the column with the cursor column
+.,E8A7 F0 07    BEQ $E8B0       if at the start of the line go decrement the cursor row
+                                and exit
+.,E8A9 18       CLC             else clear carry for add
+.,E8AA 69 28    ADC #$28        increment to next line
+.,E8AC CA       DEX             decrement loop count
+.,E8AD D0 F6    BNE $E8A5       loop if more to test
+.,E8AF 60       RTS             
+.,E8B0 C6 D6    DEC $D6         else decrement the cursor row
+.,E8B2 60       RTS             
+
+                                *** test for line increment
+                                
+                                if at end of the line, but not at end of the last line, increment the cursor row
+.,E8B3 A2 02    LDX #$02        set the count
+.,E8B5 A9 27    LDA #$27        set the column
+.,E8B7 C5 D3    CMP $D3         compare the column with the cursor column
+.,E8B9 F0 07    BEQ $E8C2       if at end of line test and possibly increment cursor row
+.,E8BB 18       CLC             else clear carry for add
+.,E8BC 69 28    ADC #$28        increment to the next line
+.,E8BE CA       DEX             decrement the loop count
+.,E8BF D0 F6    BNE $E8B7       loop if more to test
+.,E8C1 60       RTS             
+                                cursor is at end of line
+.,E8C2 A6 D6    LDX $D6         get the cursor row
+.,E8C4 E0 19    CPX #$19        compare it with the end of the screen
+.,E8C6 F0 02    BEQ $E8CA       if at the end of screen just exit
+.,E8C8 E6 D6    INC $D6         else increment the cursor row
+.,E8CA 60       RTS             
+
+                                *** set the colour code. enter with the colour character in A. if A does not contain a
+                                colour character this routine exits without changing the colour
+.,E8CB A2 0F    LDX #$0F        
+                                set the colour code count
+.,E8CD DD DA E8 CMP $E8DA,X     compare the character with a table code
+.,E8D0 F0 04    BEQ $E8D6       if a match go save the colour and exit
+.,E8D2 CA       DEX             else decrement the index
+.,E8D3 10 F8    BPL $E8CD       loop if more to do
+.,E8D5 60       RTS             
+.,E8D6 8E 86 02 STX $0286       save the current colour code
+.,E8D9 60       RTS             
+
+                                *** ASCII colour code table
+                                CHR$()  colour
+                                ------  ------
+.:E8DA 90                        144    black
+.:E8DB 05                          5    white 
+.:E8DC 1C                         28    red 
+.:E8DD 9F                        159    cyan
+.:E8DE 9C                        156    purple
+.:E8DF 1E                         30    green
+.:E8E0 1F                         31    blue
+.:E8E1 9E                        158    yellow
+.:E8E2 81                        129    orange
+.:E8E3 95                        149    brown
+.:E8E4 96                        150    light red
+.:E8E5 97                        151    dark grey
+.:E8E6 98                        152    medium grey
+.:E8E7 99                        153    light green
+.:E8E8 9A                        154    light blue
+.:E8E9 9B                        155    light grey
+
+                                *** scroll the screen
+.,E8EA A5 AC    LDA $AC         copy the tape buffer start pointer
+.,E8EC 48       PHA             save it
+.,E8ED A5 AD    LDA $AD         copy the tape buffer start pointer
+.,E8EF 48       PHA             save it
+.,E8F0 A5 AE    LDA $AE         copy the tape buffer end pointer
+.,E8F2 48       PHA             save it
+.,E8F3 A5 AF    LDA $AF         copy the tape buffer end pointer
+.,E8F5 48       PHA             save it
+.,E8F6 A2 FF    LDX #$FF        set to -1 for pre increment loop
+.,E8F8 C6 D6    DEC $D6         decrement the cursor row
+.,E8FA C6 C9    DEC $C9         decrement the input cursor row
+.,E8FC CE A5 02 DEC $02A5       decrement the screen row marker
+.,E8FF E8       INX             increment the line number

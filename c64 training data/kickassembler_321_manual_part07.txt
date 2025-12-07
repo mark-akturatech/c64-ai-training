@@ -1,0 +1,132 @@
+# KickAssembler Script Language - Numeric Values, Strings, Chars
+
+      loop=$<<Invalid String>>
+   flex pass 2
+      loop=$1000
+   Output pass
+If you detect an error while assembling, you can use the .error directive to terminate the assembling
+and display an error message:
+   .var width = 45
+   .if (width>40) .error “width can’t be higher than 40”
+                                                                                                   16
+4 Introducing the Script Language
+In this chapter the basics of the script language is introduced. Late chapters will deal with more
+advanced areas.
+4.1 Expressions
+Kick assembler has a built in mechanism for evaluating expressions. An example of an expression
+is 25+2*3/x. Expressions can be used in many different contexts, for example to calculate the value
+of a variable or to define a byte:
+            lda #25+2*3/x
+            .byte 25+2*3/x
+Standard assemblers can only calculate expressions based on numbers, while Kick Assembler can
+evaluate expressions based on many different types like: Numbers, Booleans, Strings, Lists,
+Vectors, and Matrixes. So, if you want to calculate an argument based on the second value in a list
+you write:
+            lda #35+myList.get(1) // 1 because first element is number 0
+Or perhaps you want to generate your argument based on the x-coordinate of a vector:
+            lda #35+myVector.getX()
+Or perhaps on the basis of the x-coordinate on the third vector in a list:
+            lda #35+myVectorList.get(2).getX()
+I think you get the idea by now. Kick Assembler’s evaluation mechanism is much like those in
+modern programming languages. It has a kind of object oriented approach, so calling a function on
+a value(/object) executes a function specially connected to the value. Operators like +, -,*, /, ==,
+!=, etc., are seen as functions and are also specially defined for each type of value.
+In the following chapters, a detailed description of how to use the value types and functions in Kick
+Assembler will be presented.
+4.2 Variables, Constants and User Defined Labels
+Before you can use variables you have to declare them. You do this with the .var directive:
+            .var x=25
+            lda #x           // Gives lda #25
+If you want to change x later on you write:
+            .eval x=x+10
+            lda #x           // Gives lda #35
+                                                                                                   17
+This will increase x by 10. The .eval directive is used to make Kick Assembler evaluate
+expressions. In fact, the .var directive above is just a convenient shorthand of ‘.eval var x =25’,
+where ‘var’ is subexpression that declares a variable (this will come in handy later when we want to
+define variables in for-loops).
+Two other shorthands exist: the ++ and the -- operator, which automatically calls a referenced
+variable with +1 or -1. For example:
+   .var x = 0
+   .eval x++                  // Gives x=x+1
+   .eval x--                  // Gives x=x-1
+Experienced users of modern programming languages will know that assignments return a value,
+e.g. x = y = z = 25 first assigns 25 to z, which returns 25 that is assigned to y, which returns 25 that
+is assigned to x. Kick Assembler supports this as well. Notice that the ++ and -- works as real ++
+and –- postfix operators, which means that they return the original value and not the new (Ex:
+.eval x=0 .eval y=x++, will set x to 1 and y to 0)
+You can also declare constants:
+   .const c=1                      // Declares the constant c to be 1
+   .eval const pi=3.1415           // Declares the constant pi using the eval form
+   .const name = “Camelot” // Constants can assume any value, for example string
+A constant can’t be assigned a new value, so .eval pi=22 will generate an error. Note that not all
+values are immutable. If you define a constant that points to a list, the content of the list can still
+change. If you want to make a mutable value immutable, you can use its lock() function, which will
+lock it’s content:
+   .const immutableList = List().add(1,2,3).lock()
+After this you will get an error if you try to add an element or modify existing elements.
+With the .enum statement you can define enumerations, which are series of constants:
+   .enum {singleColor, multiColor} // Defines singleColor=0, multiColor=1
+   .enum {effect1=1,effect2=2,end=$ff} // Assigns values explicitly
+   .enum {up,down,left,right, none=$ff} // You can mix implicit and explicit
+                                                   // assignment of values
+Variables and constants can only be seen after they are declared while labels can be seen in the
+entire scope. You can define a label with the .label directive like you define variables and
+constants:
+            // This fails
+            inc myLabel1
+            .const myLabel1 = $d020
+            // This is ok
+                                                                                                        18
+           inc myLabel2
+           .label myLabel2 = $d020
+4.3 Scoping
+You can limit the scope of you variables and labels by defining a user defined scope. This is done
+by {..}. Everything between the brackets is defined in a local scope and can’t be seen from the
+outside.
+  Function1: {
+           .var length = 10
+           ldx #0
+           lda #0
+  loop: sta table1,x
+           inx
+           cpx #length
+           bne loop
+  }
+  Function2: {
+           .var length = 20 // doesn’t collide with the previous ‘length’
+           ldx #0
+           lda #0
+  loop: sta table2,x // the label doesn’t collide with the previous ‘loop’
+           inx
+           cpx #length
+           bne loop
+  }
+Scopes can be nested as many times as you wish as demonstrated by the following program:
+  .var x = 10
+  {
+           .var x=20
+           {
+              .print "X in 2nd level scope read from 3rd level scope is " + x
+              .var x=30
+              .print "X in 3rd level scope is " + x
+           }
+           .print "X in 2nd level scope is " + x
+  }
+  .print "X in first level scope is " + x
+The output of this is:
+  X in 2nd level scope read from 3rd level scope is 20.0
+  X in 3rd level scope is 30.0
+  X in 2nd level scope is 20.0
+  X in first level scope is 10.0
+                                                                                                  19
+4.4 Numeric Values
+Numeric values are numbers covering both integers and floats. Standard numerical operators (+,-,*,
+and /) work as in standard programming languages. You can combine them with each other and
+they will obey the standard precedence rules. Here are some examples:
+   25+3
+   5+2.5*3-10/2
+   charmem + y * $100
+In practical use they can look like this:
+   .var charmem = $0400
+            ldx #0

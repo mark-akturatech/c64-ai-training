@@ -1,0 +1,302 @@
+# C64 PRG Appendix - SID Register Summary
+
+  to be read, there is no carry problem and the register can be read "on
+  the fly," provided that any read of Hours is followed by a read of 10ths
+  of seconds to disable the latching.
+
+  READ
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  8  |TOD 10THS|  0   |  0   |  0   |  0   |  T8  |  T4  |  T2  |  T1  |
+  |  9  |TOD SEC  |  0   |  SH4 |  SH2 |  SH1 |  SL8 |  SL4 |  SL2 |  SL1 |
+  |  A  |TOD MIN  |  0   |  MH4 |  MH2 |  MH1 |  ML8 |  ML4 |  ML2 |  ML1 |
+  |  B  |TOD HR   |  PM  |  0   |  0   |  HH  |  HL8 |  HL4 |  HL2 |  HL1 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  WRITE
+
+  CRB7=0 TOD
+  CRB7=1 ALARM
+  (SAME FORMAT AS READ)
+
+  Serial Port (SDR)
+
+    The serial port is a buffered, 8-bit synchronous shift register system.
+  A control bit selects input or output mode. In input mode, data on the SP
+  pin is shifted into the shift register on the rising edge of the signal
+  applied to the CNT pin. After 8 CNT pulses, the data in the shift
+  register is dumped into the Serial Data Register and an interrupt is
+  generated. In the output mode, TIMER A is used for the baud rate
+  generator. Data is shifted out on the SP pin at 1/2 the underflow rate of
+  TIMER A. The maximum baud rate possible is 02 divided by 4, but the
+  maximum useable baud rate will be determined by line loading and the
+  speed at which the receiver responds to input data. Transmission will
+  start following a write to the Serial Data Register (provided TIMER A is
+  running and in continuous mode). The clock signal derived from TIMER A
+  appears as an output on the CNT pin. The data in the Serial Data Register
+  will be loaded into the shift register then shift out to the SP pin when
+  a CNT pulse occurs. Data shifted out becomes valid on the falling edge of
+  CNT and remains valid until the next falling edge. After 8 CNT pulses, an
+
+  432   APPENDIX M
+~
+
+
+  interrupt is generated to indicate more data can be sent. If the Serial
+  Data Register was loaded with new information prior to this interrupt,
+  the new data will automatically be loaded into the shift register and
+  transmission will continue. If the microprocessor stays one byte ahead of
+  the shift register, transmission will be continuous. If no further data
+  is to be transmitted, after the 8th CNT pulse, CNT will return high and
+  SP will remain at the level of the last data bit transmitted. SDR data is
+  shifted out MSB first and serial input data should also appear in this
+  format.
+    The bidirectional capability of the Serial Port and CNT clock allows
+  many 6526 devices to be connected to a common serial communication bus on
+  which one 6526 acts as a master, sourcing data and shift clock, while all
+  other 6526 chips act as slaves. Both CNT and SP outputs are open drain to
+  allow such a common bus. Protocol for master/slave selection can be
+  transmitted over the serial bus, or via dedicated handshaking lines.
+
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  C  |   SDR   |  S7  |  S6  |  S5  |  S4  |  S3  |  S2  |  S1  |  S0  |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  Interrupt Control (ICR)
+
+    There are five sources of interrupts on the 6526: underflow from TIMER
+  A, underflow from TIMER B, TOD ALARM, Serial Port full/empty and /FLAG.
+  A single register provides masking and interrupt information. The
+  interrupt Control Register consists of a write-only MASK register and a
+  read-only DATA register. Any interrupt will set the corresponding bit in
+  the DATA register. Any interrupt which is enabled by the MASK register
+  will set the IR bit (MSB) of the DATA register and bring the /IRQ pin
+  low. In a multi-chip system, the IR bit can be polled to detect which
+  chip has generated an interrupt request. The interrupt DATA register is
+  cleared and the /IRQ line returns high following a read of the DATA
+  register. Since each interrupt sets an interrupt bit regardless of the
+  MASK, and each interrupt bit can be selectively masked to prevent the
+  generation of a processor interrupt, it is possible to intermix polled
+  interrupts with true interrupts. However, polling the IR bit will cause
+  the DATA register to clear, therefore, it is up to the user to preserve
+  the information contained in the DATA register if any polled interrupts
+  were present.
+    The MASK register provides convenient control of individual mask bits.
+  When writing to the MASK register, if bit 7 (SET/CLEAR) of the data
+
+                                                           APPENDIX M   433
+~
+
+
+  written is a ZERO, any mask bit written with a one will be cleared, while
+  those mask bits written with a zero will be unaffected. If bit 7 of the
+  data written is a ONE, any mask bit written with a one will be set, while
+  those mask bits written with a zero will be unaffected. In order for an
+  interrupt flag to set IR and generate an Interrupt Request, the corre-
+  sponding MASK bit must be set.
+
+  READ (INT DATA)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  D  |   ICR   |  IR  |   0  |   0  |  FLG |  SP  | ALRM |  TB  |  TA  |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  WRITE (INT MASK)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  D  |   ICR   |  S/C |   X  |   X  |  FLG |  SP  | ALRM |  TB  |  TA  |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+  CONTROL REGISTERS
+
+    There are two control registers in the 6526, CRA and CRB. CRA is
+  associated with TIMER A and CRB is associated with TIMER B. The register
+  format is as follows:
+
+  CRA:
+  Bit  Name    Function
+   0  START    1=START TIMER A, 0=STOP TIMER A. This bit is automatically
+               reset when underflow occurs during one-shot mode.
+   1  PBON     1=TIMER A output appears on PB6, 0=PB6 normal operation.
+
+   2  OUTMODE  1=TOGGLE, 0=PULSE
+   3  RUNMODE  1=ONE-SHOT, 0=CONTINUOUS
+   4  LOAD     1=FORCE LOAD (this is a STROBE input, there is no data
+               storage, bit 4 will always read back a zero and writing a
+               zero has no effect).
+   5  INMODE   1=TIMER A counts positive CNT transitions, 0=TIMER A counts
+               02 pulses.
+   6  SPMODE   1=SERIAL PORT output (CNT sources shift clock),
+               0=SERIAL PORT input (external shift clock required).
+   7  TODIN    1=50 Hz clock required on TOD pin for accurate time,
+               0=60 Hz clock required on TOD pin for accurate time.
+
+  434   APPENDIX M
+~
+
+
+  CRB:
+  Bit  Name    Function
+               (Bits CRB0-CRB4 are identical to CRA0-CRA4 for TIMER B with
+               the exception that bit 1 controls the output of TIMER B on
+               PB7).
+  5,6 INMODE   Bits CRB5 and CRB6 select one of four input modes for
+               TIMER B as:
+               CRB6   CRB5
+                0      0       TIMER B counts 02 pulses.
+                0      1       TIMER B counts positive CNT transistions.
+                1      0       TIMER B counts TIMER A underflow pulses.
+                1      1       TIMER B counts TIMER A underflow pulses
+                               while CNT is high.
+  7   ALARM     1=writing to TOD registers sets ALARM, 0=writing to TOD
+                registers sets TOD clock.
+
+  REGNAME TODIN SP MODE IN MODE   LOAD  RUN MODE OUT MODE   PB ON   START
+  +-+---+------+-------+-------+--------+-------+--------+--------+-------+
+  |E|CRA|0=60Hz|0=INPUT| 0=02  |1=FORCE |0=CONT.|0=PULSE |0=PB6OFF|0=STOP |
+  | |   |      |       |       |  LOAD  |       |        |        |       |
+  | |   |1=50Hz|1=OUTP.| 1=CNT |(STROBE)|1=O.S. |1=TOGGLE|1=PB6ON |1=START|
+  +-+---+------+-------+-------+--------+-------+--------+--------+-------+
+                       +------------------ TA ----------------------------+
+
+  REGNAME ALARM    IN MODE        LOAD  RUN MODE OUT MODE   PB ON   START
+  +-+---+------+------+--------+--------+-------+--------+--------+-------+
+  |E|CRB|0=TOD |   0  |0=02    |1=FORCE |0=CONT.|0=PULSE |0=PB7OFF|0=STOP |
+  | |   |      |   1  |1=CNT   |LOAD    |       |        |        |       |
+  | |   |1=    |   1  |0=TA    |        |       |        |        |       |
+  | |   | ALARM|   1  |1=CNT&TA|(STROBE)|1=O.S. |1=TOGGLE|1=PB7ON |1=START|
+  +-+---+------+------+--------+--------+-------+--------+--------+-------+
+               +-------------------------- TB ----------------------------+
+
+  All unused register bits are unaffected by a write and are forced to zero
+  on a read.
+  +-----------------------------------------------------------------------+
+  | COMMODORE SEMICONDUCTOR GROUP reserves the right to make changes to   |
+  | any products herein to improve reliability, function or design.       |
+  | COMMODORE SEMICONDUCTOR GROUP does not assume any liability arising   |
+  | out of the application or use of any product or circuit described     |
+  | herein; neither does it convey any license under its patent rights nor|
+  | the rights of others.                                                 |
+  +-----------------------------------------------------------------------+
+                                                           APPENDIX M   435
+~
+
+
+  APPENDIX N
+
+  6566/6567 (VIC-II) CHIP
+  SPECIFICATIONS
+
+
+
+    The 6566/6567 are multi-purpose color video controller devices for use
+  in both computer video terminals and video game applications. Both
+  devices contain 47 control registers which are accessed via a standard
+  8-bit microprocessor bus (65XX) and will access up to 16K of memory for
+  display information. The various operating modes and options within each
+  mode are described.
+
+
+
+  CHARACTER DISPLAY MODE
+
+    In the character display mode, the 6566/6567 fetches CHARACTER POINTERs
+  from the VIDEO MATRIX area of memory and translates the pointers to
+  character dot location addresses in the 2048 byte CHARACTER BASE area of
+  memory. The video matrix is comprised of 1000 consecutive locations in
+  memory which each contain an eight-bit character pointer. The location of
+  the video matrix within memory is defined by VM13-VM10 in register 24
+  ($18) which are used as the 4 MSB of the video matrix address. The lower
+  order 10 bits are provided by an internal counter (VC9-VC0) which steps
+  through the 1000 character locations. Note that the 6566/6567 provides 14
+  address outputs; therefore, additional system hardware may be required
+  for complete system memory decodes.
+
+
+
+                          CHARACTER POINTER ADDRESS
+
+     A13| A12| A11| A10| A09| A08| A07| A06| A05| A04| A03| A02| A01| A00
+  ------+----+----+----+----+----+----+----+----+----+----+----+----+------
+    VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0
+
+
+
+
+
+
+  436   APPENDIX N
+~
+
+
+    The eight-bit character pointer permits up to 256 different character
+  definitions to be available simultaneously. Each character is an 8*8 dot
+  matrix stored in the character base as eight consecutive bytes. The loca-
+  tion of the character base is defined by CB13-CB11 also in register 24
+  ($18) which are used for the 3 most significant bits (MSB) of the char-
+  acter base address. The 11 lower order addresses are formed by the 8-bit
+  character pointer from the video matrix (D7-D0) which selects a
+  particular character, and a 3-bit raster counter (RC2-RC0) which selects
+  one of the eight character bytes. The resulting characters are formatted
+  as 25 rows of 40 characters each. In addition to the 8-bit character
+  pointer, a 4-bit COLOR NYBBLE is associated with each video matrix
+  location (the video matrix memory must be 12 bits wide) which defines one
+  of sixteen colors for each character.
+
+
+                           CHARACTER DATA ADDRESS
+
+     A13| A12| A11| A10| A09| A08| A07| A06| A05| A04| A03| A02| A01| A00
+  ------+----+----+----+----+----+----+----+----+----+----+----+----+------
+    CB13|CB12|CB11| D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 | RC2| RC1| RC0
+
+
+  STANDARD CHARACTER MODE (MCM = BMM = ECM = 0)
+
+    In the standard character mode, the 8 sequential bytes from the
+  character base are displayed directly on the 8 lines in each character
+  region. A "0" bit causes the background #0 color (from register 33 ($21))
+  to be displayed while the color selected by the color nybble (foreground)
+  is displayed for a "1" bit (see Color Code Table).
+
+                | CHARACTER |
+     FUNCTION   |    BIT    |               COLOR DISPLAYED
+  --------------+-----------+----------------------------------------------
+    Background  |     0     |  Background #0 color
+                |           |  (register 33 ($21)
+    Foreground  |     1     |  Color selected by 4-bit color nybble
+
+
+    Therefore, each character has a unique color determined by the 4-bit
+  color nybble (1 of 16) and all characters share the common background
+  color.
+
+
+                                                           APPENDIX N   437
+~
+
+
+  MULTI-COLOR CHARACTER MODE (MCM = 1, BMM = ECM = 0 )
+
+    Multi-color mode provides additional color flexibility allowing up to
+  four colors within each character but with reduced resolution. The multi-
+  color mode is selected by setting the MCM bit in register 22 ($16) to
+  "1," which causes the dot data stored in the character base to be
+  interpreted in a different manner. If the MSB of the color nybble is a
+  "0," the character will be displayed as described in standard character
+  mode, allowing the two modes to be inter-mixed (however, only the lower
+  order 8 colors are available). When the MSB of the color nybble is a "1"
+  (if MCM:MSB(CM) = 1) the character bits are interpreted in the multi-
+  color mode:
+
+                | CHARACTER  |
+     FUNCTION   |  BIT PAIR  |               COLOR DISPLAYED
+  --------------+------------+---------------------------------------------
+    Background  |     00     |  Background #0 Color
+                |            |  (register 33 ($21))
+    Background  |     01     |  Background #1 Color
+                |            |  (register 34 ($22)
+    Foreground  |     10     |  Background #2 Color
+                |            |  (register 35 ($23)
+    Foreground  |     11     |  Color specified by 3 LSB

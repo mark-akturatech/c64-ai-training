@@ -1,0 +1,89 @@
+# 6502 Arithmetic Operations Primer - ADC and SBC Behavior
+
+          A Primer of 6502 Arithmetic Operations
+                                                                  6502 Instruction Set
+          The 6502 processor features two basic arithmetic instructions, ADC, ADd with Carry,
+          and SBC, SuBtract with Carry. As the names suggest, these provide addition and
+          subtraction for single byte operands and results. However, operations are not
+          limited to a single byte range, which is where the carry flag comes in, providing
+          the means for a single-bit carry (or borrow), to combine operations over several
+          bytes.
+          In order to accomplish this, the carry is included in each of these operations:
+          for additions, it is added (much like another operand); for subtractions, which are
+          just an addition using the inverse of the operand (complement value of the operand),
+          the role of the carry is inverted, as well.
+          Therefore, it is crucial to set up the carry appropriatly: fo additions, the carry
+          has to be initially cleared (using CLC), while for subtractions, it must be initally
+          set (using SEC — more on SBC below).
+                         ;ADC: A = A + M + C
+            CLC          ;clear carry in preparation
+            LDA #2       ;load 2 into the accumulator
+            ADD #3       ;add 3 -> now 5 in accumulator
+                         ;SBC: A = A - M - C̅       ("C̅ ": "not carry")
+            SEC          ;set carry in preparation
+            LDA #15      ;load 15 into the accumulator
+            SBC #8       ;subtract 8 -> now 7 in accumulator
+          Note: Here, we used immediate mode, indicated by the prefix "#" before the operand,
+            to directly load a literal value. If there is no such "#" prefix, we generally
+            mean to use the value stored at the address, which is given by the operand. As
+            we will see in the next example.)
+          To combine this for 16-bit values (2 bytes each), we simply chain the instructions
+          for the next bytes to operate on, but this time without setting or clearing the carry.
+          Supposing the following locations for storing 16-bit values:
+                                low-byte     high-byte
+            first argument ....   $1000        $1001
+            second argument ...   $1002        $1003
+            result ............   $1004        $1005
+          we perform a 16-bit addition by:
+            CLC          ;prepare carry for addition
+            LDA $1000    ;load value at address $1000 into A (low byte of first argument)
+            ADC $1002    ;add low byte of second argument at $1002
+                                                                   6502 Instruction Set
+            STA $1004     ;store low byte of result at $1004
+            LDA $1001     ;load high byte of first argument
+            ADC $1003     ;add high byte of second argument
+            STA $1005     ;store high byte of result (result in $1004 and $1005)
+          and, conversely, for a 16-bit subtraction:
+            SEC           ;prepare carry for subtraction
+            LDA $1000     ;load value at address $1000 into A (low byte of first argument)
+            SBC $1002     ;subtract low byte of second argument at $1002
+            STA $1004     ;store low byte of result at $1004
+            LDA $1001     ;load high byte of first argument
+            SBC $1003     ;subtract high byte of second argument
+            STA $1005     ;store high byte of result (result in $1004 and $1005)
+          Note: Another, important preparatory step is to set the processor into binary
+            mode by use of the CLD (CLear Decimal flag) instruction. (Compare the section
+            on decimal mode below.) This has to be done only once.
+          Signed Values
+          Operations for unsigned and signed values are principally the same, the only
+          difference being in how we interpret the values. Generally, the 6502 uses what
+          is known as two's complement to represent negative values.
+          (In earlier computers,something known as ones' complement was used, where we
+          simply flip all bits to their opposite state to represent a negative value.
+          While simple, this came with a few drawbacks, like an additional value of
+          negative zero, which are overcome by two's complement.)
+          In two's complement representation, we simply flip all the bits in a byte to
+          their opposite (the same as an XOR by $FF) and then add 1 to this.
+          E.g., to represent -4:,
+          (We here use "$" to indicate a hexadecimal number and "%" for binary notation.
+          A dot is used to separate the high- and low-nibble, i.e. group of 4 bits.)
+                %0000.0100      4
+            XOR %1111.1111    255
+            -------------
+                %1111.1011    complement (all bits flipped)
+             +            1
+            -------------
+                %1111.1100     -4, two's complement
+          Thus, in a single byte, we may represent values in the range
+                                                                       6502 Instruction Set
+            from   -128   (%1000.0000 or $80)
+            to     +127   (%0111.1111 or $7F)
+          A notable feature is that the highest value bit (first bit from the left) will
+          always be 1 for a negative value and always be 0 for a positive one, for which
+          it is also known as the sign bit. Whenever we interpret a value as a signed
+          number, a set sign bit indicates a negative value.
+          This works just the same for larger values, e.g., for a signed 16-bit value:
+            -512   =  %1111.1110.0000.0000     =   $FE $00
+            -516   =  %1111.1101.1111.1100     =   $FD $FC (mind how the +1 step carries over)
+          Notably, the binary operations are still the same as with unsigned values and
+          provide the expected results:

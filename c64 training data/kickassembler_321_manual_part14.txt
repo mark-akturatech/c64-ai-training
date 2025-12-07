@@ -1,0 +1,140 @@
+# KickAssembler - Special Features: Basic Upstart, Opcodes, Colors
+
+code for the outside. This is useful, since labels names won’t collide, but sometimes you want to
+access these anyway. By using namespaces you can access this information. In this chapter the
+different uses of namespaces are explained.
+8.1 The Namespace Directive
+Suppose you want to divide your code into different parts with local labels and variables and want
+to access to some of the labels from the outside. This can be done with the .namespace directive:
+           jsr part1.init
+           jsr part1.exec
+           jsr part2.init
+           jsr part2.exec
+           rts
+   .namespace part1 {
+   init:
+           ...
+           rts
+   exec:
+           ...
+           rts
+   }
+   .namespace part2 {
+   init:
+           ...
+           rts
+   exec:
+           ...
+           rts
+   }
+Inside a namespace you reference the labels as usual, but from the outside you append the
+namespace name as prefix to the label as seen in the jsr commands. Namespaces can be nested
+which is seen in the following example:
+           jsr part1.section1.exec
+           rts
+   .namespace part1 {
+           .namespace section1 {
+           exec:
+              ...
+              rts
+           }
+                                                                                                  37
+           // You don't have to append part1 here since we are already in
+           // the part1 namespace
+           jsr section2.exec
+           .namespace section2 {
+           exec:
+               ...
+               rts
+           }
+   }
+User defined labels can also be accessed, so if you want a constant to be exposed to the outside of
+your namespace then define it as a label:
+           .namespace vic {
+               .label borderColor = $d020
+               .label backgroundColor0 = $d021
+               .label backgroundColor1 = $d022
+               .label backgroundColor2 = $d023
+           }
+           lda #0
+           sta vic.backgroundColor0
+           sta vic.borderColor
+8.2 File Namespaces
+If you want the intire sourcefile to be place in a namespace, you can put a .filenamespace directive
+in the top of the file.
+   .filenamespace mySpace
+           .pc=$1000
+   start: inc $d020
+           jmp start
+It’s equivalent to using the .namespace directive but it will save a pair of brackets.
+                                                                                                   38
+8.3 Label Namespaces (Autonamespacing)
+If you declare a scope after a label, the scope will automatically declare a namespace. This is handy
+if you use scoping to make the labels of your functions local. In the example below the clearScreen
+label and the succeeding scope creates a namespace with the name clearScreen.
+            lda #' '
+            sta clearScreen.fillbyte+1
+            jsr clearScreen
+            rts
+   clearScreen: {
+   fillbyte: lda #0
+            ldx #0
+   loop:
+            sta $0400,x
+            sta $0500,x
+            sta $0600,x
+            sta $0700,x
+            inx
+            bne loop
+            rts
+   }
+The above code fills the screen with black spaces. The code that calls the clearScreen subroutine
+uses the namespace to access the fillbyte label. If you use the label directive to define the fillbyte
+label, the code can be done a little nicer:
+            lda #'a'
+            sta clearScreen2.fillbyte
+            jsr clearScreen2
+            rts
+   ClearScreen2: {
+            .label fillbyte = *+1
+            lda #0
+            ldx #0
+   loop:
+            sta $0400,x
+            sta $0500,x
+            sta $0600,x
+            sta $0700,x
+            inx
+            bne loop
+            rts
+   }
+Now you don’t have to remember to add one to the address before storing the fill byte.
+Autonamespacing works with both normal labels and the label directive, so its also possible to
+write programs like this:
+   .label mylabel1= $1000 {
+            .label mylabel2 = $1234
+   }
+   .print “mylable2=”+mylabel1.mylabel2
+                                                                                                       39
+8.4 Accessing Local Labels of Macros and Pseudocommands
+Autonamespacing makes it possible to access local labels of executed Macros and
+pseudocommands as demonstrated in the following program:
+  .pc=$1000
+  start:
+         inc c1.color
+         dec c2.color
+  c1:    :setColor()
+  c2:    :setColor()
+         jmp start
+  .macro setColor() {
+         .label color = *+1
+         lda #0
+         sta $d020
+  }
+                                                                                40
+9 Special Features
+In the previous chapters we have described general features of Kick Assembler that can be used to
+solve a wide range if problems. In this chapter, we describe special features that where
+implemented to solve specific problems, such as converting graphics, importing sid files, or making
+vector calculations.
+9.1 Creating a Basic Upstart Program

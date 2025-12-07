@@ -1,0 +1,284 @@
+# C64 PRG Chapter 5 - Kernal: CHROUT, CIOUT, CINT, CLALL
+
+  288   BASIC TO MACHINE LANGUAGE
+~
+
+
+  B-18. Function Name: OPEN
+
+
+    Purpose: Open a logical file
+    Call address: $FFC0 (hex) 65472 (decimal)
+    Communication registers: None
+    Preparatory routines: SETLFS, SETNAM
+    Error returns: 1,2,4,5,6,240, READST
+    Stack requirements: None
+    Registers affected: A, X, Y
+
+    Description: This routine is used to OPEN a logical file. Once the
+  logical file is set up, it can be used for input/output operations. Most
+  of the I/O KERNAL routines call on this routine to create the logical
+  files to operate on. No arguments need to be set up to use this routine,
+  but both the SETLFS and SETNAM KERNAL routines must be called before
+  using this routine.
+
+
+  How to Use:
+
+    0) Use the SETLFS routine.
+    1) Use the SETNAM routine.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    This is an implementation of the BASIC statement: OPEN 15,8,15,"I/O"
+
+
+          LDA #NAME2-NAME    ;LENGTH OF FILE NAME FOR SETLFS
+          LDY #>NAME         ;ADDRESS OF FILE NAME
+          LDX #<NAME
+          JSR SETNAM
+          LDA #15
+          LDX #8
+          LDY #15
+          JSR SETLFS
+          JSR OPEN
+    NAME  .BYT 'I/O'
+    NAME2
+
+
+                                            BASIC TO MACHINE LANGUAGE   289
+~
+
+
+  B-19. Function Name: PLOT
+
+    Purpose: Set cursor location
+    Call address: $FFF0 (hex) 65520 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A, X, Y
+
+    Description: A call to this routine with the accumulator carry flag
+  set loads the current position of the cursor on the screen (in X,Y
+  coordinates) into the Y and X registers. Y is the column number of the
+  cursor location (6-39), and X is the row number of the location of the
+  cursor (0-24). A call with the carry bit clear moves the cursor to X,Y
+  as determined by the Y and X registers.
+
+  How to Use:
+
+
+  READING CURSOR LOCATION
+
+    1) Set the carry flag.
+    2) Call this routine.
+    3) Get the X and Y position from the Y and X registers, respectively.
+
+
+  SETTING CURSOR LOCATION
+
+    1) Clear carry flag.
+    2) Set the Y and X registers to the desired cursor location.
+    3) Call this routine.
+
+
+  EXAMPLE:
+
+    ;MOVE THE CURSOR TO ROW 10, COLUMN 5 (5,10)
+    LDX #10
+    LDY #5
+    CLC
+    JSR PLOT
+
+
+  290   BASIC TO MACHINE LANGUAGE
+~
+
+
+  B.20. Function Name: RAMTAS
+
+    Purpose: Perform RAM test
+    Call address: $FF87 (hex) 65415 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A, X, Y
+
+    Description: This routine is used to test RAM and set the top and
+  bottom of memory pointers accordingly. It also clears locations $0000 to
+  $0101 and $0200 to $03FF. It also allocates the cassette buffer, and sets
+  the screen base to $0400. Normally, this routine is called as part of the
+  initialization process of a Commodore 64 program cartridge.
+
+  EXAMPLE:
+    JSR RAMTAS
+
+  B-21. Function Name: RDTIM
+
+    Purpose: Read system clock
+    Call address: $FFDE (hex) 65502 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A, X, Y
+
+    Description: This routine is used to read the system clock. The clock's
+  resolution is a 60th of a second. Three bytes are returned by the
+  routine. The accumulator contains the most significant byte, the X index
+  register contains the next most significant byte, and the Y index
+  register contains the least significant byte.
+
+  EXAMPLE:
+
+    JSR RDTIM
+    STY TIME
+    STX TIME+1
+    STA TIME+2
+    ...
+    TIME *=*+3
+                                            BASIC TO MACHINE LANGUAGE   291
+~
+
+
+  B-22. Function Name: READST
+
+    Purpose: Read status word
+    Call address: $FFB7 (hex) 65463 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A
+
+    Description: This routine returns the current status of the I/O devices
+  in the accumulator. The routine is usually called after new communication
+  to an I/O device. The routine gives you information about device status,
+  or errors that have occurred during the I/O operation.
+    The bits returned in the accumulator contain the following information:
+  (see table below)
+
+  +---------+------------+---------------+------------+-------------------+
+  |  ST Bit | ST Numeric |    Cassette   |   Serial   |    Tape Verify    |
+  | Position|    Value   |      Read     |  Bus R/W   |      + Load       |
+  +---------+------------+---------------+------------+-------------------+
+  |    0    |      1     |               |  time out  |                   |
+  |         |            |               |  write     |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    1    |      2     |               |  time out  |                   |
+  |         |            |               |    read    |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    2    |      4     |  short block  |            |    short block    |
+  +---------+------------+---------------+------------+-------------------+
+  |    3    |      8     |   long block  |            |    long block     |
+  +---------+------------+---------------+------------+-------------------+
+  |    4    |     16     | unrecoverable |            |   any mismatch    |
+  |         |            |   read error  |            |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    5    |     32     |    checksum   |            |     checksum      |
+  |         |            |     error     |            |       error       |
+  +---------+------------+---------------+------------+-------------------+
+  |    6    |     64     |  end of file  |  EOI line  |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    7    |   -128     |  end of tape  | device not |    end of tape    |
+  |         |            |               |   present  |                   |
+  +---------+------------+---------------+------------+-------------------+
+
+  292   BASIC TO MACHINE LANGUAGE
+~
+
+
+  How to Use:
+
+    1) Call this routine.
+    2) Decode the information in the A register as it refers to your pro-
+       gram.
+
+  EXAMPLE:
+
+    ;CHECK FOR END OF FILE DURING READ
+    JSR READST
+    AND #64                       ;CHECK EOF BIT (EOF=END OF FILE)
+    BNE EOF                       ;BRANCH ON EOF
+
+  B-23. Function Name: RESTOR
+
+    Purpose: Restore default system and interrupt vectors
+    Call address: $FF8A (hex) 65418 (decimal)
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A, X, Y
+
+    Description: This routine restores the default values of all system
+  vectors used in KERNAL and BASIC routines and interrupts. (See the Memory
+  Map for the default vector contents). The KERNAL VECTOR routine is used
+  to read and alter individual system vectors.
+
+  How to Use:
+    1) Call this routine.
+
+  EXAMPLE:
+    JSR RESTOR
+
+  B-24. Function Name: SAVE
+
+    Purpose: Save memory to a device
+    Call address: $FFD8 (hex) 65496 (decimal)
+    Communication registers: A, X, Y
+    Preparatory routines: SETLFS, SETNAM
+    Error returns: 5,8,9, READST
+    Stack requirements: None
+    Registers affected: A, X, Y
+
+                                            BASIC TO MACHINE LANGUAGE   293
+~
+
+
+    Description: This routine saves a section of memory. Memory is saved
+  from an indirect address on page 0 specified by the accumulator to the
+  address stored in the X and Y registers. It is then sent to a logical
+  file on an input/output device. The SETLFS and SETNAM routines must be
+  used before calling this routine. However, a file name is not required to
+  SAVE to device 1 (the Datassette(TM) recorder). Any attempt to save to
+  other devices without using a file name results in an error.
+
+  +-----------------------------------------------------------------------+
+  | NOTE: Device 0 (the keyboard), device 2 (RS-232), and device 3 (the   |
+  | screen) cannot be SAVEd to. If the attempt is made, an error occurs,  |
+  | and the SAVE is stopped.                                              |
+  +-----------------------------------------------------------------------+
+
+  How to Use:
+
+    0) Use the SETLFS routine and the SETNAM routine (unless a SAVE with no
+       file name is desired on "a save to the tape recorder"),
+    1) Load two consecutive locations on page 0 with a pointer to the start
+       of your save (in standard 6502 low byte first, high byte next
+       format).
+    2) Load the accumulator with the single byte page zero offset to the
+       pointer.
+    3) Load the X and Y registers with the low byte and high byte re-
+       spectively of the location of the end of the save.
+    4) Call this routine.
+
+  EXAMPLE:
+
+    LDA #1              ;DEVICE = 1:CASSETTE
+    JSR SETLFS
+    LDA #0              ;NO FILE NAME
+    JSR SETNAM
+    LDA PROG            ;LOAD START ADDRESS OF SAVE
+    STA TXTTAB          ;(LOW BYTE)
+    LDA PROG+1
+    STA TXTTA B+1       ;(HIGH BYTE)
+    LDX VARTAB          ;LOAD X WITH LOW BYTE OF END OF SAVE
+    LDY VARTAB+1        ;LOAD Y WITH HIGH BYTE
+    LDA #<TXTTAB        ;LOAD ACCUMULATOR WITH PAGE 0 OFFSET
+    JSR SAVE
+
+

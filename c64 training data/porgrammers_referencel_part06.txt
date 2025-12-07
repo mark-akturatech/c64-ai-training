@@ -1,0 +1,190 @@
+# C64 PRG Chapter 1 - Logical Operators, Hierarchy
+
+  14   BASIC PROGRAMMING RULES
+~
+
+
+    IF A=100 OR B=100 THEN 20     (if A or B is 100 then the
+                                   result is true)
+
+    A=64 OR 32: PRINT A           (A = 96)
+
+    IF NOT X<Y THEN 30            (if X>=Y the result is true)
+
+    X= NOT 96                     (result is -97 (two's complement))
+
+
+  HIERARCHY OF OPERATIONS
+
+    All expressions perform the different types of operations according to
+  a fixed hierarchy. In other words, certain operations are performed be-
+  fore other operations. The normal order of operations can be modified
+  by enclosing two or more operands within parentheses ( ), creating a
+  "subexpression." The parts of an expression enclosed in parentheses will
+  be reduced to a single value before working on parts outside the par-
+  entheses.
+    When you use parentheses in expressions, they must be paired so that
+  you always have an equal number of left and right parentheses. Otherwise,
+  the BASIC error message ?SYNTAX ERROR will appear.
+    Expressions which have operands inside parentheses may themselves
+  be enclosed in parentheses, forming complex expressions of multiple
+  levels. This is called nesting. Parentheses can be nested in expressions
+  to a maximum depth of ten levels-ten matching sets of parentheses.
+  The inner-most expression has its operations performed first. Some
+  examples of expressions are:
+
+                     A+B
+                     C^(D+E)/2
+                     ((X-C^(D+E)/2)*10)+1
+                     GG$>HH$
+                     JJ$+"MORE"
+                     K%=1 AND M<>X
+                     K%=2 OR (A=B AND M<X)
+                     NOT (D=E)
+
+    The BASIC Interpreter will normally perform operations on expressions
+  by performing arithmetic operations first, then relational operations,
+  and logical operations lost. Both arithmetic and logical operators have
+
+
+                                               BASIC PROGRAMMING RULES   15
+~
+
+
+  an order of precedence (or hierarchy of operations) within themselves. On
+  the other hand, relational operators do not have an order of precedence
+  and will be performed as the expression is evaluated from left to right.
+    If all remaining operators in an expression have the same level of
+  precedence then operations happen from left to right. When performing
+  operations on expressions within parentheses, the normal order of pre-
+  cedence is maintained. The hierarchy of arithmetic and logical opera-
+  tions is shown in Table 1-3 from first to last in order of precedence.
+
+     Table 1-3. Hierarchy of Operations Performed on Expressions
+  +---------------+---------------------------------+---------------------+
+  |   OPERATOR    |           DESCRIPTION           |       EXAMPLE       |
+  +---------------+---------------------------------+---------------------+
+  |       ^       |    Exponentiation               |      BASE ^ EXP     |
+  |               |                                 |                     |
+  |       -       |    Negation (Unary Minus)       |         -A          |
+  |               |                                 |                     |
+  |      * /      |    Multiplication               |       AB * CD       |
+  |               |    Division                     |       EF / GH       |
+  |               |                                 |                     |
+  |      + -      |    Addition                     |       CNT + 2       |
+  |               |    Subtraction                  |       JK - PQ       |
+  |               |                                 |                     |
+  |     > = <     |    Relational Operations        |       A <= B        |
+  |               |                                 |                     |
+  |      NOT      |    Logical NOT                  |        NOT K%       |
+  |               |    (Integer Two's Complement)   |                     |
+  |               |                                 |                     |
+  |      AND      |    Logical AND                  |      JK AND 128     |
+  |               |                                 |                     |
+  |      OR       |    Logical OR                   |       PQ OR 15      |
+  +---------------+---------------------------------+---------------------+
+
+  STRING OPERATIONS
+
+    Strings are compared using the same relational operators (=, <>,
+  <=, >=, <, >) that are used for comparing numbers. String compari-
+  sons are mode by taking one character at a time (left-to-right) from
+  each string and evaluating each character code position from the PET/
+  CBM character set. If the character codes are the same, the characters
+  are equal. If the character codes differ, the character with the lower
+  code number is lower in the character set. The comparison stops when
+
+  16   BASIC PROGRAMMING RULES
+~
+
+
+    the end of either string is reached. All other things being equal, the
+  shorter string is considered less than the longer string. Leading or
+  trailing blanks ARE significant.
+    Regardless of the data types, at the end of all comparisons you get
+  an integer result. This is true even if both operands are strings.
+  Because of this a comparison of two string operands can be used as an
+  operand in performing calculations. The result will be - 1 or 0 (true or
+  false) and can be used as anything but a divisor since division by zero
+  is illegal.
+
+  STRING EXPRESSIONS
+
+    Expressions are treated as if an implied "<>0" follows them. This means
+  that if an expression is true then the next BASIC statements on. the same
+  program line are executed. If the expression is false the rest of the
+  line is ignored and the next line in the program is executed.
+    Just as with numbers, you can also perform operations on string vari-
+  ables. The only string arithmetic operator recognized by CBM BASIC is the
+  plus sign (+) which is used to perform concatenation of strings. When
+  strings are concatenated, the string on the right of the plus sign is
+  appended to the string on the left, forming a third string as a result.
+  The result can be printed immediately, used in a comparison, or assigned
+  to a variable name. If a string data item is compared with (or set equal
+  to) a numeric item, or vice-versa, the BASIC error message ?TYPE MISMATCH
+  will occur. Some examples of string expressions and concatenation are:
+
+    10 A$="FILE": B$="NAME"
+    20 NAM$=A$+B$                      (gives the string: FILENAME)
+    30 RES$="NEW "+A$+B$               (gives the string: NEW FILENAME)
+                ^
+                |       +-----------------+
+                +-------+ Note space here.|
+                        +-----------------+
+
+
+
+
+
+
+
+
+
+
+                                               BASIC PROGRAMMING RULES   17
+~
+
+
+  PROGRAMMING TECHNIQUES
+
+  DATA CONVERSIONS
+
+    When necessary, the CBM BASIC Interpreter will convert a numeric
+  data item from an integer to floating-point. or vice-versa, according to
+  the following rules:
+
+    o All arithmetic and relational operations are performed in floating
+      point format. Integers are converted to floating-point form for
+      evaluation of the expression, and the result is converted back to
+      integer. logical operations convert their operands to integers an
+      return an integer result.
+    o If a numeric variable name of one type is set equal to a numeric
+      data item of a different type, the number will be converted and
+      stored as the data type declared in the variable name.
+    o When a floating-point value is converted to an integer, the frac-
+      tional portion is truncated (eliminated) and the integer result is
+      less than or equal to the floating-point value. If the result is
+      outside the range of +32767 thru -32768, the BASIC error message
+      ?ILLEGAL QUANTITY will occur.
+
+
+
+  USING THE INPUT STATEMENT
+
+    Now that you know what variables are, let's take that information an
+  put it together with the INPUT statement for some practical program-
+  ming applications.
+    In our first example, you can think of a variable as a "storage com-
+  partment" where the Commodore 64 stores the user's response to your
+  prompt question. To write a program which asks the user to type in a
+  name, you might assign the variable N$ to the name typed in. Now
+  every time you PRINT N$ in your program, the Commodore 64 will
+  automatically PRINT the name that the user typed in.
+    Type the word NEW on your Commodore 64. Hit the <RETURN> key
+  and try this example:
+
+    10 PRINT"YOUR NAME": INPUT N$
+    20 PRINT"HELLO",N$
+
+
+

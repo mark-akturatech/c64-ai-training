@@ -1,0 +1,302 @@
+# ML for C64 - Appendix A: Instruction Details (ROL-TYA)
+
+make the computer do whatever you choose.
+
+
+Debugging
+---------
+
+When a program has been written, the next step is to look for any possible
+errors, or bugs.  The process of searching for and systematically eliminating
+these bugs is called debugging.
+
+Most programs are made up of sections, each of which has a clear task to
+perform.  When a program misbehaves, it may be easy to go to the area of the
+bug, since you can see which parts of the program are working and where
+things start to go wrong.
+
+                                                                        :143:
+
+In case of doubt, you may insert breakpoints into your program.  Replace
+selected instructions with the instruction BRK; this may be done by replacing
+the instructions' op codes with the value 00.  Run the program; when it
+reaches the first breakpoint, it will stop and the machine language monitor
+will become active.  Examine the registers carefully to see whether they
+contain the values expected.  Display memory locations that the program
+should have written; the contents will tell you whether the program has been
+doing its job correctly.
+
+When you have confirmed that the program is behaving correctly up to the
+breakpoint, replace the BRK command at that point with the original op code.
+Command .G to that address, and the program will continue to the next
+breakpoint.  If it helps your investigation, you may even change memory or
+registers before continuing program execution.
+
+If you carried this procedure to the extreme, you might stop your program
+after every instruction.  It would take time, but you would certainly track
+down everything the program did.
+
+The best debugging takes place at the time you write the program.  Write
+sensibly, not "super cleverly."  If you fear getting caught in an endless
+loop, insert a stop key test (JSR $FFE1) so that you'll still have control of
+the computer.
+
+Get to know your machine language monitor.  The monitor uses a number of
+locations in memory; you'll have trouble debugging a program if it uses the
+same storage addresses as does your program.  Every time you try to check the
+contents of a memory location to see what your program has done, you'll see
+the monitor working values instead--and that would be misleading and
+annoying.
+
+
+Symbolic Assemblers
+-------------------
+
+Throughout these exercises, we have used small, "nonsymbolic" assemblers such
+as would be found within a machine language monitor.  These are good for
+beginners; they parallel the machine code quite closely and allow you to keep
+the working machine clearly in focus.
+
+As you write bigger and better programs, these small assemblers will be less
+convenient.  Forward branches and subroutines we have not yet written make it
+necessary for us to "guess" at the address and fix up our guess later.  There
+is the possible danger that an address will be typed in wrongly ($0345
+instead of $0354), causing the program to fail.
+
+                                                                        :144:
+
+To help us write more ambitious programs, we may wish to turn to commercially
+available assembler systems that allow labels or symbolic addresses.  If we
+wish to write code to call a subroutine to input numbers--we might not have
+written this subroutine yet--we can code JSR NUMIN.  When we write the
+subroutine, we'll put the identifying label NUMIN at the start.  As your
+program is assembled, the proper address of NUMIN is determined, and this
+address will be inserted as needed.
+
+It saves work and helps guard against errors.  But symbolic assemblers allow
+a more powerful capability:  they help documentation and allow program
+updating.
+
+Your assembly may be listed to the printer.  This allows you to examine and
+annotate your program, and file the details away for later reference.  The
+assembler allows you to include comments, which improve the readability of
+the listing but don't affect the machine language program.
+
+The source program you have written may be saved and used again later.  If
+you find it is necessary to change the program, bring back the source code
+from cassette or disk, make the changes, and reassemble.  In this way,
+programs can be easily corrected or updated.
+
+[An even worse case scenario is when you find that you need to insert a few
+instructions in the middle of your machine code.  Within a monitor, you need
+to adjust all of your addresses forward by some number of bytes, retype the
+entire section of code which follows your change, as well as modify any
+instructions prior to your change which reference affected addresses.  If you
+were using an assembler, you can merely insert those instructions into the
+source file and let the assembler figure out all of the addressing issues.
+-wf]
+
+
+Where To Go From Here
+---------------------
+
+Almost anywhere.  Up to this point, we've been building confidence:  trying
+to give you a feel as to how the pieces work.  Now, the real fun--the
+creative programming--is up to you.
+
+Users have varying objectives.  You may want to do mathematical operations.
+You may want to interact upon BASIC programs--analyzing, searching,
+renumbering.  Whatever suits you.  Your interest area may be music, graphics,
+or animation.  Machine language will open the door to all of these; its
+amazing speed makes spectacular effects possible.  You may plan to go into
+hardware and interface new devices to your computer; an understanding of
+machine language, and IA chips in particular, will be useful.  The
+possibilities are endless.
+
+Even if you have no immediate plans to write new programs in machine
+language, you will have gained an insight into the workings of your machine.
+Everything that the machine does--BASIC, kernal, everything--is either
+hardware or machine language.
+
+With the elementary concepts we have introduced here, you will be able to go
+deeper into more advanced texts.  Many programming books deal with the
+abstract 650x chip.  That's hard for the beginner; it's difficult to see how
+the instructions fit within the architecture of a real machine, or how the
+programs can actually be placed within the computer.  By now, you should be
+able to take a piece of abstract coding and fit it into your system.
+
+                                                                        :145:
+
+Many things start to happen at once when you take your first steps in machine
+language programming.  You must learn to use the monitor.  You must learn a
+good deal about how your machine is designed.  And you must learn how to fit
+the pieces together.  It takes a while to adapt to the "information shock"--
+but things start to fit together.  Eventually, you'll have a stronger and
+sounder view of the whole computer:  hardware, software, languages, and
+usage.
+
+
+What You Have Learned
+---------------------
+
+- Machine language programs can have run times estimated fairly accurately.
+  In many cases, however, machine language is so fast that detailed speed
+  calculations are not needed.
+
+- We can handle input from devices other than the keyboard by switching the
+  identity of the designated input device.  If an input channel has been
+  opened as a file, we may connect to it with JSR $FFC6 and disconnect with
+  JSR $FFCC.
+
+- We can handle output to devices other than the screen by switching the
+  identity of the designated output device.  If an output channel has been
+  opened as a file, we may connect to it with JSR $FFC9 and disconnect with
+  JSR $FFCC.
+
+- Once input or output has been switched, we may receive in the usual way
+  with the subroutine at $FFE4, or send in the usual way with the subroutine
+  at $FFD2.
+
+- Be careful no to confuse connecting to a channel with opening a file.  In a
+  typical program, we open a file only once, but we may connect to it and
+  disconnect from it hundreds of times as we read or write data.
+
+- You have met all the instructions of the 650x microprocessor.  There are
+  enough for versatility, but not so many that you can't keep track of them
+  all.  You have made a worthwhile start in the art and science of machine
+  language programming.
+
+
+Questions and Projects
+----------------------
+
+Write a program to read a sequential file and count the number of times the
+letter "S" (hex 41) appears in the file.  Use a BASIC PEEK to print the
+value.  You may assume that "A" will not appear more than 255 times.
+
+                                                                        :146:
+
+Rewrite the above to count the number of occurrences of the RETURN character
+($0D) in a sequential file.  Allow for up to 65535 appearances.  Can you
+attach a meaning to this count?
+
+Write a program to print HAPPY NEW YEAR to the printer ten times.
+
+If you own a disk system, you know that you can scratch a program named JUNK
+by using the sequence:
+
+  OPEN 15,8,15:PRINT#15,"S0:JUNK"
+
+Convert the PRINT# statement to machine language a write a program to scratch
+JUNK.  Careful:  don't scratch a program that you will need.
+
+Write a "typewriter" program to read a line of text from the keyboard and
+then transfer it to the printer.  It will be a more useful program if you
+show what is being typed on the screen and if you write extra code to honor
+the DELETE key.
+
+                                                                        :147:
+
+
+
+                                                         Appendix A
+
+                                                          The 6502/
+                                                         6510/6509/
+                                                               7501
+                                                        Instruction
+                                                                Set
+
+
+The four chips differ only in their use of addresses 0 and 1:
+
+  On the 6502, the addresses are normal memory.
+
+  On the 6510 and 7501, address 0 is a directional register and address 1 is
+  an input/output register, used for such things as cassette tape and memory
+  control.
+
+  On the 6509, address 0 is used to switch program execution to a new memory
+  bank; address 1 is used to switch the memory bank accessed by the two
+  instructions LDA (..),Y and STA (..),Y.
+
+                                                                        :148:
+
+Addressing Modes
+----------------
+
+Accumulator Addressing--This form of addressing is represented with a one
+byte instruction, implying an operation on the accumulator.
+
+Immediate Addressing--In immediate addressing, the operand is contained in
+the second byte of the instruction, with no further memory addressing
+required.
+
+Absolute Addressing--In absolute addressing, the second byte of the
+instruction specifies the eight low order bits of the effective address while
+the third byte specifies the eight high order bits.  Thus, the absolute
+addressing mode allows access to the entire 64K bytes of addressable memory.
+
+Zero Page Addressing--The zero page instructions allow for shorter code and
+execution times by only fetching the second byte of the instruction and
+assuming a zero high address byte.  Careful use of the zero page can result
+in significant increase in code efficiency.
+
+Indexed Zero Page Addressing--(X, Y indexing)--This form of addressing is
+used in conjunction with the index register and is referred to as "Zero Page,
+X" or "Zero Page, Y".  The effective address is calculated by adding the
+second byte to the contents of the index register.  Since this is a form of
+"Zero Page" addressing, the content of the second byte references a location
+in page zero.  Additionally, due to the "Zero Page" addressing nature of this
+mode, no carry is added to the high order eight bits of memory and crossing
+of page boundaries does not occur.
+
+Indexed Absolute Addressing--(X, Y indexing)--This form of addressing is used
+in conjunction with X and Y index register and is referred to as "Absolute,
+X", and "Absolute, Y".  The effective address is formed by adding the
+contents of X and Y to the address contained in the second and third bytes of
+the instruction.  This mode allows the index register to contain the index or
+count value and the instruction to contain the base address.  This type of
+indexing allows any location referencing and the index to modify multiple
+fields resulting in reduced coding and execution time.
+
+Implied Addressing--In the implied addressing mode, the address containing
+the operand is implicitly stated in the operation code of the instruction.
+
+Relative Addressing--Relative addressing is used only with branch
+instructions and establishes a destination for the conditional branch.
+
+The second byte of the instruction becomes the operand which is an "Offset"
+added to the contents of the lower eight bits of the program counter when the
+counters is set at the next instruction.  The range of the offset is -128 to
++127 bytes from the next instruction.
+
+                                                                        :149:
+
+Indexed Indirect Addressing--In indexed indirect addressing (referred to as
+"Indirect, X"), the second byte of the instruction is added to the contents
+of the X index register, discarding the carry.  The result of this addition
+points to a memory location on page zero whose contents are the low order
+eight bits of the effective address.  The next memory location in page zero
+contains the high order eight bits of the effective address.  Both memory
+locations specifying the high and low order bytes of the effective address
+must be in page zero.
+
+Indirect Indexed Addressing--In indirect indexed addressing (referred to as
+"Indirect, Y"), the second byte of the instruction points to a memory
+location in page zero.  The contents of this memory location are added to the
+contents of the Y index register, the result being the low order eight bits
+of the effective address.  The carry from this addition is added to the
+contents of the next page zero memory location, the result being the high
+order eight bits of the effective address.
+
+Absolute Indirect--The second byte of the instruction contains the low order
+eight bits of a memory location.  The high order eight bits of that memory
+location is contained in the third byte of the instruction.  The contents of
+the fully specified memory location are the low order byte of the effective
+address.  The next memory location contains the high order byte of the
+effective address which is loaded into the sixteen bits of the program
+counter.
+
+
+Instruction Set--Alphabetic Sequence

@@ -1,0 +1,99 @@
+# 6502 Illegal Opcodes - Combined Operations (LAX, SAX, DCP, ISC)
+
+                      zeropage       ISC oper         E7   2      5
+                      zeropage,X     ISC oper,X       F7   2      6
+                      absolute       ISC oper         EF   3      6
+                      absolute,X     ISC oper,X       FF   3      7
+                      absolute,Y     ISC oper,Y       FB   3      7
+                      (indirect,X)   ISC (oper,X)     E3   2      8
+                      (indirect),Y   ISC (oper),Y     F3   2      8
+                 LAS (LAR)
+                      LDA/TSX oper
+                      M AND SP -> A, X, SP
+                                                         N Z C I D V
+                                                         + + - - - -
+                                                           6502 Instruction Set
+                      addressing     assembler       opc bytes cycles
+                      absolute,Y     LAS oper,Y       BB   3      4*
+                 LAX
+                      LDA oper + LDX oper
+                      M -> A -> X
+                                                         N Z C I D V
+                                                         + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       LAX oper         A7   2      3
+                      zeropage,Y     LAX oper,Y       B7   2      4
+                      absolute       LAX oper         AF   3      4
+                      absolute,Y     LAX oper,Y       BF   3      4*
+                      (indirect,X)   LAX (oper,X)     A3   2      6
+                      (indirect),Y   LAX (oper),Y     B3   2      5*
+                 LXA (LAX immediate)
+                      Store * AND oper in A and X
+                      Highly unstable, involves a 'magic' constant, see ANE
+                      (A OR CONST) AND oper -> A -> X
+                                                         N Z C I D V
+                                                         + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      immediate      LXA #oper        AB   2      2   ††
+                 RLA
+                      ROL oper + AND oper
+                      M = C <- [76543210] <- C, A AND M -> A
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       RLA oper         27   2      5
+                      zeropage,X     RLA oper,X       37   2      6
+                      absolute       RLA oper         2F   3      6
+                      absolute,X     RLA oper,X       3F   3      7
+                      absolute,Y     RLA oper,Y       3B   3      7
+                      (indirect,X)   RLA (oper,X)     23   2      8
+                      (indirect),Y   RLA (oper),Y     33   2      8
+                 RRA
+                      ROR oper + ADC oper
+                      M = C -> [76543210] -> C, A + M + C -> A, C
+                                                         N Z C I D V
+                                                         + + + - - +
+                                                               6502 Instruction Set
+                      addressing     assembler       opc bytes cycles
+                      zeropage       RRA oper         67   2      5
+                      zeropage,X     RRA oper,X       77   2      6
+                      absolute       RRA oper         6F   3      6
+                      absolute,X     RRA oper,X       7F   3      7
+                      absolute,Y     RRA oper,Y       7B   3      7
+                      (indirect,X)   RRA (oper,X)     63   2      8
+                      (indirect),Y   RRA (oper),Y     73   2      8
+                 SAX (AXS, AAX)
+                      A and X are put on the bus at the same time (resulting
+                      effectively in an AND operation) and stored in M
+                      A AND X -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       SAX oper         87   2      3
+                      zeropage,Y     SAX oper,Y       97   2      4
+                      absolute       SAX oper         8F   3      4
+                      (indirect,X)   SAX (oper,X)     83   2      6
+                 SBX (AXS, SAX)
+                      CMP and DEX at once, sets flags like CMP
+                      (A AND X) - oper -> X
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      immediate      SBX #oper        CB   2      2
+                 SHA (AHX, AXA)
+                      Stores A AND X AND (high-byte of addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                      used as the high-byte of the address)
+                      A AND X AND (H+1) -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      absolute,Y     SHA oper,Y       9F   3      5   †
+                      (indirect),Y   SHA (oper),Y     93   2      6   †
+                 SHX (A11, SXA, XAS)
+                      Stores X AND (high-byte of addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                                                               6502 Instruction Set
+                      used as the high-byte of the address)

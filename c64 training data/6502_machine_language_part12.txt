@@ -1,0 +1,302 @@
+# ML for C64 - Chapter 6: Linking BASIC and Machine Language
+
+217 in binary.  But we must first know how to multiply by ten.
+
+To multiply by ten, you first multiply by two; then multiply by two again.
+At this point, we have the original number times four.  Now, add the original
+number, giving the original number times five.  Multiply by two one last time
+and you've got it.  We'll see an example of this in Chapter 7.
+
+
+Right Shift and Rotate:  Dividing by Two
+----------------------------------------
+
+If we can multiply by two by shifting (and rotating) left, we can divide by
+two by moving the bits the other way.  If we have a multi-byte number, we
+must start at the high end.
+
+LSR (logical shift right) puts a zero into the left (high-order) bit, moves
+all the bits over to the right, and drops the leftover bit into the carry.
+ROR (rotate right) puts the carry into the left bit, moves everything right,
+and drops the leftover bit into the carry once again.  At the end of a right-
+shifting sequence, the final carry bit might be considered a remainder after
+dividing by two.
+
+                                                                         :64:
+
+                                  LSR
+              +-----+----+----+----+----+----+----+-----+
+              |     |    |    |    |    |    |    |     |
+          0 -----> ---> ---> ---> ---> ---> ---> ---> ---->  CARRY
+              |     |    |    |    |    |    |    |     |   (C FLAG)
+              +-----+----+----+----+----+----+----+-----+
+
+   IN AN LSR, ZERO MOVES INTO THE HIGH BIT, AND ALL BITS MOVE RIGHT ONE
+   POSITION; THE LOWEST BITS BECOME THE CARRY.
+
+
+
+         CARRY                    ROL                    
+           |  +-----+----+----+----+----+----+----+-----+   
+           |  |     |    |    |    |    |    |    |     |   
+           `-----> ---> ---> ---> ---> ---> ---> ---> -----.
+              |     |    |    |    |    |    |    |     |  |
+              +-----+----+----+----+----+----+----+-----+  |
+                                                           v
+                                                         CARRY
+
+   IN A ROL (ROTATE LEFT), THE CARRY MOVES INTO THE LOW ORDER BIT; EACH
+   BIT MOVES LEFT; AND THE HIGH ORDER BIT BECOMES THE NEW CARRY.
+
+
+
+        0      LSR
+        |  +----------+
+        |  |          |
+        `---> -> -> ----.
+           |          | |
+           +----------+ |        ROR
+                        |    +---------+
+                        v    |         |
+                      CARRY---> -> -> ----.
+                             |         |  |
+                             +---------+  |        ROR
+                                          |    +---------+
+                                          v    |         |
+                                        CARRY---> -> -> ----.
+                                               |         |  |
+                                               +---------+  |
+                                                            |
+                                                            v
+
+   TO DIVIDE A THREE-BYTE NUMBER BY TWO, WE SHIFT THE HIGH-ORDER BYTE
+   WITH LSR; THEN WE USE ROR TO ALLOW THE C FLAG TO "LINK" FROM BYTE
+   TO BYTE.
+
+   Figure 4.5
+
+
+Comments on Shift and Rotate
+----------------------------
+
+As you might expect of arithmetic instructions, the shift and rotate
+instructions normally operate in the A register.  But there's an extra bonus:
+these instructions also can operate directly on memory.  In other words, the
+computer can go to any address in memory and shift the bits at that address
+directly, without loading the data into a register.
+
+For this reason, you'll often see the instructions coded with the identity of
+the A register coded in the address part of the instruction.  We would code
+LSR A so as to distinguish from LSR $1234, where the contents of memory is
+being shifted.
+
+                                                                         :65:
+
+When a rotate or shift is performed directly on a memory location, the Z, N,
+and C flags are affected according to the contents of memory.  Z will be set
+if the contents of the location ends up as zero; N if the high bit is set;
+and C performs its standard role of catching the leftover bit.
+
+Some programmers wonder about the terms logical and arithmetic, used as part
+of the definition.  The distinction is related to the way that signed numbers
+are treated.  "Logical" means that the sign of a number will be probably lost
+if the number was intended to be signed.  "Arithmetic" means that the sign
+will probably be preserved.  It's purely a terminology question:  the bits
+themselves move exactly as you would expect them to do.
+
+
+Subroutines
+-----------
+
+We have written programs that are subroutines called by BASIC.  We have
+written subroutine calls to built-in operations such as $FFD2 or $FFE4.  Can
+we also write our own subroutine and arrange to call it?
+
+Of course we can.  RTS (return from subroutine) does not mean "return to
+BASIC."  It means "return to whoever called this routine."  If BASIC called
+up the machine language routine, RTS takes you back to BASIC.  If another
+machine language program called up the subroutine, RTS will return to the
+calling point.
+
+We wrote a successful subroutine in the last chapter.  It's purpose was to
+accept only numeric keys, echo them to the screen, and convert the ASCII
+value to binary.  Now we'll use this subroutine to build a more powerful
+program.  Here its.  Be sure it's entered in your computer.
+
+  .A 033C  JSR $FFE1
+  .A 033F  BEQ $0351
+  .A 0341  JSR $FFE4
+  .A 0344  CMP #$30
+  .A 0346  BCC $033C
+  .A 0348  CMP #$3A
+  .A 034A  BCS $033C
+  .A 034C  JSR $FFD2
+  .A 034F  AND #$0F
+  .A 0351  RTS
+
+                                                                         :66:
+
+The Project
+-----------
+
+Here is our mission:  using the above subroutine, we wish to build a simple
+addition program.  Here's how we want it to work.  The user will touch a
+numeric key, say "3".  Immediately, "3+" will appear on the screen.  Now the
+user will touch another key, say "4", and the program will complete the
+addition so that the screen shows "3+4=7'.  We will assume that the total is
+in the range 0 to 9 so that we don't have to worry about printing a two-digit
+answer--don't try 5+5 or you'll get a wrong answer.
+
+Here we go.  We must start our coding at address $0352 so as not to disturb
+our subroutine.  We'll need to give SYS 850 to make this one go.
+
+  .A 0352  JSR $033C
+
+We call our prewritten subroutine, which waits for a numeric key, echoes it
+to the screen, and converts the value to binary in the A register.
+
+Our next action is to print the plus sign.  We know how to do this, once we
+look up the ASCII code for this character.  Appendix D tells us that it's
+$2B, so we'll need to LDA $#2B and JSR $FFD2.  But wait a minute!  Our binary
+value is in the A register, and we don't want to lose it.  Let's store the
+value somewhere:
+
+  .A 0355  STA $03C0
+  .A 0358  LDA #$2B
+  .A 035A  JSR $FFD2
+  .A 035D  JSR $033C
+
+We picked $03C0, since nobody seems to be using it, and put the binary number
+safely away there.  Now we print the plus sign, and go back to ask for
+another digit.
+
+When the subroutine returns, it has a new binary value in the A register; the
+digit has been neatly printed on the screen behind the plus sign.  Now we
+need to print the equal sign.  But again, wait!  We must put our binary away
+first.
+
+We could place the value into memory--perhaps $03C1 would do--but there's
+another way.  We don't seem to be using X or Y for anything at the moment, so
+let's slip the value across into one or the other.  We have four "transfer"
+commands that will move information between A and either index register:
+
+                                                                         :67:
+
+  TAX--Transfer A to X      TAY--Transfer A to Y
+  TXA--Transfer X to A      TYA--Transfer Y to A
+
+Like the load series of commands, these instructions make a copy of the
+information.  Thus, after TAX, whatever information was in A is now also in
+X.  Again like the load commands, the Z and N status flags are affected by
+the information transferred.  It doesn't matter whether we use X or Y:  Let's
+pick X:
+
+  .A 0360  TAX
+  .A 0361  LDA #$3D
+  .A 0363  JSR $FFD2
+
+We have put our second value into X and printed the equal sign ($3D).  Now we
+can bring the value back and do our addition.  The next two instructions can
+come in any order:
+
+  .A 0366  TXA
+  .A 0367  CLC
+  .A 0368  ADC $03C0
+
+We have our total in the A register.  It's almost ready to print, except for
+one thing:  it's in binary.  We want it in ASCII.
+
+Assuming the total is in the range 0 to 9, we can convert it directly to a
+single ASCII digit with an ORA operation.  (If it's greater than nine, you're
+cheating and the answer won't make sense.)
+
+  .A 036B  ORA #$30
+  .A 036D  JSR $FFD2
+
+Are you basically a neat person?  Then you'll want to print a RETURN to start
+a new line:
+
+  .A 0370  LDA #$0D
+  .A 0372  JSR $FFD2
+  .A 0375  RTS
+
+Check it with a disassembly.  If you disassemble starting with the
+subroutine, you'll need more than one screen full of instructions to see it
+all.  No problem.  When the cursor flashes at the bottom of the screen, press
+the letter D and RETURN and you'll see a continuation of the listing.
+
+Back to BASIC.  This time we do not give SYS 828--that's the subroutine and
+we want the main routine, remember?
+
+Give the SYS 850 command.  Tap a couple of numeric keys that total nine or
+less.  Watch the result appear instantly on the screen.
+
+                                                                         :68:
+
+If you like, set up a BASIC loop and call the routine several times.
+
+Project for enthusiasts:  You couldn't resist, could you?  You had to type in
+two digits that totaled over 9 and got a silly result.  OK, your project is
+to try to expand the above code to allow for two-digit results.  It's not
+that hard, since the highest possible total is 9+9 or 18; so if there are two
+digits, the first one must be the digit 1.  You'll need to compare for the
+result over binary nine, and then arrange for printing the one and
+subtracting ten if necessary.  Sounds like fun.
+
+
+Things You Have Learned
+-----------------------
+
+- We may decide to use a number as a signed value; in this case, the high bit
+  of the number will be 0 if the number is positive and 1 if the number is
+  negative.  It's up to us.  As far as the computer is concerned, it's just
+  bits in either case.
+
+- When a number might have a value that won't fit into an eight-bit byte, we
+  may use more than one byte to hold the value.  We have already done this to
+  hold addresses in two bytes:  there's a high byte to hold the high part of
+  the value and a low byte to hold the low part.
+
+- We may add two numbers together using the ADC instruction with the A
+  register; we should always clear the carry flag before starting an
+  addition.  The carry flag will take care of multi-byte numbers for us,
+  providing we remember to start the addition at the low end.
+
+- We may subtract two numbers using the SBC instruction with the A register;
+  we should always set the carry flag before starting a subtraction.  The
+  carry--which is sometimes called an inverted borrow--will take care of
+  multi-byte numbers for us, providing we remember to start the subtraction
+  at the low end.
+
+- For unsigned numbers, the carry should end up as it started (clear for
+  addition, set for subtraction); otherwise we have overflow in the result.
+  For signed numbers, the carry doesn't matter; the V flag will be set if we
+  have overflow.
+
+- We may multiply a byte by two with the ASL (arithmetic shift left)
+  instruction.  If we have a multiple-byte number, we may carry the
+  multiplication through to other bytes by using the ROL (rotate left)
+  instruction, starting at the low byte of the number.
+
+- We may divide a byte by two with the LSR (logical shift right) instruction.
+  If we have a multiple-byte number, we may carry the division through to
+  other bytes by using the ROR (rotate right) instruction, starting at the
+  high byte of the number.
+
+- The shift and rotate instructions may be used on the contents of the A
+  register or directly on memory.  The N and Z flags are affected, and the C
+  flag plays an important role in the shift/rotate action.
+
+                                                                         :69:
+
+- If we wish to multiply by a value other than two, we may need to do more
+  work but we can get there.
+
+- As we might have expected, we may write subroutines in machine language and
+  then call them from machine language.  It's a good way to organize your
+  code.
+
+
+Questions and Projects
+----------------------
+

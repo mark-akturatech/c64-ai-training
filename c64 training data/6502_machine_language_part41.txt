@@ -1,0 +1,301 @@
+# ML for C64 - Appendix H: Supermon Commands
+
+===============================
+
+The 6560 Video Interface Chip (VIC) is designed for color video graphics
+applications such as low cost CRT terminals, biomedical monitors, control
+system displays and arcade or home video games.  It provides all of the
+circuitry necessary for generating color programmable character graphics with
+high screen resolution.  VIC also incorporates sound effects and A/D
+converters for use in a video game environment.
+
+
+Features
+--------
+
+o Fully expandable system with a 16Kbyte address space
+
+o System uses industry standard 8 bit wide ROMs and 4 bit wide RAMs
+
+o Mask programmable sync generation, NTSC-6560, PAL-6561
+
+o On-chip color generation (16 colors)
+
+o Up to 600 independently programmable and movable background locations on a
+  standard TV
+
+o Screen centering capability
+
+o Screen grid size up to 192 Horizontal by 200 Vertical dots
+
+o Two selectable graphic character sizes
+
+o On-chip sound system including:
+  a)  Three independent, programmable tone generators
+  b)  White noise generator
+  c)  Amplitude modulator
+
+o Two on-chip 8-bit A/D converters
+
+o On-chip DMA and address generation
+
+o No CPU wait states or screen hash during screen refresh
+
+o Interlaced/Non-Interlaced switch
+
+o 16 addressable control registers
+
+o Light gun/pen for target games
+
+o 2 modes of color operation
+
+
+Register Map
+------------
+
+                 +------+-----------------------+----------+
+                 | Loc  |   START VALUE-5K VIC  |   Bit    |
+                 | Hex  |  Binary  |  Decimal   | Function |
+                 +------+----------+------------+----------+
+                 | 9000 | 00000101 |   5        | ABBBBBBB |
+                 | 9001 | 00011001 |  25        | CCCCCCCC |
+                 | 9002 | 10010110 | 150        | HDDDDDDD |
+                 | 9003 | v0101110 |  46 or 176 | GEEEEEEF |
+                 | 9004 | vvvvvvvv |   v        | GGGGGGGG |
+                 | 9005 | 11110000 | 240        | HHHHIIII |
+                 | 9006 | 00000000 |   0        | JJJJJJJJ |
+                 | 9007 | 00000000 |   0        | KKKKKKKK |
+                 | 9008 | 11111111 | 255        | LLLLLLLL |
+                 | 9009 | 11111111 | 255        | MMMMMMMM |
+                 | 900A | 00000000 |   0        | NRRRRRRR |
+                 | 900B | 00000000 |   0        | OSSSSSSS |
+                 | 900C | 00000000 |   0        | PTTTTTTT |
+                 | 900D | 00000000 |   0        | QUUUUUUU |
+                 | 900E | 00000000 |   0        | WWWWVVVV |
+                 | 900F | 00011011 |  27        | XXXXYZZZ |
+                 +------+----------+------------+----------+
+                 | A Interlace enable  N Bass switch       |
+                 | B Screen origin (H) O Alto switch       |
+                 | C Screen origin (V) P Soprano switch    |
+                 | D Number of columns Q Noise switch      |
+                 | E Number of rows    R Bass frequency    |
+                 | F Char size:        S Alto frequency    |
+                 |   0=8x8, 1=8x16     T Soprano frequency |
+                 | G Raster value      U Noise frequency   |
+                 | H Screen memory loc V Sound volume      |
+                 | I Char memory loc   W Auxiliary color   |
+                 | J Light pen (H)     X Screen color      |
+                 | K Light pen (V)     Y Reverse mode:     |
+                 | L Paddle 1            0=on, 1=off       |
+                 | M Paddle 2          Z Border color      |
+                 +-----------------------------------------+
+
+A:  Interlace Mode:  A normal video frame is sent to the TV 60 times each
+second.  Interlace cuts the number of repetitions in half.  When used with
+multiplexing equipment, this allows the VIC picture to be blended with a
+picture from another source.
+                                                                        :257:
+
+  To turn off:  POKE 36864,PEEK(36864) AND 127
+  To turn on:   POKE 36864,PEEK(36864) OR 128
+
+
+B:  Screen origin--horizontal:  This determines the positioning of the image
+on the TV screen.  The normal value is 5.  Lowering the value moves the
+screen to the left, and increasing it moves the image to the right.
+
+  To change value:  POKE 36864,PEEK(36864) AND 128 OR X
+
+                                                                        :258:
+
+C:  Screen origin--vertical:  This determines the up-down placement of the
+screen image.  The normal value is 25.  Lowering this causes the screen to
+move up by 2 rows of dots for each number lowered, and raising it moves the
+screen down.
+
+  To change value:  POKE 36865,X
+
+
+D:  Number of video columns:  Normally, this is set to 22.  Changing this
+will change the display accordingly.  Numbers over 27 will give a 27 column
+screen.  The cursor controls are based on a fixed number of 22 columns, and
+changing this number makes the cursor controls misbehave.
+
+  To change:  POKE 36866,PEEK(36866) AND 128 OR X
+
+
+E:  Number of video rows:  The number of rows may range from 0 to 23.  A
+larger number of rows causes garbage to appear on the bottom of the screen.
+
+  To change:  POKE 36867,PEEK(36867) AND 129 OR (X*2)
+
+
+F:  Character size:  This bit determined the size of the matrix used for each
+character.  A 0 here sets normal mode, in which characters are 8 by 8 dots.
+A 1 sets 8 by 16 mode, where each character is now twice as tall.  8 by 16
+mode is normally used for high resolution graphics, where it is likely to
+have many unique characters on the screen.
+
+  To set 8 by 8 mode:   POKE 36867,PEEK(36867) AND 254
+  To set 8 by 16 mode:  POKE 36867,PEEK(36867) OR 1
+
+
+G:  Raster Value:  This number is used to synchronize the light pen with the
+TV picture.
+
+
+H:  Screen memory location:  This determines where in memory the VIC keeps
+the image of the screen.  The highest bit in location 36869 must be a 1.
+Bits 4-6 of location 36869 are bits 10-12 of the screen's address, and bit 7
+of location 36866 is bit 9 of the address of the screen.  To determine the
+location of the screen, use the formula:
+
+  S = 4*(PEEK(36866) AND 128) + 64*(PEEK(36869) AND 112)
+
+Note that bit 7 of location 36866 also determines the location of color
+memory.  If this bit is a 0, color memory starts at location 37888.  If this
+bit is a 1, color memory begins at 38400.  Here is a formula for this:
+
+  C = 37888 + 4*(PEEK(36866) AND 128)
+
+                                                                        :259:
+
+I:  Character memory location:  This determines where information on the
+shapes of characters is stored.  Normally this pointer is to the character
+generator ROM, which contains both the uppercase/graphics or the upper/lower
+case set.  However, a simply POKE command can change this pointer to a RAM
+location, allowing custom character sets and high resolution graphics.
+
+  To change:  POKE 36869,PEEK*36869) AND 240 OR X
+
+          +------+------+---------+--------------------------------+
+          |  X   |    LOCATION    |           CONTENTS             |
+          |Value | Hex  | Decimal |                                |
+          +------+------+---------+--------------------------------+
+          |  0   | 8000 |  32768  | Upper case normal characters   |
+          |  1   | 8400 |  33792  | Upper case reversed characters |
+          |  2   | 8800 |  34816  | Lower case normal characters   |
+          |  3   | 8C00 |  35840  | Lower case reversed characters |
+          |  4   | 9000 |  36864  | unavailable                    |
+          |  5   | 9400 |  37888  | unavailable                    |
+          |  6   | 9800 |  38912  | VIC chip-unavailable           |
+          |  7   | 9C00 |  39936  | ROM-unavailable                |
+          |  8   | 0000 |      0  | unavailable                    |
+          |  9   | ---- |  -----  | unavailable                    |
+          | 10   | ---- |  -----  | unavailable                    |
+          | 11   | ---- |  -----  | unavailable                    |
+          | 12   | 1000 |   4096  | RAM                            |
+          | 13   | 1400 |   5120  | RAM                            |
+          | 14   | 1800 |   6144  | RAM                            |
+          | 15   | 1C00 |   7168  | RAM                            |
+          +------+------+---------+--------------------------------+
+
+
+J:  Light pen horizontal:  This contains the latched number of the dot under
+the light pen, from the left of the screen.
+
+
+K:  Light pen vertical:  The latched number of the dot under the pen, counted
+from the top of the screen.
+
+
+L:  Paddle X:  This contains the digitized value of a variable resistance
+(game paddle).  The number reads from 0 to 255.
+
+
+M:  Paddle Y:  Same as Paddle X, for a second analog input.
+
+
+N:  Bass switch:  If this bit is a 0, no sound is played from Voice 1.  A 1
+in this bit results in a tone determined by Frequency 1.
+
+  To turn on:   POKE 36874,PEEK(36874) OR 128
+  To turn off:  POKE 36874,PEEK(36874) AND 127
+
+
+O:  Alto switch:  See Bass switch.
+
+                                                                        :260:
+
+P:  Soprano switch:  See Bass switch.
+
+
+Q:  Noise switch:  See Bass switch.
+
+
+R:  Bass Frequency:  This is a value corresponding to the frequency of the
+tone being played.  The larger the number, the higher the pitch of the tone.
+
+The actual frequency of the sound in cycles per second (hertz) is determined
+by the following formula:
+
+                                          Clock
+                            Frequency = ---------
+                                         127 - X
+
+X is the number from 0 to 127 that is put into the frequency register.  If X
+is 127, then use -1 for X in the formula.  The value of Clock comes from the
+following table:
+
+                +----------+----------------+----------------+
+                | Register | NTSC (US TV's) | PAL (European) |
+                +----------+----------------+----------------+
+                |  36874   |      3995      |      4329      |
+                |  36875   |      7990      |      8659      |
+                |  36876   |     15980      |     17320      |
+                |  36877   |     31960      |     34640      |
+                +----------+----------------+----------------+
+
+  To set:  POKE 36874,PEEK(36874) AND 128 OR X
+
+
+S:  Alto Frequency:  This is a value corresponding to the frequency of the
+tone being played.  The larger the number, the higher the pitch of the tone.
+
+  To set:  POKE 36875,PEEK(36875) AND 128 OR X
+
+
+T:  Soprano Frequency:  This is a value corresponding to the frequency of the
+tone being played.  The larger the number, the higher the pitch of the tone.
+
+  To set:  POKE 36876,PEEK(36876) AND 128 OR X
+
+
+U:  Noise Frequency:  This is a value corresponding to the frequency of the
+tone being played.  The larger the number, the higher the pitch of the tone.
+
+  To set:  POKE 36877,PEEK(36877) AND 128 OR X
+
+
+V:  Sound volume:  This is the volume control for all the sounds playing.  0
+is off and 15 is the loudest sound.
+
+  To set:  POKE 36878,PEEK(36878) AND 240 OR X
+
+
+W:  Auxiliary color:  This register holds the color number of the auxiliary
+color.  The value can be from 0 to 15.
+
+  To set:  POKE 36878,PEEK(36878) AND 15 OR (16*X)
+
+                                                                        :261:
+
+X:  Screen color:  A number from 0 to 15 sets the color of the screen.
+
+  To set:  POKE 36879,PEEK(36879) AND 240 OR X
+
+
+Y:  Reverse mode:  A 1 in this bit indicates normal characters, and a 0 here
+causes all characters to be displayed as if reversed.
+
+  To turn on reverse mode:   POKE 36879,PEEK(36879) AND 247
+  To turn off reverse mode:  POKE 36879,PEEK(36879) OR 8
+
+
+Z:  Border color:  A number from 0 to 7 sets the color of the screen.
+
+  To set:  POKE 36879,PEEK(36879) AND 248 OR X
+
+
+
+6522 Versatile Interface Adapter (VIA)

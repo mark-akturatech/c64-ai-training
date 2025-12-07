@@ -1,0 +1,284 @@
+# C64 PRG Chapter 5 - Jump, Stack Instructions
+
+  252   BASIC TO MACHINE LANGUAGE
+~
+
+
+  TSX              TSX Transfer stack pointer to index X                TSX
+
+  Operation:  S -> X                                    N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 8.9)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   TSX                 |    BA   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+  TXA                TXA Transfer index X to accumulator                TXA
+                                                        N Z C I D V
+  Operation:  X -> A                                    / / _ _ _ _
+                                 (Ref: 7.12)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   TXA                 |    8A   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+  TXS              TXS Transfer index X to stack pointer                TXS
+                                                        N Z C I D V
+  Operation:  X -> S                                    _ _ _ _ _ _
+                                 (Ref: 8.8)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   TXS                 |    9A   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+  TYA                TYA Transfer index Y to accumulator                TYA
+
+  Operation:  Y -> A                                    N Z C I D V
+                                                        / / _ _ _ _
+                                 (Ref: 7.14)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   TYA                 |    98   |    1    |    2     |
+  +----------------+-----------------------+---------+---------+----------+
+
+
+                                            BASIC TO MACHINE LANGUAGE   253
+~
+
+
+  +------------------------------------------------------------------------
+  | INSTRUCTION ADDRESSING MODES AND RELATED EXECUTION TIMES
+  | (in clock cycles)
+  +------------------------------------------------------------------------
+
+                  A   A   A   B   B   B   B   B   B   B   B   B   B   C
+                  D   N   S   C   C   E   I   M   N   P   R   V   V   L
+                  C   D   L   C   S   Q   T   I   E   L   K   C   S   C
+  Accumulator  |  .   .   2   .   .   .   .   .   .   .   .   .   .   .
+  Immediate    |  2   2       .   .   .   .   .   .   .   .   .   .   .
+  Zero Page    |  3   3   5   .   .   .   3   .   .   .   .   .   .   .
+  Zero Page,X  |  4   4   6   .   .   .   .   .   .   .   .   .   .   .
+  Zero Page,Y  |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  Absolute     |  4   4   6   .   .   .   4   .   .   .   .   .   .   .
+  Absolute,X   |  4*  4*  7   .   .   .   .   .   .   .   .   .   .   .
+  Absolute,Y   |  4*  4*  .   .   .   .   .   .   .   .   .   .   .   .
+  Implied      |  .   .   .   .   .   .   .   .   .   .   .   .   .   2
+  Relative     |  .   .   .   2** 2** 2** .   2** 2** 2** 7   2** 2** .
+  (Indirect,X) |  6   6   .   .   .   .   .   .   .   .   .   .   .   .
+  (Indirect),Y |  5*  5*  .   .   .   .   .   .   .   .   .   .   .   .
+  Abs. Indirect|  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+               +-----------------------------------------------------------
+                  C   C   C   C   C   C   D   D   D   E   I   I   I   J
+                  L   L   L   M   P   P   E   E   E   O   N   N   N   M
+                  D   I   V   P   X   Y   C   X   Y   R   C   X   Y   P
+  Accumulator  |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  Immediate    |  .   .   .   2   2   2   .   .   .   2   .   .   .   .
+  Zero Page    |  .   .   .   3   3   3   5   .   .   3   5   .   .   .
+  Zero Page,X  |  .   .   .   4   .   .   6   .   .   4   6   .   .   .
+  Zero Page,Y  |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  Absolute     |  .   .   .   4   4   4   6   .   .   4   6   .   .   3
+  Absolute,X   |  .   .   .   4*  .   .   7   .   .   4*  7   .   .   .
+  Absolute,Y   |  .   .   .   4*  .   .   .   .   .   4*  .   .   .   .
+  Implied      |  2   2   2   .   .   .   .   2   2   .   .   2   2   .
+  Relative     |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  (Indirect,X) |  .   .   .   6   .   .   .   .   .   6   .   .   .   .
+  (Indirect),Y |  .   .   .   5*  .   .   .   .   .   5*  .   .   .   .
+  Abs. Indirect|  .   .   .   .   .   .   .   .   .   .   .   .   .   5
+               +-----------------------------------------------------------
+     *  Add one cycle if indexing across page boundary
+     ** Add one cycle if branch is taken, Add one additional if branching
+        operation crosses page boundary
+
+  254   BASIC TO MACHINE LANGUAGE
+~
+
+
+  ------------------------------------------------------------------------+
+    INSTRUCTION ADDRESSING MODES AND RELATED EXECUTION TIMES              |
+    (in clock cycles)                                                     |
+  ------------------------------------------------------------------------+
+
+                  J   L   L   L   L   N   O   P   P   P   P   R   R   R
+                  S   D   D   D   S   O   R   H   H   L   L   O   O   T
+                  R   A   X   Y   R   P   A   A   P   A   P   L   R   I
+  Accumulator  |  .   .   .   .   2   .   .   .   .   .   .   2   2   .
+  Immediate    |  .   2   2   2   .   .   2   .   .   .   .   .   .   .
+  Zero Page    |  .   3   3   3   5   .   3   .   .   .   .   5   5   .
+  Zero Page,X  |  .   4   .   4   6   .   4   .   .   .   .   6   6   .
+  Zero Page,Y  |  .   .   4   .   .   .   .   .   .   .   .   .   .   .
+  Absolute     |  6   4   4   4   6   .   4   .   .   .   .   6   6   .
+  Absolute,X   |  .   4*  .   4*  7   .   4*  .   .   .   .   7   7   .
+  Absolute,Y   |  .   4*  4*  .   .   .   4*  .   .   .   .   .   .   .
+  Implied      |  .   .   .   .   .   2   .   3   3   4   4   .   .   6
+  Relative     |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  (Indirect,X) |  .   6   .   .   .   .   6   .   .   .   .   .   .   .
+  (Indirect),Y |  .   5*  .   .   .   .   5*  .   .   .   .   .   .   .
+  Abs. Indirect|  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+               +-----------------------------------------------------------
+                  R   S   S   S   S   S   S   S   T   T   T   T   T   T
+                  T   B   E   E   E   T   T   T   A   A   S   X   X   Y
+                  S   C   C   D   I   A   X   Y   X   Y   X   A   S   A
+  Accumulator  |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  Immediate    |  .   2   .   .   .   .   .   .   .   .   .   .   .   .
+  Zero Page    |  .   3   .   .   .   3   3   3   .   .   .   .   .   .
+  Zero Page,X  |  .   4   .   .   .   4   .   4   .   .   .   .   .   .
+  Zero Page,Y  |  .   .   .   .   .   .   4   .   .   .   .   .   .   .
+  Absolute     |  .   4   .   .   .   4   4   4   .   .   .   .   .   .
+  Absolute,X   |  .   4*  .   .   .   5   .   .   .   .   .   .   .   .
+  Absolute,Y   |  .   4*  .   .   .   5   .   .   .   .   .   .   .   .
+  Implied      |  6   .   2   2   2   .   .   .   2   2   2   2   2   2
+  Relative     |  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+  (Indirect,X) |  .   6   .   .   .   6   .   .   .   .   .   .   .   .
+  (Indirect),Y |  .   5*  .   .   .   6   .   .   .   .   .   .   .   .
+  Abs. Indirect|  .   .   .   .   .   .   .   .   .   .   .   .   .   .
+               +-----------------------------------------------------------
+     *  Add one cycle if indexing across page boundary
+     ** Add one cycle if branch is taken, Add one additional if branching
+        operation crosses page boundary
+
+                                              BASIC TO MACHINE LANGUAGE 255
+~
+
+
+
+
+
+        00 - BRK                        20 - JSR
+        01 - ORA - (Indirect,X)         21 - AND - (Indirect,X)
+        02 - Future Expansion           22 - Future Expansion
+        03 - Future Expansion           23 - Future Expansion
+        04 - Future Expansion           24 - BIT - Zero Page
+        05 - ORA - Zero Page            25 - AND - Zero Page
+        06 - ASL - Zero Page            26 - ROL - Zero Page
+        07 - Future Expansion           27 - Future Expansion
+        08 - PHP                        28 - PLP
+        09 - ORA - Immediate            29 - AND - Immediate
+        0A - ASL - Accumulator          2A - ROL - Accumulator
+        0B - Future Expansion           2B - Future Expansion
+        0C - Future Expansion           2C - BIT - Absolute
+        0D - ORA - Absolute             2D - AND - Absolute
+        0E - ASL - Absolute             2E - ROL - Absolute
+        0F - Future Expansion           2F - Future Expansion
+        10 - BPL                        30 - BMI
+        11 - ORA - (Indirect),Y         31 - AND - (Indirect),Y
+        12 - Future Expansion           32 - Future Expansion
+        13 - Future Expansion           33 - Future Expansion
+        14 - Future Expansion           34 - Future Expansion
+        15 - ORA - Zero Page,X          35 - AND - Zero Page,X
+        16 - ASL - Zero Page,X          36 - ROL - Zero Page,X
+        17 - Future Expansion           37 - Future Expansion
+        18 - CLC                        38 - SEC
+        19 - ORA - Absolute,Y           39 - AND - Absolute,Y
+        1A - Future Expansion           3A - Future Expansion
+        1B - Future Expansion           3B - Future Expansion
+        1C - Future Expansion           3C - Future Expansion
+        1D - ORA - Absolute,X           3D - AND - Absolute,X
+        1E - ASL - Absolute,X           3E - ROL - Absolute,X
+        1F - Future Expansion           3F - Future Expansion
+
+
+
+
+
+
+
+
+  256   BASIC TO MACHINE LANGUAGE
+~
+
+
+
+
+
+        40 - RTI                        60 - RTS
+        41 - EOR - (Indirect,X)         61 - ADC - (Indirect,X)
+        42 - Future Expansion           62 - Future Expansion
+        43 - Future Expansion           63 - Future Expansion
+        44 - Future Expansion           64 - Future Expansion
+        45 - EOR - Zero Page            65 - ADC - Zero Page
+        46 - LSR - Zero Page            66 - ROR - Zero Page
+        47 - Future Expansion           67 - Future Expansion
+        48 - PHA                        68 - PLA
+        49 - EOR - Immediate            69 - ADC - Immediate
+        4A - LSR - Accumulator          6A - ROR - Accumulator
+        4B - Future Expansion           6B - Future Expansion
+        4C - JMP - Absolute             6C - JMP - Indirect
+        4D - EOR - Absolute             6D - ADC - Absolute
+        4E - LSR - Absolute             6E - ROR - Absolute
+        4F - Future Expansion           6F - Future Expansion
+        50 - BVC                        70 - BVS
+        51 - EOR - (Indirect),Y         71 - ADC - (Indirect),Y
+        52 - Future Expansion           72 - Future Expansion
+        53 - Future Expansion           73 - Future Expansion
+        54 - Future Expansion           74 - Future Expansion
+        55 - EOR - Zero Page,X          75 - ADC - Zero Page,X
+        56 - LSR - Zero Page,X          76 - ROR - Zero Page,X
+        57 - Future Expansion           77 - Future Expansion
+        58 - CLI                        78 - SEI
+        59 - EOR - Absolute,Y           79 - ADC - Absolute,Y
+        5A - Future Expansion           7A - Future Expansion
+        5B - Future Expansion           7B - Future Expansion
+        5C - Future Expansion           7C - Future Expansion
+        5D - EOR - Absolute,X           7D - ADC - Absolute,X
+        5E - LSR - Absolute,X           7E - ROR - Absolute,X
+        5F - Future Expansion           7F - Future Expansion
+
+
+
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   257
+~
+
+
+
+
+
+        80 - Future Expansion           A0 - LDY - Immediate
+        81 - STA - (Indirect,X)         A1 - LDA - (Indirect,X)
+        82 - Future Expansion           A2 - LDX - Immediate
+        83 - Future Expansion           A3 - Future Expansion
+        84 - STY - Zero Page            A4 - LDY - Zero Page
+        85 - STA - Zero Page            A5 - LDA - Zero Page
+        86 - STX - Zero Page            A6 - LDX - Zero Page
+        87 - Future Expansion           A7 - Future Expansion
+        88 - DEY                        A8 - TAY
+        89 - Future Expansion           A9 - LDA - Immediate
+        8A - TXA                        AA - TAX
+        8B - Future Expansion           AB - Future Expansion
+        8C - STY - Absolute             AC - LDY - Absolute
+        8D - STA - Absolute             AD - LDA - Absolute
+        8E - STX - Absolute             AE - LDX - Absolute
+        8F - Future Expansion           AF - Future Expansion
+        90 - BCC                        B0 - BCS
+        91 - STA - (Indirect),Y         B1 - LDA - (Indirect),Y
+        92 - Future Expansion           B2 - Future Expansion
+        93 - Future Expansion           B3 - Future Expansion
+        94 - STY - Zero Page,X          B4 - LDY - Zero Page,X
+        95 - STA - Zero Page,X          BS - LDA - Zero Page,X
+        96 - STX - Zero Page,Y          B6 - LDX - Zero Page,Y
+        97 - Future Expansion           B7 - Future Expansion
+        98 - TYA                        B8 - CLV
+        99 - STA - Absolute,Y           B9 - LDA - Absolute,Y
+        9A - TXS                        BA - TSX
+        9B - Future Expansion           BB - Future Expansion
+        9C - Future Expansion           BC - LDY - Absolute,X
+        9D - STA - Absolute,X           BD - LDA - Absolute,X
+        9E - Future Expansion           BE - LDX - Absolute,Y
+        9F - Future Expansion           BF - Future Expansion
+
+
+
+
+
+
+
+

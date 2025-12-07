@@ -1,0 +1,302 @@
+# ML for C64 - Appendix I: VIC-II Registers, Screen Control
+
+The CB2 line is held low.
+
+
+Manual Output Mode
+------------------
+
+The CB2 line is held high.
+
+
+R:  CB1 Control
+---------------
+
+This bit selects the active transition of the input signal applied to the CB1
+pin.  If this bit is 0, the CB1 interrupt flag will be set on a negative
+transition (high-to-low).  If this bit is a 1, the CB1 interrupt flag will be
+set on a positive (low-to-high) transition.
+
+
+S:  CA2 Control
+---------------
+
+Bit 3  Bit 2  Bit 1
+  0      0      0    Interrupt Input Mode
+  0      0      1    Independent Interrupt Input Mode
+  0      1      0    Input Mode
+  0      1      1    Independent Input Mode
+  1      0      0    Handshake Output Mode
+  1      0      1    Pulse Output Mode
+  1      1      0    Manual Output Mode (CA2 is held LOW)
+  1      1      1    Manual Output Mode (CA2 is held HIGH)
+         
+
+Interrupt Input Mode
+--------------------
+
+The CA2 interrupt flag (IFR bit 0) will be set on a negative (high-to-low)
+transition on the CA2 input line.  The CA2 interrupt bit will be cleared on a
+read or write to Port A.
+
+
+Independent Interrupt Input Mode
+--------------------------------
+
+As above, the CA2 interrupt flag will be set on a negative transition on the
+CA2 input line.  However, reading or writing to Port A does not clear the
+flag.
+
+
+Input Mode
+----------
+
+The CA2 interrupt flag (IFR bit 0) will be set on a positive (low-to-high)
+transition of the CA2 line.  The CA2 flag will be cleared on a read or write
+of Port A.
+
+                                                                        :268:
+
+Independent Input Mode
+----------------------
+
+As above, the CA2 interrupt flag will be set on a positive transition on the
+CA2 line.  However, reading or writing Port A does not affect the flag.
+
+
+Handshake Output Mode
+---------------------
+
+The CA2 line will be set low on a write to Port A.  It will be reset high
+again when there is an active transition on the CA1 line.
+
+
+Pulse Output Mode
+-----------------
+
+The CA2 line is set low for one cycle after a write to Port A.
+
+
+Manual Output Mode
+------------------
+
+The CA2 line is held low.
+
+
+Manual Output Mode
+------------------
+
+The CA2 line is held high.
+
+
+T:  CA1 Control
+---------------
+
+This bit of the PCR selects the active transition of the input signal applied
+to the CA1 input pin.  If this bit is 0, the CA1 interrupt flag (Bit 1) will
+be set by a negative transition (high-to-low) on the CA1 pin.  If this bit is
+1, the CA1 interrupt flag will be set by a positive transition (low-to-high).
+
+There are two registers associated with interrupts:  The INTERRUPT FLAG
+REGISTER (IFR) and the INTERRUPT ENABLE REGISTER (IER).  The IFR has eight
+bits, each one connected to a register in the 6522.  Each bit in the IFR has
+an associated bit in the IER.  The flag is set when a register wants to
+interrupt.  However, no interrupt will take place unless the corresponding
+bit in the IER is set.
+
+
+UVWXYZab:  Interrupt Flag Register
+----------------------------------
+
+When the flag is set, the pin associated with that flag is attempting to
+interrupt the 6502.  Bit U is not a normal flag.  It goes high if both the
+flag and the corresponding bit in the INTERRUPT ENABLE REGISTER are set.  It
+can be cleared only by clearing all the flags in the IFR or disabling all
+active interrupts in the IER.
+
+                                                                        :269:
+    SET BY                     CLEARED BY
+
+U   IRQ Status
+V   Timer 1 time-out           Reading Timer 1 low order counter and writing
+                               Timer 1 high order latch
+W   Timer 2 time-out           Reading Timer 2 low order counter and writing
+                               Timer 2 high order counter
+X   CB1 pin active transition  Reading or writing Port B
+Y   CB2 pin active transition  Reading or writing Port B
+Z   Completion of 8 shifts     Reading or writing the shift register
+a   CA1 pin active transition  Reading or writing Port A (BBBBBBBB in chart)
+b   CA2 pin active transition  Reading or writing Port A (BBBBBBBB in chart)
+
+
+cdefghij:  Interrupt Enable Register
+------------------------------------
+
+
+c:  Enable Control
+------------------
+
+If this bit is a 0 during a write to this register, each 1 in bits 0-6 clears
+the corresponding bit in the IER.  If this bit is a 1 during a write to this
+register, each 1 in bits 0-6 will set the corresponding IER bit.
+
+  d  Timer 1 time-out enable
+  e  Timer 2 time-out enable
+  f  CB1 interrupt enable
+  g  CB2 interrupt enable
+  h  Shift interrupt enable
+  i  CA1 interrupt enable
+  j  CA2 interrupt enable
+
+
+k:  Port A
+----------
+
+This is similar to BBBBBBBB, except that the handshaking lines (CA1 and CA2)
+are unaffected by operations on this port.
+
+                                                                        :270:
+
+6526 (CIA) Complex Interface Adapter
+====================================
+
+
+Register Map
+------------
+
+        +---+---+---+---+---+-----------+----------------------------+
+        |RS3|RS2|RS1|RS0|REG|   NAME    |        DESCRIPTION         |
+        +---+---+---+---+---+-----------+----------------------------+
+        | 0 | 0 | 0 | 0 | 0 | PRA       | Peripheral Data Register A |
+        | 0 | 0 | 0 | 1 | 1 | PRB       | Peripheral Data Register B |
+        | 0 | 0 | 1 | 0 | 2 | DDRA      | Data Direction Register A  |
+        | 0 | 0 | 1 | 1 | 3 | DDRB      | Data Direction Register B  |
+        | 0 | 1 | 0 | 0 | 4 | TA LO     | Timer A Low Register       |
+        | 0 | 1 | 0 | 1 | 5 | TA HI     | Timer A High Register      |
+        | 0 | 1 | 1 | 0 | 6 | TB LO     | Timer B Low Register       |
+        | 0 | 1 | 1 | 1 | 7 | TB HI     | Timer B High Register      |
+        | 1 | 0 | 0 | 0 | 8 | TOD 10ths | 10ths of Seconds Register  |
+        | 1 | 0 | 0 | 1 | 9 | TOD SEC   | Seconds Register           |
+        | 1 | 0 | 1 | 0 | A | TOD MIN   | Minutes Register           |
+        | 1 | 0 | 1 | 1 | B | TOD HR    | Hours--AM/PM Register      |
+        | 1 | 1 | 0 | 0 | C | SDR       | Serial Data Register       |
+        | 1 | 1 | 0 | 1 | D | ICR       | Interrupt Control Register |
+        | 1 | 1 | 1 | 0 | E | CRA       | Control Register A         |
+        | 1 | 1 | 1 | 1 | F | CRB       | Control Register B         |
+        +---+---+---+---+---+-----------+----------------------------+
+
+
+I/O Ports (PRA, PRB, DDRA, DDRB)
+--------------------------------
+
+Ports A and B each consist of an 8-bit Peripheral Data Register (PR) and an
+8-bit Data Direction Register (DDR).  If a bit in the DDR is set to a one,
+the corresponding bit in the PR is an output; if a DDR bit is set to a zero,
+the corresponding PR bit is defined as an input.  On a READ, the PR reflects
+the information present on the actual port pins (PA0-PA1, PB0-PB7) for both
+input and output bits.  Port A and Port B have passive pull-up devices as
+well as active pull-ups, providing both CMOS and TTL compatibility.  Both
+ports have two TTL load drive capability.  In addition to normal I/O
+operation, PB6 and PB7 also provide timer output functions.
+
+                                                                        :271:
+
+Handshaking
+-----------
+
+Handshaking on data transfers can be accomplished using the /PC output pin
+and the /FLAG input pin.  /PC will go low for one cycle following a read or
+write of Port B.  This signal can be used to indicate "data ready" at Port B
+or "data accepted" from Port B.  Handshaking on 16-bit data transfers (using
+both Port A and Port B) is possible by always reading or writing Port A
+first.  /FLAG is a negative edge sensitive input which can be used for
+receiving the /PC output from another 6526, or as a general purpose interrupt
+input.  Any negative transition of /FLAG will set the /FLAG interrupt bit.
+
+    +-----+------+------+------+------+------+------+------+------+------+
+    | REG | NAME |  D7  |  D6  |  D5  |  D4  |  D3  |  D2  |  D1  |  D0  |
+    +-----+------+------+------+------+------+------+------+------+------+
+    |  0  | PRA  | PA7  | PA6  | PA5  | PA4  | PA3  | PA2  | PA1  | PA0  |
+    |  1  | PRB  | PB7  | PB6  | PB5  | PB4  | PB3  | PB2  | PB1  | PB0  |
+    |  2  | DDRA | DPA7 | DPA6 | DPA5 | DPA4 | DPA3 | DPA2 | DPA1 | DPA0 |
+    |  3  | DDRB | DPB7 | DPB6 | DPB5 | DPB4 | DPB3 | DPB2 | DPB1 | DPB0 |
+    +-----+------+------+------+------+------+------+------+------+------+
+
+
+Interval Timers (Timer A, Timer B)
+----------------------------------
+
+Each interval timer consists of a 16-bit read-only Timer Counter and a 16-bit
+write-only Timer Latch.  Data written to the timer are latched in the Timer
+latch, while data read from the timer are the present contents of the Time
+Counter.  The timers can be used independently or linked for extended
+operations.  The various timer modes allow generation of long time delays,
+variable width pulses, pulse trains and variable frequency waveforms.
+Utilizing the CNT input, the timers can count external pulses or measure
+frequency, pulse width and delay times of external signals.  Each timer has
+an associated control register, providing independent control of the
+following functions:
+
+
+Start/Stop
+----------
+
+A control bit allows the time to be started or stopped by the microprocessor
+at any time.
+
+
+PB On/Off
+---------
+
+A control bit allows the timer output to appear on a Port B output line (PB6
+for Timer A and PB7 for Timer B).  This function overrides the DDRB control
+bit and forces the appropriate PB line to an output.
+
+
+Toggle/Pulse
+------------
+
+A control bit selects the output applied to Port B.  On every timer underflow
+the output can either toggle or generate a single positive pulse of one cycle
+duration.  The Toggle output is set high whenever the timer is started and is
+set low by /RES.
+
+                                                                        :272:
+
+One-Shot/Continuous
+-------------------
+
+A control bit selects either timer mode.  In one-shot mode, the timer will
+count down from the latched value to zero, generate an interrupt, reload the
+latched value, then stop.  In continuous mode, the timer will count from the
+latched value to zero, generate an interrupt, reload the latched value and
+repeat the procedure continuously.
+
+
+Force Load
+----------
+
+A strobe bit allows the timer latch to be loaded into the timer counter at
+any time, whether the timer is running or not.
+
+
+Input Mode
+----------
+
+Control bits allow selection of the clock used to decrement the timer.  Timer
+A can count phi2 clock pulses or external pulses applied to the CNT pin.
+Timer B can count phi2 pulses, external CNT pulses, Timer A underflow pulses
+or Timer A underflow pulses while the CNT pin is held high.
+
+The timer latch is loaded into the timer on any timer underflow, on a force
+load or following a write to the high byte of the prescaler while the timer
+is stopped.  If the timer is running, a write to the high byte will load the
+timer latch, but not reload the counter.
+
+
+Read (Timer)
+------------
+
+     Reg  Name
+    +---+-------+------+------+------+------+------+------+------+------+
+    | 4 | TA LO | TAL7 | TAL6 | TAL5 | TAL4 | TAL3 | TAL2 | TAL1 | TAL0 |

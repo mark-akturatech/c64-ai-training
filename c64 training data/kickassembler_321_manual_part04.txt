@@ -1,0 +1,102 @@
+# KickAssembler - Labels, Memory Directives, Import, Comments
+
+              :SetBorderColor(2)
+              jsr $1003 // play music
+              :SetBorderColor(0)
+              pla
+              tay
+              pla
+              tax
+              pla
+              rti
+  //----------------------------------------------------------
+  .pc=$1000 “Music”
+  .import binary “ode to 64.bin”
+  //----------------------------------------------------------
+  // A little macro
+  .macro SetBorderColor(color) {
+              lda #color
+              sta $d020
+  }
+2.3 Configuring the Assembler
+Kick Assembler has a lot of command line options (a summary is given in the last chapter
+‘Command Line Options’). For example, if you assemble your program with the –showmem option
+you will get a memorymap shown after assembling:
+                                                                                          6
+   java –jar kickass.jar –showmem myCode.asm
+By placing a file called KickAss.cfg in the same folder as the KickAss.jar, you can set command
+line options that are used at every assembling. Lets say you always wants to have shown a
+memorymap after assembling and then have the result executed in the C64 emulator VICE. Then
+you write the following in the KickAss.cfg file:
+   -showmem
+   -execute “c:/c64/winvice/x64.exe –confirmexit”
+(Replace c:/c64/winvice/ with a path that points to the vicefolder on your machine)
+                                                                                                7
+3 Basic Assembler Stuff
+This chapter describes the mnemonics and the basic directives that are not related to the script
+language.
+3.1 6510 Commands
+In Kick Assembler you can write assembler mnemonics the traditional way:
+   lda #0
+   sta $d020
+   sta $d021
+However, it ignores format statements such as newline and tabs so you can format your program in
+any way you like. If you wish, you can write your entire program in one line:
+   lda #0 sta $d020 sta $d021
+This comes in handy when using the script language. Kick Assembler supports all opcodes, also the
+illegal ones. A complete list of commands and their opcodes in the each mode is shown here:
+Mnemonic noarg imm             zp    zpx    zpy    izx     izy   abs     Abx     aby     ind     rel
+adc                   $69      $65   $75           $61     $71   $6d     $7d     $79
+ahx                                                        $93                   $9f
+alr                   $4b
+anc                   $0b
+anc2                  $2b
+and                   $29      $25   $35           $21     $31   $2d     $3d     $39
+arr                   $6b
+asl            $0a             $06   $16                         $0e     $1e
+axs                   $cb
+bcc                                                                                              $90
+bcs                                                                                              $b0
+beq                                                                                              $f0
+bit                            $24   $34                         $2c     $3c
+bmi                                                                                              $30
+bne                                                                                              $d0
+bpl                                                                                              $10
+brk            $00
+bvc                                                                                              $50
+bvs                                                                                              $70
+clc            $18
+cld            $d8
+cli            $58
+clv            $b8
+cmp                   $c9      $c5   $d5           $c1     $d1   $cd     $dd     $d9
+cpx                   $e0      $e4                               $ec
+cpy                   $c0      $c4                               $cc
+dcp                            $c7   $d7           $c3     $d3   $cf     $df     $db
+dec                            $c6   $d6                         $ce     $de
+dex            $ca
+dey            $88
+eor                   $49      $45   $55           $41     $51   $4d     $5d     $59
+                                                                                                     8
+inc                        $e6    $f6                          $ee     $fe
+inx         $e8
+iny         $c8
+isc                        $e7    $f7            $e3    $f3    $ef     $ff    $fb
+jmp                                                            $4c                    $6c
+jsr                                                            $20
+las                                                                           $bb
+lax                 $ab    $a7            $b7    $a3    $b3    $af            $bf
+lda                 $a9    $a5    $b5            $a1    $b1    $ad     $bd    $b9
+ldx                 $a2    $a6            $b6                  $ae            $be
+ldy                 $a0    $a4    $b4                          $ac     $bc
+lsr         $4a            $46    $56                          $4e     $5e
+nop         $ea
+ora                 $09    $05    $15            $01    $11    $0d     $1d    $19
+pha         $48
+php         $08
+pla         $68
+plp         $28
+rla                        $27    $37            $23    $33    $2f     $3f    $3b
+rol         $2a            $26    $36                          $2e     $3e
+ror         $6a            $66    $76                          $6e     $7e
+rra                        $67    $77            $63    $73    $6f     $7f    $7b

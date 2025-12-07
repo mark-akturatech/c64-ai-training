@@ -1,0 +1,284 @@
+# C64 PRG Chapter 3 - Standard Character Mode, Definitions
+
+  112   PROGRAMMING GRAPHICS
+~
+
+
+    The Programmable Character Worksheet (Figure 3-1) will help you design
+  your own characters. There is an 8 by 8 matrix on the sheet, with row
+  numbers, and numbers at the top of each column. (if you view each row as
+  a binary word, the numbers are the value of that bit position. Each is a
+  power of 2. The leftmost bit is equal to 128 or 2 to the 7th power, the
+  next is equal to 64 or 2 to the 6th, and so on, until you reach the
+  rightmost bit (bit 0) which is equal to 1 or 2 to the 0 power.)
+    Place an X on the matrix at every location where you want a dot to be
+  in your character. When your character is ready you can create the DATA
+  statement for your character.
+    Begin with the first row. Wherever you placed an X, take the number at
+  the top of the column (the power-of-2 number, as explained above) and
+  write it down. When you have the numbers for every column of the first
+  row, add them together. \Mite this number down, next to the row. This is
+  the number that you will put into the DATA statement to draw this row.
+    Do the same thing with all of the other rows (1-7). When you are
+  finished you should have 8 numbers between 0 and 255. If any of your
+  numbers are not within range, recheck your addition. The numbers must be
+  in this range to be correct! If you have less than 8 numbers, you missed
+  a row. It's OK if some are 0. The 0 rows are just as important as the
+  other numbers.
+    Replace the numbers in the DATA statement in line 20 with the numbers
+  you just calculated, and RUN the program. Then type a T. Every time you
+  type it, you'll see your own character!
+    If you don't like the way the character turned out, just change the
+  numbers in the DATA statement and re-RUN the program until you are happy
+  with your character.
+    That's all there is to it!
+
+
+
+  +-----------------------------------------------------------------------+
+  | HINT: For best results, always make any vertical lines in your        |
+  | characters at least 2 dots (bits) wide. This helps prevent CHROMA     |
+  | noise (color distortion) on your characters when they are displayed   |
+  | on a TV screen.                                                       |
+  +-----------------------------------------------------------------------+
+
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   113
+~
+
+
+    Here is an example of a program using standard programmable characters:
+
+
+
+start tok64 page114.prg
+  10 rem * example 1 *
+  20 rem creating programmable characters
+  31 poke 56334,peek(56334)and254: rem turn off kb
+  32 poke 1,peek(1)and251: rem turn off i/o
+  35 for i=0to63: rem character range to be copied
+  36 for j=0to7: rem copy all 8 bytes per character
+  37 poke 12288+I*8+j,peek(53248+i*8+j): rem copy a byte
+  38 next j:next i: rem goto next byte or character
+  39 poke 1,peek(1)or4:poke 56334,peek(56334)or1: rem turn on i/O and kb
+  40 poke 53272,(peek(53272)and240)+12: rem set char pointer to mem. 12288
+  60 for char=60to63: rem program characters 60 thru 63
+  80 for byte=0to7: rem do all 8 bytes of a character
+  100 read number: rem read in 1/8th of character data
+  120 poke 12288+(8*char)+byte,number: rem store the data in memory
+  140 next byte:next char: rem also could be next byte, char
+  150 print chr$(147)tab(255)chr$(60);
+  155 print chr$(61)tab(55)chr$(62)chr$(63)
+  160 rem line 150 puts the newly defined characters on the screen
+  170 get a$: rem wait for user to press a key
+  180 if a$=""then goto170: rem if no keys were pressed, try again!
+  190 poke 53272,21: rem return to normal characters
+  200 data 4,6,7,5,7,7,3,3: rem data for character 60
+  210 data 32,96,224,160,224,224,192,192: rem data for character 61
+  220 data 7,7,7,31,31,95,143,127: rem data for character 62
+  230 data 224,224,224,248,248,248,240,224: rem data for character 63
+  240 end
+stop tok64
+
+
+
+
+
+
+
+
+
+
+
+  114   PROGRAMMING GRAPHICS
+~
+
+
+  MULTI-COLOR MODE GRAPHICS
+
+    Standard high-resolution graphics give you control of very small dots
+  on the screen. Each dot in character memory can have 2 possible values,
+  1 for on and 0 for off. When a dot is off, the color of the screen is
+  used in the space reserved for that dot. If the dot is on, the dot is
+  colored with the character color you have chosen for that screen posi-
+  tion. When you're using standard high-resolution graphics, all the dots
+  within each 8X8 character can either have background color or foreground
+  color. In some ways this limits the color resolution within that space.
+  For example, problems may occur when two different colored lines cross.
+    Multi-color mode gives you a solution to this problem. Each dot in
+  multi-color mode can be one of 4 colors: screen color (background color
+  register #0), the color in background register #1, the color in back-
+  ground color register #2, or character color. The only sacrifice is in
+  the horizontal resolution, because each multi-color mode dot is twice as
+  wide as a high-resolution dot. This minimal loss of resolution is more
+  than compensated for by the extra abilities of multi-color mode.
+
+  MULTI-COLOR MODE BIT
+
+    To turn on multi-color character mode, set bit 4 of the VIC-II control
+  register at 53270 ($D016) to a 1 by using the following POKE:
+
+    POKE 53270,PEEK(53270)OR 16
+
+    To turn off multi-color character mode, set bit 4 of location 53270 to
+  a 0 by the following POKE:
+
+    POKE 53270,PEEK(53270)AND 239
+
+    Multi-color mode is set on or off for each space on the screen, so that
+  multi-color graphics can be mixed with high-resolution (hi-res) graphics.
+  This is controlled by bit 3 in color memory. Color memory begins at
+  location 55296 ($D800 in HEX). If the number in color memory is less than
+  8 (0-7) the corresponding space on the video screen will be standard
+  hi-res, in the color (0-7) you've chosen. If the number located in color
+  memory is greater or equal to 8 (from 8 to 15), then that space will be
+  displayed in multi-color mode.
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   115
+~
+
+
+    By POKEing a number into color memory, you can change the color of the
+  character in that position on the screen. POKEing a number from 0 to 7
+  gives the normal character colors. POKEing a number between 8 and 15 puts
+  the space into multi-color mode. In other words, turning BIT 3 ON in
+  color memory, sets MULTI-COLOR MODE. Turning BIT 3 OFF in color memory,
+  sets the normal, HIGH-RESOLUTION mode.
+    Once multi-color mode is set in a space, the bits in the character
+  determine which colors are displayed for the dots. For example, here is
+  a picture of the letter A, and its bit pattern:
+
+                          IMAGE    BIT PATTERN
+
+                            **       00011000
+                           ****      00111100
+                          **  **     01100110
+                          ******     01111110
+                          **  **     01100110
+                          **  **     01100110
+                          **  **     01100110
+                                     00000000
+
+    In normal or high-resolution mode, the screen color is displayed
+  everywhere there is a 0 bit, and the character color is displayed where
+  the bit is a 1. Multi-color mode uses the bits in pairs, like so:
+
+                          IMAGE    BIT PATTERN
+
+                           AABB      00011000
+                           CCCC      00111100
+                         AABBAABB    01100110
+                         AACCCCBB    01111110
+                         AABBAABB    01100110
+                         AABBAABB    01100110
+                         AABBAABB    01100110
+                                     00000000
+
+    In the image area above, the spaces marked AA are drawn in the
+  background #1 color, the spaces marked BB use the background #2 color,
+  and the spaces marked CC use the character color. The bit pairs determine
+  this, according to the following chart:
+
+
+
+  116   PROGRAMMING GRAPHICS
+~
+
+
+  +----------+--------------------------------------+---------------------+
+  | BIT PAIR |          COLOR REGISTER              |       LOCATION      |
+  +----------+--------------------------------------+---------------------+
+  |    00    |  Background #0 color (screen color)  |   53281 ($D021)     |
+  |    01    |  Background #l color                 |   53282 ($D022)     |
+  |    10    |  Background #2 color                 |   53283 ($D023)     |
+  |    11    |  Color specified by the              |   color RAM         |
+  |          |  lower 3 bits in color memory        |                     |
+  +----------+--------------------------------------+---------------------+
+
+
+
+
+  Type NEW and then type this demonstration program:
+
+
+start tok64 page117.prg
+  100 poke 53281,1: rem set background color #0 to white
+  110 poke 53282,3: rem set background color #1 to cyan
+  120 poke 53282,8: rem set background color #2 to orange
+  130 poke 53270,peek(53270)or16: rem turn on multicolor mode
+  140 c=13*4096+8*256: rem set c to point to color memory
+  150 printchr$(147)"aaaaaaaaaa"
+  160 forl=0to9
+  170 pokec+l,8: rem use multi black
+  180 next
+stop tok64
+
+
+
+    The screen color is white, the character color is black, one color
+  register is cyan (greenish blue), the other is orange. You're not really
+  putting color codes in the space for character color, you're actually
+  using references to the registers associated with those colors. This
+  conserves memory, since 2 bits can be used to pick 16 colors (background)
+  or 8 colors (character). This also makes some neat tricks possible.
+  Simply changing one of the indirect registers will change every dot drawn
+  in that color. Therefore everything drawn in the screen and background
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   117
+~
+
+
+  colors can be changed on the whole screen instantly. Here is an example
+  of changing background color register #1:
+
+start tok64 page118.prg
+  100 poke53270,peek(53270)or16: rem turn on multicolor mode
+  110 print chr$(147)chr$(18);
+  120 print"{orange*2}";: rem type c= & 1 for orange or multicolor black bg
+  130 forl=1to22:printchr$(65);:next
+  135 fort=1to500:next
+  140 print"{blue*2}";: rem type ctrl & 7 for blue color change
+  145 fort=1to500:next
+  150 print"{black}hit a key"
+  160 get a$:if a$=""then160
+  170 x=int(rnd(1)*16)
+  180 poke 53282,x
+  190 goto 160
+stop tok64
+
+
+
+
+
+
+
+
+
+    By using the <C=> key and the COLOR keys the characters can be changed
+  to any color, including multi-color characters. For example, type this
+  command:
+
+    POKE 53270,PEEK(53270)OR 16:PRINT"<CTRL+3>";: rem lt.red/ multi-color
+  red
+
+    The word READY and anything else you type will be displayed in multi-
+  color mode. Another color control can set you back to regular text.
+
+
+
+
+
+
+
+

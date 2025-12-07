@@ -1,0 +1,238 @@
+
+                                *** bad input routine
+.,AB4D A5 11    LDA $11         get INPUT mode flag, $00 = INPUT, $40 = GET, $98 = READ
+.,AB4F F0 11    BEQ $AB62       branch if INPUT
+.,AB51 30 04    BMI $AB57       branch if READ
+                                else was GET
+.,AB53 A0 FF    LDY #$FF        set current line high byte to -1, indicate immediate mode
+.,AB55 D0 04    BNE $AB5B       branch always
+.,AB57 A5 3F    LDA $3F         get current DATA line number low byte
+.,AB59 A4 40    LDY $40         get current DATA line number high byte
+.,AB5B 85 39    STA $39         set current line number low byte
+.,AB5D 84 3A    STY $3A         set current line number high byte
+.,AB5F 4C 08 AF JMP $AF08       do syntax error then warm start
+                                was INPUT
+.,AB62 A5 13    LDA $13         get current I/O channel
+.,AB64 F0 05    BEQ $AB6B       branch if default channel
+.,AB66 A2 18    LDX #$18        else error $18, file data error
+.,AB68 4C 37 A4 JMP $A437       do error #X then warm start
+.,AB6B A9 0C    LDA #$0C        set "?REDO FROM START" pointer low byte
+.,AB6D A0 AD    LDY #$AD        set "?REDO FROM START" pointer high byte
+.,AB6F 20 1E AB JSR $AB1E       print null terminated string
+.,AB72 A5 3D    LDA $3D         get continue pointer low byte
+.,AB74 A4 3E    LDY $3E         get continue pointer high byte
+.,AB76 85 7A    STA $7A         save BASIC execute pointer low byte
+.,AB78 84 7B    STY $7B         save BASIC execute pointer high byte
+.,AB7A 60       RTS             
+
+                                *** perform GET
+.,AB7B 20 A6 B3 JSR $B3A6       check not Direct, back here if ok
+.,AB7E C9 23    CMP #$23        compare with "#"
+.,AB80 D0 10    BNE $AB92       branch if not GET#
+.,AB82 20 73 00 JSR $0073       increment and scan memory
+.,AB85 20 9E B7 JSR $B79E       get byte parameter
+.,AB88 A9 2C    LDA #$2C        set ","
+.,AB8A 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,AB8D 86 13    STX $13         set current I/O channel
+.,AB8F 20 1E E1 JSR $E11E       open channel for input with error check
+.,AB92 A2 01    LDX #$01        set pointer low byte
+.,AB94 A0 02    LDY #$02        set pointer high byte
+.,AB96 A9 00    LDA #$00        clear A
+.,AB98 8D 01 02 STA $0201       ensure null terminator
+.,AB9B A9 40    LDA #$40        input mode = GET
+.,AB9D 20 0F AC JSR $AC0F       perform the GET part of READ
+.,ABA0 A6 13    LDX $13         get current I/O channel
+.,ABA2 D0 13    BNE $ABB7       if not default channel go do channel close and return
+.,ABA4 60       RTS             
+
+                                *** perform INPUT#
+.,ABA5 20 9E B7 JSR $B79E       get byte parameter
+.,ABA8 A9 2C    LDA #$2C        set ","
+.,ABAA 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,ABAD 86 13    STX $13         set current I/O channel
+.,ABAF 20 1E E1 JSR $E11E       open channel for input with error check
+.,ABB2 20 CE AB JSR $ABCE       perform INPUT with no prompt string
+
+                                *** close input and output channels
+.,ABB5 A5 13    LDA $13         get current I/O channel
+.,ABB7 20 CC FF JSR $FFCC       close input and output channels
+.,ABBA A2 00    LDX #$00        clear X
+.,ABBC 86 13    STX $13         clear current I/O channel, flag default
+.,ABBE 60       RTS             
+
+                                *** perform INPUT
+.,ABBF C9 22    CMP #$22        compare next byte with open quote
+.,ABC1 D0 0B    BNE $ABCE       if no prompt string just do INPUT
+.,ABC3 20 BD AE JSR $AEBD       print "..." string
+.,ABC6 A9 3B    LDA #$3B        load A with ";"
+.,ABC8 20 FF AE JSR $AEFF       scan for CHR$(A), else do syntax error then warm start
+.,ABCB 20 21 AB JSR $AB21       print string from utility pointer
+                                done with prompt, now get data
+.,ABCE 20 A6 B3 JSR $B3A6       check not Direct, back here if ok
+.,ABD1 A9 2C    LDA #$2C        set ","
+.,ABD3 8D FF 01 STA $01FF       save to start of buffer - 1
+.,ABD6 20 F9 AB JSR $ABF9       print "? " and get BASIC input
+.,ABD9 A5 13    LDA $13         get current I/O channel
+.,ABDB F0 0D    BEQ $ABEA       branch if default I/O channel
+.,ABDD 20 B7 FF JSR $FFB7       read I/O status word
+.,ABE0 29 02    AND #$02        mask no DSR/timeout
+.,ABE2 F0 06    BEQ $ABEA       branch if not error
+.,ABE4 20 B5 AB JSR $ABB5       close input and output channels
+.,ABE7 4C F8 A8 JMP $A8F8       perform DATA
+.,ABEA AD 00 02 LDA $0200       get first byte in input buffer
+.,ABED D0 1E    BNE $AC0D       branch if not null
+                                else ..
+.,ABEF A5 13    LDA $13         get current I/O channel
+.,ABF1 D0 E3    BNE $ABD6       if not default channel go get BASIC input
+.,ABF3 20 06 A9 JSR $A906       scan for next BASIC statement ([:] or [EOL])
+.,ABF6 4C FB A8 JMP $A8FB       add Y to the BASIC execute pointer and return
+
+                                *** print "? " and get BASIC input
+.,ABF9 A5 13    LDA $13         get current I/O channel
+.,ABFB D0 06    BNE $AC03       skip "?" prompt if not default channel
+.,ABFD 20 45 AB JSR $AB45       print "?"
+.,AC00 20 3B AB JSR $AB3B       print [SPACE] or [CURSOR RIGHT]
+.,AC03 4C 60 A5 JMP $A560       call for BASIC input and return
+
+                                *** perform READ
+.,AC06 A6 41    LDX $41         get DATA pointer low byte
+.,AC08 A4 42    LDY $42         get DATA pointer high byte
+.,AC0A A9 98    LDA #$98        set input mode = READ
+.:AC0C 2C       .BYTE $2C       makes next line BIT $00A9
+.,AC0D A9 00    LDA #$00        set input mode = INPUT
+
+                                *** perform GET
+.,AC0F 85 11    STA $11         set input mode flag, $00 = INPUT, $40 = GET, $98 = READ
+.,AC11 86 43    STX $43         save READ pointer low byte
+.,AC13 84 44    STY $44         save READ pointer high byte
+                                READ, GET or INPUT next variable from list
+.,AC15 20 8B B0 JSR $B08B       get variable address
+.,AC18 85 49    STA $49         save address low byte
+.,AC1A 84 4A    STY $4A         save address high byte
+.,AC1C A5 7A    LDA $7A         get BASIC execute pointer low byte
+.,AC1E A4 7B    LDY $7B         get BASIC execute pointer high byte
+.,AC20 85 4B    STA $4B         save BASIC execute pointer low byte
+.,AC22 84 4C    STY $4C         save BASIC execute pointer high byte
+.,AC24 A6 43    LDX $43         get READ pointer low byte
+.,AC26 A4 44    LDY $44         get READ pointer high byte
+.,AC28 86 7A    STX $7A         save as BASIC execute pointer low byte
+.,AC2A 84 7B    STY $7B         save as BASIC execute pointer high byte
+.,AC2C 20 79 00 JSR $0079       scan memory
+.,AC2F D0 20    BNE $AC51       branch if not null
+                                pointer was to null entry
+.,AC31 24 11    BIT $11         test input mode flag, $00 = INPUT, $40 = GET, $98 = READ
+.,AC33 50 0C    BVC $AC41       branch if not GET
+                                else was GET
+.,AC35 20 24 E1 JSR $E124       get character from input device with error check
+.,AC38 8D 00 02 STA $0200       save to buffer
+.,AC3B A2 FF    LDX #$FF        set pointer low byte
+.,AC3D A0 01    LDY #$01        set pointer high byte
+.,AC3F D0 0C    BNE $AC4D       go interpret single character
+.,AC41 30 75    BMI $ACB8       branch if READ
+                                else was INPUT
+.,AC43 A5 13    LDA $13         get current I/O channel
+.,AC45 D0 03    BNE $AC4A       skip "?" prompt if not default channel
+.,AC47 20 45 AB JSR $AB45       print "?"
+.,AC4A 20 F9 AB JSR $ABF9       print "? " and get BASIC input
+.,AC4D 86 7A    STX $7A         save BASIC execute pointer low byte
+.,AC4F 84 7B    STY $7B         save BASIC execute pointer high byte
+.,AC51 20 73 00 JSR $0073       increment and scan memory, execute pointer now points to
+                                start of next data or null terminator
+.,AC54 24 0D    BIT $0D         test data type flag, $FF = string, $00 = numeric
+.,AC56 10 31    BPL $AC89       branch if numeric
+                                type is string
+.,AC58 24 11    BIT $11         test INPUT mode flag, $00 = INPUT, $40 = GET, $98 = READ
+.,AC5A 50 09    BVC $AC65       branch if not GET
+                                else do string GET
+.,AC5C E8       INX             clear X ??
+.,AC5D 86 7A    STX $7A         save BASIC execute pointer low byte
+.,AC5F A9 00    LDA #$00        clear A
+.,AC61 85 07    STA $07         clear search character
+.,AC63 F0 0C    BEQ $AC71       branch always
+                                is string INPUT or string READ
+.,AC65 85 07    STA $07         save search character
+.,AC67 C9 22    CMP #$22        compare with "
+.,AC69 F0 07    BEQ $AC72       branch if quote
+                                string is not in quotes so ":", "," or $00 are the
+                                termination characters
+.,AC6B A9 3A    LDA #$3A        set ":"
+.,AC6D 85 07    STA $07         set search character
+.,AC6F A9 2C    LDA #$2C        set ","
+.,AC71 18       CLC             clear carry for add
+.,AC72 85 08    STA $08         set scan quotes flag
+.,AC74 A5 7A    LDA $7A         get BASIC execute pointer low byte
+.,AC76 A4 7B    LDY $7B         get BASIC execute pointer high byte
+.,AC78 69 00    ADC #$00        add to pointer low byte. this add increments the pointer
+                                if the mode is INPUT or READ and the data is a "..."
+                                string
+.,AC7A 90 01    BCC $AC7D       branch if no rollover
+.,AC7C C8       INY             else increment pointer high byte
+.,AC7D 20 8D B4 JSR $B48D       print string to utility pointer
+.,AC80 20 E2 B7 JSR $B7E2       restore BASIC execute pointer from temp
+.,AC83 20 DA A9 JSR $A9DA       perform string LET
+.,AC86 4C 91 AC JMP $AC91       continue processing command
+                                GET, INPUT or READ is numeric
+.,AC89 20 F3 BC JSR $BCF3       get FAC1 from string
+.,AC8C A5 0E    LDA $0E         get data type flag, $80 = integer, $00 = float
+.,AC8E 20 C2 A9 JSR $A9C2       assign value to numeric variable
+.,AC91 20 79 00 JSR $0079       scan memory
+.,AC94 F0 07    BEQ $AC9D       branch if ":" or [EOL]
+.,AC96 C9 2C    CMP #$2C        comparte with ","
+.,AC98 F0 03    BEQ $AC9D       branch if ","
+.,AC9A 4C 4D AB JMP $AB4D       else go do bad input routine
+                                string terminated with ":", "," or $00
+.,AC9D A5 7A    LDA $7A         get BASIC execute pointer low byte
+.,AC9F A4 7B    LDY $7B         get BASIC execute pointer high byte
+.,ACA1 85 43    STA $43         save READ pointer low byte
+.,ACA3 84 44    STY $44         save READ pointer high byte
+.,ACA5 A5 4B    LDA $4B         get saved BASIC execute pointer low byte
+.,ACA7 A4 4C    LDY $4C         get saved BASIC execute pointer high byte
+.,ACA9 85 7A    STA $7A         restore BASIC execute pointer low byte
+.,ACAB 84 7B    STY $7B         restore BASIC execute pointer high byte
+.,ACAD 20 79 00 JSR $0079       scan memory
+.,ACB0 F0 2D    BEQ $ACDF       branch if ":" or [EOL]
+.,ACB2 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+.,ACB5 4C 15 AC JMP $AC15       go READ or INPUT next variable from list
+                                was READ
+.,ACB8 20 06 A9 JSR $A906       scan for next BASIC statement ([:] or [EOL])
+.,ACBB C8       INY             increment index to next byte
+.,ACBC AA       TAX             copy byte to X
+.,ACBD D0 12    BNE $ACD1       branch if ":"
+.,ACBF A2 0D    LDX #$0D        else set error $0D, out of data error
+.,ACC1 C8       INY             increment index to next line pointer high byte
+.,ACC2 B1 7A    LDA ($7A),Y     get next line pointer high byte
+.,ACC4 F0 6C    BEQ $AD32       branch if program end, eventually does error X
+.,ACC6 C8       INY             increment index
+.,ACC7 B1 7A    LDA ($7A),Y     get next line # low byte
+.,ACC9 85 3F    STA $3F         save current DATA line low byte
+.,ACCB C8       INY             increment index
+.,ACCC B1 7A    LDA ($7A),Y     get next line # high byte
+.,ACCE C8       INY             increment index
+.,ACCF 85 40    STA $40         save current DATA line high byte
+.,ACD1 20 FB A8 JSR $A8FB       add Y to the BASIC execute pointer
+.,ACD4 20 79 00 JSR $0079       scan memory
+.,ACD7 AA       TAX             copy the byte
+.,ACD8 E0 83    CPX #$83        compare it with token for DATA
+.,ACDA D0 DC    BNE $ACB8       loop if not DATA
+.,ACDC 4C 51 AC JMP $AC51       continue evaluating READ
+.,ACDF A5 43    LDA $43         get READ pointer low byte
+.,ACE1 A4 44    LDY $44         get READ pointer high byte
+.,ACE3 A6 11    LDX $11         get INPUT mode flag, $00 = INPUT, $40 = GET, $98 = READ
+.,ACE5 10 03    BPL $ACEA       branch if INPUT or GET
+.,ACE7 4C 27 A8 JMP $A827       else set data pointer and exit
+.,ACEA A0 00    LDY #$00        clear index
+.,ACEC B1 43    LDA ($43),Y     get READ byte
+.,ACEE F0 0B    BEQ $ACFB       exit if [EOL]
+.,ACF0 A5 13    LDA $13         get current I/O channel
+.,ACF2 D0 07    BNE $ACFB       exit if not default channel
+.,ACF4 A9 FC    LDA #$FC        set "?EXTRA IGNORED" pointer low byte
+.,ACF6 A0 AC    LDY #$AC        set "?EXTRA IGNORED" pointer high byte
+.,ACF8 4C 1E AB JMP $AB1E       print null terminated string
+.,ACFB 60       RTS             
+
+                                *** input error messages
+.:ACFC 3F 45 58 54 52 41 20 49  '?extra ignored'
+.:AD04 47 4E 4F 52 45 44 0D 00
+.:AD0C 3F 52 45 44 4F 20 46 52  '?redo from start'
+.:AD14 4F 4D 20 53 54 41 52 54
+.:AD1C 0D 00

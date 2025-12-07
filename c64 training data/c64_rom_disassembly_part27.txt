@@ -1,0 +1,128 @@
+# C64 KERNAL ROM Disassembly $E400-$E4FF - Screen Editor
+
+.,E400 86 16    STX $16         set descriptor stack pointer
+.,E402 38       SEC             set Cb = 1 to read the bottom of memory
+.,E403 20 9C FF JSR $FF9C       read/set the bottom of memory
+.,E406 86 2B    STX $2B         save the start of memory low byte
+.,E408 84 2C    STY $2C         save the start of memory high byte
+.,E40A 38       SEC             set Cb = 1 to read the top of memory
+.,E40B 20 99 FF JSR $FF99       read/set the top of memory
+.,E40E 86 37    STX $37         save the end of memory low byte
+.,E410 84 38    STY $38         save the end of memory high byte
+.,E412 86 33    STX $33         set the bottom of string space low byte
+.,E414 84 34    STY $34         set the bottom of string space high byte
+.,E416 A0 00    LDY #$00        clear the index
+.,E418 98       TYA             clear the A
+.,E419 91 2B    STA ($2B),Y     clear the the first byte of memory
+.,E41B E6 2B    INC $2B         increment the start of memory low byte
+.,E41D D0 02    BNE $E421       if no rollover skip the high byte increment
+.,E41F E6 2C    INC $2C         increment start of memory high byte
+.,E421 60       RTS             
+
+                                *** print the start up message and initialise the memory pointers
+.,E422 A5 2B    LDA $2B         get the start of memory low byte
+.,E424 A4 2C    LDY $2C         get the start of memory high byte
+.,E426 20 08 A4 JSR $A408       check available memory, do out of memory error if no room
+.,E429 A9 73    LDA #$73        set "**** COMMODORE 64 BASIC V2 ****" pointer low byte
+.,E42B A0 E4    LDY #$E4        set "**** COMMODORE 64 BASIC V2 ****" pointer high byte
+.,E42D 20 1E AB JSR $AB1E       print a null terminated string
+.,E430 A5 37    LDA $37         get the end of memory low byte
+.,E432 38       SEC             set carry for subtract
+.,E433 E5 2B    SBC $2B         subtract the start of memory low byte
+.,E435 AA       TAX             copy the result to X
+.,E436 A5 38    LDA $38         get the end of memory high byte
+.,E438 E5 2C    SBC $2C         subtract the start of memory high byte
+.,E43A 20 CD BD JSR $BDCD       print XA as unsigned integer
+.,E43D A9 60    LDA #$60        set " BYTES FREE" pointer low byte
+.,E43F A0 E4    LDY #$E4        set " BYTES FREE" pointer high byte
+.,E441 20 1E AB JSR $AB1E       print a null terminated string
+.,E444 4C 44 A6 JMP $A644       do NEW, CLEAR, RESTORE and return
+
+                                *** BASIC vectors, these are copied to RAM from $0300 onwards
+.:E447 8B E3                    error message          $0300
+.:E449 83 A4                    BASIC warm start       $0302
+.:E44B 7C A5                    crunch BASIC tokens    $0304
+.:E44D 1A A7                    uncrunch BASIC tokens  $0306
+.:E44F E4 A7                    start new BASIC code   $0308
+.:E451 86 AE                    get arithmetic element $030A
+
+                                *** initialise the BASIC vectors
+.,E453 A2 0B    LDX #$0B        set byte count
+.,E455 BD 47 E4 LDA $E447,X     get byte from table
+.,E458 9D 00 03 STA $0300,X     save byte to RAM
+.,E45B CA       DEX             decrement index
+.,E45C 10 F7    BPL $E455       loop if more to do
+.,E45E 60       RTS             
+
+                                *** BASIC startup messages
+.:E45F 00 20 42 41 53 49 43 20  basic bytes free
+.:E467 42 59 54 45 53 20 46 52
+.:E46F 45 45 0D 00 93 0D 20 20
+.:E473 93 0D 20 20 20 20 2A 2A  (clr) **** commodore 64 basic v2 ****
+.:E47B 2A 2A 20 43 4F 4D 4D 4F  (cr) (cr) 64k ram system
+.:E483 44 4F 52 45 20 36 34 20
+.:E48B 42 41 53 49 43 20 56 32
+.:E493 20 2A 2A 2A 2A 0D 0D 20
+.:E49B 36 34 4B 20 52 41 4D 20
+.:E4A3 53 59 53 54 45 4D 20 20
+.:E4AB 00
+
+                                *** unused
+.:E4AC 5C
+
+                                *** open channel for output
+.,E4AD 48       PHA             save the flag byte
+.,E4AE 20 C9 FF JSR $FFC9       open channel for output
+.,E4B1 AA       TAX             copy the returned flag byte
+.,E4B2 68       PLA             restore the alling flag byte
+.,E4B3 90 01    BCC $E4B6       if there is no error skip copying the error flag
+.,E4B5 8A       TXA             else copy the error flag
+.,E4B6 60       RTS             
+
+                                *** unused bytes
+.:E4B7 AA AA AA AA AA AA AA AA
+.:E4BF AA AA AA AA AA AA AA AA
+.:E4C7 AA AA AA AA AA AA AA AA
+.:E4CF AA AA AA AA AA
+
+                                *** flag the RS232 start bit and set the parity
+.,E4D3 85 A9    STA $A9         save the start bit check flag, set start bit received
+.,E4D5 A9 01    LDA #$01        set the initial parity state
+.,E4D7 85 AB    STA $AB         save the receiver parity bit
+.,E4D9 60       RTS
+
+                                *** save the current colour to the colour RAM
+.,E4DA AD 21 D0 LDA $D021       get the current colour code
+.,E4DD 91 F3    STA ($F3),Y     save it to the colour RAM
+.,E4DF 60       RTS             
+
+                                *** wait ~8.5 seconds for any key from the STOP key column
+.,E4E0 69 02    ADC #$02        set the number of jiffies to wait
+.,E4E2 A4 91    LDY $91         read the stop key column
+.,E4E4 C8       INY             test for $FF, no keys pressed
+.,E4E5 D0 04    BNE $E4EB       if any keys were pressed just exit
+.,E4E7 C5 A1    CMP $A1         compare the wait time with the jiffy clock mid byte
+.,E4E9 D0 F7    BNE $E4E2       if not there yet go wait some more
+.,E4EB 60       RTS             
+
+                                *** baud rate tables for PAL C64
+                                baud rate word is calculated from ..
+                                
+                                (system clock / baud rate) / 2 - 100
+                                
+                                    system clock
+                                    ------------
+                                PAL       985248 Hz
+                                NTSC     1022727 Hz
+.:E4EC 19 26                      50   baud   985300
+.:E4EE 44 19                      75   baud   985200
+.:E4F0 1A 11                     110   baud   985160
+.:E4F2 E8 0D                     134.5 baud   984540
+.:E4F4 70 0C                     150   baud   985200
+.:E4F6 06 06                     300   baud   985200
+.:E4F8 D1 02                     600   baud   985200
+.:E4FA 37 01                    1200   baud   986400
+.:E4FC AE 00                    1800   baud   986400
+.:E4FE 69 00                    2400   baud   984000
+
+                                *** return the base address of the I/O devices

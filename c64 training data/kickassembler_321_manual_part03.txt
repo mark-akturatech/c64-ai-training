@@ -1,0 +1,102 @@
+# KickAssembler - Basic Assembler: 6510 Commands, Addressing Modes
+
+  10.4	
+   Asserting errors in code ......................................................................................................54	
+  
+11	
+   Some technical details ...............................................................................................................55	
+  
+  11.1	
+   The flexible parse algorithm ...............................................................................................55	
+  
+  11.2	
+   Recording of side effects ....................................................................................................55	
+  
+  11.3	
+   Function Mode and Asm Mode ..........................................................................................55	
+  
+  11.4	
+   Invalid value calculations ...................................................................................................55	
+  
+12	
+   Going from Kick Assembler 2.x to 3.x......................................................................................57	
+  
+13	
+   Command line options ...............................................................................................................58	
+  
+                                                                                                                                                       3
+1 Introduction
+Welcome to this third version of Kick Assembler. The first version was a normal 6510 cross
+assembler. The second version combined the assembler with a script language, giving you the
+opportunity to write programs that generate data for the assembler code. This could be data such as
+sine waves, coordinates for a vector object, or graphic converters. Writing small data generating
+programs directly in you assembler source code is much handier than writing them in external
+languages like Java or C++.
+So why version 3? If you take a look at this manual, you will see that the functionality of Kick
+Assembler 3 is almost similar to that of Kick Assembler 2. The syntax, the functions and the
+directives are the same as in version 2. However, the code of almost every class in the assembler
+has been rewritten or modified. Three fundamental changes have been made. Kick assembler 3 uses
+a new flexible pass algorithm for assembling, and it handles side effects and invalid values in a
+more flexible and efficient way that prevent errors during assembling. If you want to know more
+about this then read the chapter ‘Some technical details’.
+If you have previously used Kick Assembler 2.x you might want to read the chapter ‘Going from
+Kick Assembler 2.x to 3.x’
+A lot of people have contributed with valuable comments and suggestions by mail and on CSDB.
+Thanks guys. Your feedback is greatly appreciated. I would especially like to thank Martin ‘Cruzer’
+Kristensen for proofreading and testing the assembler; Gunni ‘Dragnet’ Rode and Bastiaan ‘Mace’
+for proofreading; Gerwin Klein for doing JFlex (the lexical analyser used for this assembler); Scott
+Hudson, Frank Flannery and C. Scott Ananian for doing CUP (The parser generator).
+I would like to hear from people that use Kick Assembler so do not hesitate to write your comments
+to kickassembler@no.spam.theweb.dk (<- Remove no.spam. for real address).
+I wish you happy coding..
+                                                                                                    4
+2 Getting Started
+This chapter is written to quickly get you started using Kick Assembler. The details of the
+assembler’s functionalities will be presented later.
+2.1 Running the Assembler using Java
+Kick Assembler run on any platform with Java5.0 or higher installed. Java can be downloaded for
+free on Javas website (http://java.com/en/download/index.jsp). To assemble the file myCode.asm
+simply go to a command prompt and write:
+   java –jar kickass.jar myCode.asm
+And that’s it.
+Having problems with java? Some Windows users found that java couldn’t be reached from the
+command prompt after installation. If this is the case you have to insert it in your path environment
+variable. You can test it by writing:
+   java –version
+Java will now display the java version if it’s correctly installed.
+2.2 An Example Interrupt
+Below is a little sample program to quickly get you started using Kick Assembler. It sets up an
+interrupt, which play some music. It shows you how to use non-standard features such as the .pc
+directive, comments, how to use macros and include external files. This should be enough to get
+you (kick) started.
+                                                                                                    5
+  //----------------------------------------------------------
+  //----------------------------------------------------------
+  //                      Simple IRQ
+  //----------------------------------------------------------
+  //----------------------------------------------------------
+  .pc = $4000 “Main Program”
+              lda #$00
+              sta $d020
+              sta $d021
+              lda #$00
+              jsr $1000 // init music
+              sei
+              lda #<irq1
+              sta $0314
+              lda #>irq1
+              sta $0315
+              asl $d019
+              lda #$7b
+              sta $dc0d
+              lda #$81
+              sta $d01a
+              lda #$1b
+              sta $d011
+              lda #$80
+              sta $d012
+              cli
+  this:       jmp this
+  //----------------------------------------------------------
+  irq1:
+              asl $d019
