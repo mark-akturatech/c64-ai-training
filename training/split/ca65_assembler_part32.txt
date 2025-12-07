@@ -1,0 +1,64 @@
+# CA65 Assembler - Control Commands (.PAGELEN .PC02 .PDTV .POPCHARMAP .POPCPU .POPSEG .PROC .PUSHCHARMAP .PUSHCPU .PUSHSEG .PWC02)
+
+11.106 .REFERTO, .REFTO
+Mark a symbol as referenced.
+
+It is useful in combination with the .IFREF command. A subroutine with two entry points can be created. When the first entry point is called, it sets some default value as an argument, and falls through into the second entry point. .REFERTO helps to ensure that the second part is included into binary when only the first entry point is actually used from the code.
+
+Example:
+
+
+        .ifref NegateValue              ; If this subroutine is used
+        NegateValue:                    ; Define it
+                lda     #0
+                sec
+                sbc     Value
+            .ifref ResetValue           ; If the ResetValue is also used
+                jmp     SetValue        ; Jump over it
+            .else
+                .refto  SetValue        ; Ensure that SetValue will be included
+            .endif
+        .endif
+
+        .ifref ResetValue               ; If this subroutine is used
+        ResetValue:                     ; Define it
+                lda     #0              ; Set a default value
+                .refto  SetValue        ; Ensure that SetValue will be included
+        .endif
+
+        .ifref SetValue                 ; If this or previous subroutine is used
+        SetValue:
+                sta     Value
+                rts
+        .endif
+  
+11.107 .RELOC
+Switch back to relocatable mode. See the .ORG command.
+
+11.108 .REPEAT
+Repeat all commands between .REPEAT and .ENDREPEAT constant number of times. The command is followed by a constant expression that tells how many times the commands in the body should get repeated. Optionally, a comma and an identifier may be specified. If this identifier is found in the body of the repeat statement, it is replaced by the current repeat count (starting with zero for the first time the body is repeated).
+
+.REPEAT statements may be nested. If you use the same repeat count identifier for a nested .REPEAT statement, the one from the inner level will be used, not the one from the outer level.
+
+Example:
+
+The following macro will emit a string that is "encrypted" in that all characters of the string are XORed by the value $55.
+
+
+        .macro  Crypt   Arg
+                .repeat .strlen(Arg), I
+                .byte   .strat(Arg, I) ^ $55
+                .endrep
+        .endmacro
+  
+See: .ENDREPEAT
+
+11.109 .RES
+Reserve storage. The command is followed by one or two constant expressions. The first one is mandatory and defines, how many bytes of storage should be defined. The second, optional expression must be a constant byte value that will be used as value of the data. If there is no fill value given, the linker will use the value defined in the linker configuration file (default: zero).
+
+Example:
+
+
+        ; Reserve 12 bytes of memory with value $AA
+        .res    12, $AA
+  

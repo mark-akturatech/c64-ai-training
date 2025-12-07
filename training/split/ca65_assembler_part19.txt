@@ -1,0 +1,89 @@
+# CA65 Assembler - Pseudo Functions (.SPRINTF .STRAT .STRING .STRLEN .TCOUNT .XMATCH)
+
+Builtin function. It expects a format string as first argument. The number and type of the following arguments depend on the format string. The format string is similar to the one of the C printf function. Missing things are: Length modifiers, variable width.
+
+The result of the function is a string.
+
+Example:
+
+
+        num     = 3
+
+        ; Generate an identifier:
+        .ident (.sprintf ("%s%03d", "label", num)):
+  
+10.25 .STRAT
+Builtin function. The function accepts a string and an index as arguments and returns the value of the character at the given position as an integer value. The index is zero based.
+
+Example:
+
+
+        .macro  M       Arg
+                ; Check if the argument string starts with '#'
+                .if (.strat (Arg, 0) = '#')
+                ...
+                .endif
+        .endmacro
+  
+10.26 .STRING
+Builtin function. The function accepts an argument in parentheses and converts this argument into a string constant. The argument may be an identifier, or a constant numeric value.
+
+Since you can use a string in the first place, the use of the function may not be obvious. However, it is useful in macros, or more complex setups.
+
+Example:
+
+
+        ; Emulate other assemblers:
+        .macro  section name
+                .segment        .string(name)
+        .endmacro
+  
+10.27 .STRLEN
+Builtin function. The function accepts a string argument in parentheses and evaluates to the length of the string.
+
+Example:
+
+The following macro encodes a string as a pascal style string with a leading length byte.
+
+
+        .macro  PString Arg
+                .byte   .strlen(Arg), Arg
+        .endmacro
+  
+10.28 .TCOUNT
+Builtin function. The function accepts a token list in parentheses. The function result is the number of tokens given as argument. The token list may optionally be enclosed into curly braces which are not considered part of the list and not counted. Enclosement in curly braces allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case).
+
+Example:
+
+The ldax macro accepts the '#' token to denote immediate addressing (as with the normal 6502 instructions). To translate it into two separate 8 bit load instructions, the '#' token has to get stripped from the argument:
+
+
+        .macro  ldax    arg
+                .if (.match (.mid (0, 1, {arg}), #))
+                ; ldax called with immediate operand
+                lda     #<(.right (.tcount ({arg})-1, {arg}))
+                ldx     #>(.right (.tcount ({arg})-1, {arg}))
+                .else
+                ...
+                .endif
+        .endmacro
+  
+10.29 .XMATCH
+Builtin function. Matches two token lists against each other. This is most useful within macros, since macros are not stored as strings, but as lists of tokens.
+
+The syntax is
+
+
+        .XMATCH(<token list #1>, <token list #2>)
+  
+Both token list may contain arbitrary tokens with the exception of the terminator token (comma resp. right parenthesis) and
+
+
+end-of-line
+end-of-file
+The token lists may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case). Often a macro parameter is used for any of the token lists.
+
+The function compares tokens and token values. If you need a function that just compares the type of tokens, have a look at the .MATCH function.
+
+See: .MATCH
+

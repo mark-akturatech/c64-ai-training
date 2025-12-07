@@ -7,12 +7,12 @@
 - **Compile**: `kickass filename.asm` produces `.prg` files
 
 ## Knowledge Base (Qdrant)
-**IMPORTANT**: Before writing any C64 code, ALWAYS query the Qdrant knowledge base first using:
-```
-mcp__qdrant-local__semantic_search(collection="code_e8fdd6fe", query="...", limit=8)
-```
+**IMPORTANT**: Before writing any C64 code, ALWAYS query the Qdrant knowledge base first:
 
-The collection contains comprehensive C64 documentation:
+1. List available collections: `mcp__qdrant-local__list_collections()`
+2. Search each relevant collection: `mcp__qdrant-local__semantic_search(collection="<name>", query="...", limit=8)`
+
+Collections contain comprehensive 6502/C64 documentation:
 - Complete 6502 instruction set with all addressing modes
 - Full C64 memory map ($0000-$FFFF)
 - Commented ROM disassembly (BASIC, KERNAL)

@@ -1,0 +1,119 @@
+# CA65 Assembler - Pseudo Functions (.LEFT .LOBYTE .LOWORD .MATCH .MAX .MID .MIN)
+
+10.17 .MATCH
+Builtin function. Matches two token lists against each other. This is most useful within macros, since macros are not stored as strings, but as lists of tokens.
+
+The syntax is
+
+
+        .MATCH(<token list #1>, <token list #2>)
+  
+Both token list may contain arbitrary tokens with the exception of the terminator token (comma resp. right parenthesis) and
+
+
+end-of-line
+end-of-file
+The token lists may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case). Often a macro parameter is used for any of the token lists.
+
+Please note that the function does only compare tokens, not token attributes. So any number is equal to any other number, regardless of the actual value. The same is true for strings. If you need to compare tokens and token attributes, use the .XMATCH function.
+
+Example:
+
+Assume the macro ASR, that will shift right the accumulator by one, while honoring the sign bit. The builtin processor instructions will allow an optional "A" for accu addressing for instructions like ROL and ROR. We will use the .MATCH function to check for this and print and error for invalid calls.
+
+
+        .macro  asr     arg
+
+                .if (.not .blank(arg)) .and (.not .match ({arg}, a))
+                .error "Syntax error"
+                .endif
+
+                cmp     #$80            ; Bit 7 into carry
+                lsr     a               ; Shift carry into bit 7
+
+        .endmacro
+  
+The macro will only accept no arguments, or one argument that must be the reserved keyword "A".
+
+See: .XMATCH
+
+10.18 .MAX
+Builtin function. The result is the larger of two values.
+
+The syntax is
+
+
+        .MAX (<value #1>, <value #2>)
+  
+Example:
+
+
+        ; Reserve space for the larger of two data blocks
+        savearea:       .res .max (.sizeof (foo), .sizeof (bar))
+  
+See: .MIN
+
+10.19 .MID
+Builtin function. Takes a starting index, a count and a token list as arguments. Will return part of the token list.
+
+Syntax:
+
+
+        .MID (<int expr>, <int expr>, <token list>)
+  
+The first integer expression gives the starting token in the list (the first token has index 0). The second integer expression gives the number of tokens to extract from the token list. The third argument is the token list itself. The token list may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case).
+
+Example:
+
+To check in a macro if the given argument has a '#' as first token (immediate addressing mode), use something like this:
+
+
+        .macro  ldax    arg
+                ...
+                .if (.match (.mid (0, 1, {arg}), #))
+
+                ; ldax called with immediate operand
+                ...
+
+                .endif
+                ...
+        .endmacro
+  
+See also the .LEFT and .RIGHT builtin functions.
+
+10.20 .MIN
+Builtin function. The result is the smaller of two values.
+
+The syntax is
+
+
+        .MIN (<value #1>, <value #2>)
+  
+Example:
+
+
+        ; Reserve space for some data, but 256 bytes maximum
+        savearea:       .res .min (.sizeof (foo), 256)
+  
+See: .MAX
+
+10.21 .REF, .REFERENCED
+Builtin function. The function expects an identifier as argument in parentheses. The argument is evaluated, and the function yields "true" if the identifier is a symbol that has already been referenced somewhere in the source file up to the current position. Otherwise the function yields false. As an example, the .IFREF statement may be replaced by
+
+
+        .if     .referenced(a)
+  
+See: .DEFINED
+
+10.22 .RIGHT
+Builtin function. Extracts the right part of a given token list.
+
+Syntax:
+
+
+        .RIGHT (<int expr>, <token list>)
+  
+The first integer expression gives the number of tokens to extract from the token list. The second argument is the token list itself. The token list may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case).
+
+See also the .LEFT and .MID builtin functions.
+

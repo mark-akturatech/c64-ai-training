@@ -1,0 +1,121 @@
+# CA65 Assembler - Control Commands (.LOCAL .LOCALCHAR .MACPACK .MACRO .ORG .OUT .P02 .P816)
+
+11.91 .PAGELEN, .PAGELENGTH
+Set the page length for the listing. Must be followed by an integer constant. The value may be "unlimited", or in the range 32 to 127. The statement has no effect if no listing is generated. The default value is -1 (unlimited) but may be overridden by the --pagelength command line option. Beware: Since ca65 is a one pass assembler, the listing is generated after assembly is complete, you cannot use multiple line lengths with one source. Instead, the value set with the last .PAGELENGTH is used.
+
+Examples:
+
+
+        .pagelength     66              ; Use 66 lines per listing page
+
+        .pagelength     unlimited       ; Unlimited page length
+  
+11.92 .PC02
+Enable the 65C02 instructions set. This instruction set includes all 6502 and 65SC02 instructions.
+
+See: .P02, .PSC02, .P816, .P4510, and .P45GS02
+
+11.93 .PCE02
+Enable the 65CE02 instructions set. This instruction set includes all 6502 and extended 65CE02 instructions.
+
+See: .P02, .PSC02, .P816, .P4510, and .P45GS02
+
+11.94 .PDTV
+Enable the 6502DTV instruction set. This is a superset of the 6502 instruction set.
+
+See: .P02
+
+11.95 .PM740
+Enable the M740 instruction set. This is a superset of the 6502 instruction set.
+
+See: .P02
+
+11.96 .POPCHARMAP
+Pop the last character mapping from the stack, and activate it.
+
+This command will switch back to the character mapping that was last pushed onto the character mapping stack using the .PUSHCHARMAP command, and remove this entry from the stack.
+
+The assembler will print an error message if the mappting stack is empty when this command is issued.
+
+See: .CHARMAP, .PUSHCHARMAP
+
+11.97 .POPCPU
+Pop the last CPU setting from the stack, and activate it.
+
+This command will switch back to the CPU that was last pushed onto the CPU stack using the .PUSHCPU command, and remove this entry from the stack.
+
+The assembler will print an error message if the CPU stack is empty when this command is issued.
+
+See: .CPU, .PUSHCPU, .SETCPU
+
+11.98 .POPSEG
+Pop the last pushed segment from the stack, and set it.
+
+This command will switch back to the segment that was last pushed onto the segment stack using the .PUSHSEG command, and remove this entry from the stack.
+
+The assembler will print an error message if the segment stack is empty when this command is issued.
+
+See: .PUSHSEG
+
+11.99 .PROC
+Start a nested lexical level with the given name and adds a symbol with this name to the enclosing scope. All new symbols from now on are in the local lexical level and are accessible from outside only via explicit scope specification. Symbols defined outside this local level may be accessed as long as their names are not used for new symbols inside the level. Symbols names in other lexical levels do not clash, so you may use the same names for identifiers. The lexical level ends when the .ENDPROC command is read. Lexical levels may be nested up to a depth of 16 (this is an artificial limit to protect against errors in the source).
+
+Note: Macro names are always in the global level and in a separate name space. There is no special reason for this, it's just that I've never had any need for local macro definitions.
+
+Example:
+
+
+        .proc   Clear           ; Define Clear subroutine, start new level
+                lda     #$00
+        L1:     sta     Mem,y   ; L1 is local and does not cause a
+                                ; duplicate symbol error if used in other
+                                ; places
+                dey
+                bne     L1      ; Reference local symbol
+                rts
+        .endproc                ; Leave lexical level
+  
+See: .ENDPROC and .SCOPE
+
+11.100 .PSC02
+Enable the 65SC02 instructions set. This instruction set includes all 6502 instructions.
+
+See: .P02, .PC02, .P816, .P4510, and .P45GS02
+
+11.101 .PSWEET16
+Enable the Sweet16 instructions set.
+
+See: .P02, .PC02, .P816, .P4510, and .P45GS02
+
+11.102 .PUSHCHARMAP
+Push the currently active character mapping onto a stack. The stack has a size of 16 entries.
+
+.PUSHCHARMAP allows together with .POPCHARMAP to switch to another character mapping and to restore the old character mapping later, without knowledge of the current mapping.
+
+The assembler will print an error message if the character mapping stack is already full, when this command is issued.
+
+See: .CHARMAP, .POPCHARMAP
+
+11.103 .PUSHCPU
+Push the currently active CPU onto a stack. The stack has a size of 8 entries.
+
+.PUSHCPU allows together with .POPCPU to switch to another CPU and to restore the old CPU later, without knowledge of the current CPU setting.
+
+The assembler will print an error message if the CPU stack is already full, when this command is issued.
+
+See: .CPU, .POPCPU, .SETCPU
+
+11.104 .PUSHSEG
+Push the currently active segment onto a stack. The entries on the stack include the name of the segment and the segment type. The stack has a size of 16 entries.
+
+.PUSHSEG allows together with .POPSEG to switch to another segment and to restore the old segment later, without even knowing the name and type of the current segment.
+
+The assembler will print an error message if the segment stack is already full, when this command is issued.
+
+See: .POPSEG
+
+11.105 .PWC02
+Enable the W65C02 instructions set. This instruction set includes all 6502, 65SC02, 65C02 and two extra instructions (wai and stp)
+
+See: .P02, .PSC02, .P816, .P4510, and .P45GS02
+

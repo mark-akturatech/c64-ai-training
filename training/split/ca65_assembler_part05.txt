@@ -1,0 +1,75 @@
+# CA65 Assembler - Input Format and Assembler Syntax
+
+4. Input format
+
+4.1 Assembler syntax
+The assembler accepts the standard 6502/65816 assembler syntax. One line may contain a label (which is identified by a colon), and, in addition to the label, an assembler mnemonic, a macro, or a control command (see section Control Commands for supported control commands). Alternatively, the line may contain a symbol definition using the '=' token. Everything after a semicolon is handled as a comment (that is, it is ignored).
+
+Here are some examples for valid input lines:
+
+
+        Label:                          ; A label and a comment
+                lda     #$20            ; A 6502 instruction plus comment
+        L1:     ldx     #$20            ; Same with label
+        L2:     .byte   "Hello world"   ; Label plus control command
+                mymac   $20             ; Macro expansion
+                MySym = 3*L1            ; Symbol definition
+        MaSym   = Label                 ; Another symbol
+The assembler accepts
+
+
+all valid 6502 mnemonics when in 6502 mode (the default or after the .P02 command was given).
+all valid 6502 mnemonics, plus a set of illegal instructions, when in 6502X mode (after the .P02X command was given).
+all valid 6502DTV mnemonics when in DTV mode (after the .PDTV command was given).
+all valid 65SC02 mnemonics when in 65SC02 mode (after the .PSC02 command was given).
+all valid 65C02 mnemonics when in 65C02 mode (after the .PC02 command was given).
+all valid W65C02 mnemonics when in W65C02 mode (after the .PWC02 command was given).
+all valid 65CE02 mnemonics when in 65CE02 mode (after the .PCE02 command was given).
+all valid 4510 mnemonics when in 4510 mode (after the .P4510 command was given).
+all valid 45GS02 mnemonics when in 45GS02 mode (after the .P45GS02 command was given).
+all valid HuC6280 mnemonics when in HuC6280 mode (after the .P6280 command was given).
+all valid M740 mnemonics when in M740 mode (after the .PM740 command was given).
+all valid 65816 mnemonics when in 65816 mode (after the .P816 command was given).
+for more details on the various CPUs, see here.
+
+On 6502-derived platforms the BRK instruction has an optional signature byte. If omitted, the assembler will only produce only 1 byte.
+
+
+                brk                     ; 1-byte:  $00
+                brk     $34             ; 2-bytes: $00 $34
+                brk     #$34            ; 2-bytes: $00 $34
+6502 mode
+In 6502 mode (which is the default) the assembler accepts all regular "legal" 6502 mnemonics and addressing modes.
+
+6502X mode
+6502X mode is an extension to the normal 6502 mode. In this mode, several mnemonics for undocumented instructions of the NMOS 6502 CPUs are accepted.
+
+Note: Since these instructions are undocumented, there are no official mnemonics for them.
+
+
+ALR: A:=(A and #{imm})/2;
+ANC: A:= A and #{imm}; Generates opcode $0B.
+ANE: A:= (A or CONST) and X and #{imm};
+ARR: A:=(A and #{imm})/2;
+AXS: X:=A and X-#{imm};
+DCP: {addr}:={addr}-1; A-{addr};
+ISC: {addr}:={addr}+1; A:=A-{addr};
+JAM:
+LAS: A,X,S:={addr} and S;
+LAX: A,X:={addr};
+NOP: #{imm}; zp; zp,x; abs; abs,x
+RLA: {addr}:={addr}rol; A:=A and {addr};
+RRA: {addr}:={addr}ror; A:=A adc {addr};
+SAX: {addr}:=A and X;
+SHA: {addr}:=A and X and {addr hi +1};
+SHX: {addr}:=X and {addr hi +1};
+SHY: {addr}:=Y and {addr hi +1};
+SLO: {addr}:={addr}*2; A:=A or {addr};
+SRE: {addr}:={addr}/2; A:=A xor {addr};
+TAS: {addr}:=A and X and {addr hi +1}; SP:=A and X;
+DTV mode
+The C64DTV CPU is based on the 6510, but adds some instructions, and does not support all undocumented instructions.
+
+
+bra {rel} Generates opcode $12.
+sac #{imm} Generates opcode $32.

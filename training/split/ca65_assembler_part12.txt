@@ -1,0 +1,39 @@
+# CA65 Assembler - Address Sizes and Memory Models
+
+8. Address sizes and memory models
+8.1 Address sizes
+ca65 assigns each segment and each symbol an address size. This is true, even if the symbol is not used as an address. You may also think of a value range of the symbol instead of an address size.
+
+Possible address sizes are:
+
+
+Zeropage or direct (8 bits)
+Absolute (16 bits)
+Far (24 bits)
+Long (32 bits)
+Since the assembler uses default address sizes for the segments and symbols, it is usually not necessary to override the default behaviour. In cases, where it is necessary, the following keywords may be used to specify address sizes:
+
+
+DIRECT, ZEROPAGE or ZP for zeropage addressing (8 bits).
+ABSOLUTE, ABS or NEAR for absolute addressing (16 bits).
+FAR for far addressing (24 bits).
+LONG or DWORD for long addressing (32 bits).
+8.2 Address sizes of segments
+The assembler assigns an address size to each segment. Since the representation of a label within this segment is "segment start + offset", labels will inherit the address size of the segment they are declared in.
+
+The address size of a segment may be changed, by using an optional address size modifier. See the segment directive for an explanation on how this is done.
+
+8.3 Address sizes of symbols
+The address size of a symbol can be specified with a prefix:
+
+
+z: zeropage addressing (8 bits).
+a: absolute addressing (16 bits).
+f: far addressing (24 bits).
+The zeropage addressing override can be used to ensure the use of optimal zeropage instructions, or correct cases where the size isn't yet known due to the single-pass assembly model.
+
+The larger addressing overrides can be used to promote a smaller address to absolute or far addressing, instead of being automatically fit into a smaller addressing type.
+
+8.4 Memory models
+The default address size of a segment depends on the memory model used. Since labels inherit the address size from the segment they are declared in, changing the memory model is an easy way to change the address size of many symbols at once.
+

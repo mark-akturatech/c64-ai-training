@@ -1,0 +1,32 @@
+# CA65 Assembler - Module Constructors/Destructors
+
+16. Module constructors/destructors
+Note: This section applies mostly to C programs, so the explanation below uses examples from the C libraries. However, the feature may also be useful for assembler programs.
+
+16.1 Module constructors/destructors Overview
+Using the .CONSTRUCTOR, .DESTRUCTOR and .INTERRUPTOR keywords it is possible to export functions in a special way. The linker is able to generate tables with all functions of a specific type. Such a table will only include symbols from object files that are linked into a specific executable. This may be used to add initialization and cleanup code for library modules, or a table of interrupt handler functions.
+
+The C heap functions are an example where module initialization code is used. All heap functions (malloc, free, ...) work with a few variables that contain the start and the end of the heap, pointers to the free list and so on. Since the end of the heap depends on the size and start of the stack, it must be initialized at runtime. However, initializing these variables for programs that do not use the heap are a waste of time and memory.
+
+So the central module defines a function that contains initialization code and exports this function using the .CONSTRUCTOR statement. If (and only if) this module is added to an executable by the linker, the initialization function will be placed into the table of constructors by the linker. The C startup code will call all constructors before main and all destructors after main, so without any further work, the heap initialization code is called once the module is linked in.
+
+While it would be possible to add explicit calls to initialization functions in the startup code, the new approach has several advantages:
+
+
+If a module is not included, the initialization code is not linked in and not called. So you don't pay for things you don't need.
+Adding another library that needs initialization does not mean that the startup code has to be changed. Before we had module constructors and destructors, the startup code for all systems had to be adjusted to call the new initialization code.
+The feature saves memory: Each additional initialization function needs just two bytes in the table (a pointer to the function).
+16.2 Calling order
+The symbols are sorted in increasing priority order by the linker when using one of the builtin linker configurations, so the functions with lower priorities come first and are followed by those with higher priorities. The C library runtime subroutine that walks over the function tables calls the functions starting from the top of the table - which means that functions with a high priority are called first.
+
+So when using the C runtime, functions are called with high priority functions first, followed by low priority functions.
+
+16.3 Pitfalls
+When using these special symbols, please take care of the following:
+
+
+The linker will only generate function tables, it will not generate code to call these functions. If you're using the feature in some other than the existing C environments, you have to write code to call all functions in a linker generated table yourself. See the condes and callirq modules in the C runtime for an example on how to do this.
+The linker will only add addresses of functions that are in modules linked to the executable. This means that you have to be careful where to place the condes functions. If initialization or an irq handler is needed for a group of functions, be sure to place the function into a module that is linked in regardless of which function is called by the user.
+The linker will generate the tables only when requested to do so by the FEATURE CONDES statement in the linker config file. Each table has to be requested separately.
+Constructors and destructors may have priorities. These priorities determine the order of the functions in the table. If your initialization or cleanup code does depend on other initialization or cleanup code, you have to choose the priority for the functions accordingly.
+Besides the .CONSTRUCTOR, .DESTRUCTOR and .INTERRUPTOR statements, there is also a more generic command: .CONDES. This allows to specify an additional type. Predefined types are 0 (constructor), 1 (destructor) and 2 (interruptor). The linker generates a separate table for each type on request.

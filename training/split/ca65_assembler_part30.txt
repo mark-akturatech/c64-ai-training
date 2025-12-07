@@ -1,0 +1,116 @@
+# CA65 Assembler - Control Commands (.INCBIN .INCLUDE .INTERRUPTOR .LIST .LISTBYTES .LITERAL .LOBYTES)
+
+11.79 .LOCAL
+This command may only be used inside a macro definition. It declares a list of identifiers as local to the macro expansion. The identifiers may be standard identifiers or cheap local identifiers depending on the planned use.
+
+A problem when using macros are labels: Since they don't change their name, you get a "duplicate symbol" error if the macro is expanded the second time. Labels declared with .LOCAL have their name replaced by an internally generated unique name for each macro invocation.
+
+Please note that while the generated names are unique and guaranteed to not clash with any user generated names, they are still regular symbols and added to the current scope. This means that a local macro label will start a new scope for cheap locals whenever the macro is expanded. To avoid that, you may also use a cheap local symbol for the name. In this case the assembler will generate unique cheap local identifiers instead of standard ones.
+
+You get an error when using .LOCAL outside a macro.
+
+11.80 .LOCALCHAR
+Defines the character that start "cheap" local labels. You may use one of '@' and '?' as start character. The default is '@'.
+
+Cheap local labels are labels that are visible only between two non cheap labels. This way you can reuse identifiers like "loop" without using explicit lexical nesting.
+
+Example:
+
+
+        .localchar      '?'
+
+        Clear:  lda     #$00            ; Global label
+        ?Loop:  sta     Mem,y           ; Local label
+                dey
+                bne     ?Loop           ; Ok
+                rts
+        Sub:    ...                     ; New global label
+                bne     ?Loop           ; ERROR: Unknown identifier!
+  
+11.81 .MACPACK
+Insert a predefined macro package. The command is followed by an identifier specifying the macro package to insert. Available macro packages are:
+
+
+        atari           Defines the scrcode macro.
+        cbm             Defines the scrcode macro.
+        generic         Defines generic macros like add, sub, and blt.
+        longbranch      Defines conditional long-jump macros.
+  
+Including a macro package twice, or including a macro package that redefines already existing macros will lead to an error.
+
+Example:
+
+
+        .macpack        longbranch      ; Include macro package
+
+                cmp     #$20            ; Set condition codes
+                jne     Label           ; Jump long on condition
+  
+Macro packages are explained in more detail in section Macro packages.
+
+11.82 .MAC, .MACRO
+Start a classic macro definition. The command is followed by an identifier (the macro name) and optionally by a comma separated list of identifiers that are macro parameters. A macro definition is terminated by .ENDMACRO.
+
+Example:
+
+
+        .macro  ldax    arg             ; Define macro ldax
+                lda     arg
+                ldx     arg+1
+  
+See: .DELMACRO, .ENDMACRO, .EXITMACRO
+
+See also section Macros.
+
+11.83 .ORG
+Start a section of absolute code. The command is followed by a constant expression that gives the new PC counter location for which the code is assembled. Use .RELOC to switch back to relocatable code.
+
+By default, absolute/relocatable mode is global (valid even when switching segments). Using .FEATURE org_per_seg it can be made segment local.
+
+Please note that you do not need .ORG in most cases. Placing code at a specific address is the job of the linker, not the assembler, so there is usually no reason to assemble code to a specific address.
+
+Example:
+
+
+        .org    $7FF            ; Emit code starting at $7FF
+  
+11.84 .OUT
+Output a string to the console without producing an error. This command is similar to .ERROR, however, it does not force an assembler error that prevents the creation of an object file.
+
+Example:
+
+
+        .out    "This code was written by the codebuster(tm)"
+  
+See also: .ERROR, .FATAL, .WARNING
+
+11.85 .P02
+Enable the 6502 instruction set, disable 65SC02, 65C02 and 65816 instructions. This is the default if not overridden by the --cpu command line option.
+
+See: .PC02, .PSC02, .P816, .P4510, and .P45GS02
+
+11.86 .P02X
+Enable the 6502X instruction set, disable 65SC02, 65C02 and 65816 instructions.
+
+See: .PC02, .PSC02, .P816 and .P4510
+
+11.87 .P4510
+Enable the 4510 instruction set. This is a superset of the 65C02 and 6502 instruction sets.
+
+See: .P02, .PSC02, .PC02, .P816, and .P45GS02
+
+11.88 .P45GS02
+Enable the 45GS02 instruction set. This is a superset of the 4510, 65C02, and 6502 instruction sets.
+
+See: .P02, .PSC02, .PC02, .P816, and .P4510
+
+11.89 .P6280
+Enable the HuC6280 instruction set. This is a superset of the 65C02 and 6502 instruction sets.
+
+See: .P02, .PSC02, .PC02, .P4510, and .P45GS02
+
+11.90 .P816
+Enable the 65816 instruction set. This is a superset of the 65SC02 and 6502 instruction sets.
+
+See: .P02, .PSC02, .PC02, .P4510, and .P45GS02
+

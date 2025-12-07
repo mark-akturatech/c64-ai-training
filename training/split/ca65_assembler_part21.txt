@@ -1,0 +1,82 @@
+# CA65 Assembler - Control Commands (.ASCIIZ .ASSERT .AUTOIMPORT)
+
+11.5 .ASCIIZ
+Define a string with a trailing zero.
+
+Example:
+
+
+        Msg:    .asciiz "Hello world"
+  
+This will put the string "Hello world" followed by a binary zero into the current segment. There may be more strings separated by commas, but the binary zero is only appended once (after the last one). Strings will be translated using the current character mapping definition.
+
+See: .BYTE, .CHARMAP, .LITERAL
+
+11.6 .ASSERT
+Add an assertion. The command is followed by an expression, an action specifier, and an optional message that is output in case the assertion fails. If no message was given, the string "Assertion failed" is used. The action specifier may be one of warning, error, ldwarning or lderror. In the former two cases, the assertion is evaluated by the assembler if possible, and in any case, it's also passed to the linker in the object file (if one is generated). The linker will then evaluate the expression when segment placement has been done.
+
+Example:
+
+
+        .assert         * = $8000, error, "Code not at $8000"
+  
+The example assertion will check that the current location is at $8000, when the output file is written, and abort with an error if this is not the case. More complex expressions are possible. The action specifier warning outputs a warning, while the error specifier outputs an error message. In the latter case, generation of the output file is suppressed in both the assembler and linker.
+
+11.7 .AUTOIMPORT
+Is followed by a plus or a minus character. When switched on (using a +), undefined symbols are automatically marked as import instead of giving errors. When switched off (which is the default so this does not make much sense), this does not happen and an error message is displayed. The state of the autoimport flag is evaluated when the complete source was translated, before outputting actual code, so it is not possible to switch this feature on or off for separate sections of code. The last setting is used for all symbols.
+
+You should probably not use this switch because it delays error messages about undefined symbols until the link stage. The cc65 compiler (which is supposed to produce correct assembler code in all circumstances, something which is not true for most assembler programmers) will insert this command to avoid importing each and every routine from the runtime library.
+
+Example:
+
+
+        .autoimport     +       ; Switch on auto import
+  
+11.8 .BANKBYTES
+Define byte sized data by extracting only the bank byte (that is, bits 16-23) from each expression. This is equivalent to .BYTE with the operator '^' prepended to each expression in its list.
+
+Example:
+
+
+        .define MyTable TableItem0, TableItem1, TableItem2, TableItem3
+
+        TableLookupLo:   .lobytes   MyTable
+        TableLookupHi:   .hibytes   MyTable
+        TableLookupBank: .bankbytes MyTable
+  
+which is equivalent to
+
+
+        TableLookupLo:   .byte <TableItem0, <TableItem1, <TableItem2, <TableItem3
+        TableLookupHi:   .byte >TableItem0, >TableItem1, >TableItem2, >TableItem3
+        TableLookupBank: .byte ^TableItem0, ^TableItem1, ^TableItem2, ^TableItem3
+  
+See also: .BYTE, .HIBYTES, .LOBYTES
+
+11.9 .BSS
+Switch to the BSS segment. The name of the BSS segment is always "BSS", so this is a shortcut for
+
+
+        .segment  "BSS"
+  
+See also the .SEGMENT command.
+
+11.10 .BYT, .BYTE
+Define byte sized data. Must be followed by a sequence of (byte ranged) expressions or strings. Strings will be translated using the current character mapping definition.
+
+Example:
+
+
+        .byte   "Hello "
+        .byt    "world", $0D, $00
+  
+See: .ASCIIZ, .CHARMAP .LITERAL
+
+11.11 .CASE
+Switch on or off case sensitivity on identifiers. The default is off (that is, identifiers are case sensitive), but may be changed by the -i switch on the command line. The command can be followed by a '+' or '-' character to switch the option on or off respectively.
+
+Example:
+
+
+        .case   -               ; Identifiers are not case sensitive
+  

@@ -1,0 +1,112 @@
+# CA65 Assembler - Pseudo Functions (.CONCAT .CONST .DEF .DEFINEDMACRO .HIBYTE)
+
+
+
+        .include        .concat ("myheader", ".", "inc")
+  
+This is the same as the command
+
+
+        .include        "myheader.inc"
+  
+10.7 .CONST
+Builtin function. The function evaluates its argument in parentheses and yields "true" if the argument is a constant expression (that is, an expression that yields a constant value at assembly time) and "false" otherwise. As an example, the .IFCONST statement may be replaced by
+
+
+        .if     .const(a + 3)
+  
+10.8 .DEF, .DEFINED
+Builtin function. The function expects an identifier as argument in parentheses. The argument is evaluated, and the function yields "true" if the identifier is a symbol that already is defined somewhere in the source file up to the current position. Otherwise, the function yields false. As an example, the .IFDEF statement may be replaced by
+
+
+        .if     .defined(a)
+  
+10.9 .DEFINEDMACRO
+Builtin function. The function expects an identifier as argument in parentheses. The argument is evaluated, and the function yields "true" if the identifier already has been defined as the name of a macro. Otherwise, the function yields false. Example:
+
+
+        .macro add foo
+                clc
+                adc foo
+        .endmacro
+
+        .if     .definedmacro(add)
+                add #$01
+        .else
+                clc
+                adc #$01
+        .endif
+  
+10.10 .HIBYTE
+The function returns the high byte (that is, bits 8-15) of its argument. It works identical to the '>' operator.
+
+See: .LOBYTE, .BANKBYTE
+
+10.11 .HIWORD
+The function returns the high word (that is, bits 16-31) of its argument.
+
+See: .LOWORD
+
+10.12 .IDENT
+The function expects a string as its argument, and converts this argument into an identifier. If the string starts with the current .LOCALCHAR, it will be converted into a cheap local identifier, otherwise it will be converted into a normal identifier.
+
+Example:
+
+
+        .macro  makelabel       arg1, arg2
+                .ident (.concat (arg1, arg2)):
+        .endmacro
+
+                makelabel       "foo", "bar"
+
+                .word           foobar          ; Valid label
+  
+10.13 .ISMNEM, .ISMNEMONIC
+Builtin function. The function expects an identifier as argument in parentheses. The argument is evaluated, and the function yields "true" if the identifier is defined as an instruction mnemonic that is recognized by the assembler. Example:
+
+
+        .if     .not .ismnemonic(ina)
+                .macro ina
+                        clc
+                        adc #$01
+                .endmacro
+        .endif
+  
+10.14 .LEFT
+Builtin function. Extracts the left part of a given token list.
+
+Syntax:
+
+
+        .LEFT (<int expr>, <token list>)
+  
+The first integer expression gives the number of tokens to extract from the token list. The second argument is the token list itself. The token list may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case).
+
+Example:
+
+To check in a macro if the given argument has a '#' as first token (immediate addressing mode), use something like this:
+
+
+        .macro  ldax    arg
+                ...
+                .if (.match (.left (1, {arg}), #))
+
+                ; ldax called with immediate operand
+                ...
+
+                .endif
+                ...
+        .endmacro
+  
+See also the .MID and .RIGHT builtin functions.
+
+10.15 .LOBYTE
+The function returns the low byte (that is, bits 0-7) of its argument. It works identical to the '<' operator.
+
+See: .HIBYTE, .BANKBYTE
+
+10.16 .LOWORD
+The function returns the low word (that is, bits 0-15) of its argument.
+
+See: .HIWORD
+

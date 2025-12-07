@@ -1,0 +1,78 @@
+# CA65 Assembler - Control Commands (.FILEOPT .FORCEIMPORT .GLOBAL .GLOBALZP .HIBYTES)
+
+11.42 .FILEOPT, .FOPT
+Insert an option string into the object file. There are two forms of this command, one specifies the option by a keyword, the second specifies it as a number. Since usage of the second one needs knowledge of the internal encoding, its use is not recommended and I will only describe the first form here.
+
+The command is followed by one of the keywords
+
+
+        author
+        comment
+        compiler
+  
+a comma and a string. The option is written into the object file together with the string value. This is currently unidirectional and there is no way to actually use these options once they are in the object file.
+
+Examples:
+
+
+        .fileopt        comment, "Code stolen from my brother"
+        .fileopt        compiler, "BASIC 2.0"
+        .fopt           author, "J. R. User"
+  
+11.43 .FORCEIMPORT
+Import an absolute symbol from another module. The command is followed by a comma separated list of symbols to import. The command is similar to .IMPORT, but the import reference is always written to the generated object file, even if the symbol is never referenced ( .IMPORT will not generate import references for unused symbols).
+
+Example:
+
+
+        .forceimport    needthisone, needthistoo
+  
+See: .IMPORT
+
+11.44 .GLOBAL
+Declare symbols as global. Must be followed by a comma separated list of symbols to declare. Symbols from the list, that are defined somewhere in the source, are exported, all others are imported. Additional .IMPORT or .EXPORT commands for the same symbol are allowed.
+
+Example:
+
+
+        .global foo, bar
+  
+11.45 .GLOBALZP
+Declare symbols as global. Must be followed by a comma separated list of symbols to declare. Symbols from the list, that are defined somewhere in the source, are exported, all others are imported. Additional .IMPORTZP or .EXPORTZP commands for the same symbol are allowed. The symbols in the list are explicitly marked as zero page symbols.
+
+Example:
+
+
+        .globalzp foo, bar
+  
+11.46 .HIBYTES
+Define byte sized data by extracting only the high byte (that is, bits 8-15) from each expression. This is equivalent to .BYTE with the operator '>' prepended to each expression in its list.
+
+Example:
+
+
+        .lobytes         $1234, $2345, $3456, $4567
+        .hibytes         $fedc, $edcb, $dcba, $cba9
+  
+which is equivalent to
+
+
+        .byte            $34, $45, $56, $67
+        .byte            $fe, $ed, $dc, $cb
+  
+Example:
+
+
+        .define MyTable TableItem0, TableItem1, TableItem2, TableItem3
+
+        TableLookupLo:   .lobytes MyTable
+        TableLookupHi:   .hibytes MyTable
+  
+which is equivalent to
+
+
+        TableLookupLo:   .byte <TableItem0, <TableItem1, <TableItem2, <TableItem3
+        TableLookupHi:   .byte >TableItem0, >TableItem1, >TableItem2, >TableItem3
+  
+See also: .BYTE, .LOBYTES, .BANKBYTES
+

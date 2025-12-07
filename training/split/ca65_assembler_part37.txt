@@ -1,0 +1,66 @@
+# CA65 Assembler - Macros (Recursive Macros, Local Symbols)
+
+.macro  inc16   addr
+        clc
+        lda     addr
+        adc     #<$0001
+        sta     addr
+        lda     addr+1
+        adc     #>$0001
+        sta     addr+1
+.endmacro
+If you have a closer look at the code, you will notice, that it could be written more efficiently, like this:
+
+
+.macro  inc16   addr
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:
+.endmacro
+But imagine what happens, if you use this macro twice? Since the label "Skip" has the same name both times, you get a "duplicate symbol" error. Without a way to circumvent this problem, macros are not as useful, as they could be. One possible solution is the command .LOCAL. It declares one or more symbols as local to the macro expansion. The names of local variables are replaced by a unique name in each separate macro expansion. So we can solve the problem above by using .LOCAL:
+
+
+.macro  inc16   addr
+        .local  Skip            ; Make Skip a local symbol
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:                           ; Not visible outside
+.endmacro
+Another solution is of course to start a new lexical block inside the macro that hides any labels:
+
+
+.macro  inc16   addr
+.proc
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:
+.endproc
+.endmacro
+12.7 C style macros
+Starting with version 2.5 of the assembler, there is a second macro type available: C style macros using the .DEFINE directive. These macros are similar to the classic macro type described above, but behaviour is sometimes different:
+
+
+Macros defined with .DEFINE may not span more than a line. You may use line continuation (see line_continuations) to spread the definition over more than one line for increased readability, but the macro itself may not contain an end-of-line token.
+Macros defined with .DEFINE share the name space with classic macros, but they are detected and replaced at the scanner level. While classic macros may be used in every place, where a mnemonic or other directive is allowed, .DEFINE style macros are allowed anywhere in a line. So they are more versatile in some situations.
+.DEFINE style macros may take parameters. While classic macros may have empty parameters, this is not true for .DEFINE style macros. For this macro type, the number of actual parameters must match exactly the number of formal parameters. To make this possible, formal parameters are enclosed in parentheses when defining the macro. If there are no parameters, the empty parentheses may be omitted.
+Since .DEFINE style macros may not contain end-of-line tokens, there are things that cannot be done. They may not contain several processor instructions for example. So, while some things may be done with both macro types, each type has special usages. The types complement each other.
+Parentheses work differently from C macros. The common practice of wrapping C macros in parentheses may cause unintended problems here, such as accidentally implying an indirect addressing mode. While the definition of a macro requires parentheses around its argument list, when invoked they should not be included.
+Let's look at a few examples to make the advantages and disadvantages clear.
+
+To emulate assemblers that use "EQU" instead of "=" you may use the following .DEFINE:
+
+
+.define EQU     =
+
+foo     EQU     $1234           ; This is accepted now
+You may use the directive to define string constants used elsewhere:
+
+
+; Define the version number
+.define VERSION "12.3a"
+
+        ; ... and use it
+        .asciiz VERSION
