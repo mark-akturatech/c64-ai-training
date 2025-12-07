@@ -17,8 +17,11 @@
     },
     "qdrant-local": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@mhalder/qdrant-mcp-server"],
+      "command": "sh",
+      "args": [
+        "-c",
+        "docker start qdrant-db 2>/dev/null || docker run -d --name qdrant-db -p 6333:6333 -p 6334:6334 -v \"$PWD/.memories/qdrant_data:/qdrant/storage\" qdrant/qdrant:latest; sleep 2; exec npx -y @mhalder/qdrant-mcp-server"
+      ],
       "env": {
         "TRANSPORT_MODE": "stdio",
         "EMBEDDING_PROVIDER": "openai",
