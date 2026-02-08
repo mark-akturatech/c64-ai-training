@@ -1,0 +1,117 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Long division in binary by shifting the dividend into a work area (remainder), performing trial subtraction with SEC/SBC against divisor, and recording quotient bits. Detailed decimal and binary examples. 6502 routine: divides 2-byte NUM1 by 2-byte NUM2; quotient stored back into NUM1, remainder in REM (2 bytes). Cautions on widths: quotient must be as wide as dividend; remainder as wide as divisor.
+
+
+Dividing Arbitrary Numbers
+----------------------------------------
+
+
+As with multiplication, a reasonable division algorithm can be found
+by looking at the way you would write out a long division with pencil
+and paper.  Consider the following example, written in the manner
+traditionally taught in U.S. schools:
+
+
+184
+_______
+67 ) 12345
+     -67
+     ---
+      564
+     -536
+     ----
+       285
+      -268
+      ----
+        17
+
+
+Here we divided a dividend, 12345, by a divisor, 67,
+and got quotient of 184, with a remainder of 17.  Note the
+procedure...at each step, we find the largest multiple of the divisor
+that is less than the leftmost remaining digits of the dividend, and
+subtract.  Then we bring down the next digit of the dividend, and repeat
+until no more digits are left.
+
+
+Binary division works exactly the same way, as long as you use the
+rules for binary digits instead of decimal digits.  For example:
+
+
+10101
+    _________
+101 ) 1101101
+     -101
+     ----
+        11
+        -0
+        --
+        111
+       -101
+       ----
+         100
+          -0
+         ---
+         1001
+         -101
+         ----
+          100
+
+
+Note how much easier this is than the decimal version, mostly because
+there are only two possible numbers to subtract:  0 or the divisor.
+
+
+Again, writing code to do this isn't very hard.  We will shift the
+bits of the the dividend, one at a time, into a work area, and then try
+subtracting the divisor from the work area.  If the subtraction
+succeeded, we replace the work area with the result of the subtraction
+and record a 1 bit in the quotient.  If the subtraction failed, we discard
+its result and record a 0 bit in the quotient.  The process is repeated
+until all bits of the dividend are used up.
+
+
+Here's an example that divides the two-byte number NUM1 by the
+two-byte number NUM2, leaving the quotient in NUM1 and the remainder in
+REM:
+
+
+LDA #0      ;Initialize REM to 0
+        STA REM
+        STA REM+1
+        LDX #16     ;There are 16 bits in NUM1
+L1      ASL NUM1    ;Shift hi bit of NUM1 into REM
+        ROL NUM1+1  ;(vacating the lo bit, which will be used for the quotient)
+        ROL REM
+        ROL REM+1
+        LDA REM
+        SEC         ;Trial subtraction
+        SBC NUM2
+        TAY
+        LDA REM+1
+        SBC NUM2+1
+        BCC L2      ;Did subtraction succeed?
+        STA REM+1   ;If yes, save it
+        STY REM
+        INC NUM1    ;and record a 1 in the quotient
+L2      DEX
+        BNE L1
+
+
+Beware!  Since multiplying two one-byte numbers gives you a two-byte
+result, the knee-jerk expectation is that dividing a two-byte number by
+a one-byte number should give you a one-byte quotient.  This turns out not
+to be true!  When dividing two numbers, the quotient must be as wide as
+the dividend (consider dividing by 1, in which case the quotient is
+the dividend), and the remainder must be as wide as the divisor (because it
+can be as large as divisor-1).
+
+
+Again, I'm not going to bloat this article by showing division
+routines for different sizes of numbers.  Once the method is
+understood, writing additional routines is straightforward.
+
+
+---
+Additional information can be found by searching:
+- "division_by_powers_of_two_with_remainder_in_carry" which expands on Simplest case via shifts; carry-based remainder
+- "signed_multiplication_and_division_strategies_and_wrappers" which expands on Signed division conventions and wrappers

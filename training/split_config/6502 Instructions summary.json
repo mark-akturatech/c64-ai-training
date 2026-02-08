@@ -1,24 +1,190 @@
 {
   "source_file": "6502 Instructions summary.txt",
-  "context": "6502 Instruction Set Quick Reference",
+  "context": "6502 Instructions Summary",
   "splits": [
     {
       "start": 1,
+      "end": 40,
+      "name": "load_and_store_group_instructions",
+      "description": "Load and Store Group. LDA (Load Accumulator): Absolute $AD, Zero Page $A5, Immediate $A9, Absolute Indexed X $BD, Absolute Indexed Y $B9, Zero Page Indexed X $B5, Indexed Indirect ($aa,X) $A1, Indirect Indexed ($aa),Y $B1; affects N,Z. LDX (Load X Register): Absolute $AE, Zero Page $A6, Immediate $A2, Absolute Indexed Y $BE, Zero Page Indexed Y $B6; affects N,Z. LDY (Load Y Register): Absolute $AC, Zero Page $A4, Immediate $A0, Absolute Indexed X $BC, Zero Page Indexed X $B4; affects N,Z. STA (Store Accumulator): Absolute $8D, Zero Page $85, Absolute Indexed X $9D, Absolute Indexed Y $99, Zero Page Indexed X $95, Indexed Indirect ($aa,X) $81, Indirect Indexed ($aa),Y $91; no flags. STX (Store X Register): Absolute $8E, Zero Page $86, Zero Page Indexed Y $96; no flags. STY (Store Y Register): Absolute $8C, Zero Page $84, Zero Page Indexed X $94; no flags.",
+      "references": [
+        {
+          "chunk": "register_transfer_group",
+          "topic": "Moving values between accumulator/X/Y registers"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Meaning of N and Z flags affected by loads"
+        }
+      ]
+    },
+    {
+      "start": 41,
       "end": 60,
-      "name": "6502_instructions_load_store_arithmetic",
-      "description": "6502 load/store (LDA, LDX, LDY, STA, STX, STY) and arithmetic (ADC, SBC) instructions with all addressing modes, opcodes, and flags"
+      "name": "arithmetic_adc_sbc_group",
+      "description": "Arithmetic Group. ADC (Add with Carry): Absolute $6D, Zero Page $65, Immediate $69, Absolute Indexed X $7D, Absolute Indexed Y $79, Zero Page Indexed X $75, Indexed Indirect ($aa,X) $61, Indirect Indexed ($aa),Y $71; affects N,V,Z,C. SBC (Subtract with Carry): Absolute $ED, Zero Page $E5, Immediate $E9, Absolute Indexed X $FD, Absolute Indexed Y $F9, Zero Page Indexed X $F5, Indexed Indirect ($aa,X) $E1, Indirect Indexed ($aa),Y $F1; affects N,V,Z,C.",
+      "references": [
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Carry, Overflow, Negative, Zero flags used/modified by arithmetic"
+        },
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Branching based on flags after arithmetic results"
+        }
+      ]
     },
     {
       "start": 61,
-      "end": 118,
-      "name": "6502_instructions_inc_dec_transfer_logic",
-      "description": "6502 increment/decrement (INC, INX, INY, DEC, DEX, DEY), register transfer (TAX, TAY, TXA, TYA), and logical (AND, EOR, ORA) instructions"
+      "end": 80,
+      "name": "increment_decrement_group",
+      "description": "Increment and Decrement Group. INC (Increment memory): Absolute $EE, Zero Page $E6, Absolute Indexed X $FE, Zero Page Indexed X $F6; affects N,Z. INX (Increment X): Implied $E8; affects N,Z. INY (Increment Y): Implied $C8; affects N,Z. DEC (Decrement memory): Absolute $CE, Zero Page $C6, Absolute Indexed X $DE, Zero Page Indexed X $D6; affects N,Z. DEX (Decrement X): Implied $CA; affects N,Z. DEY (Decrement Y): Implied $88; affects N,Z.",
+      "references": [
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Negative and Zero flags behavior"
+        },
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Using BEQ/BNE/BMI/BPL after INC/DEC/INX/DEX/INY/DEY"
+        }
+      ]
     },
     {
-      "start": 119,
+      "start": 81,
+      "end": 88,
+      "name": "register_transfer_group",
+      "description": "Register Transfer Group. TAX (A→X) $AA; TAY (A→Y) $A8; TXA (X→A) $8A; TYA (Y→A) $98; all implied addressing; affect N,Z.",
+      "references": [
+        {
+          "chunk": "load_and_store_group_instructions",
+          "topic": "Complementary moves between registers and memory"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Negative and Zero flags affected by transfers"
+        }
+      ]
+    },
+    {
+      "start": 89,
+      "end": 120,
+      "name": "logical_and_eor_ora_group",
+      "description": "Logical Group. AND (Logical AND): Absolute $2D, Zero Page $25, Immediate $29, Absolute Indexed X $3D, Absolute Indexed Y $39, Zero Page Indexed X $35, Indexed Indirect ($aa,X) $21, Indirect Indexed ($aa),Y $31; affects N,Z. EOR (Exclusive OR): Absolute $4D, Zero Page $45, Immediate $49, Absolute Indexed X $5D, Absolute Indexed Y $59, Zero Page Indexed X $55, Indexed Indirect ($aa,X) $41, Indirect Indexed ($aa),Y $51; affects N,Z. ORA (Inclusive OR): Absolute $0D, Zero Page $05, Immediate $09, Absolute Indexed X $1D, Absolute Indexed Y $19, Zero Page Indexed X $15, Indexed Indirect ($aa,X) $01, Indirect Indexed ($aa),Y $11; affects N,Z.",
+      "references": [
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Negative and Zero flags after logical operations"
+        },
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Branching based on flags set by logical ops"
+        }
+      ]
+    },
+    {
+      "start": 121,
+      "end": 144,
+      "name": "compare_and_bit_test_group",
+      "description": "Compare and Bit Test Group. CMP (Compare accumulator): Absolute $CD, Zero Page $C5, Immediate $C9, Absolute Indexed X $DD, Absolute Indexed Y $D9, Zero Page Indexed X $D5, Indexed Indirect ($aa,X) $C1, Indirect Indexed ($aa),Y $D1; affects N,Z,C. CPX (Compare X): Absolute $EC, Zero Page $E4, Immediate $E0; affects N,Z,C. CPY (Compare Y): Absolute $CC, Zero Page $C4, Immediate $C0; affects N,Z,C. BIT (Bit Test): Absolute $2C, Zero Page $24; affects N,V,Z (N and V from memory, Z from A&M).",
+      "references": [
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Branching based on comparison/test results (BEQ/BNE/BCS/BCC/BMI/BPL/BVS/BVC)"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Interpreting N,Z,C,V flags set by comparisons and BIT"
+        }
+      ]
+    },
+    {
+      "start": 145,
+      "end": 172,
+      "name": "shift_and_rotate_group",
+      "description": "Shift and Rotate Group. ASL (Arithmetic Shift Left): Absolute $0E, Zero Page $06, Accumulator $0A, Absolute Indexed X $1E, Zero Page Indexed X $16; affects N,Z,C. LSR (Logical Shift Right): Absolute $4E, Zero Page $46, Accumulator $4A, Absolute Indexed X $5E, Zero Page Indexed X $56; affects N,Z,C. ROL (Rotate Left): Absolute $2E, Zero Page $26, Accumulator $2A, Absolute Indexed X $3E, Zero Page Indexed X $36; affects N,Z,C. ROR (Rotate Right): Absolute $6E, Zero Page $66, Accumulator $6A, Absolute Indexed X $7E, Zero Page Indexed X $76; affects N,Z,C.",
+      "references": [
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Carry, Negative, Zero flags modified by shifts/rotates"
+        },
+        {
+          "chunk": "logical_and_eor_ora_group",
+          "topic": "Often combined with logical ops for bit manipulation"
+        }
+      ]
+    },
+    {
+      "start": 173,
+      "end": 187,
+      "name": "jump_and_branch_group",
+      "description": "Jump and Branch Group. JMP: Absolute $4C, Indirect $6C; no flags changed. Branches (Relative addressing): BCC $90, BCS $B0, BEQ $F0, BMI $30, BNE $D0, BPL $10, BVC $50, BVS $70; branches depend on C, Z, N, V flags; no flags changed.",
+      "references": [
+        {
+          "chunk": "compare_and_bit_test_group",
+          "topic": "Typical producers of flag states for branching"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Meaning of status flags used by branches"
+        },
+        {
+          "chunk": "subroutine_and_interrupt_group",
+          "topic": "Other control-flow instructions (JSR/RTS/BRK/RTI/NOP)"
+        }
+      ]
+    },
+    {
+      "start": 188,
+      "end": 197,
+      "name": "stack_group_operations",
+      "description": "Stack Group. TSX (Transfer SP→X) $BA; affects N,Z. TXS (Transfer X→SP) $9A; no flags. PHA (Push A) $48; no flags. PHP (Push P) $08; no flags. PLA (Pull A) $68; affects N,Z. PLP (Pull P) $28; updates all status flags.",
+      "references": [
+        {
+          "chunk": "subroutine_and_interrupt_group",
+          "topic": "JSR/RTS/BRK/RTI use and manipulate the stack"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "PLP affects all flags; PLA affects N,Z"
+        }
+      ]
+    },
+    {
+      "start": 198,
+      "end": 207,
+      "name": "status_flag_change_group",
+      "description": "Status Flag Change Group. CLC (Clear Carry) $18; affects C. CLD (Clear Decimal) $D8; affects D. CLI (Clear Interrupt Disable) $58; affects I. CLV (Clear Overflow) $B8; affects V. SEC (Set Carry) $38; affects C. SED (Set Decimal) $F8; affects D. SEI (Set Interrupt Disable) $78; affects I.",
+      "references": [
+        {
+          "chunk": "arithmetic_adc_sbc_group",
+          "topic": "Arithmetic uses carry/overflow; decimal mode affects ADC/SBC on some 6502s"
+        },
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Branches depend on flag states"
+        }
+      ]
+    },
+    {
+      "start": 208,
       "end": 215,
-      "name": "6502_instructions_compare_shift_branch_stack",
-      "description": "6502 compare/bit test (CMP, CPX, CPY, BIT), shift/rotate (ASL, LSR, ROL, ROR), branch (BCC-BVS), jump (JMP, JSR), stack (PHA, PLA, PHP, PLP), and flag instructions"
+      "name": "subroutine_and_interrupt_group",
+      "description": "Subroutine and Interrupt Group. JSR (Jump to Subroutine) Absolute $20; pushes return address; no flags. RTS (Return from Subroutine) $60; pulls return; no flags. BRK (Force Interrupt) $00; sets B, I. RTI (Return from Interrupt) $40; restores all flags and PC from stack. NOP (No Operation) $EA; no flags.",
+      "references": [
+        {
+          "chunk": "stack_group_operations",
+          "topic": "Stack primitives used by JSR/RTS/BRK/RTI"
+        },
+        {
+          "chunk": "status_flag_change_group",
+          "topic": "Flags affected/restored by BRK/RTI"
+        },
+        {
+          "chunk": "jump_and_branch_group",
+          "topic": "Other control-flow mechanisms (JMP/branches)"
+        }
+      ]
     }
   ],
   "source_md5": "71e2b97254cd9947dbeba12e339d6ef0"

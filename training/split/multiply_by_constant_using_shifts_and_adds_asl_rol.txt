@@ -1,0 +1,131 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Multiplying by powers of two using ASL/ROL for 1-byte and 2-byte operands; constructing other constants by shift-add decomposition (e.g., 3x = 2x + x; 10x = 8x + 2x with factoring). Provides annotated 6502 code for 2-byte products for constants 3 and 10. Guidance to derive decompositions from the binary representation of the constant.
+
+Multiplying by a Constant
+----------------------------------------
+
+
+Skipping over the trivial cases of multiplying by zero or one, the
+easiest constant to multiply by is two, because all you need are the
+ASL and ROL instructions.  For a single-byte
+result:
+
+
+ASL NUM
+
+
+Or for a two-byte result:
+
+
+ASL NUM
+        ROL NUM+1
+
+
+Extending this to wider numbers should be obvious.
+
+
+Multiplying by 4, 8, 16, or higher powers of two is simply a matter
+of multiplying by two enough times to get the result.  For example, to
+multiply a one-bye number by four:
+
+
+ASL NUM
+        ASL NUM
+
+
+Or for two-byte numbers:
+
+
+ASL NUM
+        ROL NUM+1
+        ASL NUM
+        ROL NUM+1
+
+
+Multiplying by a constant other than a power of two is more
+difficult, but it can be done by adding up the results of several
+power-of-two multiplications.  This will generally require the use of
+temporary memory locations to hold intermediate results.
+
+
+For example, consider multiplication by 3.  To do this, we note that
+for any number x, 3x = 2x + x - that is, we
+can multiply by three by multiplying by two, and adding the original
+number to the result.  Of course this means the original number has to
+be kept around somewhere so it will be available for the addition.  For
+two-byte numbers:
+
+
+LDA NUM       ;Start with RESULT = 2*NUM
+        ASL A
+        STA RESULT
+        LDA NUM+1
+        ROL A
+        STA RESULT+1
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 3*NUM
+
+
+Or we can multiply by 10 using the fact that 10x = 8x +
+2x (or, factoring out a 2, 10x = 2(4x + x)):
+
+
+LDA NUM       ;Start with RESULT = NUM
+        STA RESULT
+        LDA NUM+1
+        STA RESULT+1
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 2*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 4*NUM
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 5*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 10*NUM
+
+
+So how do we figure out what powers of two we need to add to get the
+answer?  Easy:  Just write the binary equivalent of the constant, and
+look for the 1 bits.  The position of each 1 bit shows which powers of
+two need to be added to get the answer.  For example,
+
+
+3 (decimal) = 11 (binary)
+              |+--  1
+              +--- +2
+                   --
+                    3, i.e. 1x + 2x = 3x
+
+10 (decimal) = 1010 (binary)
+               | +--  2
+               +---- +8
+                     --
+                     10, i.e. 2x + 8x = 10x
+
+25 (decimal) = 11001 (binary)
+               ||  +--   1
+               |+-----   8
+               +------ +16
+                       ---
+                        25, i.e. x + 8x + 16x = 25x.
+
+
+But what if you need to multiply two numbers, and you don't know what
+either one is in advance?  In this case, you need a general
+multiply-anything-by-anything routine.
+
+
+---
+Additional information can be found by searching:
+- "strength_reduction_eliminating_multiplication_in_loops" which expands on Pair constant multiply with loop-based strength reduction
+- "binary_multiplication_algorithm_and_routines" which expands on General multiply when factors are not constant
+- "signed_multiplication_and_division_strategies_and_wrappers" which expands on Caveats and wrappers for signed operands

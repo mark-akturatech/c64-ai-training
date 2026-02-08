@@ -38,19 +38,10 @@ becomes the output filename. Ignored sections (TOC, indexes, line numbers)
 are skipped. Each output chunk gets "# <context> - <description>" prepended.
 """
 
-import hashlib
 import json
 import re
 import sys
 from pathlib import Path
-
-def md5_file(path: Path) -> str:
-    """Return hex MD5 digest of a file."""
-    h = hashlib.md5()
-    with open(path, 'rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 def sanitize_name(name: str) -> str:
@@ -59,6 +50,51 @@ def sanitize_name(name: str) -> str:
     name = re.sub(r'[^a-z0-9]+', '_', name)
     name = name.strip('_')
     return name
+
+
+def write_chunk(lines, start, end, total_lines, name, description, context,
+                references, split_dir, verbose):
+    """Write a single output chunk file. Returns (lines_covered, chunk_size) or None if skipped."""
+    end = min(end, total_lines)
+
+    # Extract lines (convert 1-indexed to 0-indexed)
+    chunk_lines = lines[start - 1:end]
+    chunk_content = ''.join(chunk_lines)
+
+    # Prepend context header
+    if context and description:
+        header = f"# {context} - {description}\n\n"
+    elif context:
+        header = f"# {context}\n\n"
+    elif description:
+        header = f"# {description}\n\n"
+    else:
+        header = ""
+
+    chunk_content = header + chunk_content
+
+    # Append cross-references footer if present
+    if references:
+        ref_lines = ['\n---\nAdditional information can be found by searching:\n']
+        for ref in references:
+            ref_lines.append(f'- "{ref["chunk"]}" which expands on {ref["topic"]}\n')
+        chunk_content += ''.join(ref_lines)
+
+    # Output filename is the topic name
+    safe_name = sanitize_name(name)
+    output_name = f"{safe_name}.txt"
+    output_path = split_dir / output_name
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(chunk_content)
+
+    chunk_size = len(chunk_content.encode('utf-8'))
+    line_count = end - start + 1
+
+    if verbose:
+        print(f"  Created {output_name} ({chunk_size:,} bytes, lines {start}-{end})")
+
+    return line_count, chunk_size
 
 
 def split_file(config_path: Path, raw_dir: Path, split_dir: Path, verbose: bool = True) -> int:
@@ -97,46 +133,15 @@ def split_file(config_path: Path, raw_dir: Path, split_dir: Path, verbose: bool 
 
         name = split.get('name', f'chunk_{chunks_created + 1}')
         description = split.get('description', name)
-
-        # Extract lines (convert 1-indexed to 0-indexed)
-        chunk_lines = lines[start - 1:end]
-        chunk_content = ''.join(chunk_lines)
-
-        # Prepend context header
-        if context and description:
-            header = f"# {context} - {description}\n\n"
-        elif context:
-            header = f"# {context}\n\n"
-        elif description:
-            header = f"# {description}\n\n"
-        else:
-            header = ""
-
-        chunk_content = header + chunk_content
-
-        # Append cross-references footer if present
         references = split.get('references', [])
-        if references:
-            ref_lines = ['\n---\nAdditional information can be found by searching:\n']
-            for ref in references:
-                ref_lines.append(f'- "{ref["chunk"]}" which expands on {ref["topic"]}\n')
-            chunk_content += ''.join(ref_lines)
 
-        # Output filename is the topic name, not part01/part02
-        safe_name = sanitize_name(name)
-        output_name = f"{safe_name}.txt"
-        output_path = split_dir / output_name
-
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(chunk_content)
-
-        chunk_size = len(chunk_content.encode('utf-8'))
-        line_count = end - start + 1
-        lines_covered += line_count
-        chunks_created += 1
-
-        if verbose:
-            print(f"  Created {output_name} ({chunk_size:,} bytes, lines {start}-{end})")
+        result = write_chunk(lines, start, end, total_lines,
+                             name, description, context, references,
+                             split_dir, verbose)
+        if result:
+            line_count, _ = result
+            lines_covered += line_count
+            chunks_created += 1
 
     if verbose:
         uncovered = total_lines - lines_covered - lines_ignored
@@ -166,9 +171,7 @@ def main():
         print(f"Error: Documents directory not found: {raw_dir}")
         sys.exit(1)
 
-    # --force flag skips cache checks
-    force = '--force' in sys.argv
-    args = [a for a in sys.argv[1:] if a != '--force']
+    args = [a for a in sys.argv[1:]]
 
     # Process specific config or all
     if args:
@@ -183,7 +186,6 @@ def main():
         sys.exit(1)
 
     total_chunks = 0
-    skipped = 0
 
     for config_path in config_files:
         if not config_path.exists():
@@ -199,26 +201,11 @@ def main():
             print(f"  Warning: Source file not found: {raw_path}")
             continue
 
-        # Check if source file has changed since last split
-        source_hash = md5_file(raw_path)
-        if not force and config.get('source_md5') == source_hash:
-            skipped += 1
-            print(f"Skipping: {config_path.name} (unchanged)")
-            continue
-
         print(f"Processing: {config_path.name}")
         chunks = split_file(config_path, raw_dir, split_dir)
         total_chunks += chunks
 
-        # Store md5 back into config
-        config['source_md5'] = source_hash
-        with open(config_path, 'w', encoding='utf-8') as f:
-            json.dump(config, f, indent=2)
-            f.write('\n')
-
     print(f"\nTotal chunks created: {total_chunks}")
-    if skipped:
-        print(f"Skipped (unchanged): {skipped}")
     print(f"Output directory: {split_dir}")
 
 

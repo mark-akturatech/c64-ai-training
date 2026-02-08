@@ -158,8 +158,18 @@ def main():
         idx = sys.argv.index('--max')
         max_lines = int(sys.argv[idx + 1])
 
-    # Process specific config or all
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    # Process specific config or all (skip --max and its value)
+    skip_next = False
+    args = []
+    for a in sys.argv[1:]:
+        if skip_next:
+            skip_next = False
+            continue
+        if a == '--max':
+            skip_next = True
+            continue
+        if not a.startswith('--'):
+            args.append(a)
     if args:
         config_files = []
         for a in args:

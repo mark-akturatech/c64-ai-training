@@ -1,36 +1,194 @@
 {
   "source_file": "6502 Math Algorithms.txt",
-  "context": "6502 Multiplication and Division Algorithms",
+  "context": "6502 Multiplication and Division Algorithms - Source: llx.com",
   "splits": [
     {
       "start": 1,
       "end": 4,
       "ignore": true,
-      "reason": "Title and source attribution"
+      "reason": "Author credits and source URL (non-technical metadata)"
     },
     {
       "start": 5,
-      "end": 199,
-      "name": "6502_multiply_constant_shift",
-      "description": "6502 multiplication techniques - strength reduction, multiplying by constants using ASL/ROL shifts, powers of two, arbitrary constants via shift-and-add"
+      "end": 31,
+      "name": "introduction_and_scope_of_6502_multiplication_division",
+      "description": "Overview of multiplying/dividing on the 6502; focus on clarity over speed; emphasizes unsigned integer routines with brief note about signed integers later; introduces that fractional/FP is out of scope.",
+      "references": [
+        {
+          "chunk": "strength_reduction_eliminating_multiplication_in_loops",
+          "topic": "Eliminating some multiplications by algebraic/code restructuring"
+        },
+        {
+          "chunk": "multiply_by_constant_using_shifts_and_adds_asl_rol",
+          "topic": "Simple constant multiplications via shifts and adds"
+        },
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "General binary multiplication algorithm and code"
+        },
+        {
+          "chunk": "division_by_powers_of_two_with_remainder_in_carry",
+          "topic": "Simplest division cases on 6502"
+        },
+        {
+          "chunk": "binary_division_algorithm_and_two_byte_routine",
+          "topic": "General binary division algorithm and code"
+        },
+        {
+          "chunk": "signed_multiplication_and_division_strategies_and_wrappers",
+          "topic": "How to adapt routines for signed numbers"
+        }
+      ]
     },
     {
-      "start": 200,
-      "end": 477,
-      "name": "6502_multiply_general_16bit",
-      "description": "6502 general multiplication - 8x8-bit and 16x16-bit unsigned multiplication routines using shift-and-add algorithm, with complete assembly code"
+      "start": 32,
+      "end": 74,
+      "name": "strength_reduction_eliminating_multiplication_in_loops",
+      "description": "Strength reduction technique: replace repeated multiplications by constant with incremental additions in loops. Example transforms J = I*23 inside a loop into repeated J = J + 115 with precomputed base, analogous to compiler optimizations.",
+      "references": [
+        {
+          "chunk": "multiply_by_constant_using_shifts_and_adds_asl_rol",
+          "topic": "Efficient constant-multiply building blocks used outside loops"
+        },
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "Use when multiplication cannot be eliminated or is not by constant"
+        }
+      ]
     },
     {
-      "start": 478,
-      "end": 640,
-      "name": "6502_division_algorithms",
-      "description": "6502 division techniques - dividing by constants, general unsigned division routines (8-bit and 16-bit), shift-and-subtract algorithm"
+      "start": 75,
+      "end": 197,
+      "name": "multiply_by_constant_using_shifts_and_adds_asl_rol",
+      "description": "Multiplying by powers of two using ASL/ROL for 1-byte and 2-byte operands; constructing other constants by shift-add decomposition (e.g., 3x = 2x + x; 10x = 8x + 2x with factoring). Provides annotated 6502 code for 2-byte products for constants 3 and 10. Guidance to derive decompositions from the binary representation of the constant.",
+      "references": [
+        {
+          "chunk": "strength_reduction_eliminating_multiplication_in_loops",
+          "topic": "Pair constant multiply with loop-based strength reduction"
+        },
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "General multiply when factors are not constant"
+        },
+        {
+          "chunk": "signed_multiplication_and_division_strategies_and_wrappers",
+          "topic": "Caveats and wrappers for signed operands"
+        }
+      ]
     },
     {
-      "start": 641,
-      "end": 785,
-      "name": "6502_signed_math",
-      "description": "6502 signed integer multiplication and division - sign handling wrappers around unsigned routines, two's complement considerations"
+      "start": 198,
+      "end": 330,
+      "name": "binary_multiplication_algorithm_and_routines",
+      "description": "Schoolbook binary multiplication algorithm (add shifted multiplicand for each 1-bit of multiplier). Includes decimal vs. binary walkthrough; 1-byte by 1-byte routine producing 2-byte result (uses LSR on multiplier, conditional ADC, stairstep ROR into RESULT); 2-byte by 2-byte routine producing 4-byte result (shifts multiplier right across two bytes, conditional add into result high word, then stairstep rotates). Notes general result-width rule: bytes(result) = bytes(a) + bytes(b).",
+      "references": [
+        {
+          "chunk": "multiply_by_constant_using_shifts_and_adds_asl_rol",
+          "topic": "Alternate approach when one factor is constant"
+        },
+        {
+          "chunk": "one_byte_multiplication_speed_optimizations_and_table_lookup_intro",
+          "topic": "Optimized variants of 1-byte multiply and performance considerations"
+        },
+        {
+          "chunk": "fast_multiplication_via_square_tables_and_page_aligned_lookup",
+          "topic": "Lookup-table based fast multiplication using square identities"
+        },
+        {
+          "chunk": "signed_multiplication_and_division_strategies_and_wrappers",
+          "topic": "Adapting unsigned algorithms for signed operands"
+        }
+      ]
+    },
+    {
+      "start": 331,
+      "end": 365,
+      "name": "division_by_powers_of_two_with_remainder_in_carry",
+      "description": "Divide by 2 (and higher powers of two) using LSR and ROR; for 2-byte numbers: LSR high byte, ROR low byte. Notes that the remainder appears in the carry flag for single-step; reconstruct multi-bit remainder by collecting successive carry-outs when repeating shifts.",
+      "references": [
+        {
+          "chunk": "binary_division_algorithm_and_two_byte_routine",
+          "topic": "General-purpose division by arbitrary divisors"
+        },
+        {
+          "chunk": "signed_multiplication_and_division_strategies_and_wrappers",
+          "topic": "Handling signed division semantics"
+        }
+      ]
+    },
+    {
+      "start": 366,
+      "end": 475,
+      "name": "binary_division_algorithm_and_two_byte_routine",
+      "description": "Long division in binary by shifting the dividend into a work area (remainder), performing trial subtraction with SEC/SBC against divisor, and recording quotient bits. Detailed decimal and binary examples. 6502 routine: divides 2-byte NUM1 by 2-byte NUM2; quotient stored back into NUM1, remainder in REM (2 bytes). Cautions on widths: quotient must be as wide as dividend; remainder as wide as divisor.",
+      "references": [
+        {
+          "chunk": "division_by_powers_of_two_with_remainder_in_carry",
+          "topic": "Simplest case via shifts; carry-based remainder"
+        },
+        {
+          "chunk": "signed_multiplication_and_division_strategies_and_wrappers",
+          "topic": "Signed division conventions and wrappers"
+        }
+      ]
+    },
+    {
+      "start": 476,
+      "end": 544,
+      "name": "one_byte_multiplication_speed_optimizations_and_table_lookup_intro",
+      "description": "Cycle optimizations for the 1-byte shift-add multiply: sentinel-bit technique using carry as loop terminator (preload #$80, ROR stairstep, saves 14 cycles with zero page RESULT); variant removing CLC in-loop by pre-DEC of NUM1 and using ADC (NUM1) plus implicit carry, profitable when multiplier has >=3 set bits. Performance discussion: even best-case ~151 cycles; introduces table lookup as the path to much faster multiplication/division and discusses the size/speed trade-off and range limitations.",
+      "references": [
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "Baseline 1-byte multiply to optimize"
+        },
+        {
+          "chunk": "fast_multiplication_via_square_tables_and_page_aligned_lookup",
+          "topic": "High-speed table-driven multiplication via square identities"
+        }
+      ]
+    },
+    {
+      "start": 545,
+      "end": 639,
+      "name": "fast_multiplication_via_square_tables_and_page_aligned_lookup",
+      "description": "Fast 8-bit multiply using tables of squares and the identities: (a+b)^2 − (a−b)^2 = 4ab, so ab = ( (a+b)^2/4 − (a−b)^2/4 ). Implementation details: store tables of x^2/4 (losing two LSBs cancels in subtraction); keep two page-aligned tables (sum SSQLO/SSQHI and diff DSQLO/DSQHI), with diff offset by one to allow -A-1 via EOR #$FF; set up four zero-page pointers PSLO/PSHI/PDLO/PDHI to the high pages. Call protocol: multiplicand in A, multiplier in Y; code indexes (PS*) and (PD*) by Y to fetch lo/hi words, subtract to produce product; result returned in A (hi) and X (lo). Worst-case timing: 38 cycles. Note: tables must be page-aligned; tables provided separately; origin note.",
+      "references": [
+        {
+          "chunk": "one_byte_multiplication_speed_optimizations_and_table_lookup_intro",
+          "topic": "Motivation and transition from loop-optimized multiply to table methods"
+        },
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "Contrasts with shift-add multiplication approach"
+        }
+      ]
+    },
+    {
+      "start": 640,
+      "end": 775,
+      "name": "signed_multiplication_and_division_strategies_and_wrappers",
+      "description": "Issues with signed values: LSR/ROR are not sign-preserving. Strategy for signed multiplication: determine result sign via EOR of high bytes (N flag), make both operands positive (two's complement negation), perform unsigned multiply, then apply sign to result (negate product if needed). Shows negation in A using EOR #$FF; ADC #1, and in memory by subtracting from zero; complete wrapper for signed 8-bit multiply around the earlier 1-byte routine. Signed division semantics: maintain dividend = divisor*quotient + remainder; two conventions described: floored division (remainder >= 0; quotient <= true quotient) and toward-zero division (quotient truncated toward zero; remainder has sign of dividend). Wrapper guidance for each convention after unsigned division.",
+      "references": [
+        {
+          "chunk": "binary_multiplication_algorithm_and_routines",
+          "topic": "Unsigned multiply routine used inside signed wrapper"
+        },
+        {
+          "chunk": "binary_division_algorithm_and_two_byte_routine",
+          "topic": "Unsigned division core used for signed division wrapper"
+        },
+        {
+          "chunk": "multiply_by_constant_using_shifts_and_adds_asl_rol",
+          "topic": "Constant-multiply routines that also work with signed values"
+        }
+      ]
+    },
+    {
+      "start": 776,
+      "end": 786,
+      "ignore": true,
+      "reason": "Revision history and non-technical notes"
     }
   ],
   "source_md5": "09452e81565e562be3c0fb3de58139c1"

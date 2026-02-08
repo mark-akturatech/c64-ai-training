@@ -1,135 +1,131 @@
 ---
-description: Split raw training docs, process examples, and import into Qdrant
-argument-hint: [filename.txt | example.asm | --no-import | (none for full rebuild)]
+description: Split raw training docs, clean chunks, document examples, and import into Qdrant
+argument-hint: [--no-import | --force | (none for full rebuild)]
 ---
 
 # Create Training Data
 
 Build or update the Qdrant training knowledge base from source documents and code examples.
 
-## Progress Tracking
+## Pipeline Overview
 
-Use **TodoWrite** to track progress throughout execution. Create todos for each major step at the start, mark each in_progress/completed as you go. For full rebuilds the todos should be:
-1. Split documents
-2. Copy examples to split dir
-3. Import into Qdrant (or mark completed immediately with "skipped" if `--no-import`)
+```
+documents/*.txt ──→ auto_split.py ──→ split_config/*.json
+                                          ↓
+                    auto_split.py --refine ──→ sub-split oversized chunks
+                                          ↓
+documents/*.txt ──→ split_training.py ──→ training/split/*.txt ──→ clean_chunks.py ──→ training/data/*.md
+examples/*.asm  ──→ document_examples.py ──→ training/data/example_*.md
+training/data/*.md ──→ Qdrant import
+```
 
-## Hard Stops
-
-**STOP and ask the user before continuing** if any of these occur:
-- `split_training.py` exits with a non-zero exit code
-- `split_training.py` output contains "uncovered lines" warnings (lines in a source doc not covered by any split config entry)
-- Zero `.txt` files exist in `training/split/` after splitting + example copying (something went wrong)
-- A source document in `documents/` has no matching config in `split_config/`
-
-Report the issue clearly and ask whether to continue or abort.
+Each script tracks MD5 hashes so only changed files are reprocessed.
 
 ## Flags
 
 ### `--no-import`
-If `$ARGUMENTS` contains `--no-import`, skip all Qdrant import steps. Only split documents and copy examples to `training/split/`. This flag can be combined with any mode (full rebuild or single file). Strip `--no-import` from the arguments before processing the remaining argument.
+Skip all Qdrant import steps. Only process documents and examples.
 
-## Modes
+### `--force`
+Pass `--force` to all scripts to reprocess everything regardless of MD5 cache.
 
-### No argument — Full rebuild
-If `$ARGUMENTS` is empty, perform a **full rebuild** of all training data:
+## Steps
 
-1. **Ask for confirmation** — "This will regenerate split files for any changed source documents and replace the Qdrant collection. Continue?" (if `--no-import`, omit the Qdrant part)
-2. **Split all docs** — run `python3 scripts/split_training.py` (no args = processes all configs; unchanged source files are skipped via MD5 caching)
-4. **Copy examples to split dir** — copy each documented `.asm` from `examples/` to `training/split/` as `example_<effect_name>.txt` (derive name from the `# Example:` header). Skip any `.asm` files that don't have a `# Example:` header (they are not yet documented).
-5. **Replace Qdrant collection** (skip if `--no-import`) — delete existing collection, create new one, import all files from `training/split/`
+Run these steps in order. Use **TodoWrite** to track progress.
 
-### File argument — Single file
-If `$ARGUMENTS` is a raw doc filename (`.txt`):
-1. Split that file using its config
-2. Import the new chunks into the **existing** Qdrant collection (skip if `--no-import`)
+### 1. Auto-split new documents
 
-If `$ARGUMENTS` is an example filename (`.asm`):
-1. Verify the file has a `# Example:` header (if not, tell the user to run `/document-examples` on it first)
-2. Copy to `training/split/` as `example_<effect_name>.txt`
-3. Import into the **existing** Qdrant collection (skip if `--no-import`)
+Check if any `.txt` files in `documents/` lack a matching config in `training/split_config/`. If so, generate configs automatically:
 
-## Processing Raw Documents
-
-Source documents in `documents/` are split using configs in `training/split_config/`.
-
-1. Run `python3 scripts/split_training.py` to split the files
-2. If a document has no config in `split_config/`, warn the user and skip it
-3. Review the script output for any "uncovered lines" warnings
-
-### Chunk size limits
-
-After the initial split configs are created, review each config for oversized chunks:
-- **Target**: ~60 lines (~4KB) per chunk
-- **Maximum**: ~80 lines (~5KB) per chunk
-- Only split further if the content has natural topic boundaries — don't break mid-table or mid-code-listing
-- Each chunk must be **self-contained** — it should make sense when read in isolation. If a chunk references concepts defined elsewhere, repeat or summarise the key context inline so readers don't need the other chunk to understand it.
-
-For any chunk exceeding ~80 lines, read the source document at those line ranges, find natural sub-topic boundaries, and split into smaller chunks.
-
-### Cross-references
-
-When splitting a large chunk into sub-chunks (or for any closely related chunks), add a `references` array to connect them:
-
-```json
-{
-  "start": 11, "end": 70,
-  "name": "sid_registers",
-  "description": "SID register map ($D400-$D41C)",
-  "references": [
-    { "chunk": "sid_adsr_waveforms", "topic": "ADSR envelope timing and waveform details" },
-    { "chunk": "sid_frequency_filter", "topic": "frequency calculation and filter modes" }
-  ]
-}
+```bash
+uv run scripts/auto_split.py --all
 ```
 
-The script appends these as a search-oriented footer in the output chunk:
-```
----
-Additional information can be found by searching:
-- "sid_adsr_waveforms" which expands on ADSR envelope timing and waveform details
-- "sid_frequency_filter" which expands on frequency calculation and filter modes
+Or for a specific file:
+```bash
+uv run scripts/auto_split.py "document name.txt"
 ```
 
-## Processing Examples
+**Hard stop**: If `auto_split.py` reports validation errors (gaps, overlaps, oversized chunks), review the generated config before continuing. Fix issues manually if needed.
 
-Examples must already be documented with `# Example:` headers (use `/document-examples` separately if needed).
+Skip this step if all documents already have configs.
 
-Copy each documented `.asm` to `training/split/` as `example_<effect_name>.txt`:
-- Derive the effect name from the `# Example: <name>` header line
-- Convert to snake_case with `example_` prefix
-- Example: `# Example: Raster Color Bars` → `example_raster_color_bars.txt`
-- For multi-file projects (files with `# Project:` tag), prefix with the project directory name:
-  - Example: `dustlayer_sprites/sub_check_keyboard.asm` with `# Example: Keyboard Matrix Scanning` → `example_dustlayer_sprites_keyboard_matrix_scanning.txt`
-  - This ensures all files from the same project share a naming prefix for discoverability
+Note: `auto_split.py` auto-refines oversized chunks (>120 lines) after initial generation. For existing configs that were generated before auto-refine existed, run step 1b.
 
-## Qdrant Import
+### 1b. Refine oversized chunks
 
-After all files are in `training/split/`, import them into Qdrant.
+If existing configs have chunks larger than 120 lines, refine them:
 
-### Collection name
-Use collection name: `c64_training`
+```bash
+uv run scripts/auto_split.py --refine
+```
 
-### For full rebuild:
-1. Delete the existing `c64_training` collection if it exists (also delete any old auto-named collections like `code_*`)
-2. Create a new `c64_training` collection
-3. Import every `.txt` file from `training/split/`
+Or for a specific config:
+```bash
+uv run scripts/auto_split.py --refine "config name.json"
+```
 
-### For single file updates:
-1. Import new/updated chunks into the existing `c64_training` collection
-2. If replacing an existing chunk, delete the old version first
+This sends oversized chunks to OpenAI to sub-split them into 60-120 line pieces. It iterates until all chunks are within the size limit. Newly generated configs (step 1) do this automatically.
 
-### Import method
-Use the Qdrant MCP tools if available:
-- `mcp__qdrant-local__list_collections()` to check existing collections
-- `mcp__qdrant-local__store()` to import each chunk
+### 2. Extract chunks
 
-If MCP tools are not available, inform the user that Qdrant import requires the qdrant-local MCP server to be running and they should restart Claude Code with Docker running.
+Split source documents into raw text chunks using existing configs:
+
+```bash
+python3 scripts/split_training.py
+```
+
+**Hard stop**: If `split_training.py` exits with non-zero code or reports "uncovered lines", stop and report the issue.
+
+### 3. Clean chunks (OpenAI)
+
+Send raw chunks to OpenAI for cleaning into well-formatted Markdown:
+
+```bash
+uv run scripts/clean_chunks.py
+```
+
+This reads from `training/split/`, writes cleaned `.md` files to `training/data/`. Tracks processed files in `training/parsed_sources.json`.
+
+To reprocess everything: `uv run scripts/clean_chunks.py --force`
+To process one chunk: `uv run scripts/clean_chunks.py chunk_name.txt`
+
+### 4. Document examples (OpenAI)
+
+Analyze assembly examples and generate documented versions:
+
+```bash
+uv run scripts/document_examples.py
+```
+
+This reads `.asm` files from `examples/`, writes `example_*.md` to `training/data/`. Tracks processed files in `parsed_sources.json`.
+
+To reprocess everything: `uv run scripts/document_examples.py --force`
+To process one file: `uv run scripts/document_examples.py examples/bars256.asm`
+
+### 5. Import to Qdrant
+
+Skip if `--no-import` was specified.
+
+Import all `.md` files from `training/data/` into Qdrant using the import script:
+
+```bash
+uv run scripts/import_qdrant.py
+```
+
+For full rebuild: `uv run scripts/import_qdrant.py --force`
+
+The script handles:
+- Collection creation (`c64_training`, 3072d cosine for `text-embedding-3-large`)
+- For `example_*.md` files: embeds only the header (before `## Source Code`) — full source code stored in payload
+- For doc chunks: embeds the full content
+- MD5 caching in `training/import_cache.json` to skip unchanged files
+- Incremental updates (deletes old point by filename before upserting)
 
 ## Summary
 
 After completion, report:
-- Number of document chunks created
-- Number of examples processed (documented / skipped / warnings)
-- Number of items imported into Qdrant (or "skipped — `--no-import`")
-- Any warnings or skipped files
+- Number of document chunks created/cleaned
+- Number of examples documented
+- Number of items imported into Qdrant (or "skipped -- `--no-import`")
+- Any warnings or errors

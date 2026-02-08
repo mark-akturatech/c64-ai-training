@@ -1,4 +1,4 @@
-# C64 / 6502 Development Toolkit
+# C64 / 6502 AI Toolkit
 
 An integrated suite of tools for Commodore 64 development, reverse engineering, and AI-assisted disassembly -- combining a semantic knowledge base, a KickAssembler language server, and an automated disassembly pipeline.
 
@@ -65,7 +65,6 @@ See [plans/ai-disassembler-mcp.md](plans/ai-disassembler-mcp.md) for the full ar
 
 ## Prerequisites
 
-- Arch Linux (or compatible distro with AUR access)
 - Docker
 - direnv
 - OpenAI API key (for Qdrant embeddings)

@@ -1,18 +1,246 @@
 {
   "source_file": "6502 ADDRESSING MODES.txt",
-  "context": "6502 Addressing Modes",
+  "context": "6502 ADDRESSING MODES",
   "splits": [
     {
       "start": 1,
+      "end": 2,
+      "name": "addressing_modes_overview_intro",
+      "description": "Intro to 6502 addressing modes and how different instructions use specific modes.",
+      "references": [
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Concise recap of the five basic addressing families with examples"
+        },
+        {
+          "chunk": "absolute_addressing",
+          "topic": "First detailed mode explained after the intro"
+        }
+      ]
+    },
+    {
+      "start": 3,
+      "end": 8,
+      "name": "absolute_addressing",
+      "description": "Absolute addressing (aaaa): operand is a 2-byte memory address. Examples: LDA $3491, LDA num1.",
+      "references": [
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "1-byte alternative in zero page with size/speed benefits"
+        },
+        {
+          "chunk": "absolute_indexed_addressing_x_y",
+          "topic": "Adds X or Y to a 16-bit base address for table access"
+        },
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Summary restates Absolute (Direct) with example"
+        }
+      ]
+    },
+    {
+      "start": 9,
+      "end": 17,
+      "name": "zero_page_addressing",
+      "description": "Zero Page addressing (aa): operand is a 1-byte address in $0000–$00FF. Smaller/faster than absolute; assemblers auto-encode if label is in zero page. Example: LDA $56; note on automatic zero page opcode generation for labels (LDA num2).",
+      "references": [
+        {
+          "chunk": "absolute_addressing",
+          "topic": "Functionally similar but 16-bit address and generally slower/larger"
+        },
+        {
+          "chunk": "zero_page_indexed_addressing_x_y",
+          "topic": "Indexed variant using 8-bit base in zero page"
+        },
+        {
+          "chunk": "indexed_indirect_x",
+          "topic": "Uses a zero-page pointer plus X"
+        },
+        {
+          "chunk": "indirect_indexed_y",
+          "topic": "Uses a zero-page pointer then adds Y"
+        }
+      ]
+    },
+    {
+      "start": 18,
+      "end": 23,
+      "name": "immediate_addressing",
+      "description": "Immediate addressing (#aa): operand is an 8-bit constant prefixed by '#'. Examples: LDA #$48, LDA #'H' (assembler allows character literal).",
+      "references": [
+        {
+          "chunk": "implicit_addressing",
+          "topic": "Contrasts with instructions that take no operand"
+        },
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Summary restates Immediate with example"
+        }
+      ]
+    },
+    {
+      "start": 24,
+      "end": 29,
+      "name": "implicit_addressing",
+      "description": "Implicit (implied) addressing: no explicit operand; the target is implied by the opcode. Examples: CLC (clear carry), TAX (transfer A to X).",
+      "references": [
+        {
+          "chunk": "accumulator_addressing_mode",
+          "topic": "Instructions that explicitly target A as an operand"
+        }
+      ]
+    },
+    {
+      "start": 30,
+      "end": 35,
+      "name": "accumulator_addressing_mode",
+      "description": "Accumulator addressing (A): certain ops (shift/rotate group) operate on accumulator when operand 'A' is used. Examples: ASL A, ROR A.",
+      "references": [
+        {
+          "chunk": "implicit_addressing",
+          "topic": "Other instructions with implied targets and no operand"
+        }
+      ]
+    },
+    {
+      "start": 36,
+      "end": 44,
+      "name": "absolute_indexed_addressing_x_y",
+      "description": "Absolute Indexed addressing (aaaa,X) and (aaaa,Y): 2-byte base address plus X or Y register gives effective address. Example: LDX #$0A; LDA $2020,X loads from $202A. Common for table access (base + offset).",
+      "references": [
+        {
+          "chunk": "zero_page_indexed_addressing_x_y",
+          "topic": "Same concept with zero-page 8-bit base"
+        },
+        {
+          "chunk": "indexed_indirect_x",
+          "topic": "Related but adds X before dereferencing a zero-page pointer"
+        },
+        {
+          "chunk": "indirect_indexed_y",
+          "topic": "Related but dereferences zero-page pointer then adds Y"
+        },
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Summary restates Indexed with example combining base + X"
+        }
+      ]
+    },
+    {
+      "start": 45,
+      "end": 51,
+      "name": "zero_page_indexed_addressing_x_y",
+      "description": "Zero Page Indexed addressing (aa,X) and (aa,Y): like absolute indexed but with an 8-bit zero-page base address. Example: LDY #$4A; LDA $24,Y loads from $6E.",
+      "references": [
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "Non-indexed zero-page base case"
+        },
+        {
+          "chunk": "absolute_indexed_addressing_x_y",
+          "topic": "16-bit base counterpart"
+        }
+      ]
+    },
+    {
+      "start": 52,
+      "end": 59,
+      "name": "indirect_absolute_jmp_only",
+      "description": "Indirect Absolute addressing (JMP (aaaa)): Only JMP uses this simple indirect form. Operand is a 16-bit pointer; memory at pointer holds low byte of target, next location holds high byte. Example: [$3418]=$55, [$3419]=$29; JMP ($3418) jumps to $2955.",
+      "references": [
+        {
+          "chunk": "indexed_indirect_x",
+          "topic": "One of the two (zero-page) indexed-indirect forms"
+        },
+        {
+          "chunk": "indirect_indexed_y",
+          "topic": "The other (zero-page) indirect-indexed form"
+        },
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Summary includes a general indirect description"
+        }
+      ]
+    },
+    {
+      "start": 60,
+      "end": 71,
+      "name": "indexed_indirect_x",
+      "description": "Indexed Indirect (aa,X): zero-page base plus X gives a zero-page address where a 16-bit pointer is read; that pointer gives the data address. Summarized as 'add the offset, then find the address.' Example: LDX #$11; LDA ($36,X) -> ZP $47; [$0047]=$49, [$0048]=$A3 -> target $A349; load [$A349] into A. Often used for zero-page tables of addresses with base operand and X as offset.",
+      "references": [
+        {
+          "chunk": "indirect_indexed_y",
+          "topic": "Complementary form: 'find the address, then add the offset'"
+        },
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "Uses zero-page pointer storage"
+        },
+        {
+          "chunk": "indirect_absolute_jmp_only",
+          "topic": "Non-indexed 16-bit indirect used by JMP"
+        }
+      ]
+    },
+    {
+      "start": 72,
+      "end": 84,
+      "name": "indirect_indexed_y",
+      "description": "Indirect Indexed (aa),Y: zero-page location holds a 16-bit pointer (low at aa, high at aa+1), then Y is added to that address to form the effective address. Summarized as 'find the address, then add the offset.' Example: [$00A5]=$28, [$00A6]=$77; LDY $08; LDA ($A5),Y -> base $7728 + $08 = $7730; load [$7730] into A.",
+      "references": [
+        {
+          "chunk": "indexed_indirect_x",
+          "topic": "Complementary X-only form that adds index before dereferencing"
+        },
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "Zero-page pointer source"
+        },
+        {
+          "chunk": "indirect_absolute_jmp_only",
+          "topic": "Other indirect-use case (JMP via 16-bit pointer)"
+        }
+      ]
+    },
+    {
+      "start": 85,
       "end": 100,
-      "name": "6502_addressing_modes",
-      "description": "All addressing modes with examples (Absolute, Zero Page, Immediate, Implicit, Accumulator, Indexed, Indirect, Relative)"
+      "name": "relative_addressing_branching",
+      "description": "Relative addressing (aa): used only by branch instructions. Operand is an 8-bit 2’s complement offset (-128..+127) added to the address of the instruction following the branch. Example: BEQ #$F5 (-11) branches to PC+2-11 if Z flag set. Loop example with label LB1 using LDA $FA55; INX; BEQ LB1.",
+      "references": [
+        {
+          "chunk": "summary_of_addressing_modes",
+          "topic": "Summary restates relative mode with numeric example"
+        }
+      ]
     },
     {
       "start": 101,
-      "end": 127,
-      "ignore": true,
-      "reason": "Summary section that repeats content already covered above"
+      "end": 126,
+      "name": "summary_of_addressing_modes",
+      "description": "SUMMARY of basic addressing families with examples: Absolute (Direct) addressing: LDA $6F55 loads from $6F55. Immediate addressing: LDA #41 loads literal 41 ($29). Indexed addressing: LDA $4F10,X with X=$34 -> effective address $4F44. Indirect addressing: operand points to an address that points to the data (example text notes loading data item 44). Relative addressing: branch example 4545 BEQ $13 transfers to $4547 + $13 = $455A if Z set; follow-up instruction at 4547 LDA $9333.",
+      "references": [
+        {
+          "chunk": "absolute_addressing",
+          "topic": "Detailed absolute mode and examples"
+        },
+        {
+          "chunk": "immediate_addressing",
+          "topic": "Detailed immediate mode and examples"
+        },
+        {
+          "chunk": "absolute_indexed_addressing_x_y",
+          "topic": "Detailed indexed absolute mode and examples"
+        },
+        {
+          "chunk": "indirect_absolute_jmp_only",
+          "topic": "Detailed indirect absolute (JMP) explanation"
+        },
+        {
+          "chunk": "relative_addressing_branching",
+          "topic": "Detailed relative mode and branching example"
+        }
+      ]
     }
   ],
   "source_md5": "cdad6b5f35309933d575d33c85f234ed"

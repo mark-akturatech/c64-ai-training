@@ -1,0 +1,50 @@
+# Example: MOS 6510 Global Namespace Wrapper
+
+**Project:** c64lib_chipset - KickAssembler library with register definitions and macros for VIC-II, CIA, SID, and MOS 6510
+
+## Summary
+Re-exports 6510 CPU port macros with @c64lib_ global namespace prefix. Wraps configureMemory for integrated library use, allowing multi-file projects to access MOS 6510 memory banking functionality without namespace collisions.
+
+## Key Registers
+- $00 - MOS 6510 data direction register - controls port pin direction (via macros)
+- $01 - MOS 6510 I/O port - LORAM/HIRAM/CHAREN bits for memory mapping (via macros)
+
+## Techniques
+- namespace wrapping
+- macro aliasing
+
+## Hardware
+MOS 6510
+
+## Source Code
+```asm
+/*
+ * MIT License
+ *
+ * Copyright (c) 2017-2032 c64lib
+ * Copyright (c) 2017-2023 Maciej Małecki
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#import "mos6510.asm"
+#importonce
+.filenamespace c64lib
+
+.macro @c64lib_configureMemory(config) { configureMemory(config) }
+```

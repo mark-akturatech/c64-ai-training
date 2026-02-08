@@ -1,0 +1,76 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Cycle optimizations for the 1-byte shift-add multiply: sentinel-bit technique using carry as loop terminator (preload #$80, ROR stairstep, saves 14 cycles with zero page RESULT); variant removing CLC in-loop by pre-DEC of NUM1 and using ADC (NUM1) plus implicit carry, profitable when multiplier has >=3 set bits. Performance discussion: even best-case ~151 cycles; introduces table lookup as the path to much faster multiplication/division and discusses the size/speed trade-off and range limitations.
+
+
+I feel the NEED for SPEED!
+----------------------------------------
+
+
+The routines shown above are reasonably compact, but not the speediest.
+With a little bit of trickery, we can squeeze a few cycles out of some of
+the above routines...for example, here's the one-byte multiplication again,
+using the carry flag instead of the Y register for the loop counter, which
+takes the DEY instruction out of the loop:
+
+
+LDA #$80     ;Preload sentinel bit into RESULT
+        STA RESULT
+        ASL A        ;Initialize RESULT hi byte to 0
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        CLC          ;If 1, add NUM1
+        ADC NUM1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        BCC L1       ;When sentinel falls off into carry, we're done
+        STA RESULT+1
+
+
+Assuming RESULT is in page 0, this saves 14 cycles.  As an
+added bonus, the Y register is no longer trashed.
+
+
+A little more trickery can get the CLC out of the loop,
+saving 2 cycles per 1-bit in NUM2:
+
+
+LDA #$80     ;Preload sentinel bit into RESULT
+        STA RESULT
+        ASL A        ;Initialize RESULT hi byte to 0
+	DEC NUM1
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        ADC NUM1     ;If 1, add (NUM1-1)+1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        BCC L1       ;When sentinel falls off into carry, we're done
+        STA RESULT+1
+
+
+Since the initial DEC NUM1 costs 5 cycles (if
+NUM1 is in page 0), this is a win if NUM2 has
+at least three 1-bits.
+
+
+But even the fastest of those routines, under the best possible
+circumstances (all variables in page 0, no page crossings, and NUM2 = 0),
+takes 151 cycles.  If you need to do much better than that, different
+techniques must be used.  The best way to get fast multiplication or
+division on the 6502 is table lookup - i.e., the programmer precomputes the
+answers to the multiplication or division problems and stores them in
+a table, and when the program needs to multiply or divide, it looks up the
+answer in the table.
+
+
+Of course this means there's a tradeoff between speed and code size.
+Table lookup works best when the numbers to be multiplied or divided
+fall in a limited range, otherwise the tables quickly grow to
+unmanageable sizes - for example, a multiplication table for
+multiplying two arbitrary one-byte numbers requires more memory than the
+6502 can directly access.
+
+
+
+---
+Additional information can be found by searching:
+- "binary_multiplication_algorithm_and_routines" which expands on Baseline 1-byte multiply to optimize
+- "fast_multiplication_via_square_tables_and_page_aligned_lookup" which expands on High-speed table-driven multiplication via square identities
