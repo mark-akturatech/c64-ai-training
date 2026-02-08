@@ -1,0 +1,399 @@
+{
+  "source_file": "Sprite Multiplexing by Cadaver.txt",
+  "context": "Sprite Multiplexing Techniques by Cadaver (Lasse Oorni)",
+  "splits": [
+    {
+      "start": 1,
+      "end": 6,
+      "ignore": true,
+      "reason": "Title, header and document heading (non-technical front matter)"
+    },
+    {
+      "start": 7,
+      "end": 31,
+      "name": "background_and_motivation",
+      "description": "Introduction and background: motivation for sprite multiplexing on the C64, games referenced (Green Beret, Ghosts'n Goblins, Midnight Resistance), author's experience reverse-engineering sprite sorting and need for faster sort than simple bubble sort.",
+      "references": [
+        {
+          "chunk": "zone_split_technique",
+          "topic": "introduces a simple multiplexing method (zone split)"
+        },
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "mentions faster sorting algorithms used in games"
+        }
+      ]
+    },
+    {
+      "start": 32,
+      "end": 115,
+      "name": "zone_split_technique",
+      "description": "Zone split technique: reuse sprites by rewriting Y-coordinates, frames and colors for groups (rows) via raster interrupts. Key hardware constraint: sprite Y must be written before raster reaches that Y, and frame/color writes take at least one raster line causing timing artifacts. Example assembly-like code shows copying and advancing Y coordinates ($D007, $D009, $D00B, $D00D, $D00F), writing frame & color tables to screen and sprite color registers ($C3FB-$C3FF, $D02A-$D02E), and advancing spriteindex.",
+      "references": [
+        {
+          "chunk": "raster_interrupt_code_example_and_notes",
+          "topic": "timing and register write ordering in raster interrupts"
+        },
+        {
+          "chunk": "doublebuffering_sorted_sprite_tables",
+          "topic": "doublebuffering suggestion to avoid tearing while updating tables"
+        }
+      ]
+    },
+    {
+      "start": 116,
+      "end": 176,
+      "name": "true_sprite_multiplexing_overview",
+      "description": "Overview of general (true) sprite multiplexing: allow more than 8 'virtual' sprites by sorting them top-to-bottom and remapping virtual sprites to the 8 physical hardware sprites. Hardware limits: max 8 sprites per raster line; rewriting registers may cause graphical glitches if tightly packed. Tasks: sort sprites by Y, map virtual→physical, write hardware registers in raster IRQs, reset offscreen sprites (Y=255). Optional: reject offscreen or >8-on-row sprites, precalc $D010 values, and doublebuffer sorted sprite table.",
+      "references": [
+        {
+          "chunk": "sprite_arrays_and_terms",
+          "topic": "defines arrays used for sorting and sprite properties"
+        },
+        {
+          "chunk": "mapping_virtual_to_physical_sprites",
+          "topic": "explains how virtual sprites are assigned to physical sprites"
+        },
+        {
+          "chunk": "doublebuffering_sorted_sprite_tables",
+          "topic": "doublebuffering sorted arrays to allow sorting while display IRQs run"
+        }
+      ]
+    },
+    {
+      "start": 177,
+      "end": 211,
+      "name": "sprite_arrays_and_terms",
+      "description": "Defines the unsorted and sorted sprite arrays and their purposes: unsorted arrays sprx (X), spry (Y), sprc (color), sprf (frame). Sorted arrays: sortsprx, sortspry, sortsprc, sortsprf. sortorder = sorted list of indexes to unsorted table (may need zeropage).",
+      "references": [
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "uses sortorder index array for fast incremental sorting"
+        },
+        {
+          "chunk": "bubblesort_for_sprites",
+          "topic": "alternative sorting method that also needs index tracking"
+        }
+      ]
+    },
+    {
+      "start": 212,
+      "end": 212,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 213,
+      "end": 256,
+      "name": "bubblesort_for_sprites",
+      "description": "Bubble-sort approach for sprite Y-sorting: O(N^2) worst-case. Requires carrying an index array so sprite properties remain associated with the Y values. Pseudocode shows initializing sortspry and sortorder, then nested loops to swap when out of order. Downsides: slow for larger N and no clear point for rejecting >8 sprites on a row without moving memory blocks.",
+      "references": [
+        {
+          "chunk": "find_next_lowest_y_sort",
+          "topic": "another O(N^2) approach with a clear rejection point"
+        },
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "faster practical alternative used in commercial games"
+        }
+      ]
+    },
+    {
+      "start": 257,
+      "end": 257,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 258,
+      "end": 319,
+      "name": "find_next_lowest_y_sort",
+      "description": "Selection-like sorting: repeatedly find the lowest Y from a temp array (destroying values by setting to 255) and append to sorted list. Execution O(N^2) but allows easy insertion of sprite rejection logic at append time. Pseudocode shows using temp_y, lowest_found_y initialization and copying sprite values or indexes into sorted arrays.",
+      "references": [
+        {
+          "chunk": "bubblesort_for_sprites",
+          "topic": "another simple O(N^2) method"
+        },
+        {
+          "chunk": "y_div_8_bucket_sort_incorrect",
+          "topic": "bucket methods offer faster O(N) alternatives"
+        }
+      ]
+    },
+    {
+      "start": 320,
+      "end": 320,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 321,
+      "end": 374,
+      "name": "y_div_8_bucket_sort_incorrect",
+      "description": "Bucket-sort by character row (Y divided by 8): O(N) execution but doesn't guarantee strict Y order inside buckets (i.e., only partial ordering). Implementation notes: managing buckets in C64 ASM can be done by precomputing bucket sizes and storing contents contiguously, avoiding two-dimensional arrays. Pseudocode shows zeroing amount_in_bucket[], assigning sprites to bucket spry[sprite]/8, and then walking buckets to fill the sorted arrays. Labelled 'incorrect' because it only approximates order.",
+      "references": [
+        {
+          "chunk": "radix_sorting_for_sprites",
+          "topic": "radix sorting refines the bucket idea to guarantee correct order"
+        },
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "practical high-performance alternative used in games"
+        }
+      ]
+    },
+    {
+      "start": 375,
+      "end": 375,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 376,
+      "end": 438,
+      "name": "radix_sorting_for_sprites",
+      "description": "Two-pass radix sort to guarantee correct Y-order with near-linear execution time. First pass buckets by (Y & 15) (remainder of Y/16), second pass buckets by Y/16. Pseudocode shows clearing buckets, filling first-pass buckets, moving through them to place sprites into second-pass buckets, and then emitting final sorted list. Notes: correct ordering but complex and memory-hungry (multiple bucket arrays & counters).",
+      "references": [
+        {
+          "chunk": "y_div_8_bucket_sort_incorrect",
+          "topic": "related bucket approach but less precise"
+        },
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "practical alternative used in several games"
+        }
+      ]
+    },
+    {
+      "start": 439,
+      "end": 549,
+      "name": "continuous_insertion_sort_ocean_algorithm",
+      "description": "Continuous insertion sort (Ocean/SWIV algorithm): maintain a persistent sortorder array between frames and perform localized swaps so sorting cost is proportional to how much sprites move relative to each other. Very fast when sprite order changes little; occasional heavy frames possible. Pseudocode initializes sortorder once (0..N-1) and then walks, performing swaps to insert out-of-order entries. Includes two ASM implementations: typical Ocean variant and a SWIV-adapted variant with zeropage temps and accumulator optimizations. Result is a sorted index array that can be traversed to fill sortsprx/sortspry and reject sprites if needed.",
+      "references": [
+        {
+          "chunk": "sprite_arrays_and_terms",
+          "topic": "uses sortorder as an index array"
+        },
+        {
+          "chunk": "mapping_virtual_to_physical_sprites",
+          "topic": "sorted order is used to map virtual sprites to physical ones"
+        }
+      ]
+    },
+    {
+      "start": 550,
+      "end": 550,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 551,
+      "end": 583,
+      "name": "mapping_virtual_to_physical_sprites",
+      "description": "Mapping strategy: map virtual sprites (sorted top-to-bottom) cyclically onto the 8 physical sprites (1-8, then 1-8 again) so virtual 1..8 → physical 1..8, virtual 9→physical1, etc. Alternative mapping orders can implement priority classes (example: BOFH uses different search orders for LOW, MEDIUM, HIGH priorities). 'Free' physical sprite is one whose previous virtual sprite is sufficiently far away in Y (typically >= 21 pixels).",
+      "references": [
+        {
+          "chunk": "rejecting_ninth_sprite_on_row",
+          "topic": "how to reject sprites that would be the 9th on a rasterline"
+        },
+        {
+          "chunk": "true_sprite_multiplexing_overview",
+          "topic": "mapping is a core part of general multiplexing"
+        }
+      ]
+    },
+    {
+      "start": 584,
+      "end": 584,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 585,
+      "end": 605,
+      "name": "rejecting_ninth_sprite_on_row",
+      "description": "Reject sprites that would become the 9th sprite on a rasterline: while walking the sorted list and mapping virtual→physical, test if the next virtual sprite's Y is within 21 pixels of the virtual sprite previously mapped to the same physical sprite. Test example: if (spry[next_sprite] - sortspry[accepted_count - 8] < 21) then reject(). The test is skipped for the first 8 sprites (no negative index).",
+      "references": [
+        {
+          "chunk": "mapping_virtual_to_physical_sprites",
+          "topic": "uses mapping order to determine which previous virtual sprite corresponds to the same physical sprite"
+        }
+      ]
+    },
+    {
+      "start": 606,
+      "end": 606,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 607,
+      "end": 611,
+      "name": "determining_physical_sprites_overview",
+      "description": "Overview: Two basic methods for deciding which physical sprite registers to write and when—(1) just before the new sprite starts and (2) just after the old sprite ends. Either can be precalculated or done on-the-fly in the raster IRQs.",
+      "references": [
+        {
+          "chunk": "write_registers_just_before_new_sprite",
+          "topic": "method 1: write shortly before new sprite Y"
+        },
+        {
+          "chunk": "write_registers_just_after_old_sprite",
+          "topic": "method 2: write right after previous sprite display"
+        }
+      ]
+    },
+    {
+      "start": 612,
+      "end": 638,
+      "name": "write_registers_just_before_new_sprite",
+      "description": "Method 2.4.1: 'Just before the new sprite'—wait until raster is close to the sprite's start Y and then write the sprite registers. 'Close enough' depends on worst-case time to write all relevant sprite registers (writing 8 sprites could require ~10-12 lines). Benefits of precalculation: decide adjustment based on number of sprites to write, and write Y-coordinates first (they're critical) then X/frame/color. Precalculated interrupts allow optimized timing and reduce cosmetic errors.",
+      "references": [
+        {
+          "chunk": "raster_interrupt_code_example_and_notes",
+          "topic": "shows naive register write sequence and $D010 MSB handling"
+        },
+        {
+          "chunk": "raster_interrupt_optimizations_and_unrolled_code",
+          "topic": "shows faster per-physical-sprite unrolled code and optimizations"
+        }
+      ]
+    },
+    {
+      "start": 639,
+      "end": 653,
+      "name": "write_registers_just_after_old_sprite",
+      "description": "Method 2.4.2: 'Just after the old sprite'—write the first 8 sprites at frame top; then, for each subsequent virtual sprite, wait for the raster line just below the sprite being replaced and write new values. If Y is written last, glitches are prevented because a delayed write just results in the new sprite not being displayed (clean failure). Simpler and cleaner, but may drop sprites in tight formations (unacceptable in some games).",
+      "references": [
+        {
+          "chunk": "write_registers_just_before_new_sprite",
+          "topic": "alternative approach with different trade-offs"
+        }
+      ]
+    },
+    {
+      "start": 654,
+      "end": 654,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 655,
+      "end": 665,
+      "name": "doublebuffering_sorted_sprite_tables",
+      "description": "Doublebuffering the sorted sprite table: allocate twice the space (e.g., for 24 sprites reserve 48) and alternate buffers—while raster IRQs display buffer A, main program sorts into buffer B. Simplifies avoiding tearing/glitches. Note: unsorted (main) sprite arrays should remain single-buffered for simplicity.",
+      "references": [
+        {
+          "chunk": "true_sprite_multiplexing_overview",
+          "topic": "doublebuffering is an optional optimization mentioned earlier"
+        },
+        {
+          "chunk": "raster_interrupt_optimizations_and_unrolled_code",
+          "topic": "raster IRQs must know which buffer (screen) to write to when doublebuffered"
+        }
+      ]
+    },
+    {
+      "start": 666,
+      "end": 666,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 667,
+      "end": 717,
+      "name": "raster_interrupt_code_example_and_notes",
+      "description": "Example raster interrupt code typical of Ocean games (inefficient): virtual sprite number in Y used to derive physical sprite (TYA AND #$07), write sortsprc→$D027,X, sortsprf→$C3F8/$C7F8 (doublebuffered two screens), sortspry→$D001,X, sortsprx→$D000,X (example multiplies X by 2 losing 1-pixel accuracy), and manipulate $D010 MSB via OR/AND tables (ortbl/andtbl) to select sprite X MSB. Includes table constants for MSB handling. Comments list potential optimizations (per-physical-sprite code, precalc $D010, write frame to only one screen).",
+      "references": [
+        {
+          "chunk": "raster_interrupt_optimizations_and_unrolled_code",
+          "topic": "suggests faster unrolled code variants and per-sprite routines"
+        },
+        {
+          "chunk": "eliminating_flicker_in_raster_interrupts",
+          "topic": "flicker issues arise from late/overlapping raster IRQs and must be handled"
+        }
+      ]
+    },
+    {
+      "start": 718,
+      "end": 763,
+      "name": "raster_interrupt_optimizations_and_unrolled_code",
+      "description": "Optimizations and alternate raster IRQ structure: suggestions include writing a separate code block per physical sprite, precalculating $D010 values to minimize IRQ time, and writing frame data to the active doublebuffer only. Example shows unrolled per-sprite code blocks (sprite0, frame0, sprite1, frame1, ...) that directly STA to the appropriate hardware registers ($D000-$D027, $D010, $C3F8-$C3FF) and branch based on endspr. Notes: must jump to correct entry point depending which sprite to start updating and adjust for active screen buffer.",
+      "references": [
+        {
+          "chunk": "doublebuffering_sorted_sprite_tables",
+          "topic": "optimization must be adapted to the currently-active screen buffer"
+        },
+        {
+          "chunk": "write_registers_just_before_new_sprite",
+          "topic": "precalculation of interrupts complements per-sprite unrolled code"
+        }
+      ]
+    },
+    {
+      "start": 764,
+      "end": 764,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 765,
+      "end": 803,
+      "name": "eliminating_flicker_in_raster_interrupts",
+      "description": "Ways to avoid flicker & slowdown from sprite multiplexing: causes include issuing next raster interrupt too close to current ($D012 timing) or missing other important IRQs (e.g., bottom score panel). Recommendations: don't display sprites outside visible ranges; shrink usable bottom lines; at end of each raster IRQ check the next planned IRQ position against $D012 with a safety margin (example: store next IRQ Y into $D012, SEC; SBC #$03; CMP $D012; BCC go_to_irq_directly) to detect lateness and skip costly saving/acknowledging if too late. These checks don't prevent CPU overload but reduce flicker and audio slowdown.",
+      "references": [
+        {
+          "chunk": "raster_interrupt_code_example_and_notes",
+          "topic": "the check should be integrated into the raster IRQ flow to avoid late IRQs"
+        }
+      ]
+    },
+    {
+      "start": 804,
+      "end": 804,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 805,
+      "end": 806,
+      "name": "conclusion_heading",
+      "description": "Section heading for Conclusion.",
+      "references": [
+        {
+          "chunk": "conclusion_bibliography_ignored",
+          "topic": "lists example multiplexer sources and game source archives"
+        }
+      ]
+    },
+    {
+      "start": 807,
+      "end": 834,
+      "ignore": true,
+      "reason": "References / bibliography: recommended example multiplexers and game source archives (non-technical bibliography)"
+    },
+    {
+      "start": 835,
+      "end": 844,
+      "name": "reverse_engineering_tips_and_findings",
+      "description": "Tips for reverse-engineering sprite multiplexers: search ML monitor for byte sequences like $01 $D0 (writes to first sprite Y) or other sprite-register writes; look near IRQ address for multiplexing code. Noting pattern: an indexed memory access whose result is used only as an index (not stored to sprite I/O) is likely the sprite order array; following references to it can lead to the sortroutine.",
+      "references": [
+        {
+          "chunk": "continuous_insertion_sort_ocean_algorithm",
+          "topic": "the referenced order array often contains the sortorder used by these algorithms"
+        },
+        {
+          "chunk": "raster_interrupt_optimizations_and_unrolled_code",
+          "topic": "multiplexer code is often located near IRQ handlers"
+        }
+      ]
+    },
+    {
+      "start": 845,
+      "end": 846,
+      "ignore": true,
+      "reason": "Author credits/contact information (non-technical)"
+    }
+  ],
+  "source_md5": "5387d15d791f55c34bc3d0acf36c596a"
+}

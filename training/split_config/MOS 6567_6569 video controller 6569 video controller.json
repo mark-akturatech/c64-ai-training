@@ -1,0 +1,1077 @@
+{
+  "source_file": "MOS 6567_6569 video controller 6569 video controller.txt",
+  "context": "The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64",
+  "splits": [
+    {
+      "start": 1,
+      "end": 11,
+      "ignore": true,
+      "reason": "Title, author and date / front matter"
+    },
+    {
+      "start": 12,
+      "end": 69,
+      "ignore": true,
+      "reason": "Table of contents and surrounding blank lines"
+    },
+    {
+      "start": 70,
+      "end": 99,
+      "name": "introduction",
+      "description": "Purpose and scope of the document: summary of VIC-II (MOS 6567/6569) examination, intended audience (C64 programmers, emulator authors), basis of investigations and contributors (Marko Mäkelä, Andreas Boose, Pasi Ojala, Wolfgang Lorenz, Christian Bauer).",
+      "references": [
+        {
+          "chunk": "c64_overview",
+          "topic": "hardware units of the C64 (6510, VIC-II, SID, CIAs, RAM/ROM)"
+        },
+        {
+          "chunk": "vic_chip_and_signals",
+          "topic": "VIC-II overview and signals"
+        }
+      ]
+    },
+    {
+      "start": 100,
+      "end": 121,
+      "name": "c64_overview",
+      "description": "High-level architecture of the Commodore 64: list of main components (6510 CPU, 6567/6569 VIC-II, 6581 SID, two 6526 CIA, 64KB DRAM, 1KB Color RAM, 16KB/4KB ROMs). Notes on NMOS implementation.",
+      "references": [
+        {
+          "chunk": "6510_processor",
+          "topic": "6510 signals and bus timing"
+        },
+        {
+          "chunk": "vic_chip_and_signals",
+          "topic": "VIC-II role and signals"
+        }
+      ]
+    },
+    {
+      "start": 122,
+      "end": 168,
+      "name": "6510_processor",
+      "description": "Description of the 6510 (6502-family) CPU used in the C64: 8-bit data bus, 16-bit address bus, clock frequencies (NTSC 1022.7 kHz, PAL 985.248 kHz), two-phase clock (φ2), important signals (φ2, R/W, IRQ, RDY, AEC) and the built-in 6-bit I/O port (P0-P5 mapped at addresses $0000/$0001). Notes on RDY/AEC interaction with VIC (bus arbitration).",
+      "references": [
+        {
+          "chunk": "memory_access_timing",
+          "topic": "Bus phase division between VIC and CPU"
+        },
+        {
+          "chunk": "addresses_0_1_and_de00_area",
+          "topic": "special behavior of addresses $0000/$0001 when VIC drives bus"
+        }
+      ]
+    },
+    {
+      "start": 169,
+      "end": 245,
+      "name": "vic_chip_and_signals",
+      "description": "Overview of MOS 6567 (NTSC) / 6569 (PAL) VIC-II: supported video modes (3 text 40x25, 2 bitmap 320x200/160x200), 8 sprites, fixed 16-color palette, DRAM handling, lightpen and interrupts. Important VIC signals: A0-A13 (14-bit video address bus, multiplexing notes), D0-D11 (12-bit data bus with upper 4 bits connected to Color RAM), IRQ, BA (bus available), AEC (address enable / tri-state control), LP (lightpen input), ΦIN (pixel clock) and Φ0 (system clock).",
+      "references": [
+        {
+          "chunk": "c64_overview",
+          "topic": "VIC as one of the main C64 chips"
+        },
+        {
+          "chunk": "vic_block_diagram",
+          "topic": "internal functional blocks and signal flow"
+        },
+        {
+          "chunk": "memory_map_vic",
+          "topic": "VIC 16KB addressing and use of Color RAM"
+        }
+      ]
+    },
+    {
+      "start": 246,
+      "end": 258,
+      "name": "memory_intro",
+      "description": "Introduction to the memory areas relevant to VIC: 64KB main RAM, 1K*4 Color RAM, 4KB Char ROM. Explanation that CPU and VIC have different views of memory and address decoding.",
+      "references": [
+        {
+          "chunk": "memory_map_cpu",
+          "topic": "memory map as seen by the 6510 CPU"
+        },
+        {
+          "chunk": "memory_map_vic",
+          "topic": "memory map as seen by the VIC"
+        }
+      ]
+    },
+    {
+      "start": 259,
+      "end": 314,
+      "name": "memory_map_cpu",
+      "description": "Memory map as seen by the 6510 CPU in standard configuration: ROM (Kernal $E000-$FFFF, BASIC $A000-$BFFF, Char ROM mapping), I/O and VIC registers at $D000-$DFFF with CHAREN controlling CHR ROM vs I/O/Color RAM, Color RAM mapped at $D800-$DBFF (lower 4 data bits), VIC registers repeated every $40 bytes in $D000-$D3FF. Notes on open areas returning last read byte on some machines.",
+      "references": [
+        {
+          "chunk": "vic_registers_table",
+          "topic": "VIC register addresses at $D000-$D02E"
+        },
+        {
+          "chunk": "addresses_0_1_and_de00_area",
+          "topic": "behavior of open $DE00 area and its interaction with VIC reads"
+        }
+      ]
+    },
+    {
+      "start": 315,
+      "end": 374,
+      "name": "memory_map_vic",
+      "description": "Memory map as seen by the VIC: VIC has 14 address lines (16KB), selects one of four 16KB banks via CIA port A bits. Char ROM is mapped at VIC addresses $1000-$1FFF (visible in bank 0 and 2 from VIC view). Color RAM is accessed via the VIC's upper 4 data lines and is addressed by VIC address bits A0-A9 (lower 10 bits) — thus available at all banks/addresses.",
+      "references": [
+        {
+          "chunk": "memory_map_cpu",
+          "topic": "CPU vs VIC differing views of memory layout"
+        },
+        {
+          "chunk": "vic_registers_table",
+          "topic": "VM/CB bits in $D018 that set VIC memory pointers"
+        }
+      ]
+    },
+    {
+      "start": 375,
+      "end": 440,
+      "name": "memory_access_timing",
+      "description": "Basic bus access behavior: both 6510 and VIC perform a memory access every clock cycle (no wait states). VIC accesses in first phase (φ2 low), CPU in second (φ2 high). VIC generates RAS/CAS and system clocks, does DRAM refresh (5 refresh accesses per line). When VIC needs extra cycles for character pointers (40 cycles) or sprite data (2 cycles per sprite), it pulls BA low and holds AEC low to take the bus (BA goes low three cycles before take-over). Diagram and explanation of takeover sequence and BA/AEC interaction are included.",
+      "references": [
+        {
+          "chunk": "6510_processor",
+          "topic": "RDY/AEC signals and CPU bus behavior"
+        },
+        {
+          "chunk": "timing_of_raster_line",
+          "topic": "detailed per-cycle access schedule including BA/AEC/IRQ"
+        }
+      ]
+    },
+    {
+      "start": 441,
+      "end": 520,
+      "name": "vic_block_diagram",
+      "description": "Block diagram overview of VIC internal units: clock generator, refresh counter, raster counter (X/Y), VC/RC logic, 40x12 video matrix/color line buffer, 8x24 sprite data buffers, sprite sequencers, graphics data sequencer, priority MUX including sprite priorities and collision detection, sync and color generation, border unit, lightpen unit. Describes separation of memory access unit and display unit (buffers), and the central role of the raster counter.",
+      "references": [
+        {
+          "chunk": "vic_registers_table",
+          "topic": "registers controlling VC/RC and sprite pointers ($D018, $D011-$D012)"
+        },
+        {
+          "chunk": "sprite_memory_access_and_display",
+          "topic": "sprite data buffers, MC/MCBASE and s/p-access scheme"
+        }
+      ]
+    },
+    {
+      "start": 521,
+      "end": 639,
+      "name": "vic_registers_table",
+      "description": "Complete list of the 47 VIC registers (addresses $D000-$D02E) and bit definitions: sprite X/Y coords $D000-$D00F, MSB X bits $D010, control registers $D011-$D016 ($d011 bits: RST8, ECM, BMM, DEN, RSEL, XSCROLL; $d016 bits: MCM, CSEL, XSCROLL/YSCROLL etc.), raster $D012, lightpen $D013-$D014, sprite enable $D015, memory pointers $D018 ($D018 bits VM10-VM13, CB11-CB13), interrupt registers $D019/$D01A, sprite control registers ($D01B-$D01F for priorities, multicolor, expansion, collision clears), color registers $D020-$D024, sprite multicolor and sprite colors $D025-$D02E. Notes on repeated mapping every $40, read-only/auto-clear behavior of $D01E/$D01F, and unused bits returning 1.",
+      "references": [
+        {
+          "chunk": "sprite_memory_access_and_display",
+          "topic": "sprite registers $D000-$D01D and MC/MCBASE and s/p-access timing"
+        },
+        {
+          "chunk": "vic_interrupts",
+          "topic": "interrupt latch $D019 and enable $D01A"
+        },
+        {
+          "chunk": "display_generation_dimensions",
+          "topic": "X/Y scroll and RSEL/CSEL effects ($D011/$D016)"
+        }
+      ]
+    },
+    {
+      "start": 640,
+      "end": 661,
+      "name": "color_palette",
+      "description": "VIC-II fixed 16-color palette encoding (4-bit values): 0 black, 1 white, 2 red, 3 cyan, 4 pink, 5 green, 6 blue, 7 yellow, 8 orange, 9 brown, 10 light red, 11 dark gray, 12 medium gray, 13 light green, 14 light blue, 15 light gray.",
+      "references": [
+        {
+          "chunk": "vic_registers_table",
+          "topic": "background and sprite color registers $D020-$D02E"
+        }
+      ]
+    },
+    {
+      "start": 662,
+      "end": 680,
+      "name": "frame_building_and_coordinate_system",
+      "description": "How the VIC constructs the video frame line-by-line; character-based graphics (8x8 pixels per character), text and bitmap resolutions (40x25 text, 320x200 or 160x200 bitmap); use of raster line number (RASTER, $D011/$D012) as Y coordinate and the sprite-based X coordinate (8 pixels per CPU cycle), including the relation between cycle numbers and sprite X precision.",
+      "references": [
+        {
+          "chunk": "display_window_and_border",
+          "topic": "visual placement of the display window, border and blanking intervals"
+        },
+        {
+          "chunk": "rsel_csel_display_window_sizes",
+          "topic": "how RSEL/CSEL change the display window start/end positions and reported dimensions"
+        }
+      ]
+    },
+    {
+      "start": 681,
+      "end": 747,
+      "name": "display_window_and_border",
+      "description": "Definition of the fixed, centered display window and the surrounding border; explanation of the display column concept (vertical extension of the window), division of border into upper/lower and left/right parts, blanking intervals where the beam is off, and an ASCII diagram illustrating visible pixels per line, vertical blanking, upper/lower borders, and display column. Includes the reference point for X coordinate 0 at the left edge of the display column.",
+      "references": [
+        {
+          "chunk": "frame_building_and_coordinate_system",
+          "topic": "raster/Y and sprite-based X coordinate system used to specify positions and timings"
+        },
+        {
+          "chunk": "rsel_csel_display_window_sizes",
+          "topic": "how the display window size and border placement are modified by RSEL and CSEL"
+        }
+      ]
+    },
+    {
+      "start": 748,
+      "end": 767,
+      "name": "rsel_csel_display_window_sizes",
+      "description": "Registers and bit fields that select alternate display window heights and widths: RSEL (bit in $D011) selects 24 vs 25 text lines (192 vs 200 pixels) and gives the corresponding first/last raster lines (RSEL=0: lines 55..246; RSEL=1: lines 51..250). CSEL (bit in $D016) selects 38 vs 40 columns (304 vs 320 pixels) and gives first/last X coordinates (CSEL=0: X 31..334; CSEL=1: X 24..343). Notes on border intrusion when RSEL/CSEL are 0 (upper/lower border extended by 4 pixels; left by 7, right by 9) and that the underlying character matrix remains 40x25.",
+      "references": [
+        {
+          "chunk": "display_window_and_border",
+          "topic": "visual effect of border and display column that RSEL/CSEL alter"
+        },
+        {
+          "chunk": "soft_scrolling_and_vic_timing",
+          "topic": "recommended X/YSCROLL settings to keep graphics aligned with chosen RSEL/CSEL and detailed VIC timing"
+        }
+      ]
+    },
+    {
+      "start": 768,
+      "end": 802,
+      "name": "soft_scrolling_and_vic_timing",
+      "description": "Soft-scrolling with XSCROLL/YSCROLL (bits 0-2 of $D011/$D016): per-pixel scrolling inside the display window (0-7 pixels right/down) and required alignment values to keep graphics aligned with the window (25 lines/40 columns: X/YSCROLL=0 and 3; 24 lines/38 columns: both 7). Complete timing/dimension table for VIC variants (6567R56A, 6567R8, 6569) listing video system, total lines, visible lines, cycles per line, visible pixels per line, vertical blank first/last lines, first X coordinate of a raster line, and first/last visible X coordinates. Explanation of why the 'first visible X coordinates' can appear numerically after the 'last visible' ones: X coordinates wrap at $1FF ($1F7 on 6569) and the raster IRQ reference point doesn't coincide with X coordinate 0; this causes the apparent ordering.",
+      "references": [
+        {
+          "chunk": "frame_building_and_coordinate_system",
+          "topic": "use of raster line and cycle/X coordinate when specifying VIC memory access timing"
+        },
+        {
+          "chunk": "rsel_csel_display_window_sizes",
+          "topic": "relationship between chosen display window size and necessary scroll alignment values"
+        }
+      ]
+    },
+    {
+      "start": 803,
+      "end": 854,
+      "name": "bad_lines",
+      "description": "Definition and mechanics of Bad Lines: VIC needs 40 extra cycles to fetch character pointers; Bad Lines 'stun' the CPU for 40-43 cycles. Normally every 8th display line is a Bad Line (first raster lines of text lines), position depends on YSCROLL and DEN. Formal Bad Line Condition: at negative edge of Φ0, RASTER in $30..$F7 range, lower 3 bits equal YSCROLL, and DEN was set during any cycle of raster line $30. Bad Line Conditions can be created/removed dynamically by changing YSCROLL, affecting VC/RC and display behavior.",
+      "references": [
+        {
+          "chunk": "memory_access_timing",
+          "topic": "BA/AEC takeover sequence for Bad Line fetches"
+        },
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VC/RC behavior and how Bad Lines affect VCBASE/RC"
+        }
+      ]
+    },
+    {
+      "start": 855,
+      "end": 857,
+      "name": "memory_access_overview",
+      "description": "Header for memory access (section 3.6) introducing the topics: X coordinates, access types, and timing of a raster line.",
+      "references": [
+        {
+          "chunk": "x_coordinates",
+          "topic": "How to determine absolute X coordinates (LPX measurement)"
+        },
+        {
+          "chunk": "access_types",
+          "topic": "c/g/p/s refresh and idle accesses"
+        }
+      ]
+    },
+    {
+      "start": 858,
+      "end": 896,
+      "name": "x_coordinates",
+      "description": "Explanation of X coordinates in VIC: VIC has no readable X register, but LPX ($D013) latches current X on negative LP edge. Absolute X positions measured by wiring IRQ to LP and using raster interrupts as line start reference; display and memory accesses are separate units (display delayed ~12 pixels), so measured X coordinates refer to display and access timing correlation. Assumes LPX values match sprite X coordinates.",
+      "references": [
+        {
+          "chunk": "lightpen",
+          "topic": "LPX/LPY registers and usage to measure X positions"
+        },
+        {
+          "chunk": "timing_of_raster_line",
+          "topic": "detailed per-cycle X coordinate timings and where BA/AEC/IRQ occur"
+        }
+      ]
+    },
+    {
+      "start": 897,
+      "end": 954,
+      "name": "access_types",
+      "description": "Types of VIC memory accesses: c-access (video matrix, 12 bits), g-access (character generator or bitmap, 8 bits), p-access (sprite data pointers, 8 bits), s-access (sprite data, 8 bits). Additional accesses: DRAM refresh (5 reads per raster line) and idle accesses (reads to $3FFF when nothing else pending). Explains video matrix (1000 addresses, includes Color RAM upper nybble), character generator/bitmap area (2KB/8KB steps), sprite pointer area (8 bytes after video matrix), and sprite data area (63 bytes per sprite in 64-byte granularity).",
+      "references": [
+        {
+          "chunk": "sprite_memory_access_and_display",
+          "topic": "p- and s-access timing for sprites"
+        },
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VC/VCBASE/RC involvement in c/g-access sequences"
+        }
+      ]
+    },
+    {
+      "start": 955,
+      "end": 966,
+      "name": "raster_line_timing_intro",
+      "description": "Introduces VIC raster-line timing: states that the sequence of VIC memory accesses within a raster line is fixed and independent of graphics mode; defines the beginning of a line as the negative edge of the raster IRQ and notes the special-case timing for raster line 0 (IRQ and RASTER increment/reset occur one cycle later in line 0) and the simplifying assumption used here (line 0 defined one cycle before IRQ).",
+      "references": [
+        {
+          "chunk": "timing_diagram_6569_badline_no_sprites",
+          "topic": "First timing diagram example for the 6569 on a Bad Line with no sprites"
+        },
+        {
+          "chunk": "timing_diagram_6569_nobadline_no_sprites",
+          "topic": "Alternate 6569 diagram showing no Bad Line"
+        },
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Explanation of the signals and access-type symbols used in the diagrams"
+        }
+      ]
+    },
+    {
+      "start": 967,
+      "end": 994,
+      "name": "timing_diagram_6569_badline_no_sprites",
+      "description": "ASCII timing diagram for the Commodore 6569 (VIC-II) showing a Bad Line with no sprites active. Includes cycle numbering, IRQ/BA/AEC signal traces, VIC access-types across phases (c,g,p,s,r,i), 6510 (CPU) access markers (x/X), and a projected 40-column 'Graph.' and X coordinates for positioning and visualization.",
+      "references": [
+        {
+          "chunk": "raster_line_timing_intro",
+          "topic": "Definition of raster line start and the line-0 exception used as context for diagrams"
+        },
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Legend and meaning of the access-type symbols (c,g,p,s,r,i) and CPU markers (x/X)"
+        },
+        {
+          "chunk": "timing_diagram_6569_nobadline_no_sprites",
+          "topic": "Comparison: 6569 behavior when there is no Bad Line"
+        }
+      ]
+    },
+    {
+      "start": 995,
+      "end": 1017,
+      "name": "timing_diagram_6569_nobadline_no_sprites",
+      "description": "Abbreviated ASCII timing diagram for the Commodore 6569 showing a raster line with no Bad Line and no sprites. Shows cycle numbering, IRQ/BA/AEC, VIC access-types including g-access phases, CPU access markers and the 'Graph.' projection and X coordinates for column positioning.",
+      "references": [
+        {
+          "chunk": "timing_diagram_6569_badline_no_sprites",
+          "topic": "Contrast with the Bad Line diagram for the 6569"
+        },
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Legend for access types and CPU signal conventions used in the diagrams"
+        },
+        {
+          "chunk": "timing_diagram_6567r56a_badline_sprites5_7",
+          "topic": "See other VIC variants' timing when sprites are active"
+        }
+      ]
+    },
+    {
+      "start": 1018,
+      "end": 1042,
+      "name": "timing_diagram_6567r56a_badline_sprites5_7",
+      "description": "Abbreviated ASCII timing diagram for the 6567R56A variant showing a Bad Line with sprites 5-7 active in this line and sprite 0 active in the next line. Includes cycle numbers, IRQ/BA/AEC traces, VIC access-types (including marked sprite pointer and sprite data accesses 'sss' and 'p'/'s' markers), CPU access markers, and the 'Graph.' and X coordinate projection.",
+      "references": [
+        {
+          "chunk": "raster_line_timing_intro",
+          "topic": "Context about line start and line 0 timing"
+        },
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Explanation of symbols such as 'sss' for sprite accesses and the access-type legend"
+        },
+        {
+          "chunk": "timing_diagram_6567r8_nobadline_sprites2_7",
+          "topic": "Another VIC variant (6567R8) diagram with multiple sprites active for comparison"
+        }
+      ]
+    },
+    {
+      "start": 1043,
+      "end": 1066,
+      "name": "timing_diagram_6567r8_nobadline_sprites2_7",
+      "description": "Abbreviated ASCII timing diagram for the 6567R8 variant showing no Bad Line, with sprites 2-7 active in this line and sprites 0-4 active in the next line. Contains cycle numbering, IRQ/BA/AEC signals, VIC access-types including multiple sprite access markers (ss3, ss4, etc.), CPU access marks, and the 'Graph.' plus X coordinate projection used for sprite positioning.",
+      "references": [
+        {
+          "chunk": "timing_diagram_6567r56a_badline_sprites5_7",
+          "topic": "Compare 6567R8 timing and sprite access ordering with the 6567R56A example"
+        },
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Legend and details of the access-type symbols and CPU markers used in the diagrams"
+        }
+      ]
+    },
+    {
+      "start": 1067,
+      "end": 1100,
+      "name": "raster_line_signals_and_access_types_explained",
+      "description": "Explains the meaning of the diagram lines and symbols: 'Cycl-#' (clock cycle counts per raster line and variant-specific lengths: 63 cycles on 6569, 64 on 6567R56A, 65 on 6567R8), the included previous/next-line cycles, the bus signals lines ('�0', 'IRQ', 'BA', 'AEC') and their phase meaning, the VIC and 6510 access-type symbols (c, g, 0-7, s, r, i) and CPU markers (x, X) with full definitions, and the 'Graph.' and 'X coo.' projection notes (how the 40-column display projection relates to sprite positioning and that the visible border on actual video is generated ~8 pixels later than shown).",
+      "references": [
+        {
+          "chunk": "timing_diagram_6569_badline_no_sprites",
+          "topic": "Diagram using the symbols and signals explained here"
+        },
+        {
+          "chunk": "timing_diagram_6569_nobadline_no_sprites",
+          "topic": "Diagram using the symbols and signals explained here"
+        },
+        {
+          "chunk": "timing_diagram_6567r56a_badline_sprites5_7",
+          "topic": "Diagram using the symbols and signals explained here"
+        },
+        {
+          "chunk": "timing_diagram_6567r8_nobadline_sprites2_7",
+          "topic": "Diagram using the symbols and signals explained here"
+        },
+        {
+          "chunk": "timing_cpu_access_using_vic_g_accesses",
+          "topic": "Practical timing technique that uses g-accesses to locate CPU writes"
+        }
+      ]
+    },
+    {
+      "start": 1101,
+      "end": 1109,
+      "name": "timing_cpu_access_using_vic_g_accesses",
+      "description": "Practical advice for timing 6510 (CPU) accesses within a raster line: use VIC g-accesses as orientation by having the 6510 change a byte in graphics memory and observing on-screen which character shows the change first; the processor write will have occurred in the clock phase immediately before that visible change. Explains how to map that observation to the diagrams to determine the exact clock cycle and to count other accesses relative to it.",
+      "references": [
+        {
+          "chunk": "raster_line_signals_and_access_types_explained",
+          "topic": "Legend and cycle counts needed to interpret where the write happened"
+        },
+        {
+          "chunk": "timing_diagram_6569_nobadline_no_sprites",
+          "topic": "Example diagram to use when mapping the observed visual change to a cycle"
+        },
+        {
+          "chunk": "timing_diagram_6567r8_nobadline_sprites2_7",
+          "topic": "Example of a different VIC variant where the same timing technique applies"
+        }
+      ]
+    },
+    {
+      "start": 1110,
+      "end": 1112,
+      "name": "text_bitmap_display_intro",
+      "description": "Header and intro to the text/bitmap display section (3.7): defines display components and links to idle/display states and sequencer behavior.",
+      "references": [
+        {
+          "chunk": "idle_state_display_state",
+          "topic": "differences between display and idle state in the graphics sequencer"
+        },
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VC/RC role in generating addresses for video matrix and character/bitmap"
+        }
+      ]
+    },
+    {
+      "start": 1113,
+      "end": 1144,
+      "name": "idle_state_display_state",
+      "description": "Defines two internal graphics states: display state (c- and g-accesses occur, data interpreted per mode) and idle state (only g-accesses to $3FFF or $39FF depending on ECM; video matrix treated as zeroes). Transitions: idle->display occurs on Bad Line Condition; display->idle occurs on cycle 58 if RC=7 and no Bad Line. Explains observable behavior and clarifies difference between 'idle access' and g-access while in idle state.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "Bad Lines trigger transition to display state"
+        },
+        {
+          "chunk": "graphics_modes_overview",
+          "topic": "g-access interpretation varies by mode"
+        }
+      ]
+    },
+    {
+      "start": 1145,
+      "end": 1196,
+      "name": "vc_and_rc",
+      "description": "Internal VIC counters: VC (Video Counter, 10-bit), VCBASE (10-bit base), RC (Row Counter, 3-bit), and VMLI (40x12 video matrix line index). Rules: VCBASE reset outside Bad Line range; VC loaded from VCBASE in first phase of cycle 14 and VMLI cleared; Bad Line in cycles 12-54 starts c-accesses (cycles 15-54) and stores c-data into video matrix/color line at VMLI; VC and VMLI increment after each g-access; in first phase cycle 58, if RC=7, video logic goes idle and VCBASE loaded from VC (VC->VCBASE), RC incremented if still in display state. This explains how VC scans 1000 video matrix addresses and RC counts 8 pixel rows per text line.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "Bad Line impact on VC/RC behavior and c-accesses"
+        },
+        {
+          "chunk": "timing_of_raster_line",
+          "topic": "where VC/VCBASE transfers occur in the cycle timeline"
+        }
+      ]
+    },
+    {
+      "start": 1197,
+      "end": 1231,
+      "name": "graphics_modes_overview",
+      "description": "Overview of 8 graphics modes selected by ECM (extended color), BMM (bitmap mode) and MCM (multicolor mode) bits: standard/multicolor text, standard/multicolor bitmap, ECM text, and three invalid combinations. Discusses sequencer implementation (8-bit shift register shifted every pixel, reload on g-access, XSCROLL delays reload 0-7 pixels) and difference in address generation for g-access under ECM/BMM settings (addresses for g-access vary: char generator vs bitmap addressing).",
+      "references": [
+        {
+          "chunk": "standard_text_mode",
+          "topic": "ECM/BMM/MCM=0/0/0 address/data interpretation"
+        },
+        {
+          "chunk": "idle_state_mode_details",
+          "topic": "g-access behavior while in idle state"
+        }
+      ]
+    },
+    {
+      "start": 1232,
+      "end": 1286,
+      "name": "standard_text_mode",
+      "description": "ECM=0, BMM=0, MCM=0 standard text mode. c-access address layout: VM13-VM10 + VC bits (VC0-VC9) selects 12-bit matrix address; c-data layout: bits 0-7 character pointer, bits 8-11 color nybble (upper 4 = color for '1' pixels). g-access address: CB13..CB11 + character byte D7..D0 + RC2..RC0 selects character row within char generator; g-data: 8 pixels (1 bit/pixel) where 0=background color0 ($D021), 1=color from bits 8-11 of c-data.",
+      "references": [
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VC/RC select c/g addresses and RC selects character row"
+        },
+        {
+          "chunk": "color_palette",
+          "topic": "palette indices used for foreground/background"
+        }
+      ]
+    },
+    {
+      "start": 1287,
+      "end": 1346,
+      "name": "multicolor_text_mode",
+      "description": "ECM=0, BMM=0, MCM=1 multicolor text mode. Allows four-colored characters with halved horizontal resolution: when c-data bit11=0, character behaves like standard text mode (colors 0-7); if bit11=1, two adjacent bits form one pixel (2 bits/pixel). c-data encodes MC flag and color for '11' pixels; g-access address same as text; g-data interpretation: if MC flag=0, 8 pixels 1bpp like standard; if MC flag=1, 4 pixels 2bpp where '00'=background0 ($D021), '01'=background1 ($D022), '10'=background2 ($D023), '11'=color from c-data bits 8-10. Note: '01' treated as background for sprite priority/collision.",
+      "references": [
+        {
+          "chunk": "sprite_priority_and_collision",
+          "topic": "treatment of '01' as background affects sprite collision/priority"
+        }
+      ]
+    },
+    {
+      "start": 1347,
+      "end": 1347,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1348,
+      "end": 1406,
+      "name": "standard_bitmap_mode",
+      "description": "ECM=0, BMM=1, MCM=0 standard bitmap mode. VIC reads 320x200 bitmap; video matrix supplies color info per 8x8 block. Addressing: c-access uses VM bits + VC (1000 matrix addresses), c-data: color nybbles for '1' and '0' pixels; g-access addresses include CB13 with VC9..VC0 and RC2..RC0 (maps into bitmap). g-data: 8 pixels (1bpp) where '0' uses c-data bits 0-3 and '1' uses c-data bits 4-7.",
+      "references": [
+        {
+          "chunk": "fli",
+          "topic": "FLI uses Bad Lines to change video matrix per raster and increase per-line color granularity"
+        }
+      ]
+    },
+    {
+      "start": 1407,
+      "end": 1407,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1408,
+      "end": 1458,
+      "name": "multicolor_bitmap_mode",
+      "description": "ECM=0, BMM=1, MCM=1 multicolor bitmap mode. Pixels are 2 bits formed by adjacent bits (reduces horizontal resolution to 160x200). c-data encodes colors for '11', '01', '10' combinations. g-access addressing like standard bitmap but g-data interpreted as 4 pixels (2bpp): '00'=bg0 ($D021), '01'=color from c-data bits 4-7, '10'=color from c-data bits 0-3, '11'=color from c-data bits 8-11. '01' treated as background in priority/collision logic.",
+      "references": [
+        {
+          "chunk": "sprite_priority_and_collision",
+          "topic": "background/foreground determination in MCM=1 (2bpp)"
+        }
+      ]
+    },
+    {
+      "start": 1459,
+      "end": 1459,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1460,
+      "end": 1510,
+      "name": "ecm_text_mode",
+      "description": "ECM=1, BMM=0, MCM=0 Extended Color Mode text: same as standard text but allows selection of one of four background colors per character using upper two bits of character pointer, at cost of reducing character set from 256 to 64. c-data bits include per-character background selection; g-access addresses force bits 9/10 low in ECM text mode addressing. g-data: 8 pixels; '0' uses background selected by c-data bits 6/7, '1' uses color from c-data bits 8-11.",
+      "references": [
+        {
+          "chunk": "standard_text_mode",
+          "topic": "comparison: ECM changes background selection, not pixel fetching"
+        }
+      ]
+    },
+    {
+      "start": 1511,
+      "end": 1511,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1512,
+      "end": 1573,
+      "name": "invalid_text_mode",
+      "description": "ECM=1, BMM=0, MCM=1 invalid text mode: produces black pixels (screen appears black) but internals generate valid sequencer output that can affect sprite collisions (so underlying pattern can be read via collisions). Generated graphics resemble multicolor text mode but character set limited to 64 (ECM effect). g-access addresses set bits accordingly; g-data results in black for both background and foreground.",
+      "references": [
+        {
+          "chunk": "sprite_priority_and_collision",
+          "topic": "use sprite collisions to read generated, otherwise invisible graphics"
+        }
+      ]
+    },
+    {
+      "start": 1574,
+      "end": 1623,
+      "name": "invalid_bitmap_mode_1",
+      "description": "ECM=1, BMM=1, MCM=0 invalid bitmap mode 1: displays black screen but internal graphics can be scanned with sprite collision trick. Structure resembles standard bitmap but g-address bits 9 and 10 are forced to zero due to ECM, causing repeated sections in displayed bitmap (graphics repeated four times). g-data ends up black.",
+      "references": [
+        {
+          "chunk": "invalid_bitmap_mode_2",
+          "topic": "related invalid bitmap with ECM set and multicolor"
+        }
+      ]
+    },
+    {
+      "start": 1624,
+      "end": 1675,
+      "name": "invalid_bitmap_mode_2",
+      "description": "ECM=1, BMM=1, MCM=1 invalid bitmap mode 2: also yields a black screen; g-address bits 9 and 10 forced to zero (ECM), structure similar to multicolor bitmap but repeated segments. '01' treated as background; g-data results in black where combinations map to background/foreground black.",
+      "references": [
+        {
+          "chunk": "invalid_bitmap_mode_1",
+          "topic": "both invalid bitmap modes share ECM-induced address restrictions"
+        }
+      ]
+    },
+    {
+      "start": 1676,
+      "end": 1743,
+      "name": "idle_state_mode_details",
+      "description": "Behavior of the sequencer in idle state: g-access repeatedly reads a single address ($3FFF or $39FF if ECM=1) and outputs it according to selected graphics mode but with video matrix treated as all zeros. Tables show effective addresses read and how the single byte is interpreted in each graphics mode in idle state (which pixels/colors result).",
+      "references": [
+        {
+          "chunk": "idle_state_display_state",
+          "topic": "definition of idle state and when it occurs"
+        },
+        {
+          "chunk": "graphics_modes_overview",
+          "topic": "how g-access interpretation changes with mode in idle state"
+        }
+      ]
+    },
+    {
+      "start": 1744,
+      "end": 1766,
+      "name": "sprites_overview",
+      "description": "Overview of VIC sprites (MOBs): 8 independent objects 24x21 pixels, movable, individually enabled via $D015 (MxE), X/Y expansion bits ($D01D/$D017), multicolor mode ($D01C), priority ($D01B), per-sprite color registers $D027-$D02E. Sprite coordinates are set by MxX/MxY registers (9-bit X with MSBs in $D010, 8-bit Y). Collision detection and sprite bitmap storage noted.",
+      "references": [
+        {
+          "chunk": "sprite_memory_access_and_display",
+          "topic": "details of sprite memory layout, p/s-accesses and MC/MCBASE"
+        },
+        {
+          "chunk": "sprite_priority_and_collision",
+          "topic": "priority rules and collision register behavior ($D01E/$D01F)"
+        }
+      ]
+    },
+    {
+      "start": 1767,
+      "end": 1783,
+      "name": "sprite_memory_layout_and_pointer_mechanism",
+      "description": "Explains sprite memory layout: sprites use 63 bytes (3 bytes per scanline) stored linearly. Sprite data blocks are 64-byte-aligned and movable in 64-byte steps within the VIC's 16KB space. Describes p-access: VIC reads an 8-bit sprite data pointer from the last 8 bytes of the video matrix every raster line; this pointer supplies the upper 8 address bits for sprite data accesses. Introduces MC0-MC7 (6-bit sprite data counters) as the lower 6 address bits and notes that p-accesses occur every raster line allowing mid-display sprite pointer changes.",
+      "references": [
+        {
+          "chunk": "s_access_timing_and_bus_takeover",
+          "topic": "When and how s-accesses follow p-accesses and bus takeover signals (BA/AEC)"
+        },
+        {
+          "chunk": "sprite_data_sequencer_and_registers",
+          "topic": "MC counters and how they form lower address bits for s-accesses"
+        }
+      ]
+    },
+    {
+      "start": 1784,
+      "end": 1793,
+      "name": "s_access_timing_and_bus_takeover",
+      "description": "Describes timing of s-accesses (sprite data reads) relative to p-accesses: when a sprite needs data, three s-access half-cycles follow the p-access for that sprite within the same raster line. Explains VIC bus takeover using BA and AEC signals (BA goes low three cycles before the access) and that s-accesses occur in statically assigned cycles for visible sprites (done in every raster line the sprite is visible).",
+      "references": [
+        {
+          "chunk": "sprite_memory_layout_and_pointer_mechanism",
+          "topic": "p-access pointers that precede s-accesses"
+        },
+        {
+          "chunk": "sprite_display_timing_and_rules_1_to_6",
+          "topic": "Which cycles/situations trigger DMA and s-accesses"
+        }
+      ]
+    },
+    {
+      "start": 1794,
+      "end": 1812,
+      "name": "sprite_display_modes_and_x_y_expansion",
+      "description": "Covers sprite display modes and size expansion: standard mode (1 bit per pixel; 0 transparent, 1 sprite color from $D027-$D02E) and multicolor mode (2 bits per pixel, resolution halved horizontally to 12x21). Explains X and Y expansion: X-expansion outputs pixels at half frequency (pixels doubled horizontally); Y-expansion causes sprite address generator to read the same addresses for two consecutive lines (pixels doubled vertically). Notes that X and Y expansions are implemented differently and combined effects (e.g., x-expanded multicolor pixel size).",
+      "references": [
+        {
+          "chunk": "sprite_data_sequencer_and_registers",
+          "topic": "How the sequencer and shift register implement X expansion"
+        },
+        {
+          "chunk": "p_and_s_access_address_and_data_format",
+          "topic": "How data bits map to pixels in standard vs multicolor modes"
+        }
+      ]
+    },
+    {
+      "start": 1813,
+      "end": 1823,
+      "name": "sprite_data_sequencer_and_registers",
+      "description": "Describes internal sprite hardware: each sprite has a 24-bit shift register (core of the data sequencer), a 6-bit MC (MOB Data Counter) that is loaded from MCBASE, a 6-bit MCBASE (MOB Data Counter Base) with reset input, and an expansion flip-flop per sprite that controls Y expansion.",
+      "references": [
+        {
+          "chunk": "sprite_display_timing_and_rules_1_to_6",
+          "topic": "When MC/MCBASE are loaded, incremented, and used during display"
+        },
+        {
+          "chunk": "sprite_display_rules_7_and_8",
+          "topic": "How MCBASE is adjusted for Y expansion and when DMA/display is turned off"
+        }
+      ]
+    },
+    {
+      "start": 1824,
+      "end": 1862,
+      "name": "sprite_display_timing_and_rules_1_to_6",
+      "description": "Lists the main rules (cycles valid for the 6569) governing sprite display steps 1–6: initialization of expansion flip-flop (MxYE in $D017), inversion on cycle 55 if MxYE set, checks in cycles 55/56 for MxE in $D015 and Y coordinate to enable DMA and clear MCBASE, loading MC from MCBASE in phase 1 of cycle 58 and enabling display if DMA and Y match, the s-access sequence (three reads stored into the 24-bit shift register and MC increments after each s-access), and shifting/out output behavior when the raster X matches sprite X (including X-expansion behavior from MxXE in $D01D and multicolor grouping).",
+      "references": [
+        {
+          "chunk": "s_access_timing_and_bus_takeover",
+          "topic": "Which cycles include the s-accesses and how they relate to p-access timing"
+        },
+        {
+          "chunk": "sprite_data_sequencer_and_registers",
+          "topic": "Where the s-access read data are stored (24-bit shift register) and MC increment behavior"
+        },
+        {
+          "chunk": "sprite_display_rules_7_and_8",
+          "topic": "Continuation: MCBASE adjustments and termination of DMA/display"
+        }
+      ]
+    },
+    {
+      "start": 1863,
+      "end": 1870,
+      "name": "sprite_display_rules_7_and_8",
+      "description": "Continues display rules covering cycles 15 and 16: in phase 1 of cycle 15, if the expansion flip-flop is set then MCBASE is incremented by 2; in phase 1 of cycle 16, if the expansion flip-flop is set then MCBASE is incremented by 1. After cycle 16's check the VIC tests if MCBASE equals 63 and, if so, turns off DMA and the sprite display.",
+      "references": [
+        {
+          "chunk": "sprite_data_sequencer_and_registers",
+          "topic": "MCBASE purpose and how increments affect which lines are read (Y expansion)"
+        },
+        {
+          "chunk": "sprite_display_timing_and_rules_1_to_6",
+          "topic": "Earlier rules that enable DMA and begin s-accesses"
+        }
+      ]
+    },
+    {
+      "start": 1871,
+      "end": 1877,
+      "name": "sprite_y_position_offset_and_start_timing",
+      "description": "Explains Y coordinate alignment and start timing: because the rule-3 test (DMA enable) runs at the end of a raster line, sprite Y registers must hold a value one less than the desired Y for the first visible sprite line. Sprite display begins on the following line after the first sprite data read — unless the sprite is positioned to the right of X coordinate $164 (cycle 58, referenced in rule 4).",
+      "references": [
+        {
+          "chunk": "sprite_display_timing_and_rules_1_to_6",
+          "topic": "Rule 3 and rule 4 interactions determining when DMA and display start"
+        },
+        {
+          "chunk": "sprite_reuse_and_horizontal_limitations",
+          "topic": "Consequences for vertical re-use and horizontal restrictions"
+        }
+      ]
+    },
+    {
+      "start": 1878,
+      "end": 1890,
+      "name": "sprite_reuse_and_horizontal_limitations",
+      "description": "Describes reuse limits: sprites can be reused vertically by changing their Y coordinate after (or during) display completion; if comparisons match again the sprite will display again at the new Y (allowing more than 8 sprites on screen). Horizontal reuse is not possible: after 24 displayed pixels the shift register is empty, so changing X within the same line cannot produce more sprite data — only up to 8 sprites can be displayed on a single raster line.",
+      "references": [
+        {
+          "chunk": "sprite_data_sequencer_and_registers",
+          "topic": "Shift register length (24 bits) limiting horizontal reuse"
+        },
+        {
+          "chunk": "sprite_y_position_offset_and_start_timing",
+          "topic": "How Y coordinate and timing affect vertical reuse"
+        }
+      ]
+    },
+    {
+      "start": 1891,
+      "end": 1938,
+      "name": "p_and_s_access_address_and_data_format",
+      "description": "Presents an overview and bitfield layouts for p-access and s-access addresses and returned data: p-access address format (VM13..VM10 and constant bits with sprite number in low bits) and p-access data bits MP7..MP0 (sprite pointer). s-access address format combining MP7..MP0 with MC5..MC0 to form the full address. s-access data interpretations for standard mode (8 pixels, 1 bit/pixel; '0' transparent, '1' sprite color) and multicolor mode (4 pixels, 2 bits/pixel with encodings for transparent, multicolor 0 from $D025, sprite color $D027-$D02E, multicolor 1 from $D026).",
+      "references": [
+        {
+          "chunk": "sprite_memory_layout_and_pointer_mechanism",
+          "topic": "How the p-access pointer forms the upper 8 address bits for s-accesses"
+        },
+        {
+          "chunk": "sprite_display_modes_and_x_y_expansion",
+          "topic": "How bits returned by s-access map to pixels in standard and multicolor modes"
+        },
+        {
+          "chunk": "s_access_timing_and_bus_takeover",
+          "topic": "When these p- and s-accesses occur within a raster line"
+        }
+      ]
+    },
+    {
+      "start": 1939,
+      "end": 2034,
+      "name": "sprite_priority_and_collision",
+      "description": "Sprite priority rules and collision detection: sprites have fixed internal priority (0 highest, 7 lowest). Sprite vs text/bitmap priority controlled per-sprite with MxDP bits in $D01B (two priority modes: MxDP=0 sprites in front of foreground graphics but behind border; MxDP=1 sprites between background and foreground). Foreground/background definition depends on MCM (MCM=0 1bpp: '1'=foreground; MCM=1 2bpp: '10'/'11'=foreground). Collision detection: sprite-sprite (sets bits in $D01E) when two sprite sequencers output non-transparent pixels simultaneously; sprite-data collisions (sets bits in $D01F) when sprite outputs non-transparent while graphics sequencer outputs foreground pixel. Collision bits are latched until read (auto-cleared on read) and can trigger interrupts if enabled.",
+      "references": [
+        {
+          "chunk": "vic_registers_table",
+          "topic": "collision registers $D01E/$D01F and interrupt bits $D019/$D01A"
+        },
+        {
+          "chunk": "graphics_modes_overview",
+          "topic": "how MCM determines background/foreground"
+        }
+      ]
+    },
+    {
+      "start": 2035,
+      "end": 2097,
+      "name": "border_unit",
+      "description": "Border generation: main border flip-flop (controls border color $D020 vs graphics output) and vertical border flip-flop (controls top/bottom border and graphics sequencer output). Flip-flops are controlled by comparators that compare raster X/Y with hardwired values depending on CSEL/RSEL. Horizontal comparison values: CSEL=0 left 31, right 335; CSEL=1 left 24, right 344. Vertical: RSEL=0 top 55 bottom 247; RSEL=1 top 51 bottom 251. Rules for setting/resetting flip-flops and notes on how to 'open' or manipulate border by changing CSEL/RSEL.",
+      "references": [
+        {
+          "chunk": "display_generation_dimensions",
+          "topic": "CSEL/RSEL effect on window size and border positions"
+        },
+        {
+          "chunk": "hyperscreen",
+          "topic": "technique to open the border by manipulating CSEL/RSEL"
+        }
+      ]
+    },
+    {
+      "start": 2098,
+      "end": 2114,
+      "name": "display_enable",
+      "description": "DEN (Display Enable) bit ($D011 bit 4) controls text/bitmap graphics on/off and affects Bad Lines and vertical border flip-flop reset input. DEN must have been set at least one cycle in raster line $30 for Bad Line Conditions to occur. Clearing DEN prevents Bad Lines and makes screen display border color only; it also disables vertical border flip-flop reset.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "DEN's role in allowing Bad Line Conditions (must be set at least once in raster line $30)"
+        },
+        {
+          "chunk": "hyperscreen",
+          "topic": "using DEN to influence border/Bad Line behavior for effects"
+        }
+      ]
+    },
+    {
+      "start": 2115,
+      "end": 2144,
+      "name": "lightpen",
+      "description": "Light pen (LP) input behavior: negative edge latches current raster beam position into LPX ($D013) and LPY ($D014) — LPX upper 8 bits of 9-bit X, LPY lower 8 bits of 9-bit Y. Only one negative edge per frame is recognized (trigger released at next vertical blank). LP line shares keyboard matrix so can be triggered by software via CIA port B ($DC01/$DC03), enabling software measurement of current X position. LPX results correspond to sprite X coordinate conventions (resolution 2 pixels horizontally). VIC can optionally generate an interrupt on LP negative edge.",
+      "references": [
+        {
+          "chunk": "x_coordinates",
+          "topic": "measuring X position by triggering LP and reading LPX"
+        },
+        {
+          "chunk": "vic_interrupts",
+          "topic": "LP interrupt source bit and latching behavior"
+        }
+      ]
+    },
+    {
+      "start": 2145,
+      "end": 2194,
+      "name": "vic_interrupts",
+      "description": "VIC interrupt system: IRQ output connected to CPU IRQ input (maskable). Four interrupt sources with latch ($D019) and enable ($D01A): RST (raster compare: bits in $D012 and $D011 bit7 set compare line; tested in cycle 0), MBC (sprite vs bitmap collision), MMC (sprite-sprite collision), LP (lightpen negative edge). Latch bits are set on event and must be cleared by CPU (writing '1' to clear) — VIC doesn't clear them automatically. Bit 7 of $D019 reflects inverted IRQ state. Only first collision triggers MBC/MMC until the corresponding register is read/cleared.",
+      "references": [
+        {
+          "chunk": "sprite_priority_and_collision",
+          "topic": "which collisions set $D01E/$D01F and can trigger MBC/MMC interrupts"
+        },
+        {
+          "chunk": "vc_and_rc",
+          "topic": "raster interrupt (RST) compare timing and VC/RASTER registers"
+        }
+      ]
+    },
+    {
+      "start": 2195,
+      "end": 2213,
+      "name": "dram_refresh",
+      "description": "DRAM refresh performed by VIC: five read accesses per raster line driven by an 8-bit refresh counter REF. REF is reset to $FF in raster line 0 and decremented by 1 after each refresh access. Addresses read in a line correspond to REF bits used as low address bits: example mapping of addresses $3FFF..$3FFB for line 0 and subsequent address sequences for following lines.",
+      "references": [
+        {
+          "chunk": "memory_access_timing",
+          "topic": "where DRAM refresh accesses occur in the per-line access schedule"
+        }
+      ]
+    },
+    {
+      "start": 2214,
+      "end": 2220,
+      "name": "effects_intro",
+      "description": "Intro to VIC special effects/applications chapter (3.14) describing techniques that exploit VIC behavior (hyperscreen, FLD, FLI, Linecrunch, Doubled text lines, DMA delay, Sprite stretching).",
+      "references": [
+        {
+          "chunk": "hyperscreen",
+          "topic": "open border by manipulating CSEL/RSEL"
+        },
+        {
+          "chunk": "fli",
+          "topic": "Flexible Line Interpretation uses Bad Lines to change per-line color"
+        }
+      ]
+    },
+    {
+      "start": 2221,
+      "end": 2273,
+      "name": "hyperscreen",
+      "description": "Hyperscreen (opening the border) technique: manipulate CSEL/RSEL so border comparators never match, allowing graphics (primarily sprites and idle-state graphics) to appear in border area. Steps to disable upper/lower border using RSEL toggling across specific raster lines and to disable left/right border using CSEL (timing critical). Notes that vertical border flip-flop interaction restricts methods for opening different border regions and differences in graphics visible depending on method.",
+      "references": [
+        {
+          "chunk": "border_unit",
+          "topic": "comparators and CSEL/RSEL values used to control border flip-flops"
+        },
+        {
+          "chunk": "idle_state_mode_details",
+          "topic": "graphics sequencer behaviour when border opened into areas that are normally idle"
+        }
+      ]
+    },
+    {
+      "start": 2274,
+      "end": 2294,
+      "name": "fld",
+      "description": "Flexible Line Distance (FLD): by manipulating YSCROLL, Bad Lines can be delayed/suppressed to control which raster lines start text lines. This allows arbitrary vertical spacing between text lines and vertical shifts of the display without moving memory bytes. Example: allowing only three Bad Lines will display three text lines at chosen positions with idle state between them.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "FLD relies on controlling Bad Line occurrence via YSCROLL"
+        },
+        {
+          "chunk": "dma_delay",
+          "topic": "other techniques to reposition display timing (horizontal) complement FLD"
+        }
+      ]
+    },
+    {
+      "start": 2295,
+      "end": 2347,
+      "name": "fli",
+      "description": "Flexible Line Interpretation (FLI): make every raster line a Bad Line by adjusting YSCROLL so the VIC reads video matrix color info every line, enabling per-raster-line color changes in bitmap modes (increase color granularity from 8x8 blocks down to line granularity). Practical constraints: VCBASE doesn't increment when creating new Bad Lines before current text line finished; requires switching VM10-VM13 to cycle through pre-prepared matrices and timing constraints for writes to $D011 (must not occur before cycle 14). Variants like AFLI (Advanced FLI) and IFLI (Interlaced FLI) are described.",
+      "references": [
+        {
+          "chunk": "standard_bitmap_mode",
+          "topic": "FLI increases color resolution in bitmap modes by forcing per-line video matrix reads"
+        },
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VCBASE/VC behavior when additional Bad Lines are inserted"
+        }
+      ]
+    },
+    {
+      "start": 2348,
+      "end": 2384,
+      "name": "linecrunch",
+      "description": "Linecrunch technique: aborting a Bad Line mid-way (by negating Bad Line Condition before cycle 14) to effectively reduce a full text line to its last raster line. Effects: RC not reset, VCBASE loaded from VC at cycle 58 (increasing VCBASE by 40), enabling vertical crunching and fast vertical scrolling without moving memory. Repeating this can make RC stay at 7, increment VCBASE by 40 each line and cause display of normally invisible matrix tail; uses wrapping at 1024 addresses.",
+      "references": [
+        {
+          "chunk": "vc_and_rc",
+          "topic": "VC/VCBASE changes caused by aborting Bad Lines"
+        },
+        {
+          "chunk": "fld",
+          "topic": "FLD and Linecrunch both manipulate Bad Lines for vertical display control"
+        }
+      ]
+    },
+    {
+      "start": 2385,
+      "end": 2396,
+      "name": "doubled_text_lines",
+      "description": "Doubled text lines: assertion of a Bad Line Condition between cycles 54-57 in the last raster line of a text line causes RC to be incremented again and the previous text line to be displayed twice (no new video matrix data read). This duplicates text lines on screen.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "timing window (cycles 54-57) where asserting Bad Line extends display of previous text line"
+        }
+      ]
+    },
+    {
+      "start": 2397,
+      "end": 2462,
+      "name": "dma_delay",
+      "description": "DMA Delay: create a Bad Line Condition in cycles 15-53 while sequencer is idle (e.g., modify $D011 so YSCROLL matches RASTER) to cause BA to go low immediately and VIC to start reading c-accesses. Because AEC follows φ2 and remains high for three cycles after BA goes low, the first three cycles return $FF for D0-D7 and lower nibble from the last CPU opcode as color data (due to analog switch U16 mapping CPU D0-D3 to VIC D8-D11). These initial invalid reads cause VC to be misaligned by a number of g-accesses, resulting in horizontal scrolling of screen contents without moving memory. DMA Delay can also be produced by toggling DEN in a specific way. This is a core technique for soft horizontal scrolling and other advanced effects.",
+      "references": [
+        {
+          "chunk": "x_coordinates",
+          "topic": "horizontal displacement measured in cycles/pixel units"
+        },
+        {
+          "chunk": "fli",
+          "topic": "combined with FLD/Linecrunch to achieve arbitrary 2D scrolling"
+        }
+      ]
+    },
+    {
+      "start": 2463,
+      "end": 2507,
+      "name": "sprite_stretching",
+      "description": "Sprite stretching techniques exploiting sprite Y-expansion flip-flop and MCBASE behavior: by toggling MxYE bits at specific cycles (e.g., clear/set around cycles 15-16 and 55), individual sprite lines can be repeated multiple times (tripled or more) or misaligned, producing arbitrary vertical scaling and effects such as sprite duplication. Details of flip-flop manipulation, MC/MCBASE increments, and how repeated reads produce stretched/reused sprite lines are explained.",
+      "references": [
+        {
+          "chunk": "sprite_memory_access_and_display",
+          "topic": "MC/MCBASE and expansion flip-flop rules that make stretching possible"
+        }
+      ]
+    },
+    {
+      "start": 2508,
+      "end": 2548,
+      "name": "addresses_0_1_and_de00_area",
+      "description": "Behavior of CPU addresses $DE00-$DFFF and $0000/$0001: normally expansion area $DE00-$DFFF reads appear random; on some C64s they return the byte the VIC read in the first phase of the clock cycle (used to measure VIC timing and run code from the $DE00 area by making VIC supply opcodes). Addresses $0000/$0001 normally map to 6510 I/O port DDR/DR registers, but writes can be effected by arranging VIC reads so that the VIC supplies the desired byte on the bus during the write (VIC read in previous cycle becomes written because R/W is low and VIC data appear on bus). Additionally, CPU can read these areas via the $DE00 trick or sprite-collision based bit probing (display a bitmap at address 0 and test single-bit collisions to reconstruct bytes).",
+      "references": [
+        {
+          "chunk": "memory_map_cpu",
+          "topic": "address overlaying: CPU view of $D000-$DFFF and $0000-$0001 I/O port mapping"
+        },
+        {
+          "chunk": "timing_of_raster_line",
+          "topic": "using VIC timing and BA/AEC to make VIC drive bus for $DE00 and $0000/$0001 effects"
+        }
+      ]
+    },
+    {
+      "start": 2549,
+      "end": 2578,
+      "ignore": true,
+      "reason": "Appendices: Bibliography and acknowledgments"
+    }
+  ],
+  "source_md5": "9a33a55252b314a05698f05743aed011"
+}

@@ -20,6 +20,7 @@ Usage:
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -40,19 +41,23 @@ Each chunk is a standalone knowledge node. When someone searches for a topic (e.
 
 ## How to split
 - Split by CONCEPT, not by line count. Each chunk = one discrete topic.
-- A small concept (20 lines) stays as one chunk — do NOT pad it or merge it with unrelated content.
-- A large concept (200 lines) that is truly one cohesive topic should stay together if possible, but if it naturally contains distinct sub-topics, split at those boundaries.
-- Typical chunks will be 60-120 lines, but concept coherence always takes priority over size.
+- Prefer GRANULAR splits. A concept that takes 20-30 lines is a perfectly good chunk — do NOT pad it or merge it with unrelated content just to reach a larger size.
+- When a section covers multiple distinct sub-topics, registers, techniques, or instructions, split them into separate chunks even if each one is small.
+- Only keep content together if it is truly ONE cohesive concept that cannot be understood when separated.
+- If a chunk exceeds ~80 lines, look harder for sub-topic boundaries — most concepts can be split further. Chunks over 120 lines almost certainly contain multiple concepts.
 - Do NOT split mid-table, mid-code-listing, mid-paragraph, or mid-concept.
 - Do NOT create chunks that are just fragments — every chunk must answer "what is this about?" clearly.
+- When in doubt, split smaller. A semantic search database works best with focused, specific chunks rather than broad, multi-topic ones.
+- Self-check: "would someone search for these sub-topics separately?" If yes, they should be separate chunks.
 
 ## What to ignore
-Mark non-technical content as ignored: table of contents, author credits, indexes, page numbers, copyright notices, bibliographies.
+Mark non-technical sections as ignored regardless of size: table of contents, author credits, indexes, copyright notices, bibliographies, revision history, modification timestamps, acknowledgements.
+Do NOT create ignored entries for blank lines, page breaks, or minor whitespace — just include those in the adjacent chunk. The cleaning step handles formatting.
 
 ## Naming and metadata
 - Each chunk needs a descriptive snake_case name based on its topic (NOT _part01/_part02).
 - Each chunk needs a description that lists the specific content: register addresses, instruction names, techniques, chip names.
-- Add references between related chunks so readers can discover connected topics.
+- Add references between related chunks so readers can discover connected topics. With granular chunks, references are essential — if you split a topic into several focused chunks, link them to each other.
 - Every line of the document must be covered by exactly one split entry (no gaps, no overlaps).
 
 ## Output Format
@@ -62,17 +67,26 @@ Return ONLY valid JSON (no markdown fencing, no commentary):
   "context": "<Document Title>",
   "splits": [
     {
-      "start": 1, "end": 60,
-      "name": "descriptive_topic_name",
-      "description": "Specific content: register addresses, techniques, chip names",
+      "start": 1, "end": 8,
+      "ignore": true,
+      "reason": "Title page and copyright"
+    },
+    {
+      "start": 9, "end": 34,
+      "name": "sprite_register_layout",
+      "description": "VIC-II sprite position registers $D000-$D00F, X/Y coordinate pairs, MSB register $D010",
       "references": [
-        { "chunk": "related_chunk_name", "topic": "what it covers" }
+        { "chunk": "sprite_display_enable", "topic": "enabling sprites via $D015" },
+        { "chunk": "sprite_color_registers", "topic": "sprite color configuration" }
       ]
     },
     {
-      "start": 61, "end": 70,
-      "ignore": true,
-      "reason": "Table of contents"
+      "start": 35, "end": 58,
+      "name": "sprite_display_enable",
+      "description": "Sprite enable register $D015, priority register $D01B, multicolor mode $D01C",
+      "references": [
+        { "chunk": "sprite_register_layout", "topic": "sprite position registers" }
+      ]
     }
   ]
 }
@@ -103,7 +117,7 @@ Note: This is a 6502/C64 document, so the content itself may contain numbers and
 - Add references between the sub-chunks so readers can find related content.
 - Every line must be covered by exactly one split entry (no gaps, no overlaps).
 - The first split must start at {start_line} and the last must end at {end_line}.
-- If a section is non-technical (TOC, index, credits), mark it as ignored.
+- Mark non-technical sections as ignored regardless of size (TOC, index, credits, revision history). Do NOT create ignored entries for blank lines or minor whitespace — include them in the adjacent chunk.
 
 ## Context
 - Document: {filename}
@@ -132,6 +146,14 @@ MAX_LINES_PER_CALL = 3000
 
 # Chunks larger than this trigger refinement
 MAX_CHUNK_LINES = 120
+
+def _fmt_response(response):
+    """Format a one-line summary of an OpenAI API response."""
+    usage = response.usage
+    parts = [f"model={response.model}"]
+    if usage:
+        parts.append(f"tokens={usage.prompt_tokens}+{usage.completion_tokens}={usage.total_tokens}")
+    return ', '.join(parts)
 
 
 def _fmt_elapsed(seconds):
@@ -234,6 +256,7 @@ def split_document(client, model, filename, content, total_lines):
                     new_count += 1
 
             print(f"{new_count} splits ({_fmt_elapsed(elapsed)})")
+            print(f"      [{_fmt_response(response)}]")
 
         except json.JSONDecodeError as e:
             print(f"PARSE ERROR ({_fmt_elapsed(elapsed)})")
@@ -278,6 +301,7 @@ def _call_openai(client, model, filename, content, start_line, end_line):
     result = json.loads(result_text)
     num_splits = len([s for s in result.get('splits', []) if not s.get('ignore')])
     print(f"{num_splits} splits ({_fmt_elapsed(elapsed)})")
+    print(f"    [{_fmt_response(response)}]")
     return result
 
 
@@ -349,6 +373,7 @@ def refine_chunk(client, model, filename, lines, split_entry):
     result = json.loads(result_text)
     new_splits = result.get('splits', [])
     print(f"{len(new_splits)} sub-splits ({_fmt_elapsed(elapsed)})")
+    print(f"      [{_fmt_response(response)}]")
     return new_splits
 
 
@@ -418,6 +443,7 @@ def _refine_large_chunk(client, model, system_prompt, _filename, lines,
                     all_splits.append(s)
                     new_count += 1
             print(f"{new_count} splits ({_fmt_elapsed(elapsed)})")
+            print(f"        [{_fmt_response(response)}]")
         except json.JSONDecodeError as e:
             print(f"PARSE ERROR ({_fmt_elapsed(elapsed)})")
             print(f"        {e}")
@@ -564,9 +590,328 @@ def validate_config(config, total_lines):
     return errors
 
 
+def _is_blank(line):
+    """Return True if a line is blank or whitespace-only."""
+    return line.strip() == ''
+
+
+def _add_context(issue, lines, splits, total):
+    """Add surrounding context lines and chunk names to an issue dict."""
+    prev_idx = issue.get('prev_split_idx')
+    next_idx = issue.get('next_split_idx')
+
+    if prev_idx is not None and 0 <= prev_idx < len(splits):
+        issue['prev_chunk'] = splits[prev_idx].get('name', splits[prev_idx].get('reason'))
+    if next_idx is not None and 0 <= next_idx < len(splits):
+        issue['next_chunk'] = splits[next_idx].get('name', splits[next_idx].get('reason'))
+
+    # 5 lines before the issue region
+    ctx_start = max(0, issue['start'] - 1 - 5)
+    ctx_end = issue['start'] - 1
+    if ctx_start < ctx_end:
+        issue['context_before'] = _number_lines(
+            ''.join(lines[ctx_start:ctx_end]), ctx_start + 1)
+
+    # 5 lines after the issue region
+    ctx_start2 = issue['end']
+    ctx_end2 = min(total, issue['end'] + 5)
+    if ctx_start2 < ctx_end2:
+        issue['context_after'] = _number_lines(
+            ''.join(lines[ctx_start2:ctx_end2]), ctx_start2 + 1)
+
+
+def _classify_issues_with_ai(client, model, filename, issues):
+    """Send all non-trivial issues (gaps and overlaps) to OpenAI in one batch call.
+
+    Returns dict mapping issue id → {"action": ..., "reason": ..., ...}
+    """
+    descriptions = []
+    for iss in issues:
+        kind = iss['type'].upper()
+        prev = iss.get('prev_chunk', 'none')
+        nxt = iss.get('next_chunk', 'none')
+        ctx_before = iss.get('context_before', '')
+        ctx_after = iss.get('context_after', '')
+
+        parts = [f"{kind} {iss['id']}: lines {iss['start']}-{iss['end']}"]
+        parts.append(f"  Previous chunk: {prev}")
+        parts.append(f"  Next chunk: {nxt}")
+        if ctx_before:
+            parts.append(f"  Last 5 lines of previous chunk:\n{ctx_before}")
+        parts.append(f"  {kind} content:\n{iss['content']}")
+        if ctx_after:
+            parts.append(f"  First 5 lines of next chunk:\n{ctx_after}")
+        descriptions.append('\n'.join(parts))
+
+    user_msg = (
+        f"Document: {filename}\n\n"
+        f"The following issues exist in a split config. "
+        f"GAPS are lines not covered by any chunk. "
+        f"OVERLAPS are lines claimed by two adjacent chunks.\n\n"
+        f"For each issue, decide the best action:\n\n"
+        f'- "ignore": the content is non-technical (page markers, figure references, '
+        f"blank lines, formatting artifacts) — mark as ignored\n"
+        f'- "extend_prev": the content belongs with the previous chunk — '
+        f"for gaps extend its end; for overlaps shrink the next chunk's start\n"
+        f'- "extend_next": the content belongs with the next chunk — '
+        f"for gaps extend its start; for overlaps shrink the previous chunk's end\n"
+        f'- "new_chunk": the content is a distinct topic — '
+        f'provide a snake_case "name" and "description". '
+        f"For overlaps this removes the lines from both adjacent chunks\n\n"
+        + '\n\n'.join(descriptions)
+        + '\n\nReturn ONLY valid JSON (no markdown fencing):\n'
+        + '{"issues": [{"id": 1, "action": "ignore|extend_prev|extend_next|new_chunk", '
+        + '"reason": "brief reason", "name": "only_for_new_chunk", '
+        + '"description": "only_for_new_chunk"}]}'
+    )
+
+    system_msg = (
+        "You are fixing gaps and overlaps in a Commodore 64 / MOS 6502 reference document "
+        "split config. This is a technical document about 6502 assembly, C64 hardware, etc. "
+        "Be careful not to discard real technical content — addresses like $D020, "
+        "register descriptions, code, memory map entries, instruction details are all valuable. "
+        "Page markers (like standalone ':187:'), figure references ('Figure C.10'), "
+        "form feeds, and blank lines are safe to ignore."
+    )
+
+    num_gaps = sum(1 for i in issues if i['type'] == 'gap')
+    num_overlaps = sum(1 for i in issues if i['type'] == 'overlap')
+    label = []
+    if num_gaps:
+        label.append(f"{num_gaps} gaps")
+    if num_overlaps:
+        label.append(f"{num_overlaps} overlaps")
+    print(f"    Classifying {' + '.join(label)} via AI ... ", end='', flush=True)
+    call_start = time.time()
+
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_msg},
+            {"role": "user", "content": user_msg},
+        ],
+    )
+
+    elapsed = time.time() - call_start
+    result_text = _strip_json_fencing(response.choices[0].message.content)
+    print(f"done ({_fmt_elapsed(elapsed)})")
+    print(f"      [{_fmt_response(response)}]")
+
+    try:
+        result = json.loads(result_text)
+        return {item['id']: item for item in result.get('issues', [])}
+    except (json.JSONDecodeError, KeyError) as e:
+        print(f"      WARNING: Failed to parse AI issue classification: {e}")
+        return {}
+
+
+def fix_gaps_and_overlaps(config, lines, client=None, model=None, filename=None):
+    """Fix gaps and overlaps in split config.
+
+    Both gaps and overlaps are classified by AI (with context) to decide:
+      ignore / extend_prev / extend_next / new_chunk
+    All-blank gaps are auto-ignored without AI.
+
+    Returns (config, num_fixes).
+    """
+    splits = config.get('splits', [])
+    if not splits:
+        return config, 0
+
+    splits.sort(key=lambda s: s.get('start', 0))
+    total = len(lines)
+    num_fixes = 0
+    issue_counter = 0
+
+    # --- Collect all issues (gaps AND overlaps) ---
+    all_issues = []
+
+    for idx in range(len(splits)):
+        s = splits[idx]
+        start = s.get('start', 0)
+        expected = 1 if idx == 0 else splits[idx - 1].get('end', 0) + 1
+
+        if start > expected:
+            # Gap
+            issue_counter += 1
+            all_issues.append({
+                "id": issue_counter,
+                "type": "gap",
+                "start": expected,
+                "end": start - 1,
+                "split_idx": idx,  # gap is before this split
+                "prev_split_idx": idx - 1 if idx > 0 else None,
+                "next_split_idx": idx,
+            })
+        elif start < expected:
+            # Overlap: lines start..expected-1 are claimed by both splits[idx-1] and splits[idx]
+            overlap_start = start
+            overlap_end = expected - 1  # = splits[idx-1].end
+            issue_counter += 1
+            all_issues.append({
+                "id": issue_counter,
+                "type": "overlap",
+                "start": overlap_start,
+                "end": overlap_end,
+                "split_idx": idx,
+                "prev_split_idx": idx - 1,
+                "next_split_idx": idx,
+            })
+
+    # Check trailing gap
+    if splits:
+        last_end = splits[-1].get('end', 0)
+        if last_end < total:
+            issue_counter += 1
+            all_issues.append({
+                "id": issue_counter,
+                "type": "gap",
+                "start": last_end + 1,
+                "end": total,
+                "split_idx": len(splits),  # after last split
+                "prev_split_idx": len(splits) - 1,
+                "next_split_idx": None,
+            })
+
+    if not all_issues:
+        return config, num_fixes
+
+    # Separate trivial (blank-only gaps) from issues needing AI
+    auto_issues = []
+    ai_issues = []
+
+    for iss in all_issues:
+        issue_lines = lines[iss['start'] - 1:iss['end']]
+        if iss['type'] == 'gap' and all(_is_blank(l) for l in issue_lines):
+            auto_issues.append(iss)
+        else:
+            iss['content'] = _number_lines(''.join(issue_lines), iss['start'])
+            _add_context(iss, lines, splits, total)
+            ai_issues.append(iss)
+
+    # Classify non-trivial issues via AI
+    ai_decisions = {}
+    if ai_issues and client:
+        ai_decisions = _classify_issues_with_ai(client, model, filename or '', ai_issues)
+    elif ai_issues:
+        print(f"    WARNING: {len(ai_issues)} issues but no AI client — using fallback")
+
+    # Build decision map
+    decisions = {}
+    for iss in auto_issues:
+        decisions[iss['id']] = {"action": "ignore", "reason": "Blank lines"}
+    for iss in ai_issues:
+        ai_result = ai_decisions.get(iss['id'])
+        if ai_result:
+            decisions[iss['id']] = ai_result
+        else:
+            # Fallback: give lines to previous chunk
+            decisions[iss['id']] = {"action": "extend_prev", "reason": "AI fallback"}
+
+    # --- Apply fixes in reverse order so index shifts don't matter ---
+    for iss in reversed(all_issues):
+        decision = decisions.get(iss['id'], {})
+        action = decision.get('action', 'extend_prev')
+        reason = decision.get('reason', '')
+        iss_start = iss['start']
+        iss_end = iss['end']
+        iss_type = iss['type']
+        split_idx = iss['split_idx']
+        prev_idx = iss.get('prev_split_idx')
+        next_idx = iss.get('next_split_idx')
+        label = iss_type.capitalize()
+
+        if action == 'ignore':
+            if iss_type == 'gap':
+                splits.insert(split_idx, {
+                    "start": iss_start, "end": iss_end,
+                    "ignore": True, "reason": reason or "Non-technical content"
+                })
+            else:  # overlap
+                # Shrink both chunks away from the overlap, insert ignored entry
+                if prev_idx is not None:
+                    splits[prev_idx]['end'] = iss_start - 1
+                if next_idx is not None:
+                    splits[next_idx]['start'] = iss_end + 1
+                splits.insert(split_idx, {
+                    "start": iss_start, "end": iss_end,
+                    "ignore": True, "reason": reason or "Non-technical content"
+                })
+            print(f"    {label} fix: lines {iss_start}-{iss_end} → ignored ({reason})")
+            num_fixes += 1
+
+        elif action == 'new_chunk':
+            new_entry = {
+                "start": iss_start, "end": iss_end,
+                "name": decision.get('name', f'{iss_type}_{iss_start}_{iss_end}'),
+                "description": decision.get('description', reason),
+            }
+            if iss_type == 'overlap':
+                if prev_idx is not None:
+                    splits[prev_idx]['end'] = iss_start - 1
+                if next_idx is not None:
+                    splits[next_idx]['start'] = iss_end + 1
+            splits.insert(split_idx, new_entry)
+            print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                  f"new chunk '{new_entry['name']}' ({reason})")
+            num_fixes += 1
+
+        elif action == 'extend_next':
+            if iss_type == 'gap':
+                if next_idx is not None and next_idx < len(splits):
+                    chunk = splits[next_idx]
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"extended '{chunk.get('name', '?')}' start → {iss_start} ({reason})")
+                    chunk['start'] = iss_start
+                    num_fixes += 1
+                elif prev_idx is not None:
+                    chunk = splits[prev_idx]
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"extended '{chunk.get('name', '?')}' end → {iss_end} (fallback)")
+                    chunk['end'] = iss_end
+                    num_fixes += 1
+            else:  # overlap → next chunk keeps lines, shrink prev
+                if prev_idx is not None:
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"kept in '{splits[next_idx].get('name', '?')}', "
+                          f"shrunk '{splits[prev_idx].get('name', '?')}' end → {iss_start - 1} "
+                          f"({reason})")
+                    splits[prev_idx]['end'] = iss_start - 1
+                    num_fixes += 1
+
+        else:  # extend_prev (default)
+            if iss_type == 'gap':
+                if prev_idx is not None and prev_idx >= 0:
+                    chunk = splits[prev_idx]
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"extended '{chunk.get('name', '?')}' end → {iss_end} ({reason})")
+                    chunk['end'] = iss_end
+                    num_fixes += 1
+                elif next_idx is not None and next_idx < len(splits):
+                    chunk = splits[next_idx]
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"extended '{chunk.get('name', '?')}' start → {iss_start} (fallback)")
+                    chunk['start'] = iss_start
+                    num_fixes += 1
+            else:  # overlap → prev chunk keeps lines, shrink next
+                if next_idx is not None:
+                    print(f"    {label} fix: lines {iss_start}-{iss_end} → "
+                          f"kept in '{splits[prev_idx].get('name', '?')}', "
+                          f"shrunk '{splits[next_idx].get('name', '?')}' start → {iss_end + 1} "
+                          f"({reason})")
+                    splits[next_idx]['start'] = iss_end + 1
+                    num_fixes += 1
+
+    # Clean up any splits that became empty after overlap fixes
+    splits = [s for s in splits if s.get('end', 0) >= s.get('start', 0)]
+
+    config['splits'] = splits
+    return config, num_fixes
+
+
 def _run_refine(client, model, _config_dir, docs_dir, config_files):
-    """Refine oversized chunks in the given config files. Runs iteratively
-    until all chunks are within MAX_CHUNK_LINES."""
+    """Refine configs: fix gaps/overlaps first, then sub-split oversized chunks.
+    Runs iteratively until all chunks are within MAX_CHUNK_LINES."""
     refined_total = 0
     errors = 0
     refine_start_time = time.time()
@@ -584,22 +929,35 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
                 print(f"  Warning: Source file not found: {raw_path}")
                 continue
 
-            total_lines = len(raw_path.read_text(encoding='utf-8', errors='replace').splitlines())
+            file_content = raw_path.read_text(encoding='utf-8', errors='replace')
+            lines = file_content.splitlines(keepends=True)
+            total_lines = len(lines)
 
-            # Iterate: refine may produce chunks that are still oversized
+            # Iterate: fix gaps/overlaps then sub-split oversized, repeat
+            # until no more changes (each step can introduce new issues)
             iteration = 0
             max_iterations = 5
             while iteration < max_iterations:
                 iteration += 1
                 if iteration > 1:
-                    print(f"  Refine iteration {iteration}...")
+                    print(f"  --- Pass {iteration} ---")
+
+                # Fix gaps and overlaps
+                config, gap_fixes = fix_gaps_and_overlaps(
+                    config, lines, client=client, model=model,
+                    filename=config['source_file'])
+                if gap_fixes:
+                    print(f"  Fixed {gap_fixes} gaps/overlaps")
+
+                # Sub-split oversized chunks
                 config, num_refined = refine_config(client, model, config, docs_dir,
                                                      verbose=True)
-                if num_refined == 0:
+                if num_refined:
+                    refined_total += num_refined
+
+                # Stop when neither step made changes
+                if gap_fixes == 0 and num_refined == 0:
                     break
-                refined_total += num_refined
-                if iteration > 1:
-                    print(f"    Refined {num_refined} more chunks")
 
             # Mark any still-oversized chunks as no_refine
             marked = 0
@@ -612,12 +970,15 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             if marked:
                 print(f"  Marked {marked} chunks as no_refine (cannot split further)")
 
-            # Validate final result
+            # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)
             if validation_errors:
+                config['warnings'] = validation_errors
                 print(f"  Validation warnings after refine:")
                 for err in validation_errors:
                     print(f"    - {err}")
+            else:
+                config.pop('warnings', None)
 
             # Write updated config
             with open(config_path, 'w', encoding='utf-8') as f:
@@ -647,7 +1008,7 @@ def main():
     force = '--force' in sys.argv
     process_all = '--all' in sys.argv
     refine_mode = '--refine' in sys.argv
-    model = 'gpt-5'
+    model = 'gpt-5-mini'
 
     if '--model' in sys.argv:
         idx = sys.argv.index('--model')
@@ -693,26 +1054,28 @@ def main():
             if not config_files:
                 sys.exit(1)
         else:
-            # Refine all configs that have oversized chunks
+            # Refine all configs that have warnings or oversized chunks
             config_files = []
             for cp in sorted(config_dir.glob('*.json')):
                 if cp.name == 'parsed_sources.json':
                     continue
                 with open(cp, 'r', encoding='utf-8') as f:
                     cfg = json.load(f)
+                has_warnings = bool(cfg.get('warnings'))
                 has_oversized = any(
                     not s.get('ignore', False)
+                    and not s.get('no_refine', False)
                     and (s.get('end', 0) - s.get('start', 0) + 1) > MAX_CHUNK_LINES
                     for s in cfg.get('splits', [])
                 )
-                if has_oversized:
+                if has_warnings or has_oversized:
                     config_files.append(cp)
 
             if not config_files:
-                print("No configs with oversized chunks found.")
+                print("No configs needing refinement found.")
                 sys.exit(0)
 
-            print(f"Found {len(config_files)} configs with oversized chunks")
+            print(f"Found {len(config_files)} configs to refine")
 
         refined, errors = _run_refine(client, model, config_dir, docs_dir, config_files)
         print(f"\n{'='*50}")
@@ -783,12 +1146,15 @@ def main():
             # Add source_md5
             config['source_md5'] = md5_content(content)
 
-            # Validate
+            # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)
             if validation_errors:
+                config['warnings'] = validation_errors
                 print(f"    Validation warnings:")
                 for err in validation_errors:
                     print(f"      - {err}")
+            else:
+                config.pop('warnings', None)
 
             # Write config
             config_path = config_dir / f"{doc_path.stem}.json"

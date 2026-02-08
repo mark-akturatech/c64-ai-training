@@ -1,0 +1,1931 @@
+{
+  "source_file": "c64ref ROM Disassembly CBM Labels.txt",
+  "context": "- Fully Commented Commodore 64 KERNAL ROM Disassembly (English, \"CBM\")",
+  "splits": [
+    {
+      "start": 1,
+      "end": 16,
+      "ignore": true,
+      "reason": "Title, author and top-level credits — non-technical metadata"
+    },
+    {
+      "start": 17,
+      "end": 30,
+      "ignore": true,
+      "reason": "Parser/format notes and file encoding instructions — non-technical"
+    },
+    {
+      "start": 31,
+      "end": 70,
+      "ignore": true,
+      "reason": "Disclaimer and ASCII-art KERNAL header text — legal/branding text"
+    },
+    {
+      "start": 71,
+      "end": 186,
+      "name": "declare_zero_page_part1",
+      "description": "Zero-page and low-memory declarations: defines 6510 I/O ports D6510/R6510, virtual registers for machine language monitor (PCH,PCL,FLGS,ACC,XR,YR,SP), user-modifiable IRQ vectors INVH/INVL, STATUS, device flags STATUS/STKEY/SVXT/VERCK and many temporary variables used by cassette, serial and editor code. Also sets origin to $0000 and uses '*=$0100' marker later. (Contains many zero page symbol definitions and comments.)",
+      "references": [
+        {
+          "chunk": "declare_zero_page_part2",
+          "topic": "continuation of zero-page variable definitions"
+        },
+        {
+          "chunk": "io_devices_and_constants",
+          "topic": "I/O device addresses referenced by these variables (VIC/SID/6526)"
+        }
+      ]
+    },
+    {
+      "start": 187,
+      "end": 276,
+      "name": "declare_zero_page_part2",
+      "description": "Continuation of zero page and low memory declarations: BASIC/monitor buffers, file tables (LAT/FAT/SAT), keyboard queue (KEYD, NDX), editor variables (LDTB1, USER, KEYTAB), RS-232 zero page pointers (RIBUF/ROBUF/RIDBE/RIDBS/RODBS/RODBE) and device registers like M51CTR/M51CDR. Also sets *=$100 and *=$200 origins for data/buffers and TBUFFR cassette buffer (TBUFFR) at $0300 etc.",
+      "references": [
+        {
+          "chunk": "declare_zero_page_part1",
+          "topic": "previous zero-page declarations and register names"
+        }
+      ]
+    },
+    {
+      "start": 277,
+      "end": 337,
+      "name": "io_devices_and_constants",
+      "description": "I/O device base addresses and hardware constants: maps VIC registers ($D000), SID registers ($D400), VIC color RAM, two 6526 CIA device register banks at $DC00 (device1) and $DD00 (device2) including registers PRA/PRB/DDRA/T1/T2/TOD/ICR/CRA/CRB. Also lists constants for tape block types (EOT, BLF, BDF, PLF, BDFH), buffer size (BUFSZ=192), screen editor constants (LLEN=40, LLEN2=80, NLINES=25) and CR=carriage return. Ends with .END and sets kernel start for VIC-40 KERNAL at $E500.",
+      "references": [
+        {
+          "chunk": "declare_zero_page_part2",
+          "topic": "zero-page pointers for VIC/SID/CIAs and buffer pointers"
+        }
+      ]
+    },
+    {
+      "start": 338,
+      "end": 359,
+      "name": "editor_lib_intro_and_undef",
+      "description": "Start of EDITOR.1 library: editor constants (MAXCHR=80, NWRAP=2), comment block with undefined function handling pseudo-code and a small note about the 6526 return address. Prepares for editor/VIC-40 routines at $E500.",
+      "references": [
+        {
+          "chunk": "io_base_routine",
+          "topic": "first editor routine at $E500 that returns VIC/6526 base"
+        }
+      ]
+    },
+    {
+      "start": 360,
+      "end": 363,
+      "name": "io_base_routine",
+      "description": "Routine at $E500: IOBASE — returns low/high byte of D1PRA (6526 device 1 PRA) in X/Y and RTS. Assembly: LDX #<D1PRA ; LDY #>D1PRA ; RTS. Used to get the 6526 base address for I/O.",
+      "references": [
+        {
+          "chunk": "io_devices_and_constants",
+          "topic": "D1PRA/6526 device1 register addresses"
+        }
+      ]
+    },
+    {
+      "start": 364,
+      "end": 369,
+      "name": "screen_dimensions_routine",
+      "description": "SCRORG routine at $E505 — returns screen dimensions: LDX #LLEN (40) and LDY #NLINES (25) then RTS. Used by editor for screen geometry.",
+      "references": [
+        {
+          "chunk": "editor_lib_intro_and_undef",
+          "topic": "editor constants LLEN, NLINES declared earlier"
+        }
+      ]
+    },
+    {
+      "start": 370,
+      "end": 378,
+      "name": "plot_routine",
+      "description": "PLOT routine entry at $E50A/$E513: reads/plots cursor position. Handles branching between PLOT and PLOT10 (BCS) and stores X/Y into TBLX/PNTR then calls STUPT when appropriate, returning via RTS.",
+      "references": [
+        {
+          "chunk": "screen_dimensions_routine",
+          "topic": "uses LLEN/NLINES for cursor position logic"
+        }
+      ]
+    },
+    {
+      "start": 379,
+      "end": 455,
+      "name": "editor_initialize_and_home",
+      "description": "Editor initialization routines: CINT and VIC setup (INITV) that load VIC registers, set PET mode, configure editor variables (KEYLOG, XMAX, COLOR, delays, blink counters), fill high-byte pointer table LDTB1 for line addressing, clear screen lines (CLRLN/clear loop), and implement HOME (NXTD) to reset cursor TBLX/PNTR and call STUPT to position cursor. Includes LPS loops to fill pointer table and mark end-of-table.",
+      "references": [
+        {
+          "chunk": "io_devices_and_constants",
+          "topic": "VIC register initialization via VICREG"
+        },
+        {
+          "chunk": "stupt_set_point",
+          "topic": "STUPT called to set cursor pointer after home/initialization"
+        }
+      ]
+    },
+    {
+      "start": 456,
+      "end": 494,
+      "name": "input_patch_and_panic",
+      "description": "Patch and panic handling inside editor: a patch for input logic (avoid A$ issues) with FINPUT/FINDST flows, PANIC/NMI entry which calls PANIC to fix VIC screen and set default I/O (DFLTO/DFLTN), and a short routine to return to home (NXTD). Contains checks for same-line handling and branching back to find routines.",
+      "references": [
+        {
+          "chunk": "editor_initialize_and_home",
+          "topic": "PANIC and STUPT interplay during initialization"
+        }
+      ]
+    },
+    {
+      "start": 495,
+      "end": 563,
+      "name": "editor_main_loop_and_print_entry",
+      "description": "Editor main loop entry points: LP2/LP1 remove character from keyboard queue, LP21..LP23 handle editor mode/auto scroll flags and run-key buffer setup. Includes PRT (print) entry that preserves registers and uses CRSW/PNTR to fetch characters, checks for special codes (space, carriage return), toggles quote-switch (QTSWC), and handles run-key buffering and function keys.",
+      "references": [
+        {
+          "chunk": "plot_routine",
+          "topic": "PLOT/PNTR usage for cursor and printing"
+        }
+      ]
+    },
+    {
+      "start": 564,
+      "end": 621,
+      "name": "editor_input_and_quote_handling",
+      "description": "Editor input character processing: detailed logic for reading characters at PNT/PNTR, masking character bits (AND #$3F), multicolor handling via ORA #$80, quote-switch handling (QTSW) and toggling, incrementing PNTR, calling QTSWC to toggle quote state, handling end-of-line and carriage return, and special PI (<PI>) handling. Returns to main loop after display updates.",
+      "references": [
+        {
+          "chunk": "editor_main_loop_and_print_entry",
+          "topic": "continues the print/input processing path"
+        },
+        {
+          "chunk": "qtsw_toggle",
+          "topic": "QTSWC handler for quote switching (referenced)"
+        }
+      ]
+    },
+    {
+      "start": 622,
+      "end": 663,
+      "name": "wlogic_wrapping_and_line_move",
+      "description": "Wrap logic and line increment/decrement (WLOG/WLOG20..WLOG30): handles wrapping lines when inserting characters, auto-scroll-down behavior, adjusting line pointers (LDTB1 entries), checking maximum chars (MAXCHR), and routines to find the start (FINDST) or end (FNDEND) of physical lines. Also contains logic to call SCROL/CLRLN when needed.",
+      "references": [
+        {
+          "chunk": "editor_input_and_quote_handling",
+          "topic": "called after inserting characters to handle wrap/scroll"
+        },
+        {
+          "chunk": "scrol_and_scrlin",
+          "topic": "screen scroll routines used here"
+        }
+      ]
+    },
+    {
+      "start": 664,
+      "end": 720,
+      "name": "cursor_movement_and_editing_operations",
+      "description": "Cursor movement, editing (NXT1..NXT3, NXTX, NXTX1) and insert/delete logic: routines for moving cursor left/right/up/down, backspace handling (BAK1UP/BKLN), wrap-around checks (WLOG) and functions to set and update display and color pointers (SCOLOR/DSPP). Implements insertion (INS3/INS1) copying bytes and colors, updating LNMX and PNTR.",
+      "references": [
+        {
+          "chunk": "wlogic_wrapping_and_line_move",
+          "topic": "wrap/scroll integration during cursor moves"
+        }
+      ]
+    },
+    {
+      "start": 721,
+      "end": 780,
+      "name": "printing_and_character_rendering",
+      "description": "PRT/PRINT routine internals: saves registers, processes characters (spaces, case conversion), executes QTSWC and DSPP2 to render color & character to screen, handles carriage return (NXT1 path), handles lower/upper-case mapping and special editor keys, and triggers SCOLOR/DSPP for display updates and blinking.",
+      "references": [
+        {
+          "chunk": "cursor_movement_and_editing_operations",
+          "topic": "called to render characters as user types"
+        }
+      ]
+    },
+    {
+      "start": 781,
+      "end": 840,
+      "name": "case_and_shift_handling",
+      "description": "Case conversion and shift logic: handles lower/upper case toggle by manipulating VIC register D018, MODE flags, and changing keyboard mode tables via KEYLOG. Contains logic for locked/unlocked keyboard (LOCK/UNLOCK) and for checking special shifted keys; sets color mapping where appropriate.",
+      "references": [
+        {
+          "chunk": "key_tables_mode1_2_3",
+          "topic": "keyboard translation tables used during shift/case handling"
+        }
+      ]
+    },
+    {
+      "start": 841,
+      "end": 900,
+      "name": "line_wrap_and_newline_handling",
+      "description": "NXLN/NEWLIN/SCROL/CLRLN logic: routines for moving to next physical line, wrapping double lines, scrolling up/down and clearing lines. Handles pointer transfers, HI byte pointer fixes (LDTB1, LDTB2 table handling), and coordinates with SETPNT to set PNT/Y for display operations.",
+      "references": [
+        {
+          "chunk": "scrol_and_scrlin",
+          "topic": "SCROL and SCRLIN routines used to perform actual scrolling"
+        }
+      ]
+    },
+    {
+      "start": 901,
+      "end": 960,
+      "name": "wrap_check_and_screen_scroll",
+      "description": "WLOG/WLOG30 continuation: checks whether to increment TBLX (current line) or scroll screen by calling SCROL, manipulates LDTB1 pointers to mark non-continuation lines, updates LNMX (line maximum), and contains FINDST that finds the first physical line and jumps to SETPNT to ensure PNT correctness.",
+      "references": [
+        {
+          "chunk": "line_wrap_and_newline_handling",
+          "topic": "uses FINDST and SETPNT to map logical to physical addresses"
+        }
+      ]
+    },
+    {
+      "start": 961,
+      "end": 1020,
+      "name": "scroll_routines_and_newline_generation",
+      "description": "SCROL, SCRLIN and NEWLIN: core routines to scroll screen lines up or down. Saves/ restores SAL/SAH/EAL/EAH (source/destination addresses), iterates through lines, performs CLRLN when necessary, and updates LDTB1 pointer flags. Also includes new line generation BMT1/BMT2 logic to insert new blank lines or clear the last line when near bottom.",
+      "references": [
+        {
+          "chunk": "wrap_check_and_screen_scroll",
+          "topic": "invoked from wrap/insert handling to maintain screen"
+        }
+      ]
+    },
+    {
+      "start": 1021,
+      "end": 1080,
+      "name": "copy_line_and_color_transfer",
+      "description": "SCRLIN/TOFROM/SETPNT/CLRLN/CLR10: routines to copy a line from SAL to PNT, transfer corresponding color bytes from EAL to USER area, set up PNT & PNT+1 from LDTB2/LDTB1 table entries, and clear a line by storing spaces and syncing color pointers via SCOLOR/CPATCH. Used by scrolling and line insertion/deletion code.",
+      "references": [
+        {
+          "chunk": "scroll_routines_and_newline_generation",
+          "topic": "SCRLIN and TOFROM invoked during scroll/newline operations"
+        }
+      ]
+    },
+    {
+      "start": 1081,
+      "end": 1140,
+      "name": "display_put_and_color_pointer",
+      "description": "DSPP/DSPP2/SCOLOR/KEY routines: DSPP places a char on screen and DSPP2 restores color & displays (used by blinking). SCOLOR builds the color RAM pointer in USER/USER+1 from PNT/PNT+1 and VIC color RAM base. Also includes KEY (clock/jiffy update) which handles blinking cursor timing, CASSETTE switch checks, and calls SCNKEY to scan keyboard if necessary.",
+      "references": [
+        {
+          "chunk": "keyboard_scan_and_irq",
+          "topic": "KEY calls SCNKEY to scan keyboard"
+        },
+        {
+          "chunk": "tofrom_setup_pnt",
+          "topic": "SCOLOR and TOFROM coordinate to copy colors"
+        }
+      ]
+    },
+    {
+      "start": 1141,
+      "end": 1200,
+      "name": "keyboard_scan_and_irq_handling",
+      "description": "SCNKEY and keyboard IRQ return: SCNKEY scans the 8x8 keyboard matrix by toggling COLM, debounces (comparing ROWS repeatedly), translates via KEYTAB, handles special keys (shift/stop), updates shift flags (SHFLAG/LSTSHF), handles key repeat logic and queueing, and ends with RTI. Includes RSP232 protection calls and indirect KEYLOG use. Touches SHFLOG for Commodore shift combos.",
+      "references": [
+        {
+          "chunk": "key_tables_mode1_2_3",
+          "topic": "KEYTAB translation tables referenced during SCNKEY"
+        },
+        {
+          "chunk": "shift_logic_and_keycod",
+          "topic": "shift handling done by SHFLOG which uses KEYCOD tables"
+        }
+      ]
+    },
+    {
+      "start": 1201,
+      "end": 1260,
+      "name": "key_repeat_and_queue_logic",
+      "description": "Key repeat and queue handling: RPT10..RPT40 logic resets and handles repeat delays (DELAY/KOUNT), checks repeat enable flags (RPTFLG), handles special-case keys (cursor, space), debounces key changes, inserts raw key data into KEYD queue (PUTQUE), and handles stop key sense via COLM. Works with LSTX/LSTSHF to detect repeated key events.",
+      "references": [
+        {
+          "chunk": "keyboard_scan_and_irq_handling",
+          "topic": "continues SCNKEY flow and handles repeat/queueing"
+        }
+      ]
+    },
+    {
+      "start": 1261,
+      "end": 1320,
+      "name": "shift_logic_and_keycode_dispatch",
+      "description": "SHFLOG plus dispatch to key code tables: reads SHFLAG, detects Commodore shift combos, prevents double shift handling, toggles VIC case bit for lower/upper (D018), chooses control/shift translation tables, loads KEYTAB pointers from KEYCOD tables, and jumps to REKEY to process the key. Includes tables of key codes based on mode (MODE1/MODE2/MODE3) and the CONTROL key mapping.",
+      "references": [
+        {
+          "chunk": "key_tables_mode1_2_3",
+          "topic": "KEYCOD and MODE tables used by SHFLOG"
+        }
+      ]
+    },
+    {
+      "start": 1321,
+      "end": 1380,
+      "name": "key_tables_mode1_2_3",
+      "description": "Keyboard mode tables and keycode tables: MODE1/MODE2/MODE3 translation tables (.BYT entries) mapping raw keyboard codes to PET character codes depending on mode (PET, shifted, katakana variants), CONTROL key mapping (CONTRL), and end-of-table markers ($FF). Contains arrays used by the keyboard dispatch to convert key matrix values into characters/actions.",
+      "references": [
+        {
+          "chunk": "shift_logic_and_keycod",
+          "topic": "Tables referenced by SHFLOG to map keys depending on shift/mode"
+        }
+      ]
+    },
+    {
+      "start": 1381,
+      "end": 1440,
+      "name": "mode_and_control_tables_and_color_table",
+      "description": "Additional mode tables, CONTRL table and color mapping table (COLTAB): includes CONTROL mapping for color/special functions, and TVIC/BAUD/TVIC data bytes. Also defines LINZ table base addresses and LDTB2 low-byte table entries for screen line base addresses. This section includes PET/KATAKANA mode comments and other mapping tables.",
+      "references": [
+        {
+          "chunk": "linz_and_linetables",
+          "topic": "LINZ and LDTB2 table definitions for line addressing"
+        }
+      ]
+    },
+    {
+      "start": 1441,
+      "end": 1500,
+      "name": "linz_and_linetables",
+      "description": "LINZ definition and LDTB2 table: defines LINZ0..LINZ24 as VICSCN offsets (per-line base addresses) and stores their low bytes into LDTB2 (.BYTE <LINZ0 .. <LINZ24) to be used by screen editor to compute character memory addresses. Also includes .END of the editor library and start of SERIAL4.0 library at $ED09.",
+      "references": [
+        {
+          "chunk": "mode_and_control_tables_and_color_table",
+          "topic": "color/CONTRL tables used for display attributes"
+        }
+      ]
+    },
+    {
+      "start": 1501,
+      "end": 1560,
+      "name": "serial_command_and_listen",
+      "description": "Start of SERIAL4.0 library at $ED09: TALK/LISTN helpers to create talk/listen addresses by ORA #$40/#$20 respectively, protective call to RSP232 for RS232 NMI protection, LISTN handling that checks buffered chars (C3P0), sets EOI flags (R2D2), and calls ISOUR/ISOURA to send attention and data with proper IOCIA debouncing and clock toggling. Implements attention handling and clock/data toggling for the CBM serial bus.",
+      "references": [
+        {
+          "chunk": "serial_isour_isr",
+          "topic": "ISR routines and ISOUR used to send characters on the serial bus"
+        }
+      ]
+    },
+    {
+      "start": 1561,
+      "end": 1620,
+      "name": "serial_isour_and_isr",
+      "description": "Serial bus ISOUR/ISR routines: ISOUR/ISOURA send buffered bytes with EOI handling; check device presence, toggle CLK and DATA lines (CLKHI/CLKLO/DATAHI/DATALO), use delays (W1MS) and DEBPIA to debounce PIA, and update status flags (C3P0, R2D2). Implements EOI sequence and framing error handling (FRMERR) and returns with appropriate status changes.",
+      "references": [
+        {
+          "chunk": "serial_command_and_listen",
+          "topic": "high-level LISTN/TALK commands rely on ISOUR/ISOURA and ISR sequences"
+        }
+      ]
+    },
+    {
+      "start": 1621,
+      "end": 1680,
+      "name": "serial_talk_unlisten_and_buffered_io",
+      "description": "Talk/Listen/Unlisten/Untalk routines and buffered I/O: TKSA/TKATN/TKATN1 manage sending secondary addresses and shifting to listener, CI OUT (buffered output) handles storing buffer (BSOUR/BSOUR flags), CI routines toggle C3P0 buffer flags, and UNTLK/UNLSN handle unlisten/untalk commands by releasing ATN and toggling lines. Also includes CIOUT/ISOUR buffering logic.",
+      "references": [
+        {
+          "chunk": "serial_isour_and_isr",
+          "topic": "uses the CLKHI/CLKLO/DATAHI/DATALO primitives"
+        }
+      ]
+    },
+    {
+      "start": 1681,
+      "end": 1740,
+      "name": "acptr_and_eoi_timeout",
+      "description": "ACPTR (serial input) and EOIACP flow: ACPTR reads a byte from serial bus with interrupts disabled (SEI), debounces clock with DEBPIA, sets a timer for EOI checking (D1T2H/D1CRB), and handles timeout conditions (EOI handling) and framing errors. Contains loop to capture bits and perform error handling via UDST/CSBERR.",
+      "references": [
+        {
+          "chunk": "clkhi_clklo_data_lines",
+          "topic": "uses CLKHI/CLKLO/DATAHI/DATALO primitives defined later"
+        }
+      ]
+    },
+    {
+      "start": 1741,
+      "end": 1800,
+      "name": "clkhi_clklo_data_lines",
+      "description": "Clock/data line control primitives and helpers: CLKHI (set clock high), CLKLO (set clock low), DATAHI, DATALO (affect PIA D2PRA bits), DEBPIA (debounce PIA reads), and W1MS (1ms loop delay). These are used throughout the serial bus send/receive routines to implement timing and debouncing requirements.",
+      "references": [
+        {
+          "chunk": "acptr_and_eoi_timeout",
+          "topic": "ACPTR uses these primitives to sample bits and detect timeouts"
+        }
+      ]
+    },
+    {
+      "start": 1801,
+      "end": 1860,
+      "name": "rs232trans_overview_and_variables",
+      "description": "Start of RS232TRANS library: description header and variables used by RS232 transmitter routines — BITTS, NXTBIT, ROPRTY, RODATA, RODBS, RODBE, ROBUF, RSSTAT, BITNUM, BAUDOF and notes about timing. RSTRAB checks BITTS and routes flow if done or performing stop/parity bits, shifting RODATA etc.",
+      "references": [
+        {
+          "chunk": "rs232trans_parity_and_bgn",
+          "topic": "parity calculation and start-of-byte setup"
+        }
+      ]
+    },
+    {
+      "start": 1861,
+      "end": 1920,
+      "name": "rs232trans_parity_and_bgn",
+      "description": "RS-232 transmitter bit handling and parity calculation: RSTRAB routine shifts RODATA, updates parity (ROPRTY), decrements BITTS, calculates parity according to M51CDR flags (no parity, odd/even, mark/space), sends stop bits, and RSTBGN entry starts a byte transfer by loading BITNUM/BITTS and pulling a byte from ROBUF into RODATA if available. Also handles errors (DSR/CTS) and sets RSSTAT error flags.",
+      "references": [
+        {
+          "chunk": "rs232trans_overview_and_variables",
+          "topic": "uses BITTS, RODATA, NXTBIT variables described there"
+        }
+      ]
+    },
+    {
+      "start": 1921,
+      "end": 1980,
+      "name": "rs232trans_error_handling_and_bitcnt",
+      "description": "Transmitter error handling and BITCNT: RST... error labels (DSRERR/CTSERR) update RSSTAT, OENABL manipulates D2ICR and ENABL to manage NMIs for timer T1, and BITCNT calculates actual number of bits to send (taking into account 6551 M51CTR settings) to return #bits+1. Provides support for 7/8/6/5 bit words depending on M51CTR.",
+      "references": [
+        {
+          "chunk": "rs232trans_parity_and_bgn",
+          "topic": "transmitter start and parity code uses BITCNT"
+        }
+      ]
+    },
+    {
+      "start": 1981,
+      "end": 2040,
+      "name": "rs232rcvr_overview_and_variables",
+      "description": "Start of RS232RCVR library: overview and variables used by receiver NMI routine — INBIT, BITCI, RINONE, RIDATA, RIPRTY, RIBUF, RIDBE, RIDBS. The RSRCVR NMI entry checks for start bit, shifts bits into RIDATA, updates RIPRTY parity accumulator, manages BITCI/INBIT and stores completed bytes into input buffer (RIBUF) with overrun and framing error detection.",
+      "references": [
+        {
+          "chunk": "rs232rcvr_parity_errors",
+          "topic": "parity checking and error reporting routines invoked after receiving a byte"
+        }
+      ]
+    },
+    {
+      "start": 2041,
+      "end": 2100,
+      "name": "rs232rcvr_parity_errors",
+      "description": "Receiver buffer storage & parity check: after collecting bits, RSRCVR stores bytes into RIBUF (handling RIDBE/RIDBS wrap), then checks 6551 command (M51CDR) to see if parity is expected and validates computed parity against RIPRTY. On parity mismatch, sets RSSTAT parity error; other errors include receiver overrun, break detect, frame error. Uses RSRABL to re-enable receiving after handling.",
+      "references": [
+        {
+          "chunk": "rs232rcvr_overview_and_variables",
+          "topic": "uses INBIT/BITCI/RIDATA/RIPRTY variables as defined"
+        }
+      ]
+    },
+    {
+      "start": 2101,
+      "end": 2160,
+      "name": "rs232inout_buffer_and_protection",
+      "description": "RS232 IN/OUT helpers and buffer management (RS232INOUT): routines to start/stop RS232 (CKO232/CKI232 checks for DSR/RTS/CTS handling), BSO232/BSI232 buffer handlers for output/input (RODBS/RODBE/ROBUF/RIBUF pointers), RSP232 routine to protect serial/cassette from RS232 NMI's by toggling ENABL and D2ICR to disable/enable NMIs while critical operations occur.",
+      "references": [
+        {
+          "chunk": "rs232trans_parity_and_bgn",
+          "topic": "BSO232 uses RSTBGN to start transmissions"
+        },
+        {
+          "chunk": "rs232rcvr_overview_and_variables",
+          "topic": "BSI232 returns input bytes from RIBUF described earlier"
+        }
+      ]
+    },
+    {
+      "start": 2161,
+      "end": 2220,
+      "name": "rsp232_and_gettop_helpers",
+      "description": "RSP232 and buffer allocation utilities: RSP232 pushes A, checks ENABL, waits until T1/T2 are idle, sets a disable flag by writing D2ICR, clears ENABL and returns. Also includes message printing (MS1..MS18) area and SPMSG routine to print messages only if MSGFLG is set, using BSOUT for output. There are helpers to allocate/free input/output buffers using GETTOP (called later).",
+      "references": [
+        {
+          "chunk": "messages_and_channelio_intro",
+          "topic": "message strings (MS1..MS18) used by SPMSG"
+        }
+      ]
+    },
+    {
+      "start": 2221,
+      "end": 2280,
+      "name": "messages_and_channelio_intro",
+      "description": "MESSAGES library and channel I/O intro: contains message strings (MS1, MS5..MS21 etc.) like 'I/O ERROR', 'SEARCHING', 'PRESS PLAY ON TAP' and SPMSG routine (checks MSGFLG and prints message via BSOUT). Also starts CHANNELIO library with comments describing GETIN semantics and device mapping (0 keyboard, 1 cassette, 2 RS232, 3 screen, 4-31 serial bus).",
+      "references": [
+        {
+          "chunk": "declare_zero_page_part1",
+          "topic": "MSGFLG and BSOUT variables are in zero page declarations"
+        }
+      ]
+    },
+    {
+      "start": 2281,
+      "end": 2340,
+      "name": "getin_and_basin",
+      "description": "GETIN and BASIN routines: GETIN dispatches input based on DFLTN (default input device). If device 0 (keyboard) it removes char from keyboard queue (LP2). If device 2 (RS232) it calls BSI232 to fetch from RS232 buffer. BASIN handles reading from keyboard (drives screen editor to produce whole lines), screen device handling (fake CR), and device >3 dispatch to serial bus/BASIN. Returns appropriate CR or buffer values and manages PNTR/TBLX preservation.",
+      "references": [
+        {
+          "chunk": "keyboard_scan_and_irq_handling",
+          "topic": "keyboard queue removal uses LP2/LP1 code"
+        },
+        {
+          "chunk": "rs232inout_buffer_and_protection",
+          "topic": "calls BSI232 for RS232 input"
+        }
+      ]
+    },
+    {
+      "start": 2341,
+      "end": 2400,
+      "name": "jtget_and_cassette_buffers",
+      "description": "Cassette buffer retrieval (JTGET/JTP20/RBLK/WBLK): JTGET handles reading bytes from the TBUFFR cassette buffer (TAPE1/TAPE1 pointer), handles buffer wrap via JTP20, and calls RBLK to read next block if buffer empty. Also contains CASOUT handling to buffer output for tape write and checks for EOF markers and stop key during reads/writes.",
+      "references": [
+        {
+          "chunk": "getin_and_basin",
+          "topic": "called when default input is cassette"
+        }
+      ]
+    },
+    {
+      "start": 2401,
+      "end": 2460,
+      "name": "bsout_and_casout_handling",
+      "description": "BSOUT/BSOBAD and CASOUT: BSOUT is the channel output entry; for screen it jumps to PRT, for serial it goes to CIOUT, and for cassette it buffers into TAPE1/T1. CASOUT saves registers, checks buffer pointers (JTP20/JTP10), writes block headers and data, and calls WBLK (write block) to flush when full. Also handles RS232 output case (BSO232) by enqueueing into ROBUF and starting transmitter via BSO100/BSPIN sequences.",
+      "references": [
+        {
+          "chunk": "rs232inout_buffer_and_protection",
+          "topic": "BSO232 uses ROBUF and T1 to queue RS232 bytes"
+        }
+      ]
+    },
+    {
+      "start": 2461,
+      "end": 2520,
+      "name": "open_and_chkin",
+      "description": "OPEN and CHKIN logic: OPEN creates logical file table entries (LAT/FAT/SAT) using LOOKUP and JZ100/JZ101/GETTOP. CHKIN opens a logical file for input (checks DFLTN), special-cases keyboard/screen/serial devices, handles RS232 talk/listen commands (TALK/LISTN) and validates that requested device supports read operations. Uses JZ100/JZ101 to extract table info.",
+      "references": [
+        {
+          "chunk": "lookup_and_clall",
+          "topic": "LOOKUP/JZ100 routines used to find table entries"
+        }
+      ]
+    },
+    {
+      "start": 2521,
+      "end": 2580,
+      "name": "open_checks_and_serial_open",
+      "description": "Open path for serial and tape devices: after checking logical file entry, handles RS232 'talk to' sequences (ED09 TALK, TKATN/TKSA) and sends secondary addresses if present; for tape it calls cassette routines to search for or create files (CSTE1/CSTE2, FAF/FAH) and writes headers. Also prepares file buffer pointers and type flags for tape read/write.",
+      "references": [
+        {
+          "chunk": "serial_command_and_listen",
+          "topic": "uses TALK/LISTN/TKATN/TKSA for serial device opening"
+        },
+        {
+          "chunk": "jtget_and_cassette_buffers",
+          "topic": "tape header/search/write helpers FAF/FAH used here"
+        }
+      ]
+    },
+    {
+      "start": 2581,
+      "end": 2640,
+      "name": "close_and_cassette_finalize",
+      "description": "CLOSE logical file handling: finds the logical entry (JLTLK/JZ100), handles device-specific close operations — for RS232 cleans up and deallocates buffers (CLN232), for cassette writes EOF markers or writes final block (CASOUT/WBLK/TAPEH), for serial calls CLSEI. Deallocates RIBUF/ROBUF pointers and updates MEMTCF to change top-of-memory if buffers freed.",
+      "references": [
+        {
+          "chunk": "jtget_and_cassette_buffers",
+          "topic": "uses CASOUT/WBLK/TAPEH to finalize cassette writes"
+        }
+      ]
+    },
+    {
+      "start": 2641,
+      "end": 2700,
+      "name": "jxr_mv_and_lookup",
+      "description": "Table management routines: JXRMV/JX170 removes a logical file entry by shifting the last entry into the deleted slot (LAT/FAT/SAT arrays), JLTLK/JLTLK/JZ100/JZ101 lookup routines to match logical file numbers (LAT) and fetch LA/FA/SA (LA=logical address pointer, FA=device number, SA=secondary). Also includes flags for STATUS and error returns.",
+      "references": [
+        {
+          "chunk": "close_and_cassette_finalize",
+          "topic": "used when closing and removing table entries"
+        }
+      ]
+    },
+    {
+      "start": 2701,
+      "end": 2760,
+      "name": "lookup_and_clall",
+      "description": "LOOKUP/JLTLK helpers and CLALL: LOOKUP clears STATUS and checks LAT table for a logical file entry, stores LA/FA/SA into B8/BA/BB. CLALL (close all) deletes all table entries by setting LDTND=0 and restores default I/O channels (DFLTO=3 screen, DFLTN=0 keyboard) and unlists/un-talks IEEE devices if necessary.",
+      "references": [
+        {
+          "chunk": "jxr_mv_and_lookup",
+          "topic": "LOOKUP/JZ routines locate table entries used across open/close"
+        }
+      ]
+    },
+    {
+      "start": 2761,
+      "end": 2820,
+      "name": "open_continued_and_opn232",
+      "description": "OPEN continuation and OPN232: after adding table entry, performs device-specific open tasks. For serial devices, calls OPENI (open serial) which sets up the 6551 (M51CTR/M51CDR), computes BITNUM via BITCNT, calculates BAUD rates using PAL/NTSC BAUD tables and BAUDOP (start/test rates), initializes RIDBE/RIDBS/RODBS/RODBE buffer pointers, and allocates buffers via GETTOP if needed.",
+      "references": [
+        {
+          "chunk": "rs232trans_overview_and_variables",
+          "topic": "OPN232 sets up M51 registers, BAUDOF and BITNUM used by RS232 transmitter"
+        }
+      ]
+    },
+    {
+      "start": 2821,
+      "end": 2844,
+      "name": "tape_read_decision_and_search",
+      "description": "OP155 entry and decision logic for cassette device open: loads SA, masks command nibble and branches to the tape-write path if non-zero; otherwise begins cassette read open: prompts user (CSTE1), handles STOP-key, shows \"searching\" (LUKING), checks FNLEN to decide between searching for any file or a named file, calls FAF to search for a named file, handles found/stop/file-not-found conditions (branches to OP171/OP180/ERROR4).",
+      "references": [
+        {
+          "chunk": "tape_open_write_prompt_and_header",
+          "topic": "tape-write path and header write flow"
+        },
+        {
+          "chunk": "tape_open_finish_and_buffer_init",
+          "topic": "finalize open and initialize tape buffer pointers"
+        }
+      ]
+    },
+    {
+      "start": 2845,
+      "end": 2857,
+      "name": "tape_open_write_prompt_and_header",
+      "description": "OP170/OP200 sequence for opening cassette for write: JSR FAH (GET ANY OLD HEADER) and checks for STOP, then for the write path calls CSTE2 (prompt \"PRESS PLAY AND RECORD\"), handles STOP-key, loads the cassette data-file header type (#$04) and calls TAPEH to write the header.",
+      "references": [
+        {
+          "chunk": "tape_read_decision_and_search",
+          "topic": "alternative tape-read path that precedes this write flow"
+        },
+        {
+          "chunk": "tape_open_finish_and_buffer_init",
+          "topic": "common post-open buffer initialization for tape reads/writes"
+        }
+      ]
+    },
+    {
+      "start": 2858,
+      "end": 2874,
+      "name": "tape_open_finish_and_buffer_init",
+      "description": "Finish cassette open (common read/write exit): set BUF size/force-read flag (LDA #$BF), test SA for read/open type, initialize buffer pointers for the tape buffer (store TYPE flag at (TAPE1),Y and set BUFPT to point to data), clear carry to signal a successful open and return (CLC/RTS).",
+      "references": [
+        {
+          "chunk": "tape_read_decision_and_search",
+          "topic": "searching and header handling that come before finalizing the open"
+        },
+        {
+          "chunk": "openi_serial_listen_and_presence_check",
+          "topic": "OPENI follows tape open for other device types (serial/RS-232)"
+        }
+      ]
+    },
+    {
+      "start": 2875,
+      "end": 2902,
+      "name": "openi_serial_listen_and_presence_check",
+      "description": "OPENI entry: called for serial/IEEE/other device opens. Loads SA and returns if SA not set; checks FNLEN and returns if no filename; clears the serial STATUS byte, issues LISTN (device LA to listen) and SECND calls, examines STATUS to detect remote presence; if device not present, strips return address (PLA PLA) and jumps ERROR5 (device not present).",
+      "references": [
+        {
+          "chunk": "serial_send_filename",
+          "topic": "sends the filename over the serial line when device present and filename length > 0"
+        },
+        {
+          "chunk": "open_rs232_init_and_param_transfer",
+          "topic": "opening RS-232 ports (OPN232) is a related serial open path"
+        }
+      ]
+    },
+    {
+      "start": 2903,
+      "end": 2915,
+      "name": "serial_send_filename",
+      "description": "OP35/OP40 sequence to send the filename over a serial link: checks FNLEN, loops over filename bytes via (FNADR),Y and calls CIOUT for each character, increments pointer until FNLEN bytes sent, then jumps to CUNLSN (UNLSN + cleanup sequence).",
+      "references": [
+        {
+          "chunk": "openi_serial_listen_and_presence_check",
+          "topic": "filename send is performed after successful LISTN/SECND presence checks"
+        },
+        {
+          "chunk": "open_rs232_init_and_param_transfer",
+          "topic": "parallel/RS-232 open may also use filename/parameter transfer to device registers"
+        }
+      ]
+    },
+    {
+      "start": 2916,
+      "end": 2940,
+      "name": "open_rs232_init_and_param_transfer",
+      "description": "OPN232 entry: initializes RS-232 subsystem by calling CLN232 (clears NMI, configures ports), clears RSSTAT, inspects FNLEN and if parameters exist copies up to 4 filename parameters from FNADR into 6551 (M51) control/data registers (M51CTR/M51CDR) for later use in configuring the 6551 ACIA.",
+      "references": [
+        {
+          "chunk": "rs232_bit_calculation",
+          "topic": "calculate number of data bits (BITNUM) based on M51 control register"
+        },
+        {
+          "chunk": "cln232_cleanup_and_port_setup",
+          "topic": "CLN232 routine invoked here to set up DDRB/CB2 and initial port state"
+        }
+      ]
+    },
+    {
+      "start": 2941,
+      "end": 2943,
+      "name": "opn232_buffer_allocation_and_return",
+      "description": "OPN232 buffer allocation and finalization: after GETTOP returns, checks and sets RIBUF/ROBUF allocation flags (RIBUF+1/ROBUF+1), adjusts top-of-memory pointer for allocation (decrements by 256 when allocating), stores buffer pointer values into variables RIBUF/ROBUF, and stores BAUD start rate into M51AJB/M51AJB+1; returns to higher-level open routine with STATUS set appropriately.",
+      "references": [
+        {
+          "chunk": "open_continued_and_opn232",
+          "topic": "continuation of buffer allocation and RS232 initialization"
+        }
+      ]
+    },
+    {
+      "start": 2944,
+      "end": 2984,
+      "name": "opn232_bit_baud_and_buffer_setup",
+      "description": "Consolidates the RS-232 open sequence that calculates the number of data bits and baud rate (including TV-standard table lookup), checks modem line responses, sets up buffer pointers, allocates input/output buffers, signals top-of-memory changes, and provides the CLN232 cleanup routine to initialize DDRB/CB2 and related registers."
+    },
+    {
+      "start": 2985,
+      "end": 3008,
+      "name": "rs232_buffer_pointers_and_memory_allocation",
+      "description": "OPN050–OPN060: set up internal buffer pointers (RIDBE->RIDBS, RODBE->RODBS), allocate memory for RIBUF/ROBUF by calling GETTOP to obtain MEMSIZ, adjust buffer pointer bytes if buffers not already allocated, set SEC to signal top-of-memory change, load a marker and JMP SETTOP to apply the new top-of-memory.",
+      "references": [
+        {
+          "chunk": "cln232_cleanup_and_port_setup",
+          "topic": "CLN232 is used earlier in OPN232 to initialize port/NMI state before buffer allocation"
+        }
+      ]
+    },
+    {
+      "start": 3009,
+      "end": 3023,
+      "name": "cln232_cleanup_and_port_setup",
+      "description": "CLN232 routine: clear NMI enables (LDA #$7F -> D2ICR), set DDRB for the user port (LDA #$06 -> D2DDRB), set DTR/RTS lines high (STA D2PRB), set PA2 output high (ORA/STA D2PRA), clear ENABL (STY ENABL = 0) and return (RTS). Also contains comments describing purpose: prepare the 6526/6551/CB2 settings for RS-232 operation.",
+      "references": [
+        {
+          "chunk": "open_rs232_init_and_param_transfer",
+          "topic": "CLN232 is invoked at the start of OPN232 to prepare the RS-232 hardware"
+        },
+        {
+          "chunk": "rs232_line_response_checks",
+          "topic": "port and line states set here are validated by subsequent line checks"
+        }
+      ]
+    },
+    {
+      "start": 3024,
+      "end": 3042,
+      "name": "load_header_and_entry_points",
+      "description": "Library header and entry points for the LOAD routine. Contains comment block describing LOAD/NLOAD/LOADSP behavior (cassette and IEEE devices, verify flag, monitor alt-start behavior, return registers) and the initial entry code: LOADSP (stores .X/.Y alt start into MEMUSS/MEMUSS+1) and LOAD (JMP via ILOAD monitor vector).",
+      "references": [
+        {
+          "chunk": "nload_device_checks",
+          "topic": "Handles device selection and further entry checks for LOAD/NLOAD"
+        },
+        {
+          "chunk": "ieee_load_sequence",
+          "topic": "Sequence after device is determined for IEEE device loads"
+        }
+      ]
+    },
+    {
+      "start": 3043,
+      "end": 3055,
+      "name": "nload_device_checks_and_basic_errors",
+      "description": "NLOAD entry: store verify flag (VERCK) and clear STATUS. Loads device number FA and validates it (disallow keyboard and screen loads). Branches to appropriate error handlers for bad device numbers, or to tape handling if FA indicates a tape device (carry set).",
+      "references": [
+        {
+          "chunk": "load_header_and_entry_points",
+          "topic": "Initial entry points and monitor-load alt-start handling"
+        },
+        {
+          "chunk": "ieee_load_sequence",
+          "topic": "If device is not tape, proceed to IEEE device load sequence"
+        },
+        {
+          "chunk": "tape_load_dispatch",
+          "topic": "If device indicates tape, branch to tape load logic"
+        }
+      ]
+    },
+    {
+      "start": 3056,
+      "end": 3091,
+      "name": "ieee_load_open_and_address_fetch",
+      "description": "Load-from-CBM-IEEE-device setup: ensure file name present (FNLEN), save SA in X, print 'SEARCHING' (LUKING), set special load command in SA, JSR OPENI to open file, establish TALK on device channel (TALK/TKSA), and use ACPTR to receive first 2 bytes (file's load address). Handles file-not-found status check and supports alternate start address if SA=0 by reading MEMUSS into EAL/EAH. Finally calls LODING to announce load to user.",
+      "references": [
+        {
+          "chunk": "nload_device_checks_and_basic_errors",
+          "topic": "Reached when device is an IEEE device"
+        },
+        {
+          "chunk": "ieee_receive_and_store_loop",
+          "topic": "After opening and fetching the load address, the loop retrieves file data bytes and stores/verifies them"
+        },
+        {
+          "chunk": "load_header_and_entry_points",
+          "topic": "Monitor entry behavior and alternate start semantics"
+        }
+      ]
+    },
+    {
+      "start": 3092,
+      "end": 3130,
+      "name": "ieee_receive_and_store_loop",
+      "description": "Main IEEE data receive loop and exit sequence: checks STOP key, repeatedly calls ACPTR to get bytes, tests for timeouts and retries, performs verify (VERCK) vs store into memory using EAL/EAH pointer, increments EAL/EAH, checks STATUS/EOI to detect end-of-file, then UNTLK/CLSEI to close the channel. Handles STOP-key break and file-not-found error jumps.",
+      "references": [
+        {
+          "chunk": "ieee_load_open_and_address_fetch",
+          "topic": "Begins after fetch of starting address and LODING message"
+        },
+        {
+          "chunk": "load_header_and_entry_points",
+          "topic": "Uses saved SA/MEMUSS for alternate start behavior"
+        },
+        {
+          "chunk": "loading_verify_message",
+          "topic": "Uses the LODING/VERIFYING message routines to inform the user"
+        }
+      ]
+    },
+    {
+      "start": 3131,
+      "end": 3166,
+      "name": "tape_load_dispatch_and_file_search",
+      "description": "Entry and dispatch for tape (cassette) loads: detect cassette based on device/flags, call ZZZ to set tape pointers, CSTE1 to inform the user of button use, print 'SEARCHING', look for filename if FNLEN present via FAF, handle stop-key, end-of-tape, or 'find any header' logic (FAH). Validates header and inspects file type (BLF/PLF flags) to determine whether the file is movable, program, or other and whether a monitor (SA=0) fixed-load should be used.",
+      "references": [
+        {
+          "chunk": "nload_device_checks_and_basic_errors",
+          "topic": "Reached when device indicates tape (carry set)"
+        },
+        {
+          "chunk": "tape_addressing_and_block_load",
+          "topic": "After locating header and file type, compute effective start and perform block load (TRD)"
+        },
+        {
+          "chunk": "luking_message_subroutine",
+          "topic": "Uses the searching message routine to inform the user"
+        }
+      ]
+    },
+    {
+      "start": 3167,
+      "end": 3203,
+      "name": "tape_addressing_and_block_load",
+      "description": "Tape-file address computation and block load: for movable or fixed files, read TAPEA/TAPESTA entries from tape header, compute EA = STA + (TAPEA - TAPESTA) using multi-byte arithmetic, store computed EAL/EAH and set STAL/STAH from MEMUSS as the start buffer, call LODING to announce load, then call TRD to perform the tape block load. Contains the byte reserved for TRD's carry result.",
+      "references": [
+        {
+          "chunk": "tape_load_dispatch_and_file_search",
+          "topic": "Uses header info found by FAF/FAH to determine TAPEA/TAPESTA and file type"
+        },
+        {
+          "chunk": "tape_finish_and_return",
+          "topic": "After TRD completes, finalizes end address and returns"
+        },
+        {
+          "chunk": "loading_verify_message",
+          "topic": "Uses the LODING message routine before TRD"
+        }
+      ]
+    },
+    {
+      "start": 3204,
+      "end": 3212,
+      "name": "tape_finish_and_return",
+      "description": "Finalization after a successful load: clear carry for a good exit, set up end-load address by loading EAL/EAH into X/Y, and return (RTS). This chunk contains the epilogue for both tape and IEEE successful exits.",
+      "references": [
+        {
+          "chunk": "tape_addressing_and_block_load",
+          "topic": "Follows TRD block-load and handles carry/result, computes end address"
+        },
+        {
+          "chunk": "ieee_receive_and_store_loop",
+          "topic": "IEEE path also jumps to this general successful-return logic after closing channels"
+        }
+      ]
+    },
+    {
+      "start": 3213,
+      "end": 3225,
+      "name": "luking_message_subroutine",
+      "description": "LUKING subroutine: prints 'SEARCHING' (and 'FOR' plus filename if present) to the console depending on MSGFLG and FNLEN. Calls MSG for the text and uses existing routines to output messages.",
+      "references": [
+        {
+          "chunk": "ieee_load_open_and_address_fetch",
+          "topic": "Called from IEEE open sequence to inform the user the system is searching for the file"
+        },
+        {
+          "chunk": "tape_load_dispatch_and_file_search",
+          "topic": "Also called during tape search to inform the user"
+        },
+        {
+          "chunk": "output_filename_subroutine",
+          "topic": "Uses the OUTFN routine to print the actual filename after 'FOR' if present"
+        }
+      ]
+    },
+    {
+      "start": 3226,
+      "end": 3236,
+      "name": "output_filename_subroutine",
+      "description": "OUTFN subroutine: outputs the file name to the console. If FNLEN is zero, returns immediately. Otherwise loops through filename bytes at FNADR (indirect via $BB) and outputs each character using BSOUT, returning when done.",
+      "references": [
+        {
+          "chunk": "luking_message_subroutine",
+          "topic": "Used by LUKING to print the filename following 'FOR'"
+        }
+      ]
+    },
+    {
+      "start": 3237,
+      "end": 3246,
+      "name": "loading_verify_message",
+      "description": "LODING subroutine: prints either 'LOADING' or 'VERIFYING' depending on the verify flag (VERCK). Loads a message index into Y and jumps to SPMSG to print the proper message, then returns to caller.",
+      "references": [
+        {
+          "chunk": "ieee_load_open_and_address_fetch",
+          "topic": "Called before starting IEEE byte transfer to inform the user"
+        },
+        {
+          "chunk": "tape_addressing_and_block_load",
+          "topic": "Called before TRD tape block load to announce the load"
+        },
+        {
+          "chunk": "ieee_receive_and_store_loop",
+          "topic": "Used to indicate the beginning of the receive/store loop"
+        }
+      ]
+    },
+    {
+      "start": 3247,
+      "end": 3361,
+      "name": "save_library",
+      "description": "SAVE library (SAVE, SAVESP, NSAVE): Save routines for cassette or IEEE-488 devices. Accepts start/end addresses indirectly, stores addresses, calls device open sequences, LISTN/TALK to set device in receive mode, outputs SAL/SAH start address to device, compares start/end, iterates through memory and outputs bytes to device via CIOUT/BSOUT, handles STOP key and channel closes. Includes user messages 'SAVING' and tape-specific writing via TAPEH/TWRT/TWRT2 etc. Variables: SA, SAL/SAH, FSBLK, CNTDN, PRP, OCHAR.",
+      "references": [
+        {
+          "chunk": "device_open_and_tape_serial_init",
+          "topic": "uses OPENI and IEEE talk/listen"
+        },
+        {
+          "chunk": "tapefile_library",
+          "topic": "uses TAPEH/TWRT for tape writes"
+        },
+        {
+          "chunk": "read_library",
+          "topic": "complements read routines which verify saved data"
+        }
+      ]
+    },
+    {
+      "start": 3362,
+      "end": 3434,
+      "name": "time_library",
+      "description": "TIME functions: three utilities UDTIM (update time), SETTIM (set time), RDTIM (read time). UDTIM increments BCD-style time registers at A0/A1/A2 (TIME/TIME+1/TIME+2), handles roll-over 23:59:59, clears to zero and preserves keyboard STOP key flag handling. SETTIM stores .A/.X/.Y into TIME registers with interrupts disabled. RDTIM disables interrupts and reads time into A/X/Y. Uses 6526 timer synchronization (ROWS/ROWS settling) and STKEY/STOP key flag.",
+      "references": [
+        {
+          "chunk": "init_library",
+          "topic": "initializes timer hardware and vectors used by TIME"
+        },
+        {
+          "chunk": "error_handler_library",
+          "topic": "STOP key handling interacts with ERROR/STOP routines"
+        }
+      ]
+    },
+    {
+      "start": 3435,
+      "end": 3496,
+      "name": "error_handler_library",
+      "description": "Error handler and STOP-check routines. NSTOP/STOP routines check STKEY flag, close channels and flush keyboard queue, set Z flag for STOP key. ERROR handler prints CBM I/O error messages when MSGFLG is set and returns error number in A with Carry set. Defines standard KERNAL error codes ERROR1..ERROR9 (LDA #$01..#09) and uses CLRCH to restore I/O channels and BSOUT for printing error digits. Uses STATUS and MSGFLG variables.",
+      "references": [
+        {
+          "chunk": "load_library",
+          "topic": "uses error codes (ERROR4: FILE NOT FOUND, ERROR9: BAD DEVICE #)"
+        },
+        {
+          "chunk": "save_library",
+          "topic": "invokes STOP and error prints on save failure"
+        }
+      ]
+    },
+    {
+      "start": 3497,
+      "end": 3553,
+      "name": "find_any_header_fah",
+      "description": "FAH - Find Any Header: reads tape blocks (JSR RBLK) and scans the cassette buffer for header block types. Recognizes EOT ($05) as end-of-tape (failure), BLF ($01) and PLF ($03) as successful load headers, and BDFH ($04) as Basic data-file header (continues searching). On success returns file-type in X; carry clear on success, carry set on failure. If MSGFLG set, prints a \"FOUND\" message and outputs the complete file name from the tape buffer via BSOUT. Preserves/restores the verify flag around RBLK and checks for STOP key (A=0 on stop). Also invokes FPATCH if STKEY indicates a key-down on the last row.",
+      "references": [
+        {
+          "chunk": "find_any_header_and_compare_faf",
+          "topic": "wrapper that calls FAH and compares the filename"
+        },
+        {
+          "chunk": "tape_header_write_tapeh",
+          "topic": "writes headers to tape (uses similar tape-buffer structures)"
+        }
+      ]
+    },
+    {
+      "start": 3554,
+      "end": 3649,
+      "name": "tape_header_write_tapeh",
+      "description": "TAPEH - Write Tape Header: writes a header block into the cassette buffer and requests writing it to tape. Checks that the cassette buffer is allocated (JSR ZZZ; BCC indicates de-allocated). Preserves current start/end addresses (STAL/STAH/EAL/EAH) on the stack, fills the tape buffer with blanks (BUFSZ), writes block type (T1), start and end load addresses (STAL/STAH and EAL/EAH) into the header, copies the file name into the header from FNADR up to FNLEN, calls LDAD1 to set header start/end pointers, sets leader timing (SHCNH), and calls TWRT2 to write the header block. Restores the original start/end addresses and returns with the previous error code preserved in Y.",
+      "references": [
+        {
+          "chunk": "zzz_get_tape_buffer_pointer",
+          "topic": "verifies and returns the cassette buffer pointer used by TAPEH"
+        },
+        {
+          "chunk": "ldad1_compute_start_end_addresses",
+          "topic": "computes and stores start/end header addresses (called by TAPEH)"
+        },
+        {
+          "chunk": "find_any_header_fah",
+          "topic": "searches tape for headers; TAPEH produces headers that FAH can find"
+        }
+      ]
+    },
+    {
+      "start": 3650,
+      "end": 3658,
+      "name": "zzz_get_tape_buffer_pointer",
+      "description": "ZZZ - Return cassette buffer pointer: loads the cassette buffer pointer from TAPE1 (LDX TAPE1, LDY TAPE1+1). Checks allocation state by comparing TAPE1+1 against #$02: a value of 0 or 1 indicates the buffer is de-allocated (CPY #$02; callers branch on carry/zero flags). Returns with X/Y holding the pointer bytes.",
+      "references": [
+        {
+          "chunk": "ldad1_compute_start_end_addresses",
+          "topic": "called by LDAD1 to get the cassette pointer"
+        },
+        {
+          "chunk": "tape_header_write_tapeh",
+          "topic": "called by TAPEH to verify the tape buffer is allocated"
+        }
+      ]
+    },
+    {
+      "start": 3659,
+      "end": 3669,
+      "name": "ldad1_compute_start_end_addresses",
+      "description": "LDAD1 - Compute and store start/end addresses for header blocks: calls ZZZ to get the cassette pointer, saves the low start byte (STAL), computes the end-pointer by adding BUFSZ (ADC #$C0) to the start low byte and stores EAL, saves the high start byte (STAH) and computes/stores EAH (handles carry from the low-byte ADC). Leaves pointer bytes in STAL/STAH and EAL/EAH for header writing.",
+      "references": [
+        {
+          "chunk": "zzz_get_tape_buffer_pointer",
+          "topic": "uses ZZZ to obtain tape buffer pointer"
+        },
+        {
+          "chunk": "tape_header_write_tapeh",
+          "topic": "TAPEH calls LDAD1 to set header start/end addresses prior to writing"
+        }
+      ]
+    },
+    {
+      "start": 3670,
+      "end": 3693,
+      "name": "find_any_header_and_compare_faf",
+      "description": "FAF - Find Any Header wrapper that compares file names: calls FAH to locate the next header. On success, compares the file name stored in the tape header (offset 5) with the supplied filename at FNADR for FNLEN characters. If any character mismatches, branches back to FAH to find the next header (loop). On full match sets carry clear (success) and returns. If FAH failed, returns with carry set. Uses T1/T2 as temporary offsets into the tape header and name buffer.",
+      "references": [
+        {
+          "chunk": "find_any_header_fah",
+          "topic": "FAF invokes FAH to find headers on tape"
+        },
+        {
+          "chunk": "tape_header_write_tapeh",
+          "topic": "TAPEH constructs headers that FAF/FAH will find and compare"
+        }
+      ]
+    },
+    {
+      "start": 3694,
+      "end": 3699,
+      "name": "increment_buffer_pointer",
+      "description": "Small utility: calls an external JSR (ZZZ/JTP20), increments the buffer pointer (BUFPT) and returns. Contains the .LIB TAPECONTROL directive and a short sequence that updates BUFPT and returns (INC $A6 / LDY $A6 / CPY #BUFSZ / RTS).",
+      "references": [
+        {
+          "chunk": "press_play_prompt_and_debounce",
+          "topic": "Uses TAPECONTROL library routines and is adjacent to cassette prompt logic"
+        }
+      ]
+    },
+    {
+      "start": 3700,
+      "end": 3718,
+      "name": "press_play_prompt_and_debounce",
+      "description": "CSTE1 routine and related subroutines: displays 'PRESS PLAY...' (MSG) via CS30, watches for STOP key (TSTOP/CS40), loops to monitor cassette switches (CS10), and performs a debounce check of the cassette port bit in R6510 (CS10 / CS25). Returns with carry clear on success.",
+      "references": [
+        {
+          "chunk": "increment_buffer_pointer",
+          "topic": "Preceding utility in same TAPECONTROL area"
+        },
+        {
+          "chunk": "record_prompt_check",
+          "topic": "Parallel routine used for 'PRESS PLAY & RECORD' prompt"
+        },
+        {
+          "chunk": "tape_completion_wait_loop",
+          "topic": "Later uses TSTOP to watch for STOP key during tape operations"
+        }
+      ]
+    },
+    {
+      "start": 3719,
+      "end": 3724,
+      "name": "record_prompt_check",
+      "description": "CSTE2 routine: checks for both PLAY and RECORD being active and, if so, triggers the display of the 'RECORD' message (MSG). Branches back to the 'PRESS PLAY' path if necessary.",
+      "references": [
+        {
+          "chunk": "press_play_prompt_and_debounce",
+          "topic": "Related cassette switch checks and messaging functions"
+        },
+        {
+          "chunk": "block_entry_read_write_setup",
+          "topic": "Called before initiating read/write block operations that follow"
+        }
+      ]
+    },
+    {
+      "start": 3725,
+      "end": 3760,
+      "name": "block_entry_read_write_setup",
+      "description": "Block entry points for cassette R/W: RBLK (read header block entry) initializes status and version check flags and calls LDAD1; TRD (read load block entry) calls CSTE1 and prepares for read with SEI and clearing of multiple flags (RDFLG, SNSW1, CMP0, PTR1, PTR2, DPSW). Also includes WBLK (write header block entry) and TWRT/TWRT2/TWRT3 (write load block entry sequence): sets SHCNH, prompts 'PRESS PLAY & RECORD', handles STOP key checks, and sets up vector selection (LDX #$08 or #$0E) before jumping to the main tape entry. Contains comments and flow between read/write entry labels.",
+      "references": [
+        {
+          "chunk": "press_play_prompt_and_debounce",
+          "topic": "Uses CSTE1 to prompt before reads"
+        },
+        {
+          "chunk": "tape_operation_timer_and_irq_setup",
+          "topic": "Transfers flow to TAPE entry to configure timers and IRQs for cassette operation"
+        }
+      ]
+    },
+    {
+      "start": 3761,
+      "end": 3780,
+      "name": "tape_operation_timer_and_irq_setup",
+      "description": "TAPE entry: configures 6526 (CIA) registers for cassette operations. Sets D1ICR/D1CRB to enable/disable selected timer IRQs (clears unwanted IRQs, sets OR mask to enable T2 for cassette write), preserves 50/60Hz TOD bit, stores CASTON for auto mode, and prepares for RS-232 completion. Also disables the VIC display (clears bit in $D011) and saves the current IRQ vector into IRQTMP (IRQTMP, IRQTMP+1) before calling BSIV to install the cassette-specific IRQ vector.",
+      "references": [
+        {
+          "chunk": "block_entry_read_write_setup",
+          "topic": "Called from read/write entry points to start tape operations"
+        },
+        {
+          "chunk": "motor_control_and_interrupt_enable",
+          "topic": "Follows IRQ setup to start motor and local counters"
+        },
+        {
+          "chunk": "tape_completion_wait_loop",
+          "topic": "Uses the new IRQ vector and IRQTMP to determine completion"
+        }
+      ]
+    },
+    {
+      "start": 3781,
+      "end": 3794,
+      "name": "motor_control_and_interrupt_enable",
+      "description": "Local counters and motor control: sets FSBLK, calls NEWCH to prepare local counters/flags, turns cassette motor on via the R6510 port (enabling low bit), flags internal motor control (CAS1), runs a two-level delay loop to allow hardware settle, then enables interrupts (CLI).",
+      "references": [
+        {
+          "chunk": "tape_operation_timer_and_irq_setup",
+          "topic": "Implements hardware enabling after timers/IRQ vectors are set"
+        },
+        {
+          "chunk": "tape_completion_wait_loop",
+          "topic": "After enabling interrupts, enters a wait loop until cassette IRQs indicate completion"
+        }
+      ]
+    },
+    {
+      "start": 3795,
+      "end": 3804,
+      "name": "tape_completion_wait_loop",
+      "description": "Loop that monitors whether the IRQ vector has been restored (checks IRQTMP+1 vs CINV+1) to detect the cassette completion condition. If not complete, it polls for the STOP key via TSTOP and calls UD60 (to ignore 60Hz keyscan) in a tight loop until the cassette operation finishes.",
+      "references": [
+        {
+          "chunk": "motor_control_and_interrupt_enable",
+          "topic": "Enters this wait loop after motor is turned on and interrupts enabled"
+        },
+        {
+          "chunk": "stop_key_handler",
+          "topic": "Invoked when TSTOP detects a STOP key press during cassette operations"
+        }
+      ]
+    },
+    {
+      "start": 3805,
+      "end": 3820,
+      "name": "stop_key_handler",
+      "description": "TSTOP routine and STOP handling: calls the generic STOP routine, then on STOP-key detection turns off cassettes (TNIF), sets the failure flag (SEC), pops the stack to reverse a prior push, clears the IRQTMP entry (deallocates saved IRQ pointer) and returns. Provides STOP3/STOP4 labels used elsewhere to handle immediate stop conditions.",
+      "references": [
+        {
+          "chunk": "tape_completion_wait_loop",
+          "topic": "Called repeatedly from the wait loop to check for STOP key"
+        },
+        {
+          "chunk": "block_entry_read_write_setup",
+          "topic": "Branches to TWRT3 / TRD stop handling which eventually use this STOP handling"
+        }
+      ]
+    },
+    {
+      "start": 3821,
+      "end": 3863,
+      "name": "timeout_watch_and_simulated_irq",
+      "description": "STT1/STT2/STT3/STT4 timeout-watch routines: STT1 initializes a timeout constant (STX TEMP) and adjusts a long-byte count based on CMP0 (scaling and sign handling). It then waits for safe timing relative to D1T2L/D1T2H to avoid rollover before calculating and storing adjusted timer counts into D1T1L/D1T1H and enabling timers (D1CRA). STUPID is set to indicate a pending T1 IRQ, old T1 IRQ flags are checked and if present a simulated IRQ return address is pushed to the stack and the code jumps to SIMIRQ; otherwise the routine clears and returns (STT4). This block handles precise timing, rollover avoidance, and optionally simulates an IRQ to handle an already-set flag.",
+      "references": [
+        {
+          "chunk": "tape_operation_timer_and_irq_setup",
+          "topic": "Enables timers that STT1 adjusts and prepares for"
+        },
+        {
+          "chunk": "motor_control_and_interrupt_enable",
+          "topic": "Interacts with timer enabling/state flags set earlier"
+        }
+      ]
+    },
+    {
+      "start": 3864,
+      "end": 3896,
+      "name": "variables_used_in_cassette_read",
+      "description": "List and brief explanation of all zero-page variables used by the cassette read routines: REZ, RER, DIFF, SYNO, SNSW1, DATA, MYCH, FIRT, SVXT, TEMP, PRTY, PRP, FSBLK, SHCNL, RDFLG (modes MI/VS/NE), SAL, SHCNH, BAD table, PTR1/PTR2, VERCHK, CMP0, DPSW, PCNTR, STUPID, KIKA26 and their roles in timing capture, dipole/byte decoding, parity and pass management.",
+      "references": [
+        {
+          "chunk": "read_timer_capture_and_noise_reject",
+          "topic": "READ entry uses many of these variables to capture timer and start decode"
+        },
+        {
+          "chunk": "byte_handler_intro_and_mode_flags",
+          "topic": "RDFLG, FSBLK, PRP, PTR1/PTR2 used by the byte handler logic"
+        }
+      ]
+    },
+    {
+      "start": 3897,
+      "end": 3959,
+      "name": "read_timer_capture_and_noise_reject",
+      "description": "READ interrupt entry: compute timer2 delta (LDX/TA/SBC/CPX loop), reload timer2 for next interval, enable timer (D1CRB), clear timer1 interrupt flag (D1ICR -> KIKA26), compute high/low timing values into TEMP and CMP0 adjustment, perform minimum-pulse noise rejection, and branch to DSPW/RADJ paths. Implements initial pulse timing normalization and early ignore logic.",
+      "references": [
+        {
+          "chunk": "variables_used_in_cassette_read",
+          "topic": "Uses variables like TEMP, CMP0, KIKA26, DPSW described in the variables list"
+        },
+        {
+          "chunk": "first_half_detection_and_bit_handling",
+          "topic": "Branches into bit/half-dipole handling when pulse passes noise checks"
+        }
+      ]
+    },
+    {
+      "start": 3960,
+      "end": 4010,
+      "name": "first_half_detection_and_bit_handling",
+      "description": "Handler for dipole halves and assembly of bits: check for byte sync (SNSW1), handle timer1 IRQ interactions (KIKA26/STUPID) to detect first/second half (FIRT), update PCNTR and parity (PRTY), shift bits into MYCH, detect consecutive equal halves (error SRER), count zero dipoles (REZ) and detect block sync (SYNO). Calls STT1 for timeouts and returns via PREND when a full byte plus parity is ready.",
+      "references": [
+        {
+          "chunk": "read_timer_capture_and_noise_reject",
+          "topic": "Continues after initial timing capture and noise rejection"
+        },
+        {
+          "chunk": "long_pulse_handler_rad2",
+          "topic": "Jumps to RAD2 when a longlong pulse is detected"
+        },
+        {
+          "chunk": "finish_byte_and_newchar_call",
+          "topic": "When a byte is complete it jumps to PREND which restores regs and returns to caller"
+        }
+      ]
+    },
+    {
+      "start": 4011,
+      "end": 4051,
+      "name": "long_pulse_handler_rad2",
+      "description": "RAD2 longlong pulse handler and edge cases: distinguish longlong pulses vs block/byte sync, adjust timeout (TEMP/CMP0) for long pulses, set/clear byte-sync flags (SNSW1), save DIFF, combine error flags (RER/REZ -> PRP), transfer assembled byte (MYCH -> OCHAR) and branch back to PREND. Also handles throwing away bits (DPSW) and setting timer1 interrupts when encountering sync patterns.",
+      "references": [
+        {
+          "chunk": "first_half_detection_and_bit_handling",
+          "topic": "RAD2 is invoked from the bit detection logic for longlong pulses"
+        },
+        {
+          "chunk": "finish_byte_and_newchar_call",
+          "topic": "RAD2 saves the assembled byte and error flags then returns via PREND"
+        }
+      ]
+    },
+    {
+      "start": 4052,
+      "end": 4058,
+      "name": "finish_byte_and_newchar_call",
+      "description": "RADJ: finish-byte handler that calls NEWCH (JSR NEWCH), clears DPSW bit, reinitializes dipole state and timeout (STT1), checks FSBLK for exit, and stores FSBLK into SHCNL for later dispatch. Prepares the system to enter the byte-handling routine.",
+      "references": [
+        {
+          "chunk": "long_pulse_handler_rad2",
+          "topic": "RADJ is called when a byte boundary is detected to finalize byte processing"
+        },
+        {
+          "chunk": "byte_handler_intro_and_mode_flags",
+          "topic": "After NEWCH returns, flow proceeds into the byte handler which interprets RDFLG/FSBLK"
+        }
+      ]
+    },
+    {
+      "start": 4059,
+      "end": 4099,
+      "name": "byte_handler_intro_and_mode_flags",
+      "description": "Comment and setup for the cassette byte handler: descriptive block explaining RDFLG modes (ignore zeros, load, wait for byte sync), error flags and pass mechanics, symbolic error codes (SPERR/CKERR/SBERR/LBERR). RD15 entry sets temporary value and uses RDFLG/BIT tests to determine mode: waiting-for-zeros mode, transitions into sync/long-block error handling, and sets RDFLG for upcoming data or ignoring bytes. This block determines whether to accept data or report block errors before entering data-load flow.",
+      "references": [
+        {
+          "chunk": "finish_byte_and_newchar_call",
+          "topic": "RADJ stored FSBLK and then control flows here to handle the assembled byte per RDFLG"
+        },
+        {
+          "chunk": "load_sync_and_block_start_handling",
+          "topic": "If in load mode, flow branches to RD20/RD200 to configure address pointers and data mode"
+        }
+      ]
+    },
+    {
+      "start": 4100,
+      "end": 4136,
+      "name": "load_sync_and_block_start_handling",
+      "description": "RD20 / RD200 logic for load sequences: branching between waiting-for-sync and loading modes, checking block sync (SYNO) and first-byte error flags (PRP), interpreting header count char (OCHAR) to determine first/second block, setting RDFLG to data or ignore modes, calling RD300 to initialize address pointers (SAL/SAH), and setting up for actual data reads. Also handles the case for entering ignore-bytes mode for block remainder.",
+      "references": [
+        {
+          "chunk": "byte_handler_intro_and_mode_flags",
+          "topic": "This code is reached when RDFLG indicates entering data-load or sync processing"
+        },
+        {
+          "chunk": "pass_checks_and_verify_store_prep",
+          "topic": "After addresses are set up, control eventually reaches end-of-block checks and storage/verify logic"
+        }
+      ]
+    },
+    {
+      "start": 4137,
+      "end": 4162,
+      "name": "pass_checks_and_verify_store_prep",
+      "description": "End-of-block and pass management: RD70/after CMPSTE checks whether end of storage area reached, handles short/long block errors (SBERR/LBERR via UDST), checks FSBLK to determine which pass is active (first or second), decides load vs verify based on VERCK, and for verify compares incoming OCHAR with memory (SAL) and marks PRP on mismatch. Prepares to log bad locations for later re-reads by storing addresses into BAD table when errors detected.",
+      "references": [
+        {
+          "chunk": "load_sync_and_block_start_handling",
+          "topic": "Address setup from RD300 is used by these store/verify checks"
+        },
+        {
+          "chunk": "second_pass_bad_table_handling",
+          "topic": "If an error was logged, it will be recorded into BAD table here for second-pass retries"
+        }
+      ]
+    },
+    {
+      "start": 4163,
+      "end": 4188,
+      "name": "second_pass_bad_table_handling",
+      "description": "Logic for handling the bad-location table and preparing second-pass retries: iterate and check PTR1 (number of bad entries) against max, store bad SAL/SAH into BAD table for later re-reads, update PTR1 pointer, and branch to next actions. This section also checks, during second pass, whether the current location matches the next BAD entry and advances PTR2 when a match is found.",
+      "references": [
+        {
+          "chunk": "pass_checks_and_verify_store_prep",
+          "topic": "Bad locations are populated here after verify failures or other PRP indications"
+        },
+        {
+          "chunk": "store_or_verify_and_address_increment",
+          "topic": "When verifying/loading during second pass, matching BAD entries will trigger re-store/verification flow"
+        }
+      ]
+    },
+    {
+      "start": 4189,
+      "end": 4219,
+      "name": "store_or_verify_and_address_increment",
+      "description": "RD59 / RD90 storage/verify and increment logic: if VERCK indicates load, store OCHAR into (SAL); if verify, compare and set PRP on mismatch. Uses INCSAL routine to increment address pointers, handle second-pass errors (SPERR/UDST), and then perform C64-specific adjustments: SEI while clearing T1 info, disable T1 via D1ICR, decrement FSBLK/SHCNL between passes, call TNIF when finished, and restore SAL/SAH via RD300. Also clears SHCNH used by BCC calculation.",
+      "references": [
+        {
+          "chunk": "second_pass_bad_table_handling",
+          "topic": "This routine is invoked for actual store or verify operations including second-pass logic"
+        },
+        {
+          "chunk": "compute_block_parity_and_checksum",
+          "topic": "After storing/advancing addresses, block-level parity (BCC) calculation may be performed"
+        }
+      ]
+    },
+    {
+      "start": 4220,
+      "end": 4234,
+      "name": "compute_block_parity_and_checksum",
+      "description": "VPRTY: compute BCC over the loaded block by XOR-ing fetched bytes into SHCNH (running parity), incrementing addresses, and checking CMPSTE for end-of-block. If computed BCC doesn't match OCHAR, flag checksum error (CKERR via UDST). On success, return to PREND.",
+      "references": [
+        {
+          "chunk": "store_or_verify_and_address_increment",
+          "topic": "This parity routine uses the same SAL/SAH pointers managed during store/verify and is called after finishing read passes"
+        },
+        {
+          "chunk": "restore_addresses_and_newch_init",
+          "topic": "If more bytes are to be read or upon exit, RD300/NEWCH restore and init routines are used"
+        }
+      ]
+    },
+    {
+      "start": 4235,
+      "end": 4248,
+      "name": "restore_addresses_and_newch_init",
+      "description": "RD300 and NEWCH small utility routines: RD300 restores starting address pointers (STAH->SAH, STAL->SAL) and returns (RTS). NEWCH initializes PCNTR (8 bits+parity), clears dipole counters (FIRT), error flag (RER), parity accumulator (PRTY) and zero count (REZ) then returns. Ends with .END marker.",
+      "references": [
+        {
+          "chunk": "load_sync_and_block_start_handling",
+          "topic": "RD300 is used to restore SAL/SAH when preparing to read block data"
+        },
+        {
+          "chunk": "finish_byte_and_newchar_call",
+          "topic": "NEWCH is called by RADJ to initialize state for the next assembled byte"
+        }
+      ]
+    },
+    {
+      "start": 4249,
+      "end": 4272,
+      "name": "cassette_write_toggle_and_timer_setup",
+      "description": "WRITE entry: cassette write/format bit output routine. Describes OCHAR bit-shift into carry, selects short/long write pulse, sets timer one-shot period into 6526 timer registers (D1T2L/D1T2H), clears/arms timer interrupt (D1ICR/D1CRB), and toggles the 6510 port write bit (R6510). Returns with RTS.",
+      "references": [
+        {
+          "chunk": "write_end_of_block_and_bit_processing",
+          "topic": "continues bit-level processing and end-of-block handling"
+        },
+        {
+          "chunk": "bsiv_change_irq_vectors",
+          "topic": "uses IRQ vector changes for write-zero/data timing"
+        }
+      ]
+    },
+    {
+      "start": 4273,
+      "end": 4312,
+      "name": "write_end_of_block_and_bit_processing",
+      "description": "WRTL3 and WRTN group: flags end-of-block via PRP (ROR PRP + branch), WRTN handles per-byte finalization: checks for long-bit (RER) or one-bit (REZ) special cases, invokes WRTX/WRTW/WRITE as needed, increments counters (RER/REZ), toggles OCHAR for dipole complementary bit, updates parity (PRTY), and branches to the register-restore/RTI exit (PREND) when appropriate.",
+      "references": [
+        {
+          "chunk": "cassette_write_toggle_and_timer_setup",
+          "topic": "calls WRITE/WRTX/WRTW to generate pulses"
+        },
+        {
+          "chunk": "byte_finish_parity_and_header_character_output",
+          "topic": "continues with per-bit advancement, parity and header output"
+        }
+      ]
+    },
+    {
+      "start": 4313,
+      "end": 4354,
+      "name": "byte_finish_parity_and_header_character_output",
+      "description": "WRT2/WRT3/WRT4/WRTS: advances to next bit (LSR OCHAR), decrements bit counter (PCNTR), checks for end-of-byte and moves parity into OCHAR, handles header counter logic (CNTDN) to write header characters (including marking first header via FSBLK), clears/updates BCC (DATA) and uses NEWCH/CMPSTE/INCSAL for character fetch/compare logic. Ends with jump to PREND (RESTORE REGS/RTI) when required.",
+      "references": [
+        {
+          "chunk": "write_end_of_block_and_bit_processing",
+          "topic": "arrives here after per-byte bit handling"
+        },
+        {
+          "chunk": "block_completion_sync_and_write_zero_sequence",
+          "topic": "follows to complete block and write trailing sync/zeros"
+        },
+        {
+          "chunk": "increment_address_pointer_insal",
+          "topic": "INCSAL used to increment source address (SAL) during header/data fetch"
+        }
+      ]
+    },
+    {
+      "start": 4355,
+      "end": 4384,
+      "name": "block_completion_sync_and_write_zero_sequence",
+      "description": "WRNC/WREND/WRTZ/WRTS entry sequence: checks and decrements FSBLK (block counter) and, if last, calls TNOF to turn off cassette motor. Sets up trailing sync (SHCNL/SHCNH) and uses BSIV to switch IRQ vectors to the \"write zeros\" handler. Implements writing low/high sync pulses (WRTZ loop), clears counters (NEWCH), sets up for data writing (BSIV with different selector), and prepares for next header/data write by calling RD300 and initializing CNTDN/PRP before jumping back to WRTS.",
+      "references": [
+        {
+          "chunk": "bsiv_change_irq_vectors",
+          "topic": "uses BSIV to set IRQ vectors for zero/data writing"
+        },
+        {
+          "chunk": "turn_off_cassette_motor_tnof",
+          "topic": "calls TNOF to shut the motor after the final block"
+        },
+        {
+          "chunk": "interrupt_restore_and_vic_keyboard_restore_tnif_tniq",
+          "topic": "eventually restores system state after write completes"
+        }
+      ]
+    },
+    {
+      "start": 4385,
+      "end": 4405,
+      "name": "interrupt_restore_and_vic_keyboard_restore_tnif_tniq",
+      "description": "TNIF/TNIQ/STKY sequence: library routine to clean up after cassette write activity. Saves flags (PHP/SEI), unlocks VIC display (VICREG $D011), clears tape timer interrupts (D1ICR), restores keyboard IRQ/setup (IOKEYS and IRQTMP -> CINV), turns off motor (TNOF), restores interrupt flags (PLP) and returns. Also includes STKY entry which calls TNIF when invoked by cassette IRQ and returns to WRTBK if appropriate.",
+      "references": [
+        {
+          "chunk": "turn_off_cassette_motor_tnof",
+          "topic": "called here to turn off the cassette motor"
+        },
+        {
+          "chunk": "bsiv_change_irq_vectors",
+          "topic": "STKY/restore are used when BSIV switched IRQs for tape operations"
+        }
+      ]
+    },
+    {
+      "start": 4406,
+      "end": 4416,
+      "name": "bsiv_change_irq_vectors",
+      "description": "BSIV subroutine and table-driven IRQ vector changer. Uses X as selector (.X = 8 for write zeros, 10 for write data, 12 restore keyscan, 14 read data). Loads two bytes from a table (BSIT-8 + X) and stores them into the IRQ vector at $0314/$0315 (CINV/CINV+1), then RTS.",
+      "references": [
+        {
+          "chunk": "block_completion_sync_and_write_zero_sequence",
+          "topic": "called to change IRQ handlers for zero/data write sequences"
+        },
+        {
+          "chunk": "interrupt_restore_and_vic_keyboard_restore_tnif_tniq",
+          "topic": "restoration routines depend on proper IRQ vector management"
+        }
+      ]
+    },
+    {
+      "start": 4417,
+      "end": 4421,
+      "name": "turn_off_cassette_motor_tnof",
+      "description": "TNOF: turns off the cassette motor by setting the motor bit in the 6510 port (R6510 OR #$20 -> store), then returns with RTS.",
+      "references": [
+        {
+          "chunk": "interrupt_restore_and_vic_keyboard_restore_tnif_tniq",
+          "topic": "used during system restore after tape write"
+        },
+        {
+          "chunk": "block_completion_sync_and_write_zero_sequence",
+          "topic": "invoked when final block has been written"
+        }
+      ]
+    },
+    {
+      "start": 4422,
+      "end": 4431,
+      "name": "compare_start_end_addresses_cmpste",
+      "description": "CMPSTE: subroutine to compare the start (SAL/SAH) and end (EAL/EAH) addresses used by tape read/save routines. Performs SBC across low/high bytes to set flags for BCC/BNE decisions by callers. Preserves carry (SEC) at entry and returns with RTS.",
+      "references": [
+        {
+          "chunk": "byte_finish_parity_and_header_character_output",
+          "topic": "called (CMPSTE) to compare start:end when writing header/data ranges"
+        }
+      ]
+    },
+    {
+      "start": 4432,
+      "end": 4437,
+      "name": "increment_address_pointer_insal",
+      "description": "INCSAL (INCR): increments the two-byte SAL source address (low byte at $AC, high at $AD). Increments low, branches on no-wrap; on overflow increments high byte, then returns.",
+      "references": [
+        {
+          "chunk": "byte_finish_parity_and_header_character_output",
+          "topic": "INCSAL used while fetching header/data characters (SAL) for BCC and output"
+        }
+      ]
+    },
+    {
+      "start": 4438,
+      "end": 4441,
+      "name": "end_and_init_directives_ignored",
+      "description": "Assembly directives and section transition: '.END' directive followed by '.LIB INIT' and a non-technical comment about system reset/start location. Marked ignored (non-technical assembly bookkeeping and transition to INIT library).",
+      "references": [
+        {
+          "chunk": "cassette_write_toggle_and_timer_setup",
+          "topic": "previous library (.LIB WRITE) ends before INIT begins"
+        }
+      ]
+    },
+    {
+      "start": 4442,
+      "end": 4466,
+      "name": "system_start_reset_sequence",
+      "description": "System reset/startup sequence: tests for alternate ROM signature ('CBM80'), initializes CPU state (SEI, TXS, CLD), checks for $A000/$8000 ROMs (JSR A0INT), branches to alternate ROM init if present, sets VIC refresh register, calls IOINIT (I/O initialization), RAMTAS (RAM test/set), RESTOR (KERNAL vectors), CINT (screen init), enables interrupts and finally jumps to BASIC at ($A000). Covers labels START and START1 and the warm/hard-start comments.",
+      "references": [
+        {
+          "chunk": "a0rom_test_tbla0r_table",
+          "topic": "performs the detailed $8000 ROM signature check used by this startup sequence"
+        },
+        {
+          "chunk": "ioinit_configure_io_devices_and_ports",
+          "topic": "IO device initialization invoked by this startup sequence (IOINIT)"
+        },
+        {
+          "chunk": "ramtas_memory_initialization_and_top_detection",
+          "topic": "RAM test and memory sizing called during startup (RAMTAS)"
+        },
+        {
+          "chunk": "restore_and_vector_initialization",
+          "topic": "RESTOR sets up KERNAL indirects and vectors after RAM init"
+        }
+      ]
+    },
+    {
+      "start": 4467,
+      "end": 4479,
+      "name": "a0rom_test_tbla0r_table",
+      "description": "A0INT routine: tests for an $8000 ROM signature by comparing memory bytes against TBLA0R data. Returns Z set if $8000 ROM present. Includes the TBLA0R/TBLA0E data bytes ('.BYT $C3,$C2,$CD,'80'') used for the comparison.",
+      "references": [
+        {
+          "chunk": "system_start_reset_sequence",
+          "topic": "called early in startup to decide whether to jump to an alternate ROM"
+        },
+        {
+          "chunk": "restore_and_vector_initialization",
+          "topic": "vector/table initialization that follows the ROM test in startup"
+        }
+      ]
+    },
+    {
+      "start": 4480,
+      "end": 4506,
+      "name": "restore_and_vector_initialization",
+      "description": "RESTOR and VECTOR routines: RESTOR loads KERNAL indirect pointers and vector base (VECTSS), and VECTOR copies between KERNAL storage and user vectors. Implements MOVOS loop to move vector table entries between storage and the user area, and defines the VECTSS..VECTSE list of KERNAL vector words (KEY, TIMB, NNMI, NOPEN, etc.).",
+      "references": [
+        {
+          "chunk": "system_start_reset_sequence",
+          "topic": "RESTOR is invoked during the system startup sequence"
+        },
+        {
+          "chunk": "ramtas_memory_initialization_and_top_detection",
+          "topic": "RAM tests and tape buffer allocation occur prior to restoring vectors"
+        }
+      ]
+    },
+    {
+      "start": 4507,
+      "end": 4557,
+      "name": "ramtas_memory_initialization_and_top_detection",
+      "description": "RAMTAS memory initialization and sizing: zeroes low memory and system/user buffers (RAMTZ loop), allocates tape buffer pointers (TBUFFR/TAPE1), iterates through memory to detect RAM top via $55/$AA test pattern (RAMTBT, RAMTZ1, RAMTZ2 loop), restores original data, and on success calls SETTOP to record detected top-of-memory. Also sets default MEMBOT (MEMSTR) and HIBASE (screen base) values and returns. Covers labels RAMTAS, RAMTZ0..RAMTZ2, RAMTBT, SIZE and the SETTOP call.",
+      "references": [
+        {
+          "chunk": "system_start_reset_sequence",
+          "topic": "RAMTAS is called during startup to size and initialize RAM"
+        },
+        {
+          "chunk": "memtop_gettop_settop_and_membot",
+          "topic": "uses SETTOP/GETTOP helpers to record the detected top-of-memory"
+        },
+        {
+          "chunk": "cassette_irq_indirect_table",
+          "topic": "tape buffer pointers allocated here correspond to cassette IRQ handling table"
+        }
+      ]
+    },
+    {
+      "start": 4558,
+      "end": 4558,
+      "name": "cassette_irq_indirect_table",
+      "description": "BSIT table: table of indirect pointers for cassette IRQ handlers ('.WOR WRTZ,WRTN,KEY,READ' etc.) used by the cassette interrupt handling logic.",
+      "references": [
+        {
+          "chunk": "ramtas_memory_initialization_and_top_detection",
+          "topic": "tape buffer allocation is related to cassette routines referenced by this table"
+        },
+        {
+          "chunk": "ioinit_configure_io_devices_and_ports",
+          "topic": "cassette I/O is part of the broader I/O initialization"
+        }
+      ]
+    },
+    {
+      "start": 4559,
+      "end": 4598,
+      "name": "ioinit_configure_io_devices_and_ports",
+      "description": "IOINIT routine: initializes I/O devices and chip registers. Disables interrupts, clears interrupt-control for CIA timers (D1ICR, D2ICR), enables STOP key, shuts off timers, configures CIA registers (CRA/CRB) for timers, sets keyboard and user-port DDRs and PRAs/PRBs, disables SID output, sets 6510 port defaults ($01 and $00), reads PAL/NTSC flag to choose keyboard-timer interval, initializes timer1 low/high bytes for keyboard scan (SIXTY/SIXTYP), then jumps to PIOKEY. Includes commented-out alternative timer enable code and the IOKEYS PAL/NTSC branch logic.",
+      "references": [
+        {
+          "chunk": "system_start_reset_sequence",
+          "topic": "IOINIT is invoked early in startup to configure I/O hardware"
+        },
+        {
+          "chunk": "sixty_and_file_io_helpers",
+          "topic": "the SIXTY/SIXTYP constants used here are defined nearby and influence keyboard timer setup"
+        }
+      ]
+    },
+    {
+      "start": 4599,
+      "end": 4633,
+      "name": "sixty_constant_and_file_io_helpers",
+      "description": "SIXTY constant and small IO/file helper routines: defines SIXTY (keyboard timer value), SETNAM (store filename length & pointer), SETLFS (set logical file parameters LA/FA/SA), READSS (determine whether input device is RS-232 and clear RS-232 status on read), SETMSG (set message flag), READST (read and OR status byte), and SETTMO (store timeout). These helpers are used by higher-level device/file operations.",
+      "references": [
+        {
+          "chunk": "ioinit_configure_io_devices_and_ports",
+          "topic": "SIXTY is used during IOINIT to program the keyboard timer"
+        },
+        {
+          "chunk": "memtop_gettop_settop_and_membot",
+          "topic": "SETTMO and related helpers interact with timeout/IO management"
+        }
+      ]
+    },
+    {
+      "start": 4634,
+      "end": 4660,
+      "name": "memtop_gettop_settop_and_membot",
+      "description": "Memory top/bottom management routines: MEMTOP (branch to SETTOP or GETTOP depending on carry), GETTOP (load MEMSIZ into X/Y), SETTOP (store X/Y into MEMSIZ), MEMBOT (branch to SETBOT or GETTOP depending on carry), GET bottom (load MEMSTR into X/Y), and SETBOT (store X/Y into MEMSTR). Concludes with .END. These helpers allow other routines to read or set the detected top and bottom memory boundaries.",
+      "references": [
+        {
+          "chunk": "ramtas_memory_initialization_and_top_detection",
+          "topic": "uses SETTOP to record detected top-of-memory during RAMTAS"
+        },
+        {
+          "chunk": "sixty_and_file_io_helpers",
+          "topic": "some I/O timeout and memory dependent operations use these memory-bound helpers"
+        }
+      ]
+    },
+    {
+      "start": 4661,
+      "end": 4676,
+      "name": "rs232_nmi_entry_and_rom_check",
+      "description": "RS232NMI entry sequence: SEI and JMP to NMINV, push A,X,Y on stack, disable all NMIs by storing #$7F into D2ICR, read D2ICR to test whether the interrupt is a real NMI source, call A0INT to check for $A000 ROM presence, and jump through ($8002) if the $A000 ROM is present.",
+      "references": [
+        {
+          "chunk": "stop_key_and_warm_start_restore",
+          "topic": "stop-key check and warm-start handling reached if not ROM"
+        },
+        {
+          "chunk": "nmi_prepare_and_t1_transmit",
+          "topic": "continues into preparing for NMI handling and T1 transmit"
+        }
+      ]
+    },
+    {
+      "start": 4677,
+      "end": 4690,
+      "name": "stop_key_and_warm_start_restore",
+      "description": "Checks for the STOP key and, if pressed, performs a warm-start (TIMB): calls UD60 and STOP to test STOP key; if STOP is detected, executes system restore sequence (RESTOR, IOINIT, CINT) and then jumps to the BASIC warm-start vector at ($A002). If no STOP, execution continues to NMI handling.",
+      "references": [
+        {
+          "chunk": "rs232_nmi_entry_and_rom_check",
+          "topic": "previous NMI entry and ROM presence check"
+        },
+        {
+          "chunk": "nmi_prepare_and_t1_transmit",
+          "topic": "next: disable NMIs until ready and handle T1/T2/FLAG"
+        }
+      ]
+    },
+    {
+      "start": 4691,
+      "end": 4710,
+      "name": "nmi_prepare_and_t1_transmit",
+      "description": "Prepare for servicing NMIs and handle T1 (transmit) NMI: comments about disabling NMIs until ready and saving on stack; restore Y (TYA), mask ENABL to show only enabled sources, save mask in X (TAX). T1 NMI check: test ENABL bit for T1, read D2PRA, mask/merge with NXTBIT to produce next output bit, write back to D2PRA to transmit, then restore D2ICR (NMI enables). Also notes about 6526 ICR structure requiring nested handling of another NMI.",
+      "references": [
+        {
+          "chunk": "rs232_nmi_entry_and_rom_check",
+          "topic": "entry/setup that leads here"
+        },
+        {
+          "chunk": "nested_nmi_dispatch_and_rstrab",
+          "topic": "after transmit, code checks for nested NMIs (T2/FLAG)"
+        },
+        {
+          "chunk": "popen_patch_and_baudof_calculation_and_end",
+          "topic": "NXTBIT and BAUD timing values established by POPEN/BAUD table"
+        }
+      ]
+    },
+    {
+      "start": 4711,
+      "end": 4726,
+      "name": "nested_nmi_dispatch_and_rstrab",
+      "description": "Handle a second NMI as a nested/subroutine call due to 6526 ICR semantics: test for another NMI (TXA AND #$12) and branch accordingly. If T2 set, call T2NMI to process a received bit; if FLAG, call FLNMI for start-bit handling. After handling, JSR RSTRAB is called to recompute necessary parameters and then branch/jump to NMIRTI for return processing.",
+      "references": [
+        {
+          "chunk": "nmi_prepare_and_t1_transmit",
+          "topic": "called after T1 transmit restores NMI enables and checks for additional NMIs"
+        },
+        {
+          "chunk": "t2nmi_subroutine_sample_and_timer_update",
+          "topic": "T2NMI handles normal received-bit processing"
+        },
+        {
+          "chunk": "flnmi_half_bit_setup_and_return",
+          "topic": "FLNMI handles start-bit (flag edge) setup"
+        }
+      ]
+    },
+    {
+      "start": 4727,
+      "end": 4750,
+      "name": "t2_and_flag_nmi_handlers_and_rti",
+      "description": "Top-level checks and returns for T2 and FLAG NMIs: T2 NMI path verifies T2 bit and calls T2NMI then jumps to NMIRTI. FLAG NMI path detects flag edge and calls FLNMI to start half-bit timing. After either branch, ENABL is restored to D2ICR, stack registers are pulled (PLA/TAY/PLA/TAX/PLA) and RTI performed to resume execution.",
+      "references": [
+        {
+          "chunk": "nested_nmi_dispatch_and_rstrab",
+          "topic": "alternative entry points for nested NMI checks"
+        },
+        {
+          "chunk": "t2nmi_subroutine_sample_and_timer_update",
+          "topic": "detailed T2NMI implementation invoked here"
+        },
+        {
+          "chunk": "flnmi_half_bit_setup_and_return",
+          "topic": "detailed FLNMI implementation invoked here"
+        }
+      ]
+    },
+    {
+      "start": 4751,
+      "end": 4768,
+      "name": "baud_table_and_cbit",
+      "description": "BAUDO table and CBIT constant: the BAUDO table contains 16-bit words used to compute timing for half-bit or mid-bit sampling for various standard baud rates (50 through 2400). The comments indicate the stored values (e.g., 10000-CBIT, 6667-CBIT, etc.). CBIT is defined as an adjustment (100 cycles) approximating the time to service a CB1 NMI and is used to tune mid-bit sampling times.",
+      "references": [
+        {
+          "chunk": "t2nmi_subroutine_sample_and_timer_update",
+          "topic": "BAUDOF values from BAUDO are used to compute the mid-bit timer adjustments"
+        },
+        {
+          "chunk": "popen_patch_and_baudof_calculation_and_end",
+          "topic": "POpen computes BAUDOF derived from M51AJB and CBIT"
+        }
+      ]
+    },
+    {
+      "start": 4769,
+      "end": 4798,
+      "name": "t2nmi_subroutine_sample_and_timer_update",
+      "description": "T2NMI subroutine: read the input bit from D2PRB, mask/save it into INBIT; compute an updated T2 timer for mid-bit sampling by subtracting a fixed offset, adding BAUDOF (BAUDOF/BAUDOF+1 words), store new D2T2L/H, enable the timer via D2CRB, restore NMI enables to D2ICR, preset the countdown values (D2T2L/H) to $FFFF for the next interval, and then JMP to RSRCVR (the receiver/shifter) to process the sampled bit. Comments note worst-case timing and why the CBIT adjustment exists.",
+      "references": [
+        {
+          "chunk": "baud_table_and_cbit",
+          "topic": "uses BAUDOF/BAUDOF+1 and CBIT constants for timing"
+        },
+        {
+          "chunk": "flnmi_half_bit_setup_and_return",
+          "topic": "FLNMI sets up the half-bit timer and then transfers control to T2NMI path"
+        },
+        {
+          "chunk": "nested_nmi_dispatch_and_rstrab",
+          "topic": "T2NMI is invoked when a T2 NMI is detected"
+        }
+      ]
+    },
+    {
+      "start": 4799,
+      "end": 4823,
+      "name": "flnmi_half_bit_setup_and_return",
+      "description": "FLNMI (FLAG NMI) helper: set up half-bit timing when a start-edge (flag) is detected. Load the precomputed half-bit timer value from M51AJB/M51AJB+1 into D2T2L/H, enable the timer (D2CRB), toggle ENABL to disable FLAG and enable T2 (store ENABL), preset the countdown D2T2L/H to $FFFF, load BITNUM into BITCI (receive bit counter), and return (RTS). This primes the system to sample the middle of the incoming start/first data bits.",
+      "references": [
+        {
+          "chunk": "t2nmi_subroutine_sample_and_timer_update",
+          "topic": "FLNMI primes timer and counters before T2NMI mid-bit sampling runs"
+        },
+        {
+          "chunk": "t2_and_flag_nmi_handlers_and_rti",
+          "topic": "FLNMI is called from the FLAG NMI path"
+        }
+      ]
+    },
+    {
+      "start": 4824,
+      "end": 4840,
+      "name": "popen_patch_and_baudof_calculation_and_end",
+      "description": "POPEN routine and module end: POPEN (patch for universal KERNAL) calculates BAUDOF (M51AJB-based half-bit rate adjustment) by rotating and adding CBIT-derived offsets, stores BAUDOF and BAUDOF+1, and returns. The file ends with a couple of NOPs and the .END directive. Comments note M51AJB meaning (FREQ/BAUD/2 - 100) and that POPEN is used when configuring RS-232 open behavior.",
+      "references": [
+        {
+          "chunk": "baud_table_and_cbit",
+          "topic": "POpen computes BAUDOF and BAUDOF+1 that are used along with BAUDO table entries"
+        },
+        {
+          "chunk": "nmi_prepare_and_t1_transmit",
+          "topic": "BAUD/bit timing values computed here affect NXTBIT and transmit timing"
+        }
+      ]
+    },
+    {
+      "start": 4841,
+      "end": 4862,
+      "name": "irqfile_library",
+      "description": "IRQ simulation and break handling helpers: SIMIRQ pushes processor state and simulates an IRQ for cassette reads, fixes BREAK flag on stack, then uses PULS to check for real IRQs vs break instruction by examining saved P status in page $0104. PULS will jump to the callback vectors in page $0316/$0314 (CBINV/CINV) to handle the break/IRQ accordingly. Used for creating a software-simulated IRQ context for cassette processing.",
+      "references": [
+        {
+          "chunk": "rs232_nmi_library",
+          "topic": "SIMIRQ used when cassette code needs to simulate interrupts"
+        },
+        {
+          "chunk": "vectors_table",
+          "topic": "vectors point to CINV/CBINV entries used by PULS"
+        }
+      ]
+    },
+    {
+      "start": 4863,
+      "end": 4909,
+      "name": "vectors_table",
+      "description": "KERNAL vectors and jump table area: installs high-level vector entries for KERNAL services (CINT, IOINIT, RAMTAS, RESTOR, VECTOR, SETMSG, SECND, TALK, LISTN, ACPTR, CIOUT, UNTLK, UNLSN, BSOUT, OPEN/CLOSE/CHKIN/CKOUT/CLRCH/BASIN/BSOUT mapping to indirect tables), STOP/GETIN/CLALL/UDTIM etc. Also defines the NMI/RESET/IRQ vectors at $FFFA..$FFFE (NMI, RESET, IRQ) and includes a table of cassette IRQ entry points (BSIT) and patchable jump entries. This block wires ROM entrypoints to the routines implemented elsewhere in the file and provides the public KERNAL API entrypoints used by BASIC and machine code programs.",
+      "references": [
+        {
+          "chunk": "init_library",
+          "topic": "VECTOR/RESTOR use these vectors to initialize KERNAL indirects"
+        },
+        {
+          "chunk": "load_library",
+          "topic": "LOAD/SAVE routines are exposed via these KERNAL vectors (OPEN/LOAD/SAVE)"
+        }
+      ]
+    }
+  ],
+  "source_md5": "b707105caeef2084ede3fe562b56a815"
+}

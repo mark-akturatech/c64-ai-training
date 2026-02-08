@@ -1,0 +1,805 @@
+{
+  "source_file": "C64 Memory Map sta.c64.org.txt",
+  "context": "Commodore 64 Complete Memory Map - Source: sta.c64.org",
+  "splits": [
+    {
+      "start": 1,
+      "end": 3,
+      "ignore": true,
+      "reason": "Title and document header"
+    },
+    {
+      "start": 4,
+      "end": 6,
+      "name": "zero_page_overview",
+      "description": "Zero Page region overview ($0000-$00FF). Introduces the purpose and range of the zero page used by the BASIC interpreter and system.",
+      "references": [
+        {
+          "chunk": "zero_page_processor_port_and_defaults",
+          "topic": "processor port and startup defaults"
+        },
+        {
+          "chunk": "zero_page_buffers_and_tokenization",
+          "topic": "tokenization and byte buffers"
+        }
+      ]
+    },
+    {
+      "start": 7,
+      "end": 10,
+      "name": "zero_page_processor_port_and_defaults",
+      "description": "Zero Page addresses $0000-$0006: $0000 Processor Port DDR (data direction for processor port bits), $0001 Processor Port (memory area configuration and datasette control), $0002-$0004 and $0005-$0006 unused-default execution addresses for floating-point and integer conversion routines.",
+      "references": [
+        {
+          "chunk": "bank_switching_notes",
+          "topic": "visibility controlled by processor port $0001"
+        },
+        {
+          "chunk": "basic_rom_visibility",
+          "topic": "effect of $0001 on ROM visibility"
+        }
+      ]
+    },
+    {
+      "start": 11,
+      "end": 19,
+      "name": "zero_page_buffers_and_tokenization",
+      "description": "Zero Page $0007-$000F: various byte buffers and tokenization/state flags used by BASIC. Includes search/input byte buffers ($0007-$0008), column counter ($0009), LOAD/VERIFY switch ($000A), token/array counters ($000B-$000C), expression and numerical type flags ($000D-$000E), and quotation mode ($000F).",
+      "references": [
+        {
+          "chunk": "tokenizer_and_executor_vectors",
+          "topic": "tokenizer/executor vectors in $0304-$0309"
+        }
+      ]
+    },
+    {
+      "start": 20,
+      "end": 26,
+      "name": "zero_page_variable_and_input_flags",
+      "description": "Zero Page $0010-$0018: variable/input flags and line-number pointers. Contains variable fetch flags, input method selector, sign register, current I/O device, and default line-number storage ($0014-$0015).",
+      "references": [
+        {
+          "chunk": "basic_program_area",
+          "topic": "BASIC program area and line storage"
+        }
+      ]
+    },
+    {
+      "start": 27,
+      "end": 29,
+      "name": "zero_page_string_stack_and_temps",
+      "description": "Zero Page $0016-$0029: string stack and temporary areas. Includes string stack pointer ($0016), previous pointer ($0017-$0018), string stack temp area ($0019-$0021), general temporary storage ($0022-$0025), and auxiliary arithmetic register ($0026-$0029) used for division/multiplication.",
+      "references": [
+        {
+          "chunk": "floating_point_registers",
+          "topic": "FAC and arithmetic registers in $0061-$0065 and $0069-$006D"
+        }
+      ]
+    },
+    {
+      "start": 30,
+      "end": 36,
+      "name": "zero_page_basic_pointers_and_arrays",
+      "description": "Zero Page $002A-$0036: includes $002A unused, $002B-$002C BASIC start pointer (default $0801), $002D-$002E variable area start, $002F-$0030 array start, $0031-$0032 array end, $0033-$0034 string start, and $0035-$0036 string allocation size.",
+      "references": [
+        {
+          "chunk": "basic_program_area",
+          "topic": "default BASIC program start at $0801"
+        }
+      ]
+    },
+    {
+      "start": 37,
+      "end": 46,
+      "name": "zero_page_basic_end_and_execution_state",
+      "description": "Zero Page $0037-$004A: BASIC end pointer ($0037-$0038), current line and CONT line/pointer ($0039-$003E), DATA line/pointer ($003F-$0042), input/result pointers and variable name/value pointers ($0043-$0048), variable pointer/WAIT and temp instruction storage ($0049-$004C).",
+      "references": [
+        {
+          "chunk": "interrupt_and_basic_vectors",
+          "topic": "BASIC/USR/IRQ vectors influence execution flow"
+        }
+      ]
+    },
+    {
+      "start": 47,
+      "end": 56,
+      "name": "zero_page_comparison_fn_and_math_registers",
+      "description": "Zero Page $004B-$0065: saved temp instruction pointer ($004B-$004C), comparison operator flags ($004D), FN pointer ($004E-$004F), string variable pointer ($0050-$0051), garbage collection step size ($0053), JMP instruction pointers ($0054-$0056), arithmetic Register #3 and #4 storage ($0057-$0060 and $005C-$0060 overlapping registers), and start of the floating-point accumulator region ($0061-$0065).",
+      "references": [
+        {
+          "chunk": "garbage_collection_and_memory_management",
+          "topic": "GC step size usage ($0053)"
+        },
+        {
+          "chunk": "floating_point_registers",
+          "topic": "FAC region"
+        }
+      ]
+    },
+    {
+      "start": 57,
+      "end": 63,
+      "name": "floating_point_registers_and_string_compare",
+      "description": "Zero Page $0066-$0072: FAC sign ($0066), polynomial degree counter ($0067), temporary area ($0068), ARG register ($0069-$006D) and ARG sign ($006E), plus pointers used for string comparison ($006F-$0070) and array/polynomial tables ($0071-$0072).",
+      "references": [
+        {
+          "chunk": "zero_page_string_stack_and_temps",
+          "topic": "string stack and temp areas"
+        }
+      ]
+    },
+    {
+      "start": 64,
+      "end": 66,
+      "name": "chrget_machine_code_and_pointers",
+      "description": "Zero Page $0073-$007B: CHRGET machine code area ($0073-$008A covers code for reading BASIC bytes, entry at $0079), plus CHRGET pointer(s) ($007A-$007B) used to reference the current BASIC byte during tokenization and listing.",
+      "references": [
+        {
+          "chunk": "tokenizer_and_executor_vectors",
+          "topic": "tokenizer routines that call CHRGET"
+        }
+      ]
+    },
+    {
+      "start": 67,
+      "end": 76,
+      "name": "random_and_device_status_flags",
+      "description": "Zero Page $008B-$0098: RND state ($008B-$008F), ST variable device status ($0090), Stop key indicator ($0091), datasette timing and load/verify switches ($0092-$0093), serial cache and previous byte ($0094-$0095), tape EOL ($0096), and saved register values during I/O ($0097-$0098).",
+      "references": [
+        {
+          "chunk": "datasette_and_serial_buffers",
+          "topic": "datasette and serial-related zero page fields"
+        },
+        {
+          "chunk": "random_number_state",
+          "topic": "RND() state usage"
+        }
+      ]
+    },
+    {
+      "start": 77,
+      "end": 83,
+      "name": "io_device_numbers_and_flags",
+      "description": "Zero Page $0099-$009F: input and output device numbers ($0099-$009A), datasette parity/byte-ready flags ($009B-$009C), error display and RS232/datasette output/error counter ($009D-$009E), and auxiliary datasette counter ($009F).",
+      "references": [
+        {
+          "chunk": "serial_and_rs232_zero_page",
+          "topic": "RS232 buffers and control bytes in zero page"
+        }
+      ]
+    },
+    {
+      "start": 84,
+      "end": 96,
+      "name": "time_and_serial_counters",
+      "description": "Zero Page $00A0-$00B1: TI variables/time counters ($00A0-$00A2) incremented every 1/60s, EOI/datasette counters ($00A3-$00A6), RS232 bit buffers and counters for input ($00A7-$00AA), RS232 byte buffer ($00AB), save/load start and load address pointers ($00AC-$00AF), and two unused bytes ($00B0-$00B1).",
+      "references": [
+        {
+          "chunk": "datasette_and_serial_buffers",
+          "topic": "datasette/RS232 buffer pointers and counters"
+        }
+      ]
+    },
+    {
+      "start": 97,
+      "end": 105,
+      "name": "datasette_and_file_parameter_pointers",
+      "description": "Zero Page $00B2-$00BB: pointer to datasette buffer ($00B2-$00B3), RS232 bit control and buffers for output ($00B4-$00B6), filename length and file parameters ($00B7-$00BA), and filename pointer ($00BB).",
+      "references": [
+        {
+          "chunk": "file_open_close_vectors",
+          "topic": "BASIC file handling vectors in $031A-$0323"
+        }
+      ]
+    },
+    {
+      "start": 106,
+      "end": 112,
+      "name": "rs232_and_saveblock_controls",
+      "description": "Zero Page $00BD-$00C5: RS232 parity/aux buffering ($00BD), datasette block counter ($00BE), unused ($00BF), datasette motor switch ($00C0), save start addresses ($00C1-$00C2) and secondary start ($00C3-$00C4), plus previous key matrix entry ($00C5).",
+      "references": [
+        {
+          "chunk": "datasette_and_serial_buffers",
+          "topic": "motor and block counters for datasette"
+        }
+      ]
+    },
+    {
+      "start": 113,
+      "end": 121,
+      "name": "keyboard_control_and_cursor_state",
+      "description": "Zero Page $00C6-$00CF: keyboard buffer length and reverse mode ($00C6-$00C7), line/column and cursor state variables ($00C8-$00CF) including cursor row/column, visibility, delay, character under cursor, and cursor phase.",
+      "references": [
+        {
+          "chunk": "default_screen_memory",
+          "topic": "screen memory and cursor mapping at $0400"
+        }
+      ]
+    },
+    {
+      "start": 122,
+      "end": 131,
+      "name": "screen_line_pointers_and_input_state",
+      "description": "Zero Page $00D0-$00F1: EOL switch ($00D0), screen line pointer ($00D1-$00D2), current column/quote mode/line length/current row/input character/insertion count ($00D3-$00D9), and high-byte table for 25 screen line pointers ($00D9-$00F1).",
+      "references": [
+        {
+          "chunk": "default_screen_memory",
+          "topic": "screen RAM mapping and line pointers at $0400-$07FF"
+        }
+      ]
+    },
+    {
+      "start": 132,
+      "end": 140,
+      "name": "screen_scroll_color_and_rs232_pointers",
+      "description": "Zero Page $00F2-$010A and adjacent areas: scroll temporary ($00F2), color line pointer ($00F3-$00F4), keyboard conversion table pointer ($00F5-$00F6), RS232 input/output buffer pointers ($00F7-$00FA), four unused bytes ($00FB-$00FE), and floating-point-to-string conversion buffer ($00FF-$010A).",
+      "references": [
+        {
+          "chunk": "floating_point_registers",
+          "topic": "FAC and FP conversion buffers referenced from zero page"
+        },
+        {
+          "chunk": "serial_and_rs232_zero_page",
+          "topic": "RS232 buffer pointers"
+        }
+      ]
+    },
+    {
+      "start": 141,
+      "end": 147,
+      "name": "processor_stack_and_error_bytes",
+      "description": "Processor Stack region header ($0100-$01FF) and contents: $0100-$013D error bytes (datasette pointers) and the system processor stack area used for subroutine/interrupt stacking and FOR/GOSUB storage ($0100-$01FF).",
+      "references": [
+        {
+          "chunk": "hardware_vectors",
+          "topic": "stack use by interrupts and vectors"
+        }
+      ]
+    },
+    {
+      "start": 148,
+      "end": 156,
+      "name": "system_area_input_and_file_tables",
+      "description": "System Area $0200-$0262 start: input buffer/screen data ($0200-$0258), logical file number table ($0259-$0262), device number and secondary address tables next in region.",
+      "references": [
+        {
+          "chunk": "zero_page_basic_pointers_and_arrays",
+          "topic": "link between BASIC start and system area"
+        }
+      ]
+    },
+    {
+      "start": 157,
+      "end": 164,
+      "name": "system_area_memory_test_and_keyboard",
+      "description": "System Area $0263-$028A: device/secondary address tables ($0263-$0276), keyboard buffer ($0277-$0280), BASIC memory test start/end ($0281-$0284), serial timeout ($0285), cursor color bits and screen memory high byte ($0286-$0288), keyboard buffer max/repeat config ($0289-$028A).",
+      "references": [
+        {
+          "chunk": "keyboard_control_and_cursor_state",
+          "topic": "keyboard buffer and cursor flags in zero page"
+        }
+      ]
+    },
+    {
+      "start": 165,
+      "end": 174,
+      "name": "system_area_key_repeat_and_shift",
+      "description": "System Area $028B-$0297: key repeat delays ($028B-$028D), shift key status and previous shift state ($028D-$028E), shift routine address ($028F-$0290), commodore-shift enable ($0291), scroll direction ($0292), RS232 control/command and RS232 out timer defaults ($0293-$0296), RS232 status ($0297).",
+      "references": [
+        {
+          "chunk": "serial_and_rs232_zero_page",
+          "topic": "RS232 config in system area vs zero page"
+        }
+      ]
+    },
+    {
+      "start": 175,
+      "end": 181,
+      "name": "system_area_rs232_buffer_and_isr_backup",
+      "description": "System Area $0298-$02A0: RS232 byte size and timers ($0298-$0299-$029A), RS232 input offset/pointer and output offset/pointer ($029B-$029E), ISR backup pointers ($029F-$02A0).",
+      "references": [
+        {
+          "chunk": "hardware_vectors",
+          "topic": "ISR backups and interrupt handling"
+        }
+      ]
+    },
+    {
+      "start": 182,
+      "end": 190,
+      "name": "cia_backup_scroll_and_video_standard",
+      "description": "System Area $02A1-$02FF: CIA interrupt/backups ($02A1-$02A4), scroll line count ($02A5), PAL/NTSC switch ($02A6), and remaining unused bytes up to $02FF.",
+      "references": [
+        {
+          "chunk": "vic_bank_selection",
+          "topic": "PAL/NTSC effects on VIC-II behavior"
+        }
+      ]
+    },
+    {
+      "start": 191,
+      "end": 199,
+      "name": "interrupt_and_basic_vectors_intro",
+      "description": "Interrupt vectors and BASIC vectors region header ($0300-$03FF) and core BASIC entry vectors: $0300 Warm start, $0302 BASIC idle, $0304 tokenizer, $0306 token decoder, $0308 executor, $030A expression reader.",
+      "references": [
+        {
+          "chunk": "tokenizer_and_executor_vectors",
+          "topic": "tokenizer/executor addresses in $0304-$0309"
+        }
+      ]
+    },
+    {
+      "start": 200,
+      "end": 208,
+      "name": "sys_registers_and_core_handlers",
+      "description": "Vectors/resources $030C-$0319: default SYS return registers ($030C-$030F), USR function jump ($0310-$0312), IRQ / BRK / NMI handler addresses ($0314-$0319).",
+      "references": [
+        {
+          "chunk": "hardware_vectors",
+          "topic": "NMI/IRQ/Reset hardware vectors at $FFFA-$FFFF"
+        }
+      ]
+    },
+    {
+      "start": 209,
+      "end": 218,
+      "name": "file_i_o_vectors",
+      "description": "BASIC I/O and channel vectors $031A-$032A: OPEN/CLOSE/CHKIN/CHKOUT/CLRCHN/CHRIN/CHROUT/STOP/GETIN and related I/O function pointers used by the KERNAL/BASIC I/O layer.",
+      "references": [
+        {
+          "chunk": "zero_page_datasette_and_file_pointers",
+          "topic": "zero page file parameters and pointers"
+        }
+      ]
+    },
+    {
+      "start": 219,
+      "end": 225,
+      "name": "load_save_and_datasette_buffer_vectors",
+      "description": "Vectors $0330-$033B and datasette: LOAD and SAVE routine addresses ($0330-$0333), unused bytes ($0334-$033B), datasette I/O buffer area $033C-$03FB (192 bytes), and trailing unused bytes through $03FF.",
+      "references": [
+        {
+          "chunk": "datasette_and_serial_buffers",
+          "topic": "datasette buffer pointers in zero page and system area"
+        }
+      ]
+    },
+    {
+      "start": 226,
+      "end": 233,
+      "name": "default_screen_memory",
+      "description": "Default Screen Memory area $0400-$07FF: screen RAM for display ($0400-$07E7, 1000 bytes), unused region ($07E8-$07F7), and default sprite pointers ($07F8-$07FF).",
+      "references": [
+        {
+          "chunk": "color_ram",
+          "topic": "color RAM mapping at $D800-$DBFF"
+        },
+        {
+          "chunk": "vic_sprite_registers",
+          "topic": "VIC-II sprite coordinate registers at $D000-$D00F"
+        }
+      ]
+    },
+    {
+      "start": 234,
+      "end": 247,
+      "name": "basic_program_area_and_cartridge_space",
+      "description": "BASIC program area and cartridge space $0800-$9FFF: BASIC program storage starts at $0801 (link area at $0800), main program area $0801-$9FFF, and optional cartridge ROM region $8000-$9FFF (8K) including cartridge vector fields at $8000-$8008.",
+      "references": [
+        {
+          "chunk": "zero_page_basic_pointers_and_arrays",
+          "topic": "BASIC start pointer ($002B-$002C) referencing $0801"
+        },
+        {
+          "chunk": "cartridge_structure",
+          "topic": "cartridge cold reset/NMI entries and signature"
+        }
+      ]
+    },
+    {
+      "start": 248,
+      "end": 255,
+      "name": "basic_rom_area",
+      "description": "BASIC ROM region $A000-$BFFF: 8 KB BASIC interpreter ROM or RAM if banked out/overlaid. Visibility controlled by processor port $0001 bits #0-#2.",
+      "references": [
+        {
+          "chunk": "zero_page_processor_port_and_defaults",
+          "topic": "processor port $0001 controls ROM visibility"
+        }
+      ]
+    },
+    {
+      "start": 256,
+      "end": 261,
+      "name": "upper_ram",
+      "description": "Upper RAM $C000-$CFFF: 4 KB general-purpose RAM typically used by programs and cartridges when visible.",
+      "references": [
+        {
+          "chunk": "basic_program_area_and_cartridge_space",
+          "topic": "upper RAM placement relative to cartridge ROM"
+        }
+      ]
+    },
+    {
+      "start": 262,
+      "end": 265,
+      "name": "io_area_header",
+      "description": "I/O Area header $D000-$DFFF describing the I/O-mapped device range accessed through the VIC/SID/CIAs and expansion ports.",
+      "references": [
+        {
+          "chunk": "vic_sprite_registers",
+          "topic": "VIC-II registers located at $D000-$D3FF"
+        },
+        {
+          "chunk": "sid_registers_voice1",
+          "topic": "SID registers located at $D400-$D7FF"
+        }
+      ]
+    },
+    {
+      "start": 266,
+      "end": 273,
+      "name": "vic_sprite_registers",
+      "description": "VIC-II Sprite Registers $D000-$D00F and $D010: sprite X/Y coordinate registers for sprites 0-7 ($D000-$D00F) (X bits 0-7), and X MSB additional bits for sprites 0-7 stored in $D010 (bit #8).",
+      "references": [
+        {
+          "chunk": "vic_screen_control_registers",
+          "topic": "screen control registers $D011-$D018"
+        },
+        {
+          "chunk": "default_screen_memory",
+          "topic": "sprite pointers at $07F8-$07FF"
+        }
+      ]
+    },
+    {
+      "start": 274,
+      "end": 284,
+      "name": "vic_screen_control_registers",
+      "description": "VIC-II screen control registers $D011-$D018: $D011 (vertical scroll, height/bitmap mode, raster MSB), $D012 raster line (bits 0-7), $D013-$D014 light pen X/Y (read-only), $D015 sprite enable, $D016 screen control 2 (horizontal scroll, width, multicolor), $D017 sprite height (double height), $D018 memory setup (character/bitmap/screen memory pointers).",
+      "references": [
+        {
+          "chunk": "vic_sprite_registers",
+          "topic": "sprite X/Y and MSB bits at $D000/$D010"
+        },
+        {
+          "chunk": "vic_interrupt_registers",
+          "topic": "raster and collision IRQs at $D019-$D01A"
+        }
+      ]
+    },
+    {
+      "start": 285,
+      "end": 289,
+      "name": "vic_interrupt_registers",
+      "description": "VIC-II interrupt registers $D019-$D01A: $D019 IRQ status (raster, sprite collision, light pen), and $D01A IRQ control to enable raster/collision/light pen interrupts.",
+      "references": [
+        {
+          "chunk": "hardware_vectors",
+          "topic": "NMI/IRQ vectors and their default handlers"
+        }
+      ]
+    },
+    {
+      "start": 290,
+      "end": 297,
+      "name": "vic_sprite_features",
+      "description": "VIC-II sprite feature registers $D01B-$D01F: $D01B sprite priority (behind/in-front), $D01C sprite multicolor mode, $D01D sprite width (double width), $D01E sprite-sprite collision register, $D01F sprite-background collision register.",
+      "references": [
+        {
+          "chunk": "vic_sprite_registers",
+          "topic": "sprite position/pointer registers"
+        }
+      ]
+    },
+    {
+      "start": 298,
+      "end": 308,
+      "name": "vic_color_registers_and_bg_colors",
+      "description": "VIC-II color registers $D020-$D02E: $D020 border color, $D021 primary background color, $D022-$D024 extended background colors 1-3, $D025-$D026 multicolor sprite colors, and $D027-$D02E individual sprite colors for sprites 0-7 (bits 0-3 only).",
+      "references": [
+        {
+          "chunk": "color_ram",
+          "topic": "color RAM stores per-character color data at $D800-$DBFF"
+        }
+      ]
+    },
+    {
+      "start": 309,
+      "end": 313,
+      "name": "vic_mirror_area",
+      "description": "VIC-II mirror area $D02F-$D3FF: register images repeated every $40 bytes providing mirror copies of the VIC-II register set.",
+      "references": [
+        {
+          "chunk": "vic_screen_control_registers",
+          "topic": "original VIC-II register set locations"
+        }
+      ]
+    },
+    {
+      "start": 314,
+      "end": 324,
+      "name": "sid_registers_voice1",
+      "description": "SID (Sound Interface Device) Voice 1 registers $D400-$D406: $D400-$D401 frequency (write-only), $D402-$D403 pulse width, $D404 control (waveform/modulation), $D405 attack/decay (A/D), $D406 sustain/release (S/R).",
+      "references": [
+        {
+          "chunk": "sid_filter_registers",
+          "topic": "SID filter and master volume at $D415-$D418"
+        }
+      ]
+    },
+    {
+      "start": 325,
+      "end": 332,
+      "name": "sid_registers_voice2",
+      "description": "SID Voice 2 registers $D407-$D40D: $D407-$D408 frequency, $D409-$D40A pulse width, $D40B control, $D40C attack/decay, $D40D sustain/release (write-only).",
+      "references": [
+        {
+          "chunk": "sid_registers_voice1",
+          "topic": "voice register layout similarity"
+        }
+      ]
+    },
+    {
+      "start": 333,
+      "end": 339,
+      "name": "sid_registers_voice3",
+      "description": "SID Voice 3 registers $D40E-$D414: $D40E-$D40F frequency, $D410-$D411 pulse width, $D412 control, $D413 attack/decay, $D414 sustain/release (write-only).",
+      "references": [
+        {
+          "chunk": "sid_paddle_and_readback",
+          "topic": "voice 3 readback registers at $D41B-$D41C"
+        }
+      ]
+    },
+    {
+      "start": 340,
+      "end": 340,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 341,
+      "end": 347,
+      "name": "sid_filter_registers",
+      "description": "SID Filter registers $D415-$D418: $D415 filter cutoff low (bits 0-2), $D416 filter cutoff high (bits 3-10), $D417 filter control (voice routing/resonance), $D418 master volume and filter mode register (write-only).",
+      "references": [
+        {
+          "chunk": "sid_registers_voice1",
+          "topic": "voices routed to filter via $D417"
+        }
+      ]
+    },
+    {
+      "start": 348,
+      "end": 354,
+      "name": "sid_paddle_and_readback",
+      "description": "SID paddle and voice 3 readback $D419-$D41C: paddle X/Y read-only values ($D419-$D41A, updated every 512 cycles), Voice 3 waveform and ADSR readback ($D41B-$D41C).",
+      "references": [
+        {
+          "chunk": "sid_registers_voice3",
+          "topic": "voice 3 write registers vs readback"
+        }
+      ]
+    },
+    {
+      "start": 355,
+      "end": 359,
+      "name": "sid_mirror_area",
+      "description": "SID mirror area $D41D-$D7FF: register images repeated every $20 bytes providing mirror copies of the SID registers.",
+      "references": [
+        {
+          "chunk": "sid_filter_registers",
+          "topic": "filter/master volume original locations"
+        }
+      ]
+    },
+    {
+      "start": 360,
+      "end": 366,
+      "name": "color_ram",
+      "description": "Color RAM $D800-$DBFF: screen color memory (1000 bytes) stored at $D800-$DBE7 (bits 0-3 only) and a small unused region $DBE8-$DBFF (24 bytes). Color RAM is separate from screen RAM and controls character colors.",
+      "references": [
+        {
+          "chunk": "default_screen_memory",
+          "topic": "screen RAM mapping and coordination with Color RAM"
+        }
+      ]
+    },
+    {
+      "start": 367,
+      "end": 376,
+      "name": "cia1_port_control",
+      "description": "CIA #1 registers $DC00-$DC03 port control: $DC00 Port A (keyboard matrix & joystick #2), $DC01 Port B (keyboard rows & joystick #1), $DC02 Port A DDR, $DC03 Port B DDR (data direction registers).",
+      "references": [
+        {
+          "chunk": "keyboard_control_and_cursor_state",
+          "topic": "keyboard matrix and port mapping in zero page"
+        }
+      ]
+    },
+    {
+      "start": 377,
+      "end": 381,
+      "name": "cia1_timers",
+      "description": "CIA #1 timers $DC04-$DC07: Timer A ($DC04-$DC05) and Timer B ($DC06-$DC07), both 16-bit read/write counters used for interrupts and timing by the system.",
+      "references": [
+        {
+          "chunk": "cia1_port_control",
+          "topic": "CIA#1 port/timer interactions"
+        }
+      ]
+    },
+    {
+      "start": 382,
+      "end": 388,
+      "name": "cia1_time_of_day",
+      "description": "CIA #1 Time-of-Day clock $DC08-$DC0B: TOD tenths ($DC08), seconds ($DC09), minutes ($DC0A), hours ($DC0B) stored in BCD with AM/PM bit.",
+      "references": [
+        {
+          "chunk": "system_area_time_counters",
+          "topic": "system time counters and TI variable mapping"
+        }
+      ]
+    },
+    {
+      "start": 389,
+      "end": 396,
+      "name": "cia1_serial_and_interrupt",
+      "description": "CIA #1 serial and interrupt registers: $DC0C serial shift, $DC0D interrupt status (timer, TOD, serial, FLAG), and related control lines for serial bit shifting.",
+      "references": [
+        {
+          "chunk": "serial_and_rs232_zero_page",
+          "topic": "serial bit handling in zero page and CIAs"
+        }
+      ]
+    },
+    {
+      "start": 397,
+      "end": 406,
+      "name": "cia1_timer_control_and_mirror",
+      "description": "CIA #1 timer control $DC0E-$DC0F (Timer A/B control registers) and CIA#1 image mirror area $DC10-$DCFF (register images repeated every $10 bytes).",
+      "references": [
+        {
+          "chunk": "cia1_timers",
+          "topic": "timer counters and control registers"
+        }
+      ]
+    },
+    {
+      "start": 407,
+      "end": 415,
+      "name": "cia2_port_control",
+      "description": "CIA #2 registers $DD00-$DD03 port control: $DD00 Port A (VIC bank selection & serial bus control), $DD01 Port B (RS232 and user port), $DD02 Port A DDR, $DD03 Port B DDR.",
+      "references": [
+        {
+          "chunk": "vic_bank_selection",
+          "topic": "VIC bank selection bits on CIA#2 Port A"
+        },
+        {
+          "chunk": "io_area_header",
+          "topic": "I/O area mapping and device controls"
+        }
+      ]
+    },
+    {
+      "start": 416,
+      "end": 416,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 417,
+      "end": 421,
+      "name": "cia2_timers",
+      "description": "CIA #2 timers $DD04-$DD07: Timer A ($DD04-$DD05) and Timer B ($DD06-$DD07), both 16-bit counters used for timing and interrupts for devices on the system bus.",
+      "references": [
+        {
+          "chunk": "cia2_port_control",
+          "topic": "CIA#2 ports and timers used for system control"
+        }
+      ]
+    },
+    {
+      "start": 422,
+      "end": 428,
+      "name": "cia2_time_of_day",
+      "description": "CIA #2 Time-of-Day clock $DD08-$DD0B: TOD tenths ($DD08), seconds ($DD09), minutes ($DD0A), hours ($DD0B) in BCD with AM/PM bit. Mirrors CIA#1 TOD functionality for additional hardware timing.",
+      "references": [
+        {
+          "chunk": "cia1_time_of_day",
+          "topic": "comparison of CIA1 and CIA2 TOD registers"
+        }
+      ]
+    },
+    {
+      "start": 429,
+      "end": 436,
+      "name": "cia2_serial_and_interrupt",
+      "description": "CIA #2 serial shift and interrupt registers: $DD0C serial shift, $DD0D interrupt status (timer, TOD, serial, FLAG non-maskable interrupt status).",
+      "references": [
+        {
+          "chunk": "hardware_vectors",
+          "topic": "interrupt/NMI handling and vectoring"
+        }
+      ]
+    },
+    {
+      "start": 437,
+      "end": 446,
+      "name": "cia2_timer_control_and_mirror",
+      "description": "CIA #2 timer control $DD0E-$DD0F (Timer A/B control) and CIA#2 image mirror area $DD10-$DDFF (register images repeated every $10 bytes).",
+      "references": [
+        {
+          "chunk": "cia2_timers",
+          "topic": "timer counters and control registers"
+        }
+      ]
+    },
+    {
+      "start": 447,
+      "end": 453,
+      "name": "expansion_io_areas",
+      "description": "Expansion I/O Areas $DE00-$DFFF: optional external device registers mapped as I/O Area 1 ($DE00-$DEFF) and I/O Area 2 ($DF00-$DFFF), each 256 bytes for cartridges or expansion hardware.",
+      "references": [
+        {
+          "chunk": "cartridge_structure",
+          "topic": "how cartridges populate high memory and I/O spaces"
+        }
+      ]
+    },
+    {
+      "start": 454,
+      "end": 461,
+      "name": "kernal_rom_area",
+      "description": "KERNAL ROM region $E000-$FFFF: 8 KB operating system kernel ROM or RAM if banked out. Visibility controlled by processor port $0001 bits #0-#2. Contains OS service routines referenced by BASIC and machine code.",
+      "references": [
+        {
+          "chunk": "zero_page_processor_port_and_defaults",
+          "topic": "processor port $0001 that controls KERNAL visibility"
+        },
+        {
+          "chunk": "hardware_vectors",
+          "topic": "KERNAL contains the default IRQ/NMI/Reset handlers referenced by vectors"
+        }
+      ]
+    },
+    {
+      "start": 462,
+      "end": 469,
+      "name": "hardware_vectors",
+      "description": "Hardware vectors at $FFFA-$FFFF: $FFFA-$FFFB NMI vector (default $FE43), $FFFC-$FFFD Reset vector (cold reset entry, default $FCE2), $FFFE-$FFFF IRQ/BRK vector (default $FF48). These addresses contain the 16-bit pointers to the system handlers.",
+      "references": [
+        {
+          "chunk": "processor_stack_and_error_bytes",
+          "topic": "stack usage during vectored interrupts"
+        },
+        {
+          "chunk": "kernal_rom_area",
+          "topic": "KERNAL provides default handlers pointed to by these vectors"
+        }
+      ]
+    },
+    {
+      "start": 470,
+      "end": 485,
+      "name": "key_notes",
+      "description": "Key notes covering bank switching and system defaults: processor port $0001 controls visibility of BASIC/KERNAL/Character ROM and I/O area; CIA#2 Port A bits 0-1 select the VIC-II 16KB video bank; default configuration places BASIC at $0801, screen memory at $0400 and color RAM at $D800 with BASIC/KERNAL visible and I/O active.",
+      "references": [
+        {
+          "chunk": "zero_page_processor_port_and_defaults",
+          "topic": "processor port $0001 functions"
+        },
+        {
+          "chunk": "vic_bank_selection",
+          "topic": "VIC-II bank selection (CIA#2 Port A bits)"
+        },
+        {
+          "chunk": "basic_program_area_and_cartridge_space",
+          "topic": "default BASIC layout"
+        }
+      ]
+    }
+  ],
+  "source_md5": "5849c1e246cdf03d7d2aeda29557fd36"
+}

@@ -1,0 +1,491 @@
+{
+  "source_file": "CIA 6526 Reference.txt",
+  "context": "CIA 6526 Complex Interface Adapter - Comprehensive Reference",
+  "splits": [
+    {
+      "start": 1,
+      "end": 11,
+      "ignore": true,
+      "reason": "Document title and source credits (non-technical front matter)."
+    },
+    {
+      "start": 12,
+      "end": 27,
+      "name": "description_and_chip_locations",
+      "description": "Overview of the MOS 6526 Complex Interface Adapter (CIA): a 65XX-bus compatible peripheral providing flexible timing and I/O. Notes that two CIA chips are used in the Commodore 64: CIA 1 at $DC00-$DCFF (56320-56575) which triggers IRQ, and CIA 2 at $DD00-$DDFF (56576-56831) which triggers NMI. Also mentions other systems using the CIA (C128, SX64, 1570/71/81 disk drives).",
+      "references": [
+        {
+          "chunk": "features",
+          "topic": "hardware features and variants (6526 vs 6526A)"
+        },
+        {
+          "chunk": "pin_configuration_40pin_dip",
+          "topic": "physical pinout and signal names"
+        },
+        {
+          "chunk": "register_map",
+          "topic": "CIA register address ranges ($DC00/$DD00)"
+        }
+      ]
+    },
+    {
+      "start": 28,
+      "end": 41,
+      "name": "features",
+      "description": "List of CIA hardware features: two 8-bit I/O ports (16 lines), 8/16-bit handshaking, two independent (and linkable) 16-bit interval timers, 24-hour BCD time-of-day clock with alarm, 8-bit serial shift register, TTL/CMOS compatible I/O, and speed variants (6526 = 1 MHz, 6526A = 2 MHz).",
+      "references": [
+        {
+          "chunk": "description_and_chip_locations",
+          "topic": "what the CIA is and where it's used"
+        },
+        {
+          "chunk": "pin_configuration_40pin_dip",
+          "topic": "I/O lines and control pins"
+        },
+        {
+          "chunk": "register_map",
+          "topic": "registers implementing these features (timers, TOD, SDR)"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 93,
+      "name": "pin_configuration_40pin_dip",
+      "description": "40-pin DIP pinout and pin descriptions for the 6526 CIA: ASCII diagram and per-pin functions (Vss, PA0-PA7, PB0-PB7, /PC, TOD, Vcc, /IRQ, /RES, /CS, FLAG, PHI2, D0-D7, R/W, RS0-RS3, SP, CNT). Also lists ordering info (frequency suffix, package suffix).",
+      "references": [
+        {
+          "chunk": "port_a_data_register_pra",
+          "topic": "Port A pin functions (PA0-PA7)"
+        },
+        {
+          "chunk": "port_b_data_register_prb",
+          "topic": "Port B pin functions (PB0-PB7)"
+        },
+        {
+          "chunk": "serial_shift_register_notes",
+          "topic": "SP and CNT pins used by the serial shift register"
+        }
+      ]
+    },
+    {
+      "start": 94,
+      "end": 119,
+      "name": "register_map",
+      "description": "CIA register map (offsets $00-$0F) for CIA1 ($DC00-$DC0F) and CIA2 ($DD00-$DD0F): PRA ($00), PRB ($01), DDRA ($02), DDRB ($03), TALO/TAHI ($04/$05), TBLO/TBHI ($06/$07), TOD registers ($08-$0B), SDR ($0C), ICR ($0D), CRA ($0E), CRB ($0F). Note: register map repeats every 16 bytes across $DC00-$DCFF and $DD00-$DDFF.",
+      "references": [
+        {
+          "chunk": "port_a_data_register_pra",
+          "topic": "PRA ($00) detailed bit assignments"
+        },
+        {
+          "chunk": "port_b_data_register_prb",
+          "topic": "PRB ($01) detailed bit assignments"
+        },
+        {
+          "chunk": "ddra_ddrb",
+          "topic": "DDRA/DDRB ($02/$03) direction control"
+        },
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "Timer A ($04/$05)"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "Timer B ($06/$07)"
+        },
+        {
+          "chunk": "time_of_day_clock",
+          "topic": "TOD ($08-$0B)"
+        },
+        {
+          "chunk": "serial_data_register_sdr",
+          "topic": "SDR ($0C)"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "ICR ($0D)"
+        },
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA ($0E)"
+        },
+        {
+          "chunk": "control_register_b",
+          "topic": "CRB ($0F)"
+        }
+      ]
+    },
+    {
+      "start": 120,
+      "end": 160,
+      "name": "port_a_data_register_pra",
+      "description": "Port A Data Register (PRA) at offset $00 (CIA1 $DC00, CIA2 $DD00). Read/Write; bits correspond to PA0-PA7. Direction controlled by DDRA ($02). CIA1 bit assignments: keyboard columns 0-7, joystick 2 directions/fire, paddle signals, and bit 7 can directly disable NMI. CIA2 bit assignments: VIC-II bank select bits 0-1 (active low), RS-232 TXD, serial bus ATN/CLOCK/DATA IN/OUT. VIC-II bank selection: bits 1-0 (active low) choose which 16K bank the VIC-II sees (Bank 0 $0000-$3FFF ... Bank 3 $C000-$FFFF).",
+      "references": [
+        {
+          "chunk": "ddra_ddrb",
+          "topic": "DDRA controls PRA pin directions"
+        },
+        {
+          "chunk": "cia2_detailed_connections",
+          "topic": "VIC-II bank selection uses CIA2 Port A bits 0-1"
+        },
+        {
+          "chunk": "cia1_detailed_connections",
+          "topic": "Keyboard and joystick connections on CIA1 Port A"
+        }
+      ]
+    },
+    {
+      "start": 161,
+      "end": 187,
+      "name": "port_b_data_register_prb",
+      "description": "Port B Data Register (PRB) at offset $01 (CIA1 $DC01, CIA2 $DD01). Read/Write; bits correspond to PB0-PB7. Direction controlled by DDRB ($03). CIA1: keyboard rows 0-7 and joystick 1 directions/fire; PB6 and PB7 can be used as Timer A/B toggle/pulse outputs. CIA2: user port and RS-232 signals (PB0 RXD input, PB1 RTS output, PB2 DTR output, PB3 RI input, PB4 DCD input, PB6/PB7 timer outputs).",
+      "references": [
+        {
+          "chunk": "ddra_ddrb",
+          "topic": "DDRB controls PRB pin directions"
+        },
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "Timer A can toggle/pulse PB6"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "Timer B can toggle/pulse PB7"
+        },
+        {
+          "chunk": "cia1_detailed_connections",
+          "topic": "Keyboard scanning uses Port B (rows)"
+        }
+      ]
+    },
+    {
+      "start": 188,
+      "end": 199,
+      "name": "ddra_ddrb",
+      "description": "Data Direction Registers DDRA ($02) and DDRB ($03). Read/Write; 0 = pin is INPUT, 1 = pin is OUTPUT. Default values: CIA1 DDRA=$FF (all outputs), DDRB=$00 (all inputs). CIA2 defaults: DDRA=$3F (bits 0-5 outputs, 6-7 inputs), DDRB=$00 (all inputs).",
+      "references": [
+        {
+          "chunk": "port_a_data_register_pra",
+          "topic": "PRA pin direction controlled by DDRA"
+        },
+        {
+          "chunk": "port_b_data_register_prb",
+          "topic": "PRB pin direction controlled by DDRB"
+        }
+      ]
+    },
+    {
+      "start": 200,
+      "end": 221,
+      "name": "timer_a_16bit",
+      "description": "Timer A (TALO/T AHI) at offsets $04/$05: a 16-bit down-counter. Writes update the timer latch; latch is transferred to counter on underflow (continuous mode), on forced load via CRA bit 4, or when starting the timer. Count sources selected by CRA bit 5: PHI2 system clock (~1 MHz) or positive edges on CNT pin. On underflow Timer A can trigger an interrupt (ICR), toggle/pulse PB6 (CRA PBON/OUTMODE), and clock Timer B when configured. Reading returns current counter value.",
+      "references": [
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA bits control Timer A start, mode, input source, and PB6 output"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "Timer B can count Timer A underflows (cascading)"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "Timer underflow can trigger an interrupt flagged in ICR"
+        }
+      ]
+    },
+    {
+      "start": 222,
+      "end": 243,
+      "name": "timer_b_16bit",
+      "description": "Timer B (TBLO/TBHI) at offsets $06/$07: a 16-bit down-counter operating similarly to Timer A but with additional count sources. Timer B input mode (CRB bits 5-6) selects PHI2, CNT edges, Timer A underflow pulses, or Timer A underflows coincident with CNT positive edge. On underflow Timer B can trigger an interrupt and toggle/pulse PB7. Timer A and B can be cascaded to form a 32-bit timer (Timer B counts Timer A underflows).",
+      "references": [
+        {
+          "chunk": "control_register_b",
+          "topic": "CRB bits select Timer B input mode, start, and PB7 output"
+        },
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "Timer A underflows can clock Timer B (cascading)"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "Timer underflow can trigger an interrupt flagged in ICR"
+        }
+      ]
+    },
+    {
+      "start": 244,
+      "end": 289,
+      "name": "time_of_day_clock",
+      "description": "Time-of-Day (TOD) clock at offsets $08-$0B: a 24-hour BCD clock with 1/10 second resolution, clocked from the TOD pin (mains frequency 50 Hz PAL / 60 Hz NTSC). Offsets: $08 tenths, $09 seconds (BCD), $0A minutes (BCD), $0B hours (BCD + AM/PM flag in bit 7). CRA bit 7 selects 50/60 Hz input. TOD uses BCD storage; reading hours latches the TOD registers until tenths are read; writing hours stops the clock until tenths are written. CRB bit 7 selects ALARM write mode; TOD alarm triggers an interrupt (ICR bit 2).",
+      "references": [
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA bit 7 selects TOD input frequency (50/60 Hz)"
+        },
+        {
+          "chunk": "control_register_b",
+          "topic": "CRB bit 7 toggles alarm write mode for TOD"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "TOD alarm flag appears in ICR (ALRM)"
+        }
+      ]
+    },
+    {
+      "start": 290,
+      "end": 310,
+      "name": "serial_data_register_sdr",
+      "description": "Serial Data Register (SDR) at offset $0C: an 8-bit bidirectional shift register used for synchronous serial I/O. Output mode (CRA bit 6 = 1): data written to SDR is shifted out MSB-first on SP, with Timer A underflows providing the shift clock (CNT outputs the shift clock at half Timer A rate); interrupt on byte complete. Input mode (CRA bit 6 = 0): external clock on CNT shifts data in on SP on positive CNT edges; interrupt on 8 bits received; read received byte from SDR.",
+      "references": [
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA bit 6 selects serial port input/output mode and Timer A as shift clock"
+        },
+        {
+          "chunk": "serial_shift_register_notes",
+          "topic": "practical notes on using the SDR, baud limits, SP/CNT behavior"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "SDR transfer completion flags and interrupts (ICR SP bit)"
+        }
+      ]
+    },
+    {
+      "start": 311,
+      "end": 352,
+      "name": "interrupt_control_register_icr",
+      "description": "Interrupt Control Register (ICR) at offset $0D. Read returns interrupt STATUS: bits indicate TA (Timer A), TB (Timer B), ALRM (TOD alarm), SP (shift register transfer), FLG (FLAG pin negative edge), and bit 7 IR = logical OR of enabled sources. Reading ICR clears all interrupt flags and de-asserts the IRQ/NMI line. Writing ICR acts as an interrupt MASK with Set/Clear bit (bit 7 = SC): when SC=1 bits written as 1 enable sources; when SC=0 bits written as 1 disable sources. Examples provided for enabling/disabling Timer A interrupt. CIA1 ICR drives CPU /IRQ, CIA2 ICR drives /NMI.",
+      "references": [
+        {
+          "chunk": "interrupt_handling",
+          "topic": "how ICR clearing interacts with IRQ/NMI lines and handlers"
+        },
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "Timer A underflow sets ICR TA flag"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "Timer B underflow sets ICR TB flag"
+        },
+        {
+          "chunk": "serial_data_register_sdr",
+          "topic": "SDR transfer sets ICR SP flag"
+        }
+      ]
+    },
+    {
+      "start": 353,
+      "end": 383,
+      "name": "control_register_a",
+      "description": "Control Register A (CRA) at offset $0E. Read/Write. Bits: 0 START (start/stop Timer A), 1 PBON (route Timer A output to PB6), 2 OUTMODE (toggle vs pulse PB6), 3 RUNMODE (one-shot vs continuous), 4 LOAD (force load latch into counter; strobe, reads as 0), 5 INMODE (Timer A counts CNT positive edges when 1, PHI2 when 0), 6 SPMODE (serial port output when 1, input when 0), 7 TODIN (select 50 Hz when 1, 60 Hz when 0).",
+      "references": [
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "CRA bits control Timer A start, input source, and PB6 behavior"
+        },
+        {
+          "chunk": "serial_data_register_sdr",
+          "topic": "CRA bit 6 selects serial port input/output mode"
+        },
+        {
+          "chunk": "time_of_day_clock",
+          "topic": "CRA bit 7 selects TOD input frequency (50/60 Hz)"
+        }
+      ]
+    },
+    {
+      "start": 384,
+      "end": 414,
+      "name": "control_register_b",
+      "description": "Control Register B (CRB) at offset $0F. Read/Write. Bits: 0 START (start/stop Timer B), 1 PBON (route Timer B output to PB7), 2 OUTMODE (toggle vs pulse PB7), 3 RUNMODE (one-shot vs continuous), 4 LOAD (force load latch into counter; strobe), bits 5-6 INMODE (00=PHI2, 01=CNT edges, 10=Timer A underflows, 11=Timer A underflows coincident with CNT), 7 ALARM (when 1, writes to TOD registers set the alarm time instead of the clock).",
+      "references": [
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "CRB bits select Timer B input source and start/mode/pulse behavior"
+        },
+        {
+          "chunk": "time_of_day_clock",
+          "topic": "CRB bit 7 selects alarm write mode for TOD"
+        }
+      ]
+    },
+    {
+      "start": 415,
+      "end": 452,
+      "name": "cia1_detailed_connections",
+      "description": "CIA1 ($DC00-$DCFF) detailed connections and responsibilities on the C64: keyboard scanning (Port A drives columns, Port B reads rows), Joystick ports (Joystick 2 on Port A $DC00, Joystick 1 on Port B $DC01; bits active low), paddles/datasette control, and IRQ generation. Keyboard scanning procedure: write 0 to desired Port A column bit and read Port B; 0 indicates a pressed key. FLAG pin is connected to Cassette Read; negative edge on FLAG can generate IRQ if enabled.",
+      "references": [
+        {
+          "chunk": "port_a_data_register_pra",
+          "topic": "Port A drives keyboard columns and joystick 2"
+        },
+        {
+          "chunk": "port_b_data_register_prb",
+          "topic": "Port B reads keyboard rows and joystick 1"
+        },
+        {
+          "chunk": "interrupt_handling",
+          "topic": "FLAG pin can generate IRQ (ICR FLG enable)"
+        }
+      ]
+    },
+    {
+      "start": 453,
+      "end": 496,
+      "name": "cia2_detailed_connections",
+      "description": "CIA2 ($DD00-$DDFF) detailed connections: VIC-II memory bank selection via Port A bits 0-1 (active low), serial IEC bus signals on Port A (ATN OUT, CLOCK OUT, DATA OUT, CLOCK IN, DATA IN), RS-232 signals across Port A/Port B (TXD on Port A bit 2; RXD on Port B bit 0; RTS/DTR outputs; RI/DCD inputs), user port I/O, and NMI generation. CIA2 FLAG pin connects to Serial Bus SRQ; negative edge generates NMI if enabled.",
+      "references": [
+        {
+          "chunk": "port_a_data_register_pra",
+          "topic": "VIC-II bank selection bits (CIA2 Port A bits 0-1)"
+        },
+        {
+          "chunk": "port_b_data_register_prb",
+          "topic": "RS-232 signals on CIA2 Port B"
+        },
+        {
+          "chunk": "interrupt_handling",
+          "topic": "CIA2 ICR triggers NMI on the CPU"
+        }
+      ]
+    },
+    {
+      "start": 497,
+      "end": 536,
+      "name": "interrupt_handling",
+      "description": "CIA interrupt handling overview: CIA1 connects to CPU /IRQ, CIA2 to /NMI. Five interrupt sources per CIA: Timer A underflow, Timer B underflow, TOD alarm match, Shift register transfer complete, FLAG pin negative edge. Reading the ICR clears all interrupt flags and de-asserts IRQ/NMI. Important: NMI is edge-triggered; NMI handler must read $DD0D to clear CIA2's interrupt flag or subsequent NMIs won't trigger. Typical IRQ setup example (assembly) provided for enabling Timer A IRQ on CIA1.",
+      "references": [
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "ICR read clears flags and write masks enable/disable sources"
+        },
+        {
+          "chunk": "cia1_detailed_connections",
+          "topic": "CIA1 -> /IRQ usage and typical IRQ setup in KERNAL"
+        },
+        {
+          "chunk": "cia2_detailed_connections",
+          "topic": "CIA2 -> /NMI behavior and need to clear ICR in NMI handler"
+        }
+      ]
+    },
+    {
+      "start": 537,
+      "end": 571,
+      "name": "timer_programming_notes",
+      "description": "Practical notes for programming CIA timers: resolution at PHI2 (~985,248 Hz PAL / 1,022,727 Hz NTSC) making minimum period about 1 microsecond and maximum single 16-bit period ~65.5 ms. Cascading A and B yields a 32-bit timer (~71.8 minutes PAL). One-shot vs continuous mode explained. Latch vs counter: writes go to latch; latch transferred to counter on underflow (continuous), via force-load (CRA/CRB bit 4), or when timer starts. Timer underflow output on PB6/PB7 can be pulse mode (one PHI2 cycle) or toggle mode (invert each underflow) useful for waveforms or timing signals.",
+      "references": [
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "Timer A latch/counter behavior and outputs to PB6"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "Timer B latch/counter behavior and cascading with Timer A"
+        },
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA bits for Timer A control (START, LOAD, INMODE, OUTMODE)"
+        },
+        {
+          "chunk": "control_register_b",
+          "topic": "CRB bits for Timer B control (START, LOAD, INMODE, OUTMODE)"
+        }
+      ]
+    },
+    {
+      "start": 572,
+      "end": 603,
+      "name": "time_of_day_clock_notes",
+      "description": "Practical TOD usage notes: the TOD runs independently from CPU, clocked by TOD pin (mains). Procedure to set the clock: ensure CRB bit 7 = 0 (write sets clock), write hours first (stops clock), then minutes, seconds, and tenths last to restart. Procedure to set alarm: set CRB bit 7 = 1, write alarm time, then clear CRB bit 7. Reading TOD: read hours to latch all TOD registers, then minutes, seconds, and tenths (tenths release latch). BCD format example provided (12:30:00.5 PM stored as TOD HR=$92 with bit7=1).",
+      "references": [
+        {
+          "chunk": "time_of_day_clock",
+          "topic": "TOD register formats and latching behavior ($08-$0B)"
+        },
+        {
+          "chunk": "control_register_b",
+          "topic": "CRB bit 7 selects alarm write mode"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "ICR ALRM bit indicates TOD alarm interrupt"
+        }
+      ]
+    },
+    {
+      "start": 604,
+      "end": 623,
+      "name": "serial_shift_register_notes",
+      "description": "Practical notes for the CIA serial (shift) register: synchronous serial port behavior. Output mode (CRA bit 6 = 1): write to SDR ($0C), Timer A provides shift clock, data shifted MSB-first on SP, CNT outputs the shift clock at half Timer A rate; interrupt on byte completion; maximum baud ~PHI2/4 (~250 kbit/s). Input mode (CRA bit 6 = 0): external clock on CNT shifts data in on SP, interrupt after 8 bits, read byte from SDR.",
+      "references": [
+        {
+          "chunk": "serial_data_register_sdr",
+          "topic": "SDR operation details and SP/CNT usage"
+        },
+        {
+          "chunk": "control_register_a",
+          "topic": "CRA bit 6 selects serial mode and links Timer A to SDR"
+        },
+        {
+          "chunk": "interrupt_control_register_icr",
+          "topic": "SDR transfer completion sets ICR SP flag"
+        }
+      ]
+    },
+    {
+      "start": 624,
+      "end": 641,
+      "name": "cia_failure_symptoms",
+      "description": "Common failure symptoms for CIA1 and CIA2: CIA1 failures may cause no cursor at startup, unresponsive keyboard, partial keyboard/joystick malfunction, random characters, control port failures. CIA2 failures may cause serial bus/disk inaccessibility, \"FILE NOT FOUND\" disk errors, user port failure, character display anomalies from bank selection faults, and RS-232 failure.",
+      "references": [
+        {
+          "chunk": "cia1_detailed_connections",
+          "topic": "CIA1 functions (keyboard, joysticks) and related failure modes"
+        },
+        {
+          "chunk": "cia2_detailed_connections",
+          "topic": "CIA2 functions (serial bus, bank select, RS-232) and related failure modes"
+        }
+      ]
+    },
+    {
+      "start": 642,
+      "end": 666,
+      "name": "quick_reference_c64_kernal_cia_usage",
+      "description": "Quick-reference of how the C64 KERNAL uses the CIAs: CIA1 Timer A used by KERNAL for system IRQ (~60 Hz) with default timer values ($4025 PAL, $4295 NTSC) driving cursor blink, keyboard scan and periodic tasks. CIA1 Timer B available to user programs and used by BASIC for TI/TI$ when combined with Timer A. CIA1 TOD used by BASIC for TI/TI$ variables. CIA2 timers/TOD used by KERNAL for RS-232 timing and available for user programs.",
+      "references": [
+        {
+          "chunk": "timer_a_16bit",
+          "topic": "CIA1 Timer A default values and KERNAL uses"
+        },
+        {
+          "chunk": "timer_b_16bit",
+          "topic": "CIA1 Timer B availability and BASIC uses (jiffy clock)"
+        },
+        {
+          "chunk": "time_of_day_clock",
+          "topic": "CIA1 TOD used by BASIC for TI/TI$ real-time variables"
+        },
+        {
+          "chunk": "cia2_detailed_connections",
+          "topic": "CIA2 timers and TOD used for RS-232 timing"
+        }
+      ]
+    },
+    {
+      "start": 667,
+      "end": 669,
+      "ignore": true,
+      "reason": "Document footer (end marker and separators), non-technical closing lines."
+    }
+  ],
+  "source_md5": "89fa2b36da6b1f5869ef0ff62c54d3b1"
+}

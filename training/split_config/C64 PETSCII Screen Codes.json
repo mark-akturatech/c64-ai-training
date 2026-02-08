@@ -1,0 +1,381 @@
+{
+  "source_file": "C64 PETSCII Screen Codes.txt",
+  "context": "C64 PETSCII and Screen Codes Reference - sta.c64.org",
+  "splits": [
+    {
+      "start": 1,
+      "end": 8,
+      "ignore": true,
+      "reason": "Title, brief header and source line (non-technical document header)"
+    },
+    {
+      "start": 9,
+      "end": 16,
+      "name": "petscii_overview",
+      "description": "Overview of PETSCII: definition (PET Standard Code of Information Interchange), used by the Commodore 64 and other Commodore computers; explains that the table lists all 256 PETSCII codes with decimal/hex values and character descriptions; notes how the character column shows both uppercase/graphics (up/gfx) and lowercase/uppercase (lo/up) modes.",
+      "references": [
+        {
+          "chunk": "petscii_notes",
+          "topic": "special notes about control ranges and unused codes"
+        },
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "how PETSCII maps to screen codes used in video memory"
+        },
+        {
+          "chunk": "screen_codes_intro",
+          "topic": "screen codes used in $0400-$07E7"
+        }
+      ]
+    },
+    {
+      "start": 17,
+      "end": 26,
+      "name": "petscii_notes",
+      "description": "Important notes about PETSCII behavior and special cases: control code ranges ($00-$1F and $80-$9F) are layout/control codes, codes $60-$7F and $E0-$FE are copies of other codes ($C0-$DF and $A0-$BE), and code $FF is a BASIC token for the pi symbol with special internal conversions to/from $DE. Explains keyboard buffer behaviour for $DE.",
+      "references": [
+        {
+          "chunk": "petscii_ff_special",
+          "topic": "detailed behavior of code $FF and conversion to $DE"
+        },
+        {
+          "chunk": "petscii_control_00_1f",
+          "topic": "control codes $00-$1F examples"
+        },
+        {
+          "chunk": "petscii_control_80_9f",
+          "topic": "control codes $80-$9F examples"
+        }
+      ]
+    },
+    {
+      "start": 27,
+      "end": 66,
+      "name": "petscii_control_00_1f",
+      "description": "PETSCII control codes in ranges $00-$1F (decimal 0-31). Lists each code's decimal and hex value with description including: unused codes, Stop (RUN/STOP $03), color set White ($05), Disable/Enable Commodore-Shift ($08/$09), Return ($0D), switch charset to lowercase/uppercase ($0E), Cursor Down ($11), Reverse On ($12), Home ($13), Delete ($14), Red ($1C), Cursor Right ($1D), Green ($1E), Blue ($1F).",
+      "references": [
+        {
+          "chunk": "petscii_color_codes_summary",
+          "topic": "color-setting control codes (e.g. $05 White, $1C Red)"
+        },
+        {
+          "chunk": "petscii_control_codes_summary",
+          "topic": "summary list of PETSCII control code actions"
+        }
+      ]
+    },
+    {
+      "start": 67,
+      "end": 105,
+      "name": "petscii_printable_20_3f",
+      "description": "PETSCII printable characters in range $20-$3F (decimal 32-63). Covers space, punctuation, and digits 0-9, plus symbols : ; < = > ? with decimal/hex values listed for each code.",
+      "references": [
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "conversion: PETSCII $20-$3F map directly to Screen Code $20-$3F"
+        },
+        {
+          "chunk": "screen_codes_space_20_3f",
+          "topic": "corresponding screen codes for space/digits/symbols"
+        }
+      ]
+    },
+    {
+      "start": 106,
+      "end": 147,
+      "name": "petscii_letters_40_5f",
+      "description": "PETSCII letters and symbols in range $40-$5F (decimal 64-95). Describes behavior in both character set modes: in uppercase/graphics mode these are uppercase letters/symbols; in lowercase/uppercase mode these are lowercase letters (a-z) and symbols. Table entries include @, A-Z, bracket/arrow symbols and their codes ($40-$5F).",
+      "references": [
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "conversion: PETSCII $40-$5F -> Screen Code $00-$1F (subtract $40)"
+        },
+        {
+          "chunk": "screen_codes_letters_00_1f",
+          "topic": "the screen codes that represent @ and letters ($00-$1F)"
+        }
+      ]
+    },
+    {
+      "start": 148,
+      "end": 191,
+      "name": "petscii_graphic_or_upper_60_7f",
+      "description": "PETSCII codes $60-$7F (decimal 96-127): in uppercase/graphics mode these are graphic characters (identical to $C0-$DF), in lowercase/uppercase mode they are uppercase letters (same as $C0-$DF). Notes that codes $60-$7F are copies of $C0-$DF and lists the entries, including horizontal line, graphic characters and Pi symbol copies.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_c0_df",
+          "topic": "original graphic character definitions in $C0-$DF (which $60-$7F copy)"
+        },
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "conversion: PETSCII $60-$7F -> Screen Code $40-$5F (subtract $20)"
+        }
+      ]
+    },
+    {
+      "start": 192,
+      "end": 230,
+      "name": "petscii_control_80_9f",
+      "description": "PETSCII control codes in range $80-$9F (decimal 128-159). Lists each control: color set codes (e.g. Orange $81), Run ($83), function keys F1-F8 encoded in PETSCII ($85-$8C, order noted), Shift-Return ($8D), switch charset to uppercase/graphics ($8E), Cursor Up ($91), Reverse Off ($92), Clear ($93), Insert ($94), various color codes ($90, $95-$9F), and cursor direction ($9D Cursor Left).",
+      "references": [
+        {
+          "chunk": "petscii_color_codes_summary",
+          "topic": "color-setting control codes in $80-$9F (e.g. $81 Orange)"
+        },
+        {
+          "chunk": "petscii_control_codes_summary",
+          "topic": "canonical summary of control actions across ranges"
+        }
+      ]
+    },
+    {
+      "start": 231,
+      "end": 272,
+      "name": "petscii_graphic_a0_bf",
+      "description": "PETSCII graphic characters in range $A0-$BF (decimal 160-191). Lists graphic symbol names and descriptions used in graphics mode (e.g. Shift-Space non-breaking/solid space $A0, CBM-K $A1, diagonal lines and corner pieces, quarter/full blocks, spade/suit, arrows, and other CBM-specific graphics), with decimal and hex codes.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_e0_fe",
+          "topic": "codes $E0-$FE are copies of $A0-$BE"
+        },
+        {
+          "chunk": "screen_codes_graphic_60_7f",
+          "topic": "screen code positions for these graphic characters ($60-$7F)"
+        }
+      ]
+    },
+    {
+      "start": 273,
+      "end": 314,
+      "name": "petscii_graphic_c0_df",
+      "description": "PETSCII graphic characters / uppercase letters in range $C0-$DF (decimal 192-223). Describes that in uppercase/graphics mode these are graphic characters and in lowercase/uppercase mode they are uppercase letters. Lists the graphic characters (horizontal line, many CBM graphics) and copies of letters/symbols (A-Z and special symbols) in $C0-$DF.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_or_upper_60_7f",
+          "topic": "copies located at $60-$7F"
+        },
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "conversion: PETSCII $C0-$DF -> Screen Code $40-$5F (subtract $80)"
+        }
+      ]
+    },
+    {
+      "start": 315,
+      "end": 354,
+      "name": "petscii_graphic_e0_fe",
+      "description": "PETSCII graphic characters in range $E0-$FE (decimal 224-254). Notes that codes $E0-$FE are copies of $A0-$BE and enumerates the copied graphic characters (Shift-Space, CBM-K etc.) with their corresponding original $A0-$BE code references.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_a0_bf",
+          "topic": "original definitions for $A0-$BF which $E0-$FE copy"
+        }
+      ]
+    },
+    {
+      "start": 355,
+      "end": 364,
+      "name": "petscii_ff_special",
+      "description": "Special-case PETSCII code $FF (decimal 255): documented as the BASIC token for the pi symbol. Describes internal conversion behavior: $FF is converted to $DE when printed; $DE is converted back to $FF when fetched from the screen; when reading the keyboard buffer $DE is returned for Shift-up arrow (no conversion performed at that stage).",
+      "references": [
+        {
+          "chunk": "petscii_graphic_c0_df",
+          "topic": "the Pi symbol graphic at $DE in $C0-$DF"
+        },
+        {
+          "chunk": "petscii_notes",
+          "topic": "overview notes mentioning $FF special handling"
+        }
+      ]
+    },
+    {
+      "start": 365,
+      "end": 382,
+      "name": "petscii_to_screen_conversion",
+      "description": "Conversion rules between PETSCII and C64 Screen Codes (screen memory $0400-$07E7). Gives explicit mapping formulas: PETSCII $20-$3F -> Screen $20-$3F (unchanged); $40-$5F -> Screen $00-$1F (subtract $40); $60-$7F -> Screen $40-$5F (subtract $20); $A0-$BF -> Screen $60-$7F (subtract $40); $C0-$DF -> Screen $40-$5F (subtract $80). Also notes to add $80 to a screen code to get its reverse-video equivalent.",
+      "references": [
+        {
+          "chunk": "screen_codes_intro",
+          "topic": "screen codes used in screen memory ($0400-$07E7)"
+        },
+        {
+          "chunk": "screen_codes_reverse_80_ff",
+          "topic": "how to obtain reverse video by adding $80 to screen codes"
+        },
+        {
+          "chunk": "petscii_printable_20_3f",
+          "topic": "unchanged mapping for $20-$3F (space/digits/symbols)"
+        }
+      ]
+    },
+    {
+      "start": 383,
+      "end": 399,
+      "name": "screen_codes_intro",
+      "description": "Introduction to Commodore 64 Screen Codes (source reference). Explains that screen codes are the values stored in screen memory ($0400-$07E7) and differ from PETSCII; explains display modes up/gfx and lo/up; notes that codes $80-$FF are reverse-video equivalents (bit 7 set) of $00-$7F.",
+      "references": [
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "how PETSCII maps to screen codes"
+        },
+        {
+          "chunk": "screen_codes_reverse_80_ff",
+          "topic": "reverse-video mapping and examples"
+        }
+      ]
+    },
+    {
+      "start": 400,
+      "end": 437,
+      "name": "screen_codes_at_and_letters_00_1f",
+      "description": "Screen codes $00-$1F (decimal 0-31): represent @ and the uppercase letters A-Z (or lowercase in lo/up mode). Lists each screen code with the character it displays: $00 = @, $01 = A / a, up to $1A = Z / z, plus [, pound sign, ], up arrow, left arrow at the upper codes.",
+      "references": [
+        {
+          "chunk": "petscii_letters_40_5f",
+          "topic": "PETSCII $40-$5F convert to these screen codes (subtract $40)"
+        }
+      ]
+    },
+    {
+      "start": 438,
+      "end": 477,
+      "name": "screen_codes_space_digits_symbols_20_3f",
+      "description": "Screen codes $20-$3F (decimal 32-63): space, punctuation, and digits 0-9, plus symbols : ; < = > ? with each screen code listed by decimal and hex.",
+      "references": [
+        {
+          "chunk": "petscii_printable_20_3f",
+          "topic": "these screen codes directly correspond to PETSCII $20-$3F"
+        }
+      ]
+    },
+    {
+      "start": 478,
+      "end": 518,
+      "name": "screen_codes_graphic_or_upper_40_5f",
+      "description": "Screen codes $40-$5F (decimal 64-95): in uppercase/graphics mode these display graphic characters; in lowercase/uppercase mode they display uppercase letters A-Z and some symbols. Lists entries $40-$5F including horizontal line, graphic characters and the mapping to letters when in lo/up mode.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_c0_df",
+          "topic": "PETSCII $C0-$DF map to these screen codes with conversion rules"
+        },
+        {
+          "chunk": "petscii_to_screen_conversion",
+          "topic": "conversion rules that produce these screen code values"
+        }
+      ]
+    },
+    {
+      "start": 519,
+      "end": 559,
+      "name": "screen_codes_graphic_60_7f",
+      "description": "Screen codes $60-$7F (decimal 96-127): graphic characters in both character set modes. Includes non-breaking/solid space ($60), CBM-K, diagonal and corner graphics, half/quarter blocks, spade symbol, vertical/horizontal lines, and other CBM graphics with each corresponding screen code listed.",
+      "references": [
+        {
+          "chunk": "petscii_graphic_a0_bf",
+          "topic": "PETSCII $A0-$BF map to these screen codes ($60-$7F)"
+        }
+      ]
+    },
+    {
+      "start": 560,
+      "end": 566,
+      "name": "reverse_video_intro",
+      "description": "Introduction and rule for reverse-video screen codes: states that codes $80-$FF are the reverse-video equivalents of $00-$7F and explains how to obtain the reverse-video version (add $80 / decimal 128). Precedes the detailed mapping table.",
+      "references": [
+        {
+          "chunk": "reverse_video_letters_and_basic_symbols",
+          "topic": "mapping table: reverse @ and A-Z (start of the table)"
+        },
+        {
+          "chunk": "reverse_video_punctuation_numbers_space",
+          "topic": "mapping table: punctuation, space and digits"
+        },
+        {
+          "chunk": "reverse_video_graphics_and_cbm_symbols",
+          "topic": "mapping table: graphic and CBM symbol mappings"
+        }
+      ]
+    },
+    {
+      "start": 567,
+      "end": 595,
+      "name": "reverse_video_letters_and_basic_symbols",
+      "description": "Start of the reverse-video mapping table (table header included). Covers decimal 128-154 (hex $80-$9A): Reverse @ and the alphabet A/a through Z/z, plus the next few basic symbols up to $9A.",
+      "references": [
+        {
+          "chunk": "reverse_video_intro",
+          "topic": "explanation of reverse-video and how codes relate ($80 addition)"
+        },
+        {
+          "chunk": "reverse_video_punctuation_numbers_space",
+          "topic": "continuation: punctuation, arrows, space and digits follow this letter range"
+        }
+      ]
+    },
+    {
+      "start": 596,
+      "end": 632,
+      "name": "reverse_video_punctuation_numbers_space",
+      "description": "Continuation of the mapping table covering decimal 155-191 (hex $9B-$BF). Includes reverse punctuation and symbol mappings (Reverse [, Reverse Pound sign, Reverse ], arrows), then Reverse Space and common punctuation, and the numeric characters Reverse 0 through Reverse 9 up to Reverse ? ($BF).",
+      "references": [
+        {
+          "chunk": "reverse_video_letters_and_basic_symbols",
+          "topic": "previous table section: letters and basic symbols"
+        },
+        {
+          "chunk": "reverse_video_graphics_and_cbm_symbols",
+          "topic": "next table section: extended graphics, CBM-specific glyphs and shift variants"
+        }
+      ]
+    },
+    {
+      "start": 633,
+      "end": 697,
+      "name": "reverse_video_graphics_and_cbm_symbols",
+      "description": "Final section of the reverse-video mapping table covering decimal 192-255 (hex $C0-$FF) and the trailing blank line. Lists reverse horizontal line, reverse graphics and the Commodore-specific graphic characters (CBM symbols), shift-variants and reverse Shift-Space. Covers all graphic glyph mappings from $C0 through $FF.",
+      "references": [
+        {
+          "chunk": "reverse_video_punctuation_numbers_space",
+          "topic": "previous table section: punctuation, space and digits"
+        },
+        {
+          "chunk": "reverse_video_intro",
+          "topic": "overview: codes $80-$FF are reverse equivalents of $00-$7F"
+        }
+      ]
+    },
+    {
+      "start": 698,
+      "end": 724,
+      "name": "petscii_color_codes_summary",
+      "description": "Summary of PETSCII control codes that set text color and their corresponding color names and decimal/hex values. Lists the control codes for the C64 16-color palette: White $05 (dec 5), Red $1C, Green $1E, Blue $1F, Orange $81, Black $90, Brown $95, Pink $96, Dark Grey $97, Grey $98, Light Green $99, Light Blue $9A, Light Grey $9B, Purple $9C, Yellow $9E, Cyan $9F. Notes these correspond to VIC-II color values 0-15.",
+      "references": [
+        {
+          "chunk": "petscii_control_00_1f",
+          "topic": "color-setting codes in the $00-$1F control range (example: $05 White)"
+        },
+        {
+          "chunk": "petscii_control_80_9f",
+          "topic": "color-setting codes in the $80-$9F control range (example: $81 Orange)"
+        }
+      ]
+    },
+    {
+      "start": 725,
+      "end": 756,
+      "name": "petscii_control_codes_summary",
+      "description": "Concise summary table of frequently used PETSCII control codes and their actions with decimal/hex values. Includes Stop (RUN/STOP $03), Disable/Enable Commodore-Shift ($08/$09), Return ($0D), switch charsets ($0E/$8E), Cursor Down/Up ($11/$91), Reverse On/Off ($12/$92), Home ($13), Delete ($14), Cursor Right/Left ($1D/$9D), Run ($83), function-key tokens (e.g. F1 $85, F3 $86, etc.), Shift-Return $8D, Clear Screen $93, Insert $94, and others.",
+      "references": [
+        {
+          "chunk": "petscii_control_00_1f",
+          "topic": "full listing and descriptions of control codes in $00-$1F"
+        },
+        {
+          "chunk": "petscii_control_80_9f",
+          "topic": "full listing and descriptions of control codes in $80-$9F"
+        }
+      ]
+    }
+  ],
+  "source_md5": "1dd135872322ce5ee3b976ccbfe88133"
+}

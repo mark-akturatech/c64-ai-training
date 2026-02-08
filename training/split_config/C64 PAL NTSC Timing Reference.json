@@ -1,0 +1,177 @@
+{
+  "source_file": "C64 PAL NTSC Timing Reference.txt",
+  "context": "C64 PAL/NTSC Raster Timing Reference",
+  "splits": [
+    {
+      "start": 1,
+      "end": 10,
+      "ignore": true,
+      "reason": "Title and source credits"
+    },
+    {
+      "start": 11,
+      "end": 28,
+      "name": "vicii_chip_variants",
+      "description": "Table of VIC-II (MOS 656x / 856x) chip variants with system, video standard, cycles per raster line, total raster lines, and CPU clock. Covers models 6567R56A, 6567R8, 6569, 6572, 6573 and 8562/8564/8565/8566/8569 variants and their NTSC/PAL differences (Cycles/Line, Raster Lines, CPU Clock Hz).",
+      "references": [
+        {
+          "chunk": "frame_timing_comparison",
+          "topic": "detailed timing differences (clocks, dots, fps) between VIC-II variants"
+        },
+        {
+          "chunk": "display_window_coordinates",
+          "topic": "how different chip variants affect visible coordinate offsets and blanking"
+        }
+      ]
+    },
+    {
+      "start": 29,
+      "end": 49,
+      "name": "frame_timing_comparison",
+      "description": "Side-by-side comparison of timing parameters for 6567R56A (early NTSC), 6567R8 (NTSC), and 6569 (PAL): system clock (Hz), dot clock (MHz), color clock (MHz), cycles per raster line, total raster lines/frame, visible raster lines, cycles per frame, frames per second, and pixels per line. Note about rarity of 6567R56A and which chips are standard for NTSC vs PAL.",
+      "references": [
+        {
+          "chunk": "vicii_chip_variants",
+          "topic": "list of chip models and their basic specs"
+        },
+        {
+          "chunk": "raster_time_basics",
+          "topic": "how cycles/line and lines/frame translate to cycles per frame and refresh rate"
+        }
+      ]
+    },
+    {
+      "start": 50,
+      "end": 65,
+      "name": "raster_time_basics",
+      "description": "Definition of 'raster time' (duration to render one byte / 8 pixels) and basic frame calculations: PAL example (63 cycles x 312 lines = 19,656 cycles ~50.12 Hz) and NTSC example (65 cycles x 263 lines = 17,095 cycles ~59.83 Hz). Explains that each raster line includes visible pixels plus horizontal blanking and that total raster lines include vertical blanking.",
+      "references": [
+        {
+          "chunk": "frame_timing_comparison",
+          "topic": "numerical timing values (cycles, lines, Hz) used in the calculations"
+        },
+        {
+          "chunk": "bad_lines",
+          "topic": "how bad line behavior affects available raster/cpu cycles"
+        }
+      ]
+    },
+    {
+      "start": 66,
+      "end": 97,
+      "name": "bad_lines",
+      "description": "Bad Line condition criteria and effects. Conditions: raster between $30 and $F7, lower 3 bits of RASTER equal YSCROLL ($D011 bits 0-2), and DEN bit ($D011 bit 4) was set during some cycle of line $30. Explains that bad lines occur typically every 8th visible line and that VIC-II fetches 40 bytes of character pointers on bad lines. Cycle-stealing behavior: VIC-II asserts BA low 3 cycles before needing bus, CPU halts, VIC-II uses cycles 15-54 for c-accesses (character pointer fetches), approximately 40 cycles stolen; available CPU cycles on a bad line drop (example PAL: ~23 cycles vs ~63 on normal lines). Gives bad line summary for PAL 6569 (normal vs bad line cycles, bad line rate, total bad lines per frame). Notes technique of forcing every line to be a bad line (FLI) and its CPU cost.",
+      "references": [
+        {
+          "chunk": "vicii_memory_access_pattern",
+          "topic": "detailed VIC-II phi1/phi2 access sequencing and bad-line access timeline"
+        },
+        {
+          "chunk": "sprite_dma_timing",
+          "topic": "additional CPU cycles stolen by sprite DMA on bad lines"
+        }
+      ]
+    },
+    {
+      "start": 98,
+      "end": 126,
+      "name": "sprite_dma_timing",
+      "description": "Timing and CPU impact of VIC-II sprite DMA. Each active sprite uses: 1 p-access (sprite pointer fetch) during VIC-II phi1, followed by 3 s-accesses (sprite data fetches) in the subsequent half-cycles. BA line goes low 3 cycles before the first s-access, causing CPU bus handover and effectively stealing ~2 extra CPU cycles per sprite for handover plus the time of the 3 s-accesses. Notes that positions vary slightly between chip variants. Gives worst-case example: on a PAL bad line with 8 sprites active, additional ~16 cycles lost, leaving ~7 cycles for CPU after bad-line stealing.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "combined effect of bad-line character fetches and sprite DMA on CPU availability"
+        },
+        {
+          "chunk": "vicii_memory_access_pattern",
+          "topic": "how sprite p-/s-accesses fit into the VIC-II's phi1/phi2 access phases"
+        }
+      ]
+    },
+    {
+      "start": 127,
+      "end": 152,
+      "name": "vicii_memory_access_pattern",
+      "description": "Description of VIC-II and CPU shared bus behavior using two-phase clocking: phi1 (VIC-II accesses memory) and phi2 (CPU accesses memory). During phi1 the VIC-II performs g-accesses (graphics fetches), sprite p-accesses and s-accesses, DRAM refresh cycles, and idle accesses. Normally CPU uses phi2, but on bad lines and during sprite DMA the VIC-II can claim phi2 by holding AEC low, blocking the CPU. Provides an example access sequence for a typical PAL bad line (63 cycles): cycles 1-10 VIC-II phi1 idle/refresh with CPU on phi2; cycles 11-14 BA goes low and CPU finishes current instruction; cycles 15-54 VIC-II claims both phases for c-access and g-access (40 cycles); cycles 55-63 sprite pointer/data fetches then idle.",
+      "references": [
+        {
+          "chunk": "bad_lines",
+          "topic": "bad-line detection conditions and overall effect on bus access"
+        },
+        {
+          "chunk": "sprite_dma_timing",
+          "topic": "sprite DMA p-/s-access placement and BA timing"
+        }
+      ]
+    },
+    {
+      "start": 153,
+      "end": 184,
+      "name": "display_window_coordinates",
+      "description": "Visible display window coordinates and how RSEL/CSEL bits affect them. Vertical display window depends on RSEL in $D011: RSEL=0 => 24 rows (first line 55/$37, last 246/$F6, height 192 pixels); RSEL=1 => 25 rows (first line 51/$33, last 250/$FA, height 200 pixels). Horizontal display depends on CSEL in $D016: CSEL=0 => 38 cols (first pixel 31/$1F, last 334/$14E, width 304 pixels); CSEL=1 => 40 cols (first pixel 24/$18, last 343/$157, width 320 pixels). Lists first/last visible X coordinates for chip variants 6567R56A, 6567R8, 6569 (both decimal and hex where shown). Vertical blanking first/last lines by chip variant and note that PAL 6569 wraps vertical blank across line counter boundary (lines 300-311, then 0-15).",
+      "references": [
+        {
+          "chunk": "vicii_chip_variants",
+          "topic": "which VIC-II chip affects visible X coordinate offsets and blanking"
+        },
+        {
+          "chunk": "frame_timing_comparison",
+          "topic": "relationship between total raster lines and visible window"
+        }
+      ]
+    },
+    {
+      "start": 185,
+      "end": 213,
+      "name": "practical_cycle_budgets",
+      "description": "Approximate CPU cycle budgets per frame for PAL (6569) and NTSC (6567R8). PAL (19,656 cycles/frame) breakdown for a 200-line visible area: normal lines (175 x 63 cycles = 11,025), bad lines (25 x 23 cycles = 575), border/vblank (112 x 63 = 7,056), TOTAL available ~18,656 (no sprites; some lost to VIC-II refresh). NTSC (17,095 cycles/frame) breakdown: normal lines (175 x 65 = 11,375), bad lines (25 x 23 = 575), border/vblank (63 x 65 = 4,095), TOTAL available ~16,045 (no sprites). Key observations: PAL has ~2,600 more cycles/frame, more vertical blank time (112 vs 63 lines), NTSC has 2 more cycles per raster line (65 vs 63), extra PAL VBlank is useful for screen updates and music.",
+      "references": [
+        {
+          "chunk": "frame_timing_comparison",
+          "topic": "source numbers for cycles per frame and lines"
+        },
+        {
+          "chunk": "bad_lines",
+          "topic": "how bad lines reduce available cycles in visible area"
+        }
+      ]
+    },
+    {
+      "start": 214,
+      "end": 242,
+      "name": "common_raster_time_considerations",
+      "description": "Practical considerations for routines that depend on raster timing. Music/sound: SID players typically need 3,000-8,000 cycles per frame and should run once per frame during VBlank or stable raster; digi playback may require disabling VIC-II. Raster effects: raster splits require precise timing, stable raster IRQ setup, and compensation for bad-line jitter; the 'double IRQ' technique helps achieve cycle-exact timing. Screen updates: do them in VBlank or border time; scrolling routines benefit from border cycles; PAL's longer VBlank aids screen manipulation. Sprite multiplexing: max 8 hardware sprites per raster line, more sprites possible by repositioning across lines but requires precise timing and accounting for sprite DMA cycle stealing.",
+      "references": [
+        {
+          "chunk": "raster_time_basics",
+          "topic": "how raster timing relates to per-frame tasks and cycle budgets"
+        },
+        {
+          "chunk": "sprite_dma_timing",
+          "topic": "sprite DMA impact when multiplexing sprites"
+        },
+        {
+          "chunk": "bad_lines",
+          "topic": "bad-line jitter effects on timing-sensitive raster effects"
+        }
+      ]
+    },
+    {
+      "start": 243,
+      "end": 261,
+      "name": "detect_pal_ntsc",
+      "description": "Software detection of PAL vs NTSC using the raster counter. Method: read $D012 (and bit 7 of $D011 for the 9th bit) and wait for the raster counter to reach its maximum. Maximum raster lines: PAL = 311 ($137), NTSC (6567R8) = 262 ($106), NTSC (6567R56A) = 261 ($105). Explains why detection is important: adjusting music/player speed (50 vs 60 Hz), adapting raster effects and scroll routines, and setting correct timer values for CIA-based timing.",
+      "references": [
+        {
+          "chunk": "frame_timing_comparison",
+          "topic": "expected maximum raster counts and frame rates per system"
+        },
+        {
+          "chunk": "display_window_coordinates",
+          "topic": "how visible area and blanking differ between PAL and NTSC"
+        }
+      ]
+    }
+  ],
+  "source_md5": "aef29c5cdb4404f64218e93138863e6f"
+}

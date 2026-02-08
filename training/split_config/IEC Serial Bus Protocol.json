@@ -1,0 +1,501 @@
+{
+  "source_file": "IEC Serial Bus Protocol.txt",
+  "context": "Commodore IEC Serial Bus Protocol Reference - pagetable.com",
+  "splits": [
+    {
+      "start": 1,
+      "end": 8,
+      "ignore": true,
+      "reason": "Title, source attribution and external links (author credits / bibliography)"
+    },
+    {
+      "start": 9,
+      "end": 24,
+      "name": "series_structure_and_overview",
+      "description": "Overview of the Commodore Peripheral Bus family and series structure. Lists the different bus variants and document parts: IEEE-488 (PET), TALK/LISTEN layer, Commodore DOS layer, Standard Serial (IEC), TCBM, JiffyDOS, Fast Serial, CBDOS.",
+      "references": [
+        {
+          "chunk": "historical_context_and_serial_bus_properties",
+          "topic": "historical context and retained IEEE properties"
+        },
+        {
+          "chunk": "ieee488_physical_and_signals",
+          "topic": "original IEEE-488 parallel bus details"
+        }
+      ]
+    },
+    {
+      "start": 25,
+      "end": 41,
+      "name": "historical_context_and_serial_bus_properties",
+      "description": "Historical context for Commodore peripheral buses and list of IEEE-488 properties preserved by the Standard Serial (IEC) bus: daisy-chaining, single controller, one-to-many transmission, multi-channel support, byte-stream data, open-collector logic.",
+      "references": [
+        {
+          "chunk": "series_structure_and_overview",
+          "topic": "document part map"
+        },
+        {
+          "chunk": "iec_layer1_electrical",
+          "topic": "serialization of IEEE-488 signals to IEC 5 lines"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 64,
+      "name": "ieee488_physical_and_signals",
+      "description": "Physical connector and signal summary of IEEE-488 (PET/CBM): 24-pin connectors, DIO data lines (8), handshake lines NRFD/DAV/NDAC, control lines EOI/ATN/SRQ/REN/IFC. Also notes PET-specific defaults (REN grounded, SRQ unused).",
+      "references": [
+        {
+          "chunk": "byte_transfer_handshake_pet_notes",
+          "topic": "byte transfer mechanism and PET timeouts"
+        },
+        {
+          "chunk": "series_structure_and_overview",
+          "topic": "relationship between IEEE-488 and IEC"
+        }
+      ]
+    },
+    {
+      "start": 65,
+      "end": 75,
+      "name": "byte_transfer_handshake_pet_notes",
+      "description": "IEEE-488 byte transfer mechanism: 3-wire handshake (NRFD, DAV, NDAC). PET-specific implementation notes: REN grounded, SRQ unused in software, default timeout (64 microseconds) and ability to disable via KERNAL SETTMO.",
+      "references": [
+        {
+          "chunk": "ieee488_physical_and_signals",
+          "topic": "control and handshake lines"
+        }
+      ]
+    },
+    {
+      "start": 76,
+      "end": 106,
+      "name": "iec_layer1_electrical",
+      "description": "IEC (Standard Serial) Layer 1: electrical and connector details. Female 6-pin DIN connectors, pinout (SRQ, GND, ATN, CLK, DATA, RESET), and open-collector (inverted) logic behaviour (5V = logical 0, 0V = logical 1) with implications for multi-device sharing.",
+      "references": [
+        {
+          "chunk": "byte_transfer_sequence",
+          "topic": "how CLK/DATA are used during byte transfers"
+        },
+        {
+          "chunk": "open_collector_consequences",
+          "topic": "open-collector details and signaling implications"
+        }
+      ]
+    },
+    {
+      "start": 107,
+      "end": 123,
+      "name": "byte_transfer_sequence",
+      "description": "IEC Layer 2: Basic byte transmission sequence. Sender controls CLK, receivers control DATA. Steps include sender releasing/controlling CLK, placing bits LSB-first on DATA, 60 µs minimum data-valid holds, receivers pulling DATA to acknowledge, repeated per bit and per byte.",
+      "references": [
+        {
+          "chunk": "iec_layer1_electrical",
+          "topic": "pin roles for CLK and DATA"
+        },
+        {
+          "chunk": "timing_evolution_on_commodore_models",
+          "topic": "timing history and practical hold-times"
+        }
+      ]
+    },
+    {
+      "start": 124,
+      "end": 136,
+      "name": "timing_evolution_on_commodore_models",
+      "description": "Timing evolution of the IEC serial transfer across Commodore models: original 4 µs design (unshipped due to 6522 VIA bug), VIC-20 ~20 µs holds (~2 KB/s), C64 60 µs holds (<1 KB/s) due to VIC-II DMA stealing CPU cycles and affecting timing.",
+      "references": [
+        {
+          "chunk": "byte_transfer_sequence",
+          "topic": "required hold times and bit/byte mechanics"
+        },
+        {
+          "chunk": "fast_loaders_and_variants",
+          "topic": "fast loaders and why they were needed"
+        }
+      ]
+    },
+    {
+      "start": 137,
+      "end": 146,
+      "name": "eoi_timing_sidechannel",
+      "description": "End-of-Information (EOI) signalling for IEC: no dedicated wire; EOI implemented as a timing sidechannel. Sender delays placing first bit by ≥200 µs after receivers release DATA to indicate final byte; receivers detect this and acknowledge by pulling DATA for 60 µs before final byte.",
+      "references": [
+        {
+          "chunk": "byte_transfer_sequence",
+          "topic": "normal byte flow vs EOI special-case"
+        }
+      ]
+    },
+    {
+      "start": 147,
+      "end": 154,
+      "name": "atn_command_mode",
+      "description": "ATN (Attention) command mode: controller pulls ATN to force all devices into receiver (command) mode. Command bytes use same byte transmission mechanics; EOI is NOT used during commands. Devices typically respond within 1000 µs (ATN response timing).",
+      "references": [
+        {
+          "chunk": "layer3_overview",
+          "topic": "controller broadcasts commands and role orchestration"
+        },
+        {
+          "chunk": "command_codes",
+          "topic": "LISTEN/TALK/SECOND/OPEN/CLOSE command opcodes sent under ATN"
+        }
+      ]
+    },
+    {
+      "start": 155,
+      "end": 159,
+      "name": "error_conditions_and_timeouts",
+      "description": "IEC error conditions and timeouts: device-not-present (DATA remains unpulled after 256 µs), receiver timeout (no DATA pull within 1000 µs after byte sent), sender timeout (CLK not pulled within 512 µs for empty stream).",
+      "references": [
+        {
+          "chunk": "byte_transfer_sequence",
+          "topic": "timing-based error detection during transfers"
+        }
+      ]
+    },
+    {
+      "start": 160,
+      "end": 171,
+      "name": "layer3_overview",
+      "description": "Layer 3 overview: TALK/LISTEN bus arbitration based on IEEE-488. One computer acts as controller (no address), issuing commands to devices. Role assignment and address-based routing enable controlled communications.",
+      "references": [
+        {
+          "chunk": "command_codes",
+          "topic": "commands used by the controller to assign TALK/LISTEN roles"
+        },
+        {
+          "chunk": "practical_command_sequences",
+          "topic": "examples of talk/listen sequences"
+        }
+      ]
+    },
+    {
+      "start": 172,
+      "end": 180,
+      "name": "primary_addressing_and_conventional_assignments",
+      "description": "Primary device addressing: devices have Primary Addresses (PA) 0-30. Conventional assignments: 4-5 printers, 6-7 plotters, 8-11 disk drives/hard disks, 12-30 third-party devices.",
+      "references": [
+        {
+          "chunk": "command_codes",
+          "topic": "encoding LISTEN/TALK using $20+$40 + PA"
+        },
+        {
+          "chunk": "named_channels",
+          "topic": "how OPEN/CLOSE/SECOND relate to primary addressing"
+        }
+      ]
+    },
+    {
+      "start": 181,
+      "end": 195,
+      "name": "command_codes",
+      "description": "Talk/Listen command opcodes sent under ATN. LISTEN = $20 + PA, UNLISTEN = $3F, TALK = $40 + PA, UNTALK = $5F, SECOND = $60 + SA, CLOSE = $E0 + SA, OPEN = $F0 + SA. PA = primary address (0-30), SA = secondary address (0-15).",
+      "references": [
+        {
+          "chunk": "atn_command_mode",
+          "topic": "commands are sent with ATN held"
+        },
+        {
+          "chunk": "kernal_low_level_calls",
+          "topic": "KERNAL routines that issue these commands"
+        }
+      ]
+    },
+    {
+      "start": 196,
+      "end": 201,
+      "name": "talker_listener_rules",
+      "description": "Talker/Listener rules: only one talker may transmit at a time, multiple listeners can receive, controller orchestrates role changes by broadcasting commands, and all commands are heard by all devices on the bus.",
+      "references": [
+        {
+          "chunk": "command_codes",
+          "topic": "how TALK/LISTEN/UNTALK/UNLISTEN are encoded"
+        },
+        {
+          "chunk": "practical_command_sequences",
+          "topic": "examples illustrating these rules"
+        }
+      ]
+    },
+    {
+      "start": 202,
+      "end": 209,
+      "name": "secondary_addressing_channels",
+      "description": "Secondary addressing (channels): secondary addresses (0-31) select channels within devices. Commands may select a secondary after TALK or LISTEN. Disk drives ignore bit 4 of SA so channels 16-31 map to 0-15.",
+      "references": [
+        {
+          "chunk": "named_channels",
+          "topic": "using secondary addresses to open/close named channels"
+        }
+      ]
+    },
+    {
+      "start": 210,
+      "end": 216,
+      "name": "named_channels",
+      "description": "Named channels and OPEN/CLOSE semantics: Commodore extends IEEE-488 to associate secondary addresses 0-15 with filenames. OPEN sequence: LISTEN -> OPEN -> send filename bytes -> UNLISTEN. CLOSE sequence: LISTEN -> CLOSE -> UNLISTEN.",
+      "references": [
+        {
+          "chunk": "secondary_addressing_channels",
+          "topic": "SA ranges and disk drive behavior"
+        },
+        {
+          "chunk": "commodore_dos_channel_architecture",
+          "topic": "how DOS treats channel numbers"
+        }
+      ]
+    },
+    {
+      "start": 217,
+      "end": 238,
+      "name": "practical_command_sequences",
+      "description": "Practical examples of TALK/LISTEN/SECOND/OPEN/CLOSE sequences: reading from device 8 channel 2 (TALK $48, SECOND $62, UNTALK $5F), writing to device 4 channel 7 (LISTEN $24, SECOND $67, UNLISTEN $3F), and device-to-device transfer (LISTEN printer, TALK disk, SECOND channel).",
+      "references": [
+        {
+          "chunk": "command_codes",
+          "topic": "numeric encoding of commands in examples"
+        },
+        {
+          "chunk": "byte_transfer_sequence",
+          "topic": "how bytes are transmitted once roles are assigned"
+        }
+      ]
+    },
+    {
+      "start": 239,
+      "end": 250,
+      "name": "kernal_low_level_calls",
+      "description": "Low-level KERNAL calls for serial/IEEE bus operations: LISTEN $FFB1, UNLISTEN $FFAE, TALK $FFB4, UNTALK $FFAB, SECOND $FF93, TKSA $FF96, ACPTR $FFA5 (read byte), CIOUT $FFA8 (write byte). These take device/byte in A as documented.",
+      "references": [
+        {
+          "chunk": "practical_command_sequences",
+          "topic": "examples that result in these KERNAL calls"
+        },
+        {
+          "chunk": "high_level_channel_io",
+          "topic": "how high-level I/O maps to low-level calls"
+        }
+      ]
+    },
+    {
+      "start": 251,
+      "end": 259,
+      "name": "high_level_channel_io",
+      "description": "High-level logical channel I/O API (KERNAL): OPEN, CLOSE, CHKIN, CHKOUT, CHRIN, CHROUT. Notes that the high-level API supports up to 10 simultaneous logical files.",
+      "references": [
+        {
+          "chunk": "kernal_low_level_calls",
+          "topic": "low-level primitives used by high-level routines"
+        },
+        {
+          "chunk": "assembly_examples_for_channel_io",
+          "topic": "assembly examples showing how to use SETLFS/SETNAM/OPEN"
+        }
+      ]
+    },
+    {
+      "start": 260,
+      "end": 260,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 261,
+      "end": 277,
+      "name": "commodore_dos_channel_architecture",
+      "description": "Commodore DOS channel architecture: uses 32 channels (0-31) though DOS supports 0-15. Channels 0-14 handle file data, channel 15 is the command/status metachannel. Channel defaults: 0=read (LOAD), 1=write (SAVE), 2-14 flexible, 15 command/status.",
+      "references": [
+        {
+          "chunk": "named_channels",
+          "topic": "OPEN/CLOSE use of secondary addresses as filenames"
+        },
+        {
+          "chunk": "command_channel_15",
+          "topic": "how to send commands via channel 15"
+        }
+      ]
+    },
+    {
+      "start": 278,
+      "end": 283,
+      "name": "command_channel_15",
+      "description": "Command channel (15) behaviour: commands transmitted as ASCII byte streams with optional binary args. Two submission methods: stream data to channel 15 terminated by EOI/UNLISTEN, or open a named channel with command as the filename parameter.",
+      "references": [
+        {
+          "chunk": "commodore_dos_channel_architecture",
+          "topic": "role and position of channel 15"
+        },
+        {
+          "chunk": "status_reporting_and_error_codes",
+          "topic": "how drives return status via command channel"
+        }
+      ]
+    },
+    {
+      "start": 284,
+      "end": 295,
+      "name": "file_types_and_access_modes",
+      "description": "DOS file types and access modes: Sequential file types SEQ/PRG/USR. Access modes R (read), M (recovery), W (write), A (append).",
+      "references": [
+        {
+          "chunk": "relative_files_rel",
+          "topic": "contrast with REL (relative) files and record-based access"
+        }
+      ]
+    },
+    {
+      "start": 296,
+      "end": 299,
+      "name": "relative_files_rel",
+      "description": "REL (relative) files: random access using fixed record sizes (1-254 bytes). POSITION command sets record pointers using binary-encoded arguments.",
+      "references": [
+        {
+          "chunk": "file_types_and_access_modes",
+          "topic": "Context of sequential vs relative file types"
+        }
+      ]
+    },
+    {
+      "start": 300,
+      "end": 308,
+      "name": "directory_listing_syntax",
+      "description": "Directory listing commands and syntax: '$' retrieves directory contents; supports wildcards and filtering. Examples: '$' for full listing, '$0:*' all files on drive 0, '$0:*.PRG' only PRG files.",
+      "references": [
+        {
+          "chunk": "command_channel_15",
+          "topic": "how directory commands are sent to the drive"
+        }
+      ]
+    },
+    {
+      "start": 309,
+      "end": 339,
+      "name": "status_reporting_and_error_codes",
+      "description": "Drive status reporting: returned as CR-delimited ASCII string 'code,string,a,b[,c]'. Error categories and common status codes: 00 OK, 01 scratched count, 20-23 read errors, 25-26 write errors, 30-33 syntax/filename errors, 60-63 file open/existence, 72 disk full, 73 DOS version, 74 drive not ready. Also lists category meanings.",
+      "references": [
+        {
+          "chunk": "command_channel_15",
+          "topic": "status returned on the command/status channel 15"
+        },
+        {
+          "chunk": "basic_examples",
+          "topic": "BASIC example showing reading the error channel"
+        }
+      ]
+    },
+    {
+      "start": 340,
+      "end": 355,
+      "name": "block_access_api",
+      "description": "Block access API: 256-byte logical blocks identified by track/sector. '#' channel syntax allocates a buffer for direct block access. Commands include U1 (UA) read block, U2 (UB) write block, B-A allocate block in BAM, B-F free block in BAM. Example sequence to read track 18 sector 0 into a buffer via channel 2.",
+      "references": [
+        {
+          "chunk": "memory_and_execution_commands",
+          "topic": "M-R/M-W/M-E drive memory ops"
+        },
+        {
+          "chunk": "commodore_dos_channel_architecture",
+          "topic": "use of channels for block access and buffers"
+        }
+      ]
+    },
+    {
+      "start": 356,
+      "end": 362,
+      "name": "memory_and_execution_commands",
+      "description": "Drive memory and execution commands: M-R (Memory Read), M-W (Memory Write), M-E (Memory Execute), and user command vectors U3-U8 for additional entry points.",
+      "references": [
+        {
+          "chunk": "block_access_api",
+          "topic": "block-level operations often combined with memory ops"
+        }
+      ]
+    },
+    {
+      "start": 363,
+      "end": 367,
+      "name": "burst_api",
+      "description": "Burst API: low-level disk access via U0 subcommands supporting physical sector operations and file transfers using alternate serial protocols. Available on 1571 and 1581 drives with the C128.",
+      "references": [
+        {
+          "chunk": "fast_loaders_and_variants",
+          "topic": "burst modes and drive/cpu assisted fast serial protocols"
+        }
+      ]
+    },
+    {
+      "start": 368,
+      "end": 400,
+      "name": "basic_examples",
+      "description": "Common IEC bus programming patterns in BASIC: LOAD \"FILENAME\",8,1; SAVE \"FILENAME\",8; reading the error channel using OPEN 15,8,15 and INPUT#15; sending disk commands via OPEN 15,8,15,\"S:FILENAME\"; sequential file read/write examples using OPEN/GET#/PRINT#.",
+      "references": [
+        {
+          "chunk": "status_reporting_and_error_codes",
+          "topic": "reading and interpreting the error/status channel"
+        },
+        {
+          "chunk": "assembly_examples_for_channel_io",
+          "topic": "equivalent operations in assembly via KERNAL calls"
+        }
+      ]
+    },
+    {
+      "start": 401,
+      "end": 445,
+      "name": "assembly_examples_for_channel_io",
+      "description": "Assembly (6502) examples showing KERNAL usage: opening the error channel using SETLFS/SETNAM/OPEN, reading status via CHKIN/CHRIN/CLRCHN/CLOSE, loading files using SETNAM/SETLFS/LOAD, sending a byte to a device using LISTEN/SECOND/CIOUT/UNLISTEN. Demonstrates registers and JSR vectors used.",
+      "references": [
+        {
+          "chunk": "kernal_low_level_calls",
+          "topic": "low-level vectors used by assembly routines"
+        },
+        {
+          "chunk": "high_level_channel_io",
+          "topic": "how assembly maps to high-level channel operations"
+        }
+      ]
+    },
+    {
+      "start": 446,
+      "end": 458,
+      "name": "related_kernal_vectors_list",
+      "description": "List of related KERNAL vectors and their functions: $FFBA SETLFS, $FFBD SETNAM, $FFC0 OPEN, $FFC3 CLOSE, $FFC6 CHKIN, $FFC9 CHKOUT, $FFCC CLRCHN, $FFCF CHRIN, $FFD2 CHROUT, $FFD5 LOAD, $FFD8 SAVE.",
+      "references": [
+        {
+          "chunk": "assembly_examples_for_channel_io",
+          "topic": "uses of these vectors in example code"
+        },
+        {
+          "chunk": "kernal_low_level_calls",
+          "topic": "device and secondary address primitives"
+        }
+      ]
+    },
+    {
+      "start": 459,
+      "end": 485,
+      "name": "fast_loaders_and_variants",
+      "description": "Notes on fast loaders and protocol variants: JiffyDOS (1985) modifies both the computer KERNAL and drive DOS ROM for higher throughput by changing byte protocol; Fast Serial (C128, 1986) uses CIA hardware serial register requiring compatible drives; many software fast loaders upload custom drive code to improve speed. Explains fundamental IEC limitation: CPU must bit-bang bits and C64 VIC-II DMA steals cycles.",
+      "references": [
+        {
+          "chunk": "timing_evolution_on_commodore_models",
+          "topic": "why C64 timing limitations motivated fast loaders"
+        },
+        {
+          "chunk": "burst_api",
+          "topic": "burst and drive-assisted fast transfers on compatible drives"
+        }
+      ]
+    },
+    {
+      "start": 486,
+      "end": 488,
+      "ignore": true,
+      "reason": "Document footer / 'END OF REFERENCE' and closing separator (non-technical)"
+    }
+  ],
+  "source_md5": "a88c253f98e543a5740620468fd2f3b4"
+}

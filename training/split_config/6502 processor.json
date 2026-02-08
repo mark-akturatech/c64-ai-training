@@ -1,0 +1,1966 @@
+{
+  "source_file": "6502 processor.txt",
+  "context": "6502 Microprocessor",
+  "splits": [
+    {
+      "start": 1,
+      "end": 13,
+      "name": "introduction",
+      "description": "Introductory notes about the source material and scope: relation to Commodore 64 / 6510, emulation note.",
+      "references": []
+    },
+    {
+      "start": 14,
+      "end": 20,
+      "name": "registers_overview",
+      "description": "Overview: The 6502 has a set of internal registers used for calculations and control (register list introduction).",
+      "references": [
+        {
+          "chunk": "accumulator_register",
+          "topic": "detailed accumulator description"
+        },
+        {
+          "chunk": "status_register",
+          "topic": "status flags described next"
+        }
+      ]
+    },
+    {
+      "start": 21,
+      "end": 30,
+      "name": "accumulator_register",
+      "description": "Description of the Accumulator (A): primary data register; used by arithmetic instructions; can load/store/modify memory via instructions.",
+      "references": [
+        {
+          "chunk": "instruction_alphabetic_sequence",
+          "topic": "list of instructions that operate on the accumulator"
+        }
+      ]
+    },
+    {
+      "start": 31,
+      "end": 41,
+      "name": "x_index_register",
+      "description": "Description of the X index register (X): used for addressing modes and some unique instructions; can be loaded from/stored to memory.",
+      "references": [
+        {
+          "chunk": "addressing_modes_indexed",
+          "topic": "indexed addressing uses X"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 52,
+      "name": "y_index_register",
+      "description": "Description of the Y index register (Y): similar to X but used by a different set of instructions and addressing modes.",
+      "references": [
+        {
+          "chunk": "addressing_modes_indexed",
+          "topic": "indexed addressing uses Y"
+        }
+      ]
+    },
+    {
+      "start": 53,
+      "end": 95,
+      "name": "status_register",
+      "description": "6502 Status Register (P): eight flags S V - B D I Z C described individually. Flags: C (carry), Z (zero), I (interrupt disable), D (decimal mode), B (break), bit5 (unused, typically 1), V (overflow), S (sign/negative). Commonly used flags: C, Z, V, S.",
+      "references": [
+        {
+          "chunk": "instruction_operation_pseudocode_intro",
+          "topic": "SET_* and IF_* macros used in pseudocode reference these flags"
+        }
+      ]
+    },
+    {
+      "start": 96,
+      "end": 104,
+      "name": "program_counter",
+      "description": "Program Counter (PC): points to the address of the current instruction; advances as instructions execute; always changing unless halted.",
+      "references": [
+        {
+          "chunk": "jumps_and_subroutines_table",
+          "topic": "JMP, JSR, RTS, RTI behavior that modifies PC"
+        }
+      ]
+    },
+    {
+      "start": 105,
+      "end": 113,
+      "name": "stack_pointer",
+      "description": "Stack Pointer (S): contains location of the first empty place on the hardware stack; stack used for temporary storage, return addresses, status save/restore.",
+      "references": [
+        {
+          "chunk": "stack_instructions_table",
+          "topic": "PHA, PLA, PHP, PLP, JSR/RTS and interrupt sequences push/pull to/from stack"
+        }
+      ]
+    },
+    {
+      "start": 114,
+      "end": 120,
+      "name": "addressing_modes_overview",
+      "description": "Introduction to addressing modes: operand location semantics, number of addressing modes on 6502 (11) and how they determine instruction operand fetch behavior.",
+      "references": [
+        {
+          "chunk": "addressing_modes_immediate",
+          "topic": "immediate addressing details"
+        },
+        {
+          "chunk": "addressing_modes_zero_page",
+          "topic": "absolute and zero-page addressing"
+        }
+      ]
+    },
+    {
+      "start": 121,
+      "end": 128,
+      "name": "addressing_modes_immediate",
+      "description": "Immediate addressing (#): operand value is encoded in the instruction. Example: LDA #$0A -> opcodes $A9 $0A.",
+      "references": [
+        {
+          "chunk": "instruction_tables_adc",
+          "topic": "ADC immediate opcode and cycles"
+        }
+      ]
+    },
+    {
+      "start": 129,
+      "end": 142,
+      "name": "addressing_modes_absolute_and_zero_page",
+      "description": "Absolute and Zero-page addressing: absolute provides full 16-bit address (low byte stored first), zero-page uses one byte address with implicit high byte $00. Examples and opcode differences shown.",
+      "references": [
+        {
+          "chunk": "instruction_tables_lda",
+          "topic": "LDA absolute and zero-page opcodes"
+        }
+      ]
+    },
+    {
+      "start": 143,
+      "end": 148,
+      "name": "addressing_modes_implied",
+      "description": "Implied addressing: no operand required, operation is implied by instruction (e.g., TAX $AA).",
+      "references": [
+        {
+          "chunk": "instruction_tables_tax",
+          "topic": "TAX implied opcode and behavior"
+        }
+      ]
+    },
+    {
+      "start": 149,
+      "end": 154,
+      "name": "addressing_modes_accumulator",
+      "description": "Accumulator addressing: instruction operates directly on accumulator (e.g., LSR with opcode $4A).",
+      "references": [
+        {
+          "chunk": "instruction_tables_lsr",
+          "topic": "LSR accumulator and memory forms"
+        }
+      ]
+    },
+    {
+      "start": 155,
+      "end": 168,
+      "name": "addressing_modes_indexed_and_zero_page_indexed",
+      "description": "Indexed and Zero-page indexed addressing: base address is added to X or Y to produce effective address. Zero-page indexing wraps around within the zero page (8-bit wrap). Many zero-page indexed instructions use X only.",
+      "references": [
+        {
+          "chunk": "addressing_modes_pre_indexed_indirect",
+          "topic": "pre-indexed indirect uses X for zero-page addition"
+        },
+        {
+          "chunk": "addressing_modes_post_indexed_indirect",
+          "topic": "post-indexed indirect uses Y for adding after indirection"
+        }
+      ]
+    },
+    {
+      "start": 169,
+      "end": 180,
+      "name": "addressing_modes_indirect",
+      "description": "Indirect addressing: only used by JMP (JMP (addr)). The two bytes at the supplied address form the jump destination (low byte at the low address). Example: JMP ($215F) reads $215F and $2160 to form destination $3076.",
+      "references": [
+        {
+          "chunk": "instruction_tables_jmp",
+          "topic": "JMP absolute and indirect opcodes and cycles"
+        }
+      ]
+    },
+    {
+      "start": 181,
+      "end": 203,
+      "name": "addressing_modes_pre_indexed_indirect",
+      "description": "Pre-indexed indirect: LDA (zp,X) — add zero-page address to X (wrap-around), get two bytes at that zero-page address to form effective 16-bit address, then load. Example step-by-step given. Note: wrap-around behavior on zero-page addition and only X is used.",
+      "references": [
+        {
+          "chunk": "instruction_tables_lda",
+          "topic": "LDA (Oper,X) opcode and cycles"
+        }
+      ]
+    },
+    {
+      "start": 204,
+      "end": 223,
+      "name": "addressing_modes_post_indexed_indirect",
+      "description": "Post-indexed indirect: LDA (zp),Y — zero-page address supplies pointer (two bytes), add Y to that pointer to get effective address, then load. Only Y is used in this mode. Example step-by-step provided.",
+      "references": [
+        {
+          "chunk": "instruction_tables_lda",
+          "topic": "LDA (Oper),Y opcode and cycles"
+        }
+      ]
+    },
+    {
+      "start": 224,
+      "end": 249,
+      "name": "addressing_modes_relative",
+      "description": "Relative addressing: used by branch instructions. A signed one-byte displacement (two's complement) is added to the PC (which points to next instruction) allowing ±127-byte branches. Notes on branch range, signed format, and branching strategy if further than 127 bytes.",
+      "references": [
+        {
+          "chunk": "branch_instructions_behavior",
+          "topic": "BCC, BCS, BEQ, BNE, BMI, BPL, BVC, BVS timing and page-cross penalty"
+        }
+      ]
+    },
+    {
+      "start": 250,
+      "end": 250,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 251,
+      "end": 336,
+      "name": "instruction_alphabetic_sequence",
+      "description": "Alphabetic summary of MCS6502 instruction set: list of mnemonics and short names (ADC, AND, ASL, BCC, BCS, ... TYA).",
+      "references": [
+        {
+          "chunk": "instruction_tables_adc",
+          "topic": "Detailed ADC instruction table"
+        },
+        {
+          "chunk": "instruction_operation_pseudocode_intro",
+          "topic": "Pseudocode explaining each instruction's runtime behavior"
+        }
+      ]
+    },
+    {
+      "start": 337,
+      "end": 338,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 339,
+      "end": 373,
+      "name": "notation_and_symbols",
+      "description": "Notation used in instruction tables: A, X, Y, M, P, S, ->, <-, / (change), _ (no change), + (add), /\\ (AND), - (subtract), # (immediate). Also notes about references in the manual.",
+      "references": [
+        {
+          "chunk": "instruction_timing_tables",
+          "topic": "Timing tables use these notations"
+        }
+      ]
+    },
+    {
+      "start": 374,
+      "end": 393,
+      "name": "instruction_tables_adc",
+      "description": "ADC (Add Memory to Accumulator with Carry) table: operation A + M + C -> A,C and affected flags N Z C I D V. Addressing modes, opcodes ($69, $65, $75, $60, $70, $79, $61, $71), bytes and cycles. Note: +1 cycle if page boundary crossed.",
+      "references": [
+        {
+          "chunk": "instruction_operation_adc",
+          "topic": "ADC pseudocode and flag semantics (binary and BCD)"
+        },
+        {
+          "chunk": "instruction_timing_tables",
+          "topic": "page crossing cycle penalty"
+        }
+      ]
+    },
+    {
+      "start": 394,
+      "end": 413,
+      "name": "instruction_tables_and",
+      "description": "AND (A AND M -> A) table: bitwise AND operation, flags affected N Z. Addressing modes and opcodes ($29, $25, $35, $2D, $3D, $39, $21, $31). Page crossing note.",
+      "references": [
+        {
+          "chunk": "instruction_operation_and",
+          "topic": "AND pseudocode"
+        },
+        {
+          "chunk": "instruction_timing_tables",
+          "topic": "addressing mode cycles"
+        }
+      ]
+    },
+    {
+      "start": 414,
+      "end": 430,
+      "name": "instruction_tables_asl",
+      "description": "ASL (Arithmetic Shift Left) table: shifts left one bit, moves bit7 to Carry, low bit filled with 0. Affects N Z C. Addressing modes and opcodes ($0A accumulator, $06 zero page, $16 zp,X, $0E absolute, $1E absolute,X).",
+      "references": [
+        {
+          "chunk": "instruction_operation_asl",
+          "topic": "ASL pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 431,
+      "end": 443,
+      "name": "instruction_tables_bcc",
+      "description": "BCC (Branch on Carry Clear) table: Relative mode, opcode $90, 2 bytes, 2 cycles (+1/+2 if branch and page crossing). Affects no flags.",
+      "references": [
+        {
+          "chunk": "addressing_modes_relative",
+          "topic": "relative addressing and signed displacement"
+        },
+        {
+          "chunk": "branch_instructions_behavior",
+          "topic": "timing details for branches"
+        }
+      ]
+    },
+    {
+      "start": 444,
+      "end": 457,
+      "name": "instruction_tables_bcs",
+      "description": "BCS (Branch on Carry Set) table: Relative mode, opcode $B0, 2 bytes, cycles depend on branch and page crossing.",
+      "references": [
+        {
+          "chunk": "instruction_operation_bcs",
+          "topic": "pseudocode for BCS"
+        }
+      ]
+    },
+    {
+      "start": 458,
+      "end": 470,
+      "name": "instruction_tables_beq",
+      "description": "BEQ (Branch on Result Zero): Relative mode, opcode $F0. Branch if Z=1. Timing includes page crossing penalties.",
+      "references": [
+        {
+          "chunk": "instruction_operation_beq",
+          "topic": "BEQ pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 471,
+      "end": 486,
+      "name": "instruction_tables_bit",
+      "description": "BIT (Test bits in memory with accumulator): Operation A AND M -> sets Z depending on result, copies M7 to N and M6 to V. Addressing modes: Zero Page ($24), Absolute ($2C).",
+      "references": [
+        {
+          "chunk": "instruction_operation_bit",
+          "topic": "BIT pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 487,
+      "end": 500,
+      "name": "instruction_tables_bmi",
+      "description": "BMI (Branch on Result Minus): Relative mode, opcode $30. Branch when N=1. Timing includes page crossing penalties.",
+      "references": [
+        {
+          "chunk": "instruction_operation_bmi",
+          "topic": "BMI pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 501,
+      "end": 514,
+      "name": "instruction_tables_bne",
+      "description": "BNE (Branch on Result Not Zero): Relative mode, opcode $D0. Branch when Z=0. Timing includes page crossing penalties.",
+      "references": [
+        {
+          "chunk": "instruction_operation_bne",
+          "topic": "BNE pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 515,
+      "end": 528,
+      "name": "instruction_tables_bpl",
+      "description": "BPL (Branch on Result Plus): Relative mode, opcode $10. Branch when N=0. Timing includes page crossing penalties.",
+      "references": [
+        {
+          "chunk": "instruction_operation_bpl",
+          "topic": "BPL pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 529,
+      "end": 555,
+      "name": "instruction_tables_brk",
+      "description": "BRK (Force Break) implied: opcode $00, pushes PC+2 and status to stack, sets B and I, loads PC from interrupt vector at $FFFE/$FFFF. Affects interrupt-disable flag. 7 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_brk",
+          "topic": "BRK pseudocode and stack sequence"
+        }
+      ]
+    },
+    {
+      "start": 556,
+      "end": 569,
+      "name": "instruction_tables_bvc_bvs",
+      "description": "BVC/BVS Branch on Overflow Clear/Set: relative mode, opcodes $50 and $70 respectively. Branch taken depends on V flag. Timing includes page crossing penalties.",
+      "references": [
+        {
+          "chunk": "instruction_operation_bvc",
+          "topic": "BVC pseudocode"
+        },
+        {
+          "chunk": "instruction_operation_bvs",
+          "topic": "BVS pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 570,
+      "end": 581,
+      "name": "instruction_tables_clc",
+      "description": "CLC (Clear Carry): implied, opcode $18, 2 cycles. Operation: 0 -> C.",
+      "references": [
+        {
+          "chunk": "instruction_operation_clc",
+          "topic": "CLC pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 582,
+      "end": 593,
+      "name": "instruction_tables_cld",
+      "description": "CLD (Clear Decimal Mode): implied, opcode $D8, 2 cycles. Operation: 0 -> D.",
+      "references": [
+        {
+          "chunk": "instruction_operation_cld",
+          "topic": "CLD pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 594,
+      "end": 605,
+      "name": "instruction_tables_cli",
+      "description": "CLI (Clear Interrupt Disable): implied, opcode $58, 2 cycles. Operation: 0 -> I.",
+      "references": [
+        {
+          "chunk": "instruction_operation_cli",
+          "topic": "CLI pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 606,
+      "end": 617,
+      "name": "instruction_tables_clv",
+      "description": "CLV (Clear Overflow Flag): implied, opcode $B8, 2 cycles. Operation: 0 -> V.",
+      "references": [
+        {
+          "chunk": "instruction_operation_clv",
+          "topic": "CLV pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 618,
+      "end": 636,
+      "name": "instruction_tables_cmp",
+      "description": "CMP (Compare memory and accumulator): sets flags as A - M result; addressing modes with opcodes ($C9,$C5,$D5,$CD,$DD,$D9,$C1,$D1), page crossing note.",
+      "references": [
+        {
+          "chunk": "instruction_operation_cmp",
+          "topic": "CMP pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 637,
+      "end": 648,
+      "name": "instruction_tables_cpx",
+      "description": "CPX (Compare memory and X): opcodes ($E0,$E4,$EC). Operation X - M, flags updated accordingly.",
+      "references": [
+        {
+          "chunk": "instruction_operation_cpx",
+          "topic": "CPX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 649,
+      "end": 660,
+      "name": "instruction_tables_cpy",
+      "description": "CPY (Compare memory and Y): opcodes ($C0,$C4,$CC). Operation Y - M, flags updated accordingly.",
+      "references": [
+        {
+          "chunk": "instruction_operation_cpy",
+          "topic": "CPY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 661,
+      "end": 676,
+      "name": "instruction_tables_dec",
+      "description": "DEC (Decrement memory by one): modifies memory M -> M-1 and updates N/Z. Addressing modes and opcodes ($C6,$D6,$CE,$DE).",
+      "references": [
+        {
+          "chunk": "instruction_operation_dec",
+          "topic": "DEC pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 677,
+      "end": 688,
+      "name": "instruction_tables_dex",
+      "description": "DEX (Decrement X): implied, opcode $CA, updates X and flags N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_dex",
+          "topic": "DEX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 689,
+      "end": 700,
+      "name": "instruction_tables_dey",
+      "description": "DEY (Decrement Y): implied, opcode $88, updates Y and flags N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_dey",
+          "topic": "DEY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 701,
+      "end": 720,
+      "name": "instruction_tables_eor",
+      "description": "EOR (Exclusive OR) A EOR M -> A. Addressing modes and opcodes ($49,$45,$55,$40,$50,$59,$41,$51). Page boundary note.",
+      "references": [
+        {
+          "chunk": "instruction_operation_eor",
+          "topic": "EOR pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 721,
+      "end": 732,
+      "name": "instruction_tables_inc",
+      "description": "INC (Increment memory by one): M -> M+1 and update N/Z. Addressing modes and opcodes ($E6,$F6,$EE,$FE).",
+      "references": [
+        {
+          "chunk": "instruction_operation_inc",
+          "topic": "INC pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 733,
+      "end": 743,
+      "name": "instruction_tables_inx",
+      "description": "INX (Increment X): implied, opcode $E8, 2 cycles. X -> X+1 updates N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_inx",
+          "topic": "INX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 744,
+      "end": 755,
+      "name": "instruction_tables_iny",
+      "description": "INY (Increment Y): implied, opcode $C8, 2 cycles. Y -> Y+1 updates N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_iny",
+          "topic": "INY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 756,
+      "end": 768,
+      "name": "instruction_tables_jmp",
+      "description": "JMP (Jump): Absolute ($4C) and Indirect ($6C). Operation: PC <- target. Indirect reads vector from memory.",
+      "references": [
+        {
+          "chunk": "addressing_modes_indirect",
+          "topic": "JMP (Indirect) explanation"
+        },
+        {
+          "chunk": "instruction_operation_jmp",
+          "topic": "JMP pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 769,
+      "end": 780,
+      "name": "instruction_tables_jsr",
+      "description": "JSR (Jump to Subroutine): Absolute ($20). Pushes return address (PC+2) onto stack and sets PC to target. 6 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_jsr",
+          "topic": "JSR stack sequence pseudocode"
+        },
+        {
+          "chunk": "stack_instructions_table",
+          "topic": "stack use by JSR/RTS"
+        }
+      ]
+    },
+    {
+      "start": 781,
+      "end": 800,
+      "name": "instruction_tables_lda",
+      "description": "LDA (Load Accumulator): loads memory into A, affects N/Z. Addressing modes and opcodes ($A9,$A5,$B5,$AD,$BD,$B9,$A1,$B1). Page crossing penalty on some modes.",
+      "references": [
+        {
+          "chunk": "instruction_operation_lda",
+          "topic": "LDA pseudocode"
+        },
+        {
+          "chunk": "addressing_modes_pre_indexed_indirect",
+          "topic": "LDA (Oper,X) example"
+        }
+      ]
+    },
+    {
+      "start": 801,
+      "end": 817,
+      "name": "instruction_tables_ldx",
+      "description": "LDX (Load X): loads memory into X, affects N/Z. Addressing modes and opcodes ($A2,$A6,$B6,$AE,$BE). Page crossing note for Absolute,Y variant.",
+      "references": [
+        {
+          "chunk": "instruction_operation_ldx",
+          "topic": "LDX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 818,
+      "end": 833,
+      "name": "instruction_tables_ldy",
+      "description": "LDY (Load Y): loads memory into Y, affects N/Z. Addressing modes and opcodes ($A0,$A4,$B4,$AC,$BC). Page crossing note for Absolute,X variant.",
+      "references": [
+        {
+          "chunk": "instruction_operation_ldy",
+          "topic": "LDY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 834,
+      "end": 850,
+      "name": "instruction_tables_lsr",
+      "description": "LSR (Logical Shift Right): shifts right one bit, bit0 -> Carry, bit7 filled with 0. Affects N/Z/C. Addressing modes and opcodes ($4A,$46,$56,$4E,$5E).",
+      "references": [
+        {
+          "chunk": "instruction_operation_lsr",
+          "topic": "LSR pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 851,
+      "end": 861,
+      "name": "instruction_tables_nop",
+      "description": "NOP (No Operation): opcode $EA, implied, 2 cycles. Does nothing and does not change flags.",
+      "references": [
+        {
+          "chunk": "instruction_operation_nop",
+          "topic": "NOP pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 862,
+      "end": 881,
+      "name": "instruction_tables_ora",
+      "description": "ORA (OR memory with accumulator): A OR M -> A. Addressing modes and opcodes ($09,$05,$15,$0D,$1D,$19,$01,$11). Page crossing note.",
+      "references": [
+        {
+          "chunk": "instruction_operation_ora",
+          "topic": "ORA pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 882,
+      "end": 893,
+      "name": "instruction_tables_pha",
+      "description": "PHA (Push Accumulator on Stack): implied, opcode $48, pushes A onto stack. 3 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_pha",
+          "topic": "PHA pseudocode"
+        },
+        {
+          "chunk": "stack_instructions_table",
+          "topic": "PHP/PLA/PLP related stack usage"
+        }
+      ]
+    },
+    {
+      "start": 894,
+      "end": 905,
+      "name": "instruction_tables_php",
+      "description": "PHP (Push Processor Status on Stack): implied, opcode $08, pushes status register to stack. 3 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_php",
+          "topic": "PHP pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 906,
+      "end": 917,
+      "name": "instruction_tables_pla",
+      "description": "PLA (Pull Accumulator from Stack): implied, opcode $68, pulls a byte from stack to A and updates N/Z. 4 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_pla",
+          "topic": "PLA pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 918,
+      "end": 929,
+      "name": "instruction_tables_plp",
+      "description": "PLP (Pull Processor Status from Stack): implied, opcode $28, pulls status from stack into P. 4 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_plp",
+          "topic": "PLP pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 930,
+      "end": 948,
+      "name": "instruction_tables_rol",
+      "description": "ROL (Rotate Left): shifts left through carry (C -> bit0 and bit7 -> C). Affects N/Z/C. Addressing modes and opcodes ($2A,$26,$36,$2E,$3E).",
+      "references": [
+        {
+          "chunk": "instruction_operation_rol",
+          "topic": "ROL pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 949,
+      "end": 970,
+      "name": "instruction_tables_ror",
+      "description": "ROR (Rotate Right): rotates right through carry (C inserted into bit7, bit0 -> C). Affects N/Z/C. Addressing modes and opcodes ($6A,$66,$76,$6E,$7E). Note: ROR available on MCS650X microprocessors after June 1976.",
+      "references": [
+        {
+          "chunk": "instruction_operation_ror",
+          "topic": "ROR pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 971,
+      "end": 981,
+      "name": "instruction_tables_rti",
+      "description": "RTI (Return from Interrupt): implied, opcode $40? table shows $4D (document uses internal numbering), operation: pull P from stack, pull PC from stack. Affects flags from stack.",
+      "references": [
+        {
+          "chunk": "instruction_operation_rti",
+          "topic": "RTI pseudocode (P and PC pulled from stack)"
+        }
+      ]
+    },
+    {
+      "start": 982,
+      "end": 992,
+      "name": "instruction_tables_rts",
+      "description": "RTS (Return from Subroutine): implied, opcode $60, pulls return address from stack and adds 1 to set PC, 6 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_rts",
+          "topic": "RTS pseudocode and stack sequence"
+        }
+      ]
+    },
+    {
+      "start": 993,
+      "end": 1012,
+      "name": "instruction_tables_sbc",
+      "description": "SBC (Subtract Memory from Accumulator with Borrow): A - M - (1-C) -> A; affected flags N Z C I D V. Addressing modes and opcodes ($E9,$E5,$F5,$ED,$FD,$F9,$E1,$F1). Decimal mode behavior noted.",
+      "references": [
+        {
+          "chunk": "instruction_operation_sbc",
+          "topic": "SBC pseudocode and BCD handling"
+        }
+      ]
+    },
+    {
+      "start": 1013,
+      "end": 1024,
+      "name": "instruction_tables_sec",
+      "description": "SEC (Set Carry): implied, opcode $38, sets carry flag to 1, 2 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_sec",
+          "topic": "SEC pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1025,
+      "end": 1035,
+      "name": "instruction_tables_sed",
+      "description": "SED (Set Decimal Mode): implied, opcode $F8, sets decimal mode flag D to 1, 2 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_sed",
+          "topic": "SED pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1036,
+      "end": 1046,
+      "name": "instruction_tables_sei",
+      "description": "SEI (Set Interrupt Disable): implied, opcode $78, sets I flag to 1, 2 cycles.",
+      "references": [
+        {
+          "chunk": "instruction_operation_sei",
+          "topic": "SEI pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1047,
+      "end": 1064,
+      "name": "instruction_tables_sta",
+      "description": "STA (Store Accumulator): copies A to memory (various addressing modes). Op-codes include $85,$95,$80,$90,$99,$81,$91; store instructions take differing cycles per addressing mode.",
+      "references": [
+        {
+          "chunk": "instruction_operation_sta",
+          "topic": "STA pseudocode (STORE into memory)"
+        }
+      ]
+    },
+    {
+      "start": 1065,
+      "end": 1078,
+      "name": "instruction_tables_stx",
+      "description": "STX (Store X): store X into memory. Addressing modes and opcodes ($86,$96,$8E).",
+      "references": [
+        {
+          "chunk": "instruction_operation_stx",
+          "topic": "STX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1079,
+      "end": 1092,
+      "name": "instruction_tables_sty",
+      "description": "STY (Store Y): store Y into memory. Addressing modes and opcodes ($84,$94,$8C).",
+      "references": [
+        {
+          "chunk": "instruction_operation_sty",
+          "topic": "STY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1093,
+      "end": 1104,
+      "name": "instruction_tables_tax",
+      "description": "TAX (Transfer Accumulator to X): implied, opcode $AA, sets N/Z based on A copied to X.",
+      "references": [
+        {
+          "chunk": "instruction_operation_tax",
+          "topic": "TAX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1105,
+      "end": 1116,
+      "name": "instruction_tables_tay",
+      "description": "TAY (Transfer Accumulator to Y): implied, opcode $A8, sets N/Z based on A copied to Y.",
+      "references": [
+        {
+          "chunk": "instruction_operation_tay",
+          "topic": "TAY pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1117,
+      "end": 1127,
+      "name": "instruction_tables_tsx",
+      "description": "TSX (Transfer Stack Pointer to X): implied, opcode $BA, X <- S and updates N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_tsx",
+          "topic": "TSX pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1128,
+      "end": 1137,
+      "name": "instruction_tables_txa",
+      "description": "TXA (Transfer X to Accumulator): implied, opcode $8A, A <- X and updates N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_txa",
+          "topic": "TXA pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1138,
+      "end": 1147,
+      "name": "instruction_tables_txs",
+      "description": "TXS (Transfer X to Stack Pointer): implied, opcode $9A, S <- X (no flags affected).",
+      "references": [
+        {
+          "chunk": "instruction_operation_txs",
+          "topic": "TXS pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1148,
+      "end": 1160,
+      "name": "instruction_tables_tya",
+      "description": "TYA (Transfer Y to Accumulator): implied, opcode $98, A <- Y and updates N/Z.",
+      "references": [
+        {
+          "chunk": "instruction_operation_tya",
+          "topic": "TYA pseudocode"
+        }
+      ]
+    },
+    {
+      "start": 1161,
+      "end": 1249,
+      "name": "instruction_timing_tables",
+      "description": "Instruction addressing modes and related execution times (clock cycles) tables: per addressing mode cycle counts for many instructions, notes on page crossing and branch penalties.",
+      "references": [
+        {
+          "chunk": "addressing_modes_relative",
+          "topic": "branch timing notes and page-cross penalties"
+        },
+        {
+          "chunk": "instruction_alphabetic_sequence",
+          "topic": "maps mnemonics to timing rows"
+        }
+      ]
+    },
+    {
+      "start": 1250,
+      "end": 1282,
+      "name": "opcode_map_00_3f",
+      "description": "Opcode map entries for byte values $00–$3F. Textual listing showing mnemonics and addressing modes for opcodes 00–1F (left column) and 20–3F (right column). Includes BRK, JSR, ORA/AND/ASL/ROL variants across Immediate, Zero Page, Absolute, Accumulator, Indexed and Indirect addressing, branch instructions (BPL, BMI), stack/PHP/PLP, flag set/clear (CLC/SEC), and several 'Future Expansion' placeholders.",
+      "references": [
+        {
+          "chunk": "opcode_map_40_7f",
+          "topic": "Opcode entries for $40–$7F (next block)"
+        },
+        {
+          "chunk": "opcode_map_80_bf",
+          "topic": "Opcode entries for $80–$BF (later block)"
+        },
+        {
+          "chunk": "opcode_map_c0_ff",
+          "topic": "Opcode entries for $C0–$FF (later block)"
+        }
+      ]
+    },
+    {
+      "start": 1283,
+      "end": 1315,
+      "name": "opcode_map_40_7f",
+      "description": "Opcode map entries for byte values $40–$7F. Textual listing showing mnemonics and addressing modes for opcodes 40–5F (left column) and 60–7F (right column). Covers RTI/RTS, EOR/ADC and shifts (LSR/ROR) across various addressing modes, stack ops (PHA/PLA), JMP (absolute and indirect), branch instructions (BVC/BVS), flag instructions (CLI/SEI), and multiple 'Future Expansion' placeholders.",
+      "references": [
+        {
+          "chunk": "opcode_map_00_3f",
+          "topic": "Opcode entries for $00–$3F (previous block)"
+        },
+        {
+          "chunk": "opcode_map_80_bf",
+          "topic": "Opcode entries for $80–$BF (next block)"
+        },
+        {
+          "chunk": "opcode_map_c0_ff",
+          "topic": "Opcode entries for $C0–$FF (later block)"
+        }
+      ]
+    },
+    {
+      "start": 1316,
+      "end": 1348,
+      "name": "opcode_map_80_bf",
+      "description": "Opcode map entries for byte values $80–$BF. Textual listing showing mnemonics and addressing modes for opcodes 80–9F (left column) and A0–BF (right column). Includes STA/STA variants, LDY/LDX/LDA immediate/zero page/absolute/indexed forms, transfer and register ops (TXA/TAX/TAY/DEY/TYA/TXS), branch instructions (BCC/BCS), and many 'Future Expansion' placeholders. Note: contains some typographical duplications present in the source (e.g., repeated opcode labels).",
+      "references": [
+        {
+          "chunk": "opcode_map_00_3f",
+          "topic": "Opcode entries for $00–$3F (earlier block)"
+        },
+        {
+          "chunk": "opcode_map_40_7f",
+          "topic": "Opcode entries for $40–$7F (previous block)"
+        },
+        {
+          "chunk": "opcode_map_c0_ff",
+          "topic": "Opcode entries for $C0–$FF (next block)"
+        }
+      ]
+    },
+    {
+      "start": 1349,
+      "end": 1382,
+      "name": "opcode_map_c0_ff",
+      "description": "Opcode map entries for byte values $C0–$FF. Textual listing showing mnemonics and addressing modes for opcodes C0–DF (left column) and E0–FF (right column). Covers compare (CPY/CPX/CMP), SBC/ADC families, DEC/INC/INX/INY/DEX, branch instructions (BNE/BEQ), flag set/clear (CLD/SED), and many 'Future Expansion' placeholders; includes NOP (EA) and multiple addressing-mode variants for arithmetic and logical ops.",
+      "references": [
+        {
+          "chunk": "opcode_map_00_3f",
+          "topic": "Opcode entries for $00–$3F (earlier block)"
+        },
+        {
+          "chunk": "opcode_map_40_7f",
+          "topic": "Opcode entries for $40–$7F (earlier block)"
+        },
+        {
+          "chunk": "opcode_map_80_bf",
+          "topic": "Opcode entries for $80–$BF (previous block)"
+        }
+      ]
+    },
+    {
+      "start": 1383,
+      "end": 1420,
+      "name": "instruction_operation_pseudocode_intro",
+      "description": "Pseudocode introduction and helper macros used in the following instruction operation snippets: src, SET_SIGN, SET_ZERO, SET_CARRY, SET_OVERFLOW, SET_INTERRUPT, SET_BREAK, SET_DECIMAL, REL_ADDR, SET_SR, GET_SR, PULL, PUSH, LOAD, STORE, IF_* macros, clk, and register aliases (AC, XR, YR, PC, SP).",
+      "references": [
+        {
+          "chunk": "instruction_timing_tables",
+          "topic": "timing information referenced when pseudocode mentions clock cycles"
+        }
+      ]
+    },
+    {
+      "start": 1421,
+      "end": 1435,
+      "name": "instruction_operation_adc",
+      "description": "ADC pseudocode: performs A + M + C, sets Zero/Sign/Overflow/Carry appropriately. Includes BCD (decimal mode) adjustments and different carry/overflow rules for decimal/binary modes.",
+      "references": [
+        {
+          "chunk": "instruction_tables_adc",
+          "topic": "ADC opcode table and cycles"
+        },
+        {
+          "chunk": "status_register",
+          "topic": "flags affected by ADC: C, Z, V, S (and D for decimal mode)"
+        }
+      ]
+    },
+    {
+      "start": 1436,
+      "end": 1436,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1437,
+      "end": 1441,
+      "name": "instruction_operation_and",
+      "description": "AND pseudocode: src &= AC; set sign and zero; AC = result. Bitwise AND operation affecting N and Z flags.",
+      "references": [
+        {
+          "chunk": "instruction_tables_and",
+          "topic": "AND opcodes and addressing modes"
+        }
+      ]
+    },
+    {
+      "start": 1442,
+      "end": 1442,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1443,
+      "end": 1449,
+      "name": "instruction_operation_asl",
+      "description": "ASL pseudocode: shift left, top bit -> Carry, low bit filled with 0; set sign and zero; store result to memory or accumulator depending on mode.",
+      "references": [
+        {
+          "chunk": "instruction_tables_asl",
+          "topic": "ASL opcodes and modes"
+        }
+      ]
+    },
+    {
+      "start": 1450,
+      "end": 1450,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1451,
+      "end": 1455,
+      "name": "instruction_operation_bcc",
+      "description": "BCC pseudocode: if Carry flag clear then add cycles for page crossing and set PC to relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bcc",
+          "topic": "BCC opcode and timing"
+        }
+      ]
+    },
+    {
+      "start": 1456,
+      "end": 1456,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1457,
+      "end": 1461,
+      "name": "instruction_operation_bcs",
+      "description": "BCS pseudocode: if Carry flag set then handle page crossing cycles and PC = relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bcs",
+          "topic": "BCS opcode"
+        }
+      ]
+    },
+    {
+      "start": 1462,
+      "end": 1462,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1463,
+      "end": 1467,
+      "name": "instruction_operation_beq",
+      "description": "BEQ pseudocode: if Zero flag set then adjust cycles for page crossing and PC to relative target.",
+      "references": [
+        {
+          "chunk": "instruction_tables_beq",
+          "topic": "BEQ opcode and timing"
+        }
+      ]
+    },
+    {
+      "start": 1468,
+      "end": 1468,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1469,
+      "end": 1472,
+      "name": "instruction_operation_bit",
+      "description": "BIT pseudocode: copy bit7 of src to Sign, bit6 to Overflow, set Zero based on A AND src.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bit",
+          "topic": "BIT opcodes and addressing"
+        }
+      ]
+    },
+    {
+      "start": 1473,
+      "end": 1473,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1474,
+      "end": 1478,
+      "name": "instruction_operation_bmi",
+      "description": "BMI pseudocode: branch if Sign flag set; account for page crossing cycles and set PC accordingly.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bmi",
+          "topic": "BMI opcode"
+        }
+      ]
+    },
+    {
+      "start": 1479,
+      "end": 1479,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1480,
+      "end": 1484,
+      "name": "instruction_operation_bne",
+      "description": "BNE pseudocode: branch if Zero flag clear; adjust cycles for page crossing then PC = relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bne",
+          "topic": "BNE opcode"
+        }
+      ]
+    },
+    {
+      "start": 1485,
+      "end": 1485,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1486,
+      "end": 1490,
+      "name": "instruction_operation_bpl",
+      "description": "BPL pseudocode: branch if Sign flag clear; adjust cycles for page crossing then PC = relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bpl",
+          "topic": "BPL opcode"
+        }
+      ]
+    },
+    {
+      "start": 1491,
+      "end": 1491,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1492,
+      "end": 1500,
+      "name": "instruction_operation_brk",
+      "description": "BRK pseudocode: increment PC, push return address (high/low) and status onto stack, set break and interrupt flags, load PC from IRQ vector ($FFFE/$FFFF).",
+      "references": [
+        {
+          "chunk": "instruction_tables_brk",
+          "topic": "BRK opcode and vector behavior"
+        }
+      ]
+    },
+    {
+      "start": 1501,
+      "end": 1505,
+      "name": "instruction_operation_bvc",
+      "description": "BVC pseudocode: branch if Overflow flag clear; adjust cycles for page crossing then PC = relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bvc_bvs",
+          "topic": "BVC/BVS opcode summary"
+        }
+      ]
+    },
+    {
+      "start": 1506,
+      "end": 1506,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1507,
+      "end": 1511,
+      "name": "instruction_operation_bvs",
+      "description": "BVS pseudocode: branch if Overflow flag set; handle page crossing cycles then PC = relative address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_bvc_bvs",
+          "topic": "BVC/BVS opcode summary"
+        }
+      ]
+    },
+    {
+      "start": 1512,
+      "end": 1512,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1513,
+      "end": 1515,
+      "name": "instruction_operation_clc",
+      "description": "CLC pseudocode: clear the carry flag (C = 0).",
+      "references": [
+        {
+          "chunk": "instruction_tables_clc",
+          "topic": "CLC opcode"
+        }
+      ]
+    },
+    {
+      "start": 1516,
+      "end": 1518,
+      "name": "instruction_operation_cld",
+      "description": "CLD pseudocode: clear the decimal flag (D = 0).",
+      "references": [
+        {
+          "chunk": "instruction_tables_cld",
+          "topic": "CLD opcode"
+        }
+      ]
+    },
+    {
+      "start": 1519,
+      "end": 1521,
+      "name": "instruction_operation_cli",
+      "description": "CLI pseudocode: clear the interrupt disable flag (I = 0).",
+      "references": [
+        {
+          "chunk": "instruction_tables_cli",
+          "topic": "CLI opcode"
+        }
+      ]
+    },
+    {
+      "start": 1522,
+      "end": 1524,
+      "name": "instruction_operation_clv",
+      "description": "CLV pseudocode: clear the overflow flag (V = 0).",
+      "references": [
+        {
+          "chunk": "instruction_tables_clv",
+          "topic": "CLV opcode"
+        }
+      ]
+    },
+    {
+      "start": 1525,
+      "end": 1529,
+      "name": "instruction_operation_cmp",
+      "description": "CMP pseudocode: compute AC - src, set Carry if no borrow (src < 0x100), set Sign and Zero based on low byte result.",
+      "references": [
+        {
+          "chunk": "instruction_tables_cmp",
+          "topic": "CMP opcodes & modes"
+        }
+      ]
+    },
+    {
+      "start": 1530,
+      "end": 1530,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1531,
+      "end": 1535,
+      "name": "instruction_operation_cpx",
+      "description": "CPX pseudocode: XR - src, set Carry if no borrow, set Sign and Zero based on result.",
+      "references": [
+        {
+          "chunk": "instruction_tables_cpx",
+          "topic": "CPX opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1536,
+      "end": 1536,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1537,
+      "end": 1541,
+      "name": "instruction_operation_cpy",
+      "description": "CPY pseudocode: YR - src, set Carry if no borrow, set Sign and Zero based on result.",
+      "references": [
+        {
+          "chunk": "instruction_tables_cpy",
+          "topic": "CPY opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1542,
+      "end": 1542,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1543,
+      "end": 1547,
+      "name": "instruction_operation_dec",
+      "description": "DEC pseudocode: decrement memory value by one (wrap to 8-bit), set Sign and Zero, store back to memory.",
+      "references": [
+        {
+          "chunk": "instruction_tables_dec",
+          "topic": "DEC opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1548,
+      "end": 1548,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1549,
+      "end": 1555,
+      "name": "instruction_operation_dex",
+      "description": "DEX pseudocode: XR = (XR - 1) & 0xff; update Sign and Zero; store back to X register.",
+      "references": [
+        {
+          "chunk": "instruction_tables_dex",
+          "topic": "DEX opcode"
+        }
+      ]
+    },
+    {
+      "start": 1556,
+      "end": 1562,
+      "name": "instruction_operation_dey",
+      "description": "DEY pseudocode: decrement Y register, update Sign and Zero.",
+      "references": [
+        {
+          "chunk": "instruction_tables_dey",
+          "topic": "DEY opcode"
+        }
+      ]
+    },
+    {
+      "start": 1563,
+      "end": 1567,
+      "name": "instruction_operation_eor",
+      "description": "EOR pseudocode: src ^= AC; set Sign and Zero; AC = result (bitwise exclusive-or).",
+      "references": [
+        {
+          "chunk": "instruction_tables_eor",
+          "topic": "EOR opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1568,
+      "end": 1568,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1569,
+      "end": 1573,
+      "name": "instruction_operation_inc",
+      "description": "INC pseudocode: increment memory value by one (wrap to 8-bit), set Sign and Zero, store back.",
+      "references": [
+        {
+          "chunk": "instruction_tables_inc",
+          "topic": "INC opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1574,
+      "end": 1574,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1575,
+      "end": 1581,
+      "name": "instruction_operation_inx",
+      "description": "INX pseudocode: XR = (XR + 1) & 0xff; update Sign and Zero.",
+      "references": [
+        {
+          "chunk": "instruction_tables_inx",
+          "topic": "INX opcode"
+        }
+      ]
+    },
+    {
+      "start": 1582,
+      "end": 1587,
+      "name": "instruction_operation_iny",
+      "description": "INY pseudocode: YR = (YR + 1) & 0xff; update Sign and Zero.",
+      "references": [
+        {
+          "chunk": "instruction_tables_iny",
+          "topic": "INY opcode"
+        }
+      ]
+    },
+    {
+      "start": 1588,
+      "end": 1588,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1589,
+      "end": 1591,
+      "name": "instruction_operation_jmp",
+      "description": "JMP pseudocode: PC = target address (src).",
+      "references": [
+        {
+          "chunk": "instruction_tables_jmp",
+          "topic": "JMP opcodes absolute and indirect"
+        }
+      ]
+    },
+    {
+      "start": 1592,
+      "end": 1596,
+      "name": "instruction_operation_jsr",
+      "description": "JSR pseudocode: decrement PC, push return address (high/low) to stack, set PC to target.",
+      "references": [
+        {
+          "chunk": "instruction_tables_jsr",
+          "topic": "JSR opcode and stack semantics"
+        }
+      ]
+    },
+    {
+      "start": 1597,
+      "end": 1597,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1598,
+      "end": 1602,
+      "name": "instruction_operation_lda",
+      "description": "LDA pseudocode: set Sign and Zero based on src and load AC = src.",
+      "references": [
+        {
+          "chunk": "instruction_tables_lda",
+          "topic": "LDA opcodes and addressing modes"
+        }
+      ]
+    },
+    {
+      "start": 1603,
+      "end": 1607,
+      "name": "instruction_operation_ldx",
+      "description": "LDX pseudocode: set Sign and Zero and XR = src.",
+      "references": [
+        {
+          "chunk": "instruction_tables_ldx",
+          "topic": "LDX opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1608,
+      "end": 1611,
+      "name": "instruction_operation_ldy",
+      "description": "LDY pseudocode: set Sign and Zero and YR = src.",
+      "references": [
+        {
+          "chunk": "instruction_tables_ldy",
+          "topic": "LDY opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1612,
+      "end": 1612,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1613,
+      "end": 1618,
+      "name": "instruction_operation_lsr",
+      "description": "LSR pseudocode: set Carry from bit0, shift right by one, set Sign and Zero, store into memory or accumulator depending on mode.",
+      "references": [
+        {
+          "chunk": "instruction_tables_lsr",
+          "topic": "LSR opcodes and addressing modes"
+        }
+      ]
+    },
+    {
+      "start": 1619,
+      "end": 1619,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1620,
+      "end": 1621,
+      "name": "instruction_operation_nop",
+      "description": "NOP pseudocode: No operation; instruction takes cycles but alters nothing.",
+      "references": [
+        {
+          "chunk": "instruction_tables_nop",
+          "topic": "NOP opcode $EA"
+        }
+      ]
+    },
+    {
+      "start": 1622,
+      "end": 1622,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1623,
+      "end": 1627,
+      "name": "instruction_operation_ora",
+      "description": "ORA pseudocode: src |= AC; set Sign and Zero; AC = result (bitwise OR).",
+      "references": [
+        {
+          "chunk": "instruction_tables_ora",
+          "topic": "ORA opcodes and modes"
+        }
+      ]
+    },
+    {
+      "start": 1628,
+      "end": 1628,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1629,
+      "end": 1632,
+      "name": "instruction_operation_pha",
+      "description": "PHA pseudocode: push AC onto stack (use PUSH macro).",
+      "references": [
+        {
+          "chunk": "instruction_tables_pha",
+          "topic": "PHA opcode"
+        }
+      ]
+    },
+    {
+      "start": 1633,
+      "end": 1636,
+      "name": "instruction_operation_php",
+      "description": "PHP pseudocode: PUSH(GET_SR) pushes processor status onto stack.",
+      "references": [
+        {
+          "chunk": "instruction_tables_php",
+          "topic": "PHP opcode"
+        }
+      ]
+    },
+    {
+      "start": 1637,
+      "end": 1641,
+      "name": "instruction_operation_pla",
+      "description": "PLA pseudocode: pull a byte from stack into src, update Sign and Zero flags and set AC = pulled value.",
+      "references": [
+        {
+          "chunk": "instruction_tables_pla",
+          "topic": "PLA opcode"
+        }
+      ]
+    },
+    {
+      "start": 1642,
+      "end": 1645,
+      "name": "instruction_operation_plp",
+      "description": "PLP pseudocode: pull a byte from stack into SR (status register) using SET_SR macro.",
+      "references": [
+        {
+          "chunk": "instruction_tables_plp",
+          "topic": "PLP opcode"
+        }
+      ]
+    },
+    {
+      "start": 1646,
+      "end": 1653,
+      "name": "instruction_operation_rol",
+      "description": "ROL pseudocode: shift src left, insert carry into bit0 if set, set Carry from overflow >0xff, mask to 8-bit, update Sign and Zero, store result.",
+      "references": [
+        {
+          "chunk": "instruction_tables_rol",
+          "topic": "ROL opcodes and modes"
+        }
+      ]
+    },
+    {
+      "start": 1654,
+      "end": 1654,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1655,
+      "end": 1661,
+      "name": "instruction_operation_ror",
+      "description": "ROR pseudocode: if carry set then or src with 0x100, set Carry from bit0, shift right, update Sign and Zero, store to memory or accumulator depending on mode.",
+      "references": [
+        {
+          "chunk": "instruction_tables_ror",
+          "topic": "ROR opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1662,
+      "end": 1662,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1663,
+      "end": 1668,
+      "name": "instruction_operation_rti",
+      "description": "RTI pseudocode: pull status from stack (SET_SR), then pull return address (low/high) and restore PC.",
+      "references": [
+        {
+          "chunk": "instruction_tables_rti",
+          "topic": "RTI opcode"
+        }
+      ]
+    },
+    {
+      "start": 1669,
+      "end": 1669,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1670,
+      "end": 1673,
+      "name": "instruction_operation_rts",
+      "description": "RTS pseudocode: pull return address low/high from stack, add 1, set PC to that value.",
+      "references": [
+        {
+          "chunk": "instruction_tables_rts",
+          "topic": "RTS opcode"
+        }
+      ]
+    },
+    {
+      "start": 1674,
+      "end": 1674,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1675,
+      "end": 1685,
+      "name": "instruction_operation_sbc",
+      "description": "SBC pseudocode: temp = AC - src - (IF_CARRY() ? 0 : 1). Sets Sign/Zero/Overflow. Decimal mode adjustments implemented (BCD rules), sets Carry based on temp < 0x100, AC = low byte.",
+      "references": [
+        {
+          "chunk": "instruction_tables_sbc",
+          "topic": "SBC opcode table and decimal-mode behavior"
+        },
+        {
+          "chunk": "status_register",
+          "topic": "C and D flags used in SBC behavior"
+        }
+      ]
+    },
+    {
+      "start": 1686,
+      "end": 1686,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1687,
+      "end": 1689,
+      "name": "instruction_operation_sec",
+      "description": "SEC pseudocode: set Carry flag (C = 1).",
+      "references": [
+        {
+          "chunk": "instruction_tables_sec",
+          "topic": "SEC opcode"
+        }
+      ]
+    },
+    {
+      "start": 1690,
+      "end": 1692,
+      "name": "instruction_operation_sed",
+      "description": "SED pseudocode: set decimal mode flag (D = 1).",
+      "references": [
+        {
+          "chunk": "instruction_tables_sed",
+          "topic": "SED opcode"
+        }
+      ]
+    },
+    {
+      "start": 1693,
+      "end": 1695,
+      "name": "instruction_operation_sei",
+      "description": "SEI pseudocode: set interrupt disable flag (I = 1).",
+      "references": [
+        {
+          "chunk": "instruction_tables_sei",
+          "topic": "SEI opcode"
+        }
+      ]
+    },
+    {
+      "start": 1696,
+      "end": 1697,
+      "name": "instruction_operation_sta",
+      "description": "STA pseudocode: STORE(address, src) — stores accumulator to memory address, used for all STA addressing forms.",
+      "references": [
+        {
+          "chunk": "instruction_tables_sta",
+          "topic": "STA opcodes and modes"
+        }
+      ]
+    },
+    {
+      "start": 1698,
+      "end": 1698,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1699,
+      "end": 1700,
+      "name": "instruction_operation_stx",
+      "description": "STX pseudocode: STORE(address, src) — stores X to memory address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_stx",
+          "topic": "STX opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1701,
+      "end": 1701,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1702,
+      "end": 1703,
+      "name": "instruction_operation_sty",
+      "description": "STY pseudocode: STORE(address, src) — stores Y to memory address.",
+      "references": [
+        {
+          "chunk": "instruction_tables_sty",
+          "topic": "STY opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1704,
+      "end": 1704,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1705,
+      "end": 1710,
+      "name": "instruction_operation_tax",
+      "description": "TAX pseudocode: transfer A to X; set Sign and Zero based on copied value.",
+      "references": [
+        {
+          "chunk": "instruction_tables_tax",
+          "topic": "TAX opcode"
+        }
+      ]
+    },
+    {
+      "start": 1711,
+      "end": 1715,
+      "name": "instruction_operation_tay",
+      "description": "TAY pseudocode: transfer A to Y; set Sign and Zero based on copied value.",
+      "references": [
+        {
+          "chunk": "instruction_tables_tay",
+          "topic": "TAY opcode"
+        }
+      ]
+    },
+    {
+      "start": 1716,
+      "end": 1716,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1717,
+      "end": 1721,
+      "name": "instruction_operation_tsx",
+      "description": "TSX pseudocode: transfer S (stack pointer) to X; set Sign and Zero accordingly.",
+      "references": [
+        {
+          "chunk": "instruction_tables_tsx",
+          "topic": "TSX opcode"
+        }
+      ]
+    },
+    {
+      "start": 1722,
+      "end": 1722,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1723,
+      "end": 1727,
+      "name": "instruction_operation_txa",
+      "description": "TXA pseudocode: transfer X to A; set Sign and Zero based on X value.",
+      "references": [
+        {
+          "chunk": "instruction_tables_txa",
+          "topic": "TXA opcode"
+        }
+      ]
+    },
+    {
+      "start": 1728,
+      "end": 1728,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1729,
+      "end": 1731,
+      "name": "instruction_operation_txs",
+      "description": "TXS pseudocode: transfer X to stack pointer (SP = X). Does not affect flags.",
+      "references": [
+        {
+          "chunk": "instruction_tables_txs",
+          "topic": "TXS opcode"
+        }
+      ]
+    },
+    {
+      "start": 1732,
+      "end": 1732,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1733,
+      "end": 1738,
+      "name": "instruction_operation_tya",
+      "description": "TYA pseudocode: transfer Y to A; set Sign and Zero based on Y value. (Final pseudocode block in the document.)",
+      "references": [
+        {
+          "chunk": "instruction_tables_tya",
+          "topic": "TYA opcode"
+        }
+      ]
+    }
+  ],
+  "source_md5": "a8f115a21fc48a8243a6a309cbb00f1c"
+}

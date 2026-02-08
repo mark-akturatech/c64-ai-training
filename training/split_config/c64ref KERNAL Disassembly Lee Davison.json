@@ -1,0 +1,624 @@
+{
+  "source_file": "c64ref KERNAL Disassembly Lee Davison.txt",
+  "context": "C64 KERNAL API (Lee Davison)",
+  "splits": [
+    {
+      "start": 1,
+      "end": 21,
+      "ignore": true,
+      "reason": "Title, author, file header and internal parsing comments (non-technical metadata)"
+    },
+    {
+      "start": 22,
+      "end": 22,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 23,
+      "end": 26,
+      "name": "ff81_initialise_vic_and_screen_editor",
+      "description": "$FF81 — Initialise VIC and screen editor. Sets up the VIC-II chip and the editor/display subsystem used by the system ROM; prepares video hardware and text screen-related state.",
+      "references": [
+        {
+          "chunk": "ffed_return_xy_organization_of_screen",
+          "topic": "screen X,Y organization"
+        },
+        {
+          "chunk": "fff3_io_base_address",
+          "topic": "memory mapped I/O base for VIC-II access"
+        }
+      ]
+    },
+    {
+      "start": 27,
+      "end": 30,
+      "name": "ff84_initialise_sid_cia_and_irq",
+      "description": "$FF84 — Initialise SID, CIA and IRQ (marked unused). Intended to initialise the SID sound chip and CIA timers/interrupts; in this listing noted as unused in this ROM.",
+      "references": [
+        {
+          "chunk": "ffea_increment_realtime_clock",
+          "topic": "KERNAL interrupt clock handling via CIA timers"
+        }
+      ]
+    },
+    {
+      "start": 31,
+      "end": 34,
+      "name": "ff87_ram_test_and_find_ram_end",
+      "description": "$FF87 — RAM test and find RAM end. Scans system RAM to detect available top-of-RAM; used during initialisation to determine memory size and usable area.",
+      "references": [
+        {
+          "chunk": "ff99_read_set_top_of_memory",
+          "topic": "top of RAM pointer manipulation"
+        },
+        {
+          "chunk": "ff9c_read_set_bottom_of_memory",
+          "topic": "bottom of RAM pointer manipulation"
+        }
+      ]
+    },
+    {
+      "start": 35,
+      "end": 41,
+      "name": "ff8a_restore_default_io_vectors",
+      "description": "$FF8A — Restore default I/O vectors. Restores default values for system vectors used by KERNAL, BASIC and interrupts (vector jump addresses), returning standard handlers.",
+      "references": [
+        {
+          "chunk": "ff8d_read_set_vectored_io",
+          "topic": "read and set vectored I/O vectors"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 55,
+      "name": "ff8d_read_set_vectored_io",
+      "description": "$FF8D — Read/Set vectored I/O. Manages system vector jump addresses stored in RAM. With carry=1 it stores current RAM vector contents into a user list pointed to by X/Y; with carry=0 it copies a user list from X/Y back into the system RAM vectors. Usage caution: read vectors, modify desired entries, then write back.",
+      "references": [
+        {
+          "chunk": "ff8a_restore_default_io_vectors",
+          "topic": "restore defaults for vectors"
+        }
+      ]
+    },
+    {
+      "start": 56,
+      "end": 69,
+      "name": "ff90_control_kernal_messages",
+      "description": "$FF90 — Control KERNAL messages. Controls printing of error and control messages. A register/accumulator value determines which messages are printed: bits 7 (print error) and 6 (print control). Examples: 'FILE NOT FOUND' (error) and 'PRESS PLAY ON CASSETTE' (control).",
+      "references": []
+    },
+    {
+      "start": 70,
+      "end": 82,
+      "name": "ff93_send_secondary_address_after_listen",
+      "description": "$FF93 — Send secondary address after LISTEN. Sends a secondary address to a device after calling LISTEN. Cannot be used after TALK. Secondary addresses typically carry setup/command info; must be ORed with $60 when sent on the serial bus.",
+      "references": [
+        {
+          "chunk": "ffb1_command_listen",
+          "topic": "LISTEN command ($FFB1)"
+        },
+        {
+          "chunk": "ff96_send_secondary_address_after_talk",
+          "topic": "secondary address for TALK devices ($FF96)"
+        }
+      ]
+    },
+    {
+      "start": 83,
+      "end": 91,
+      "name": "ff96_send_secondary_address_after_talk",
+      "description": "$FF96 — Send secondary address after TALK. Transmits a secondary address on the serial bus for a TALK device. Must be called with accumulator containing 4..31; must be called after TALK ($FFB4), not after LISTEN.",
+      "references": [
+        {
+          "chunk": "ffb4_command_talk",
+          "topic": "preceding TALK command ($FFB4)"
+        },
+        {
+          "chunk": "ffa5_input_byte_from_serial",
+          "topic": "used before reading data via TALK"
+        }
+      ]
+    },
+    {
+      "start": 92,
+      "end": 99,
+      "name": "ff99_read_set_top_of_memory",
+      "description": "$FF99 — Read/Set the top of memory. With carry=1 loads pointer to top-of-RAM into X/Y; with carry=0 saves X/Y as the top-of-memory pointer, changing available RAM top.",
+      "references": [
+        {
+          "chunk": "ff87_ram_test_and_find_ram_end",
+          "topic": "detecting top of RAM"
+        },
+        {
+          "chunk": "ff9c_read_set_bottom_of_memory",
+          "topic": "paired bottom-of-memory routine"
+        }
+      ]
+    },
+    {
+      "start": 100,
+      "end": 107,
+      "name": "ff9c_read_set_bottom_of_memory",
+      "description": "$FF9C — Read/Set the bottom of memory. With carry=1 loads pointer to bottom-of-RAM into X/Y; with carry=0 saves X/Y as the bottom-of-memory pointer, changing available RAM base.",
+      "references": [
+        {
+          "chunk": "ff99_read_set_top_of_memory",
+          "topic": "paired top-of-memory routine"
+        }
+      ]
+    },
+    {
+      "start": 108,
+      "end": 114,
+      "name": "ff9f_scan_the_keyboard",
+      "description": "$FF9F — Scan the keyboard. Scans keyboard matrix and checks for pressed keys (same routine used by IRQ handler). If a key is down, its ASCII value is placed into the keyboard queue.",
+      "references": [
+        {
+          "chunk": "ffe4_get_character_from_input_device",
+          "topic": "keyboard input retrieval"
+        },
+        {
+          "chunk": "ffea_increment_realtime_clock",
+          "topic": "IRQ vs polled scanning interplay"
+        }
+      ]
+    },
+    {
+      "start": 115,
+      "end": 127,
+      "name": "ffa2_set_timeout_on_serial_bus",
+      "description": "$FFA2 — Set timeout on serial bus. Controls serial bus timeout flag: accumulator bit 7 = 0 enables timeouts (device wait 64 ms), bit 7 = 1 disables timeouts. Timeouts allow detection of conditions like 'file not found' on disk attempts.",
+      "references": [
+        {
+          "chunk": "ffb7_read_io_status_word",
+          "topic": "check status after serial operations"
+        }
+      ]
+    },
+    {
+      "start": 128,
+      "end": 139,
+      "name": "ffa5_input_byte_from_serial_bus",
+      "description": "$FFA5 — Input a byte from the serial bus (full handshaking). Reads a data byte returned in A. Requires a prior TALK call ($FFB4). If the device needs a secondary command, send it with TKSA ($FF96) before calling this routine. Errors are returned via status word (READST $FFB7).",
+      "references": [
+        {
+          "chunk": "ffb4_command_talk",
+          "topic": "must TALK before reading"
+        },
+        {
+          "chunk": "ff96_send_secondary_address_after_talk",
+          "topic": "send secondary address for TALK devices"
+        },
+        {
+          "chunk": "ffb7_read_io_status_word",
+          "topic": "check errors/status"
+        }
+      ]
+    },
+    {
+      "start": 140,
+      "end": 153,
+      "name": "ffa8_output_byte_to_serial_bus",
+      "description": "$FFA8 — Output a byte to the serial bus (full handshaking). Sends A as a data byte. Requires a prior LISTEN ($FFB1). Routine buffers one character; when UNLISTEN ($FFAE) is called, the buffered char is sent with EOI, then UNLISTEN is transmitted. Timeout or other errors reflected in status word.",
+      "references": [
+        {
+          "chunk": "ffb1_command_listen",
+          "topic": "must LISTEN before sending"
+        },
+        {
+          "chunk": "ffae_command_unlisten",
+          "topic": "UNLISTEN completes transfer"
+        },
+        {
+          "chunk": "ffb7_read_io_status_word",
+          "topic": "check errors/status"
+        }
+      ]
+    },
+    {
+      "start": 154,
+      "end": 159,
+      "name": "ffab_command_untalk",
+      "description": "$FFAB — Command serial bus to UNTALK. Transmits an UNTALK command on the serial bus; devices previously set to TALK will stop sending data.",
+      "references": [
+        {
+          "chunk": "ffb4_command_talk",
+          "topic": "ending TALK states"
+        }
+      ]
+    },
+    {
+      "start": 160,
+      "end": 170,
+      "name": "ffae_command_unlisten",
+      "description": "$FFAE — Command serial bus to UNLISTEN. Transmits UNLISTEN to command devices to stop receiving data. Used after finishing data transmission; only affects devices previously commanded to LISTEN. Also used to clear output listeners on the bus.",
+      "references": [
+        {
+          "chunk": "ffa8_output_byte_to_serial_bus",
+          "topic": "UNLISTEN sends buffered char with EOI"
+        },
+        {
+          "chunk": "ffcc_close_channels",
+          "topic": "closing channels will UNLISTEN where needed"
+        }
+      ]
+    },
+    {
+      "start": 171,
+      "end": 179,
+      "name": "ffb1_command_listen",
+      "description": "$FFB1 — Command devices on the serial bus to LISTEN. A must-load accumulator with device number 4..31 before calling. Converts device number to a listen address and transmits it; device enters listen mode to accept data. Device numbers >=4 refer to serial bus devices.",
+      "references": [
+        {
+          "chunk": "ffa8_output_byte_to_serial_bus",
+          "topic": "used before sending data"
+        },
+        {
+          "chunk": "ff93_send_secondary_address_after_listen",
+          "topic": "send secondary address after LISTEN"
+        }
+      ]
+    },
+    {
+      "start": 180,
+      "end": 186,
+      "name": "ffb4_command_talk",
+      "description": "$FFB4 — Command serial bus device to TALK. Load accumulator with device number 4..30; routine converts number to talk address and transmits it on the serial bus so device will send data.",
+      "references": [
+        {
+          "chunk": "ffa5_input_byte_from_serial_bus",
+          "topic": "read data after TALK"
+        },
+        {
+          "chunk": "ff96_send_secondary_address_after_talk",
+          "topic": "send secondary address after TALK"
+        }
+      ]
+    },
+    {
+      "start": 187,
+      "end": 194,
+      "name": "ffb7_read_io_status_word",
+      "description": "$FFB7 — Read I/O status word. Returns current status of I/O device in A (status/errors). Typically called after serial communication to determine device status or errors that occurred during I/O operations.",
+      "references": [
+        {
+          "chunk": "ffa5_input_byte_from_serial_bus",
+          "topic": "errors after serial input"
+        },
+        {
+          "chunk": "ffa8_output_byte_to_serial_bus",
+          "topic": "errors after serial output"
+        },
+        {
+          "chunk": "ffa2_set_timeout_on_serial_bus",
+          "topic": "timeout flag affects status"
+        }
+      ]
+    },
+    {
+      "start": 195,
+      "end": 220,
+      "name": "ffba_set_logical_first_and_second_addresses",
+      "description": "$FFBA — Set logical file number, device address and secondary (command) address for KERNAL I/O routines. Logical file number indexes the file table used by OPEN. Device addresses 0..30 map to built-in devices (0=keyboard,1=cassette #1,2=RS-232,3=CRT display,4=printer,8=disk drive). Devices >=4 are on the serial bus. If no secondary address is needed set Y=$FF.",
+      "references": [
+        {
+          "chunk": "ffbd_set_the_filename",
+          "topic": "filename used by OPEN/SAVE/LOAD"
+        },
+        {
+          "chunk": "ffc0_open_a_logical_file",
+          "topic": "OPEN uses SETLFS settings"
+        },
+        {
+          "chunk": "ffb1_command_listen",
+          "topic": "LISTEN/TALK use device addresses"
+        }
+      ]
+    },
+    {
+      "start": 221,
+      "end": 230,
+      "name": "ffbd_set_the_filename",
+      "description": "$FFBD — Set the filename. A = length of filename; X/Y = pointer to filename string (X=low byte). If A=0 (no filename) XY may be any address. Used before OPEN, SAVE, LOAD.",
+      "references": [
+        {
+          "chunk": "ffba_set_logical_first_and_second_addresses",
+          "topic": "device/secondary address pairing for file ops"
+        },
+        {
+          "chunk": "ffc0_open_a_logical_file",
+          "topic": "OPEN reads filename set here"
+        }
+      ]
+    },
+    {
+      "start": 231,
+      "end": 240,
+      "name": "ffc0_open_a_logical_file",
+      "description": "$FFC0 — Open a logical file. Creates logical file used by I/O routines. Requires prior calls to SETLFS ($FFBA) and SETNAM ($FFBD). No other arguments required; OPEN sets up file table entries and device handshake where necessary.",
+      "references": [
+        {
+          "chunk": "ffc3_close_a_specified_logical_file",
+          "topic": "close files opened with OPEN"
+        },
+        {
+          "chunk": "ffc6_open_channel_for_input",
+          "topic": "CHKIN/CHKOUT after OPEN"
+        },
+        {
+          "chunk": "ffc9_open_channel_for_output",
+          "topic": "CHKIN/CHKOUT after OPEN"
+        }
+      ]
+    },
+    {
+      "start": 241,
+      "end": 248,
+      "name": "ffc3_close_a_specified_logical_file",
+      "description": "$FFC3 — Close a specified logical file. Call with accumulator set to logical file number to close; routine finalises I/O for that file and updates file table pointers.",
+      "references": [
+        {
+          "chunk": "ffe7_close_all_channels_and_files",
+          "topic": "close all files at once"
+        }
+      ]
+    },
+    {
+      "start": 249,
+      "end": 268,
+      "name": "ffc6_open_channel_for_input",
+      "description": "$FFC6 — Open channel for input. Marks an already-open logical file as the input channel; device must be input-capable or error occurs. If not used, keyboard is default input. For serial devices this will send LISTEN and any secondary address automatically. Possible error codes: 3=file not open, 5=device not present, 6=file is not an input file.",
+      "references": [
+        {
+          "chunk": "ffcf_input_character_from_channel",
+          "topic": "read chars from the input channel"
+        },
+        {
+          "chunk": "ffba_set_logical_first_and_second_addresses",
+          "topic": "SETLFS prepares device/logical file"
+        }
+      ]
+    },
+    {
+      "start": 269,
+      "end": 269,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 270,
+      "end": 290,
+      "name": "ffc9_open_channel_for_output",
+      "description": "$FFC9 — Open channel for output. Marks an already-open logical file as the output channel; device must be output-capable. If omitted, screen (device 3) is default output. For serial devices this will send LISTEN and any secondary address automatically. Possible error codes: 3=file not open, 5=device not present, 7=file is not an output file.",
+      "references": [
+        {
+          "chunk": "ffd2_output_character_to_channel",
+          "topic": "send chars to the output channel"
+        },
+        {
+          "chunk": "ffba_set_logical_first_and_second_addresses",
+          "topic": "SETLFS prepares device/logical file"
+        }
+      ]
+    },
+    {
+      "start": 291,
+      "end": 305,
+      "name": "ffcc_close_input_and_output_channels",
+      "description": "$FFCC — Close input and output channels. Clears all open channels and restores I/O channels to defaults (input=keyboard(0), output=screen(3)). If a serial channel is being closed an UNTALK or UNLISTEN is sent as appropriate. Leaving listeners open allows broadcasting to multiple devices (e.g., printer TALK + disk LISTEN for direct printing).",
+      "references": [
+        {
+          "chunk": "ffae_command_unlisten",
+          "topic": "UNLISTEN sent to clear output channels"
+        },
+        {
+          "chunk": "ffab_command_untalk",
+          "topic": "UNTALK sent to clear input channels"
+        }
+      ]
+    },
+    {
+      "start": 306,
+      "end": 322,
+      "name": "ffcf_input_character_from_channel",
+      "description": "$FFCF — Input character from channel. Returns a byte from the currently opened input channel (set by CHKIN $FFC6). If the keyboard is the input, special handling occurs: cursor is shown and the logical line is buffered into BASIC input buffer (up to 80 chars) until carriage return; successive calls return characters one at a time. Channel remains open after call.",
+      "references": [
+        {
+          "chunk": "ffe4_get_character_from_input_device",
+          "topic": "alternative input routine that depends on IRQ"
+        },
+        {
+          "chunk": "ff9f_scan_the_keyboard",
+          "topic": "keyboard scanning used by IRQ filling the buffer"
+        }
+      ]
+    },
+    {
+      "start": 323,
+      "end": 337,
+      "name": "ffd2_output_character_to_channel",
+      "description": "$FFD2 — Output character to channel. Sends A as a character to the currently opened output channel (set by CHKOUT $FFC9). If omitted, output goes to default device 3 (screen). Channel remains open after call. Warning: data is sent to all open output channels on the serial bus; close other channels first if not desired.",
+      "references": [
+        {
+          "chunk": "ffc9_open_channel_for_output",
+          "topic": "open output channel before CHROUT"
+        },
+        {
+          "chunk": "ffcc_close_input_and_output_channels",
+          "topic": "close channels when done"
+        }
+      ]
+    },
+    {
+      "start": 338,
+      "end": 354,
+      "name": "ffd5_load_ram_from_device",
+      "description": "$FFD5 — Load RAM from a device. Loads bytes from input device directly into RAM or performs a verify operation. A=0 for load, A=1 for verify. If device was OPENed with secondary address 0 header info from device ignored and XY must contain load start address. If secondary address 1 or 2, header determines load address. Returns highest RAM address loaded. Requires SETLFS and SETNAM beforehand.",
+      "references": [
+        {
+          "chunk": "ffba_set_logical_first_and_second_addresses",
+          "topic": "SETLFS for device selection"
+        },
+        {
+          "chunk": "ffbd_set_the_filename",
+          "topic": "SETNAM for filename selection"
+        }
+      ]
+    },
+    {
+      "start": 355,
+      "end": 366,
+      "name": "ffd8_save_ram_to_device",
+      "description": "$FFD8 — Save RAM to a device. Saves memory from an indirect address on page zero (specified by A) to the address in XY to a logical file. Requires SETLFS and SETNAM first. Filename optional for cassette (device 1) but required for other devices. Device 0 (keyboard) and 3 (screen) cannot be SAVEd to (error if attempted).",
+      "references": [
+        {
+          "chunk": "ffba_set_logical_first_and_second_addresses",
+          "topic": "SETLFS for device selection"
+        },
+        {
+          "chunk": "ffbd_set_the_filename",
+          "topic": "SETNAM for filename selection"
+        }
+      ]
+    },
+    {
+      "start": 367,
+      "end": 375,
+      "name": "ffdb_set_the_realtime_clock",
+      "description": "$FFDB — Set the real-time clock. System clock (jiffies, 1/60s increments) is three bytes (up to 5,184,000 jiffies). To set the clock put new time in Y,X,A with A = most significant byte then call this routine.",
+      "references": [
+        {
+          "chunk": "ffde_read_the_realtime_clock",
+          "topic": "read clock value"
+        },
+        {
+          "chunk": "ffea_increment_realtime_clock",
+          "topic": "clock increment routine for IRQ"
+        }
+      ]
+    },
+    {
+      "start": 376,
+      "end": 381,
+      "name": "ffde_read_the_realtime_clock",
+      "description": "$FFDE — Read the real-time clock. Returns current time in jiffies in A,X,Y with A being the most significant byte.",
+      "references": [
+        {
+          "chunk": "ffdb_set_the_realtime_clock",
+          "topic": "set clock value"
+        }
+      ]
+    },
+    {
+      "start": 382,
+      "end": 390,
+      "name": "ffe1_scan_the_stop_key",
+      "description": "$FFE1 — Scan the STOP key. If STOP is pressed when called the Z flag will be set; other flags unchanged. If not pressed accumulator will contain byte representing last row of keyboard scan. Can be used to check other special keys similarly.",
+      "references": [
+        {
+          "chunk": "ff9f_scan_the_keyboard",
+          "topic": "keyboard scanning routine"
+        }
+      ]
+    },
+    {
+      "start": 391,
+      "end": 400,
+      "name": "ffe4_get_character_from_input_device",
+      "description": "$FFE4 — Get character from input device. Operates like CHRIN ($FFCF) for all devices except keyboard. For keyboard, reads one character from keyboard buffer filled by IRQ routine; returns 0 if buffer empty. Depends on IRQ-based keyboard handling.",
+      "references": [
+        {
+          "chunk": "ffcf_input_character_from_channel",
+          "topic": "CHRIN vs GETIN differences (keyboard handling)"
+        },
+        {
+          "chunk": "ff9f_scan_the_keyboard",
+          "topic": "IRQ keyboard scanning that fills buffer"
+        }
+      ]
+    },
+    {
+      "start": 401,
+      "end": 407,
+      "name": "ffe7_close_all_channels_and_files",
+      "description": "$FFE7 — Close all channels and files. Closes all open files and resets pointers into the open file table; also resets I/O channels to defaults.",
+      "references": [
+        {
+          "chunk": "ffcc_close_input_and_output_channels",
+          "topic": "close individual I/O channels"
+        }
+      ]
+    },
+    {
+      "start": 408,
+      "end": 414,
+      "name": "ffea_increment_realtime_clock",
+      "description": "$FFEA — Increment real-time clock. Updates system clock by one jiffy. Normally called by KERNAL interrupt routine every 1/60 s; if user program handles interrupts itself this must be called to maintain clock and STOP-key functionality.",
+      "references": [
+        {
+          "chunk": "ffdb_set_the_realtime_clock",
+          "topic": "manually set clock value"
+        },
+        {
+          "chunk": "ffd5_load_ram_from_device",
+          "topic": "interrupts and I/O interactions"
+        }
+      ]
+    },
+    {
+      "start": 415,
+      "end": 415,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 416,
+      "end": 420,
+      "name": "ffed_return_xy_organization_of_screen",
+      "description": "$FFED — Return X,Y organization of screen. Returns the screen organization (number of columns and rows) in X and Y registers.",
+      "references": [
+        {
+          "chunk": "ff81_initialise_vic_and_screen_editor",
+          "topic": "initialises VIC and screen editor"
+        },
+        {
+          "chunk": "fff0_read_set_xy_cursor_position",
+          "topic": "cursor coordinates within screen organization"
+        }
+      ]
+    },
+    {
+      "start": 421,
+      "end": 427,
+      "name": "fff0_read_set_xy_cursor_position",
+      "description": "$FFF0 — Read/Set X,Y cursor position. With carry=1 loads current cursor column (X) and row (Y) into registers. With carry=0 moves the cursor to position specified by X (column) and Y (row).",
+      "references": [
+        {
+          "chunk": "ffed_return_xy_organization_of_screen",
+          "topic": "screen X,Y extents"
+        }
+      ]
+    },
+    {
+      "start": 428,
+      "end": 428,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 429,
+      "end": 435,
+      "name": "fff3_return_io_base_address",
+      "description": "$FFF3 — Return the base address of the I/O devices. Sets X/Y to the address of the memory section where memory-mapped I/O devices are located so software can access device registers using that base plus offsets.",
+      "references": [
+        {
+          "chunk": "ff81_initialise_vic_and_screen_editor",
+          "topic": "VIC-II base is accessed via memory-mapped I/O"
+        }
+      ]
+    }
+  ],
+  "source_md5": "c83c7f5469fabb3483c4a9ce5c543b66"
+}

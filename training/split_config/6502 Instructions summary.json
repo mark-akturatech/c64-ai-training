@@ -1,190 +1,838 @@
 {
   "source_file": "6502 Instructions summary.txt",
-  "context": "6502 Instructions Summary",
+  "context": "6502 Instructions summary",
   "splits": [
     {
       "start": 1,
-      "end": 40,
-      "name": "load_and_store_group_instructions",
-      "description": "Load and Store Group. LDA (Load Accumulator): Absolute $AD, Zero Page $A5, Immediate $A9, Absolute Indexed X $BD, Absolute Indexed Y $B9, Zero Page Indexed X $B5, Indexed Indirect ($aa,X) $A1, Indirect Indexed ($aa),Y $B1; affects N,Z. LDX (Load X Register): Absolute $AE, Zero Page $A6, Immediate $A2, Absolute Indexed Y $BE, Zero Page Indexed Y $B6; affects N,Z. LDY (Load Y Register): Absolute $AC, Zero Page $A4, Immediate $A0, Absolute Indexed X $BC, Zero Page Indexed X $B4; affects N,Z. STA (Store Accumulator): Absolute $8D, Zero Page $85, Absolute Indexed X $9D, Absolute Indexed Y $99, Zero Page Indexed X $95, Indexed Indirect ($aa,X) $81, Indirect Indexed ($aa),Y $91; no flags. STX (Store X Register): Absolute $8E, Zero Page $86, Zero Page Indexed Y $96; no flags. STY (Store Y Register): Absolute $8C, Zero Page $84, Zero Page Indexed X $94; no flags.",
+      "end": 2,
+      "name": "load_and_store_group_header",
+      "description": "Group header: 'Load and Store Group' (section title for LDA, LDX, LDY, STA, STX, STY). References the load/store instruction chunks below.",
       "references": [
         {
-          "chunk": "register_transfer_group",
-          "topic": "Moving values between accumulator/X/Y registers"
+          "chunk": "lda_instruction",
+          "topic": "LDA addressing modes and opcodes"
         },
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Meaning of N and Z flags affected by loads"
+          "chunk": "ldx_instruction",
+          "topic": "LDX addressing modes and opcodes"
+        },
+        {
+          "chunk": "ldy_instruction",
+          "topic": "LDY addressing modes and opcodes"
+        },
+        {
+          "chunk": "sta_instruction",
+          "topic": "STA addressing modes and opcodes"
         }
       ]
+    },
+    {
+      "start": 3,
+      "end": 10,
+      "name": "lda_instruction",
+      "description": "LDA (Load Accumulator). Addressing modes and opcodes: Absolute LDA $aaaa ($AD, 3 bytes) sets N,Z; Zero Page LDA $aa ($A5, 2) ; Immediate LDA #$aa ($A9, 2) ; Absolute Indexed X LDA $aaaa,X ($BD, 3) ; Absolute Indexed Y LDA $aaaa,Y ($B9, 3) ; Zero Page Indexed X LDA $aa,X ($B5, 2) ; Indexed Indirect LDA ($aa,X) ($A1, 2) ; Indirect Indexed LDA ($aa),Y ($B1, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "ldx_instruction",
+          "topic": "related load instruction (X register)"
+        },
+        {
+          "chunk": "ldy_instruction",
+          "topic": "related load instruction (Y register)"
+        },
+        {
+          "chunk": "sta_instruction",
+          "topic": "store accumulator counterpart"
+        }
+      ]
+    },
+    {
+      "start": 11,
+      "end": 11,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 12,
+      "end": 16,
+      "name": "ldx_instruction",
+      "description": "LDX (Load X Register). Addressing modes and opcodes: Absolute LDX $aaaa ($AE, 3 bytes) sets N,Z; Zero Page LDX $aa ($A6, 2) ; Immediate LDX #$aa ($A2, 2) ; Absolute Indexed Y LDX $aaaa,Y ($BE, 3) ; Zero Page Indexed Y LDX $aa,Y ($B6, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "lda_instruction",
+          "topic": "related load instruction (Accumulator)"
+        },
+        {
+          "chunk": "ldy_instruction",
+          "topic": "related load instruction (Y register)"
+        }
+      ]
+    },
+    {
+      "start": 17,
+      "end": 17,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 18,
+      "end": 22,
+      "name": "ldy_instruction",
+      "description": "LDY (Load Y Register). Addressing modes and opcodes: Absolute LDY $aaaa ($AC, 3 bytes) sets N,Z; Zero Page LDY $aa ($A4, 2) ; Immediate LDY #$aa ($A0, 2) ; Absolute Indexed X LDY $aaaa,X ($BC, 3) ; Zero Page Indexed X LDY $aa,X ($B4, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "lda_instruction",
+          "topic": "related load instruction (Accumulator)"
+        },
+        {
+          "chunk": "ldx_instruction",
+          "topic": "related load instruction (X register)"
+        }
+      ]
+    },
+    {
+      "start": 23,
+      "end": 23,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 24,
+      "end": 30,
+      "name": "sta_instruction",
+      "description": "STA (Store Accumulator). Addressing modes and opcodes: Absolute STA $aaaa ($8D, 3 bytes) (no flags affected) ; Zero Page STA $aa ($85, 2) ; Absolute Indexed X STA $aaaa,X ($9D, 3) ; Absolute Indexed Y STA $aaaa,Y ($99, 3) ; Zero Page Indexed X STA $aa,X ($95, 2) ; Indexed Indirect STA ($aa,X) ($81, 2) ; Indirect Indexed STA ($aa),Y ($91, 2).",
+      "references": [
+        {
+          "chunk": "lda_instruction",
+          "topic": "load accumulator counterpart"
+        },
+        {
+          "chunk": "stx_instruction",
+          "topic": "store X register"
+        },
+        {
+          "chunk": "sty_instruction",
+          "topic": "store Y register"
+        }
+      ]
+    },
+    {
+      "start": 31,
+      "end": 31,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 32,
+      "end": 34,
+      "name": "stx_instruction",
+      "description": "STX (Store X Register). Addressing modes and opcodes: Absolute STX $aaaa ($8E, 3 bytes) (no flags affected) ; Zero Page STX $aa ($86, 2) ; Zero Page Indexed Y STX $aa,Y ($96, 2).",
+      "references": [
+        {
+          "chunk": "sta_instruction",
+          "topic": "store accumulator"
+        },
+        {
+          "chunk": "sty_instruction",
+          "topic": "store Y register"
+        }
+      ]
+    },
+    {
+      "start": 35,
+      "end": 35,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 36,
+      "end": 38,
+      "name": "sty_instruction",
+      "description": "STY (Store Y Register). Addressing modes and opcodes: Absolute STY $aaaa ($8C, 3 bytes) (no flags affected) ; Zero Page STY $aa ($84, 2) ; Zero Page Indexed X STY $aa,X ($94, 2).",
+      "references": [
+        {
+          "chunk": "sta_instruction",
+          "topic": "store accumulator"
+        },
+        {
+          "chunk": "stx_instruction",
+          "topic": "store X register"
+        }
+      ]
+    },
+    {
+      "start": 39,
+      "end": 40,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 41,
-      "end": 60,
-      "name": "arithmetic_adc_sbc_group",
-      "description": "Arithmetic Group. ADC (Add with Carry): Absolute $6D, Zero Page $65, Immediate $69, Absolute Indexed X $7D, Absolute Indexed Y $79, Zero Page Indexed X $75, Indexed Indirect ($aa,X) $61, Indirect Indexed ($aa),Y $71; affects N,V,Z,C. SBC (Subtract with Carry): Absolute $ED, Zero Page $E5, Immediate $E9, Absolute Indexed X $FD, Absolute Indexed Y $F9, Zero Page Indexed X $F5, Indexed Indirect ($aa,X) $E1, Indirect Indexed ($aa),Y $F1; affects N,V,Z,C.",
+      "end": 42,
+      "name": "arithmetic_group_header",
+      "description": "Group header: 'Arithmetic Group' (section title for ADC and SBC).",
       "references": [
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Carry, Overflow, Negative, Zero flags used/modified by arithmetic"
+          "chunk": "adc_instruction",
+          "topic": "Add with Carry (ADC)"
         },
         {
-          "chunk": "jump_and_branch_group",
-          "topic": "Branching based on flags after arithmetic results"
+          "chunk": "sbc_instruction",
+          "topic": "Subtract with Carry (SBC)"
         }
       ]
+    },
+    {
+      "start": 43,
+      "end": 50,
+      "name": "adc_instruction",
+      "description": "ADC (Add with Carry). Addressing modes and opcodes: Absolute ADC $aaaa ($6D, 3 bytes) affects N,V,Z,C ; Zero Page ADC $aa ($65, 2) ; Immediate ADC #$aa ($69, 2) ; Absolute Indexed X ADC $aaaa,X ($7D, 3) ; Absolute Indexed Y ADC $aaaa,Y ($79, 3) ; Zero Page Indexed X ADC $aa,X ($75, 2) ; Indexed Indirect ADC ($aa,X) ($61, 2) ; Indirect Indexed ADC ($aa),Y ($71, 2). Flags affected: Negative, Overflow, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "sbc_instruction",
+          "topic": "related arithmetic (subtract with carry)"
+        }
+      ]
+    },
+    {
+      "start": 51,
+      "end": 51,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 52,
+      "end": 59,
+      "name": "sbc_instruction",
+      "description": "SBC (Subtract with Carry). Addressing modes and opcodes: Absolute SBC $aaaa ($ED, 3 bytes) affects N,V,Z,C ; Zero Page SBC $aa ($E5, 2) ; Immediate SBC #$aa ($E9, 2) ; Absolute Indexed X SBC $aaaa,X ($FD, 3) ; Absolute Indexed Y SBC $aaaa,Y ($F9, 3) ; Zero Page Indexed X SBC $aa,X ($F5, 2) ; Indexed Indirect SBC ($aa,X) ($E1, 2) ; Indirect Indexed SBC ($aa),Y ($F1, 2). Flags affected: Negative, Overflow, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "adc_instruction",
+          "topic": "related arithmetic (add with carry)"
+        }
+      ]
+    },
+    {
+      "start": 60,
+      "end": 60,
+      "ignore": true,
+      "reason": "Blank separator line"
     },
     {
       "start": 61,
-      "end": 80,
-      "name": "increment_decrement_group",
-      "description": "Increment and Decrement Group. INC (Increment memory): Absolute $EE, Zero Page $E6, Absolute Indexed X $FE, Zero Page Indexed X $F6; affects N,Z. INX (Increment X): Implied $E8; affects N,Z. INY (Increment Y): Implied $C8; affects N,Z. DEC (Decrement memory): Absolute $CE, Zero Page $C6, Absolute Indexed X $DE, Zero Page Indexed X $D6; affects N,Z. DEX (Decrement X): Implied $CA; affects N,Z. DEY (Decrement Y): Implied $88; affects N,Z.",
+      "end": 62,
+      "name": "increment_and_decrement_group_header",
+      "description": "Group header: 'Increment and Decrement Group' (section title for INC, INX, INY, DEC, DEX, DEY).",
       "references": [
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Negative and Zero flags behavior"
+          "chunk": "inc_instruction",
+          "topic": "INC memory increment"
         },
         {
-          "chunk": "jump_and_branch_group",
-          "topic": "Using BEQ/BNE/BMI/BPL after INC/DEC/INX/DEX/INY/DEY"
+          "chunk": "inx_instruction",
+          "topic": "INX register increment"
+        },
+        {
+          "chunk": "iny_instruction",
+          "topic": "INY register increment"
+        },
+        {
+          "chunk": "dec_instruction",
+          "topic": "DEC memory decrement"
+        },
+        {
+          "chunk": "dex_instruction",
+          "topic": "DEX register decrement"
+        },
+        {
+          "chunk": "dey_instruction",
+          "topic": "DEY register decrement"
         }
       ]
+    },
+    {
+      "start": 63,
+      "end": 66,
+      "name": "inc_instruction",
+      "description": "INC (Increment a memory location). Addressing modes and opcodes: Absolute INC $aaaa ($EE, 3 bytes) affects N,Z ; Zero Page INC $aa ($E6, 2) ; Absolute Indexed X INC $aaaa,X ($FE, 3) ; Zero Page Indexed X INC $aa,X ($F6, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "dec_instruction",
+          "topic": "DEC counterpart"
+        }
+      ]
+    },
+    {
+      "start": 67,
+      "end": 67,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 68,
+      "end": 68,
+      "name": "inx_instruction",
+      "description": "INX (Increment the X register). Implied addressing, opcode $E8, 1 byte. Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "iny_instruction",
+          "topic": "increment Y register (similar behavior)"
+        }
+      ]
+    },
+    {
+      "start": 69,
+      "end": 69,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 70,
+      "end": 70,
+      "name": "iny_instruction",
+      "description": "INY (Increment the Y register). Implied addressing, opcode $C8, 1 byte. Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "inx_instruction",
+          "topic": "increment X register (similar behavior)"
+        }
+      ]
+    },
+    {
+      "start": 71,
+      "end": 71,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 72,
+      "end": 75,
+      "name": "dec_instruction",
+      "description": "DEC (Decrement a memory location). Addressing modes and opcodes: Absolute DEC $aaaa ($CE, 3 bytes) affects N,Z ; Zero Page DEC $aa ($C6, 2) ; Absolute Indexed X DEC $aaaa,X ($DE, 3) ; Zero Page Indexed X DEC $aa,X ($D6, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "inc_instruction",
+          "topic": "INC counterpart"
+        }
+      ]
+    },
+    {
+      "start": 76,
+      "end": 76,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 77,
+      "end": 77,
+      "name": "dex_instruction",
+      "description": "DEX (Decrement the X register). Implied addressing, opcode $CA, 1 byte. Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "dey_instruction",
+          "topic": "DEY decrement Y register"
+        }
+      ]
+    },
+    {
+      "start": 78,
+      "end": 78,
+      "name": "dey_instruction",
+      "description": "DEY (Decrement the Y register). Implied addressing, opcode $88, 1 byte. Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "dex_instruction",
+          "topic": "DEX decrement X register"
+        }
+      ]
+    },
+    {
+      "start": 79,
+      "end": 80,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 81,
-      "end": 88,
-      "name": "register_transfer_group",
-      "description": "Register Transfer Group. TAX (A→X) $AA; TAY (A→Y) $A8; TXA (X→A) $8A; TYA (Y→A) $98; all implied addressing; affect N,Z.",
+      "end": 82,
+      "name": "register_transfer_group_header",
+      "description": "Group header: 'Register Transfer Group' (TAX,TAY,TXA,TYA).",
       "references": [
         {
-          "chunk": "load_and_store_group_instructions",
-          "topic": "Complementary moves between registers and memory"
-        },
-        {
-          "chunk": "status_flag_change_group",
-          "topic": "Negative and Zero flags affected by transfers"
+          "chunk": "register_transfer_instructions",
+          "topic": "TAX/TAY/TXA/TYA details"
         }
       ]
+    },
+    {
+      "start": 83,
+      "end": 86,
+      "name": "register_transfer_instructions",
+      "description": "Register transfer instructions: TAX (Transfer A to X) opcode $AA, 1 byte, affects N,Z ; TAY (Transfer A to Y) opcode $A8, 1 byte, affects N,Z ; TXA (Transfer X to A) opcode $8A, 1 byte, affects N,Z ; TYA (Transfer Y to A) opcode $98, 1 byte, affects N,Z.",
+      "references": [
+        {
+          "chunk": "inx_instruction",
+          "topic": "increment X register (related register operations)"
+        },
+        {
+          "chunk": "ldy_instruction",
+          "topic": "load Y (related register operations)"
+        }
+      ]
+    },
+    {
+      "start": 87,
+      "end": 88,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 89,
-      "end": 120,
-      "name": "logical_and_eor_ora_group",
-      "description": "Logical Group. AND (Logical AND): Absolute $2D, Zero Page $25, Immediate $29, Absolute Indexed X $3D, Absolute Indexed Y $39, Zero Page Indexed X $35, Indexed Indirect ($aa,X) $21, Indirect Indexed ($aa),Y $31; affects N,Z. EOR (Exclusive OR): Absolute $4D, Zero Page $45, Immediate $49, Absolute Indexed X $5D, Absolute Indexed Y $59, Zero Page Indexed X $55, Indexed Indirect ($aa,X) $41, Indirect Indexed ($aa),Y $51; affects N,Z. ORA (Inclusive OR): Absolute $0D, Zero Page $05, Immediate $09, Absolute Indexed X $1D, Absolute Indexed Y $19, Zero Page Indexed X $15, Indexed Indirect ($aa,X) $01, Indirect Indexed ($aa),Y $11; affects N,Z.",
+      "end": 90,
+      "name": "logical_group_header",
+      "description": "Group header: 'Logical Group' (AND, EOR, ORA).",
       "references": [
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Negative and Zero flags after logical operations"
+          "chunk": "and_instruction",
+          "topic": "AND details"
         },
         {
-          "chunk": "jump_and_branch_group",
-          "topic": "Branching based on flags set by logical ops"
+          "chunk": "eor_instruction",
+          "topic": "EOR details"
+        },
+        {
+          "chunk": "ora_instruction",
+          "topic": "ORA details"
         }
       ]
+    },
+    {
+      "start": 91,
+      "end": 98,
+      "name": "and_instruction",
+      "description": "AND (Logical AND). Addressing modes and opcodes: Absolute AND $aaaa ($2D, 3 bytes) affects N,Z ; Zero Page AND $aa ($25, 2) ; Immediate AND #$aa ($29, 2) ; Absolute Indexed X AND $aaaa,X ($3D, 3) ; Absolute Indexed Y AND $aaaa,Y ($39, 3) ; Zero Page Indexed X AND $aa,X ($35, 2) ; Indexed Indirect AND ($aa,X) ($21, 2) ; Indirect Indexed AND ($aa),Y ($31, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "eor_instruction",
+          "topic": "EOR (exclusive OR) - related logical operation"
+        },
+        {
+          "chunk": "ora_instruction",
+          "topic": "ORA (inclusive OR) - related logical operation"
+        }
+      ]
+    },
+    {
+      "start": 99,
+      "end": 99,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 100,
+      "end": 107,
+      "name": "eor_instruction",
+      "description": "EOR (Exclusive OR). Addressing modes and opcodes: Absolute EOR $aaaa ($4D, 3 bytes) affects N,Z ; Zero Page EOR $aa ($45, 2) ; Immediate EOR #$aa ($49, 2) ; Absolute Indexed X EOR $aaaa,X ($5D, 3) ; Absolute Indexed Y EOR $aaaa,Y ($59, 3) ; Zero Page Indexed X EOR $aa,X ($55, 2) ; Indexed Indirect EOR ($aa,X) ($41, 2) ; Indirect Indexed EOR ($aa),Y ($51, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "and_instruction",
+          "topic": "AND - related logical operation"
+        },
+        {
+          "chunk": "ora_instruction",
+          "topic": "ORA - related logical operation"
+        }
+      ]
+    },
+    {
+      "start": 108,
+      "end": 109,
+      "ignore": true,
+      "reason": "Blank separator lines"
+    },
+    {
+      "start": 110,
+      "end": 117,
+      "name": "ora_instruction",
+      "description": "ORA (Logical Inclusive OR). Addressing modes and opcodes: Absolute ORA $aaaa ($0D, 3 bytes) affects N,Z ; Zero Page ORA $aa ($05, 2) ; Immediate ORA #$aa ($09, 2) ; Absolute Indexed X ORA $aaaa,X ($1D, 3) ; Absolute Indexed Y ORA $aaaa,Y ($19, 3) ; Zero Page Indexed X ORA $aa,X ($15, 2) ; Indexed Indirect ORA ($aa,X) ($01, 2) ; Indirect Indexed ORA ($aa),Y ($11, 2). Flags affected: Negative, Zero.",
+      "references": [
+        {
+          "chunk": "and_instruction",
+          "topic": "AND - related logical operation"
+        },
+        {
+          "chunk": "eor_instruction",
+          "topic": "EOR - related logical operation"
+        }
+      ]
+    },
+    {
+      "start": 118,
+      "end": 120,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 121,
-      "end": 144,
-      "name": "compare_and_bit_test_group",
-      "description": "Compare and Bit Test Group. CMP (Compare accumulator): Absolute $CD, Zero Page $C5, Immediate $C9, Absolute Indexed X $DD, Absolute Indexed Y $D9, Zero Page Indexed X $D5, Indexed Indirect ($aa,X) $C1, Indirect Indexed ($aa),Y $D1; affects N,Z,C. CPX (Compare X): Absolute $EC, Zero Page $E4, Immediate $E0; affects N,Z,C. CPY (Compare Y): Absolute $CC, Zero Page $C4, Immediate $C0; affects N,Z,C. BIT (Bit Test): Absolute $2C, Zero Page $24; affects N,V,Z (N and V from memory, Z from A&M).",
+      "end": 122,
+      "name": "compare_and_bit_test_group_header",
+      "description": "Group header: 'Compare and Bit Test Group' (CMP, CPX, CPY, BIT).",
       "references": [
         {
-          "chunk": "jump_and_branch_group",
-          "topic": "Branching based on comparison/test results (BEQ/BNE/BCS/BCC/BMI/BPL/BVS/BVC)"
+          "chunk": "cmp_instruction",
+          "topic": "CMP details"
         },
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Interpreting N,Z,C,V flags set by comparisons and BIT"
+          "chunk": "cpx_instruction",
+          "topic": "CPX details"
+        },
+        {
+          "chunk": "cpy_instruction",
+          "topic": "CPY details"
+        },
+        {
+          "chunk": "bit_instruction",
+          "topic": "BIT details"
         }
       ]
+    },
+    {
+      "start": 123,
+      "end": 130,
+      "name": "cmp_instruction",
+      "description": "CMP (Compare accumulator). Addressing modes and opcodes: Absolute CMP $aaaa ($CD, 3 bytes) affects N,Z,C ; Zero Page CMP $aa ($C5, 2) ; Immediate CMP #$aa ($C9, 2) ; Absolute Indexed X CMP $aaaa,X ($DD, 3) ; Absolute Indexed Y CMP $aaaa,Y ($D9, 3) ; Zero Page Indexed X CMP $aa,X ($D5, 2) ; Indexed Indirect CMP ($aa,X) ($C1, 2) ; Indirect Indexed CMP ($aa),Y ($D1, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "cpx_instruction",
+          "topic": "CPX compare X register"
+        },
+        {
+          "chunk": "cpy_instruction",
+          "topic": "CPY compare Y register"
+        }
+      ]
+    },
+    {
+      "start": 131,
+      "end": 131,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 132,
+      "end": 134,
+      "name": "cpx_instruction",
+      "description": "CPX (Compare X register). Addressing modes and opcodes: Absolute CPX $aaaa ($EC, 3 bytes) affects N,Z,C ; Zero Page CPX $aa ($E4, 2) ; Immediate CPX #$aa ($E0, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "cmp_instruction",
+          "topic": "CMP compare accumulator"
+        }
+      ]
+    },
+    {
+      "start": 135,
+      "end": 135,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 136,
+      "end": 138,
+      "name": "cpy_instruction",
+      "description": "CPY (Compare Y register). Addressing modes and opcodes: Absolute CPY $aaaa ($CC, 3 bytes) affects N,Z,C ; Zero Page CPY $aa ($C4, 2) ; Immediate CPY #$aa ($C0, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "cmp_instruction",
+          "topic": "CMP compare accumulator"
+        }
+      ]
+    },
+    {
+      "start": 139,
+      "end": 139,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 140,
+      "end": 141,
+      "name": "bit_instruction",
+      "description": "BIT (Bit Test). Addressing modes and opcodes: Absolute BIT $aaaa ($2C, 3 bytes) affects N,V,Z ; Zero Page BIT $aa ($24, 2). Flags affected: Negative, Overflow, Zero.",
+      "references": [
+        {
+          "chunk": "cmp_instruction",
+          "topic": "related compare operations"
+        }
+      ]
+    },
+    {
+      "start": 142,
+      "end": 144,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 145,
-      "end": 172,
-      "name": "shift_and_rotate_group",
-      "description": "Shift and Rotate Group. ASL (Arithmetic Shift Left): Absolute $0E, Zero Page $06, Accumulator $0A, Absolute Indexed X $1E, Zero Page Indexed X $16; affects N,Z,C. LSR (Logical Shift Right): Absolute $4E, Zero Page $46, Accumulator $4A, Absolute Indexed X $5E, Zero Page Indexed X $56; affects N,Z,C. ROL (Rotate Left): Absolute $2E, Zero Page $26, Accumulator $2A, Absolute Indexed X $3E, Zero Page Indexed X $36; affects N,Z,C. ROR (Rotate Right): Absolute $6E, Zero Page $66, Accumulator $6A, Absolute Indexed X $7E, Zero Page Indexed X $76; affects N,Z,C.",
+      "end": 146,
+      "name": "shift_and_rotate_group_header",
+      "description": "Group header: 'Shift and Rotate Group' (ASL, LSR, ROL, ROR).",
       "references": [
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Carry, Negative, Zero flags modified by shifts/rotates"
+          "chunk": "asl_instruction",
+          "topic": "ASL arithmetic shift left"
         },
         {
-          "chunk": "logical_and_eor_ora_group",
-          "topic": "Often combined with logical ops for bit manipulation"
+          "chunk": "lsr_instruction",
+          "topic": "LSR logical shift right"
+        },
+        {
+          "chunk": "rol_instruction",
+          "topic": "ROL rotate left"
+        },
+        {
+          "chunk": "ror_instruction",
+          "topic": "ROR rotate right"
         }
       ]
+    },
+    {
+      "start": 147,
+      "end": 151,
+      "name": "asl_instruction",
+      "description": "ASL (Arithmetic Shift Left). Addressing modes and opcodes: Absolute ASL $aaaa ($0E, 3 bytes) affects N,Z,C ; Zero Page ASL $aa ($06, 2) ; Accumulator ASL A ($0A, 1) ; Absolute Indexed X ASL $aaaa,X ($1E, 3) ; Zero Page Indexed X ASL $aa,X ($16, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "lsr_instruction",
+          "topic": "LSR logical shift (opposite direction)"
+        },
+        {
+          "chunk": "rol_instruction",
+          "topic": "rotate left relation"
+        }
+      ]
+    },
+    {
+      "start": 152,
+      "end": 152,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 153,
+      "end": 157,
+      "name": "lsr_instruction",
+      "description": "LSR (Logical Shift Right). Addressing modes and opcodes: Absolute LSR $aaaa ($4E, 3 bytes) affects N,Z,C ; Zero Page LSR $aa ($46, 2) ; Accumulator LSR A ($4A, 1) ; Absolute Indexed X LSR $aaaa,X ($5E, 3) ; Zero Page Indexed X LSR $aa,X ($56, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "asl_instruction",
+          "topic": "ASL logical/arith shift (opposite direction)"
+        },
+        {
+          "chunk": "ror_instruction",
+          "topic": "rotate right relation"
+        }
+      ]
+    },
+    {
+      "start": 158,
+      "end": 159,
+      "ignore": true,
+      "reason": "Blank separator lines"
+    },
+    {
+      "start": 160,
+      "end": 164,
+      "name": "rol_instruction",
+      "description": "ROL (Rotate Left). Addressing modes and opcodes: Absolute ROL $aaaa ($2E, 3 bytes) affects N,Z,C ; Zero Page ROL $aa ($26, 2) ; Accumulator ROL A ($2A, 1) ; Absolute Indexed X ROL $aaaa,X ($3E, 3) ; Zero Page Indexed X ROL $aa,X ($36, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "asl_instruction",
+          "topic": "ASL vs ROL (shift vs rotate)"
+        },
+        {
+          "chunk": "ror_instruction",
+          "topic": "ROR (rotate right)"
+        }
+      ]
+    },
+    {
+      "start": 165,
+      "end": 165,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 166,
+      "end": 170,
+      "name": "ror_instruction",
+      "description": "ROR (Rotate Right). Addressing modes and opcodes: Absolute ROR $aaaa ($6E, 3 bytes) affects N,Z,C ; Zero Page ROR $aa ($66, 2) ; Accumulator ROR A ($6A, 1) ; Absolute Indexed X ROR $aaaa,X ($7E, 3) ; Zero Page Indexed X ROR $aa,X ($76, 2). Flags affected: Negative, Zero, Carry.",
+      "references": [
+        {
+          "chunk": "rol_instruction",
+          "topic": "ROL (rotate left counterpart)"
+        },
+        {
+          "chunk": "lsr_instruction",
+          "topic": "LSR (logical shift relation)"
+        }
+      ]
+    },
+    {
+      "start": 171,
+      "end": 172,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 173,
-      "end": 187,
-      "name": "jump_and_branch_group",
-      "description": "Jump and Branch Group. JMP: Absolute $4C, Indirect $6C; no flags changed. Branches (Relative addressing): BCC $90, BCS $B0, BEQ $F0, BMI $30, BNE $D0, BPL $10, BVC $50, BVS $70; branches depend on C, Z, N, V flags; no flags changed.",
+      "end": 174,
+      "name": "jump_and_branch_group_header",
+      "description": "Group header: 'Jump and Branch Group' (JMP and conditional branches).",
       "references": [
         {
-          "chunk": "compare_and_bit_test_group",
-          "topic": "Typical producers of flag states for branching"
+          "chunk": "jmp_instruction",
+          "topic": "JMP absolute/indirect"
         },
         {
-          "chunk": "status_flag_change_group",
-          "topic": "Meaning of status flags used by branches"
-        },
-        {
-          "chunk": "subroutine_and_interrupt_group",
-          "topic": "Other control-flow instructions (JSR/RTS/BRK/RTI/NOP)"
+          "chunk": "branch_instructions",
+          "topic": "conditional branch opcodes"
         }
       ]
+    },
+    {
+      "start": 175,
+      "end": 176,
+      "name": "jmp_instruction",
+      "description": "JMP (Jump to another location). Addressing modes and opcodes: Absolute JMP $aaaa ($4C, 3 bytes) (no flags affected) ; Indirect JMP ($aaaa) ($6C, 3).",
+      "references": [
+        {
+          "chunk": "branch_instructions",
+          "topic": "branches for conditional control flow"
+        }
+      ]
+    },
+    {
+      "start": 177,
+      "end": 177,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 178,
+      "end": 185,
+      "name": "branch_instructions",
+      "description": "Conditional branch opcodes (Relative addressing, 2 bytes each, no flags changed by executing the branch itself): BCC (Branch if carry clear) $90 ; BCS (Branch if carry set) $B0 ; BEQ (Branch if zero set) $F0 ; BMI (Branch if negative set) $30 ; BNE (Branch if zero clear) $D0 ; BPL (Branch if negative clear) $10 ; BVC (Branch if overflow clear) $50 ; BVS (Branch if overflow set) $70.",
+      "references": [
+        {
+          "chunk": "jmp_instruction",
+          "topic": "unconditional jump (JMP)"
+        }
+      ]
+    },
+    {
+      "start": 186,
+      "end": 187,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 188,
-      "end": 197,
-      "name": "stack_group_operations",
-      "description": "Stack Group. TSX (Transfer SP→X) $BA; affects N,Z. TXS (Transfer X→SP) $9A; no flags. PHA (Push A) $48; no flags. PHP (Push P) $08; no flags. PLA (Pull A) $68; affects N,Z. PLP (Pull P) $28; updates all status flags.",
+      "end": 189,
+      "name": "stack_group_header",
+      "description": "Group header: 'Stack Group' (TSX, TXS, PHA, PHP, PLA, PLP).",
       "references": [
         {
-          "chunk": "subroutine_and_interrupt_group",
-          "topic": "JSR/RTS/BRK/RTI use and manipulate the stack"
-        },
-        {
-          "chunk": "status_flag_change_group",
-          "topic": "PLP affects all flags; PLA affects N,Z"
+          "chunk": "stack_instructions",
+          "topic": "stack operations (push/pull/transfer)"
         }
       ]
+    },
+    {
+      "start": 190,
+      "end": 195,
+      "name": "stack_instructions",
+      "description": "Stack-related instructions: TSX (Transfer stack pointer to X) opcode $BA, 1 byte, affects N,Z ; TXS (Transfer X to stack pointer) opcode $9A, 1 byte ; PHA (Push accumulator on stack) opcode $48, 1 byte ; PHP (Push processor status on stack) opcode $08, 1 byte ; PLA (Pull accumulator from stack) opcode $68, 1 byte, affects N,Z ; PLP (Pull processor status from stack) opcode $28, 1 byte, affects all flags as loaded.",
+      "references": [
+        {
+          "chunk": "subroutine_interrupt_instructions",
+          "topic": "stack usage by JSR/RTS/BRK/RTI"
+        }
+      ]
+    },
+    {
+      "start": 196,
+      "end": 197,
+      "ignore": true,
+      "reason": "Blank separator lines"
     },
     {
       "start": 198,
-      "end": 207,
-      "name": "status_flag_change_group",
-      "description": "Status Flag Change Group. CLC (Clear Carry) $18; affects C. CLD (Clear Decimal) $D8; affects D. CLI (Clear Interrupt Disable) $58; affects I. CLV (Clear Overflow) $B8; affects V. SEC (Set Carry) $38; affects C. SED (Set Decimal) $F8; affects D. SEI (Set Interrupt Disable) $78; affects I.",
+      "end": 199,
+      "name": "status_flag_change_group_header",
+      "description": "Group header: 'Status Flag Change Group' (CLC, CLD, CLI, CLV, SEC, SED, SEI).",
       "references": [
         {
-          "chunk": "arithmetic_adc_sbc_group",
-          "topic": "Arithmetic uses carry/overflow; decimal mode affects ADC/SBC on some 6502s"
-        },
-        {
-          "chunk": "jump_and_branch_group",
-          "topic": "Branches depend on flag states"
+          "chunk": "status_flag_instructions",
+          "topic": "flag set/clear instructions"
         }
       ]
     },
     {
-      "start": 208,
-      "end": 215,
-      "name": "subroutine_and_interrupt_group",
-      "description": "Subroutine and Interrupt Group. JSR (Jump to Subroutine) Absolute $20; pushes return address; no flags. RTS (Return from Subroutine) $60; pulls return; no flags. BRK (Force Interrupt) $00; sets B, I. RTI (Return from Interrupt) $40; restores all flags and PC from stack. NOP (No Operation) $EA; no flags.",
+      "start": 200,
+      "end": 206,
+      "name": "status_flag_instructions",
+      "description": "Status flag change instructions (implied addressing, 1 byte each): CLC (Clear carry) $18 affects C ; CLD (Clear decimal) $D8 affects D ; CLI (Clear interrupt disable) $58 affects I ; CLV (Clear overflow) $B8 affects V ; SEC (Set carry) $38 affects C ; SED (Set decimal) $F8 affects D ; SEI (Set interrupt disable) $78 affects I.",
       "references": [
         {
-          "chunk": "stack_group_operations",
-          "topic": "Stack primitives used by JSR/RTS/BRK/RTI"
-        },
-        {
-          "chunk": "status_flag_change_group",
-          "topic": "Flags affected/restored by BRK/RTI"
-        },
-        {
-          "chunk": "jump_and_branch_group",
-          "topic": "Other control-flow mechanisms (JMP/branches)"
+          "chunk": "branch_instructions",
+          "topic": "SEI/CLI can affect interrupt-driven branching and IRQ behavior"
         }
       ]
+    },
+    {
+      "start": 207,
+      "end": 207,
+      "ignore": true,
+      "reason": "Blank separator line"
+    },
+    {
+      "start": 208,
+      "end": 209,
+      "name": "subroutine_and_interrupt_group_header",
+      "description": "Group header: 'Subroutine and Interrupt Group' (JSR, RTS, BRK, RTI, NOP).",
+      "references": [
+        {
+          "chunk": "subroutine_interrupt_instructions",
+          "topic": "JSR/RTS/BRK/RTI/NOP details"
+        },
+        {
+          "chunk": "stack_instructions",
+          "topic": "stack operations used by subroutines and interrupts"
+        }
+      ]
+    },
+    {
+      "start": 210,
+      "end": 214,
+      "name": "subroutine_interrupt_instructions",
+      "description": "Subroutine and interrupt instructions: JSR (Jump to subroutine) Absolute JSR $aaaa ($20, 3 bytes) ; RTS (Return from subroutine) opcode $60, 1 byte ; BRK (Force an interrupt) opcode $00, 1 byte, sets B and I flags ; RTI (Return from Interrupt) opcode $40, 1 byte, restores all flags ; NOP (No Operation) opcode $EA, 1 byte. Note: stack operations (PHA/PLA/PHP/PLP) are used with interrupts/subroutines.",
+      "references": [
+        {
+          "chunk": "stack_instructions",
+          "topic": "stack operations used by RTI/RTS"
+        },
+        {
+          "chunk": "status_flag_instructions",
+          "topic": "BRK/RTI interact with processor status flags"
+        }
+      ]
+    },
+    {
+      "start": 215,
+      "end": 215,
+      "ignore": true,
+      "reason": "Trailing blank line"
     }
   ],
   "source_md5": "71e2b97254cd9947dbeba12e339d6ef0"

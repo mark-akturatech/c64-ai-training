@@ -1,0 +1,600 @@
+{
+  "source_file": "C64 KERNAL API Reference.txt",
+  "context": "Commodore 64 KERNAL Functions Reference",
+  "splits": [
+    {
+      "start": 1,
+      "end": 4,
+      "ignore": true,
+      "reason": "Title and header information (non-technical metadata)"
+    },
+    {
+      "start": 5,
+      "end": 7,
+      "name": "scinit",
+      "description": "SCINIT ($FF81). Initializes VIC chip, restores keyboard/screen I/O, clears display, sets PAL/NTSC mode and interrupt timer. No input/output parameters. Uses registers A, X, Y. Real address: $FF5B.",
+      "references": [
+        {
+          "chunk": "screen",
+          "topic": "screen dimensions returned by SCREEN ($FFED)"
+        },
+        {
+          "chunk": "ioinit",
+          "topic": "overall hardware initialization performed by IOINIT"
+        }
+      ]
+    },
+    {
+      "start": 8,
+      "end": 10,
+      "name": "ioinit",
+      "description": "IOINIT ($FF84). Initializes CIA chips and SID volume, configures memory, and establishes the interrupt timer. No input/output parameters. Uses registers A, X. Real address: $FDA3.",
+      "references": [
+        {
+          "chunk": "scinit",
+          "topic": "VIC initialization done by SCINIT"
+        },
+        {
+          "chunk": "io_base",
+          "topic": "CIA base address returned by IOBASE ($FFF3)"
+        }
+      ]
+    },
+    {
+      "start": 11,
+      "end": 13,
+      "name": "ramtas",
+      "description": "RAMTAS ($FF87). Clears memory ranges $0002-$0101 and $0200-$03FF, performs a memory test, and configures BASIC workspace and datasette buffer at $033C. No input/output parameters. Uses A, X, Y. Real address: $FD50.",
+      "references": [
+        {
+          "chunk": "memtop",
+          "topic": "BASIC workspace upper boundary (MEMTOP $FF99)"
+        },
+        {
+          "chunk": "membot",
+          "topic": "BASIC workspace lower boundary (MEMBOT $FF9C)"
+        }
+      ]
+    },
+    {
+      "start": 14,
+      "end": 16,
+      "name": "restor",
+      "description": "RESTOR ($FF8A). Restores the default interrupt vector table at $0314-$0333. No input/output parameters. Real address: $FD15.",
+      "references": [
+        {
+          "chunk": "vector",
+          "topic": "transferring vector table between system and user areas (VECTOR $FF8D)"
+        }
+      ]
+    },
+    {
+      "start": 17,
+      "end": 19,
+      "name": "vector",
+      "description": "VECTOR ($FF8D). Transfers the interrupt vector table between system and user areas. Input: Carry flag (0 = copy user to system, 1 = copy system to user); X/Y = pointer to user table. Uses registers A, Y. Real address: $FD1A.",
+      "references": [
+        {
+          "chunk": "restor",
+          "topic": "restore default vector table (RESTOR $FF8A)"
+        }
+      ]
+    },
+    {
+      "start": 20,
+      "end": 22,
+      "name": "setmsg",
+      "description": "SETMSG ($FF90). Configures system error message display. Input: A = switch value. Real address: $FE18.",
+      "references": []
+    },
+    {
+      "start": 23,
+      "end": 25,
+      "name": "lstnsa",
+      "description": "LSTNSA ($FF93). Transmits a LISTEN secondary address via the serial IEC bus (requires prior LISTEN call). Input: A = secondary address. Uses A register. Real address: $EDB9.",
+      "references": [
+        {
+          "chunk": "listen",
+          "topic": "must call LISTEN before LSTNSA"
+        },
+        {
+          "chunk": "iecout",
+          "topic": "writing bytes to the bus after addressing (IECOUT $FFA8)"
+        }
+      ]
+    },
+    {
+      "start": 26,
+      "end": 28,
+      "name": "talksa",
+      "description": "TALKSA ($FF96). Transmits a TALK secondary address via the serial IEC bus (requires prior TALK call). Input: A = secondary address. Uses A register. Real address: $EDC7.",
+      "references": [
+        {
+          "chunk": "talk",
+          "topic": "must call TALK before TALKSA"
+        },
+        {
+          "chunk": "iecin",
+          "topic": "reading bytes from the bus after addressing (IECIN $FFA5)"
+        }
+      ]
+    },
+    {
+      "start": 29,
+      "end": 31,
+      "name": "memtop",
+      "description": "MEMTOP ($FF99). Manages BASIC workspace upper boundary. Input: Carry (0 = restore, 1 = save); if Carry=0 then X/Y = address to restore; if Carry=1 then X/Y returned = saved address. Uses X, Y registers. Real address: $FE25.",
+      "references": [
+        {
+          "chunk": "membot",
+          "topic": "BASIC workspace lower boundary (MEMBOT $FF9C)"
+        },
+        {
+          "chunk": "ramtas",
+          "topic": "RAM initialization and workspace setup (RAMTAS $FF87)"
+        }
+      ]
+    },
+    {
+      "start": 32,
+      "end": 34,
+      "name": "membot",
+      "description": "MEMBOT ($FF9C). Manages BASIC workspace lower boundary. Input: Carry (0 = restore, 1 = save); if Carry=0 then X/Y = address to restore; if Carry=1 then X/Y returned = saved address. Uses X, Y registers. Real address: $FE34.",
+      "references": [
+        {
+          "chunk": "memtop",
+          "topic": "BASIC workspace upper boundary (MEMTOP $FF99)"
+        }
+      ]
+    },
+    {
+      "start": 35,
+      "end": 37,
+      "name": "scnkey",
+      "description": "SCNKEY ($FF9F). Scans the keyboard matrix: stores raw code at $00CB, shift status at $028D, and converts to PETSCII code written to buffer. Uses A, X, Y registers. Real address: $EA87.",
+      "references": [
+        {
+          "chunk": "getin",
+          "topic": "reading input bytes from default input (GETIN $FFE4)"
+        }
+      ]
+    },
+    {
+      "start": 38,
+      "end": 40,
+      "name": "settmo",
+      "description": "SETTMO ($FFA2). Sets serial bus timeout value. Input: A = timeout value. Real address: $FE21.",
+      "references": [
+        {
+          "chunk": "listen",
+          "topic": "affects serial communications initiated by LISTEN/TALK"
+        },
+        {
+          "chunk": "talk",
+          "topic": "affects serial communications initiated by TALK"
+        }
+      ]
+    },
+    {
+      "start": 41,
+      "end": 43,
+      "name": "iecin",
+      "description": "IECIN ($FFA5). Reads a byte from the serial IEC bus (requires prior TALK/TALKSA addressing). Output: A = received byte. Uses A register. Real address: $EE13.",
+      "references": [
+        {
+          "chunk": "talksa",
+          "topic": "requires TALK/TALKSA before IECIN"
+        },
+        {
+          "chunk": "readst",
+          "topic": "device status reading related to IEC transfers (READST $FFB7)"
+        }
+      ]
+    },
+    {
+      "start": 44,
+      "end": 46,
+      "name": "iecout",
+      "description": "IECOUT ($FFA8). Writes a byte to the serial IEC bus (requires prior LISTEN/LSTNSA addressing). Input: A = byte to send. Real address: $EDDD.",
+      "references": [
+        {
+          "chunk": "lstnsa",
+          "topic": "requires LISTEN/LSTNSA before IECOUT"
+        },
+        {
+          "chunk": "untalk",
+          "topic": "ending a TALK session (UNTALK $FFAB)"
+        }
+      ]
+    },
+    {
+      "start": 47,
+      "end": 49,
+      "name": "untalk",
+      "description": "UNTALK ($FFAB). Sends the UNTALK command on the serial IEC bus to end a TALK session. Uses A register. Real address: $EDEF.",
+      "references": [
+        {
+          "chunk": "talk",
+          "topic": "complements TALK ($FFB4)"
+        },
+        {
+          "chunk": "unlstn",
+          "topic": "complements UNLISTEN ($FFAE)"
+        }
+      ]
+    },
+    {
+      "start": 50,
+      "end": 52,
+      "name": "unlstn",
+      "description": "UNLSTN ($FFAE). Sends the UNLISTEN command on the serial IEC bus to end a LISTEN session. Uses A register. Real address: $EDFE.",
+      "references": [
+        {
+          "chunk": "listen",
+          "topic": "complements LISTEN ($FFB1)"
+        },
+        {
+          "chunk": "clrchn",
+          "topic": "CLRCHN issues UNTALK/UNLISTEN as needed (CLRCHN $FFCC)"
+        }
+      ]
+    },
+    {
+      "start": 53,
+      "end": 55,
+      "name": "listen",
+      "description": "LISTEN ($FFB1). Sends a LISTEN command to a device on the serial IEC bus. Input: A = device number. Uses A register. Real address: $ED0C.",
+      "references": [
+        {
+          "chunk": "lstnsa",
+          "topic": "sending a secondary address after LISTEN (LSTNSA $FF93)"
+        },
+        {
+          "chunk": "iecout",
+          "topic": "write data after LISTEN via IECOUT ($FFA8)"
+        }
+      ]
+    },
+    {
+      "start": 56,
+      "end": 58,
+      "name": "talk",
+      "description": "TALK ($FFB4). Sends a TALK command to a device on the serial IEC bus. Input: A = device number. Uses A register. Real address: $ED09.",
+      "references": [
+        {
+          "chunk": "talksa",
+          "topic": "sending a secondary address after TALK (TALKSA $FF96)"
+        },
+        {
+          "chunk": "iecin",
+          "topic": "read data after TALK via IECIN ($FFA5)"
+        }
+      ]
+    },
+    {
+      "start": 59,
+      "end": 61,
+      "name": "readst",
+      "description": "READST ($FFB7). Retrieves device status / ST variable (also clears RS232 status). Output: A = status. Uses A register. Real address: $FE07.",
+      "references": [
+        {
+          "chunk": "setlfs",
+          "topic": "file device setup uses device numbers read by READST"
+        }
+      ]
+    },
+    {
+      "start": 62,
+      "end": 64,
+      "name": "setlfs",
+      "description": "SETLFS ($FFBA). Configures file parameters: Input: A = logical file number; X = device number; Y = secondary address. Real address: $FE00.",
+      "references": [
+        {
+          "chunk": "setnam",
+          "topic": "SETNAM sets the filename for subsequent OPEN"
+        },
+        {
+          "chunk": "open",
+          "topic": "OPEN uses parameters from SETLFS/SETNAM"
+        }
+      ]
+    },
+    {
+      "start": 65,
+      "end": 67,
+      "name": "setnam",
+      "description": "SETNAM ($FFBD). Establishes filename parameters. Input: A = name length; X/Y = pointer to filename in memory. Real address: $FDF9.",
+      "references": [
+        {
+          "chunk": "setlfs",
+          "topic": "SETLFS configures device and logical file (#) before OPEN"
+        },
+        {
+          "chunk": "open",
+          "topic": "OPEN uses filename set by SETNAM"
+        }
+      ]
+    },
+    {
+      "start": 68,
+      "end": 70,
+      "name": "open",
+      "description": "OPEN ($FFC0). Opens a file (requires prior SETLFS and SETNAM). Uses registers A, X, Y. Real address: indirect via ($031A) then $F34A.",
+      "references": [
+        {
+          "chunk": "setlfs",
+          "topic": "SETLFS configures logical number, device, secondary address"
+        },
+        {
+          "chunk": "setnam",
+          "topic": "SETNAM sets filename and length"
+        },
+        {
+          "chunk": "close",
+          "topic": "CLOSE closes files opened by OPEN"
+        }
+      ]
+    },
+    {
+      "start": 71,
+      "end": 73,
+      "name": "close",
+      "description": "CLOSE ($FFC3). Closes a specified file. Input: A = logical file number. Uses registers A, X, Y. Real address: indirect via ($031C) then $F291.",
+      "references": [
+        {
+          "chunk": "open",
+          "topic": "closes files opened by OPEN"
+        },
+        {
+          "chunk": "clrchn",
+          "topic": "CLRCHN closes default I/O files and performs cleanup"
+        }
+      ]
+    },
+    {
+      "start": 74,
+      "end": 76,
+      "name": "chkin",
+      "description": "CHKIN ($FFC6). Sets the specified logical file as the default input device (requires file OPEN). Input: X = logical file number. Uses A, X registers. Real address: indirect via ($031E) then $F20E.",
+      "references": [
+        {
+          "chunk": "chkout",
+          "topic": "complementary operation to set default output (CHKOUT $FFC9)"
+        },
+        {
+          "chunk": "open",
+          "topic": "file must be OPEN before CHKIN"
+        }
+      ]
+    },
+    {
+      "start": 77,
+      "end": 79,
+      "name": "chkout",
+      "description": "CHKOUT ($FFC9). Sets the specified logical file as the default output device (requires file OPEN). Input: X = logical file number. Uses A, X registers. Real address: indirect via ($0320) then $F250.",
+      "references": [
+        {
+          "chunk": "chkin",
+          "topic": "complementary operation to set default input (CHKIN $FFC6)"
+        },
+        {
+          "chunk": "open",
+          "topic": "file must be OPEN before CHKOUT"
+        }
+      ]
+    },
+    {
+      "start": 80,
+      "end": 82,
+      "name": "clrchn",
+      "description": "CLRCHN ($FFCC). Closes default I/O files, sends UNTALK/UNLISTEN as needed on the serial bus, and restores keyboard/screen I/O. Uses A, X registers. Real address: indirect via ($0322) then $F333.",
+      "references": [
+        {
+          "chunk": "untalk",
+          "topic": "CLRCHN issues UNTALK when needed (UNTALK $FFAB)"
+        },
+        {
+          "chunk": "unlstn",
+          "topic": "CLRCHN issues UNLISTEN when needed (UNLSTN $FFAE)"
+        }
+      ]
+    },
+    {
+      "start": 83,
+      "end": 85,
+      "name": "chrin",
+      "description": "CHRIN ($FFCF). Reads a byte from the default input or a line from the screen. Output: A = byte read. Uses A, Y registers. Real address: indirect via ($0324) then $F157.",
+      "references": [
+        {
+          "chunk": "chrout",
+          "topic": "writing to default output (CHROUT $FFD2)"
+        },
+        {
+          "chunk": "getin",
+          "topic": "lower-level input reading (GETIN $FFE4)"
+        }
+      ]
+    },
+    {
+      "start": 86,
+      "end": 88,
+      "name": "chrout",
+      "description": "CHROUT ($FFD2). Writes a byte to the default output. Input: A = byte to write. Real address: indirect via ($0326) then $F1CA.",
+      "references": [
+        {
+          "chunk": "chrin",
+          "topic": "reading from default input (CHRIN $FFCF)"
+        }
+      ]
+    },
+    {
+      "start": 89,
+      "end": 91,
+      "name": "load",
+      "description": "LOAD ($FFD5). Loads or verifies a file (requires SETLFS/SETNAM). Input: A = operation (0 = load, 1-255 = verify); X/Y = load address if secondary address = 0. Output: Carry flag (0 = success, 1 = error); A = error code if Carry=1; X/Y = last byte address if Carry=0. Uses A, X, Y registers. Real address: $F49E.",
+      "references": [
+        {
+          "chunk": "save",
+          "topic": "complementary file write operation (SAVE $FFD8)"
+        },
+        {
+          "chunk": "setlfs",
+          "topic": "SETLFS configures device/logical number for LOAD"
+        },
+        {
+          "chunk": "setnam",
+          "topic": "SETNAM sets filename for LOAD"
+        }
+      ]
+    },
+    {
+      "start": 92,
+      "end": 94,
+      "name": "save",
+      "description": "SAVE ($FFD8). Saves a file (requires SETLFS/SETNAM). Input: A = zero page register holding start address; X/Y = end address plus 1. Output: Carry flag (0 = success, 1 = error); A = error code if Carry=1. Uses A, X, Y registers. Real address: $F5DD.",
+      "references": [
+        {
+          "chunk": "load",
+          "topic": "complementary file read operation (LOAD $FFD5)"
+        },
+        {
+          "chunk": "setlfs",
+          "topic": "SETLFS configures device/logical number for SAVE"
+        }
+      ]
+    },
+    {
+      "start": 95,
+      "end": 97,
+      "name": "settim",
+      "description": "SETTIM ($FFDB). Sets the Time-of-Day (TOD) clock at $00A0-$00A2. Input: A/X/Y = new TOD value. Real address: $F6E4.",
+      "references": [
+        {
+          "chunk": "rdtim",
+          "topic": "read current TOD (RDTIM $FFDE)"
+        },
+        {
+          "chunk": "udtim",
+          "topic": "update TOD and STOP indicator (UDTIM $FFEA)"
+        }
+      ]
+    },
+    {
+      "start": 98,
+      "end": 100,
+      "name": "rdtim",
+      "description": "RDTIM ($FFDE). Reads the Time-of-Day (TOD) clock from $00A0-$00A2. Output: A/X/Y = current TOD value. Uses A, X, Y registers. Real address: $F6DD.",
+      "references": [
+        {
+          "chunk": "settim",
+          "topic": "set TOD (SETTIM $FFDB)"
+        },
+        {
+          "chunk": "udtim",
+          "topic": "UDTIM updates TOD and STOP key indicator (UDTIM $FFEA)"
+        }
+      ]
+    },
+    {
+      "start": 101,
+      "end": 103,
+      "name": "stop",
+      "description": "STOP ($FFE1). Queries the STOP key status at $0091; if pressed, calls CLRCHN and clears input buffer. Output: Zero flag (0 = unpressed, 1 = pressed); Carry flag (1 = pressed). Uses A, X registers. Real address: indirect via ($0328) then $F6ED.",
+      "references": [
+        {
+          "chunk": "clrchn",
+          "topic": "CLRCHN is called when STOP is detected (CLRCHN $FFCC)"
+        },
+        {
+          "chunk": "udtim",
+          "topic": "UDTIM updates STOP key indicator (UDTIM $FFEA)"
+        }
+      ]
+    },
+    {
+      "start": 104,
+      "end": 106,
+      "name": "getin",
+      "description": "GETIN ($FFE4). Reads a byte from the default input. Output: A = byte read. Uses A, X, Y registers. Real address: indirect via ($032A) then $F13E.",
+      "references": [
+        {
+          "chunk": "chrin",
+          "topic": "higher-level input routine that may call GETIN (CHRIN $FFCF)"
+        }
+      ]
+    },
+    {
+      "start": 107,
+      "end": 109,
+      "name": "clall",
+      "description": "CLALL ($FFE7). Clears the file table and calls CLRCHN to close channels and restore I/O. Uses A, X registers. Real address: indirect via ($032C) then $F32F.",
+      "references": [
+        {
+          "chunk": "clrchn",
+          "topic": "CLRCHN performs channel close and UNLISTEN/UNTALK (CLRCHN $FFCC)"
+        }
+      ]
+    },
+    {
+      "start": 110,
+      "end": 112,
+      "name": "udtim",
+      "description": "UDTIM ($FFEA). Updates the Time-of-Day ($00A0-$00A2) and the STOP key indicator at $0091. Uses A, X registers. Real address: $F69B.",
+      "references": [
+        {
+          "chunk": "settim",
+          "topic": "set TOD (SETTIM $FFDB)"
+        },
+        {
+          "chunk": "rdtim",
+          "topic": "read TOD (RDTIM $FFDE)"
+        },
+        {
+          "chunk": "stop",
+          "topic": "STOP key state tracked by UDTIM (STOP $FFE1)"
+        }
+      ]
+    },
+    {
+      "start": 113,
+      "end": 115,
+      "name": "screen",
+      "description": "SCREEN ($FFED). Returns screen dimensions. Output: X = 40 columns; Y = 25 rows. Uses X, Y registers. Real address: $E505.",
+      "references": [
+        {
+          "chunk": "scinit",
+          "topic": "SCINIT initializes the VIC and display (SCINIT $FF81)"
+        },
+        {
+          "chunk": "plot",
+          "topic": "cursor position management (PLOT $FFF0)"
+        }
+      ]
+    },
+    {
+      "start": 116,
+      "end": 118,
+      "name": "plot",
+      "description": "PLOT ($FFF0). Manages cursor position. Input: Carry (0 = restore, 1 = save); X/Y = column/row if Carry=0. Output: X/Y = column/row if Carry=1. Uses X, Y registers. Real address: $E50A.",
+      "references": [
+        {
+          "chunk": "screen",
+          "topic": "screen dimensions (SCREEN $FFED)"
+        }
+      ]
+    },
+    {
+      "start": 119,
+      "end": 121,
+      "name": "io_base",
+      "description": "IOBASE ($FFF3). Returns the CIA #1 base address. Output: X/Y = $DC00. Uses X, Y registers. Real address: $E500.",
+      "references": [
+        {
+          "chunk": "ioinit",
+          "topic": "CIA initialization performed by IOINIT ($FF84)"
+        }
+      ]
+    }
+  ],
+  "source_md5": "295e06a2c429fba4efb72fdb29638ab8"
+}

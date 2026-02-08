@@ -28,6 +28,15 @@ from pathlib import Path
 
 from openai import OpenAI
 
+def _fmt_response(response):
+    """Format a one-line summary of an OpenAI API response."""
+    usage = response.usage
+    parts = [f"model={response.model}"]
+    if usage:
+        parts.append(f"tokens={usage.prompt_tokens}+{usage.completion_tokens}={usage.total_tokens}")
+    return ', '.join(parts)
+
+
 SYSTEM_PROMPT = """\
 You are an expert Commodore 64 and MOS 6502 assembly programmer. Analyze this source code and produce a markdown documentation header optimized for retrieval by an AI coding assistant.
 
@@ -240,7 +249,8 @@ def document_example(client, model, source_code, asm_path, project_root):
             {"role": "user", "content": user_msg},
         ],
     )
-    return response.choices[0].message.content
+
+    return response.choices[0].message.content, _fmt_response(response)
 
 
 def main():
@@ -254,7 +264,7 @@ def main():
     force = '--force' in sys.argv
     dry_run = '--dry-run' in sys.argv
     register = '--register' in sys.argv
-    model = 'gpt-5'
+    model = 'gpt-5-mini'
 
     if '--model' in sys.argv:
         idx = sys.argv.index('--model')
@@ -370,7 +380,7 @@ def main():
             _, clean_source = strip_comment_header(raw_text)
             if not clean_source:
                 clean_source = raw_text
-            header = document_example(client, model, raw_text, asm_path, project_root)
+            header, resp_info = document_example(client, model, raw_text, asm_path, project_root)
 
             # Derive output filename from the AI response header
             output_name = derive_output_name(header, asm_path, project_root)
@@ -387,6 +397,7 @@ def main():
 
             processed += 1
             print(f" done -> {output_name}")
+            print(f"    [{resp_info}]")
 
             # Rate limiting
             if i < total:

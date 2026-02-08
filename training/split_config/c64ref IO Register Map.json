@@ -1,0 +1,2219 @@
+{
+  "source_file": "c64ref IO Register Map.txt",
+  "context": "- C64 I/O Map (Mapping The Commodore 64)",
+  "splits": [
+    {
+      "start": 1,
+      "end": 7,
+      "ignore": true,
+      "reason": "Title, header and non-technical metadata"
+    },
+    {
+      "start": 8,
+      "end": 28,
+      "name": "vicii_chip_overview",
+      "description": "Overview of the VIC-II video chip: its responsibility for the C64 display, ability to address 16K banks independently of the 6510, location of VIC-II I/O registers ($D000-$D02E / 53248-53294), and a short intro to the graphics subsystems (text, character dot data, sprites, bitmap).",
+      "references": [
+        {
+          "chunk": "video_matrix_and_character_dot_data",
+          "topic": "Video Matrix / Character dot data base ($D018)"
+        },
+        {
+          "chunk": "sprite_overview_and_data_pointers",
+          "topic": "Sprites and Sprite Data Pointers"
+        }
+      ]
+    },
+    {
+      "start": 29,
+      "end": 49,
+      "name": "video_matrix_and_character_dot_data",
+      "description": "Video Matrix Base Address and Character Dot-Data Base within VIC-II memory controlled by Memory Control Register ($D018 / 53272). Notes on Character Generator ROM and how displayed character shapes use an 8x8 dot matrix. Border ($D020 / 53280) and Background Color Register 0 ($D021 / 53281) mention.",
+      "references": [
+        {
+          "chunk": "vicii_chip_overview",
+          "topic": "VIC-II general overview"
+        },
+        {
+          "chunk": "vmcsb_vic_memory_control_register",
+          "topic": "Detailed control of these base addresses ($D018)"
+        },
+        {
+          "chunk": "border_and_background_color_registers",
+          "topic": "Border ($D020) and Background ($D021) registers"
+        }
+      ]
+    },
+    {
+      "start": 50,
+      "end": 61,
+      "name": "color_ram_and_multicolor_text_intro",
+      "description": "Color RAM basics: one nybble per character starting at $D800 (55296), color selection per-character; introduction to multicolor text mode enabled by Bit 4 of $D016 (53270) and use of Background Color Registers 1 and 2 ($D022-$D023 / 53282-53283).",
+      "references": [
+        {
+          "chunk": "scrolx_horizontal_fine_scrolling",
+          "topic": "Register $D016 controls multicolor bit among others"
+        },
+        {
+          "chunk": "color_ram_description",
+          "topic": "Detailed Color RAM behavior and colors ($D800-$DBFF)"
+        }
+      ]
+    },
+    {
+      "start": 62,
+      "end": 88,
+      "name": "extended_background_color_mode_intro",
+      "description": "Extended Background Color Mode (Bit 6 of $D011 / 53265): behavior where foreground color comes from Color RAM and background depends on character code groups (0-63 uses BGCOL0, 64-127 uses BGCOL1, 128-191 uses BGCOL2, 192-255 uses BGCOL3). Limits: only first 64 character shapes available.",
+      "references": [
+        {
+          "chunk": "bgcolor_registers",
+          "topic": "Background Color Registers $D021-$D024"
+        },
+        {
+          "chunk": "d011_vertical_fine_scrolling_and_control",
+          "topic": "Control register $D011 which contains this bit"
+        }
+      ]
+    },
+    {
+      "start": 89,
+      "end": 115,
+      "name": "bitmap_graphics_mode_overview",
+      "description": "Bitmap graphics mode (enable Bit 5 of $D011 / 53265): 320x200 bitmap, one bit per dot for hi-res, mapping differences vs character mode, Color RAM not used for hi-res bitmap, multicolor bitmap option uses Color RAM for foreground colors and reduces horizontal resolution to 160.",
+      "references": [
+        {
+          "chunk": "vmcsb_vic_memory_control_register",
+          "topic": "How Memory Control ($D018) selects bitmap and color areas"
+        },
+        {
+          "chunk": "bitmap_addressing_and_plotting",
+          "topic": "Formulas and methods to find/modify a dot in bitmap memory"
+        }
+      ]
+    },
+    {
+      "start": 116,
+      "end": 126,
+      "name": "multicolor_summary_and_sprite_intro",
+      "description": "Summary of multicolor text vs multicolor bitmap (tradeoffs: extra colors vs reduced horizontal resolution) and an introduction to the separate sprite graphics system (independent characters that can be moved and animated).",
+      "references": [
+        {
+          "chunk": "sprite_overview_and_data_pointers",
+          "topic": "Sprites: shapes, sizes, pointers"
+        },
+        {
+          "chunk": "scrolx_horizontal_fine_scrolling",
+          "topic": "Multicolor bit lives in $D016"
+        }
+      ]
+    },
+    {
+      "start": 127,
+      "end": 154,
+      "name": "sprite_overview_and_data_pointers",
+      "description": "Sprites: there are eight sprites 0-7; each 24x21 dots; shapes come from 63 bytes within a 64-byte block. Sprite Data Pointers (last eight bytes of screen memory, default $7F8-$7FF / 2040-2047) select which 64-byte block (pointer * 64 = block start) within VIC-II's 16K window provides sprite shape data.",
+      "references": [
+        {
+          "chunk": "sprite_shape_data_format",
+          "topic": "How sprite bits map to dots (3 bytes per line)"
+        },
+        {
+          "chunk": "sprite_horizontal_and_vertical_position_registers",
+          "topic": "Registers $D000-$D010 for sprite positioning"
+        }
+      ]
+    },
+    {
+      "start": 155,
+      "end": 176,
+      "name": "sprite_shape_data_format",
+      "description": "How sprite shape bytes map to dots: bits in each byte represent dots (bit0=1, bit7=128), 24 dots per line use 3 bytes (24 bits). Explanation of binary weights and how combinations of bits give 0-255 values for bytes.",
+      "references": [
+        {
+          "chunk": "sprite_overview_and_data_pointers",
+          "topic": "Where to put these 63 bytes (Sprite Data Pointers / screen memory)"
+        },
+        {
+          "chunk": "sprite_line_examples",
+          "topic": "Examples showing byte values corresponding to bit patterns"
+        }
+      ]
+    },
+    {
+      "start": 177,
+      "end": 196,
+      "name": "sprite_line_examples",
+      "description": "Concrete sprite line examples mapping bit patterns to decimal bytes: e.g., 00000000 01111110 00000000 -> 0,126,0 and 00011111 11111111 11111000 -> 21,255,248; explanation of how bit values sum to those bytes.",
+      "references": [
+        {
+          "chunk": "sprite_shape_data_format",
+          "topic": "Bit weight explanation"
+        },
+        {
+          "chunk": "sprite_cross_example",
+          "topic": "Multi-line example showing a cross drawn with sprite bytes"
+        }
+      ]
+    },
+    {
+      "start": 197,
+      "end": 226,
+      "name": "sprite_cross_example",
+      "description": "A 21-line example (63 numbers, three per line) showing how the bytes would be stored to draw a large cross sprite, with the decimal values shown next to their bit patterns.",
+      "references": [
+        {
+          "chunk": "sprite_shape_data_format",
+          "topic": "How those bytes are formed"
+        }
+      ]
+    },
+    {
+      "start": 227,
+      "end": 237,
+      "name": "sprite_display_setup_steps",
+      "description": "Steps required to display a sprite after placing shape data in memory and setting Sprite Data Pointer: enable sprite in Sprite Display Enable register ($D015 / 53269), set horizontal/vertical position registers ($D000-$D010 / 53248-53264), and set sprite color in Sprite Color Registers ($D027-$D02E / 53287-53294).",
+      "references": [
+        {
+          "chunk": "spena_sprite_enable_register",
+          "topic": "Register $D015 to enable sprites"
+        },
+        {
+          "chunk": "sprite_horizontal_and_vertical_position_registers",
+          "topic": "Registers $D000-$D010 to position sprites"
+        },
+        {
+          "chunk": "sprite_color_registers",
+          "topic": "Registers $D027-$D02E for sprite color"
+        }
+      ]
+    },
+    {
+      "start": 238,
+      "end": 264,
+      "name": "sprite_animation_and_optional_features",
+      "description": "Animation by changing position registers or changing Sprite Data Pointer to alternate shapes; optional features include X/Y expand registers (double width/height), collision detection registers, priority register for sprite vs foreground, and per-sprite multicolor via $D01C plus shared multicolor registers $D025-$D026.",
+      "references": [
+        {
+          "chunk": "xexpand_and_yexpand_registers",
+          "topic": "Horizontal ($D01D) and vertical ($D017) expansion registers"
+        },
+        {
+          "chunk": "sprite_collision_registers",
+          "topic": "Collision detection ($D01E-$D01F) and IRQ sources"
+        },
+        {
+          "chunk": "spmc_sprite_multicolor_registers",
+          "topic": "Sprite multicolor config ($D01C, $D025-$D026)"
+        }
+      ]
+    },
+    {
+      "start": 265,
+      "end": 319,
+      "name": "sprite_horizontal_and_vertical_position_registers_description",
+      "description": "Overview of sprite horizontal/vertical positioning: each sprite has its own X/Y register ($D000-$D00F, 53248-53263) and there is a shared MSB register ($D010 / 53264) for the 9th horizontal bit. Vertical positions 0-255 (top line of 21-line sprite); visible lines are 50-249. Horizontal positions 0-511 using MSB bit; visible area mapped to 24..344 and notes on initialization (all zero at power-up).",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_list",
+          "topic": "List of $D000-$D00F registers"
+        },
+        {
+          "chunk": "d010_msigx_register",
+          "topic": "Most significant X bits register ($D010)"
+        }
+      ]
+    },
+    {
+      "start": 320,
+      "end": 351,
+      "name": "sprite_position_registers_list",
+      "description": "Register catalog: $D000/$D001 = SP0X/SP0Y, $D002/$D003 = SP1X/SP1Y, ... through $D00E/$D00F = SP7X/SP7Y; each is Sprite N Horizontal/Vertical Position (low 8 bits).",
+      "references": [
+        {
+          "chunk": "sprite_horizontal_and_vertical_position_registers_description",
+          "topic": "Overview of ranges and use"
+        }
+      ]
+    },
+    {
+      "start": 352,
+      "end": 366,
+      "name": "d010_msigx_register",
+      "description": "$D010 (53264) MSIGX — Most Significant Bits of Sprites 0-7 Horizontal Position: bit0..bit7 correspond to sprites 0..7; setting bit adds 256 to sprite's horizontal position extending range to 511.",
+      "references": [
+        {
+          "chunk": "sprite_horizontal_and_vertical_position_registers_description",
+          "topic": "How to form 9-bit horizontal position"
+        }
+      ]
+    },
+    {
+      "start": 367,
+      "end": 427,
+      "name": "d011_vertical_fine_scrolling_bits0_2_and_demo",
+      "description": "$D011 (53265) SCROY — Vertical fine scrolling and control register: bits 0-2 = fine vertical scroll (0-7 scanlines), bit3 = 24/25-row select, bit4 = screen blanking enable, bit5 = bitmap enable, bit6 = extended background color, bit7 = high bit of raster compare. This chunk concentrates on bits 0-2 (vertical fine scroll), how they smooth scrolling (1-7 lines), and includes BASIC demo to demonstrate fine scrolling.",
+      "references": [
+        {
+          "chunk": "d011_bit3_shortened_display",
+          "topic": "Bit 3: 24/25 rows"
+        },
+        {
+          "chunk": "d011_bit4_screen_blanking",
+          "topic": "Bit 4: screen blanking & performance"
+        },
+        {
+          "chunk": "d012_raster_compare_register",
+          "topic": "Bit 7 participates in raster compare 9-bit value"
+        }
+      ]
+    },
+    {
+      "start": 428,
+      "end": 446,
+      "name": "d011_bit3_shortened_display",
+      "description": "D011 Bit 3: selects a 24-row or 25-row text display (1=25 rows, 0=24 rows). Shortened display hides top/bottom row(s) under border to aid vertical fine scrolling by covering lines where new data is introduced.",
+      "references": [
+        {
+          "chunk": "d011_vertical_fine_scrolling_bits0_2_and_demo",
+          "topic": "Bit 3 contextualized with vertical fine scrolling"
+        }
+      ]
+    },
+    {
+      "start": 447,
+      "end": 503,
+      "name": "d011_bit4_screen_blanking_and_performance",
+      "description": "D011 Bit 4: screen blanking (0 = blank screen to border color). Explains effect on VIC-II/6510 bus contention: blanking disables VIC fetches that delay the CPU allowing the 6510 to run full speed (useful for tape I/O compatibility). Includes BASIC timing demonstration and notes about disabling screen to cooperate with older 1540 drives.",
+      "references": [
+        {
+          "chunk": "d011_vertical_fine_scrolling_bits0_2_and_demo",
+          "topic": "Bit 4 is in same D011 control register"
+        }
+      ]
+    },
+    {
+      "start": 504,
+      "end": 571,
+      "name": "d011_bit5_bitmap_mode_and_bitmap_memory_layout",
+      "description": "D011 Bit 5: Enable bitmap graphics (320x200). Explanation of how bitmap memory is arranged (character-like interleaving of bytes), the need for separate color memory (1KB) because Color RAM ($D800) is only 4-bit nybbles, and that bitmap display uses 8K area and color map in opposite half of VIC-II memory. The Memory Control Register ($D018 / 53272) controls bitmap and color locations.",
+      "references": [
+        {
+          "chunk": "vmcsb_vic_memory_control_register",
+          "topic": "Controlling bitmap & color base addresses ($D018)"
+        },
+        {
+          "chunk": "bitmap_addressing_and_plotting",
+          "topic": "Practical formulas for finding a bitmap byte for a given X,Y"
+        }
+      ]
+    },
+    {
+      "start": 572,
+      "end": 616,
+      "name": "bitmap_addressing_and_plotting",
+      "description": "Formulas and method to find the byte BY containing the desired dot in the 320x200 bitmap: BY = BASE + 40*(Y AND 256) + (Y AND 7) + (X AND 504). BASIC examples to POKE or clear bits; notes on using arrays for speed (powers of two) and general plotting approach.",
+      "references": [
+        {
+          "chunk": "d011_bit5_bitmap_mode_and_bitmap_memory_layout",
+          "topic": "Bitmap memory layout and where BASE comes from (Memory Control Register)"
+        },
+        {
+          "chunk": "bitmap_basic_sample_program",
+          "topic": "BASIC sample showing plotting loop and BI array"
+        }
+      ]
+    },
+    {
+      "start": 617,
+      "end": 639,
+      "name": "bitmap_basic_sample_program",
+      "description": "BASIC sample to demonstrate hi-res plotting with an array of power-of-two values (BI) and a loop that computes BY and uses POKE to set bits, including initialization to bitmap mode and color map setup.",
+      "references": [
+        {
+          "chunk": "bitmap_addressing_and_plotting",
+          "topic": "Uses BY formula and BI array"
+        }
+      ]
+    },
+    {
+      "start": 640,
+      "end": 647,
+      "name": "bitmap_basic_performance_note",
+      "description": "Note: BASIC plotting in hi-res is slow; machine language recommended. Reference to article 'Hi-Res Graphics Made Simple' for better BASIC replacements.",
+      "references": [
+        {
+          "chunk": "bitmap_basic_sample_program",
+          "topic": "Example demonstrates why BASIC is slow"
+        }
+      ]
+    },
+    {
+      "start": 648,
+      "end": 652,
+      "name": "bitmap_multicolor_enable_note",
+      "description": "Note that multicolor bitmap mode is available: set multicolor bit (Bit 4 of $D016 / 53270) while in bitmap mode to produce 4-color per 8x8 area (reduces horizontal res to 160).",
+      "references": [
+        {
+          "chunk": "scrolx_horizontal_fine_scrolling",
+          "topic": "Bit 4 of $D016 controls multicolor"
+        },
+        {
+          "chunk": "bitmap_addressing_and_plotting",
+          "topic": "Plotting rules change for multicolor mode (byte addressing and bit-pairs)"
+        }
+      ]
+    },
+    {
+      "start": 653,
+      "end": 715,
+      "name": "d011_bit6_extended_background_color_mode_and_examples_part1",
+      "description": "D011 Bit 6: Extended background color mode expands background color choices by character code ranges. Explanation of which character code ranges use which background color registers ($D021-$D024) and a small BASIC experiment demonstrating behavior and POKE sequences to enable/disable this mode (POKE 53265,PEEK(53265) OR 64 to enable, AND 191 to disable).",
+      "references": [
+        {
+          "chunk": "bgcolor_registers",
+          "topic": "Background Color Registers $D021-$D024"
+        },
+        {
+          "chunk": "extended_background_color_utilities",
+          "topic": "Subroutines and programs to use extended background for windows"
+        }
+      ]
+    },
+    {
+      "start": 716,
+      "end": 756,
+      "name": "extended_background_color_utilities",
+      "description": "Practical techniques and issues when using extended background color mode: limitations (only first 64 shapes), solutions (define custom character set), text conversion subroutine (converts A$ to B$ to print in window 2 or 4) and notes on printing reversed characters.",
+      "references": [
+        {
+          "chunk": "d011_bit6_extended_background_color_mode_and_examples_part1",
+          "topic": "How to enable and test extended background mode"
+        },
+        {
+          "chunk": "windows_demo_program",
+          "topic": "Example uses this to create colored windows"
+        }
+      ]
+    },
+    {
+      "start": 757,
+      "end": 787,
+      "name": "windows_demo_program",
+      "description": "A BASIC program that demonstrates creating multiple colored 'windows' using extended background color mode, POKEing background color registers, and showing flashing/appearance techniques.",
+      "references": [
+        {
+          "chunk": "extended_background_color_utilities",
+          "topic": "Uses conversion subroutine and register POKEs"
+        }
+      ]
+    },
+    {
+      "start": 788,
+      "end": 809,
+      "name": "d011_bit7_raster_compare_high_bit_and_blank_waiting",
+      "description": "D011 Bit 7: High bit (bit 8) of the Raster Compare register ($D012). Note about testing this bit using the Negative flag (BPL/BMI) in machine language to wait for vertical blank (example: LOOP LDA $D011 / BPL LOOP) and advice to move sprites during vertical blanking to avoid wobble. BASIC WAIT 53265,128 is the equivalent but often too slow.",
+      "references": [
+        {
+          "chunk": "d012_raster_compare_register",
+          "topic": "This high bit forms the 9th bit of the raster compare value"
+        }
+      ]
+    },
+    {
+      "start": 810,
+      "end": 849,
+      "name": "d012_raster_compare_register_read_function_and_sample",
+      "description": "$D012 (53266) RASTE — Raster compare register: read returns current raster scan line (0-261 NTSC, 0-311 PAL). Useful for timing changes to display; includes BASIC/machine examples and a sample program demonstrating dividing the screen to show all combinations of text foreground/background colors by reading the raster.",
+      "references": [
+        {
+          "chunk": "d011_bit7_raster_compare_high_bit_and_blank_waiting",
+          "topic": "D011 bit 7 is high-order bit for the Raster Compare"
+        },
+        {
+          "chunk": "d01a_irqmask_and_raster_interrupts",
+          "topic": "Raster Compare can be used as an interrupt source (mask at $D01A)"
+        }
+      ]
+    },
+    {
+      "start": 850,
+      "end": 874,
+      "name": "d012_raster_compare_register_write_function_and_9bit_note",
+      "description": "Writing to $D012 sets the raster line for Raster Compare Interrupt. Important: raster compare is 9-bit; the 9th bit is Bit 7 of $D011 ($D011). Forgetting to set/read that high bit leads to 256-line errors. Describes raster interrupt behavior and warns about earlier programs that assumed default high bit values.",
+      "references": [
+        {
+          "chunk": "d01a_irqmask_and_raster_interrupts",
+          "topic": "Enabling raster interrupts and using vectors"
+        }
+      ]
+    },
+    {
+      "start": 875,
+      "end": 896,
+      "name": "light_pen_overview",
+      "description": "Light Pen registers ($D013-$D014 / 53283-53284): describes how a light pen plugged into joystick port 1 triggers at the moment the raster strikes it and how VIC-II latches the horizontal and vertical coordinates once per frame (60Hz). Recommends averaging samples for accuracy.",
+      "references": [
+        {
+          "chunk": "d013_lpenx_horizontal_position",
+          "topic": "Light Pen horizontal ($D013)"
+        },
+        {
+          "chunk": "d014_lpeny_vertical_position",
+          "topic": "Light Pen vertical ($D014)"
+        }
+      ]
+    },
+    {
+      "start": 897,
+      "end": 905,
+      "name": "d013_lpenx_horizontal_position",
+      "description": "$D013 (53283) LPENX — Light Pen Horizontal Position (8-bit): provides horizontal value read from light pen, accurate only to every second dot (0..160). Multiply by 2 to approximate actual pixel X position.",
+      "references": [
+        {
+          "chunk": "light_pen_overview",
+          "topic": "General light pen behavior"
+        }
+      ]
+    },
+    {
+      "start": 906,
+      "end": 911,
+      "name": "d014_lpeny_vertical_position",
+      "description": "$D014 (53284) LPENY — Light Pen Vertical Position: holds vertical raster scan line when triggered; corresponds exactly to visible scan lines (0..199 visible).",
+      "references": [
+        {
+          "chunk": "light_pen_overview",
+          "topic": "General light pen behavior"
+        }
+      ]
+    },
+    {
+      "start": 912,
+      "end": 932,
+      "name": "spena_sprite_enable_register",
+      "description": "$D015 (53269) SPENA — Sprite Display Enable Register: bits 0-7 enable sprites 0-7 respectively (1=on). To display a sprite, set this bit, make sure sprite data/pointer is non-zero, set color register, and set position within visible ranges.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_list",
+          "topic": "Positions must be set in $D000-$D00F"
+        },
+        {
+          "chunk": "sprite_color_registers",
+          "topic": "Sprite colors are set in $D027-$D02E"
+        }
+      ]
+    },
+    {
+      "start": 933,
+      "end": 971,
+      "name": "scrolx_horizontal_fine_scrolling",
+      "description": "$D016 (53270) SCROLX — Horizontal fine scrolling and control register: bits 0-2 = fine horizontal scroll (0-7 dots), bit3 = 38/40-column select, bit4 = multicolor text/bitmap mode, bit5 = video chip reset (0 normal, 1 video off). Default value and demonstration BASIC program for horizontal fine-scroll provided.",
+      "references": [
+        {
+          "chunk": "bitmap_multicolor_enable_note",
+          "topic": "Bit 4 interacts with bitmap multicolor mode"
+        },
+        {
+          "chunk": "d011_vertical_fine_scrolling_bits0_2_and_demo",
+          "topic": "D011 and D016 are the two fine-scroll registers (vertical/horizontal)"
+        }
+      ]
+    },
+    {
+      "start": 972,
+      "end": 1000,
+      "name": "horizontal_scrolling_continuation_and_raster_interrupts_note",
+      "description": "Notes on needing coarse scroll when fine-scroll bits wrap (0<->7) and the requirement of using raster interrupts to isolate portions of the screen to scroll independently, because changing bits affects the whole display.",
+      "references": [
+        {
+          "chunk": "d01a_irqmask_and_raster_interrupts",
+          "topic": "Use raster interrupts to limit scroll zone"
+        }
+      ]
+    },
+    {
+      "start": 1001,
+      "end": 1011,
+      "name": "d016_bit3_column_control",
+      "description": "D016 Bit 3: cover up first and last columns with border enabling 40-column (1) or 38-column (0) text display; cosmetic aid for coarse scrolling (hides characters moved into view).",
+      "references": [
+        {
+          "chunk": "scrolx_horizontal_fine_scrolling",
+          "topic": "Register $D016 where this bit lives"
+        }
+      ]
+    },
+    {
+      "start": 1012,
+      "end": 1062,
+      "name": "d016_bit4_multicolor_mode_text_and_bitmap",
+      "description": "D016 Bit 4: Multicolor mode behavior. In character (text) mode: characters with color nybble <8 display normally; those >=8 display in multicolor with bit-pair encoding mapping to 4 color sources (00 background0, 01 bg register1, 10 bg register2, 11 color RAM nybble). If both multicolor and bitmap enabled, this produces multicolor bitmap mode with color sources: 00=Background Color Register 0, 01=upper nybble of Video Matrix, 10=lower nybble of Video Matrix, 11=Color RAM nybble. Impact on plotting and resolution described.",
+      "references": [
+        {
+          "chunk": "color_ram_description",
+          "topic": "Color RAM usage in multicolor modes"
+        },
+        {
+          "chunk": "bitmap_multicolor_plotting",
+          "topic": "How to plot in multicolor bitmap mode (bit pairs)"
+        }
+      ]
+    },
+    {
+      "start": 1063,
+      "end": 1098,
+      "name": "bitmap_multicolor_plotting_and_sample",
+      "description": "How to address and set bit-pairs in multicolor bitmap: BY=BASE+(Y AND 248)*40+(Y AND 7)+(2*X AND 504). Array for bit masks CA(0..3) = {1,4,16,64}. Example BASIC program and plotting loop for drawing multicolor sine waves; discussion of color selection (CO=0..3) and POKE formula.",
+      "references": [
+        {
+          "chunk": "d016_bit4_multicolor_mode_text_and_bitmap",
+          "topic": "Color sources & plotting rules for multicolor bitmap"
+        },
+        {
+          "chunk": "bitmap_basic_sample_program",
+          "topic": "Hi-res plotting example for comparison"
+        }
+      ]
+    },
+    {
+      "start": 1099,
+      "end": 1105,
+      "name": "d016_bit5_reset_and_unused_bits",
+      "description": "D016 Bit 5: VIC-II chip reset (1=video off); recommended to keep 0 for normal operation. Bits 6-7 unused.",
+      "references": [
+        {
+          "chunk": "scrolx_horizontal_fine_scrolling",
+          "topic": "Context and default for $D016"
+        }
+      ]
+    },
+    {
+      "start": 1106,
+      "end": 1121,
+      "name": "d017_yx_expand_sprite_vertical_expansion",
+      "description": "$D017 (53271) YXPAND — Sprite Vertical Expansion Register: bits 0-7 control vertical expansion for sprites 0-7 (1=double height, 0=normal). When set, each sprite row becomes two scanlines tall.",
+      "references": [
+        {
+          "chunk": "xexpand_and_yexpand_registers",
+          "topic": "Horizontal expansion ($D01D) & how vertical expansion pairs with it"
+        }
+      ]
+    },
+    {
+      "start": 1122,
+      "end": 1201,
+      "name": "vmcsb_vic_memory_control_register",
+      "description": "$D018 (53272) VMCSB — VIC-II Memory Control Register: lower nybble (bits1-3) control character dot-data base address (even 1K offsets 0..14) and significance in bitmap mode (bit3 chooses 0 or 8K). Upper nybble (bits4-7) control Video Matrix base address in 1K increments (0..15). Includes default values and notes on updating BASIC pointer (location 648) when moving screen memory.",
+      "references": [
+        {
+          "chunk": "video_matrix_and_character_dot_data",
+          "topic": "Effect on displayed text & character shapes"
+        },
+        {
+          "chunk": "bitmap_addressing_and_plotting",
+          "topic": "Choosing BASE for bitmap and color memory mapping"
+        }
+      ]
+    },
+    {
+      "start": 1202,
+      "end": 1263,
+      "name": "d019_vic_interrupt_flag_register",
+      "description": "$D019 (53273) VICIRQ — VIC Interrupt Flag Register: bits indicate pending VIC-II IRQ sources — bit0 raster compare, bit1 sprite-foreground collision, bit2 sprite-sprite collision, bit3 light pen trigger, bit7 overall VIC-II IRQ flag. Reading behavior: bits are latched, writing a 1 clears corresponding bit. Default write of 15 clears all interrupts. Explains how IRQ handler should read and clear bits.",
+      "references": [
+        {
+          "chunk": "d01a_irqmask_and_raster_interrupts",
+          "topic": "Masking and enabling VIC interrupts"
+        },
+        {
+          "chunk": "sprite_collision_registers",
+          "topic": "Which registers to read to determine colliding sprites ($D01E-$D01F)"
+        }
+      ]
+    },
+    {
+      "start": 1264,
+      "end": 1273,
+      "name": "irqmask_register_overview",
+      "description": "Definition of $D01A (IRQMASK) register and bit assignments: bit 0 enables raster compare IRQ, bit 1 enables sprite-foreground collision IRQ, bit 2 enables sprite-sprite collision IRQ, bit 3 enables light pen IRQ; bits 4-7 unused. Also includes the register's purpose for enabling VIC-II interrupt conditions.",
+      "references": [
+        {
+          "chunk": "raster_irq_and_raster_registers",
+          "topic": "Details on Raster Compare IRQ (bit 0) and raster registers"
+        },
+        {
+          "chunk": "light_pen_and_sprite_collision_irqs",
+          "topic": "Details on light pen and sprite collision IRQs (bits 1-3)"
+        }
+      ]
+    },
+    {
+      "start": 1274,
+      "end": 1286,
+      "name": "interrupts_intro_and_concept",
+      "description": "General introduction to interrupts: what an interrupt is, how the CPU temporarily stops the main program to run an interrupt routine and then returns to the main program.",
+      "references": [
+        {
+          "chunk": "irqmask_register_overview",
+          "topic": "Which IRQ sources can be enabled"
+        },
+        {
+          "chunk": "installing_raster_irq_steps",
+          "topic": "How to install an interrupt routine safely"
+        }
+      ]
+    },
+    {
+      "start": 1287,
+      "end": 1316,
+      "name": "raster_compare_irq_and_raster_scan_basics",
+      "description": "Explanation of Raster Compare IRQ (bit 0): how raster scanning works on the VIC-II, the 262-line/200-visible-line NTSC scan, how raster line number is tracked in $D012/$D011, and the dual role of the Raster Register for reading current line and writing a target line for raster interrupts. Also describes how the raster-compare status bit triggers the interrupt allowing mid-screen register changes.",
+      "references": [
+        {
+          "chunk": "irqmask_register_overview",
+          "topic": "Bit assignment for Raster Compare IRQ (bit 0)"
+        },
+        {
+          "chunk": "installing_raster_irq_steps",
+          "topic": "Practical steps to enable and use raster interrupts"
+        },
+        {
+          "chunk": "raster_interrupt_example_basic_and_data_listing",
+          "topic": "Example program that uses raster interrupts to split the screen"
+        }
+      ]
+    },
+    {
+      "start": 1317,
+      "end": 1349,
+      "name": "installing_raster_irq_steps",
+      "description": "Step-by-step procedure to install a raster interrupt routine: 1) SEI to disable interrupts while changing vectors; 2) set Bit 0 of $D01A to enable raster IRQ; 3) write 9-bit raster value across $D012 (low) and $D011 (high bit); 4) write the low and high bytes of the handler address into the IRQ vector at locations 788-789 ($314-$315); includes formula for calculating HIBYTE and LOWBYTE for an address; 5) CLI to re-enable interrupts.",
+      "references": [
+        {
+          "chunk": "raster_compare_irq_and_raster_scan_basics",
+          "topic": "Why the raster registers and 9-bit value matter"
+        },
+        {
+          "chunk": "preserving_jiffy_clock_and_vectors",
+          "topic": "How to preserve/chain the existing timer (jiffy) interrupt vector"
+        }
+      ]
+    },
+    {
+      "start": 1350,
+      "end": 1362,
+      "name": "preserving_jiffy_clock_and_vectors",
+      "description": "Notes about the system default IRQ vector: on power-up the IRQ vector points to the jiffy clock/hardware timer routine (keyboard and clock). Recommendation to turn off the hardware timer interrupt by writing 127 to $DC0D (56333) if not needed, and guidance on preserving and chaining the original vector so keyboard and jiffy clock can still function while using a custom raster ISR.",
+      "references": [
+        {
+          "chunk": "installing_raster_irq_steps",
+          "topic": "Where to write the new IRQ vector (locations 788-789)"
+        },
+        {
+          "chunk": "raster_interrupt_example_basic_and_data_listing",
+          "topic": "Example ISR that may chain to the original interrupt routine"
+        }
+      ]
+    },
+    {
+      "start": 1363,
+      "end": 1376,
+      "name": "two_raster_interrupts_and_program_introduction",
+      "description": "Explanation that at least two raster interrupts are required to change only a portion of the screen: one interrupt to change display mode/values and another to change it back. Introduction to the sample program that divides the display into three sections (top high-res bitmap, middle text, bottom multicolor bitmap) using raster-scan interrupts.",
+      "references": [
+        {
+          "chunk": "raster_compare_irq_and_raster_scan_basics",
+          "topic": "How raster interrupts allow mid-screen register changes"
+        },
+        {
+          "chunk": "sample_program_registers_and_data_locations",
+          "topic": "Registers and data tables used by the sample program"
+        },
+        {
+          "chunk": "raster_interrupt_example_basic_and_data_listing",
+          "topic": "Full BASIC + machine-code sample that implements the split-screen"
+        }
+      ]
+    },
+    {
+      "start": 1377,
+      "end": 1396,
+      "name": "sample_program_registers_and_data_locations",
+      "description": "Details of the sample program's data tables: which VIC-II registers are POKEd during each interrupt (Control Register 1 $D011, Control Register 2 $D016, Memory Control $D018, Background Color 0 $D021), explanation that the interrupt routine POKEs entries into four key locations during each interrupt, and that the machine-code/data block is stored at addresses corresponding to BASIC line numbers 49152-49276.",
+      "references": [
+        {
+          "chunk": "two_raster_interrupts_and_program_introduction",
+          "topic": "Overview of the sample program's purpose"
+        },
+        {
+          "chunk": "data_table_mapping_and_examples",
+          "topic": "How the DATA items map to the interrupts and registers"
+        },
+        {
+          "chunk": "raster_interrupt_example_basic_and_data_listing",
+          "topic": "Exact BASIC and DATA listing used by the sample program"
+        }
+      ]
+    },
+    {
+      "start": 1397,
+      "end": 1419,
+      "name": "data_table_mapping_and_examples",
+      "description": "Explanation of the DATA table order and how entries map to interrupts and affected VIC registers. Describes that DATA values are stored in reverse order for some registers, how the scan-line DATA entries determine when each interrupt occurs, and examples of how changing specific DATA values (e.g., 170 to 210, changing values in control/data lines) affects the sizes of areas and graphics modes.",
+      "references": [
+        {
+          "chunk": "sample_program_registers_and_data_locations",
+          "topic": "Which registers the DATA table values are POKEd into"
+        },
+        {
+          "chunk": "raster_interrupt_example_basic_and_data_listing",
+          "topic": "Try changing these DATA values in the provided example"
+        }
+      ]
+    },
+    {
+      "start": 1420,
+      "end": 1469,
+      "name": "raster_interrupt_example_basic_and_data_listing",
+      "description": "Advice about runtime modification of table values followed by the full example BASIC program and embedded machine code DATA statements (lines 5–150 and DATA blocks at 49152–49276). The listing includes POKEs, SYS call to run the machine code, and DATA that comprise the interrupt handler and configuration tables used to create the three-zone split-screen effect.",
+      "references": [
+        {
+          "chunk": "data_table_mapping_and_examples",
+          "topic": "Which DATA items correspond to scan lines and register values"
+        },
+        {
+          "chunk": "preserving_jiffy_clock_and_vectors",
+          "topic": "How to preserve original IRQ behavior when using the example"
+        }
+      ]
+    },
+    {
+      "start": 1470,
+      "end": 1504,
+      "name": "light_pen_and_sprite_collision_irqs",
+      "description": "Uses of raster interrupts for scrolling zones, and descriptions of other IRQ sources: the light pen interrupt (how the light pen triggers an IRQ and reading its position from $D013-$D014), the sprite-foreground collision interrupt (bit for sprite touching foreground graphics), and the sprite-sprite collision interrupt (sprite touching another sprite). Also explains that the corresponding collision registers at $D01F and $D01E report which sprites are involved.",
+      "references": [
+        {
+          "chunk": "irqmask_register_overview",
+          "topic": "The IRQ mask bits that enable these interrupts (bits 1–3)"
+        },
+        {
+          "chunk": "raster_compare_irq_and_raster_scan_basics",
+          "topic": "Raster interrupts as another VIC-II interrupt source (bit 0)"
+        }
+      ]
+    },
+    {
+      "start": 1505,
+      "end": 1545,
+      "name": "d01b_sprite_foreground_priority_register",
+      "description": "$D01B (53275) SPBGPR — Sprite to Foreground Display Priority Register: bits 0-7 determine whether each sprite appears in front of (0) or behind (1) foreground graphics. Default 0 (sprites above foreground). Notes on multicolor '01' bit-pair considered background and fixed sprite-to-sprite priority (lower-number sprites have priority over higher-number sprites).",
+      "references": [
+        {
+          "chunk": "spena_sprite_enable_register",
+          "topic": "Enable sprites ($D015) before priority matters"
+        },
+        {
+          "chunk": "spmc_sprite_multicolor_registers",
+          "topic": "Multicolor bit-pair behavior and shared colors"
+        }
+      ]
+    },
+    {
+      "start": 1546,
+      "end": 1580,
+      "name": "spmc_sprite_multicolor_registers",
+      "description": "$D01C (53276) SPMC — Sprite Multicolor Register bits: bits 0-7 enable multicolor mode per sprite (1=multicolor, 0=hi-res). When enabled, sprite bits are grouped as pairs controlling double-wide dots (sprite effectively 12 dots wide) and four bit-pair combinations map to: 00 background color (transparent), 01 Sprite Multicolor Register 0 ($D025), 10 sprite's own color register ($D027-$D02E), 11 Sprite Multicolor Register 1 ($D026). Two shared multicolor registers plus per-sprite unique color allow up to three foreground colors per sprite.",
+      "references": [
+        {
+          "chunk": "sprite_color_registers",
+          "topic": "Per-sprite color registers $D027-$D02E"
+        },
+        {
+          "chunk": "sprite_multicolor_shared_registers",
+          "topic": "Registers $D025-$D026 for shared multicolor values"
+        }
+      ]
+    },
+    {
+      "start": 1581,
+      "end": 1598,
+      "name": "d01d_xxpand_horizontal_expansion_register",
+      "description": "$D01D (53277) XXPAND — Sprite Horizontal Expansion Register: bits 0-7 control horizontal expansion for sprites 0-7 (1=double-width, 0=normal). Can be combined with vertical expansion ($D017) to scale sprites.",
+      "references": [
+        {
+          "chunk": "d017_yx_expand_sprite_vertical_expansion",
+          "topic": "Vertical expansion register $D017"
+        }
+      ]
+    },
+    {
+      "start": 1599,
+      "end": 1610,
+      "name": "sprite_collision_detection_registers_intro",
+      "description": "Intro to Sprite Collision Detection Registers ($D01E-$D01F): VIC IRQ bits indicate collisions (sprite-sprite, sprite-foreground). These registers specify which sprites were involved. Reading them clears the detection latches; rules explain that collision firing depends on nonzero shape bits and that some bit-pairs (01 in multicolor) are considered background and do not count.",
+      "references": [
+        {
+          "chunk": "d01e_sprite_sprite_collision_register",
+          "topic": "$D01E Sprite-Sprite Collision register details"
+        },
+        {
+          "chunk": "d01f_sprite_foreground_collision_register",
+          "topic": "$D01F Sprite-Foreground Collision register details"
+        }
+      ]
+    },
+    {
+      "start": 1611,
+      "end": 1650,
+      "name": "sprite_collision_rules_and_notes",
+      "description": "Detailed rules about what counts as a collision: only sprite shape bits of 1 (or nonzero multicolor pairs other than 01) can collide; invisible sprites with all-zero shape bytes never collide; collisions can be detected even in border-covered areas; ambiguous multi-sprite collisions may require positional checks to determine exact pairing.",
+      "references": [
+        {
+          "chunk": "sprite_collision_detection_registers_intro",
+          "topic": "Where to read which sprites were involved ($D01E-$D01F)"
+        }
+      ]
+    },
+    {
+      "start": 1651,
+      "end": 1661,
+      "name": "d01e_sprite_sprite_collision_register",
+      "description": "$D01E (53278) SPSPCL — Sprite-to-Sprite Collision Register: bits 0-7 indicate whether Sprite 0..7 collided with another sprite (1=yes). Reading clears the register.",
+      "references": [
+        {
+          "chunk": "sprite_collision_rules_and_notes",
+          "topic": "Rules for collision detection and interpretation"
+        }
+      ]
+    },
+    {
+      "start": 1662,
+      "end": 1671,
+      "name": "d01f_sprite_foreground_collision_register",
+      "description": "$D01F (53279) SPBGCL — Sprite-to-Foreground Collision Register: bits 0-7 indicate whether Sprite 0..7 collided with foreground display (text/bitmap) (1=yes). Reading clears the register.",
+      "references": [
+        {
+          "chunk": "sprite_collision_rules_and_notes",
+          "topic": "Rules for collision detection and interpretation"
+        }
+      ]
+    },
+    {
+      "start": 1672,
+      "end": 1746,
+      "name": "vicii_color_registers_border_bg_and_sprite_colors",
+      "description": "$D020-$D02E — VIC-II Color Registers: $D020 Border Color, $D021 Background Color 0, $D022-$D024 Background Colors 1-3 (used with extended background mode and multicolor), $D025-$D026 Sprite Multicolor 0/1, $D027-$D02E Sprite 0-7 color registers. Note: only low 4 bits are connected; mask with AND 15 when reading.",
+      "references": [
+        {
+          "chunk": "color_ram_description",
+          "topic": "Color RAM low-4bit behavior vs these color registers"
+        },
+        {
+          "chunk": "spmc_sprite_multicolor_registers",
+          "topic": "Multicolor source registers $D025-$D026"
+        }
+      ]
+    },
+    {
+      "start": 1747,
+      "end": 1753,
+      "name": "d02f_d03f_not_connected_vicii",
+      "description": "$D02F-$D03F — Not connected VIC-II addresses: these 17 addresses don't access memory; they read as $FF and ignore writes.",
+      "references": [
+        {
+          "chunk": "vicii_color_registers_border_bg_and_sprite_colors",
+          "topic": "Context of VIC-II register address space"
+        }
+      ]
+    },
+    {
+      "start": 1754,
+      "end": 1764,
+      "name": "d040_d3ff_vicii_register_images",
+      "description": "$D040-$D3FF — VIC-II Register Images: the VIC decodes only 64 addresses; the 1K window is mirrored every 64 bytes. Example: POKE 53281+64,1 is same as POKE 53281,1. Advises using base addresses for clarity.",
+      "references": [
+        {
+          "chunk": "vicii_color_registers_border_bg_and_sprite_colors",
+          "topic": "Use base addresses (e.g., $D020..$D02E) for clarity"
+        }
+      ]
+    },
+    {
+      "start": 1765,
+      "end": 1780,
+      "name": "sid_overview_intro",
+      "description": "$D400-$D41C — Sound Interface Device (SID) overview: the 6581 SID provides three voices with 16-bit frequency control, waveforms, ADSR envelopes, sync/ringmod, and programmable filters (low/high/band-pass). Addresses $D400-$D41C (54272-54300) are the SID registers. Most SID registers are write-only (except final registers).",
+      "references": [
+        {
+          "chunk": "sid_voice_registers_overview",
+          "topic": "Voice registers and common control sequence"
+        },
+        {
+          "chunk": "sid_filter_controls",
+          "topic": "Filter controls and cutoff/resonance registers"
+        }
+      ]
+    },
+    {
+      "start": 1781,
+      "end": 1809,
+      "name": "sid_common_usage_and_sequence",
+      "description": "Typical SID usage sequence: set overall volume (Volume register), set 16-bit frequency (two bytes), set ADSR via Attack/Decay and Sustain/Release registers, select waveform & gate via Control register to start note; keep waveform bit set when gating off to allow Release; note that most SID registers are write-only.",
+      "references": [
+        {
+          "chunk": "d418_sigvol_volume_and_filter_select",
+          "topic": "Overall volume and filter select ($D418)"
+        },
+        {
+          "chunk": "voice1_frequency_and_control",
+          "topic": "Voice 1 frequency and VCREG1 details"
+        }
+      ]
+    },
+    {
+      "start": 1810,
+      "end": 1831,
+      "name": "voice1_frequency_control",
+      "description": "$D400-$D401 Voice 1 Frequency Control (low/high bytes): 16-bit frequency range and formula FREQUENCY = (REGISTER VALUE * CLOCK / 16777216) Hz; given NTSC clock ~1022730 yields FREQUENCY = REGISTER_VALUE * 0.060959458 Hz. Explains combining low and high bytes (value = low + 256*high).",
+      "references": [
+        {
+          "chunk": "sid_overview_intro",
+          "topic": "Where frequency fits in sequence"
+        },
+        {
+          "chunk": "voice1_pw_width_and_control",
+          "topic": "Pulse width registers and control for voice 1"
+        }
+      ]
+    },
+    {
+      "start": 1832,
+      "end": 1835,
+      "name": "d400_frelo1_and_d401_frehi1_labels",
+      "description": "Register labels: $D400 FRELO1 (Voice 1 frequency low byte) and $D401 FREHI1 (Voice 1 frequency high byte).",
+      "references": [
+        {
+          "chunk": "voice1_frequency_control",
+          "topic": "Frequency combining formula"
+        }
+      ]
+    },
+    {
+      "start": 1836,
+      "end": 1859,
+      "name": "voice1_pulse_waveform_width_control",
+      "description": "$D402-$D403 — Voice 1 Pulse Width Control: 12-bit pulse width (low byte + lower nybble of high register) controls duty cycle; formula PULSE WIDTH = (REGISTER VALUE / 40.95)%; range 0-4095. Changing pulse width alters timbre of pulse waveform.",
+      "references": [
+        {
+          "chunk": "voice1_frequency_control",
+          "topic": "Pulse width relevant when pulse waveform selected"
+        },
+        {
+          "chunk": "d404_vcreg1_voice1_control_register",
+          "topic": "Select pulse waveform via VCREG1 bit 6"
+        }
+      ]
+    },
+    {
+      "start": 1860,
+      "end": 1863,
+      "name": "d402_pwlo1_and_d403_pwhi1_labels",
+      "description": "Register labels: $D402 PWLO1 (Voice 1 pulse width low byte) and $D403 PWHI1 (Voice 1 pulse width high nybble).",
+      "references": [
+        {
+          "chunk": "voice1_pulse_waveform_width_control",
+          "topic": "Pulse width register composition"
+        }
+      ]
+    },
+    {
+      "start": 1864,
+      "end": 1921,
+      "name": "d404_vcreg1_voice1_control_register",
+      "description": "$D404 (54276) VCREG1 — Voice 1 Control Register bits: bit0 Gate (start ADSR), bit1 Sync (sync oscillator with osc3), bit2 Ring mod (1=ring mod osc1/3), bit3 Test (disable oscillator), bits4-7 select waveform bits (triangle, sawtooth, pulse, noise). Explains behavior of each bit and combination rules (waveforms ANDed if multiple bits set).",
+      "references": [
+        {
+          "chunk": "voice1_pulse_waveform_width_control",
+          "topic": "Pulse width used when bit6 is set"
+        },
+        {
+          "chunk": "voice1_adsr_and_envelope",
+          "topic": "ADSR registers triggered by Gate bit"
+        },
+        {
+          "chunk": "voice2_voice3_control_registers",
+          "topic": "Similar control for voices 2 and 3"
+        }
+      ]
+    },
+    {
+      "start": 1922,
+      "end": 1961,
+      "name": "voice1_envelope_adrs_overview",
+      "description": "SID envelope (ADSR) concept: attack, decay, sustain, release stages and how they are controlled via Attack/Decay and Sustain/Release registers. Gate bit initiates attack; setting gate to 0 begins release. Notes on residual noise and ways to silence voice (turn off waveform bit, set frequency to 0, or set volume to 0).",
+      "references": [
+        {
+          "chunk": "d405_atdcy1_attack_decay_register",
+          "topic": "Attack/decay durations and mapping (D405)"
+        },
+        {
+          "chunk": "d406_surel1_sustain_release_register",
+          "topic": "Sustain level and release timing (D406)"
+        }
+      ]
+    },
+    {
+      "start": 1962,
+      "end": 2001,
+      "name": "d405_atdcy1_attack_decay_register",
+      "description": "$D405 (54277) ATDCY1 — Voice 1 Attack/Decay Register: bits4-7 select attack duration (0..15 mapping to 2ms..8s); bits0-3 select decay duration (0..15 mapping to 6ms..24s). Explanation of combining attack*16 + decay for register value.",
+      "references": [
+        {
+          "chunk": "voice1_envelope_adrs_overview",
+          "topic": "How to trigger ADSR via VCREG1 Gate bit"
+        }
+      ]
+    },
+    {
+      "start": 2002,
+      "end": 2039,
+      "name": "d406_surel1_sustain_release_register",
+      "description": "$D406 (54278) SUREL1 — Voice 1 Sustain/Release Register: bits4-7 select sustain level (0..15) representing volume held after decay; bits0-3 select release duration (0..15) with same timing table as decay. Explains usage and examples of values/time mapping.",
+      "references": [
+        {
+          "chunk": "d405_atdcy1_attack_decay_register",
+          "topic": "Attack/decay mapping for complementary phases"
+        }
+      ]
+    },
+    {
+      "start": 2040,
+      "end": 2046,
+      "name": "voice2_voice3_controls_overview",
+      "description": "General note: Voice 2 and Voice 3 registers correspond almost exactly to Voice 1 registers; difference: sync/ring-mod bits connect different oscillators (voice2 sync/ring uses oscillators 1 & 2; voice3 uses 2 & 3).",
+      "references": [
+        {
+          "chunk": "voice1_frequency_control",
+          "topic": "Voice1 reference for structure"
+        }
+      ]
+    },
+    {
+      "start": 2047,
+      "end": 2047,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2048,
+      "end": 2066,
+      "name": "voice2_registers_list_and_vcreg2",
+      "description": "$D407-$D40B — Voice 2 registers: $D407 FRELO2, $D408 FREHI2, $D409 PWLO2, $D40A PWHI2, $D40B VCREG2 (gating, sync to oscillator 1, ring mod between 2 & 1, test, waveform select bits 4-7).",
+      "references": [
+        {
+          "chunk": "voice2_atdcy2_and_surel2",
+          "topic": "Voice 2 ADSR registers ($D40C-$D40D)"
+        }
+      ]
+    },
+    {
+      "start": 2067,
+      "end": 2075,
+      "name": "d40c_atdcy2_attack_decay_register",
+      "description": "$D40C (54284) ATDCY2 — Voice 2 Attack/Decay Register: bits 4-7 attack (0..15), bits 0-3 decay (0..15), same timing mappings as voice1.",
+      "references": [
+        {
+          "chunk": "voice2_registers_list_and_vcreg2",
+          "topic": "Voice 2 frequency and control context"
+        }
+      ]
+    },
+    {
+      "start": 2076,
+      "end": 2076,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2077,
+      "end": 2080,
+      "name": "d40e_frelo3_and_d40f_frehi3_labels",
+      "description": "Register labels for Voice 3 frequency control: $D40E FRELO3 (low byte) and $D40F FREHI3 (high byte).",
+      "references": [
+        {
+          "chunk": "voice3_registers_list",
+          "topic": "Voice 3 other registers & control"
+        }
+      ]
+    },
+    {
+      "start": 2081,
+      "end": 2105,
+      "name": "voice3_registers_list",
+      "description": "$D410-$D414 — Voice 3 registers: $D410 PWLO3, $D411 PWHI3, $D412 VCREG3 (gate, sync to oscillator 2, ring mod between 3 & 2, test, waveform bits), $D413 ATDCY3, $D414 SUREL3. ADSR and waveform bits behave analogously to voice1/2.",
+      "references": [
+        {
+          "chunk": "voice2_registers_list_and_vcreg2",
+          "topic": "Voice2/3 comparison and sync/ring-mod differences"
+        }
+      ]
+    },
+    {
+      "start": 2106,
+      "end": 2148,
+      "name": "sid_filter_controls_overview",
+      "description": "$D415-$D418 — Filter Controls: SID includes configurable low-pass, high-pass, and band-pass filters and can also filter an external input. Cutoff frequency is 11-bit (0..2047) composed of high byte and low 3 bits; formula FREQUENCY = (REGISTER VALUE * 5.8) + 30 Hz approx. Resonance control peaks frequencies near cutoff.",
+      "references": [
+        {
+          "chunk": "d415_cutlo_low_cutoff_low_bits",
+          "topic": "Low bits of cutoff ($D415)"
+        },
+        {
+          "chunk": "d416_cuthi_cutoff_high_byte",
+          "topic": "High byte of cutoff ($D416)"
+        },
+        {
+          "chunk": "d417_resonance_control",
+          "topic": "Resonance and routing bits ($D417)"
+        }
+      ]
+    },
+    {
+      "start": 2149,
+      "end": 2152,
+      "name": "d415_cutlo_low_cutoff_low_bits",
+      "description": "$D415 (54293) CUTLO — Filter Cutoff low portion: bits 0-2 hold the low 3 bits of the 11-bit cutoff value; bits 3-7 unused.",
+      "references": [
+        {
+          "chunk": "sid_filter_controls_overview",
+          "topic": "Cutoff composed of $D415 low bits + $D416 high byte"
+        }
+      ]
+    },
+    {
+      "start": 2153,
+      "end": 2154,
+      "name": "d416_cuthi_cutoff_high_byte",
+      "description": "$D416 (54294) CUTHI — Filter Cutoff Frequency high byte (the high 8 bits of the 11-bit cutoff value).",
+      "references": [
+        {
+          "chunk": "sid_filter_controls_overview",
+          "topic": "Cutoff composed of $D415 low bits + $D416 high byte"
+        }
+      ]
+    },
+    {
+      "start": 2155,
+      "end": 2176,
+      "name": "d417_resonance_control",
+      "description": "$D417 (54295) RESON — Filter Resonance Control Register: bits 0-3 route voices/external input through the filter (bit0 voice1, bit1 voice2, bit2 voice3, bit3 external), bits 4-7 control resonance 0..15 (0=no resonance, 15=max).",
+      "references": [
+        {
+          "chunk": "sid_filter_controls_overview",
+          "topic": "Filter routing and resonance relationships"
+        },
+        {
+          "chunk": "d418_sigvol_volume_and_filter_select",
+          "topic": "Global volume and filter selection"
+        }
+      ]
+    },
+    {
+      "start": 2177,
+      "end": 2200,
+      "name": "d418_sigvol_volume_and_filter_select",
+      "description": "$D418 (54296) SIGVOL — Global Volume & Filter Select: bits0-3 = output volume (0..15), bits4-6 = select low-pass/band-pass/high-pass filters (can combine), bit7 = disconnect output of voice 3 (1=voice3 off) to use oscillator3 for modulation without audio output.",
+      "references": [
+        {
+          "chunk": "d417_resonance_control",
+          "topic": "Route voices to filter via D417 then select filter type via D418"
+        }
+      ]
+    },
+    {
+      "start": 2201,
+      "end": 2252,
+      "name": "game_paddle_inputs_and_sid_paddle_reading",
+      "description": "$D419-$D41A — Game Paddle Inputs: SID A/D reads paddles via analog potentiometers returning 0..255. A switching mechanism selects which controller port is read (set CIA#1 Data Port A bits to 01 or 10). To reliably select and read paddles from BASIC you must manage the keyboard IRQ (POKE 56333,127), read PEEK(54297)/PEEK(54298) for paddles, then restore IRQ. Fire buttons are read at CIA ports (bits 2/3). Examples of BASIC code to test paddle fire buttons and notes on conflicts with keyboard scan and joystick.",
+      "references": [
+        {
+          "chunk": "ciapra_data_port_register_a",
+          "topic": "How CIA Port A bits control paddle selection"
+        },
+        {
+          "chunk": "potx_poty_sid_paddle_registers",
+          "topic": "SID locations $D419-$D41A where paddle positions are read"
+        }
+      ]
+    },
+    {
+      "start": 2253,
+      "end": 2253,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2254,
+      "end": 2256,
+      "name": "potx_poty_register_labels",
+      "description": "Register labels: $D419 POTX (Read game paddle 1 or 3), $D41A POTY (Read game paddle 2 or 4).",
+      "references": [
+        {
+          "chunk": "game_paddle_inputs_and_sid_paddle_reading",
+          "topic": "How to set up and read paddles through SID + CIA port A switching"
+        }
+      ]
+    },
+    {
+      "start": 2257,
+      "end": 2257,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2258,
+      "end": 2294,
+      "name": "d41b_random_oscillator3_upper_waveform",
+      "description": "$D41B — RANDOM: reads upper 8 bits of oscillator 3 waveform output. Behavior depends on selected waveform (sawtooth = 0..255 ramp, triangle = up and down, pulse = 0 or 255, noise = random 0..255). Useful as a random number source or for modulation of other voice parameters; when using oscillator 3 for modulation, audio output of voice3 is usually turned off (bit7 in $D418).",
+      "references": [
+        {
+          "chunk": "d418_sigvol_volume_and_filter_select",
+          "topic": "Bit7 can disconnect voice 3 output when using oscillator 3 for modulation"
+        },
+        {
+          "chunk": "d41c_env3_envelope_generator_3_output",
+          "topic": "Envelope output from voice 3 can also be read for modulation"
+        }
+      ]
+    },
+    {
+      "start": 2295,
+      "end": 2305,
+      "name": "d41c_env3_envelope_generator_3_output",
+      "description": "$D41C — ENV3: reads envelope generator output of voice 3. Can be used for modulation of other parameters (freq, pulse width, filter cutoff). Requires gate bit of Control Register 3 to be set to 1 to produce output; ADSR controls how ENV3 changes.",
+      "references": [
+        {
+          "chunk": "d41b_random_oscillator3_upper_waveform",
+          "topic": "Oscillator 3 vs envelope 3 outputs for modulation"
+        }
+      ]
+    },
+    {
+      "start": 2306,
+      "end": 2306,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2307,
+      "end": 2312,
+      "name": "d41d_d41f_sid_not_connected",
+      "description": "$D41D-$D41F — Not Connected SID addresses: the SID supports 29 registers; remaining 3 addresses are not used and read as $FF with writes having no effect.",
+      "references": [
+        {
+          "chunk": "sid_register_image_mirroring",
+          "topic": "SID register mirroring in $D420-$D7FF"
+        }
+      ]
+    },
+    {
+      "start": 2313,
+      "end": 2313,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2314,
+      "end": 2321,
+      "name": "d420_d7ff_sid_register_images",
+      "description": "$D420-$D7FF — SID Register Images: SID decodes only 32 addresses; the 1K window is mirrored every 32 bytes. Advises using base SID addresses only to avoid confusion.",
+      "references": [
+        {
+          "chunk": "sid_overview_intro",
+          "topic": "SID base register set and behavior"
+        }
+      ]
+    },
+    {
+      "start": 2322,
+      "end": 2322,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2323,
+      "end": 2369,
+      "name": "color_ram_description",
+      "description": "$D800-$DBFF — Color RAM: 1KB area (1000 used) controlling foreground color per character (low 4 bits only). Reading requires masking high bits (AND 15). Provides enumerated color table 0..15 mapping to names (BLACK, WHITE, RED, CYAN, ... LIGHT GRAY).",
+      "references": [
+        {
+          "chunk": "vicii_color_registers_border_bg_and_sprite_colors",
+          "topic": "How color registers and Color RAM differ (Color RAM is fixed address)"
+        }
+      ]
+    },
+    {
+      "start": 2370,
+      "end": 2408,
+      "name": "color_ram_usage_multicolor_and_notes",
+      "description": "Color RAM usage in different graphics modes: for text it holds per-character foreground color; in multicolor text character values >7 enable multicolor mode (low 3 bits used); in hi-res bitmap Color RAM not used (bitmap uses separate color map); in multicolor bitmap and multicolor text behavior differs. Notes about OS behavior in newer C64s setting Color RAM to background color on screen clear, and using color mapping to hide/reveal text.",
+      "references": [
+        {
+          "chunk": "bitmap_multicolor_plotting_and_sample",
+          "topic": "Color RAM usage in multicolor bitmap mode"
+        }
+      ]
+    },
+    {
+      "start": 2409,
+      "end": 2430,
+      "name": "cia1_overview",
+      "description": "$DC00-$DC0F — CIA #1 (6526) overview: addresses 56320-56335. CIA #1 handles joystick controllers, paddle fire buttons, keyboard matrix scanning, two timers, serial port, and interrupts. Timers used for keyboard scan (1/60s) and tape I/O timing; describes general CIA role.",
+      "references": [
+        {
+          "chunk": "ciapra_data_port_register_a",
+          "topic": "CIA #1 Data Port A usage (keyboard column select / paddles)"
+        },
+        {
+          "chunk": "cia_timers_and_tod",
+          "topic": "CIA timers and Time-Of-Day clock functionality"
+        }
+      ]
+    },
+    {
+      "start": 2431,
+      "end": 2490,
+      "name": "cia1_data_ports_keyboard_matrix_and_layout",
+      "description": "CIA #1 Data Ports A ($DC00) and B ($DC01): explanation of keyboard matrix (8 columns via writes to Port A, rows read from Port B); matrix layout of keys shown. Procedure to read keys: set Port A outputs and Port B inputs, write column select to Port A and read Port B; 0 bit indicates key pressed. Also explains Port mapping for joysticks: Controller Port 1 read from Data Port B, Controller Port 2 read from CIA Data Port A (counterintuitive).",
+      "references": [
+        {
+          "chunk": "cia_data_direction_registers",
+          "topic": "Data Direction Registers ($DC02-$DC03) control input/output behavior"
+        },
+        {
+          "chunk": "game_paddle_inputs_and_sid_paddle_reading",
+          "topic": "Paddle selection conflicts with keyscan"
+        }
+      ]
+    },
+    {
+      "start": 2491,
+      "end": 2579,
+      "name": "cia1_joystick_paddle_conflicts_and_workarounds",
+      "description": "Details of joystick reading (logic 0 when pressed), mapping of joystick bits to return values, examples of BASIC PEEK/bitwise manipulations for reading joystick and fire buttons, and conflicts between joystick and keyboard matrix scans (how keyscan interprets joystick presses as keypresses). Workarounds: use Controller Port 2 to avoid conflicts or temporarily disable keyscan with POKE 56333,127 and restore it after reads.",
+      "references": [
+        {
+          "chunk": "cia1_data_ports_keyboard_matrix_and_layout",
+          "topic": "Where joystick bits are read within the keyboard matrix"
+        },
+        {
+          "chunk": "cia_serial_and_timer_outputs",
+          "topic": "How timers can be used to toggle Port B outputs as alternative uses"
+        }
+      ]
+    },
+    {
+      "start": 2580,
+      "end": 2602,
+      "name": "cia1_paddle_fire_buttons_and_port_b_timer_outputs",
+      "description": "Details on how paddle fire buttons are read via CIA ports (Port B reads for Controller Port 1, Port A for Controller Port 2) at bits 2 and 3. Also explains that Port B bits 6/7 can be toggled/pulsed by Timer A/Timer B as an output alternative when configured in control registers.",
+      "references": [
+        {
+          "chunk": "game_paddle_inputs_and_sid_paddle_reading",
+          "topic": "Combined use of SID and CIA for paddles & fire buttons"
+        },
+        {
+          "chunk": "dc04_dc07_timers",
+          "topic": "Timers A/B registers and modes to toggle port bits"
+        }
+      ]
+    },
+    {
+      "start": 2603,
+      "end": 2622,
+      "name": "ciapra_data_port_register_a",
+      "description": "$DC00 CIAPRA — Data Port Register A: bit-level mapping for keyboard column selection and joystick 2 directions and paddle fire buttons; bit6/7 used to select which paddles are read by SID (Port A vs B); shows alternate uses per bit.",
+      "references": [
+        {
+          "chunk": "cia1_data_ports_keyboard_matrix_and_layout",
+          "topic": "How to write column selects and read rows"
+        },
+        {
+          "chunk": "potx_poty_register_labels",
+          "topic": "Paddle inputs read via SID registers ($D419-$D41A) after selecting port via CIA"
+        }
+      ]
+    },
+    {
+      "start": 2623,
+      "end": 2641,
+      "name": "ciaprb_data_port_register_b",
+      "description": "$DC01 CIAPRB — Data Port Register B: bit-level mapping for keyboard rows and joystick 1 directions and paddle fire buttons; bit6/7 can be used as timer-driven outputs (toggle/pulse) for Timers A/B.",
+      "references": [
+        {
+          "chunk": "ciapra_data_port_register_a",
+          "topic": "Companion port for keyboard matrix and joystick mapping"
+        }
+      ]
+    },
+    {
+      "start": 2642,
+      "end": 2642,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2643,
+      "end": 2661,
+      "name": "cia_data_direction_registers",
+      "description": "$DC02-$DC03 — CIA #1 Data Direction Registers A and B: control direction (input=0/output=1) for each bit of Data Ports A and B respectively. Default: DDRA=255 (all outputs), DDRB=0 (all inputs) for keyboard scanning mode.",
+      "references": [
+        {
+          "chunk": "ciapra_data_port_register_a",
+          "topic": "Reasons to set DDR bits before reading keyboard or external devices"
+        }
+      ]
+    },
+    {
+      "start": 2662,
+      "end": 2671,
+      "name": "dc02_ciddra_label",
+      "description": "$DC02 CIDDRA — Data Direction Register A label and per-bit meanings (0=input, 1=output).",
+      "references": [
+        {
+          "chunk": "cia_data_direction_registers",
+          "topic": "Use of DDRs for port direction"
+        }
+      ]
+    },
+    {
+      "start": 2672,
+      "end": 2672,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2673,
+      "end": 2683,
+      "name": "dc03_ciddrb_label",
+      "description": "$DC03 CIDDRB — Data Direction Register B label and per-bit meanings (0=input, 1=output).",
+      "references": [
+        {
+          "chunk": "cia_data_direction_registers",
+          "topic": "Use of DDRs for port direction"
+        }
+      ]
+    },
+    {
+      "start": 2684,
+      "end": 2748,
+      "name": "dc04_dc07_timers",
+      "description": "$DC04-$DC07 — CIA Timers A and B low/high bytes: these 16-bit timers count down from a latch value and can generate interrupts or toggle port bits. When read they return the current counter; when written they set the timer latch which can be forced into counter via control register. Timer A often used for keyboard/jiffy clock (default latch 17045 ~ 1/60s). Timer B can count micro cycles, external pulses, or count Timer A zeroes to form 32-bit linked timer.",
+      "references": [
+        {
+          "chunk": "dc0d_ciaicr_interrupt_control_register",
+          "topic": "Timer IRQ enable and how timers signal IRQs"
+        },
+        {
+          "chunk": "dc0e_ciacra_control_register_a",
+          "topic": "Control bits to start/stop Timer A and modes"
+        }
+      ]
+    },
+    {
+      "start": 2749,
+      "end": 2755,
+      "name": "dc04_timalo_timahi_timbl_timbhi_labels",
+      "description": "Register labels: $DC04 TIMALO (Timer A low), $DC05 TIMAHI (Timer A high), $DC06 TIMBLO (Timer B low), $DC07 TIMBHI (Timer B high).",
+      "references": [
+        {
+          "chunk": "dc04_dc07_timers",
+          "topic": "Timer operation and latch/load behavior"
+        }
+      ]
+    },
+    {
+      "start": 2756,
+      "end": 2756,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2757,
+      "end": 2800,
+      "name": "dc08_dc0b_time_of_day_clock_tod",
+      "description": "$DC08-$DC0B — Time-of-Day (TOD) Clock: four BCD registers for tenths, seconds, minutes, hours; includes latching behavior when reading/writing hours (reading hours latches clock until tenths are read; writing hours latches until tenths written). Bit 7 of hours is AM/PM flag. TOD has alarm that can generate IRQ. Useful for precise timing and as seed for RND in BASIC.",
+      "references": [
+        {
+          "chunk": "dc0d_ciaicr_interrupt_control_register",
+          "topic": "Enabling TOD alarm interrupt via CIA ICR"
+        }
+      ]
+    },
+    {
+      "start": 2801,
+      "end": 2823,
+      "name": "cia_tod_write_mode_and_latch_behavior",
+      "description": "Behavior of the CIA Time-of-Day (TOD) write mode and latch: $DC0F bit controls whether writing TOD registers sets alarm or clock; writing hours latches/stops updates until tenths of seconds are written. Notes on BASIC RND using TOD seconds/tenths as seed and TOD's advantages over software clocks and IRQ-based timers (survives RESET, more accurate).",
+      "references": [
+        {
+          "chunk": "dc0f_control_register_b_cia1",
+          "topic": "Control of TOD write/select via CIACRB ($DC0F)"
+        },
+        {
+          "chunk": "dc08_dc0b_time_of_day_registers",
+          "topic": "Individual TOD registers (tenths, seconds, minutes, hours)"
+        },
+        {
+          "chunk": "basic_tod_clock_example",
+          "topic": "BASIC example that reads/writes TOD registers"
+        }
+      ]
+    },
+    {
+      "start": 2824,
+      "end": 2843,
+      "name": "basic_tod_clock_example",
+      "description": "BASIC digital clock example demonstrating use of CIA Time of Day registers (PEEK/POKE at 56328-56331 / $DC08-$DC0B). Complete listing of the program that reads hours/minutes/seconds/tenths, allows user to set time, and displays a running clock.",
+      "references": [
+        {
+          "chunk": "cia_tod_write_mode_and_latch_behavior",
+          "topic": "Explains latch and write behavior used by the program"
+        },
+        {
+          "chunk": "dc08_dc0b_time_of_day_registers",
+          "topic": "Addresses and bit meanings for TOD registers used by the program"
+        }
+      ]
+    },
+    {
+      "start": 2844,
+      "end": 2867,
+      "name": "dc08_dc0b_time_of_day_registers",
+      "description": "CIA #1 Time of Day Clock registers at $DC08-$DC0B: $DC08 TODTEN (tenths of seconds, BCD low nibble), $DC09 TODSEC (seconds - BCD low/upper nybble bits), $DC0A TODMIN (minutes BCD), $DC0B TODHRS (hours BCD with AM/PM flag at bit 7).",
+      "references": [
+        {
+          "chunk": "cia_tod_write_mode_and_latch_behavior",
+          "topic": "How writes to these registers interact with CIACRB bit for alarm vs clock set and latch behavior"
+        },
+        {
+          "chunk": "basic_tod_clock_example",
+          "topic": "BASIC code that reads/writes these registers"
+        }
+      ]
+    },
+    {
+      "start": 2868,
+      "end": 2892,
+      "name": "dc0c_serial_data_register",
+      "description": "$DC0C CIASDR — Serial Data Register: CIA serial port bit-serial transfer (MSB first). Control Register A ($DC0E) sets input/output mode; in output mode Timer A clocks bits out (transmission starts when a byte is written). Typically unused by the C64 OS as serial I/O is via other ports.",
+      "references": [
+        {
+          "chunk": "dc0e_ciacra_control_register_a",
+          "topic": "Control bits to set serial mode and timer clock selection"
+        }
+      ]
+    },
+    {
+      "start": 2893,
+      "end": 2954,
+      "name": "dc0d_ciaicr_interrupt_control_register",
+      "description": "$DC0D CIAICR — Interrupt Control Register for CIA #1: bits 0-4 correspond to Timer A/B, TOD alarm, serial shift completion, and FLAG line; bit7 indicates whether any CIA caused an interrupt. Writing with bit7=1 sets mask bits written with 1; bit7=0 clears mask bits written with 1. Reading shows which sources have triggered (reading clears the register). Examples for enabling/disabling Timer A interrupt from BASIC: POKE 56333,129 to enable Timer A (bit7 and bit0).",
+      "references": [
+        {
+          "chunk": "dc04_dc07_timers",
+          "topic": "Timer A/B cause bits 0/1 respectively"
+        },
+        {
+          "chunk": "dc08_dc0b_time_of_day_clock_tod",
+          "topic": "TOD alarm uses bit2"
+        }
+      ]
+    },
+    {
+      "start": 2955,
+      "end": 3000,
+      "name": "dc0e_ciacra_control_register_a",
+      "description": "$DC0E CIACRA — Control Register A: controls Timer A start/stop (bit0), Timer A output on Port B (bit1), Port B output mode toggle/pulse (bit2), Timer A run mode one-shot/continuous (bit3), Force load Timer A from latch (bit4), Timer A input mode microprocessor cycles vs CNT line (bit5), serial port mode (bit6), and TOD frequency selection (bit7 50Hz/60Hz). Describes the effect of bits 0-5 in detail.",
+      "references": [
+        {
+          "chunk": "dc04_dc07_timers",
+          "topic": "How Control Register A manipulates timer behavior and modes"
+        },
+        {
+          "chunk": "dc0c_serial_data_register",
+          "topic": "Serial mode controlled by bit6 of this register"
+        }
+      ]
+    },
+    {
+      "start": 3001,
+      "end": 3008,
+      "name": "dc0e_control_register_a_cia1",
+      "description": "CIA #1 Control Register A at $DC0E (CIACRA): bit 0 start/stop Timer A; bit 1 select Timer A output on Port B (appears on PB6); bit 2 port B output mode toggle/pulse; bit 3 Timer A one-shot/continuous; bit 4 force load latched Timer A value; bit 5 Timer A input mode (count CPU cycles or CNT line pulses); bit 6 serial port mode (1=output, 0=input); bit 7 TOD frequency selection (1=50Hz, 0=60Hz). Details on Timer A operation, PB6 signaling (toggle vs pulse), force load usage, input source selection (CPU cycles vs CNT).",
+      "references": [
+        {
+          "chunk": "dc0c_serial_data_port_cia1",
+          "topic": "bit 6 controls serial input/output"
+        },
+        {
+          "chunk": "dc0d_cia1_interrupt_control_register",
+          "topic": "Timer A interrupt source handling"
+        }
+      ]
+    },
+    {
+      "start": 3009,
+      "end": 3048,
+      "name": "dc0f_control_register_b_cia1",
+      "description": "CIA #1 Control Register B at $DC0F (CIACRB): bit 0 start/stop Timer B; bit 1 Timer B output to Port B (PB7); bit 2 Port B output mode toggle/pulse; bit 3 Timer B one-shot/continuous; bit 4 force load Timer B latch; bits 5-6 select Timer B input mode (00=count CPU cycles, 01=count CNT line pulses, 10=count Timer A underflows, 11=count Timer A underflows only when CNT pulses present); bit 7 select TOD write mode (1=writing sets alarm, 0=writing sets clock). Describes linking Timer A and B for 32-bit-like timing and TOD write selection.",
+      "references": [
+        {
+          "chunk": "cia_tod_write_mode_and_latch_behavior",
+          "topic": "How CIACRB bit 7 affects TOD register writes"
+        },
+        {
+          "chunk": "dc0e_control_register_a_cia1",
+          "topic": "Comparison with CIACRA Timer A bits"
+        }
+      ]
+    },
+    {
+      "start": 3049,
+      "end": 3058,
+      "name": "dc10_dcff_cia1_register_images",
+      "description": "CIA #1 register image mirroring ($DC10-$DCFF): The CIA has 16 internal registers and occupies a 256-byte region where every 16-byte block is a mirror of the base region. For clarity programs should address the base addresses ($DC00-$DC0F) rather than mirrored areas.",
+      "references": [
+        {
+          "chunk": "dc0e_control_register_a_cia1",
+          "topic": "CIA #1 control registers located in the mirrored register space"
+        }
+      ]
+    },
+    {
+      "start": 3059,
+      "end": 3084,
+      "name": "dd00_dd0f_cia2_intro_and_differences",
+      "description": "CIA #2 overview ($DD00-$DD0F): CIA #2 is identical in registers to CIA #1 but used for Serial Bus, RS-232, and User Port control; Data Port A selects VIC-II 16K bank via bits 0-1. Key difference: CIA #1 IRQ is wired to 6510 IRQ while CIA #2 interrupts go to NMI line (cannot be masked by SEI); disable via CIA mask register and use NMI vector for CIA#2-driven routines.",
+      "references": [
+        {
+          "chunk": "cia_tod_write_mode_and_latch_behavior",
+          "topic": "TOD behavior exists on both CIA chips ($DCxx and $DDxx)"
+        },
+        {
+          "chunk": "dd00_dd01_cia2_data_ports_a_b_and_serial_rs232",
+          "topic": "Detailed port usage and peripheral connections"
+        }
+      ]
+    },
+    {
+      "start": 3085,
+      "end": 3131,
+      "name": "dd00_dd01_cia2_data_ports_a_b_and_serial_rs232",
+      "description": "CIA #2 Data Ports A and B ($DD00-$DD01): Data port A used for Serial Bus signals (bits 5 & 7 for data out/in, bits 4 & 6 for clock out/in, bit 3 ATN), and bit 2 for RS-232 data output (connected to User Port). RS-232 heavily uses Port B pins (DSR, CTS, DCD, RI, DTR, RTS, SIN). User Port exposes Port B pins and PA2. Serial Bus/RS-232 are slower serial protocols; CIA-2 timers used for RS-232 timing (CIA-1 Timer B used by Serial Bus).",
+      "references": [
+        {
+          "chunk": "user_port_pinout",
+          "topic": "Pin mapping of the User Port to CIA #2 signals and RS-232 DB-25"
+        },
+        {
+          "chunk": "dd04_dd07_timers_overview",
+          "topic": "CIA #2 timers used for RS-232 timing"
+        }
+      ]
+    },
+    {
+      "start": 3132,
+      "end": 3158,
+      "name": "user_port_pinout",
+      "description": "User Port pinout mapping to CIA lines and RS-232 DB-25 pins: tabular mapping of user-port pins 1-12 and labeled pins A-M to CIA signals (CNT1, SP1, CNT2, SP2, PC2, FLAG2, PB0-PB7, PA2) and to RS-232 DB-25 lines (SIN, RTS, DTR, RI, DCD, CTS, DSR) plus power, grounds, and cassette/ATN connections. Includes voltage/power limits and descriptions.",
+      "references": [
+        {
+          "chunk": "dd00_dd01_cia2_data_ports_a_b_and_serial_rs232",
+          "topic": "Explains which CIA bits appear on User Port pins"
+        },
+        {
+          "chunk": "cia2_pc2_handshake_signal",
+          "topic": "PC2 handshake behavior on read/write of Port B"
+        }
+      ]
+    },
+    {
+      "start": 3159,
+      "end": 3165,
+      "name": "cia2_pc2_handshake_signal",
+      "description": "CIA #2 PC (PC2 / handshaking) behavior: On CIA #2, the PC line is connected and accessible from the User Port. The PC2 line goes low for one cycle after a read or write of Port B, signaling external devices that data was read/written (handshaking).",
+      "references": [
+        {
+          "chunk": "user_port_pinout",
+          "topic": "Which User Port pin exposes PC2"
+        }
+      ]
+    },
+    {
+      "start": 3166,
+      "end": 3194,
+      "name": "cia2_porta_bits_video_bank_selection",
+      "description": "CIA #2 Port A bits 0-1 select the VIC-II 16K video memory bank: bit patterns choose which 16K block the VIC-II addresses (00 = Bank 3 $C000-$FFFF, 01 = Bank 2 $8000-$BFFF, 10 = Bank 1 $4000-$7FFF, 11 = Bank 0 $0000-$3FFF). Discussion of VIC-II limitation to 16K and overview of trade-offs for selecting different banks for graphics data.",
+      "references": [
+        {
+          "chunk": "changing_vic_memory_banks_procedure",
+          "topic": "How to change banks from BASIC using Port A and VIC registers"
+        },
+        {
+          "chunk": "vic_memory_block0_description",
+          "topic": "Contents and constraints of Bank 0 (Block 0)"
+        }
+      ]
+    },
+    {
+      "start": 3195,
+      "end": 3212,
+      "name": "vic_memory_block0_description",
+      "description": "VIC-II bank/block 0 description (addresses 0-16383 / Block 0): normally used for system variables and BASIC text; default screen memory at 1024-2047 ($400-$7FF). Character generator ROM is seen by VIC-II at $1000-$1FFF reducing available graphics RAM; small free areas exist for limited sprite or character data; recommends adjusting BASIC memory pointers to free more space if needed.",
+      "references": [
+        {
+          "chunk": "vic_memory_block2_description",
+          "topic": "Comparison to Block 2 where RAM exists under BASIC ROM"
+        },
+        {
+          "chunk": "changing_vic_memory_banks_procedure",
+          "topic": "Steps to switch VIC bank to avoid conflicts with system usage"
+        }
+      ]
+    },
+    {
+      "start": 3213,
+      "end": 3227,
+      "name": "vic_memory_block1_description",
+      "description": "VIC-II bank/block 1 description (16384-32767 / Block 1): normally used for BASIC program storage. Advantages: VIC-II does not see character generator ROM here so the block is open for sprite shapes, character graphics, and bitmap graphics provided BASIC top-of-memory is adjusted. Drawbacks: BASIC program space limited and character ROM unavailable (can copy ROM to RAM).",
+      "references": [
+        {
+          "chunk": "vic_memory_block0_description",
+          "topic": "Default bank differences with Block 0"
+        },
+        {
+          "chunk": "vic_memory_block2_description",
+          "topic": "Alternative bank with RAM under ROM availability"
+        }
+      ]
+    },
+    {
+      "start": 3228,
+      "end": 3257,
+      "name": "vic_memory_block2_description",
+      "description": "VIC-II bank/block 2 description (32768-49151 / Block 2): 8K of RAM where half is seen by VIC-II as character ROM and 8K BASIC ROM area. VIC-II reads RAM underneath BASIC ROM allowing use of that RAM for graphics while 6510 still reads ROM when needed; you can write to this area but BASIC cannot read it directly. Limitations for screen memory and advice against using this block for full high-resolution screens without machine-language tricks.",
+      "references": [
+        {
+          "chunk": "vic_memory_block1_description",
+          "topic": "Trade-offs vs Block 1"
+        },
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "Relation of character ROM and using RAM-under-ROM"
+        }
+      ]
+    },
+    {
+      "start": 3258,
+      "end": 3268,
+      "name": "vic_memory_block3_description",
+      "description": "VIC-II bank/block 3 description (49152-65535 / Block 3): normally contains free RAM, I/O registers, and the 8K Kernal ROM. Useful for lots of graphics and BASIC program space; character ROM unavailable but can be copied to RAM. Warning about DOS support code residing at 52224 ($CC00) and potential conflicts if using 52224-53247 for graphics.",
+      "references": [
+        {
+          "chunk": "changing_vic_memory_banks_procedure",
+          "topic": "Sample program demonstrates switching to Bank 3"
+        }
+      ]
+    },
+    {
+      "start": 3269,
+      "end": 3311,
+      "name": "changing_vic_memory_banks_procedure",
+      "description": "Step-by-step procedure for changing VIC-II 16K bank from BASIC: 1) Set Data Direction Register A outputs, 2) Select bank via POKE 56576 and 56578 manipulations, 3) Set VIC register for character memory (53272 / $D018), 4) Set VIC register for display memory (53272 formula), 5) Set OS pointer for display memory at 648 ($288). Warnings about RESTORE key behavior and suggestion to disable RESTORE to avoid display/OS pointer mismatch.",
+      "references": [
+        {
+          "chunk": "cia2_porta_bits_video_bank_selection",
+          "topic": "Bits 0-1 on CIA #2 Port A used to select bank"
+        },
+        {
+          "chunk": "sample_bank3_switch_program",
+          "topic": "Example BASIC + machine-code program implementing the steps"
+        }
+      ]
+    },
+    {
+      "start": 3312,
+      "end": 3354,
+      "name": "sample_bank3_switch_program",
+      "description": "Sample BASIC program (with machine language subroutines) that switches the VIC-II to Bank 3, copies ROM character set to RAM, installs a small NMI handler to fix RESTORE, writes to new screen RAM area, erases and restores character set. Includes DATA for ML routines and POKE/SYS sequence demonstrating bank switching and character ROM handling.",
+      "references": [
+        {
+          "chunk": "changing_vic_memory_banks_procedure",
+          "topic": "Implements the steps given in the procedure"
+        },
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "Machine-language copy of character ROM to RAM explained"
+        }
+      ]
+    },
+    {
+      "start": 3355,
+      "end": 3364,
+      "name": "dd00_ci2pra_data_port_register_a",
+      "description": "CIA #2 Data Port A register ($DD00 / CI2PRA) bit assignments: bits 0-1 select 16K VIC-II bank (11=bank0 .. 00=bank3); bit 2 RS-232 data output (PA2); bit 3 Serial bus ATN; bit 4 Serial bus clock out; bit 5 Serial bus data out; bit 6 Serial bus clock in; bit 7 Serial bus data in.",
+      "references": [
+        {
+          "chunk": "cia2_porta_bits_video_bank_selection",
+          "topic": "Specifies which patterns correspond to which banks"
+        },
+        {
+          "chunk": "user_port_pinout",
+          "topic": "Which User Port pins carry these signals"
+        }
+      ]
+    },
+    {
+      "start": 3365,
+      "end": 3376,
+      "name": "dd01_ci2prb_data_port_register_b",
+      "description": "CIA #2 Data Port B register ($DD01 / CI2PRB) bit assignments and RS-232 mapping: bit 0 RS-232 data input (SIN); bit 1 RTS; bit 2 DTR; bit 3 RI; bit 4 DCD; bit 5 User Port J; bit 6 CTS (and Timer A toggle/pulse output capability); bit 7 DSR (and Timer B toggle/pulse output capability).",
+      "references": [
+        {
+          "chunk": "user_port_pinout",
+          "topic": "Which User Port pins correspond to Port B bits"
+        },
+        {
+          "chunk": "dd04_dd07_timers_overview",
+          "topic": "Timer outputs can toggle/pulse Port B bits 6/7"
+        }
+      ]
+    },
+    {
+      "start": 3377,
+      "end": 3377,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3378,
+      "end": 3389,
+      "name": "dd02_dd03_data_direction_registers_overview",
+      "description": "Overview of CIA #2 Data Direction Registers ($DD02-$DD03): control direction of Data Ports A and B respectively. Default settings: DDRA default 63 (all bits except 6,7 outputs), DDRB default 0 (all inputs). RS-232 open operation changes PB1 and PB2 to outputs. Refer to CIA #1 DDR entry for operational details.",
+      "references": [
+        {
+          "chunk": "dd02_c2ddra",
+          "topic": "Detailed bit-by-bit description of Data Direction Register A"
+        },
+        {
+          "chunk": "dd03_c2ddrb",
+          "topic": "Detailed bit-by-bit description of Data Direction Register B"
+        }
+      ]
+    },
+    {
+      "start": 3390,
+      "end": 3399,
+      "name": "dd02_c2ddra",
+      "description": "CIA #2 Data Direction Register A ($DD02 / C2DDRA): bits 0-7 select input(0)/output(1) for corresponding bits of Data Port A (PA0..PA7).",
+      "references": [
+        {
+          "chunk": "dd00_ci2pra_data_port_register_a",
+          "topic": "Shows which signals are affected by these direction bits"
+        }
+      ]
+    },
+    {
+      "start": 3400,
+      "end": 3400,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3401,
+      "end": 3411,
+      "name": "dd03_c2ddrb",
+      "description": "CIA #2 Data Direction Register B ($DD03 / C2DDRB): bits 0-7 select input(0)/output(1) for corresponding bits of Data Port B (PB0..PB7).",
+      "references": [
+        {
+          "chunk": "dd01_ci2prb_data_port_register_b",
+          "topic": "Shows which signals are affected by these direction bits"
+        }
+      ]
+    },
+    {
+      "start": 3412,
+      "end": 3421,
+      "name": "dd04_dd07_timers_overview",
+      "description": "CIA #2 Timer registers overview ($DD04-$DD07): four timer bytes (Timer A low/high, Timer B low/high) control CIA timers. The C64 OS primarily uses CIA #2 timers for RS-232 send/receive timing; Serial Bus uses CIA #1 Timer B.",
+      "references": [
+        {
+          "chunk": "dd04_dd07_timer_registers_list",
+          "topic": "Exact register names and addresses for each timer byte"
+        },
+        {
+          "chunk": "dd0e_ci2cra_control_register_a",
+          "topic": "Control bits relating to starting, mode, and input source for Timer A"
+        }
+      ]
+    },
+    {
+      "start": 3422,
+      "end": 3428,
+      "name": "dd04_dd07_timer_registers_list",
+      "description": "CIA #2 Timer registers names: $DD04 TI2ALO Timer A low byte, $DD05 TI2AHI Timer A high byte, $DD06 TI2BLO Timer B low byte, $DD07 TI2BHI Timer B high byte.",
+      "references": [
+        {
+          "chunk": "dd04_dd07_timers_overview",
+          "topic": "Use of these registers by the C64 OS and RS-232 timing"
+        }
+      ]
+    },
+    {
+      "start": 3429,
+      "end": 3429,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3430,
+      "end": 3461,
+      "name": "dd08_dd0b_time_of_day_clock_cia2",
+      "description": "CIA #2 Time of Day Clock registers ($DD08-$DD0B): same format as CIA #1 TOD — $DD08 TO2TEN (tenths BCD low nibble), $DD09 TO2SEC (seconds BCD), $DD0A TO2MIN (minutes BCD), $DD0B TO2HRS (hours BCD with AM/PM flag in bit 7). The C64 OS does not use these CIA #2 TOD registers.",
+      "references": [
+        {
+          "chunk": "dc08_dc0b_time_of_day_registers",
+          "topic": "CIA #1 TOD registers and format (same layout)"
+        }
+      ]
+    },
+    {
+      "start": 3462,
+      "end": 3462,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3463,
+      "end": 3469,
+      "name": "dd0c_ci2sdr_serial_data_port",
+      "description": "CIA #2 Serial Data Register at $DD0C: on-chip serial shift register (MSB first) analogous to CIA #1 serial port; see $DC0C entry for operation. The C64 Operating System does not use this CIA #2 serial facility.",
+      "references": [
+        {
+          "chunk": "dc0c_serial_data_port_cia1",
+          "topic": "Detailed description of the serial data facility (CIA #1)"
+        }
+      ]
+    },
+    {
+      "start": 3470,
+      "end": 3470,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3471,
+      "end": 3496,
+      "name": "dd0d_ci2icr_interrupt_control_register_cia2",
+      "description": "CIA #2 Interrupt Control Register at $DD0D: bits and behavior identical to CIA #1 ($DC0D) — bits 0-4 indicate Timer A, Timer B, TOD alarm, serial shift complete, FLAG line; bits 5-6 unused; bit 7 indicates any CIA#2 source caused an interrupt. Writing uses bit7 to determine set/clear of mask bits. Main difference: FLAG line for CIA #2 is connected to User Port pin B and is available for user handshaking.",
+      "references": [
+        {
+          "chunk": "dc0d_cia1_interrupt_control_register",
+          "topic": "General behavior and writing semantics are the same as CIA#1"
+        },
+        {
+          "chunk": "user_port_pinout",
+          "topic": "Which User Port pin carries CIA#2 FLAG line"
+        }
+      ]
+    },
+    {
+      "start": 3497,
+      "end": 3497,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3498,
+      "end": 3515,
+      "name": "dd0e_ci2cra_control_register_a",
+      "description": "CIA #2 Control Register A at $DD0E (CI2CRA): bits mirror CIA #1 CIACRA: bit 0 start/stop Timer A, bit 1 select Timer A output on PB6, bit 2 PB6 toggle/pulse mode, bit 3 Timer A one-shot/continuous, bit 4 force load Timer A latch, bit 5 Timer A input mode (count CPU cycles or CNT line), bit 6 serial port mode (1=output,0=input), bit 7 TOD frequency selection (50Hz/60Hz).",
+      "references": [
+        {
+          "chunk": "dd04_dd07_timers_overview",
+          "topic": "Timer A control explained here"
+        },
+        {
+          "chunk": "dd0c_ci2sdr_serial_data_port",
+          "topic": "bit 6 selects serial direction"
+        }
+      ]
+    },
+    {
+      "start": 3516,
+      "end": 3533,
+      "name": "dd0f_ci2crb_control_register_b",
+      "description": "CIA #2 Control Register B at $DD0F (CI2CRB): mirrors CIA#1 CIACRB: bit 0 start/stop Timer B, bit 1 Timer B output on PB7, bit 2 PB7 toggle/pulse, bit 3 Timer B one-shot/continuous, bit 4 force load Timer B latch, bits 5-6 Timer B input mode (00 CPU cycles, 01 CNT pulses, 10 count Timer A underflows, 11 Timer A underflows with CNT), bit 7 select TOD write (0 writing sets alarm, 1 writing sets clock).",
+      "references": [
+        {
+          "chunk": "dd08_dd0b_time_of_day_clock_cia2",
+          "topic": "bit 7 influences TOD register write behavior"
+        },
+        {
+          "chunk": "dd04_dd07_timers_overview",
+          "topic": "Timer B mode selections and linking with Timer A"
+        }
+      ]
+    },
+    {
+      "start": 3534,
+      "end": 3541,
+      "name": "dd10_ddff_cia2_register_images",
+      "description": "CIA #2 register image mirroring ($DD10-$DDFF): Like CIA#1, CIA#2 uses only 16 registers and the remaining 256-byte block contains mirrors every 16 bytes. Advises not to use these mirrored addresses for clarity.",
+      "references": [
+        {
+          "chunk": "dc10_dcff_cia1_register_images",
+          "topic": "Mirroring behavior common to both CIA chips"
+        }
+      ]
+    },
+    {
+      "start": 3542,
+      "end": 3542,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3543,
+      "end": 3560,
+      "name": "de00_deff_reserved_for_io_expansion",
+      "description": "I/O expansion area ($DE00-$DEFF): reserved for cartridges and expansion hardware via Expansion Port pin 7. Examples: CP/M module uses 56832 ($DE00) to switch Z-80 CPU control; Simon's BASIC cartridge uses this space for on/off control of cartridge features when overlaying ROM at $8000-$BFFF by writing/reading $DE00.",
+      "references": [
+        {
+          "chunk": "df00_dfff_reserved_expansion_port",
+          "topic": "Other expansion port reserved ranges"
+        }
+      ]
+    },
+    {
+      "start": 3561,
+      "end": 3568,
+      "name": "df00_dfff_reserved_expansion_port",
+      "description": "Expansion port I/O region ($DF00-$DFFF): not used by internal hardware but accessible via Expansion Port pin 10. Commodore mentioned possible uses like inexpensive parallel disk drive hardware.",
+      "references": [
+        {
+          "chunk": "de00_deff_reserved_for_io_expansion",
+          "topic": "Other expansion ranges reserved for cartridges and modules"
+        }
+      ]
+    },
+    {
+      "start": 3569,
+      "end": 3606,
+      "name": "character_generator_rom_overview_and_bit_values",
+      "description": "Character Generator ROM ($D000-$DFFF alternate 53248-57343) overview: holds 4096 bytes representing two complete character sets (256 chars each, 8 bytes per character). Each byte defines one row of an 8x8 dot matrix; bit values for bits 0-7 are 1,2,4,8,16,32,64,128 respectively. Explains how byte values map to displayed pixels and how character shapes are stored sequentially.",
+      "references": [
+        {
+          "chunk": "character_rom_example_and_display_program",
+          "topic": "Example showing ROM bytes and a BASIC program to display character shapes"
+        },
+        {
+          "chunk": "vic_character_rom_mapping_and_copying",
+          "topic": "How VIC-II maps character ROM into VIC address space and copying ROM to RAM"
+        }
+      ]
+    },
+    {
+      "start": 3607,
+      "end": 3639,
+      "name": "character_rom_example_and_display_program",
+      "description": "Example of character ROM content and BASIC program to display character shapes: shows first eight byte values (60,102,110,110,96,98,60,0) broken into binary patterns to illustrate the '@' glyph. Provides a BASIC program that reads ROM bytes (temporarily switching ROM visibility) and prints the 8x8 bit patterns and numeric byte values for any character number (0-511).",
+      "references": [
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "Context for the displayed byte-to-pixel mapping and bit-value table"
+        },
+        {
+          "chunk": "sample_bank3_switch_program",
+          "topic": "Machine-language sample that copies character ROM to RAM"
+        }
+      ]
+    },
+    {
+      "start": 3640,
+      "end": 3654,
+      "name": "vic_character_rom_mapping_and_copying",
+      "description": "How VIC-II maps Character ROM into VIC address space: VIC-II can address only 16K; character ROM is made visible to VIC-II as images at $1000-$1FFF and $9000-$9FFF so character data is accessible in those ranges. To use characters in other banks, copy ROM data into RAM (sample ML routine provided at $DD00). Notes that VIC-II reads RAM underneath ROM if RAM is present under ROM (useful under BASIC ROM).",
+      "references": [
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "Why ROM visibility matters and how character bytes map to glyphs"
+        },
+        {
+          "chunk": "sample_bank3_switch_program",
+          "topic": "Contains machine language copy routine to transfer ROM to RAM"
+        }
+      ]
+    },
+    {
+      "start": 3655,
+      "end": 3665,
+      "name": "user_defined_characters_benefits",
+      "description": "Advantages of user-defined characters: extend graphics power (math/foreign symbols, graphics substitutes for bitmap plotting), allow higher apparent resolution with less memory, faster to print than plotting individual points. Encourages creation and use of custom character sets for enhanced display capabilities.",
+      "references": [
+        {
+          "chunk": "employing_user_defined_characters_setup",
+          "topic": "Steps to place character data for VIC-II to use"
+        }
+      ]
+    },
+    {
+      "start": 3666,
+      "end": 3675,
+      "name": "employing_user_defined_characters_setup",
+      "description": "How to employ user-defined characters: choose a video memory bank (via CIA #2 Port A bits), set the 2K character memory pointer in VIC-II register $D018 (53272), place shape data into chosen memory. Notes about copying part of ROM character set to RAM if desired (see location 1 entry for ROM reading).",
+      "references": [
+        {
+          "chunk": "cia2_porta_bits_video_bank_selection",
+          "topic": "Selecting the 16K bank that will contain your character set"
+        },
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "Using ROM characters as a basis for user-defined sets"
+        }
+      ]
+    },
+    {
+      "start": 3676,
+      "end": 3682,
+      "name": "creating_characters_methods",
+      "description": "Methods for creating character shapes: draw on an 8x8 grid and convert pixel patterns to byte values by summing bit-values for each row, or use commercial character editors to generate data interactively. Advises on storing shapes and using tools to ease creation.",
+      "references": [
+        {
+          "chunk": "employing_user_defined_characters_setup",
+          "topic": "Where to place the generated character data"
+        }
+      ]
+    },
+    {
+      "start": 3683,
+      "end": 3695,
+      "name": "multicolor_text_mode_description",
+      "description": "Multicolor text mode: enabled by bit 4 of $D016 (53270). In this mode each byte is interpreted as four 2-bit pairs (bit-pairs), each pair selects one of four color sources: Background Color Register #0 (00), Background Color Register #1 (01), Background Color Register #2 (10), or the Color RAM nybble (11). Characters become 4 pixels wide (each pixel double-width) giving multicolor capability but lower horizontal resolution; user-defined characters often required for best results.",
+      "references": [
+        {
+          "chunk": "character_generator_rom_overview_and_bit_values",
+          "topic": "How character shape bytes are interpreted differently in multicolor text mode"
+        },
+        {
+          "chunk": "employing_user_defined_characters_setup",
+          "topic": "Recommendation to use custom character sets for multicolor text"
+        }
+      ]
+    }
+  ],
+  "source_md5": "ad78902586726bcafac3e02a74416f7d"
+}

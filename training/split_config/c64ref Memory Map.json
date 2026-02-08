@@ -1,0 +1,565 @@
+{
+  "source_file": "c64ref Memory Map.txt",
+  "context": "- C64 RAM Map (Mapping The Commodore 64)",
+  "splits": [
+    {
+      "start": 1,
+      "end": 16,
+      "ignore": true,
+      "reason": "Title, author, publication and credits (non-technical front matter)."
+    },
+    {
+      "start": 17,
+      "end": 33,
+      "ignore": true,
+      "reason": "File-format notes, parsing rules, and metadata (non-technical/instructions)."
+    },
+    {
+      "start": 34,
+      "end": 34,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 35,
+      "end": 2813,
+      "name": "c64_ram_map_0000_0305",
+      "description": "Comprehensive C64 memory-map overview covering zero-page I/O and BASIC variables, system vectors, stack, BASIC line editor buffer, file/device tables, keyboard and screen editor state, tape/RS-232 I/O emulation, floating-point accumulators, CHRGET routine, RND seed, Kernal I/O status and related flags, RS-232 pseudo-6551 registers and buffers, BASIC indirect vector table up to vector ICRNCH. Includes detailed descriptions of: $0000 D6510 (6510 data direction register), $0001 R6510 (6510 I/O port - LORAM/HIRAM/CHAREN and datasette control), various BASIC zero-page variables and vectors ($0003-$00FF), microprocessor stack ($0100-$01FF), BASIC line editor input buffer ($0200-$0258), I/O file/device tables ($0259-$0276), keyboard buffer and scan state ($0277-$02FF), RS-232 pseudo 6551 control/command/status registers ($0293-$0297 and related indices), and the BASIC indirect vector table ($0300-$0305 shown through ICRNCH). The chunk contains explanations of bitfields (e.g., PORT and DDR bits), example BASIC POKE sequences (moving ROM to RAM, reading character ROM), CHRGET disassembly and flags, RND seed behavior, Kernal message control (MSGFLG), jiffy clock (TIME), tape and serial timing and buffering (TAPE1, BUFPT, BAUDOF), keyboard repeat/delay flags and tables (XMAX, RPTFLAG, DELAY, KEYTAB), and how these zero-page locations are used by BASIC and the Kernal.",
+      "references": [
+        {
+          "chunk": "c64_ram_map_0000_0305",
+          "topic": "See individual register descriptions within this consolidated map for details such as CHRGET, D6510, R6510, RS-232 pseudo-6551, and the BASIC vectors."
+        }
+      ],
+      "no_refine": true
+    },
+    {
+      "start": 2814,
+      "end": 2819,
+      "name": "rs232_bitnum",
+      "description": "$0298 BITNUM: number of zero bits to add to a data character to pad it to the word length set by the RS-232 control register (referenced at $0293).",
+      "references": [
+        {
+          "chunk": "rs232_baud_prescaler",
+          "topic": "timing for send/receive driven by CIA timers"
+        }
+      ]
+    },
+    {
+      "start": 2820,
+      "end": 2840,
+      "name": "rs232_baud_prescaler",
+      "description": "$0299-$029A BAUDOF: prescaler (time required to send a bit) used by CIA #2 timers A and B to cause NMI-driven RS-232 routines. Gives CLOCK values (NTSC 1,022,730 Hz; PAL 985,250 Hz) and prescaler formula PRESCALER = ((CLOCK/BAUDRATE)/2) - 100. Mentions tables of NTSC prescaler values at $FEC2 (65218) and PAL at $E4EC (58604).",
+      "references": [
+        {
+          "chunk": "rs232_bitnum",
+          "topic": "bit padding for word length"
+        },
+        {
+          "chunk": "rs232_status_error_bits",
+          "topic": "when to read buffer / GET#2"
+        }
+      ]
+    },
+    {
+      "start": 2841,
+      "end": 2851,
+      "name": "rs232_fifo_overview",
+      "description": "$029B-$029E: overview of the two 256-byte FIFO receive and transmit buffers for RS-232. Explains dynamic wraparound buffers and that indices to start/end are used to manage buffer contents.",
+      "references": [
+        {
+          "chunk": "rs232_ridbe",
+          "topic": "index to end of receive buffer"
+        },
+        {
+          "chunk": "rs232_ridbs",
+          "topic": "index to start of receive buffer"
+        },
+        {
+          "chunk": "rs232_rodbs",
+          "topic": "index to start of transmit buffer"
+        },
+        {
+          "chunk": "rs232_rodbe",
+          "topic": "index to end of transmit buffer"
+        }
+      ]
+    },
+    {
+      "start": 2852,
+      "end": 2856,
+      "name": "rs232_ridbe",
+      "description": "$029B RIDBE: RS-232 index to the end of the receive buffer. Points to the ending byte within the 256-byte receive buffer and is used to add data to that buffer.",
+      "references": [
+        {
+          "chunk": "rs232_fifo_overview",
+          "topic": "wraparound FIFO buffer management"
+        }
+      ]
+    },
+    {
+      "start": 2857,
+      "end": 2861,
+      "name": "rs232_ridbs",
+      "description": "$029C RIDBS: RS-232 index to the start of the receive buffer. Points to the starting byte within the 256-byte receive buffer and is used to remove data from that buffer.",
+      "references": [
+        {
+          "chunk": "rs232_fifo_overview",
+          "topic": "wraparound FIFO buffer management"
+        }
+      ]
+    },
+    {
+      "start": 2862,
+      "end": 2866,
+      "name": "rs232_rodbs",
+      "description": "$029D RODBS: RS-232 index to the start of the transmit buffer. Points to the starting byte within the 256-byte transmit buffer and is used to remove data from that buffer.",
+      "references": [
+        {
+          "chunk": "rs232_fifo_overview",
+          "topic": "wraparound FIFO buffer management"
+        },
+        {
+          "chunk": "rs232_rodbe",
+          "topic": "where transmit data is added"
+        }
+      ]
+    },
+    {
+      "start": 2867,
+      "end": 2871,
+      "name": "rs232_rodbe",
+      "description": "$029E RODBE: RS-232 index to the end of the transmit buffer. Points to the ending byte within the 256-byte transmit buffer and is used to add data to that buffer.",
+      "references": [
+        {
+          "chunk": "rs232_rodbs",
+          "topic": "start index of transmit buffer"
+        }
+      ]
+    },
+    {
+      "start": 2872,
+      "end": 2884,
+      "name": "irqtmp_cassette_irq_vector_save",
+      "description": "$029F-$02A0 IRQTMP: save area for the IRQ vector while cassette I/O routines are hooked into the interrupt. Explains why the old IRQ vector is saved (so keyboard scanning, clock, STOP key, cursor blink can be restored) and that these functions are suspended during tape I/O.",
+      "references": [
+        {
+          "chunk": "tbuffr_cassette_buffer",
+          "topic": "cassette buffer used by tape routines"
+        },
+        {
+          "chunk": "cinv_irq_vector",
+          "topic": "IRQ vector usage and precautions"
+        }
+      ]
+    },
+    {
+      "start": 2885,
+      "end": 2896,
+      "name": "rs232_enabl_flags",
+      "description": "$02A1 ENABL: RS-232 'interrupts enabled' flag byte (holds active NMI flag from CIA #2 Interrupt Control Register). Lists bit meanings: Bit 4 (16) = system waiting for receiver edge; Bit 1 (2) = system receiving data; Bit 0 (1) = system transmitting data.",
+      "references": [
+        {
+          "chunk": "rs232_status_error_bits",
+          "topic": "status handling and when to GET#2"
+        }
+      ]
+    },
+    {
+      "start": 2897,
+      "end": 2902,
+      "name": "cia1_cassette_save_areas",
+      "description": "$02A2-$02A4: indicators and save areas related to CIA #1 control during cassette I/O. Includes: $02A2 indicator of CIA #1 Control Register B activity during cassette I/O; $02A3 save area for CIA #1 Interrupt Control Register during cassette read; $02A4 save area for CIA #1 Control Register A during cassette read.",
+      "references": [
+        {
+          "chunk": "irqtmp_cassette_irq_vector_save",
+          "topic": "saving/restoring IRQ vector during cassette I/O"
+        }
+      ]
+    },
+    {
+      "start": 2903,
+      "end": 2904,
+      "name": "next_40col_line_index",
+      "description": "$02A5: temporary index to the next 40-column line used for screen scrolling routines.",
+      "references": [
+        {
+          "chunk": "register_storage_area",
+          "topic": "examples of using Kernal routines to position/format screen output"
+        }
+      ]
+    },
+    {
+      "start": 2905,
+      "end": 2921,
+      "name": "pal_ntsc_flag",
+      "description": "$02A6: PAL/NTSC flag set at power-on by testing a raster interrupt at line 311. 0 = NTSC (interrupt won't occur), 1 = PAL (interrupt occurs). Used to adjust CIA timer prescaler values so IRQ occurs every 1/60 second; notes slight CLOCK difference between PAL and NTSC.",
+      "references": [
+        {
+          "chunk": "rs232_baud_prescaler",
+          "topic": "CLOCK differences and prescaler calculations for NTSC vs PAL"
+        }
+      ]
+    },
+    {
+      "start": 2922,
+      "end": 2932,
+      "name": "unused_02A7_02FF",
+      "description": "$02A7-$02FF: unused RAM area (free for machine language subroutines or graphics data). Mentions this area is useful for sprite or character data when VIC-II uses bottom 16K (default), e.g., locations 704-767 usable for sprite block 11.",
+      "references": [
+        {
+          "chunk": "tbuffr_cassette_buffer",
+          "topic": "other small free areas (cassette buffer) that can be used for graphics"
+        }
+      ]
+    },
+    {
+      "start": 2933,
+      "end": 2985,
+      "name": "basic_indirect_vector_table",
+      "description": "$0300-$030B BASIC Indirect Vector Table: explains indirect vectors in RAM pointing to BASIC routines. Vectors initialized on power-up to point past JMP instructions in ROM; benefits: hide ROM addresses and allow compatibility across machines, and allow user preprocessing or replacement of BASIC routines (e.g., adding commands). Mentions vectors for error messages, crunch/tokenization, token execution, listing tokens, and more; suggests using these vectors to alter BASIC behavior.",
+      "references": [
+        {
+          "chunk": "ierror_vector",
+          "topic": "vector to BASIC error routine"
+        },
+        {
+          "chunk": "icrnch_vector",
+          "topic": "vector to CRUNCH routine for tokenizing"
+        },
+        {
+          "chunk": "iqplop_vector",
+          "topic": "vector to QPLOP routine for listing tokens"
+        }
+      ]
+    },
+    {
+      "start": 2986,
+      "end": 2990,
+      "name": "ierror_vector",
+      "description": "$0300-$0301 IERROR: vector to the BASIC error message routine (points to ERROR routine at $E38B / 58251).",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 2991,
+      "end": 2997,
+      "name": "imain_vector",
+      "description": "$0302-$0303 IMAIN: vector to the main BASIC program loop (points to the main loop at $A483 / 42115). This routine executes statements in direct (READY) mode and stores program lines.",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 2998,
+      "end": 3002,
+      "name": "icrnch_vector",
+      "description": "$0304-$0305 ICRNCH: vector to the routine that 'crunches' ASCII keywords into BASIC tokens (CRUNCH routine at $A57C / 42364).",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 3003,
+      "end": 3003,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3004,
+      "end": 3008,
+      "name": "iqplop_vector",
+      "description": "$0306-$0307 IQPLOP: vector to the routine that lists a BASIC program token as ASCII text (QPLOP at $A71A / 42778).",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 3009,
+      "end": 3013,
+      "name": "igone_vector",
+      "description": "$0308-$0309 IGONE: vector to the routine that executes the next BASIC program token (GONE routine at $A7E4 / 42980).",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 3014,
+      "end": 3020,
+      "name": "ieval_vector",
+      "description": "$030A-$030B IEVAL: vector to the routine that evaluates a single-term arithmetic expression (EVAL at $AE86 / 44678). Used for BASIC functions such as INT and ABS.",
+      "references": [
+        {
+          "chunk": "basic_indirect_vector_table",
+          "topic": "BASIC indirect vectors overview"
+        }
+      ]
+    },
+    {
+      "start": 3021,
+      "end": 3063,
+      "name": "register_storage_area",
+      "description": "$030C-$030F: Register Storage Area used by BASIC SYS command to store 6510 registers (.A, .X, .Y, .P). Explains that SYS loads registers from these storage addresses before a ML routine and saves them back after RTS, allowing preentry register values and postroutine inspection. Gives example using Kernal PLOT (SYS 65520) with POKE into storage area to position cursor, and using SCREEN (SYS 65517) to get screen size.",
+      "references": [
+        {
+          "chunk": "register_storage_addresses",
+          "topic": "specific storage addresses for .A, .X, .Y, .P"
+        },
+        {
+          "chunk": "usradd_and_parameter_passing",
+          "topic": "passing parameters to/from USR and interaction with register storage"
+        }
+      ]
+    },
+    {
+      "start": 3064,
+      "end": 3071,
+      "name": "register_storage_addresses",
+      "description": "$030C-$030F specific bytes: $030C SAREG (storage for Accumulator .A), $030D SXREG (.X), $030E SYREG (.Y), $030F SPREG (.P).",
+      "references": [
+        {
+          "chunk": "register_storage_area",
+          "topic": "how BASIC SYS uses these storage locations"
+        },
+        {
+          "chunk": "status_register_bits",
+          "topic": "meaning of bits stored at SPREG"
+        }
+      ]
+    },
+    {
+      "start": 3072,
+      "end": 3095,
+      "name": "status_register_bits",
+      "description": "Status (.P) register bit assignments and cautions: Bit 7 Negative (128), Bit 6 Overflow (64), Bit 5 Not used (32), Bit 4 BREAK (16), Bit 3 Decimal (8), Bit 2 Interrupt Disable (4), Bit 1 Zero (2), Bit 0 Carry (1). Advises safe clearing before SYS (POKE 783,0) and warns about Interrupt Disable flag (SEI behavior); suggests POKE 783,247 to set all except Interrupt disable.",
+      "references": [
+        {
+          "chunk": "register_storage_addresses",
+          "topic": "SPREG stores the status register for SYS entry/exit"
+        },
+        {
+          "chunk": "cinv_irq_vector",
+          "topic": "Interrupt disable implications for IRQ handling"
+        }
+      ]
+    },
+    {
+      "start": 3096,
+      "end": 3100,
+      "name": "usr_jump_instruction",
+      "description": "$0310: byte containing the 6510 JMP instruction opcode ($4C / 76 decimal) used by the USR command (first byte of JMP instruction placed here).",
+      "references": [
+        {
+          "chunk": "usradd_and_parameter_passing",
+          "topic": "USR address vector and how USR jumps to user routine"
+        }
+      ]
+    },
+    {
+      "start": 3101,
+      "end": 3147,
+      "name": "usradd_and_parameter_passing",
+      "description": "$0311-$0312 USRADD: address of the USR routine (low byte first). Explains initialization to point to BASIC error handler, how to POKE low/high bytes (HI=INT(AD/256):LO=AD-(HI*256)), example for 49152 ($C000). Describes USR(parameter) passing: parameter placed in FAC1 as floating point; machine routine can read/return values via FAC1. Describes vectored routines to convert FAC1 to signed integer (low byte in .Y/loc101, high byte in A) and to convert signed integer (A high byte, Y low byte) back to FAC1 via JMP ($0005).",
+      "references": [
+        {
+          "chunk": "register_storage_area",
+          "topic": "using SYS vs USR and register storage differences"
+        }
+      ]
+    },
+    {
+      "start": 3148,
+      "end": 3148,
+      "name": "unused_0313",
+      "description": "$0313: unused byte.",
+      "references": []
+    },
+    {
+      "start": 3149,
+      "end": 3149,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3150,
+      "end": 3194,
+      "name": "cinv_irq_vector",
+      "description": "$0314-$0315 CINV: vector to the IRQ interrupt routine (normally at $EA31 / 59953). Explains that CIA #1 Timer B causes IRQs every 1/60 second; changing the vector allows user ML routines to run periodically. Provides precautions: disable IRQs (SEI/CLI) before changing vector or use Kernal VECTOR routine; ROM pushes registers before jumping through vector (PHA, TXA, PHA, TYA, PHA) so user must restore stack correctly (PLA, TAY, PLA, TAX, PLA, RTI) or exit through normal IRQ; IRQ routine must determine source when multiple IRQ sources enabled; if replacing default IRQ, user should call old routine periodically to preserve keyboard scanning, clock, and STOP key handling.",
+      "references": [
+        {
+          "chunk": "irqtmp_cassette_irq_vector_save",
+          "topic": "saving/restoring IRQ vector for cassette I/O"
+        },
+        {
+          "chunk": "register_storage_area",
+          "topic": "effects of disabling keyboard/IRQ-driven services"
+        }
+      ]
+    },
+    {
+      "start": 3195,
+      "end": 3209,
+      "name": "cbinv_brk_vector",
+      "description": "$0316-$0317 CBINV: vector for BRK instruction interrupt. Points to routine executed on BRK (00). Default points to routine that calls Kernal init routines (RESTOR, IOINIT, part of CINT) and jumps to BASIC warm start; used by STOP/RESTORE and BRK. ML monitors usually repoint this vector to monitor warm start for breakpoints.",
+      "references": [
+        {
+          "chunk": "nminv_vector",
+          "topic": "other system interrupt vectors (NMI)"
+        }
+      ]
+    },
+    {
+      "start": 3210,
+      "end": 3244,
+      "name": "nminv_vector",
+      "description": "$0318-$0319 NMINV: vector to the Non-Maskable Interrupt routine (typically at $FE47 / 65095). Two sources: RESTORE key (direct to 6510 NMI) and CIA #2 interrupt. ROM sets Interrupt Disable flag and jumps through this RAM vector; routine checks cause (CIA #2 vs RESTORE). If CIA #2, RS-232 routines may be called; if RESTORE, cartridge warm start or STOP key tests occur; STOP+RESTORE triggers Kernal init and BASIC warm start. Notes: changing vector can disable STOP/RESTORE sequence (e.g., POKE 792,193 to point to RTI) but will also cut out NMIs needed for RS-232.",
+      "references": [
+        {
+          "chunk": "rs232_enabl_flags",
+          "topic": "CIA #2 RS-232 NMI involvement"
+        },
+        {
+          "chunk": "cbinv_brk_vector",
+          "topic": "BRK and STOP/RESTORE linkage"
+        }
+      ]
+    },
+    {
+      "start": 3245,
+      "end": 3269,
+      "name": "kernal_indirect_vectors_overview",
+      "description": "$031A-$032D: Kernal indirect vectors table overview. Explains there are 39 Kernal routines with vectors in RAM; ten routines use RAM vectors via a jump table entry in ROM ($FF81). Vectors initialized to point to Kernal ROM routines but can be changed to add/replace functionality (useful for new I/O devices). Cautions modifying interrupt-driven vectors without disabling interrupts and suggests using the Kernal VECTOR routine at $FD1A to change vectors safely. References detailed ROM locations for individual routines.",
+      "references": [
+        {
+          "chunk": "iopen_..._istop",
+          "topic": "individual I/O vector entries"
+        },
+        {
+          "chunk": "usrcmd_vector",
+          "topic": "USRCMD vector and legacy behavior"
+        }
+      ]
+    },
+    {
+      "start": 3270,
+      "end": 3283,
+      "name": "iopen_iclose_ichkin_ickout_iclrch_ibasin_ibSout_vectors",
+      "description": "$031A-$0327: Kernal I/O vectors: $031A-$031B IOPEN (OPEN), $031C-$031D ICLOSE (CLOSE), $031E-$031F ICHKIN (CHKIN), $0320-$0321 ICKOUT (CKOUT), $0322-$0323 ICLRCH (CLRCHN), $0324-$0325 IBASIN (CHRIN), $0326-$0327 IBSOUT (CHROUT). (These entries point to the corresponding Kernal routines in ROM.)",
+      "references": [
+        {
+          "chunk": "kernal_indirect_vectors_overview",
+          "topic": "how these I/O vectors fit into the Kernal jump table"
+        }
+      ]
+    },
+    {
+      "start": 3284,
+      "end": 3292,
+      "name": "istop_vector_details",
+      "description": "$0328-$0329 ISTOP: vector to Kernal STOP routine (currently at $F6ED / 63213). Explains this routine tests the STOP key; shows how STOP can be disabled by POKE 808,239; to disable both STOP and STOP/RESTORE use POKE 808,234 (but this may break LIST). To restore normal behavior POKE 808,237.",
+      "references": [
+        {
+          "chunk": "cbinv_brk_vector",
+          "topic": "STOP/RESTORE behavior is related to BRK/USRCMD vectors"
+        }
+      ]
+    },
+    {
+      "start": 3293,
+      "end": 3296,
+      "name": "igetin_iclall_vectors",
+      "description": "$032A-$032D: IGETIN ($032A-$032B) vector to GETIN routine (at $F13E / 61758) and ICLALL ($032C-$032D) vector to CLALL routine (at $F32F / 62255).",
+      "references": [
+        {
+          "chunk": "kernal_indirect_vectors_overview",
+          "topic": "I/O and console input vectors"
+        }
+      ]
+    },
+    {
+      "start": 3297,
+      "end": 3309,
+      "name": "usrcmd_vector",
+      "description": "$032E-$032F USRCMD: vector to user-defined command (currently points to BRK at $FE66 / 65126). Historical holdover from PET; originally used by machine monitor to jump through USRCMD for unknown commands. Although VECTOR routine updates it, it doesn't seem to facilitate adding new commands in this system.",
+      "references": [
+        {
+          "chunk": "cbinv_brk_vector",
+          "topic": "current USRCMD points to the BRK/STOP/RESTORE handler"
+        },
+        {
+          "chunk": "kernal_indirect_vectors_overview",
+          "topic": "how this vector is part of the Kernal jump table"
+        }
+      ]
+    },
+    {
+      "start": 3310,
+      "end": 3313,
+      "name": "iload_isave_vectors",
+      "description": "$0330-$0333 ILOAD/$0330-$0331 and ISAVE/$0332-$0333: vectors to the Kernal LOAD (currently at $F49E / 62622) and SAVE (currently at $F5DD / 62941) routines.",
+      "references": [
+        {
+          "chunk": "kernal_indirect_vectors_overview",
+          "topic": "LOAD/SAVE as vectored Kernal routines"
+        }
+      ]
+    },
+    {
+      "start": 3314,
+      "end": 3317,
+      "name": "unused_0334_033B",
+      "description": "$0334-$033B: eight unused bytes available for user vectors or other data.",
+      "references": [
+        {
+          "chunk": "unused_02A7_02FF",
+          "topic": "other free RAM regions"
+        }
+      ]
+    },
+    {
+      "start": 3318,
+      "end": 3379,
+      "name": "tbuffr_cassette_buffer",
+      "description": "$033C-$03FB TBUFFR: 192-byte cassette I/O buffer used to hold data read/written to tape. Describes typical uses (program header blocks, data headers, data storage blocks), format of blocks (identifier byte at $033C, header blocks contain start/end RAM address and filename padded to 187 bytes, data blocks contain 191 bytes of data). Explains identifier values: 1 = relocatable program header, 3 = nonrelocatable program header, 4 = data file header (used when opening tape files), 2 = data blocks, 5 = logical end of tape. Notes practical reuse of buffer for ML routines or VIC-II graphics when tape not in use (e.g., sprite blocks at $0340-$03BF).",
+      "references": [
+        {
+          "chunk": "irqtmp_cassette_irq_vector_save",
+          "topic": "cassette I/O routines and IRQ vector swapping"
+        },
+        {
+          "chunk": "unused_02A7_02FF",
+          "topic": "alternative small RAM areas for ML/graphics"
+        }
+      ]
+    },
+    {
+      "start": 3380,
+      "end": 3382,
+      "name": "unused_03FC_03FF",
+      "description": "$03FC-$03FF: four unused bytes (free RAM).",
+      "references": [
+        {
+          "chunk": "unused_0334_033B",
+          "topic": "other free RAM bytes"
+        }
+      ]
+    }
+  ],
+  "source_md5": "d0c7ae129e10d6a7dbfa3844fdea154c"
+}

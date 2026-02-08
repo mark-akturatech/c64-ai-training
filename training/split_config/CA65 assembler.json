@@ -1,0 +1,1339 @@
+{
+  "source_file": "CA65 assembler.txt",
+  "context": "ca65 Users Guide",
+  "splits": [
+    {
+      "start": 1,
+      "end": 3,
+      "ignore": true,
+      "reason": "Title and author lines"
+    },
+    {
+      "start": 4,
+      "end": 10,
+      "name": "overview_introduction",
+      "description": "Short introduction to ca65: purpose, supported CPUs (6502/65C02/65816), relation to cc65, and origin notes.",
+      "references": [
+        {
+          "chunk": "design_criteria",
+          "topic": "design goals that motivated ca65"
+        },
+        {
+          "chunk": "usage_overview",
+          "topic": "how to run ca65 from the command line"
+        }
+      ]
+    },
+    {
+      "start": 11,
+      "end": 29,
+      "name": "design_criteria",
+      "description": "Design goals for ca65: macros, CPU support (65C02/65816), relocatable code, conditional assembly, segments, linker expression resolution, lexical nesting and local symbols, one-pass assembly, licensing goals.",
+      "references": [
+        {
+          "chunk": "overview_introduction",
+          "topic": "context for the design"
+        }
+      ]
+    },
+    {
+      "start": 30,
+      "end": 36,
+      "name": "usage_command_summary",
+      "description": "Top-level usage summary: 'ca65 [options] file' and start of command line options section.",
+      "references": [
+        {
+          "chunk": "short_command_line_options",
+          "topic": "short-form CLI options"
+        },
+        {
+          "chunk": "long_command_line_options",
+          "topic": "long-form CLI options"
+        }
+      ]
+    },
+    {
+      "start": 37,
+      "end": 56,
+      "name": "short_command_line_options",
+      "description": "Short command-line options (-D, -I, -U, -V, -W, -d, -g, -x, -h, -i, -l, -mm, -o, -s, -S, -t, -v) with brief one-line descriptions.",
+      "references": [
+        {
+          "chunk": "usage_command_summary",
+          "topic": "usage synopsis"
+        },
+        {
+          "chunk": "long_command_line_options",
+          "topic": "detailed equivalents"
+        }
+      ]
+    },
+    {
+      "start": 57,
+      "end": 86,
+      "name": "long_command_line_options",
+      "description": "Long command-line options (e.g. --auto-import, --bin-include-dir, --color, --cpu, --create-dep, --debug-info, --feature, --include-dir, --memory-model, --segment-list, --target, --verbose, --version, --warn-align-waste, --warnings-as-errors) with brief descriptions.",
+      "references": [
+        {
+          "chunk": "short_command_line_options",
+          "topic": "short option equivalents"
+        },
+        {
+          "chunk": "detailed_command_line_options",
+          "topic": "full option descriptions"
+        }
+      ]
+    },
+    {
+      "start": 87,
+      "end": 91,
+      "name": "command_line_options_overview",
+      "description": "Section header and short introduction to the detailed command line options in CA65 assembler.",
+      "references": [
+        {
+          "chunk": "bin_include_dir",
+          "topic": "binary include directory option"
+        },
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "CPU selection option and supported CPU list"
+        }
+      ]
+    },
+    {
+      "start": 92,
+      "end": 95,
+      "name": "bin_include_dir",
+      "description": "The --bin-include-dir option: specify directories searched for binary include files; may be given multiple times; current directory searched first; see search paths discussion.",
+      "references": [
+        {
+          "chunk": "include_dir",
+          "topic": "text include directory option and search path behavior"
+        }
+      ]
+    },
+    {
+      "start": 96,
+      "end": 99,
+      "name": "color_output",
+      "description": "The --color option: controls whether the assembler uses colored diagnostics; default is 'auto' which enables colors when output is a terminal.",
+      "references": [
+        {
+          "chunk": "verbose_option",
+          "topic": "verbosity and diagnostic output options"
+        }
+      ]
+    },
+    {
+      "start": 100,
+      "end": 116,
+      "name": "cpu_type_and_supported_cpus",
+      "description": "The --cpu type option: sets the default CPU type for the assembler. Lists supported CPU type names and short descriptions, including 6502 variants (6502, 6502X, 6502DTV), CMOS and extended sets (65SC02, 65C02, W65C02, 65CE02), C65/MEGA65 CPUs (4510, 45GS02), HuC6280, M740, 65816, and sweet16 interpreter.",
+      "references": [
+        {
+          "chunk": "target_system_option",
+          "topic": "target option may set a default CPU type"
+        },
+        {
+          "chunk": "smart_mode_option",
+          "topic": "65816-specific smart-mode behavior for operand sizes"
+        }
+      ]
+    },
+    {
+      "start": 117,
+      "end": 123,
+      "name": "create_dep_files",
+      "description": "Options --create-dep and --create-full-dep: generate makefile-style dependency files for the assembled module. --create-full-dep includes files passed via debug information; both write output to the given filename.",
+      "references": [
+        {
+          "chunk": "debug_info_option",
+          "topic": "interaction with debug information and dependency inclusion"
+        }
+      ]
+    },
+    {
+      "start": 124,
+      "end": 127,
+      "name": "debug_mode_switch",
+      "description": "The -d, --debug option: enables assembler debug mode (diagnostics useful for debugging the assembler itself).",
+      "references": [
+        {
+          "chunk": "debug_info_option",
+          "topic": "debug mode vs. generating debug info with -g"
+        }
+      ]
+    },
+    {
+      "start": 128,
+      "end": 131,
+      "name": "define_symbol_option",
+      "description": "The -D option: define symbols on the command line. Without a value the symbol gets value zero. When supplying a value, $ can be used as a hex prefix (may require quoting on some shells).",
+      "references": [
+        {
+          "chunk": "auto_import_option",
+          "topic": "symbol handling differences and auto-imported symbols"
+        }
+      ]
+    },
+    {
+      "start": 132,
+      "end": 136,
+      "name": "feature_option",
+      "description": "The --feature name option: enables an emulation feature from the assembler (.FEATURE equivalent). Feature names must be lower case; each feature requires a separate --feature option (no comma lists). See .FEATURE for the list of features.",
+      "references": [
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "features may emulate CPU-specific behavior"
+        }
+      ]
+    },
+    {
+      "start": 137,
+      "end": 141,
+      "name": "debug_info_option",
+      "description": "The -g, --debug-info option (or .DEBUGINFO): causes the assembler to add a section to the object file containing all symbols (including locals) with values and source positions; the linker can export these into a VICE label file.",
+      "references": [
+        {
+          "chunk": "create_dep_files",
+          "topic": "which dependency outputs include files referenced via debug information"
+        }
+      ]
+    },
+    {
+      "start": 142,
+      "end": 145,
+      "name": "help_option",
+      "description": "The -h, --help option: prints the short option summary.",
+      "references": [
+        {
+          "chunk": "command_line_options_overview",
+          "topic": "overall options summary"
+        }
+      ]
+    },
+    {
+      "start": 146,
+      "end": 149,
+      "name": "include_dir",
+      "description": "The -I dir, --include-dir dir option: specify directories searched for source include files; may be used multiple times; current directory searched first. See search paths discussion.",
+      "references": [
+        {
+          "chunk": "bin_include_dir",
+          "topic": "binary include file search vs. text include search"
+        }
+      ]
+    },
+    {
+      "start": 150,
+      "end": 153,
+      "name": "ignore_case_option",
+      "description": "The -i, --ignore-case option: makes the assembler case-insensitive for identifiers and labels. Overrides the default but can be overridden by the .CASE control command in source.",
+      "references": [
+        {
+          "chunk": "define_symbol_option",
+          "topic": "case sensitivity implications for command-line defined symbols"
+        }
+      ]
+    },
+    {
+      "start": 154,
+      "end": 157,
+      "name": "listing_option",
+      "description": "The -l name, --listing name option: generate an assembler listing file with the provided name. No listing file is generated if assembly fails due to errors.",
+      "references": [
+        {
+          "chunk": "pagelength_option",
+          "topic": "listing page length and formatting options"
+        },
+        {
+          "chunk": "expand_macros_option",
+          "topic": "macro expansion verbosity in listings"
+        }
+      ]
+    },
+    {
+      "start": 158,
+      "end": 161,
+      "name": "large_alignment_warning_toggle",
+      "description": "The --large-alignment option: disables warnings about a large combined alignment. See .ALIGN directive discussion for more details.",
+      "references": [
+        {
+          "chunk": "warn_align_waste_option",
+          "topic": "other alignment-related warnings"
+        }
+      ]
+    },
+    {
+      "start": 162,
+      "end": 165,
+      "name": "list_bytes_option",
+      "description": "The --list-bytes n option: sets the maximum number of bytes printed in the listing for one line of input. A value of zero means unlimited. See .LISTBYTES directive for more information.",
+      "references": [
+        {
+          "chunk": "listing_option",
+          "topic": "how many bytes are shown per listing line"
+        }
+      ]
+    },
+    {
+      "start": 166,
+      "end": 169,
+      "name": "memory_model_option",
+      "description": "The -mm model, --memory-model model option: defines the default memory model. Valid values are near, far and huge.",
+      "references": [
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "memory models may interact with target CPU addressing"
+        }
+      ]
+    },
+    {
+      "start": 170,
+      "end": 173,
+      "name": "no_utf8_option",
+      "description": "The --no-utf8 option: disables UTF-8 characters in diagnostics. Useful if auto-detection fails or output is processed by tools that are not UTF-8 capable.",
+      "references": [
+        {
+          "chunk": "color_output",
+          "topic": "other diagnostics output formatting options"
+        }
+      ]
+    },
+    {
+      "start": 174,
+      "end": 177,
+      "name": "output_filename_option",
+      "description": "The -o name option: set the output file name. By default the output is the input filename with extension replaced by .o and placed in the same directory as source; -o supplies an explicit path/name.",
+      "references": [
+        {
+          "chunk": "create_dep_files",
+          "topic": "where dependency files are written relative to output"
+        }
+      ]
+    },
+    {
+      "start": 178,
+      "end": 181,
+      "name": "pagelength_option",
+      "description": "The --pagelength n option: set the number of lines per listing page. See the .PAGELENGTH directive for more information.",
+      "references": [
+        {
+          "chunk": "listing_option",
+          "topic": "listing generation and formatting options"
+        }
+      ]
+    },
+    {
+      "start": 182,
+      "end": 189,
+      "name": "relax_checks_option",
+      "description": "The --relax-checks option: disables certain assembler error checks to allow otherwise rejected code in special cases. Lists the disabled checks: truncation of byte-sized loads from non-zero page addresses instead of error, and allowing indirect jmp (label) when label is on a page boundary ($xxFF) which on 6502 fetches the second byte from the wrong address.",
+      "references": [
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "6502-specific behavior relevant to indirect jump page-boundary semantics"
+        }
+      ]
+    },
+    {
+      "start": 190,
+      "end": 193,
+      "name": "segment_list_option",
+      "description": "The -S, --segment-list option: include the segment ID in front of each address in the listing file.",
+      "references": [
+        {
+          "chunk": "listing_option",
+          "topic": "listing file content and formatting"
+        }
+      ]
+    },
+    {
+      "start": 194,
+      "end": 199,
+      "name": "smart_mode_option",
+      "description": "The -s, --smart-mode option (or .SMART): in 65816 mode, the assembler tracks usage of REP/SEP and updates operand sizes accordingly. If it cannot evaluate an operand (e.g., imported symbol), a warning is issued. Smart mode can't trace execution flow and can be incorrect in some cases; use .ixx and .axx to explicitly set registers. Smart mode is off by default.",
+      "references": [
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "65816 CPU support and related options"
+        }
+      ]
+    },
+    {
+      "start": 200,
+      "end": 205,
+      "name": "target_system_option",
+      "description": "The -t sys, --target sys option: set the target system which enables translation of character strings and constants into that system's character set. Default is 'none' (no translation). The assembler supports the same targets as the compiler. Depending on the target, the assembler may also set a default CPU type (overridable with --cpu).",
+      "references": [
+        {
+          "chunk": "cpu_type_and_supported_cpus",
+          "topic": "default CPU selection behavior for targets"
+        }
+      ]
+    },
+    {
+      "start": 206,
+      "end": 209,
+      "name": "auto_import_option",
+      "description": "The -U, --auto-import option: mark symbols not defined in sources as imported symbols. Use with care because it defers errors for typos until linking. The compiler uses .AUTOIMPORT for runtime library symbols but assembler programmers may need to avoid relying on it.",
+      "references": [
+        {
+          "chunk": "define_symbol_option",
+          "topic": "command-line symbol definitions vs. auto-imported symbols"
+        },
+        {
+          "chunk": "warning_level_option",
+          "topic": "warning levels and unused/imported symbol diagnostics"
+        }
+      ]
+    },
+    {
+      "start": 210,
+      "end": 213,
+      "name": "verbose_option",
+      "description": "The -v, --verbose option: increase assembler verbosity. Can be repeated for more verbose output; primarily useful for debugging purposes.",
+      "references": [
+        {
+          "chunk": "debug_mode_switch",
+          "topic": "verbosity vs. full debug mode"
+        }
+      ]
+    },
+    {
+      "start": 214,
+      "end": 217,
+      "name": "version_option",
+      "description": "The -V, --version option: print the assembler version number. Reported version helps with bug reports and suggestions.",
+      "references": [
+        {
+          "chunk": "debug_mode_switch",
+          "topic": "debugging/reporting issues with version information"
+        }
+      ]
+    },
+    {
+      "start": 218,
+      "end": 221,
+      "name": "warning_level_option",
+      "description": "The -Wn option: set assembler warning level (default 1). Example: -W2 enables warnings for items such as unused imported symbols. Lower than 1 is discouraged.",
+      "references": [
+        {
+          "chunk": "auto_import_option",
+          "topic": "interaction between auto-imported symbols and warning levels"
+        },
+        {
+          "chunk": "warnings_as_errors_option",
+          "topic": "treating warnings as errors"
+        }
+      ]
+    },
+    {
+      "start": 222,
+      "end": 225,
+      "name": "warn_align_waste_option",
+      "description": "The --warn-align-waste option: emit warnings when alignment requirements cause emission of fill bytes.",
+      "references": [
+        {
+          "chunk": "large_alignment_warning_toggle",
+          "topic": "suppressing or enabling alignment-related warnings"
+        }
+      ]
+    },
+    {
+      "start": 226,
+      "end": 229,
+      "name": "warnings_as_errors_option",
+      "description": "The --warnings-as-errors option: elevate any warnings produced by the assembler to errors, causing assembly to fail if warnings occur.",
+      "references": [
+        {
+          "chunk": "warning_level_option",
+          "topic": "fine-tuning warning behavior and consequences"
+        }
+      ]
+    },
+    {
+      "start": 230,
+      "end": 232,
+      "name": "expand_macros_option",
+      "description": "The -x, --expand-macros option: in the listing file, show exactly how macros were expanded. Use the option twice for more verbose macro expansion output.",
+      "references": [
+        {
+          "chunk": "listing_option",
+          "topic": "macro expansion details in assembler listings"
+        }
+      ]
+    },
+    {
+      "start": 233,
+      "end": 246,
+      "name": "search_paths",
+      "description": "Search paths used by ca65: order for include files (current file dir, -I dirs, CA65_INC, CC65_HOME/asminc, compiled-in dir) and binary include files (current dir, --bin-include-dir dirs).",
+      "references": [
+        {
+          "chunk": "detailed_command_line_options",
+          "topic": "options that affect search paths (-I, --bin-include-dir)"
+        }
+      ]
+    },
+    {
+      "start": 247,
+      "end": 286,
+      "name": "input_format_and_syntax",
+      "description": "Input format: assembler syntax rules (labels with colon, mnemonics, macros, control commands, symbol definitions with '='), comment syntax ';', examples of valid lines, and note on BRK optional signature bytes. Also mentions default 6502 mode acceptance.",
+      "references": [
+        {
+          "chunk": "cpu_modes_and_features",
+          "topic": "per-CPU mnemonic differences"
+        },
+        {
+          "chunk": "number_format_and_conditional_assembly",
+          "topic": "number constants and conditional assembly caveats"
+        }
+      ]
+    },
+    {
+      "start": 287,
+      "end": 287,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 288,
+      "end": 386,
+      "name": "cpu_modes_and_features",
+      "description": "Descriptions of CPU modes and instruction sets supported or emulated by ca65: 6502 mode, 6502X (undocumented opcodes with mnemonics list), C64DTV mode differences and supported undocumented instructions, 65SC02, 65C02, W65C02, 65CE02, 4510 (C65 differences), 45GS02 (MEGA65), HuC6280, M740, and 65816 mode (aliases and MVN/MVP forms).",
+      "references": [
+        {
+          "chunk": "detailed_command_line_options",
+          "topic": "--cpu option and supported CPU types"
+        },
+        {
+          "chunk": "smart_mode_and_65816_specifics",
+          "topic": "smart mode and 65816 operand-size handling"
+        }
+      ]
+    },
+    {
+      "start": 387,
+      "end": 387,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 388,
+      "end": 397,
+      "name": "sweet16_mode",
+      "description": "Special SWEET16 mode: pseudo 16-bit interpreter semantics (R0..R15 registers reserved, '@' as indirect addressing, no interpreter/code stubs provided). Notes about how macros and character translation behave in this mode.",
+      "references": [
+        {
+          "chunk": "cpu_modes_and_features",
+          "topic": "other CPU modes"
+        }
+      ]
+    },
+    {
+      "start": 398,
+      "end": 403,
+      "name": "number_format_and_conditional_assembly",
+      "description": "Number formats accepted by ca65: hex with leading '$' or trailing 'h', binary with '%', decimal bare number; no octal or floats. Conditional assembly caveat: tokens in unassembled branches still tokenized so directives must be syntactically valid.",
+      "references": [
+        {
+          "chunk": "input_format_and_syntax",
+          "topic": "tokenization rules and examples"
+        }
+      ]
+    },
+    {
+      "start": 404,
+      "end": 481,
+      "name": "expressions_evaluation_and_operators",
+      "description": "Expression evaluation rules: 32-bit precision, constant vs linker-evaluated expressions, rules for determining expression result size (byte/word), boolean expression semantics and shortcut operators, constant-expression rules and the list of available operators with precedence (string funcs, pseudo-variables, unary + -, bitwise not, < > ^ bank byte, arithmetic, bitwise ops, shifts, compare, logical AND/OR/NOT). Parentheses for grouping.",
+      "references": [
+        {
+          "chunk": "address_size_overrides",
+          "topic": "when assembler needs to know address size"
+        },
+        {
+          "chunk": "pseudo_functions",
+          "topic": "operators and functions (.LOBYTE, .HIBYTE, etc.)"
+        }
+      ]
+    },
+    {
+      "start": 482,
+      "end": 482,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 483,
+      "end": 520,
+      "name": "symbols_and_labels_basics",
+      "description": "Symbol/label naming rules: identifier characters, reserved single-letter tokens (e.g., 'A'), use of symbols for readability. Numeric constants (using '=' or ':=' for label marking), numeric variables with .SET (mutable within macros and control structures) and examples (including .SPRINTF usage for generating unique labels).",
+      "references": [
+        {
+          "chunk": "macros_overview",
+          "topic": "macros using .SET and .SPRINTF"
+        },
+        {
+          "chunk": "symbols_and_debuginfo",
+          "topic": ".DEBUGINFO behavior for symbols"
+        }
+      ]
+    },
+    {
+      "start": 521,
+      "end": 585,
+      "name": "label_types_and_scope_visibility",
+      "description": "Label types and scoping: standard labels (name:), local labels via .PROC, cheap local labels (start with .LOCALCHAR like '@', visible only between two non-cheap labels) with example, unnamed labels (':' and forward/back references :++/:-), using .DEFINE to create token-substitution constants (string constants caveat), and .DEBUGINFO interaction (which symbol types are written to object file).",
+      "references": [
+        {
+          "chunk": "scopes_and_namespace",
+          "topic": "how scopes affect named symbols"
+        },
+        {
+          "chunk": "macros_overview",
+          "topic": "using .DEFINE and macro-related caveats"
+        }
+      ]
+    },
+    {
+      "start": 586,
+      "end": 641,
+      "name": "scopes_generic_and_nested_scopes",
+      "description": "Scope types: global scope, cheap locals scope, generic nested scopes (.SCOPE/.ENDSCOPE), lookup rules for nested scopes (local first, then upward), example scenarios showing subtle behavior when a symbol is redefined in inner scopes and how address-size decisions may cause range errors; address-size override operators (a:, z:, f:) and example to avoid range error.",
+      "references": [
+        {
+          "chunk": "scopes_procedures_and_enclosing",
+          "topic": "procedures (.PROC) as named scopes"
+        },
+        {
+          "chunk": "address_size_overrides",
+          "topic": "forcing addressing mode with prefixes"
+        }
+      ]
+    },
+    {
+      "start": 642,
+      "end": 659,
+      "name": "scopes_procedures_and_proc_equivalence",
+      "description": "Nested procedures via .PROC: they create a named nested lexical level, add a symbol in the enclosing scope, and are equivalent to label plus .SCOPE. Example shows .proc foo ... .endproc equals foo: .scope foo ... .endscope.",
+      "references": [
+        {
+          "chunk": "scopes_generic_and_nested_scopes",
+          "topic": "generic scopes and scoping rules"
+        }
+      ]
+    },
+    {
+      "start": 660,
+      "end": 683,
+      "name": "structs_unions_enums_and_explicit_scope_spec",
+      "description": "Structs, unions, enums open scopes if named; unnamed declarations add members to enclosing scope. Explicit scope specification uses namespace token '::' to access symbols in named scopes (example shows foo::bar and use of :: to access global scope).",
+      "references": [
+        {
+          "chunk": "scopes_generic_and_nested_scopes",
+          "topic": "scope naming and lookup"
+        }
+      ]
+    },
+    {
+      "start": 684,
+      "end": 748,
+      "name": "scope_search_order_and_anchor_rules",
+      "description": "Detailed scope search order and anchoring: how the assembler searches current then enclosing scopes; scope references must reference a previously defined scope (scopes can't be used forward unless anchored with ::), examples of complex scope chains and how anchoring with :: changes lookup behavior.",
+      "references": [
+        {
+          "chunk": "structs_unions_enums_and_explicit_scope_spec",
+          "topic": "explicit scope syntax (::)"
+        }
+      ]
+    },
+    {
+      "start": 749,
+      "end": 749,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 750,
+      "end": 783,
+      "name": "address_sizes_and_memory_models",
+      "description": "Address sizes supported: zeropage (8 bit), absolute (16 bit), far (24 bit), long (32 bit). Keywords for overrides (DIRECT/ZP, ABSOLUTE/ABS/NEAR, FAR, LONG/DWORD). Address sizes are assigned to segments and inherited by labels declared in those segments. Symbol prefixes (z:, a:, f:) to override address size are described.",
+      "references": [
+        {
+          "chunk": "scopes_generic_and_nested_scopes",
+          "topic": "when symbol addressing matters for lookups"
+        },
+        {
+          "chunk": "segment_directive",
+          "topic": ".SEGMENT and segment address size assignment"
+        }
+      ]
+    },
+    {
+      "start": 784,
+      "end": 786,
+      "name": "memory_models_summary",
+      "description": "Memory model summary: default address sizes depend on chosen memory model (near/far/huge), switching memory model adjusts default address size for segments and thus for labels declared in them.",
+      "references": [
+        {
+          "chunk": "address_sizes_and_memory_models",
+          "topic": "address-size inheritance and memory models"
+        }
+      ]
+    },
+    {
+      "start": 787,
+      "end": 789,
+      "name": "pseudo_variables_overview",
+      "description": "Introduction to assembler pseudo variables: they are readable in all cases and in some special cases writable. General section header for the following specific pseudo variables.",
+      "references": [
+        {
+          "chunk": "pc_asterisk",
+          "topic": "Program counter pseudo variable (*)"
+        },
+        {
+          "chunk": "asize_pseudo_variable",
+          "topic": "Accumulator size (.ASIZE)"
+        },
+        {
+          "chunk": "cpu_pseudo_variable",
+          "topic": "CPU identification (.CPU)"
+        },
+        {
+          "chunk": "isize_pseudo_variable",
+          "topic": "Index size (.ISIZE)"
+        },
+        {
+          "chunk": "paramcount_pseudo_variable",
+          "topic": "Macro parameter count (.PARAMCOUNT)"
+        },
+        {
+          "chunk": "time_pseudo_variable",
+          "topic": "Translation time (.TIME)"
+        },
+        {
+          "chunk": "version_pseudo_variable",
+          "topic": "Assembler version (.VERSION)"
+        }
+      ]
+    },
+    {
+      "start": 790,
+      "end": 794,
+      "name": "pc_asterisk",
+      "description": "The '*' pseudo variable: reading returns the program counter (PC) at the start of the current input line. Assignment to '*' is only possible when .FEATURE pc_assignment is enabled; nevertheless .ORG is the recommended way to change the location counter.",
+      "references": [
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 795,
+      "end": 818,
+      "name": "asize_pseudo_variable",
+      "description": ".ASIZE: returns the current Accumulator size in bits. For the 65816 instruction set it returns 8 or 16 depending on the current accumulator operand size; for other CPU instruction sets it always returns 8. Includes an example macro (rsb) that branches on .ASIZE to select appropriate immediate operand sizes. See also .ISIZE.",
+      "references": [
+        {
+          "chunk": "isize_pseudo_variable",
+          "topic": "Index size (.ISIZE) — related register size pseudo variable"
+        },
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 819,
+      "end": 882,
+      "name": "cpu_pseudo_variable",
+      "description": ".CPU: returns a constant integer whose bits identify which CPU and which instruction-set groups are supported. Lists CPU constants (CPU_6502, CPU_65SC02, CPU_65C02, CPU_65816, CPU_SWEET16, CPU_HUC6280, CPU_4510, CPU_45GS02, CPU_6502DTV, CPU_M740) and instruction-set group constants (CPU_ISET_* variants). Describes using .CPU in conditional assembly (replacement for older .IFPxx) with an example. Explains the design 'dilemma' — that .CPU/ISET bits indicate groups of instructions fully supported (so newer CPUs don't necessarily imply full compatibility with all older instruction semantics). Contains an example showing conditional assembly for different CPU instruction-group support. Mentions .CAP as a similar mechanism without this compatibility caveat.",
+      "references": [
+        {
+          "chunk": "asize_pseudo_variable",
+          "topic": "Register-size pseudo variables (.ASIZE) — related CPU behavior"
+        },
+        {
+          "chunk": "isize_pseudo_variable",
+          "topic": "Index size (.ISIZE) — related register-size pseudo variable"
+        },
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 883,
+      "end": 891,
+      "name": "isize_pseudo_variable",
+      "description": ".ISIZE: returns the current Index register size in bits. For the 65816 it returns 8 or 16 depending on the current index operand size in immediate index addressing mode; for other CPU instruction sets it always returns 8. See also .ASIZE.",
+      "references": [
+        {
+          "chunk": "asize_pseudo_variable",
+          "topic": "Accumulator size (.ASIZE) — related register-size pseudo variable"
+        },
+        {
+          "chunk": "cpu_pseudo_variable",
+          "topic": ".CPU — CPU and instruction-set considerations that affect instruction size"
+        },
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 892,
+      "end": 906,
+      "name": "paramcount_pseudo_variable",
+      "description": ".PARAMCOUNT: a macro-only pseudo variable replaced by the actual number of parameters passed to the macro invocation. Example shows a macro checking .paramcount and emitting .error on mismatch. See the Macros section for more details.",
+      "references": [
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        },
+        {
+          "chunk": "asize_pseudo_variable",
+          "topic": "Example usage patterns (.ASIZE macro example)"
+        }
+      ]
+    },
+    {
+      "start": 907,
+      "end": 916,
+      "name": "time_pseudo_variable",
+      "description": ".TIME: returns the current translation time as a POSIX integer (seconds since the Epoch). Useful to embed the translation time into generated code; example shows storing .time as a 32-bit value with .dword.",
+      "references": [
+        {
+          "chunk": "version_pseudo_variable",
+          "topic": ".VERSION — other build/assembler metadata pseudo variable"
+        },
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 917,
+      "end": 928,
+      "name": "version_pseudo_variable",
+      "description": ".VERSION: returns the assembler version encoded as (VER_MAJOR * 0x100) + VER_MINOR, with major in the upper 8 bits and minor in the lower 8 bits. Example: assembler version 47.11 would produce 0x2f0b. Notes that older assembler versions (until 2.19) used a broken formula which produced incorrect values starting at 2.16; therefore .VERSION is considered informal and should not be relied upon for exact version checks.",
+      "references": [
+        {
+          "chunk": "time_pseudo_variable",
+          "topic": ".TIME — other build/translation metadata pseudo variable"
+        },
+        {
+          "chunk": "pseudo_variables_overview",
+          "topic": "General pseudo variables introduction"
+        }
+      ]
+    },
+    {
+      "start": 929,
+      "end": 929,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 930,
+      "end": 981,
+      "name": "pseudo_functions_addrsize_and_bank",
+      "description": "Pseudo-functions for address and bank: .ADDRSIZE(symbol) returns internal address size (useful in macros), .BANK(symbol) returns bank attribute for banked memory (evaluated at link stage only) with examples showing using .BANK to populate bank bytes in tables, and .BANKBYTE (.BANK byte alias '^') behavior.",
+      "references": [
+        {
+          "chunk": "address_sizes_and_memory_models",
+          "topic": "address size semantics"
+        },
+        {
+          "chunk": "pseudo_functions_misc",
+          "topic": "other pseudo-functions (.LOBYTE, .HIBYTE, .SIZEOF, etc.)"
+        }
+      ]
+    },
+    {
+      "start": 982,
+      "end": 982,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 983,
+      "end": 1060,
+      "name": "pseudo_functions_misc_part1",
+      "description": "Pseudo-functions: .BANKBYTE (bank byte extraction '^'), .BLANK (tests presence of argument tokens), .CAP/.CAPABILITY (check target/CPU capabilities like CPU_HAS_BITIMM, CPU_HAS_BRA8, CPU_HAS_PUSHXY, CPU_HAS_ZPIND, CPU_HAS_STZ), usage notes and examples, .CONCAT (string concatenation), .CONST (is constant?), .DEF/.DEFINED (is identifier defined?), .DEFINEDMACRO (is macro defined?).",
+      "references": [
+        {
+          "chunk": "pseudo_functions_addrsize_and_bank",
+          "topic": "bank-related functions"
+        },
+        {
+          "chunk": "macros_overview",
+          "topic": "using .DEFINEDMACRO in macro-aware code"
+        }
+      ]
+    },
+    {
+      "start": 1061,
+      "end": 1149,
+      "name": "pseudo_functions_misc_part2",
+      "description": "Pseudo-functions: .HIBYTE/.HIWORD/.LOBYTE/.LOWORD (byte/word extraction operators '>' '<' equivalents), .IDENT (convert string to identifier), .ISMNEM/.ISMNEMONIC (is token a mnemonic), .LEFT/.MID/.RIGHT (token-list substring helpers), .MATCH/.XMATCH (token-list matching), .MAX/.MIN, and usage examples especially in macros.",
+      "references": [
+        {
+          "chunk": "expressions_evaluation_and_operators",
+          "topic": "corresponding operators and their operator equivalents"
+        },
+        {
+          "chunk": "macros_overview",
+          "topic": "token-list manipulation in macros"
+        }
+      ]
+    },
+    {
+      "start": 1150,
+      "end": 1186,
+      "name": "match_token_lists",
+      "description": "Documentation for the .MATCH builtin function: syntax (.MATCH(<token list #1>, <token list #2>)), allowed token list contents (cannot contain terminator tokens or end-of-line/file unless enclosed in curly braces), typical use within macros, behavior (compares tokens but not token attributes), and a complete example showing usage in an ASR macro including the macro definition and error handling for invalid arguments.",
+      "references": [
+        {
+          "chunk": "xmatch_token_and_attributes",
+          "topic": "related function that compares token values and attributes (.XMATCH) — referenced by original documentation"
+        }
+      ]
+    },
+    {
+      "start": 1187,
+      "end": 1202,
+      "name": "max_value",
+      "description": "Documentation for the .MAX builtin function: returns the larger of two values. Syntax: .MAX (<value #1>, <value #2>) and an example showing reserving space for the larger of two data blocks (.res .max (.sizeof (foo), .sizeof (bar))).",
+      "references": [
+        {
+          "chunk": "min_value",
+          "topic": "related function that returns the smaller of two values (.MIN)"
+        }
+      ]
+    },
+    {
+      "start": 1203,
+      "end": 1230,
+      "name": "mid_sublist",
+      "description": "Documentation for the .MID builtin function: extracts a sublist of tokens from a token list. Syntax: .MID (<int expr>, <int expr>, <token list>). The first argument is the start index (0-based), the second is the count of tokens to extract, and the third is the token list (optionally in curly braces to include terminator-like tokens). Includes an example showing how to detect an immediate addressing '#' token in a macro using .MID and .MATCH. References .LEFT and .RIGHT as related extraction functions.",
+      "references": [
+        {
+          "chunk": "right_token_list",
+          "topic": "related function to extract the right part of a token list (.RIGHT)"
+        }
+      ]
+    },
+    {
+      "start": 1231,
+      "end": 1246,
+      "name": "min_value",
+      "description": "Documentation for the .MIN builtin function: returns the smaller of two values. Syntax: .MIN (<value #1>, <value #2>) and an example showing reserving space up to a maximum of 256 bytes (.res .min (.sizeof (foo), 256)).",
+      "references": [
+        {
+          "chunk": "max_value",
+          "topic": "related function that returns the larger of two values (.MAX)"
+        }
+      ]
+    },
+    {
+      "start": 1247,
+      "end": 1255,
+      "name": "ref_referenced",
+      "description": "Documentation for the .REF / .REFERENCED builtin function: takes an identifier in parentheses, evaluates it, and yields true if that symbol has already been referenced earlier in the source file at the current position, false otherwise. Example usage replacing .IFREF: .if .referenced(a).",
+      "references": [
+        {
+          "chunk": "defined_symbol_query",
+          "topic": "related concept/function .DEFINED (mentioned in original documentation)"
+        }
+      ]
+    },
+    {
+      "start": 1256,
+      "end": 1266,
+      "name": "right_token_list",
+      "description": "Documentation for the .RIGHT builtin function: extracts the rightmost part of a token list. Syntax: .RIGHT (<int expr>, <token list>) where the first argument is the number of tokens to extract and the second is the token list (optionally enclosed in curly braces to include terminator-like tokens). References .LEFT and .MID as complementary functions.",
+      "references": [
+        {
+          "chunk": "mid_sublist",
+          "topic": "related function to extract a middle sublist of tokens (.MID)"
+        }
+      ]
+    },
+    {
+      "start": 1267,
+      "end": 1318,
+      "name": "sizeof_size_of",
+      "description": "Documentation for the .SIZEOF pseudo-function: returns the size of its argument (struct/union, struct member, scope/procedure, or label). Explains that for procedures/labels size is data emitted into the segment where the label is relative to (data emitted in other segments does not count). Notes that the symbol or scope must exist before use, and scopes take precedence over same-named symbols. Gives a comprehensive example with a struct Point, labeled instances, code/data procedures and nested scopes showing .sizeof(Point) = 4, .sizeof(Point::xcoord) = 2, .sizeof(P) = 4, .sizeof(@P) = 4, .sizeof(Code) = 3 (includes child scopes), .sizeof(Code::Inner) = 1, and .sizeof(Data) = 0 because the segment was switched after entry.",
+      "references": [
+        {
+          "chunk": "max_value",
+          "topic": "example use of .sizeof inside expressions (used in .MAX example)"
+        }
+      ]
+    },
+    {
+      "start": 1319,
+      "end": 1331,
+      "name": "sprintf_formatting",
+      "description": "Documentation for the .SPRINTF builtin function: printf-style formatting that returns a string. It expects a format string as the first argument; additional arguments depend on the format. Notes missing features compared to C printf (length modifiers, variable width). Provides an example generating an identifier using .sprintf: .ident (.sprintf (\"%s%03d\", \"label\", num)): where num = 3.",
+      "references": [
+        {
+          "chunk": "identifier_generation",
+          "topic": "related usage of .sprintf for generating identifiers (example in this section)"
+        }
+      ]
+    },
+    {
+      "start": 1332,
+      "end": 1406,
+      "name": "pseudo_functions_remaining_and_xmatch",
+      "description": "Remaining pseudo-functions: .STRAT/.STRING/.STRLEN usage, .TCOUNT example, `.XMATCH` behavior and differences from .MATCH, and intro to Control Commands section.",
+      "references": [
+        {
+          "chunk": "pseudo_functions_size_and_format",
+          "topic": "related string and token helpers"
+        },
+        {
+          "chunk": "control_commands_overview",
+          "topic": "start of control commands reference"
+        }
+      ]
+    },
+    {
+      "start": 1407,
+      "end": 2721,
+      "name": "control_commands_overview",
+      "description": "Comprehensive reference of control commands (.A16, .A8, .ADDR/.FARADDR, .ALIGN, .ASCIIZ, .ASSERT, .AUTOIMPORT, .BANKBYTES, .BSS, .BYTE/.BYT, .CASE, .CHARMAP, .CODE, .CONDES/.CONSTRUCTOR/.DESTRUCTOR, .DATA, .DBYT, .DEBUGINFO, .DEFINE/.UNDEFINE, .DELMAC/.DELMACRO, .DWORD, conditional directives (.ELSE/.ELSEIF/.ENDIF), .END/.ENDMACRO/.ENDPROC/.ENDREPEAT/.ENDSCOPE/.ENDSTRUCT/.ENDUNION, .ENUM, .ERROR/.FATAL/.OUT/.WARNING, .EXPORT/.EXPORTZP, .FORCEIMPORT/.IMPORT/.IMPORTZP, .INCBIN/.INCLUDE, .INTERRUPTOR, listing controls (.LIST/.LISTBYTES/.PAGELENGTH), .LITERAL, byte helpers (.LOBYTES/.HIBYTES/.BANKBYTES), macro helpers (.LOCAL/.LOCALCHAR/.MACPACK/.MAC/.ENDMACRO/.DELMACRO/.EXITMACRO), .ORG/.RELOC (absolute vs relocatable), .P02/.P02X/.PC02/.PCE02/.PSC02/.P4510/.P45GS02/.P6280/.P816/.PWC02/.PDTV/.PM740 (CPU switches), .POPCHARMAP/.PUSHCHARMAP, .POPCPU/.PUSHCPU, .POPSEG/.PUSHSEG, .PROC/.SCOPE/.SEGMENT/.SET/.SETCPU/.SMART/.STRUCT/.UNION/.TAG/.RES/.RODATA/.ZEROPAGE and more. Each command includes usage notes, arguments, examples, and interactions with linker/assembler features.",
+      "references": [
+        {
+          "chunk": "detailed_command_line_options",
+          "topic": "command-line switches that affect control commands (.debuginfo, --feature, etc.)"
+        },
+        {
+          "chunk": "address_sizes_and_memory_models",
+          "topic": "segment and addressing interactions for .SEGMENT/.ZEROPAGE"
+        },
+        {
+          "chunk": "macros_overview",
+          "topic": "macro-related control commands (.MAC, .LOCAL, .DELMACRO, etc.)"
+        }
+      ],
+      "no_refine": true
+    },
+    {
+      "start": 2722,
+      "end": 2739,
+      "name": "macros_intro_and_basic_no_params",
+      "description": "Introduction to macros and the simplest form: macros without parameters. Explains that macros are token sequences replaced at expansion. Shows a simple .macro/.endmacro example (asr) and how macro expansion inserts the instructions into code.",
+      "references": [
+        {
+          "chunk": "parametrized_macros_and_parameter_handling",
+          "topic": "Parameterized macros, empty parameters, and control commands (.IFBLANK/.IFNBLANK)"
+        },
+        {
+          "chunk": "c_style_define_macros",
+          "topic": "Alternative single-line .DEFINE C-style macros and differences"
+        }
+      ]
+    },
+    {
+      "start": 2740,
+      "end": 2817,
+      "name": "parametrized_macros_and_parameter_handling",
+      "description": "Parametrized classic macros using .macro/.endmacro. Covers parameter substitution, multiple parameters separated by commas, allowing fewer or empty parameters, naming cautions (avoid a,x,y), and control commands for variable parameter lists (.IFBLANK/.IFNBLANK). Shows the ldaxy example demonstrating conditional emission based on which parameters are present. Describes .PARAMCOUNT (reports number of arguments including explicit empties) and the use of curly braces to group parameters that contain commas or parentheses.",
+      "references": [
+        {
+          "chunk": "macros_intro_and_basic_no_params",
+          "topic": "Basic macros without parameters and simple expansion example"
+        },
+        {
+          "chunk": "parameter_type_detection_match_functions",
+          "topic": "Detecting parameter types (.MATCH, .LEFT, .RIGHT) for different argument forms"
+        },
+        {
+          "chunk": "recursive_macros_and_exitmacro",
+          "topic": "Using parameter tests in recursive macros and termination with .EXITMACRO"
+        }
+      ]
+    },
+    {
+      "start": 2818,
+      "end": 2842,
+      "name": "macro_detect_parameter_types",
+      "description": "Detecting macro parameter types using .MATCH and token-list helpers. Example .macro ldax arg shows how to detect an immediate operand (#...) vs memory operand and emit appropriate lda/ldx sequences. Demonstrates use of .left, .right, .tcount and curly braces to pass token lists to pseudo functions. Usage examples: ldax #$1234 and ldax foo.",
+      "references": [
+        {
+          "chunk": "macro_parameters_and_curly_braces",
+          "topic": "how token lists and curly braces affect parameters"
+        }
+      ]
+    },
+    {
+      "start": 2843,
+      "end": 2867,
+      "name": "recursive_macros_and_exitmacro",
+      "description": "Recursive macro examples and techniques. Shows a recursive 'push r1,r2,r3' macro using .ifnblank to recurse, and explains .EXITMACRO to stop expansion immediately. Includes a larger example using .EXITMACRO to push up to seven parameters and how calls with varying parameter counts behave.",
+      "references": [
+        {
+          "chunk": "macro_detect_parameter_types",
+          "topic": "other advanced macro examples (.MATCH usage is another advanced macro technique)"
+        },
+        {
+          "chunk": "local_symbols_in_macros",
+          "topic": "use .LOCAL to avoid duplicate labels in recursive macro expansions"
+        }
+      ]
+    },
+    {
+      "start": 2868,
+      "end": 2871,
+      "name": "local_symbols_in_macros",
+      "description": "Problems with label collisions in macro expansions and solutions. Shows a simple inc16 macro and demonstrates the duplicate-symbol problem when used multiple times. Describes .LOCAL to create unique local labels per expansion and gives an alternative: open a new lexical block with .PROC/.ENDPROC inside the macro to hide labels.",
+      "references": [
+        {
+          "chunk": "recursive_macros_and_exitmacro",
+          "topic": "recursive macros often need local labels"
+        }
+      ]
+    },
+    {
+      "start": 2872,
+      "end": 2914,
+      "name": "local_symbols_in_macros",
+      "description": "Handling local symbols inside macros to avoid duplicate-symbol conflicts when a macro is expanded multiple times. Demonstrates the problem with reusable labels (Skip) and shows solutions: .LOCAL to make symbol names unique per expansion, and using a new lexical block (.proc/.endproc) inside the macro to hide labels. Uses the inc16 macro as an illustrative example.",
+      "references": [
+        {
+          "chunk": "recursive_macros_and_exitmacro",
+          "topic": "Combining recursion with local labels to create reusable macros"
+        },
+        {
+          "chunk": "c_style_define_macros",
+          "topic": "Contrast classic macros with .DEFINE style macros that behave differently"
+        }
+      ]
+    },
+    {
+      "start": 2915,
+      "end": 2970,
+      "name": "c_style_macros",
+      "description": ".DEFINE-style (C-style) macros: single-line replacement macros detected at scanner level. Rules: cannot span multiple logical lines (but can use line continuation), share namespace with classic macros, allowed anywhere in a line, formal parameters in parentheses (actual invocation should NOT include parentheses), parameter count must match exactly, empty parameters not allowed. Examples: .define EQU =, .define VERSION \"12.3a\", .define DEBUG(message) .out message, and pitfalls when invoking with/without parentheses.",
+      "references": [
+        {
+          "chunk": "macro_parameters_and_curly_braces",
+          "topic": "classic macro parameter behavior vs .DEFINE behavior"
+        },
+        {
+          "chunk": "macro_detect_parameter_types",
+          "topic": "token/list handling considerations when mixing macros"
+        }
+      ]
+    },
+    {
+      "start": 2971,
+      "end": 2974,
+      "name": "characters_in_macros",
+      "description": "Character translation timing in macros: with -t option, character translation into target character set happens late. Strings are translated when part of .BYTE/.ASCIIZ; characters are translated when used in expressions. Be careful comparing characters against numeric values inside macros because of translation timing.",
+      "references": [
+        {
+          "chunk": "c_style_macros",
+          "topic": "string constants and .DEFINE usage for textual macros"
+        }
+      ]
+    },
+    {
+      "start": 2975,
+      "end": 3000,
+      "name": "deleting_macros",
+      "description": "How to delete macros: classic macros use .DELMACRO, .DEFINE-style macros use .UNDEFINE. Example shows removing a .DEFINE 'value' and classic macro 'mac', and demonstrates that .UNDEFINE requires special handling because .DEFINE replacements occur at a low scanner level; argument to .UNDEFINE cannot come from another .DEFINE.",
+      "references": [
+        {
+          "chunk": "c_style_macros",
+          "topic": "why .UNDEFINE differs from .DELMACRO"
+        }
+      ]
+    },
+    {
+      "start": 3001,
+      "end": 3045,
+      "name": "macpack_generic_macros",
+      "description": ".MACPACK generic: predefined macros useful in many programs. Defines compact macros: add Arg (CLC / ADC Arg), sub Arg (SEC / SBC Arg), bge Arg (BSC Arg), blt Arg (BCC Arg), bgt Arg (implements greater-than using local label L), ble Arg (BEQ / BCC), bnz Arg (BNE), bze Arg (BEQ). Illustrates use of .LOCAL inside macro definitions.",
+      "references": [
+        {
+          "chunk": "macpack_longbranch",
+          "topic": "another macpack providing long branches for conditional jumps"
+        }
+      ]
+    },
+    {
+      "start": 3046,
+      "end": 3063,
+      "name": "macpack_longbranch",
+      "description": ".MACPACK longbranch: defines long conditional jumps (named like short branches but with 'j' prefix, e.g. jeq). Example shows a macro that expands to a short branch if the target is within reach; otherwise it emits the inverted short branch to skip an absolute JMP to the target. Defines jeq, jne, jmi, jpl, jcs, jcc, jvs, jvc.",
+      "references": [
+        {
+          "chunk": "macpack_generic_macros",
+          "topic": "related convenience branch macros"
+        }
+      ]
+    },
+    {
+      "start": 3064,
+      "end": 3071,
+      "name": "macpack_platform_scrcode",
+      "description": ".MACPACK platform scrcode macros: apple2, atari, and cbm macpacks each define a scrcode macro that takes a string and places it into memory translated into that platform's screen codes.",
+      "references": [
+        {
+          "chunk": "macpack_generic_macros",
+          "topic": "other available macpacks"
+        }
+      ]
+    },
+    {
+      "start": 3072,
+      "end": 3075,
+      "name": "macpack_module_header",
+      "description": ".MACPACK module: provides a module_header macro used to define a module header (dynamic and static variants).",
+      "references": [
+        {
+          "chunk": "module_constructors_destructors",
+          "topic": "module headers may be related to constructor/destructor tables"
+        }
+      ]
+    },
+    {
+      "start": 3076,
+      "end": 3118,
+      "name": "predefined_target_constants",
+      "description": "List of predefined target-system constants that the assembler defines for conditional assembly and portability: __AGAT__, __APPLE2__, __APPLE2ENH__, __ATARI2600__, __ATARI5200__, __ATARI7800__, __ATARI__, __ATARIXL__, __ATMOS__, __BBC__, __C128__, __C16__, __C64__, __C65__, __CBM__, __CBM510__, __CBM610__, __CREATIVISION__, __CX16__, __GAMATE__, __GEOS__, __GEOS_APPLE__, __GEOS_CBM__, __KIM1__, __LUNIX__, __LYNX__, __MEGA65__, __NES__, __OSIC1P__, __PCE__, __PET__, __PLUS4__, __RP6502__, __SIM6502__, __SIM65C02__, __SUPERVISION__, __SYM1__, __TELESTRAT__, __VIC20__.",
+      "references": []
+    },
+    {
+      "start": 3119,
+      "end": 3151,
+      "name": "structs_and_unions_overview_and_declaration",
+      "description": "Overview and declaration examples for .STRUCT and .UNION. Explains that named members have constant offsets from the structure start and members have sizes accessible with .SIZEOF. Examples: .struct Point with xcoord/.word and ycoord/.word, .union Entry with index/.word and ptr/.addr. Anonymous structs/unions place members in the current scope. Nested struct example (Circle containing Point) and resulting size calculation.",
+      "references": [
+        {
+          "chunk": "struct_storage_allocators",
+          "topic": "storage allocator keywords used inside struct/union member declarations"
+        },
+        {
+          "chunk": "struct_tag_keyword",
+          "topic": "reserving space for structs via .TAG"
+        }
+      ]
+    },
+    {
+      "start": 3152,
+      "end": 3171,
+      "name": "struct_storage_allocators",
+      "description": "Storage allocator keywords for struct/union members: .BYTE/.RES (1 byte multiples; .RES requires operand), .DBYT/.WORD/.ADDR (2-byte multiples), .FARADDR (3 bytes), .DWORD (4 bytes), .TAG (allocates a previously defined struct), .STRUCT/.UNION (begin nested definitions and allocate).",
+      "references": [
+        {
+          "chunk": "structs_and_unions_overview_and_declaration",
+          "topic": "examples of using these allocators inside .STRUCT/.UNION"
+        }
+      ]
+    },
+    {
+      "start": 3172,
+      "end": 3185,
+      "name": "struct_org_directive",
+      "description": "The .ORG keyword inside structs changes the offset assigned to subsequent member names — useful for mapping hardware registers. Example: .struct ACIA with .org $031C followed by DATA/.byte, STATUS/.byte, CMD/.byte, CTRL/.byte and usage: lda ACIA::DATA.",
+      "references": [
+        {
+          "chunk": "struct_tag_keyword",
+          "topic": "struct layout and access using :: and .TAG"
+        }
+      ]
+    },
+    {
+      "start": 3186,
+      "end": 3205,
+      "name": "struct_tag_keyword",
+      "description": "The .TAG keyword: reserve space for an already defined struct or union within another struct (e.g., .tag Point inside Circle). Explains that .TAG allocates space but does not allow initialization and nested .TAG-ed structs are not accessible via '::' operator. Shows how to access fields using offsets added to the base address: lda C + Circle::Radius and lda C + Circle::Origin + Point::ycoord.",
+      "references": [
+        {
+          "chunk": "structs_and_unions_overview_and_declaration",
+          "topic": "basic struct/union definitions and member offsets"
+        }
+      ]
+    },
+    {
+      "start": 3206,
+      "end": 3227,
+      "name": "nested_structs_anonymous_named_examples",
+      "description": "Examples of nested structs: named nested structures create a new scope with offsets starting at 0 (e.g., Object::target is a named struct Point whose members start at 0), while anonymous nested structures add their members to the enclosing scope and continue offsets (examples showing Object::price, Object::tax and anonymous radius). Shows correct vs incorrect ways to reference nested members.",
+      "references": [
+        {
+          "chunk": "struct_tag_keyword",
+          "topic": "accessing nested members and use of :: operator"
+        }
+      ]
+    },
+    {
+      "start": 3228,
+      "end": 3235,
+      "name": "anonymous_struct_notes",
+      "description": "Notes and cautions about anonymous structures: anonymous structs don't need a member name because their members become part of the enclosing structure; beware of redundant offsets (example: cost and price share offset).",
+      "references": [
+        {
+          "chunk": "nested_structs_anonymous_named_examples",
+          "topic": "examples showing anonymous vs named nested structs"
+        }
+      ]
+    },
+    {
+      "start": 3236,
+      "end": 3238,
+      "name": "structs_unions_limitations",
+      "description": "Current limitations: structs/unions are implemented as nested symbol tables only, there is no type system. .TAG only allocates space (can't initialize .TAG-declared variables), and adding an embedded structure via .TAG doesn't make it accessible via '::'.",
+      "references": [
+        {
+          "chunk": "struct_tag_keyword",
+          "topic": "limitations of .TAG usage"
+        }
+      ]
+    },
+    {
+      "start": 3239,
+      "end": 3268,
+      "name": "module_constructors_destructors",
+      "description": "Module constructors/destructors/interruptors (.CONSTRUCTOR, .DESTRUCTOR, .INTERRUPTOR and generic .CONDES): declarations export functions so the linker can generate tables of functions (constructors/destructors/interruptors). Useful for runtime module initialization (e.g., heap init). Linker includes addresses only for modules actually linked; constructors are called before main (and destructors after). Priorities determine order. The linker sorts by increasing priority; C runtime typically calls higher priority functions first. Pitfalls: the linker only generates tables (you must call them if not using the standard C runtime), tables are created only when requested via FEATURE CONDES in linker config, and priorities must be managed for dependency order.",
+      "references": [
+        {
+          "chunk": "macpack_module_header",
+          "topic": "module headers may relate to exported module symbols"
+        }
+      ]
+    },
+    {
+      "start": 3269,
+      "end": 3305,
+      "name": "porting_sources_from_other_assemblers_and_tass",
+      "description": "Guidance for porting code from other assemblers to ca65: major differences include .ORG handling and relocatable code via the linker. Recommends avoiding emulation features for new code. TASS porting tips: enable .feature labels_without_colons and .feature loose_char_term to emulate TASS label/char styles, reserve load-address bytes (.word *+2) and use .res instead of program-counter assignments (ca65 cannot move PC backwards). Translate conditional assembly to ca65 syntax (use .REPEAT for loops). Use .ORG to assemble code to an execution address different from assembly address and use cl65 --start-addr with -t none to produce .prg files (note cbm load address adjustment).",
+      "references": [
+        {
+          "chunk": "predefined_target_constants",
+          "topic": "useful for selecting the correct target when porting platform-specific code"
+        }
+      ]
+    },
+    {
+      "start": 3306,
+      "end": 3316,
+      "ignore": true,
+      "reason": "Copyright notice and licensing terms (non-technical/legal section)"
+    }
+  ],
+  "source_md5": "91e6c33c27cb572c0c49f23a13afc128"
+}

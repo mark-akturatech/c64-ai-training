@@ -1,0 +1,267 @@
+{
+  "source_file": "VIC-II Memory Banking Guide.txt",
+  "context": "VIC-II Memory Banking and Address Configuration Guide",
+  "splits": [
+    {
+      "start": 1,
+      "end": 11,
+      "ignore": true,
+      "reason": "Title, subtitle and sources (non-technical metadata)"
+    },
+    {
+      "start": 12,
+      "end": 16,
+      "ignore": true,
+      "reason": "Section dividers and PART 1 header (structural/non-technical)"
+    },
+    {
+      "start": 17,
+      "end": 28,
+      "name": "vic_bank_overview",
+      "description": "VIC-II addressing basics: VIC-II has 14 address lines and accesses one 16 KB bank at a time (full 64 KB is four 16 KB banks). Two bits of CIA-2 Port A ($DD00) select the bank. Note: the bit patterns are inverted by the memory management circuit.",
+      "references": [
+        {
+          "chunk": "bank_selection_table",
+          "topic": "bank bit patterns and addresses"
+        },
+        {
+          "chunk": "bank_selection_registers_and_rw",
+          "topic": "how to change bank bits in $DD00 safely"
+        }
+      ]
+    },
+    {
+      "start": 29,
+      "end": 39,
+      "name": "bank_selection_table",
+      "description": "Bank selection mapping: table of CIA-2 $DD00 bit patterns (bits 0-1) to VIC bank address ranges and whether the ROM charset shadow is present.\n- Bank 0: bit pattern xx11 -> $0000-$3FFF (ROM charset visible at $1000-$1FFF)\n- Bank 1: xx10 -> $4000-$7FFF (no ROM charset shadow)\n- Bank 2: xx01 -> $8000-$BFFF (ROM charset visible at $9000-$9FFF)\n- Bank 3: xx00 -> $C000-$FFFF (no ROM charset shadow)",
+      "references": [
+        {
+          "chunk": "vic_bank_overview",
+          "topic": "VIC bank addressing summary"
+        },
+        {
+          "chunk": "rom_charset_shadows",
+          "topic": "effects of ROM charset in banks 0 and 2"
+        }
+      ]
+    },
+    {
+      "start": 40,
+      "end": 68,
+      "name": "bank_selection_registers_and_rw",
+      "description": "CIA-2 registers for VIC bank selection and safe write practices:\n- $DD02 / 56578: CIA-2 Data Direction Register for Port A (bits 0-1 set as outputs by default)\n- $DD00 / 56576: CIA-2 Data Port A (bank selection in bits 0-1)\n\nWarning: $DD00 also controls serial bus and other CIA functions. Do NOT write a full value with STA; use read-modify-write. Examples:\n6502 assembly:\n  lda $DD00\n  and #%11111100    ; clear bits 0-1\n  ora #%000000xx    ; set desired bank bits\n  sta $DD00\n\nBASIC:\n  POKE 56578, PEEK(56578) OR 3\n  POKE 56576, (PEEK(56576) AND 252) OR x\n\nDirectly loading $DD00 can clear other CIA functions and cause a black screen.",
+      "references": [
+        {
+          "chunk": "vic_bank_overview",
+          "topic": "which bits select the bank"
+        },
+        {
+          "chunk": "basic_example_switch_bank2",
+          "topic": "BASIC usage example for switching banks"
+        }
+      ]
+    },
+    {
+      "start": 69,
+      "end": 98,
+      "name": "rom_charset_shadows",
+      "description": "ROM character set shadow behaviour in banks 0 and 2:\n- Bank 0: ROM charset is visible to the VIC-II at $1000-$1FFF (within bank 0)\n- Bank 2: ROM charset is visible at $9000-$9FFF (within bank 2)\n\nBecause the ROM charset window occupies 4 KB in those banks, that region cannot be used for sprite data, custom character sets, or screen memory. Capacity comparisons:\n- Banks 0 & 2 (with ROM shadow): 192 sprite shapes OR 12 text screens OR 6 custom charsets\n- Banks 1 & 3 (full 16 KB): 256 sprite shapes OR 16 text screens OR 8 charsets\n\nAlso: in banks 0 and 2 the lower half of a hi-res bitmap may be obscured by the ROM charset region.",
+      "references": [
+        {
+          "chunk": "bank_selection_table",
+          "topic": "which banks contain ROM charset shadows"
+        },
+        {
+          "chunk": "character_memory_offsets",
+          "topic": "how $D018 charset offsets map into bank addresses"
+        }
+      ]
+    },
+    {
+      "start": 99,
+      "end": 119,
+      "name": "basic_example_switch_bank2",
+      "description": "BASIC example that selects VIC bank 2 and points $D018 and KERNAL to new screen/charset locations:\n10 POKE 56578, PEEK(56578) OR 3        ; ensure direction bits are outputs\n20 POKE 56576, (PEEK(56576) AND 252) OR 1   ; select VIC bank 2 ($8000-$BFFF)\n30 POKE 53272, 4                       ; set $D018 so charset points to ROM shadow at $9000-$9FFF\n40 POKE 648, 128                       ; tell KERNAL new text screen page (128 = $8000/256)\n\nNotes: After execution the displayed characters may be garbled (RAM shown as characters). BASIC/KERNAL I/O must use the updated screen pointer (e.g. POKE 32768,42 to write at new screen).",
+      "references": [
+        {
+          "chunk": "bank_selection_registers_and_rw",
+          "topic": "safe $DD00 modification"
+        },
+        {
+          "chunk": "d018_vmcsb_overview",
+          "topic": "$D018 configuration referenced in line 30"
+        }
+      ]
+    },
+    {
+      "start": 120,
+      "end": 137,
+      "name": "d018_vmcsb_overview",
+      "description": "$D018 (decimal 53272) — VMCSB (Video Matrix/Character Set Base) overview: Controls placement (offsets relative to the currently selected 16 KB VIC bank) of:\n1) Video Matrix (screen RAM) base\n2) Character dot-data (charset) base\n3) Bitmap base (in bitmap mode)\nAll offsets are relative to the start (base) of the selected VIC bank.",
+      "references": [
+        {
+          "chunk": "d018_bit_layout_and_defaults",
+          "topic": "bit meanings and default value"
+        },
+        {
+          "chunk": "screen_memory_offsets",
+          "topic": "screen offset lookup (bits 7-4)"
+        },
+        {
+          "chunk": "character_memory_offsets",
+          "topic": "charset offset lookup (bits 3-1)"
+        },
+        {
+          "chunk": "bitmap_mode_base",
+          "topic": "bitmap base selection (bit 3)"
+        }
+      ]
+    },
+    {
+      "start": 138,
+      "end": 153,
+      "name": "d018_bit_layout_and_defaults",
+      "description": "$D018 bit layout and default value:\nBits (7-4) VVVV = screen memory base offset (16 possible positions, each $0400 apart)\nBits (3-1) CCC = character dot-data base offset (8 positions, each $0800 apart)\nBit 3 also selects bitmap base in bitmap mode (0 = bank base + $0000, 1 = bank base + $2000)\nBit 0 unused.\nDefault $D018 = $15 (%00010101): screen offset %0001 -> $0400, charset %010 -> $1000 (ROM charset in bank 0).",
+      "references": [
+        {
+          "chunk": "d018_vmcsb_overview",
+          "topic": "what $D018 controls"
+        },
+        {
+          "chunk": "screen_memory_offsets",
+          "topic": "detail mapping of bits 7-4"
+        },
+        {
+          "chunk": "character_memory_offsets",
+          "topic": "detail mapping of bits 3-1"
+        }
+      ]
+    },
+    {
+      "start": 154,
+      "end": 192,
+      "name": "screen_memory_offsets",
+      "description": "Screen memory positions defined by $D018 bits 7-4: 16 positions spaced $0400 (1024) bytes apart. Offset = (bits 7-4) * $0400 added to the currently selected bank base.\nMappings:\n%0000 -> $0000\n%0001 -> $0400\n%0010 -> $0800\n... up to %1111 -> $3C00\n\nExamples:\n- In Bank 0, %0001 -> $0000 + $0400 = $0400 (default)\n- In Bank 1, %0001 -> $4000 + $0400 = $4400\n\nTo change only screen bits in assembly:\n  lda $D018\n  and #%00001111    ; preserve character/bitmap bits\n  ora #%xxxx0000    ; set new screen offset in bits 7-4\n  sta $D018",
+      "references": [
+        {
+          "chunk": "d018_bit_layout_and_defaults",
+          "topic": "bits 7-4 meaning"
+        },
+        {
+          "chunk": "address_calculation_quick_reference",
+          "topic": "formula for absolute screen address"
+        }
+      ]
+    },
+    {
+      "start": 193,
+      "end": 223,
+      "name": "character_memory_offsets",
+      "description": "Character (charset) memory positions defined by $D018 bits 3-1: 8 positions spaced $0800 (2048) bytes apart. Offset = (bits 3-1) * $0800 added to the selected bank base.\nMappings:\n%000 -> $0000\n%001 -> $0800\n%010 -> $1000\n... up to %111 -> $3800\n\nExamples:\n- In Bank 0, %010 -> $0000 + $1000 = $1000 (ROM charset shadow in banks 0/2)\n- In Bank 1, %111 -> $4000 + $3800 = $7800\n\nTo change only character bits in assembly:\n  lda $D018\n  and #%11110001    ; preserve screen and unused bits\n  ora #%0000xxx0    ; set desired character offset in bits 3-1\n  sta $D018",
+      "references": [
+        {
+          "chunk": "d018_bit_layout_and_defaults",
+          "topic": "bits 3-1 meaning"
+        },
+        {
+          "chunk": "rom_charset_shadows",
+          "topic": "ROM charset mapping in banks 0 and 2"
+        }
+      ]
+    },
+    {
+      "start": 224,
+      "end": 235,
+      "name": "bitmap_mode_base",
+      "description": "Bitmap mode base selection (uses bit 3 of $D018): when bitmap mode is active, bit 3 chooses one of two bitmap base addresses within the current bank:\n- Bit 3 = 0 -> Bitmap at bank base + $0000\n- Bit 3 = 1 -> Bitmap at bank base + $2000\nNote: a bitmap needs 8000 bytes, occupying nearly half of a 16 KB bank.",
+      "references": [
+        {
+          "chunk": "d018_vmcsb_overview",
+          "topic": "bitmap base is part of $D018 control"
+        },
+        {
+          "chunk": "address_calculation_quick_reference",
+          "topic": "bitmap base calculation"
+        }
+      ]
+    },
+    {
+      "start": 236,
+      "end": 261,
+      "name": "common_configurations",
+      "description": "Common configuration examples and defaults:\nDefault C64 (Bank 0): $DD00 bits 0-1 = %11 -> Bank 0 ($0000-$3FFF); $D018 = $15 (%00010101) -> Screen $0400, Charset $1000 (ROM).\nCustom example (Bank 1 with custom charset): $DD00 bits 0-1 = %10 -> Bank 1 ($4000-$7FFF); $D018 = $18 (%00011000) -> Screen at $4400, Charset at $6000.\nCustom example (Bank 3 with bitmap): $DD00 bits 0-1 = %00 -> Bank 3 ($C000-$FFFF); $D018 = $18 -> Screen/color data at $C400, Bitmap at $E000 (bit 3=1).",
+      "references": [
+        {
+          "chunk": "bank_selection_table",
+          "topic": "bank base addresses and ROM shadows"
+        },
+        {
+          "chunk": "d018_bit_layout_and_defaults",
+          "topic": "$D018 example values"
+        },
+        {
+          "chunk": "basic_example_switch_bank2",
+          "topic": "BASIC bank switching example"
+        }
+      ]
+    },
+    {
+      "start": 262,
+      "end": 280,
+      "name": "full_bank_switch_assembly",
+      "description": "6502 assembly example: switch to VIC Bank 2 ($8000-$BFFF) and configure screen/charset offsets.\nAssembly sequence:\n  ; Select bank 2\n  lda $DD00\n  and #%11111100\n  ora #%00000001    ; Bank 2 = %01\n  sta $DD00\n\n  ; Configure screen at offset $0400 (bits 7-4 = %0001) and charset at offset $2000 (bits 3-1 = %100)\n  lda #%00011000    ; $18\n  sta $D018",
+      "references": [
+        {
+          "chunk": "bank_selection_registers_and_rw",
+          "topic": "safe read-modify-write for $DD00"
+        },
+        {
+          "chunk": "d018_vmcsb_overview",
+          "topic": "$D018 setup for screen and charset"
+        }
+      ]
+    },
+    {
+      "start": 281,
+      "end": 296,
+      "name": "address_calculation_quick_reference",
+      "description": "Quick formulas to compute absolute addresses from $D018 and bank selection:\n- Screen address = Bank base + (bits 7-4) * $0400\n- Charset address = Bank base + (bits 3-1) * $0800\n- Bitmap address = Bank base + (bit 3) * $2000\nBank base addresses:\n  Bank 0 = $0000\n  Bank 1 = $4000\n  Bank 2 = $8000\n  Bank 3 = $C000",
+      "references": [
+        {
+          "chunk": "screen_memory_offsets",
+          "topic": "screen offset table"
+        },
+        {
+          "chunk": "character_memory_offsets",
+          "topic": "charset offset table"
+        },
+        {
+          "chunk": "bitmap_mode_base",
+          "topic": "bitmap base selection"
+        }
+      ]
+    },
+    {
+      "start": 297,
+      "end": 316,
+      "name": "important_notes",
+      "description": "Important practical notes and caveats:\n1) When changing banks, update the KERNAL screen page pointer at address 648/$0288 so BASIC/KERNAL I/O write to the correct screen location. Set it to (screen_address / 256).\n2) In banks 0 and 2 the ROM charset is mapped into a 4 KB window; any data placed at those addresses (sprites, custom charset, screen) will be invisible to the VIC-II.\n3) Color RAM at $D800-$DBE7 is independent of VIC bank selection and remains at the same addresses.\n4) Sprite data pointers are stored in the last 8 bytes of screen memory (screen base + $03F8 to $03FF). Moving screen memory moves sprite pointers with it.\n5) Always use read-modify-write when changing $DD00 to avoid disrupting the serial bus and other CIA-2 functions.",
+      "references": [
+        {
+          "chunk": "address_calculation_quick_reference",
+          "topic": "compute screen_address for KERNAL page pointer"
+        },
+        {
+          "chunk": "bank_selection_registers_and_rw",
+          "topic": "RMW requirement for $DD00"
+        },
+        {
+          "chunk": "rom_charset_shadows",
+          "topic": "visibility issues when ROM charset is mapped"
+        }
+      ]
+    }
+  ],
+  "source_md5": "b5db3d25358499908860ce592d82794f"
+}

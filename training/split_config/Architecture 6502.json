@@ -1,0 +1,329 @@
+{
+  "source_file": "Architecture 6502.txt",
+  "context": "Architecture of 6502 Microprocessor",
+  "splits": [
+    {
+      "start": 1,
+      "end": 2,
+      "ignore": true,
+      "reason": "Title and blank line"
+    },
+    {
+      "start": 3,
+      "end": 6,
+      "name": "introduction_and_history",
+      "description": "Overview of the MOS Technology 6502 microprocessor, its era (late 1970s) and notable systems that used it (Apple II, BBC Model B, Acorn Electron, Atari 800, Commodore 64, Vic 20, PET). Notes the simple instruction set and low cost.",
+      "references": [
+        {
+          "chunk": "basic_specifications",
+          "topic": "hardware characteristics (clock speed, wordlength, I/O mapping)"
+        }
+      ]
+    },
+    {
+      "start": 7,
+      "end": 16,
+      "name": "basic_specifications",
+      "description": "Basic hardware specs: available clock speeds (1, 2, and 3 MHz models), 8-bit word length, and memory-mapped I/O. Explains there are no dedicated I/O registers in the CPU and gives example of writing to address $E000 to reach an I/O device.",
+      "references": [
+        {
+          "chunk": "addresses_and_address_bus",
+          "topic": "address bus width and address range"
+        },
+        {
+          "chunk": "paged_memory_and_zero_page",
+          "topic": "memory organization (zero page optimization)"
+        }
+      ]
+    },
+    {
+      "start": 17,
+      "end": 25,
+      "name": "addresses_and_address_bus",
+      "description": "Address bus is 16 bits. The processor can access binary addresses from 0000000000000000 to 1111111111111111, shown as $0000 to $FFFF in hexadecimal.",
+      "references": [
+        {
+          "chunk": "addressable_memory_and_endianness",
+          "topic": "total addressable memory and endianness"
+        }
+      ]
+    },
+    {
+      "start": 26,
+      "end": 33,
+      "name": "addressable_memory_and_endianness",
+      "description": "Total addressable memory is 64 Kb. The 6502 is little-endian: 16-bit addresses are stored least-significant byte first (example: $458D stored as $8D $45).",
+      "references": [
+        {
+          "chunk": "addresses_and_address_bus",
+          "topic": "16-bit address bus and ranges"
+        }
+      ]
+    },
+    {
+      "start": 34,
+      "end": 41,
+      "name": "paged_memory_and_zero_page",
+      "description": "Memory is organized as 256-byte pages. The first page ($0000–$00FF) is the Zero Page and supports a special addressing mode that yields shorter, faster instructions, making it suitable for frequently accessed tables and addresses.",
+      "references": [
+        {
+          "chunk": "stack_page",
+          "topic": "the reserved stack page ($0100–$01FF)"
+        },
+        {
+          "chunk": "addressable_memory_and_endianness",
+          "topic": "overall memory size and ordering"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 43,
+      "name": "stack_page",
+      "description": "The second page ($0100–$01FF) is reserved for the system stack. It is used for storing return addresses and temporary values during subroutine calls and interrupts, and its location is fixed (cannot be moved).",
+      "references": [
+        {
+          "chunk": "stack_pointer",
+          "topic": "stack pointer register behavior and stack mechanics"
+        }
+      ]
+    },
+    {
+      "start": 44,
+      "end": 51,
+      "name": "interrupt_and_reset_vectors",
+      "description": "Reserved vector addresses at the top of memory: $FFFA/$FFFB hold the NMI handler address, $FFFC/$FFFD hold the power-on reset (reset vector) address, and $FFFE/$FFFF hold the BRK/IRQ interrupt handler address.",
+      "references": [
+        {
+          "chunk": "addresses_and_address_bus",
+          "topic": "address range ($0000–$FFFF) where vectors reside"
+        }
+      ]
+    },
+    {
+      "start": 52,
+      "end": 67,
+      "name": "registers_overview",
+      "description": "Overview of the 6502 register set: six registers total — five 8-bit registers (A accumulator, X and Y index registers, S stack pointer, P processor status) and one 16-bit register (Program Counter, PCH/PCL).",
+      "references": [
+        {
+          "chunk": "accumulator",
+          "topic": "Accumulator (A) details"
+        },
+        {
+          "chunk": "index_register_x",
+          "topic": "Index register X details"
+        },
+        {
+          "chunk": "index_register_y",
+          "topic": "Index register Y details"
+        },
+        {
+          "chunk": "program_counter",
+          "topic": "Program Counter (PC) details"
+        },
+        {
+          "chunk": "stack_pointer",
+          "topic": "Stack Pointer (S) details"
+        },
+        {
+          "chunk": "processor_status_register",
+          "topic": "Processor status flags (P)"
+        }
+      ]
+    },
+    {
+      "start": 68,
+      "end": 73,
+      "name": "accumulator",
+      "description": "Accumulator (A), an 8-bit register used for arithmetic and logical operations (apart from increments and decrements). Data must be loaded into A to be manipulated by those instructions.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flags (Zero, Negative, Carry, Overflow) affected by accumulator operations"
+        }
+      ]
+    },
+    {
+      "start": 74,
+      "end": 79,
+      "name": "index_register_x",
+      "description": "Index Register X (8 bits). Typically used as a counter or memory offset; supports compare, increment, and decrement operations. Uniquely among index registers, X can be used to read or change a copy of the stack pointer.",
+      "references": [
+        {
+          "chunk": "stack_pointer",
+          "topic": "interaction: X can get or set a copy of the stack pointer"
+        }
+      ]
+    },
+    {
+      "start": 80,
+      "end": 84,
+      "name": "index_register_y",
+      "description": "Index Register Y (8 bits). Typically used as a counter or memory offset; supports compare, increment, and decrement operations similar to X, but without the special interaction with the stack pointer.",
+      "references": [
+        {
+          "chunk": "index_register_x",
+          "topic": "comparison of X and Y typical uses"
+        }
+      ]
+    },
+    {
+      "start": 85,
+      "end": 90,
+      "name": "program_counter",
+      "description": "Program Counter (PC), a 16-bit register that contains the address of the next instruction. The hardware increments it automatically; control flow instructions (jumps, branches, subroutines, returns) alter it.",
+      "references": [
+        {
+          "chunk": "interrupt_and_reset_vectors",
+          "topic": "vectors that load addresses into PC on reset or interrupt"
+        }
+      ]
+    },
+    {
+      "start": 91,
+      "end": 97,
+      "name": "stack_pointer",
+      "description": "Stack Pointer (S), an 8-bit register holding the low byte of the next free stack location. The 6502 stack occupies $0100–$01FF (page 1), starts at $01FF and grows downward. Pushing decrements S; popping increments S. The hardware does not check for stack overflow — the programmer must manage stack usage.",
+      "references": [
+        {
+          "chunk": "stack_page",
+          "topic": "fixed stack location on page 1 ($0100–$01FF)"
+        }
+      ]
+    },
+    {
+      "start": 98,
+      "end": 106,
+      "name": "processor_status_register",
+      "description": "Processor Status Register (P) containing flags: N V - B D I Z C (Negative, Overflow, unused, Break, Decimal, Interrupt Disable, Zero, Carry). Used to indicate operation results. Instructions exist to test, set, clear individual bits and to push/pop the entire flags byte on the stack.",
+      "references": [
+        {
+          "chunk": "carry_flag",
+          "topic": "Carry flag (C) details"
+        },
+        {
+          "chunk": "zero_flag",
+          "topic": "Zero flag (Z) details"
+        },
+        {
+          "chunk": "interrupt_disable",
+          "topic": "Interrupt Disable flag (I) and SEI/CLI"
+        },
+        {
+          "chunk": "decimal_mode",
+          "topic": "Decimal mode flag (D) and BCD arithmetic"
+        },
+        {
+          "chunk": "overflow_flag",
+          "topic": "Overflow flag (V) explanation"
+        },
+        {
+          "chunk": "negative_flag",
+          "topic": "Negative flag (N) explanation"
+        },
+        {
+          "chunk": "break_command",
+          "topic": "Break flag (B) and BRK instruction"
+        }
+      ]
+    },
+    {
+      "start": 107,
+      "end": 114,
+      "name": "carry_flag",
+      "description": "Carry Flag (C). Set when an operation produces a carry out of the most significant bit (bit 7) or a borrow underflow from bit 0. Affected by arithmetic, comparison, and logical shift instructions. Can be explicitly set with SEC and cleared with CLC.",
+      "references": [
+        {
+          "chunk": "accumulator",
+          "topic": "arithmetic operations in A affect the carry flag"
+        },
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the C bit"
+        }
+      ]
+    },
+    {
+      "start": 115,
+      "end": 119,
+      "name": "zero_flag",
+      "description": "Zero Flag (Z). Set if the result of the last operation was zero.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the Z bit"
+        }
+      ]
+    },
+    {
+      "start": 120,
+      "end": 124,
+      "name": "interrupt_disable",
+      "description": "Interrupt Disable Flag (I). Set by the SEI instruction to prevent the processor from responding to external interrupts; cleared by CLI to re-enable interrupts.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the I bit"
+        }
+      ]
+    },
+    {
+      "start": 125,
+      "end": 129,
+      "name": "decimal_mode",
+      "description": "Decimal Mode Flag (D). When set, the processor performs Binary Coded Decimal (BCD) arithmetic rules during addition and subtraction. Set with SED and cleared with CLD.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the D bit"
+        }
+      ]
+    },
+    {
+      "start": 130,
+      "end": 134,
+      "name": "break_command",
+      "description": "Break Command Flag (B). The B bit is set when a BRK instruction executes; BRK generates an interrupt to allow handling of the software break.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the B bit"
+        },
+        {
+          "chunk": "interrupt_and_reset_vectors",
+          "topic": "BRK/IRQ handler vector at $FFFE/$FFFF"
+        }
+      ]
+    },
+    {
+      "start": 135,
+      "end": 141,
+      "name": "overflow_flag",
+      "description": "Overflow Flag (V). Set when an arithmetic operation produces an invalid two's complement result — for example adding two positive numbers yielding a negative result (64 + 64 => -128). More generally: if the most significant bits of the two operands are the same and different from the msb of the result, V is set.",
+      "references": [
+        {
+          "chunk": "accumulator",
+          "topic": "overflow typically arises from arithmetic on A"
+        },
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the V bit"
+        }
+      ]
+    },
+    {
+      "start": 142,
+      "end": 145,
+      "name": "negative_flag",
+      "description": "Negative Flag (N). Set when the most significant bit (bit 7) of the result of the last operation is 1, indicating a negative value in two's complement representation.",
+      "references": [
+        {
+          "chunk": "processor_status_register",
+          "topic": "flag P contains the N bit"
+        }
+      ]
+    }
+  ],
+  "source_md5": "e3a34db38dce7149d1895877ede55c6b"
+}

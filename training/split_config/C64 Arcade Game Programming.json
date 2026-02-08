@@ -1,0 +1,2886 @@
+{
+  "source_file": "C64 Arcade Game Programming.txt",
+  "context": "Contents",
+  "splits": [
+    {
+      "start": 1,
+      "end": 100,
+      "ignore": true,
+      "reason": "Table of contents and non-technical listing of chapters and subsections"
+    },
+    {
+      "start": 101,
+      "end": 115,
+      "name": "chapter1_introduction_tv_and_gaming",
+      "description": "Introductory remarks on why game authors should understand the television display: motivation for learning display mechanics and using TV to present game visuals.",
+      "references": [
+        {
+          "chunk": "tv_display_principles",
+          "topic": "how the monitor draws pixels and sync pulses"
+        },
+        {
+          "chunk": "what_is_animation",
+          "topic": "relation of frames to perceived motion"
+        }
+      ]
+    },
+    {
+      "start": 116,
+      "end": 173,
+      "name": "tv_display_principles",
+      "description": "How a TV produces an image: pixels, electron beam scanning left-to-right, horizontal and vertical sync pulses, number of scan lines (262.5 nominal), Commodore-specific values (200 visible scan lines + 62 border), refresh rate (60 Hz), and relation of CPU machine cycles to beam movement (~6 pixels per machine cycle).",
+      "references": [
+        {
+          "chunk": "chapter1_introduction_tv_and_gaming",
+          "topic": "motivation for understanding the display"
+        },
+        {
+          "chunk": "working_with_interrupts_and_raster",
+          "topic": "using raster interrupts to change display mid-frame"
+        }
+      ]
+    },
+    {
+      "start": 174,
+      "end": 226,
+      "name": "what_is_animation",
+      "description": "Human perception and animation: flicker fusion frequency (~24 Hz), screen period (1/60 second) as the fundamental timing unit for animation, how to move objects at integer pixels per screen update, multiplexing technique (alternating displays faster than 24 Hz) and its constraints.",
+      "references": [
+        {
+          "chunk": "tv_display_principles",
+          "topic": "frame generation and refresh rate"
+        },
+        {
+          "chunk": "working_with_interrupts_and_raster",
+          "topic": "synchronizing animation updates with raster/interrupts"
+        }
+      ]
+    },
+    {
+      "start": 227,
+      "end": 268,
+      "name": "basic_limitations_and_animation_requirements",
+      "description": "Why BASIC is typically unsuitable for smooth arcade-style animation: interpreter overhead, repeated parsing of lines, slow PEEK/POKE hardware access, insufficient update rates for 30+ fps; introduces need for faster approaches.",
+      "references": [
+        {
+          "chunk": "machine_language_overview",
+          "topic": "advantages of machine language over BASIC"
+        },
+        {
+          "chunk": "assembly_language_definition",
+          "topic": "assembly as practical alternative to machine code"
+        }
+      ]
+    },
+    {
+      "start": 269,
+      "end": 294,
+      "name": "machine_language_overview",
+      "description": "Machine language (native opcodes) is fastest because instructions execute directly; drawback is unreadable hexadecimal codes. Discusses execution determinism and contrast with BASIC; motivation to use an assembler.",
+      "references": [
+        {
+          "chunk": "assembly_language_definition",
+          "topic": "use assembler to get machine speed with readable mnemonics"
+        }
+      ]
+    },
+    {
+      "start": 295,
+      "end": 355,
+      "name": "assembly_language_definition",
+      "description": "Definition of assembly language: mnemonics translated by an assembler to machine code once before running; benefits include speed, direct hardware access, control, and improved readability through named memory locations and variables.",
+      "references": [
+        {
+          "chunk": "using_an_assembler_pseudo_opcodes",
+          "topic": "assembler features and pseudo-opcodes used in book"
+        },
+        {
+          "chunk": "machine_language_overview",
+          "topic": "assembly gives the speed of machine language with programmer-friendly syntax"
+        }
+      ]
+    },
+    {
+      "start": 356,
+      "end": 379,
+      "name": "using_an_assembler_overview",
+      "description": "Overview of using an assembler for the book's assembly-language examples: recommends assembly for examples, suggests BASIC programmers may reuse routines, explains that each assembler has its own pseudo-opcodes, and introduces that the listings use Commodore's Macro Assembler Development System (and can be adapted to other assemblers).",
+      "references": [
+        {
+          "chunk": "pseudo_opcode_byte_directive",
+          "topic": "Specific pseudo-opcode examples (BYTE)"
+        },
+        {
+          "chunk": "assembler_porting_and_translation_advice",
+          "topic": "Advice on adapting listings to other assemblers"
+        }
+      ]
+    },
+    {
+      "start": 380,
+      "end": 395,
+      "name": "pseudo_opcode_byte_directive",
+      "description": "Documentation of the BYTE pseudo-opcode used in the Commodore Macro Assembler: the BYTE directive reserves one or more bytes of data starting at the current location counter value. (Includes the directive label and its short description as used in the listings.)",
+      "references": [
+        {
+          "chunk": "using_an_assembler_overview",
+          "topic": "Context and assembler used for examples"
+        },
+        {
+          "chunk": "pseudo_opcode_word_directive",
+          "topic": "Related data-reservation directives (WORD)"
+        }
+      ]
+    },
+    {
+      "start": 396,
+      "end": 405,
+      "name": "pseudo_opcode_word_directive",
+      "description": "Documentation of the WORD pseudo-opcode: reserves 16-bit data in LOW byte-HIGH byte format for the target machine's data definitions.",
+      "references": [
+        {
+          "chunk": "pseudo_opcode_byte_directive",
+          "topic": "Other byte-reservation directives (BYTE)"
+        },
+        {
+          "chunk": "pseudo_opcode_dbyte_directive",
+          "topic": "Alternative 16-bit ordering (.DBYTE)"
+        }
+      ]
+    },
+    {
+      "start": 406,
+      "end": 419,
+      "name": "pseudo_opcode_dbyte_directive",
+      "description": "Documentation of the .DBYTE pseudo-opcode: reserves 16-bit data in HIGH byte-LOW byte format (the opposite byte order from WORD). This section contains the .DBYTE label and its concise description as used in the assembler listings.",
+      "references": [
+        {
+          "chunk": "pseudo_opcode_word_directive",
+          "topic": "Contrasting 16-bit byte orders (WORD vs .DBYTE)"
+        },
+        {
+          "chunk": "location_counter_and_lib",
+          "topic": "Other assembler directives affecting layout (location counter, .LIB)"
+        }
+      ]
+    },
+    {
+      "start": 420,
+      "end": 431,
+      "name": "location_counter_and_lib",
+      "description": "Short notes on the program location counter and the .LIB pseudo-opcode: the listing mentions the concept 'Program location counter' (the current assembly address) and documents .LIB, which inserts another disk file into the source stream following the command.",
+      "references": [
+        {
+          "chunk": "pseudo_opcode_dbyte_directive",
+          "topic": "Previous data-definition directives"
+        },
+        {
+          "chunk": "pseudo_opcode_end_marker",
+          "topic": "End-of-file marker (.END) and file termination"
+        }
+      ]
+    },
+    {
+      "start": 432,
+      "end": 441,
+      "name": "pseudo_opcode_end_marker",
+      "description": "Documentation of the .END pseudo-opcode: used as an end-of-file marker in the assembler source listings to mark the end of the assembly input.",
+      "references": [
+        {
+          "chunk": "location_counter_and_lib",
+          "topic": "File inclusion (.LIB) and the program location counter"
+        },
+        {
+          "chunk": "symbol_assignment_directive",
+          "topic": "Other assembler directives such as symbol assignment"
+        }
+      ]
+    },
+    {
+      "start": 442,
+      "end": 458,
+      "name": "symbol_assignment_directive",
+      "description": "Description of the assembler pseudo-opcode used to assign a value to a symbol (a constant or equate). The listing shows the concept 'Assigns a value to a symbol' as the way to define named constants or symbols for use in the code.",
+      "references": [
+        {
+          "chunk": "pseudo_opcode_end_marker",
+          "topic": "Source-file termination (.END)"
+        },
+        {
+          "chunk": "macro_and_byte_order_directives",
+          "topic": "Other directives that may be labeled or used alongside assignments"
+        }
+      ]
+    },
+    {
+      "start": 459,
+      "end": 475,
+      "name": "macro_and_byte_order_directives",
+      "description": "Combined documentation of MAC/MND and byte-order/byte-splitting behavior as shown in the listings: the lines present the MAC and MND labels and indicate usages such as specifying low-order 8 bits and high-order 8 bits of a 16-bit value and that MAC starts a macro and MND ends a macro. Also notes that any of the listed directives may be preceded by a label.",
+      "references": [
+        {
+          "chunk": "symbol_assignment_directive",
+          "topic": "Labeling and symbol definitions"
+        },
+        {
+          "chunk": "macro_parameter_symbol",
+          "topic": "Macro parameter syntax using '?'"
+        }
+      ]
+    },
+    {
+      "start": 476,
+      "end": 483,
+      "name": "macro_parameter_symbol",
+      "description": "Explanation of the '?' symbol in the assembler's macro syntax: '?' precedes a number that specifies which parameter to pass to the macro and can also be used as a label in the source listings.",
+      "references": [
+        {
+          "chunk": "macro_and_byte_order_directives",
+          "topic": "Macro start/end (MAC/MND) and related syntax"
+        },
+        {
+          "chunk": "assembler_porting_and_translation_advice",
+          "topic": "How macro syntax may differ across assemblers"
+        }
+      ]
+    },
+    {
+      "start": 484,
+      "end": 493,
+      "name": "assembler_porting_and_translation_advice",
+      "description": "Final notes and advice on porting the listings to other assemblers: enumerates that the shown commands may differ across assemblers, reassures the reader these are the only likely differences, and recommends that many assemblers include a translator to convert the Commodore Macro Assembler syntax into their own format to minimize manual changes.",
+      "references": [
+        {
+          "chunk": "using_an_assembler_overview",
+          "topic": "Overall guidance about adapting the book's examples to other assemblers"
+        },
+        {
+          "chunk": "pseudo_opcode_dbyte_directive",
+          "topic": "Example directives that may need syntax changes"
+        }
+      ]
+    },
+    {
+      "start": 494,
+      "end": 509,
+      "name": "assembler_benefits_and_branch_resolution",
+      "description": "Explains basic benefits of using an assembler: it removes the need to memorize machine opcodes and automatically computes branch distances, making development of larger programs practical and less error-prone (includes a brief aside about hand-coding).",
+      "references": [
+        {
+          "chunk": "symbolic_names_and_program_readability",
+          "topic": "follow-on: how assemblers let you assign meaningful names to memory and program locations"
+        }
+      ]
+    },
+    {
+      "start": 510,
+      "end": 534,
+      "name": "symbolic_names_and_program_readability",
+      "description": "Describes the assembler feature that allows assigning symbolic names to memory locations, hardware registers and program locations; explains how meaningful names improve readability and contrasts assembled source listings with disassemblies (addresses only).",
+      "references": [
+        {
+          "chunk": "assembler_benefits_and_branch_resolution",
+          "topic": "preceding: basic assembler benefits and branch distance calculation"
+        },
+        {
+          "chunk": "macros_definition_example_and_benefits",
+          "topic": "follow-on: macro instructions as another assembler feature"
+        }
+      ]
+    },
+    {
+      "start": 535,
+      "end": 590,
+      "name": "macros_definition_example_and_benefits",
+      "description": "Introduces macro-instructions: what a macro is and how it represents a sequence of assembly commands. Provides a sample macro (DBINC) that increments a two-byte value, shows the macro definition and a use-case (DBINC SCORE,$20), and shows the expanded instructions. Discusses why macros save typing, improve readability, and how building a macro library speeds development.",
+      "references": [
+        {
+          "chunk": "symbolic_names_and_program_readability",
+          "topic": "previous: symbolic names and program readability"
+        },
+        {
+          "chunk": "macros_vs_subroutines_memory_tradeoff",
+          "topic": "next: when to use subroutines instead of macros (memory tradeoffs)"
+        }
+      ]
+    },
+    {
+      "start": 591,
+      "end": 611,
+      "name": "macros_vs_subroutines_memory_tradeoff",
+      "description": "Explains the tradeoff between macros and subroutines: macros are expanded inline each time they are used (consuming code space per use), whereas subroutines (invoked via JSR) are stored once. Recommends using subroutines for frequently used or large functions (example: text display routines) and discusses building a subroutine library analogous to a macro library.",
+      "references": [
+        {
+          "chunk": "macros_definition_example_and_benefits",
+          "topic": "previous: macro definition, example, and advantages"
+        },
+        {
+          "chunk": "code_reuse_and_library_practices",
+          "topic": "follow-on: practical advice about incorporating routines into libraries for reuse"
+        }
+      ]
+    },
+    {
+      "start": 612,
+      "end": 620,
+      "name": "code_reuse_and_library_practices",
+      "description": "Practical guidance on reuse: when you write a specialized routine that may be useful later, incorporate it into your macro or subroutine library so common routines are readily available across projects.",
+      "references": [
+        {
+          "chunk": "macros_vs_subroutines_memory_tradeoff",
+          "topic": "previous: why choose subroutines vs macros based on reuse and size"
+        },
+        {
+          "chunk": "data_definition_text_storage_and_assembler_requirements",
+          "topic": "next: assemblers' capabilities for defining and storing data and text"
+        }
+      ]
+    },
+    {
+      "start": 621,
+      "end": 641,
+      "name": "data_definition_text_storage_and_assembler_requirements",
+      "description": "Describes assembler support for defining data areas and tables (naming, mathematical expressions, byte-sized and two-byte values), options for byte order (high/low first), and text storage options such as storing characters with the high bit set to mark string ends. Concludes with the basic requirement that an assembler accept assembly language commands.",
+      "references": [
+        {
+          "chunk": "code_reuse_and_library_practices",
+          "topic": "previous: reuse practices and where to store commonly used routines"
+        }
+      ]
+    },
+    {
+      "start": 642,
+      "end": 659,
+      "name": "importance_of_an_assembler_and_package_components",
+      "description": "Explains the central role of an assembler program in machine-language game development and lists the three essential parts of a good assembler package: a text editor, the assembler itself, and a machine-language monitor.",
+      "references": [
+        {
+          "chunk": "text_editor_role_and_selection",
+          "topic": "details on the editor component"
+        },
+        {
+          "chunk": "assembling_and_coresident_assemblers_saving_practices",
+          "topic": "how the assembler component is loaded/used"
+        },
+        {
+          "chunk": "monitor_functions_and_relocatability_warning",
+          "topic": "monitor component overview"
+        }
+      ]
+    },
+    {
+      "start": 660,
+      "end": 673,
+      "name": "text_editor_role_and_selection",
+      "description": "Describes the text editor's role as the primary interface for entering and modifying source code, notes that some assemblers permit external word processors, and advises trying editors before buying because limited editors waste programming time.",
+      "references": [
+        {
+          "chunk": "importance_of_an_assembler_and_package_components",
+          "topic": "lists the editor as a core component"
+        },
+        {
+          "chunk": "assembling_and_coresident_assemblers_saving_practices",
+          "topic": "next steps after editing (assembly)"
+        }
+      ]
+    },
+    {
+      "start": 674,
+      "end": 695,
+      "name": "assembling_process_and_coresident_assemblers_saving_practices",
+      "description": "Explains that source must be assembled after editing, defines a coresident assembler (all tools loaded simultaneously), describes the convenience of coresident systems for quick test-assemble cycles, and strongly recommends saving source frequently to avoid data loss if the system locks up.",
+      "references": [
+        {
+          "chunk": "text_editor_role_and_selection",
+          "topic": "what you do with source entered in the editor"
+        },
+        {
+          "chunk": "assembly_speed_and_printouts_intro",
+          "topic": "performance and output considerations after assembly"
+        },
+        {
+          "chunk": "monitor_functions_and_relocatability_warning",
+          "topic": "saving before running and monitor-related crash risks"
+        }
+      ]
+    },
+    {
+      "start": 696,
+      "end": 707,
+      "name": "assembly_speed_and_printouts_intro",
+      "description": "Advises evaluating assembler speed (assembly time limited by disk I/O) and stresses verifying that assembler-generated printouts include the information you need; introduces a list of common printout features that vary between assemblers.",
+      "references": [
+        {
+          "chunk": "assembling_and_coresident_assemblers_saving_practices",
+          "topic": "context for assembling frequency and testing"
+        },
+        {
+          "chunk": "printout_items_and_what_to_look_for",
+          "topic": "specific printout features to check"
+        }
+      ]
+    },
+    {
+      "start": 708,
+      "end": 717,
+      "name": "printout_items_and_what_to_look_for",
+      "description": "Lists specific output/listing features to compare between assemblers: sorted symbol table with absolute addresses, macro expansion, data expansion, absolute addresses for all code, and absolute addresses for RAM registers.",
+      "references": [
+        {
+          "chunk": "assembly_speed_and_printouts_intro",
+          "topic": "introduced the importance of assembler printouts"
+        },
+        {
+          "chunk": "symbol_table_and_sorting",
+          "topic": "details on symbol tables and sorting"
+        },
+        {
+          "chunk": "macro_expansion_on_listings",
+          "topic": "how macro expansion appears and why it helps debugging"
+        },
+        {
+          "chunk": "data_expression_expansion_listings",
+          "topic": "data expansion and printed calculated values"
+        },
+        {
+          "chunk": "absolute_addresses_in_listings",
+          "topic": "importance of absolute addresses in printouts"
+        }
+      ]
+    },
+    {
+      "start": 718,
+      "end": 734,
+      "name": "symbol_table_and_sorting",
+      "description": "Explains what a symbol table is (names and corresponding addresses), how a printed symbol table aids verification and navigation, and why alphabetical sorting and resolved (absolute) addresses are important for usefulness of the listing.",
+      "references": [
+        {
+          "chunk": "printout_items_and_what_to_look_for",
+          "topic": "symbol table listed as a key printout item"
+        },
+        {
+          "chunk": "absolute_addresses_in_listings",
+          "topic": "importance of resolved absolute addresses throughout listings"
+        }
+      ]
+    },
+    {
+      "start": 735,
+      "end": 756,
+      "name": "macro_expansion_on_listings",
+      "description": "Describes macro expansion on assembler printouts: ability to request expanded macro printouts showing the macro name and generated code with substitutions (often marked with a '+' prefix), the convenience for debugging, and the diminishing need to see expansions once macros are stable.",
+      "references": [
+        {
+          "chunk": "printout_items_and_what_to_look_for",
+          "topic": "macro expansion is one of the printout options"
+        },
+        {
+          "chunk": "symbol_table_and_sorting",
+          "topic": "symbol visibility when macros generate labels"
+        }
+      ]
+    },
+    {
+      "start": 757,
+      "end": 765,
+      "name": "data_expression_expansion_listings",
+      "description": "Covers support for expressions in data statements and the value of printouts that show calculated data values for verification; notes that once data is debugged, such detailed printouts are less necessary.",
+      "references": [
+        {
+          "chunk": "printout_items_and_what_to_look_for",
+          "topic": "data expansion listed as a printout feature"
+        },
+        {
+          "chunk": "macro_expansion_on_listings",
+          "topic": "similar role of expanded views for debugging"
+        }
+      ]
+    },
+    {
+      "start": 766,
+      "end": 773,
+      "name": "absolute_addresses_in_listings",
+      "description": "Warns to avoid assemblers that do not print absolute addresses for instructions, data statements, and used hardware/RAM registers; emphasizes that absolute address information is essential for effective debugging.",
+      "references": [
+        {
+          "chunk": "symbol_table_and_sorting",
+          "topic": "symbol table should show resolved absolute addresses"
+        },
+        {
+          "chunk": "hex_files_and_loader_basics",
+          "topic": "how absolute placement relates to output files and loading"
+        }
+      ]
+    },
+    {
+      "start": 774,
+      "end": 785,
+      "name": "hex_files_and_loader_basics",
+      "description": "Explains that most assemblers output an intermediate (often hex) file containing program information in hexadecimal form for transfer; describes the loader program that translates the hex file to a binary file and places data in the correct memory locations.",
+      "references": [
+        {
+          "chunk": "absolute_addresses_in_listings",
+          "topic": "need to know where code/data are placed before creating hex output"
+        },
+        {
+          "chunk": "loader_relocation_options",
+          "topic": "loader functions may include relocation options"
+        }
+      ]
+    },
+    {
+      "start": 786,
+      "end": 794,
+      "name": "loader_relocation_options",
+      "description": "Describes loader option to relocate a program's loading address (useful for testing code in RAM while targeting cartridge or other fixed addresses), allowing testing in one memory location though intended to run elsewhere.",
+      "references": [
+        {
+          "chunk": "hex_files_and_loader_basics",
+          "topic": "relocation is a feature of loaders that process hex files"
+        },
+        {
+          "chunk": "monitor_functions_and_relocatability_warning",
+          "topic": "relocatable monitors simplify testing relocated code"
+        }
+      ]
+    },
+    {
+      "start": 795,
+      "end": 823,
+      "name": "monitor_functions_and_relocatability_warning",
+      "description": "Describes the monitor as the final piece of the development system: a program to examine/modify memory, load/save memory areas to disk, and provide a small disassembler to view memory as assembly language. Warns against monitors fixed in a single memory location (such as cartridge monitors) because they can conflict with programs; recommends relocatable monitors or providing multiple monitor versions (high-RAM and low-RAM) so one can be used without preventing program use of memory.",
+      "references": [
+        {
+          "chunk": "importance_of_an_assembler_and_package_components",
+          "topic": "monitor listed as a core package component"
+        },
+        {
+          "chunk": "assembling_and_coresident_assemblers_saving_practices",
+          "topic": "monitor use during testing and the need to save before running"
+        },
+        {
+          "chunk": "loader_relocation_options",
+          "topic": "relocatable monitors complement loaders that relocate programs"
+        }
+      ]
+    },
+    {
+      "start": 824,
+      "end": 843,
+      "name": "chapter3_underlying_concepts_intro",
+      "description": "Introduction to underlying concepts required for the book: terms and names, 6510 programming model, and the hexadecimal numbering system; prepares reader for low-level hardware descriptions.",
+      "references": [
+        {
+          "chunk": "bits_and_bytes_and_hex_notation",
+          "topic": "hexadecimal and bit/byte basics"
+        },
+        {
+          "chunk": "c64_hardware_overview",
+          "topic": "overview of major chips (6510, VIC-II, SID, CIAs)"
+        }
+      ]
+    },
+    {
+      "start": 844,
+      "end": 882,
+      "name": "bits_grouping_and_nibble",
+      "description": "Defines a bit and common synonyms (1/0, ON/OFF, SET/CLEAR, HIGH/LOW). Explains how grouping bits increases the number of representable values using 2^N, demonstrates the 4-bit example (2^4 = 16), and names a 4-bit group a 'nibble'. Introduces the idea that each bit in the group has a positional value.",
+      "references": [
+        {
+          "chunk": "bit_position_value_and_significance",
+          "topic": "explains LSB/MSB, positional values, and how to compute group values"
+        },
+        {
+          "chunk": "bytes_and_8-bit_machine",
+          "topic": "extends grouping concept to 8-bit bytes and C-64 implications"
+        }
+      ]
+    },
+    {
+      "start": 883,
+      "end": 905,
+      "name": "bit_position_value_and_significance",
+      "description": "Describes bit ordering (spread horizontally), defines the least significant bit (LSB) on the right and most significant bit (MSB) on the left. Explains that each bit position has a value 2^N where N is the number of bits from the LSB, gives the LSB example (N=0 => value 1) and next bit (2^1), and explains how to compute a group's numeric value by summing the values of ON bits, using a nibble's max (15) as an example.",
+      "references": [
+        {
+          "chunk": "bits_grouping_and_nibble",
+          "topic": "introduces grouping and the nibble concept"
+        },
+        {
+          "chunk": "bytes_and_8-bit_machine",
+          "topic": "applies the positional-value idea to 8-bit bytes"
+        }
+      ]
+    },
+    {
+      "start": 906,
+      "end": 923,
+      "name": "bytes_and_8-bit_machine",
+      "description": "Extends the grouping concept to 8 bits: shows 2^8 = 256 possible values and that a group of 8 bits is called a byte. States the numeric range of a byte (0 to 255), notes that inside the Commodore 64 all data is represented and transferred as bytes, and explains why the C-64 is referred to as an '8-bit machine'.",
+      "references": [
+        {
+          "chunk": "bit_position_value_and_significance",
+          "topic": "uses positional-value calculation to define byte values"
+        },
+        {
+          "chunk": "hexadecimal_notation_and_nibble_to_hex_mapping",
+          "topic": "introduces hexadecimal as a convenient notation for representing nibbles and bytes"
+        }
+      ]
+    },
+    {
+      "start": 924,
+      "end": 935,
+      "name": "hexadecimal_notation_and_nibble_to_hex_mapping",
+      "description": "Introduces hexadecimal (hex) as the standard notation used in the book and explains why it is convenient: one hex digit represents 16 values (one nibble), and two hex digits represent any 8-bit value (one byte). Points to Table 3-1 for the correlation between a nibble's 4 bits, its decimal value, and its hex value.",
+      "references": [
+        {
+          "chunk": "table_3-1_binary_hex_decimal_mapping",
+          "topic": "contains the full mapping table of 4-bit binary patterns to decimal and hex (Table 3-1)"
+        },
+        {
+          "chunk": "hex_digit_letters_and_assembly_notation",
+          "topic": "explains hex digit letters A-F and assembler conventions for hex notation"
+        }
+      ]
+    },
+    {
+      "start": 936,
+      "end": 955,
+      "name": "table_header_and_bit-weight_columns",
+      "description": "Table 3-1 title and column headings for the nibble (4-bit) value mapping. Contains the table title 'The Relationship Between the Binary, Hex, and Decimal Number Systems' and the top row(s) indicating binary bit weights (powers of two) and the column labels DEC and HEX that frame the mapping shown in the rest of the table.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_0_to_7",
+          "topic": "Lower half of the nibble-to-decimal/hex mapping (values 0–7)"
+        },
+        {
+          "chunk": "nibble_mapping_8_to_f",
+          "topic": "Upper half of the nibble-to-decimal/hex mapping (values 8–F)"
+        }
+      ]
+    },
+    {
+      "start": 956,
+      "end": 1004,
+      "name": "nibble_mapping_0_to_7",
+      "description": "First half of Table 3-1 showing the mapping of 4-bit binary patterns (nibbles) to their decimal and hexadecimal equivalents for values 0 through 7. This section contains the rows and bit columns corresponding to the lower nibble values and demonstrates how binary bit weights add to form the decimal values and hex digits for 0x0–0x7.",
+      "references": [
+        {
+          "chunk": "table_header_and_bit-weight_columns",
+          "topic": "Table title and binary bit-weight headings used by these rows"
+        },
+        {
+          "chunk": "nibble_mapping_8_to_f",
+          "topic": "Continuation: mapping for values 8–F (upper nibble)"
+        }
+      ]
+    },
+    {
+      "start": 1005,
+      "end": 1066,
+      "name": "nibble_mapping_hex_8",
+      "description": "Table rows and bit columns for the 4-bit pattern(s) that produce hexadecimal 8 (decimal 8). Covers the binary bit-weight columns and how they combine to yield decimal/hex values in the upper half of the nibble table (section covering hex 8).",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1067,
+      "end": 1081,
+      "name": "nibble_mapping_hex_9",
+      "description": "Table rows and bit columns showing how 4-bit binary patterns produce hexadecimal 9 (decimal 9). Includes the binary bit-weight breakdown and resulting decimal/hex representation for nibble 9.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1082,
+      "end": 1093,
+      "name": "nibble_mapping_hex_a",
+      "description": "Table rows and columns for the 4-bit patterns corresponding to hexadecimal A (decimal 10). Shows the contribution of each bit weight and the combined decimal/hex output for nibble A.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1094,
+      "end": 1105,
+      "name": "nibble_mapping_hex_b",
+      "description": "Table rows and bit-weight columns illustrating 4-bit binary patterns that produce hexadecimal B (decimal 11). Contains the breakdown of bit contributions and the resulting decimal/hex values for nibble B.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1106,
+      "end": 1117,
+      "name": "nibble_mapping_hex_c",
+      "description": "Rows and bit columns for 4-bit patterns yielding hexadecimal C (decimal 12). Shows bit-weight combination and how those bits form the decimal/hex result for nibble C.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1118,
+      "end": 1129,
+      "name": "nibble_mapping_hex_d",
+      "description": "Table entries for 4-bit binary patterns producing hexadecimal D (decimal 13). Includes the bit-weight columns and the assembled decimal/hex outcome for nibble D.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1130,
+      "end": 1141,
+      "name": "nibble_mapping_hex_e",
+      "description": "Bit-column rows showing 4-bit patterns that map to hexadecimal E (decimal 14). Details how each binary bit weight contributes and the resulting decimal/hex notation for nibble E.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_f",
+          "topic": "mapping for hex F"
+        }
+      ]
+    },
+    {
+      "start": 1142,
+      "end": 1145,
+      "name": "nibble_mapping_hex_f",
+      "description": "Final rows of the table showing 4-bit binary patterns and bit-weight contributions that produce hexadecimal F (decimal 15). This concludes the upper-nibble mapping (hex 8–F) in the table.",
+      "references": [
+        {
+          "chunk": "nibble_mapping_hex_8",
+          "topic": "mapping for hex 8"
+        },
+        {
+          "chunk": "nibble_mapping_hex_9",
+          "topic": "mapping for hex 9"
+        },
+        {
+          "chunk": "nibble_mapping_hex_a",
+          "topic": "mapping for hex A"
+        },
+        {
+          "chunk": "nibble_mapping_hex_b",
+          "topic": "mapping for hex B"
+        },
+        {
+          "chunk": "nibble_mapping_hex_c",
+          "topic": "mapping for hex C"
+        },
+        {
+          "chunk": "nibble_mapping_hex_d",
+          "topic": "mapping for hex D"
+        },
+        {
+          "chunk": "nibble_mapping_hex_e",
+          "topic": "mapping for hex E"
+        }
+      ]
+    },
+    {
+      "start": 1146,
+      "end": 1161,
+      "name": "hex_digit_letters_and_assembly_notation",
+      "description": "Explains that hex digits 0–9 match decimal up to 9, and values 10–15 are represented by letters A–F in hexadecimal. States the convention used in the book (and by most 6502 assemblers) to prefix hex numbers with a dollar sign ($). Clarifies that numbers without $ are assumed decimal unless they contain A–F (which would indicate a notation mistake).",
+      "references": [
+        {
+          "chunk": "hexadecimal_notation_and_nibble_to_hex_mapping",
+          "topic": "introductory explanation of hex digits and the need for a standard notation"
+        },
+        {
+          "chunk": "table_3-1_binary_hex_decimal_mapping",
+          "topic": "shows the A–F mappings and example conversions between binary, hex, and decimal"
+        }
+      ]
+    },
+    {
+      "start": 1162,
+      "end": 1253,
+      "name": "c64_hardware_overview",
+      "description": "High-level description of Commodore 64 hardware sections: CPU (6510), Memory (64K DRAM + 20K ROM), Video generation (6567 VIC-II), Sound (6581 SID), and I/O (two 6526 CIAs). Notes on bank switching, memory mapping, and which chips programs will typically control (VIC-II and SID).",
+      "references": [
+        {
+          "chunk": "6510_architecture_and_registers",
+          "topic": "details of 6510 registers and stack"
+        },
+        {
+          "chunk": "graphics_memory_locations_and_vic_bank_selection",
+          "topic": "VIC-II can see only one 16K bank at a time"
+        },
+        {
+          "chunk": "color_memory",
+          "topic": "color RAM and how VIC-II uses it"
+        }
+      ]
+    },
+    {
+      "start": 1254,
+      "end": 1369,
+      "name": "6510_architecture_and_registers",
+      "description": "Block-diagram level description of the 6510 microprocessor: program counter (high/low bytes), accumulator (A), index registers X and Y, stack pointer (stack at $0100-$01FF, initialized to $FF), and status register flags (carry, zero, IRQ disable, decimal, break, overflow, negative). Notes about memory-mapped hardware access appearing as memory locations.",
+      "references": [
+        {
+          "chunk": "assembly_syntax_labels_comments",
+          "topic": "how registers are used by instructions"
+        },
+        {
+          "chunk": "interrupts_overview_purpose",
+          "topic": "status register flags and interrupts (IRQ/NMI)"
+        }
+      ]
+    },
+    {
+      "start": 1370,
+      "end": 1414,
+      "name": "assembly_syntax_labels_comments",
+      "description": "Assembly source line format and conventions: LABEL OPCODE OPERAND ;comment, use of comments (preceded by ';'), labels must start in column 1, label values versus program counter, and assembler handling of branch distance calculations.",
+      "references": [
+        {
+          "chunk": "using_an_assembler_pseudo_opcodes",
+          "topic": "how pseudo-opcodes and labels integrate with assembler"
+        }
+      ]
+    },
+    {
+      "start": 1415,
+      "end": 1479,
+      "name": "instruction_types_6510",
+      "description": "Four classes of 6510 instructions: Data movement (loads, stores, transfers), Arithmetic (ADC, SBC, logical ops, shifts/rotates), Testing (CMP and other nondestructive tests that set status flags), and Flow of control (conditional branches and unconditional jumps/JSR).",
+      "references": [
+        {
+          "chunk": "addressing_modes_overview",
+          "topic": "addressing modes available to instructions"
+        },
+        {
+          "chunk": "implied_addressing",
+          "topic": "examples of implied data movement instructions (e.g., TAX)"
+        }
+      ]
+    },
+    {
+      "start": 1480,
+      "end": 1511,
+      "name": "addressing_modes_overview",
+      "description": "List of the 11 6510 addressing modes: Immediate, Zero page, Zero page,X, Absolute, Absolute,X, Absolute,Y, (Indirect,X), (Indirect),Y, Implied, Relative, and Indirect (JMP). Notes that many instructions (e.g., LDA) support multiple modes.",
+      "references": [
+        {
+          "chunk": "immediate_mode_addressing",
+          "topic": "immediate addressing details"
+        },
+        {
+          "chunk": "indirect_addressing_with_indexes",
+          "topic": "indexed indirect and indirect indexed addressing"
+        }
+      ]
+    },
+    {
+      "start": 1512,
+      "end": 1528,
+      "name": "immediate_mode_addressing",
+      "description": "Immediate addressing: operand prefixed by '#' supplies the literal value to load into the accumulator (e.g., LDA #$00 or LDA #BLACK if BLACK equated to $00). Immediate mode does not access memory locations.",
+      "references": [
+        {
+          "chunk": "assembly_syntax_labels_comments",
+          "topic": "use of labels as immediate values"
+        }
+      ]
+    },
+    {
+      "start": 1529,
+      "end": 1556,
+      "name": "zero_page_addressing",
+      "description": "Zero page addressing: addresses $00-$FF can be accessed faster and with smaller code because the high-order address byte is implicit ($00). Zero page is heavily used to minimize code size and speed (up to ~1/3 savings). Example: LDA $23 loads the byte at $0023 into A.",
+      "references": [
+        {
+          "chunk": "zero_page_indexed_addressing",
+          "topic": "indexing on zero page using X"
+        }
+      ]
+    },
+    {
+      "start": 1557,
+      "end": 1583,
+      "name": "zero_page_indexed_addressing",
+      "description": "Zero page indexed addressing (only with X): the one-byte zero-page base address in the operand is added to the X register to form the final zero-page address whose contents are then accessed. Commonly used for table lookups; X provides offset up to $FF.",
+      "references": [
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "advantages of using zero page for speed and size"
+        }
+      ]
+    },
+    {
+      "start": 1584,
+      "end": 1594,
+      "name": "absolute_addressing",
+      "description": "Absolute addressing: operand contains a two-byte address (16-bit) allowing access anywhere in $0000-$FFFF. Assembler usually picks zero page form if possible for efficiency.",
+      "references": [
+        {
+          "chunk": "absolute_indexed_addressing",
+          "topic": "absolute addressing combined with index registers X or Y"
+        }
+      ]
+    },
+    {
+      "start": 1595,
+      "end": 1617,
+      "name": "absolute_indexed_addressing",
+      "description": "Absolute indexed addressing: a 16-bit base address in the operand is added to an index register (X or Y) to form the final address. Steps: specify base address, add index, load/store from resulting address. Y may be used as index for LDA, etc.",
+      "references": [
+        {
+          "chunk": "absolute_addressing",
+          "topic": "base absolute addressing"
+        }
+      ]
+    },
+    {
+      "start": 1618,
+      "end": 1693,
+      "name": "indirect_addressing_with_indexes",
+      "description": "Indirect addressing variants available on 6510: (Indirect),Y and (Indexed Indirect,X). Indirect addressing uses a pointer stored in zero page as two consecutive bytes (low then high). (Indirect),Y: assembler reads 16-bit address from zero page, then adds Y to form final address. (Indexed Indirect,X): adds X to zero-page pointer offset, then reads address from the resulting zero-page location. The 6510 lacks true general indirect memory addressing for most data ops; these two forms are the provided options.",
+      "references": [
+        {
+          "chunk": "zero_page_addressing",
+          "topic": "indirection pointer must live in zero page"
+        },
+        {
+          "chunk": "absolute_indexed_addressing",
+          "topic": "how final address is formed by adding index"
+        }
+      ]
+    },
+    {
+      "start": 1694,
+      "end": 1712,
+      "name": "implied_addressing",
+      "description": "Implied addressing: single-byte instructions where the CPU infers the operand register (e.g., TAX transfers A to X). These execute faster because no address calculation or memory fetch is required.",
+      "references": [
+        {
+          "chunk": "instruction_types_6510",
+          "topic": "data movement examples using implied addressing"
+        }
+      ]
+    },
+    {
+      "start": 1713,
+      "end": 1726,
+      "name": "relative_addressing",
+      "description": "Relative addressing used by branch instructions: operand is a signed one-byte offset from current instruction allowing branches in range -127 to +127 bytes. Assemblers compute offsets when using labels.",
+      "references": [
+        {
+          "chunk": "assembly_syntax_labels_comments",
+          "topic": "assemblers compute branch distances when labels are used"
+        }
+      ]
+    },
+    {
+      "start": 1727,
+      "end": 1744,
+      "name": "indirect_jump_addressing",
+      "description": "Indirect addressing for JMP only: JMP (addr) reads a 16-bit address from the given operand location (which can be anywhere in memory, not restricted to zero page) and jumps to that address. X and Y are not used in address generation for indirect JMP.",
+      "references": [
+        {
+          "chunk": "addressing_modes_overview",
+          "topic": "JMP's special indirect mode"
+        }
+      ]
+    },
+    {
+      "start": 1745,
+      "end": 1773,
+      "name": "program_organization_overview",
+      "description": "Recommended program structure: macro library, system definitions (hardware registers), RAM definitions, data definitions, main program, subroutines. Macros must be defined before use; macros and system definition files referenced (MACLIB, SYSDEF).",
+      "references": [
+        {
+          "chunk": "using_an_assembler_pseudo_opcodes",
+          "topic": "macros and .LIB directives"
+        },
+        {
+          "chunk": "what_an_assembler_can_do",
+          "topic": "macro vs subroutine tradeoffs"
+        }
+      ]
+    },
+    {
+      "start": 1774,
+      "end": 1836,
+      "name": "definitions_and_data_placement",
+      "description": "Advice on defining hardware register names and RAM variables early, data placement strategies (data preceding code with a jump to start of code), and use of separate files for macro libraries and system definitions to simplify editing and reuse.",
+      "references": [
+        {
+          "chunk": "program_organization_overview",
+          "topic": "macro and system definitions as initial parts of a program"
+        }
+      ]
+    },
+    {
+      "start": 1837,
+      "end": 1908,
+      "name": "modular_development_and_debugging",
+      "description": "Guidance on modular development: build small routines, individually test and save reusable segments, keep subroutines at end to allow unused ones to be removed, chain modules if assembler supports it, and benefits of partitioning on slow disk systems.",
+      "references": [
+        {
+          "chunk": "what_an_assembler_can_do",
+          "topic": "creating libraries of subroutines and macros"
+        }
+      ]
+    },
+    {
+      "start": 1909,
+      "end": 1960,
+      "name": "interrupts_overview_purpose",
+      "description": "Purpose of interrupts in C64: timing and program control (real-time clock, keyboard buffer), sprite collision signaling, and raster line notifications. Concept of asynchronous interrupt vs polling and example use-case (collision causing explosion via interrupt jump vector).",
+      "references": [
+        {
+          "chunk": "6510_architecture_and_registers",
+          "topic": "vector locations and status bits (IRQ/NMI)"
+        },
+        {
+          "chunk": "working_with_interrupts_and_raster",
+          "topic": "detailed raster interrupt usage"
+        }
+      ]
+    },
+    {
+      "start": 1961,
+      "end": 1975,
+      "name": "raster_interrupts_overview",
+      "description": "What raster interrupts are and why they're used: the VIC-II can generate an interrupt on any specified scan line (a raster interrupt), allowing an interrupt routine to gain the CPU at a specific point on the screen for mid-frame changes (for example, changing background color).",
+      "references": [
+        {
+          "chunk": "interrupts_for_animation",
+          "topic": "Why interrupts are necessary for smooth animation"
+        },
+        {
+          "chunk": "raster_timing_and_color_smear",
+          "topic": "Visible artifacts when changing colors with raster interrupts"
+        }
+      ]
+    },
+    {
+      "start": 1976,
+      "end": 1984,
+      "name": "interrupts_for_animation",
+      "description": "Why you need interrupts in games: if the main program performs lengthy calculations or is busy, periodic interrupts are required to maintain smooth animation (take control at least once every other screen) to avoid jerky motion.",
+      "references": [
+        {
+          "chunk": "raster_interrupts_overview",
+          "topic": "Use raster interrupts to gain CPU at a screen position"
+        },
+        {
+          "chunk": "disable_other_interrupts",
+          "topic": "Prepare system before enabling custom interrupts"
+        }
+      ]
+    },
+    {
+      "start": 1985,
+      "end": 1993,
+      "name": "disable_other_interrupts",
+      "description": "Advice to disable other interrupt sources before enabling your own ISR: because enabling your interrupt routine effectively disables the C64 OS, first turn off all other interrupt sources so the cause of an interrupt is easy to find; many OS functions are unnecessary or can be done differently in games.",
+      "references": [
+        {
+          "chunk": "kill_macro_and_vector_setup",
+          "topic": "KILL macro and altering interrupt vectors"
+        }
+      ]
+    },
+    {
+      "start": 1994,
+      "end": 2010,
+      "name": "kill_macro_and_vector_setup",
+      "description": "KILL macro and interrupt vector changes: the KILL macro shuts down all devices that can generate interrupts so you can safely change interrupt vectors. After calling KILL, set the NMI vector to an RTI (since NMIs are rarely used in games) and set the maskable IRQ vector to your interrupt routine's entry.",
+      "references": [
+        {
+          "chunk": "disable_other_interrupts",
+          "topic": "Why disable other interrupt sources first"
+        },
+        {
+          "chunk": "raster_example_and_assembly_notes",
+          "topic": "Example program that installs a raster interrupt"
+        }
+      ]
+    },
+    {
+      "start": 2011,
+      "end": 2023,
+      "name": "raster_example_and_assembly_notes",
+      "description": "Reference to example code: Listing C-3 demonstrates using a RAST (raster) interrupt to change the screen background color mid-screen. Notes on assembler usage, inclusion of the macro library and system definitions via .LIB, and that Listing C-4 shows the executable.",
+      "references": [
+        {
+          "chunk": "kill_macro_and_vector_setup",
+          "topic": "Vector setup needed before running the example"
+        },
+        {
+          "chunk": "run_executable_commands",
+          "topic": "How to load and run the executable form"
+        }
+      ]
+    },
+    {
+      "start": 2024,
+      "end": 2033,
+      "name": "run_executable_commands",
+      "description": "Commands to run the executable demo: LOAD \"DEMO.O\",8,1 followed by SYS 4096 — how to load the program from device 8 and start it. (Includes brief notes about system setup and entering commands.)",
+      "references": [
+        {
+          "chunk": "raster_example_and_assembly_notes",
+          "topic": "Which listing the executable corresponds to"
+        },
+        {
+          "chunk": "interrupt_flow_two_routines",
+          "topic": "What the running program does with interrupts"
+        }
+      ]
+    },
+    {
+      "start": 2034,
+      "end": 2047,
+      "name": "interrupt_flow_two_routines",
+      "description": "How the demo's interrupt flow works: after system setup the main program loops while interrupts perform all changes. A first RAST triggers at mid-screen, changes background color, sets a RAST for the bottom of the screen, and updates the IRQ vector to the second ISR. The second ISR mirrors the first and points back to the first ISR, letting two ISRs alternate to perform different actions on each half of the screen.",
+      "references": [
+        {
+          "chunk": "raster_interrupts_overview",
+          "topic": "Using raster interrupts to control timing on the screen"
+        },
+        {
+          "chunk": "raster_timing_and_color_smear",
+          "topic": "Timing artifacts visible at the color change boundary"
+        }
+      ]
+    },
+    {
+      "start": 2048,
+      "end": 2061,
+      "name": "raster_timing_and_color_smear",
+      "description": "Visible timing artifacts when changing colors with raster interrupts: because the CPU must finish its current instruction before servicing an interrupt (instructions take 2–6 machine cycles and the beam moves ~3 pixels per cycle), the color transition can smear over about 18 pixels; VIC-II timing inconsistencies can enlarge this area.",
+      "references": [
+        {
+          "chunk": "interrupt_flow_two_routines",
+          "topic": "Where the color changes are being made in the demo"
+        },
+        {
+          "chunk": "delay_in_isr_to_hide_artifact",
+          "topic": "How to move the color-change artifact into the border"
+        }
+      ]
+    },
+    {
+      "start": 2062,
+      "end": 2066,
+      "name": "delay_in_isr_to_hide_artifact",
+      "description": "Technique to hide the raster color-change artifact: add a delay in the interrupt service routine before changing the background color to force the change into the screen border where the smear won't be visible.",
+      "references": [
+        {
+          "chunk": "raster_timing_and_color_smear",
+          "topic": "Explanation of why the smear occurs"
+        }
+      ]
+    },
+    {
+      "start": 2067,
+      "end": 2085,
+      "name": "reset_warning_and_save_advice",
+      "description": "Consequences and safety advice when disabling the OS: after running a program that disables the C64 operating system (disabling keyboard scan routines), you cannot reset the machine normally — you must power-cycle it. Warning to always save your program and source code before running new programs that take over interrupts.",
+      "references": [
+        {
+          "chunk": "kill_macro_and_vector_setup",
+          "topic": "Why running custom ISRs effectively disables OS services"
+        }
+      ]
+    },
+    {
+      "start": 2086,
+      "end": 2139,
+      "name": "chapter7_technical_information_intro",
+      "description": "Introduction to Chapter 7: deep technical details for programming VIC-II and SID chips, naming conventions for hardware registers (SYSDEF), and mention of macros provided in Appendix B/C for common functions.",
+      "references": [
+        {
+          "chunk": "graphics_memory_locations_and_vic_bank_selection",
+          "topic": "VIC-II graphics memory mapping"
+        },
+        {
+          "chunk": "color_memory",
+          "topic": "color RAM and how graphics modes interpret it"
+        }
+      ]
+    },
+    {
+      "start": 2140,
+      "end": 2200,
+      "name": "c64_address_space_and_bank_switching",
+      "description": "Commodore 64 address space: 16-bit (65536 bytes). Discussion of bank switching to swap ROM/RAM and I/O into the 64K window (e.g., swapping out BASIC or KERNAL ROM to gain RAM). Warning to disable interrupts before switching KERNAL because interrupt vectors ($FFFA-$FFFF) reside in KERNAL ROM and must be placed in RAM after switching.",
+      "references": [
+        {
+          "chunk": "memory_control_and_mapping",
+          "topic": "control lines used to select memory maps ($0001 hardware port)"
+        },
+        {
+          "chunk": "using_an_assembler_pseudo_opcodes",
+          "topic": "loader relocation options for different target addresses"
+        }
+      ]
+    },
+    {
+      "start": 2201,
+      "end": 2289,
+      "name": "memory_control_and_mapping",
+      "description": "Memory control lines and mapping: five control lines select primary memory maps; three bits at $0001 (the 6510 I/O port) control map selection and whether I/O or character ROM is visible at $D000-$DFFF. Explanation that bits 0 and 1 select four primary maps; bit 2 selects between I/O devices or character generator ROM at $D000-$DFFF. Figures referenced for memory maps and note that BANK macro can be used to set VIC bank.",
+      "references": [
+        {
+          "chunk": "c64_address_space_and_bank_switching",
+          "topic": "general bank switching rationale"
+        },
+        {
+          "chunk": "graphics_memory_locations_and_vic_bank_selection",
+          "topic": "VIC-II bank selection specifics and $DD00/$DD02 controls"
+        }
+      ]
+    },
+    {
+      "start": 2290,
+      "end": 2307,
+      "name": "vic_bank_selection_intro",
+      "description": "Introduces graphics memory limitations of the VIC-II: although the C64 has 64K RAM, the VIC can reference only one 16K block at a time (four possible banks). Explains that the default bank at power-up is $0000-$3FFF and describes how to change the VIC bank by setting the least-significant two bits of $DD00 to the desired bank value. Also states the prerequisite of setting the appropriate control-selection bits (bits 0 and 1) of $DD02 to 1 before changing $DD00.",
+      "references": [
+        {
+          "chunk": "vic_memory_map_64k_fig7_2",
+          "topic": "visual 64K memory map and labels referenced by the VIC bank selection"
+        },
+        {
+          "chunk": "vic_bank_selection_values_table_7_1",
+          "topic": "table of bank values and the address ranges to use when changing the VIC bank"
+        }
+      ]
+    },
+    {
+      "start": 2308,
+      "end": 2375,
+      "name": "vic_memory_map_64k_fig7_2",
+      "description": "OCR-extracted diagram and labels for the 64K RAM memory map (Figure 7-2) showing address-region labels such as 16K RAM blocks, LORAM and HIRAM signals, and address anchors like $0000 and $8000. This chunk preserves the diagram text and labels from the original document, as presented in the source.",
+      "references": [
+        {
+          "chunk": "vic_bank_selection_intro",
+          "topic": "textual explanation of VIC bank selection and default bank"
+        },
+        {
+          "chunk": "vic_memory_map_32k_fig7_3",
+          "topic": "alternate memory map (Figure 7-3) showing ROM/I/O overlays and different visible RAM size"
+        }
+      ]
+    },
+    {
+      "start": 2376,
+      "end": 2430,
+      "name": "vic_memory_map_32k_fig7_3",
+      "description": "Continued diagram material including address labels (e.g., FFFF, E000, D000, C000, $8000) and annotations for KERNAL ROM, I/O, 4K RAM, 16K RAM, and the LORAM/HIRAM control bits. Includes the caption for Figure 7-3 (presented as 'Fig. 7-3. 52K RAM memory map' in the OCR text) showing an alternate memory configuration where ROM and I/O occupy the top region and lower RAM regions are indicated.",
+      "references": [
+        {
+          "chunk": "vic_memory_map_64k_fig7_2",
+          "topic": "full 64K memory map shown in Figure 7-2"
+        },
+        {
+          "chunk": "vic_bank_selection_values_table_7_1",
+          "topic": "table giving explicit values to set to select the VIC-visible 16K bank"
+        }
+      ]
+    },
+    {
+      "start": 2431,
+      "end": 2454,
+      "name": "vic_bank_selection_values_table_7_1",
+      "description": "Explains control-memory select outputs and mentions a BANK macro that automates selecting the correct VIC bank. Presents Table 7-1 (The Values to Use When Selecting the Bank of Memory the VIC Chip Will Use) and lists the memory ranges corresponding to the four 16K banks: $0000-$3FFF, $4000-$7FFF, $8000-$BFFF, and $C000-$FFFF. (Table column headings and some numeric values are preserved from the original OCR text.)",
+      "references": [
+        {
+          "chunk": "vic_bank_selection_intro",
+          "topic": "how to change the VIC bank by setting bits in $DD00 and prerequisites in $DD02"
+        },
+        {
+          "chunk": "vic_memory_map_32k_fig7_3",
+          "topic": "visual mapping of the address ranges listed in Table 7-1"
+        }
+      ]
+    },
+    {
+      "start": 2455,
+      "end": 2493,
+      "name": "standard_text_mode_and_vidbas_text_selection",
+      "description": "Explains the C64 standard text mode (40x25 = 1000 characters), where the screen text bytes are stored by default at $0400, and how the VIC's VIDBAS register ($D018) upper 4 bits select the text memory base (on $0400 boundaries). Also describes that each text byte indexes the character generator (256 possible patterns) and introduces the VIDBAS lower 4 bits as selecting the character-generator/graphics memory area.",
+      "references": [
+        {
+          "chunk": "character_generator_rom_memory_maps_and_banking",
+          "topic": "Full details on the built-in character generator ROM, memory maps (Fig. 7-4/7-5), and how the VIC/CPU see the generator"
+        },
+        {
+          "chunk": "txbas_grabas_and_address_calculation",
+          "topic": "How to change text/graphics bases (TXBAS/GRABAS) and compute absolute addresses with the selected bank"
+        }
+      ]
+    },
+    {
+      "start": 2494,
+      "end": 2554,
+      "name": "memory_map_60k_ram_no_kernal",
+      "description": "Contains the opening fragment and the diagram for the Commodore 64 60K RAM memory map with no KERNAL ROM (Fig. 7-4). Includes the leading line 'The Commodore 64 has a built-in character' and the ASCII drawing showing address regions (8K RAM, 4K I/O, 4K RAM, 16K RAM, 32K RAM) and the Fig. 7-4 caption.",
+      "references": [
+        {
+          "chunk": "memory_map_default_42k_ram",
+          "topic": "Related alternate/default memory map (Fig. 7-5) and differences when KERNAL/BASIC ROMs are present"
+        },
+        {
+          "chunk": "character_generator_rom_and_bank_switching",
+          "topic": "Explains the character generator ROM placement and how it overlaps I/O addresses; bank switching details that affect the memory map"
+        }
+      ]
+    },
+    {
+      "start": 2555,
+      "end": 2611,
+      "name": "memory_map_default_42k_ram",
+      "description": "Shows the default Commodore 64 memory map with 42K RAM (Fig. 7-5). The ASCII diagram and caption illustrate the layout when KERNAL and BASIC ROMs are present (8K KERNAL ROM, 8K BASIC ROM, 4K I/O, RAM regions, control bits LORAM/HIRAM), and provides the Fig. 7-5 caption.",
+      "references": [
+        {
+          "chunk": "memory_map_60k_ram_no_kernal",
+          "topic": "Alternate memory map without KERNAL ROM (Fig. 7-4) for comparison"
+        },
+        {
+          "chunk": "character_generator_rom_and_bank_switching",
+          "topic": "Describes how character generator ROM fits into the memory map and how I/O port bits control ROM vs registers"
+        }
+      ]
+    },
+    {
+      "start": 2612,
+      "end": 2650,
+      "name": "character_generator_rom_and_bank_switching",
+      "description": "Explains the Commodore 64 built-in character generator ROM and how it interacts with the CPU and VIC. Covers that the character generator ROM is physically at $D000-$DFFF (overlapping the hardware I/O register address range), that bit 2 of the processor I/O port at $01 controls whether the CPU sees the I/O hardware registers (bit=1) or the character generator ROM (bit=0), and that the VIC chip does not use the same $D000 area but instead sees an image of the character generator at $1000-$1FFF and $9000-$AFFF (only when certain memory banks are selected). Also notes that the CPU can use the VIC's character-generator-addressed areas for data without conflict, typical choice of banks (commonly bank 1 or 3) for graphics, and options for using text (copying from the character generator or creating a custom character set).",
+      "references": [
+        {
+          "chunk": "memory_map_default_42k_ram",
+          "topic": "Shows the default map and where the character generator / I/O addresses sit relative to ROM and RAM"
+        },
+        {
+          "chunk": "memory_map_60k_ram_no_kernal",
+          "topic": "Alternate memory configuration that omits KERNAL ROM and affects available RAM regions"
+        }
+      ]
+    },
+    {
+      "start": 2651,
+      "end": 2661,
+      "name": "txbas_grabas_and_address_calculation",
+      "description": "Documents the TXBAS macro (change text base) and the GRABAS macro (change graphics base). Explains that the text and graphics base addresses selected via VIDBAS must be added to the currently selected memory bank to obtain absolute addresses. Provides a worked example: with bank 1 ($4000-$7FFF) and a text base of $0400, the text data would be found at $4400.",
+      "references": [
+        {
+          "chunk": "standard_text_mode_and_vidbas_text_selection",
+          "topic": "Defines VIDBAS bits and the role of text/graphics bases"
+        },
+        {
+          "chunk": "character_generator_rom_memory_maps_and_banking",
+          "topic": "Memory banking details and where the VIC/CPU see the character generator"
+        }
+      ]
+    },
+    {
+      "start": 2662,
+      "end": 2671,
+      "name": "vidbas_base_address_notes",
+      "description": "Notes on changing the video base (VIDBAS) register values and how they affect text and graphics base addresses. Covers: where to find values (Table 7-2), which bits to change for TEXT (upper bits) vs graphics (lower bits), meaning of a dash (don't care), and the need to add the BASE address register to the listed addresses to obtain the real memory address.",
+      "references": [
+        {
+          "chunk": "vidbas_table_values_text_graphics_base_addresses",
+          "topic": "Lookup table mapping VIDBAS values to text base addresses (Table 7-2)"
+        },
+        {
+          "chunk": "color_ram_overview",
+          "topic": "Related video memory topic: color RAM usage in text mode"
+        }
+      ]
+    },
+    {
+      "start": 2672,
+      "end": 2686,
+      "name": "color_ram_overview",
+      "description": "Introduction to Color Memory (Color RAM) for the C64 text mode. Explains screen arrangement in text mode (25 lines × 40 characters), character pattern possibilities (256 patterns), per-character color selection, the C64's 16 color palette, and that a dedicated area of memory is reserved to hold color information (color RAM).",
+      "references": [
+        {
+          "chunk": "vidbas_base_address_notes",
+          "topic": "VIDBAS and base-address setup affecting video memory layout"
+        },
+        {
+          "chunk": "vidbas_table_values_text_graphics_base_addresses",
+          "topic": "Table of VIDBAS values used when relocating text/graphics base addresses"
+        }
+      ]
+    },
+    {
+      "start": 2687,
+      "end": 2800,
+      "name": "vidbas_table_values_text_graphics_base_addresses",
+      "description": "Table 7-2: The VIDBAS values to use to change the base address for text or graphics. Lists VIDBAS settings ($0- through $F-) paired with the corresponding TEXT BASE ADDRESS upper-bit values (addresses such as $0000, $0400, $0800, $0C00, ... up to $3C00). Intended as a lookup when modifying video base addresses.",
+      "references": [
+        {
+          "chunk": "vidbas_base_address_notes",
+          "topic": "Explanation of how to apply these VIDBAS values and which bits to modify for text vs graphics"
+        }
+      ]
+    },
+    {
+      "start": 2801,
+      "end": 2862,
+      "name": "vidbas_table_and_color_ram",
+      "description": "Contains the VIDBAS graphics base address table (VIDBAS VALUE / GRAPHICS BASE ADDRESS entries) followed by the Color RAM description (location $D800, nibble storage, masking, and MVCOL usage). Separates the table and color-memory explanation into a single, coherent block."
+    },
+    {
+      "start": 2863,
+      "end": 2877,
+      "name": "color_ram_nibble_storage",
+      "description": "Color RAM location and format: Color RAM starts at $D800 and continues to $DBE7. Color RAM stores nibble (4-bit) values; when read you get a full byte but only the low 4 bits are valid — mask the upper 4 bits before use.",
+      "references": [
+        {
+          "chunk": "multicolor_text_bitpair_mapping",
+          "topic": "lower 3 bits of color RAM used in multicolor text mode"
+        },
+        {
+          "chunk": "multicolor_bitmapped_mode",
+          "topic": "color RAM usage in multicolor bitmap mode"
+        }
+      ]
+    },
+    {
+      "start": 2878,
+      "end": 2896,
+      "name": "color_ram_usage_and_mvcol_macro",
+      "description": "Color memory is fixed (VIC cannot remap it). The MVCOL macro fills color RAM with a single color (example: MVCOL WHITE). Notes on text memory vs color RAM handling in different graphics modes and advice to check graphics mode if output looks wrong.",
+      "references": [
+        {
+          "chunk": "color_ram_nibble_storage",
+          "topic": "masking upper nibble when reading color RAM"
+        }
+      ]
+    },
+    {
+      "start": 2897,
+      "end": 2898,
+      "name": "custom_character_sets",
+      "description": "How to create custom character sets: each character = 8x8 bits stored as 8 sequential bytes; each bit maps one pixel of the character cell. To use a custom charset the VIC must be directed to fetch character data from RAM (not char ROM). Character set must begin on a multiple of $0800 in the current bank and cannot occupy locations where VIC sees the character ROM. Advice on entering charset via machine monitor and saving to disk.",
+      "references": [
+        {
+          "chunk": "text_mode_multicolor_mode",
+          "topic": "text-mode color behavior with custom character sets"
+        }
+      ]
+    },
+    {
+      "start": 2899,
+      "end": 2944,
+      "name": "custom_character_sets",
+      "description": "Custom character sets: each character defined as 8x8 bits stored as eight sequential bytes (one byte per row). To redefine characters, place 8-byte character definitions in RAM on a $0800 boundary within the current bank, then set VIDBAS to point to them. When VIC uses RAM-based character generator, its ROM is no longer used; first 8 bytes of your set will be displayed if you write corresponding character codes into text RAM.",
+      "references": [
+        {
+          "chunk": "standard_text_mode_and_vidbas",
+          "topic": "changing the graphics base so VIC obtains character data from RAM"
+        }
+      ]
+    },
+    {
+      "start": 2945,
+      "end": 2975,
+      "name": "multicolor_mode",
+      "description": "Multicolor text mode: allows 4 colors per character position by using character color and BCOL0 ($D021 background), BCOL1 ($D022), BCOL2 ($D023). Selecting multicolor halves horizontal resolution (each character's pixel width halved) so characters are 4x8 pixel cells. Enable by setting bit 4 of XSCRL ($D012) or using MULTON macro; disable with MULTOF or clearing bit. In text mode, multicolor selection is per-character based on color RAM value >= $08. Bitmap bytes are interpreted as bit pairs; mapping of bit pairs to color sources (00 -> BCOL0, 01 -> BCOL1, etc.) starts here.",
+      "references": [
+        {
+          "chunk": "color_memory",
+          "topic": "color RAM values determine whether a text cell is multicolor (>= $08)"
+        },
+        {
+          "chunk": "standard_text_mode_and_vidbas",
+          "topic": "character and graphics base interplay when using multicolor characters"
+        }
+      ]
+    },
+    {
+      "start": 2976,
+      "end": 3006,
+      "name": "multicolor_text_bitpair_mapping",
+      "description": "Explanation of resolution tradeoff in multicolor text: characters become 4x8 pixel cells (horizontal halved). Each pair of bits in a character's byte encodes one of 4 color sources. Mapping: Bit pair 00 = BCOL0, 01 = BCOL1, 10 = BCOL3, 11 = lower 3 bits of COLOR RAM (note: BCOL registers referenced).",
+      "references": [
+        {
+          "chunk": "text_mode_multicolor_mode",
+          "topic": "how multicolor is enabled and per-character selection"
+        },
+        {
+          "chunk": "extended_background_color_mode",
+          "topic": "alternative method to gain colors by trading character codes"
+        }
+      ]
+    },
+    {
+      "start": 3007,
+      "end": 3041,
+      "name": "extended_background_color_mode",
+      "description": "Extended background color mode: trade character-set size (only first 64 characters usable) for additional per-character background colors. The two most significant bits of the character code select background color from BCOL0..BCOL3. Enable by setting bit 6 of YSCRL ($D011); disable by clearing bit 6. Mapping: 00=BCOL0, 01=BCOL1, 10=BCOL2, 11=BCOL3.",
+      "references": [
+        {
+          "chunk": "text_mode_multicolor_mode",
+          "topic": "alternative way to get more colors without losing resolution"
+        }
+      ]
+    },
+    {
+      "start": 3042,
+      "end": 3069,
+      "name": "bitmapped_graphics_overview",
+      "description": "Bitmapped graphics overview: 320x200 display, 64,000 pixels, requiring 8000 bytes (1 bit per pixel). Two bitmapped modes: standard bitmap (320x200, two colors per 8x8 block) and multicolor bitmap (160x200, four colors per 8x8).",
+      "references": [
+        {
+          "chunk": "standard_bitmapped_mode_and_color_storage",
+          "topic": "how to enable standard bitmap and where colors are stored"
+        },
+        {
+          "chunk": "multicolor_bitmapped_mode",
+          "topic": "multicolor bitmap mode and color sources"
+        }
+      ]
+    },
+    {
+      "start": 3070,
+      "end": 3083,
+      "name": "standard_bitmapped_mode_and_color_storage",
+      "description": "Standard bitmapped mode: enable by setting bit 5 of YSCRL ($D011) (GRAPH macro). To disable, clear bit 5 (TEXT macro). In standard bitmap mode, color for each 8x8 block is stored in text memory: high 4 bits = color when pixel bit is 1, low 4 bits = background color when pixel bit is 0. Color RAM is not used in standard bitmap mode.",
+      "references": [
+        {
+          "chunk": "bitmapped_graphics_overview",
+          "topic": "mode resolution and memory needs"
+        },
+        {
+          "chunk": "graphics_memory_byte_organization_table",
+          "topic": "how the bytes of graphics memory map to screen rows"
+        }
+      ]
+    },
+    {
+      "start": 3084,
+      "end": 3091,
+      "name": "graphics_memory_table_introduction",
+      "description": "Introduction and title for Table 7-3. Explains that the table shows how the bytes of graphics memory are organized with regard to the screen and that the shown sequence is repeated for all 25 screen rows. Contains the table heading text.",
+      "references": [
+        {
+          "chunk": "graphics_memory_row0_to_row7_byte_mapping",
+          "topic": "first block of address mappings for ROW0 and subsequent rows (start of the repeated sequence)"
+        },
+        {
+          "chunk": "graphics_memory_row1_block_$140_to_$27F",
+          "topic": "continuation of the address mappings that completes the table"
+        }
+      ]
+    },
+    {
+      "start": 3092,
+      "end": 3185,
+      "name": "graphics_memory_row0_to_row7_byte_mapping",
+      "description": "The first part of Table 7-3 showing how graphics memory bytes map to screen positions for ROW0 and the next seven internal sub-rows (rows labeled 1 through 7 in the sequence). Lists the low-range byte labels and their arrangement (examples: $8, $9, $A, ... $13F) as they appear in the repeated per-row sequence.",
+      "references": [
+        {
+          "chunk": "graphics_memory_table_introduction",
+          "topic": "table purpose and heading"
+        },
+        {
+          "chunk": "graphics_memory_row1_block_$140_to_$27F",
+          "topic": "continuation of the mapping showing the $140 and $278 regions that complete the row sequence"
+        }
+      ]
+    },
+    {
+      "start": 3186,
+      "end": 3283,
+      "name": "graphics_memory_row1_block_$140_to_$27F",
+      "description": "Continuation and completion of Table 7-3 showing the second address block for the repeated row sequence: Row 1 starting at $140 and the corresponding addresses through $17F plus the related high-range addresses (examples: $148, $150, $278 ... $27F). Completes the per-row byte-to-screen mapping sequence shown in the table.",
+      "references": [
+        {
+          "chunk": "graphics_memory_table_introduction",
+          "topic": "table purpose and heading"
+        },
+        {
+          "chunk": "graphics_memory_row0_to_row7_byte_mapping",
+          "topic": "the preceding address block for ROW0 and the first set of sub-rows"
+        }
+      ]
+    },
+    {
+      "start": 3284,
+      "end": 3346,
+      "name": "multicolor_bitmapped_mode",
+      "description": "Multicolor bitmap mode: enable by turning on bitmap graphics and then setting bit 5 of YSCRL ($D011) (MULTON/MULTOF macros). In this mode each byte is interpreted as 4 bit-pairs (each pair selects one of 4 colors). Color sources: BCOLO ($D021) background, upper/lower nibbles of character RAM for two colors, and color RAM for the fourth color. Effective resolution halved horizontally (160x200).",
+      "references": [
+        {
+          "chunk": "bitmapped_graphics_overview",
+          "topic": "resolution and color tradeoffs"
+        },
+        {
+          "chunk": "color_ram_nibble_storage",
+          "topic": "use of color RAM as one of the color sources"
+        }
+      ]
+    },
+    {
+      "start": 3347,
+      "end": 3379,
+      "name": "sprite_basic_properties_and_sizes",
+      "description": "Sprite basics: sprites are small movable bitmaps, can be shown on any display mode and look identical across modes. Standard sprite size: 24x21 pixels; pixels set to 1 use one of 16 colors, 0 = transparent. Multicolor sprites have 12x21 resolution using 3 colors + transparent. VIC can double X or Y (or both) to expand sprites but does not increase detail.",
+      "references": [
+        {
+          "chunk": "sprites_overview",
+          "topic": "general sprite limits (# of sprites, animation via pointers)"
+        }
+      ]
+    },
+    {
+      "start": 3380,
+      "end": 3400,
+      "name": "sprites_overview",
+      "description": "Sprites overview: VIC can display 8 sprites simultaneously; up to 256 sprite definitions (each 64 bytes) can be stored in a 16K bank; changing one-byte sprite pointers allows animation. Sprites are positioned by X/Y coordinates of their upper-left corner.",
+      "references": [
+        {
+          "chunk": "sprite_pointers_and_memory_layout",
+          "topic": "sprite definition size and alignment"
+        },
+        {
+          "chunk": "sprite_position_registers_table",
+          "topic": "registers for sprite positioning"
+        }
+      ]
+    },
+    {
+      "start": 3401,
+      "end": 3419,
+      "name": "sprite_pointers_and_memory_layout",
+      "description": "Sprite pointer format and memory: each sprite definition is 64 bytes (must start on $0040 boundary). A 16K bank holds 256 definitions so sprite pointer is one byte; when multiplied by 64 gives the start address. Sprite definitions may not be placed where VIC sees character generator ROM.",
+      "references": [
+        {
+          "chunk": "vidbas_graphics_base_table",
+          "topic": "current bank/graphics base affects where sprites can live"
+        }
+      ]
+    },
+    {
+      "start": 3420,
+      "end": 3436,
+      "name": "sprite_pointers_location_in_text_memory",
+      "description": "Location of the 8 sprite pointers: VIC reads the eight sprite pointers from the last eight bytes of the 1K of text memory, at an offset of $03F8 from the text base address. Since only 1000 of 1024 text bytes are used visually, sprite pointers don't interfere with screen characters. Example: default text base $0400 -> first sprite pointer at $07F8.",
+      "references": [
+        {
+          "chunk": "standard_bitmapped_mode_and_color_storage",
+          "topic": "relationship between text memory and sprite pointers"
+        }
+      ]
+    },
+    {
+      "start": 3437,
+      "end": 3449,
+      "name": "multicolor_sprite_mode_overview",
+      "description": "Explains the effect of enabling/disabling sprite multicolor mode: horizontal resolution halved (24 -> 12 pixels), each pair of bits in a sprite definition selects one of four colors, and refers to a mapping table for bit-pair to color-register relationship.",
+      "references": [
+        {
+          "chunk": "multicolor_bitpair_color_mapping_table_7_4",
+          "topic": "Detailed mapping of bit-pairs to color registers in multicolor mode"
+        },
+        {
+          "chunk": "multicolor_mode_enable_mltsp_d01c",
+          "topic": "How multicolor mode is enabled per sprite (MLTSP $D01C)"
+        }
+      ]
+    },
+    {
+      "start": 3450,
+      "end": 3458,
+      "name": "sprite_control_registers_overview",
+      "description": "Overview of sprite control registers: most sprite control registers map one bit to each sprite (bit 0 -> sprite 0, bit 1 -> sprite 1, etc.), while other controls that require values (like vertical position) have one register per sprite.",
+      "references": [
+        {
+          "chunk": "sprite_enable_register_spren_d015",
+          "topic": "Enabling/disabling individual sprites (SPREN $D015)"
+        },
+        {
+          "chunk": "sprite_color_registers_list_sprcl0_sprcl7",
+          "topic": "Per-sprite color registers and their addresses"
+        }
+      ]
+    },
+    {
+      "start": 3459,
+      "end": 3466,
+      "name": "sprite_enable_register_spren_d015",
+      "description": "Explains enabling and disabling sprites using SPREN ($D015): each bit in SPREN corresponds to a sprite; set the bit to enable that sprite (visible only if X/Y are on-screen), clear the bit to disable it.",
+      "references": [
+        {
+          "chunk": "sprite_control_registers_overview",
+          "topic": "General mapping of control bits to sprites"
+        },
+        {
+          "chunk": "sprite_color_registers_list_sprcl0_sprcl7",
+          "topic": "Setting sprite colors for enabled sprites"
+        }
+      ]
+    },
+    {
+      "start": 3467,
+      "end": 3530,
+      "name": "sprite_color_registers_list_sprcl0_sprcl7",
+      "description": "Describes per-sprite color registers: there are eight sprite color registers (one per sprite), each can select any of the 16 palette colors. Includes the names and addresses of the registers: SPRCLO $D027, SPRCL1 $D028, SPRCL2 $D029, SPRCL3 $D02A, SPRCL4 $D02B, SPRCL5 $D02C, SPRCL6 $D02D, SPRCL7 $D02E. Also explains that set bits in a sprite definition display the sprite color while clear bits are transparent.",
+      "references": [
+        {
+          "chunk": "sprite_enable_register_spren_d015",
+          "topic": "Sprites must be enabled (SPREN $D015) and positioned to be visible"
+        },
+        {
+          "chunk": "multicolor_mode_overview",
+          "topic": "How multicolor mode changes pixel interpretation (bit-pairs) and affects which color registers are used"
+        },
+        {
+          "chunk": "multicolor_mode_enable_mltsp_d01c",
+          "topic": "Per-sprite multicolor enable (MLTSP $D01C)"
+        }
+      ]
+    },
+    {
+      "start": 3531,
+      "end": 3539,
+      "name": "multicolor_mode_enable_mltsp_d01c",
+      "description": "Explains how to enable multicolor mode on a per-sprite basis using the MLTSP ($D01C) register: setting a bit enables multicolor for that sprite, clearing it disables multicolor.",
+      "references": [
+        {
+          "chunk": "multicolor_sprite_mode_overview",
+          "topic": "Effect of multicolor mode on resolution and bit interpretation"
+        },
+        {
+          "chunk": "multicolor_bitpair_color_mapping_table_7_4",
+          "topic": "Which registers/colors correspond to each bit-pair value in multicolor mode"
+        }
+      ]
+    },
+    {
+      "start": 3540,
+      "end": 3565,
+      "name": "multicolor_bitpair_color_mapping_table_7_4",
+      "description": "Table 7-4: Maps the two-bit pairs in a sprite's data (00, 01, 10, 11) to the resulting pixel interpretation in multicolor mode: 00 = transparent (screen color), 01 = sprite multicolor register #0 ($D025), 10 = sprite color register (per-sprite color), 11 = sprite multicolor register #1 ($D026).",
+      "references": [
+        {
+          "chunk": "multicolor_sprite_mode_overview",
+          "topic": "Summary of why bit-pair mapping matters (resolution and color selection)"
+        },
+        {
+          "chunk": "multicolor_mode_enable_mltsp_d01c",
+          "topic": "How to enable the multicolor interpretation per sprite"
+        },
+        {
+          "chunk": "sprite_color_registers_list_sprcl0_sprcl7",
+          "topic": "Uses of the per-sprite color register in the mapping (bit-pair 10)"
+        }
+      ]
+    },
+    {
+      "start": 3566,
+      "end": 3588,
+      "name": "sprite_scaling_multipliers",
+      "description": "Sprite multipliers: sprites can be expanded (doubled) in X or Y direction (pixel size doubles, resolution unchanged). X expansion controlled by SPRXSZ ($D01D) bits; Y expansion by SPRYSZ ($D017) bits. Set bit to expand, clear to return to normal. Both can be set for X and Y expansion simultaneously.",
+      "references": [
+        {
+          "chunk": "sprite_basic_properties_and_sizes",
+          "topic": "expanded size and no extra detail"
+        }
+      ]
+    },
+    {
+      "start": 3589,
+      "end": 3607,
+      "name": "sprite_positioning_overview",
+      "description": "Sprite positioning overview: each sprite has independent X and Y position registers plus a most significant X bit in XMSB ($D010) because screen width is 320 (requires 9 bits). Position values refer to upper-left corner of sprite.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_table",
+          "topic": "list of per-sprite X/Y registers and XMSB"
+        }
+      ]
+    },
+    {
+      "start": 3608,
+      "end": 3663,
+      "name": "sprite_position_registers_0_1",
+      "description": "Table 7-5 header and the position-register entries for sprites 0 and 1. Includes the table title and column labels (Address / Name / Description) and the rows describing SPR0X and SPR0Y (sprite 0 horizontal/vertical position registers) and SPR1X and SPR1Y (sprite 1 horizontal/vertical position registers) with their listed addresses.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_2_3",
+          "topic": "position registers for sprites 2 and 3"
+        },
+        {
+          "chunk": "sprite_position_registers_4_5",
+          "topic": "position registers for sprites 4 and 5"
+        },
+        {
+          "chunk": "sprite_position_registers_6_7_and_xmsb",
+          "topic": "position registers for sprites 6 and 7 and the XMSB register"
+        }
+      ]
+    },
+    {
+      "start": 3664,
+      "end": 3699,
+      "name": "sprite_position_registers_2_3",
+      "description": "Table rows listing the position registers for sprites 2 and 3. Covers SPR2X and SPR2Y (sprite 2 horizontal/vertical position registers) and SPR3X and SPR3Y (sprite 3 horizontal/vertical position registers) and their addresses as shown in the table.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_0_1",
+          "topic": "position registers for sprites 0 and 1 and the table header"
+        },
+        {
+          "chunk": "sprite_position_registers_4_5",
+          "topic": "position registers for sprites 4 and 5"
+        },
+        {
+          "chunk": "sprite_position_registers_6_7_and_xmsb",
+          "topic": "position registers for sprites 6 and 7 and the XMSB register"
+        }
+      ]
+    },
+    {
+      "start": 3700,
+      "end": 3735,
+      "name": "sprite_position_registers_4_5",
+      "description": "Table rows listing the position registers for sprites 4 and 5. Covers SPR4X and SPR4Y (sprite 4 horizontal/vertical position registers) and SPR5X and SPR5Y (sprite 5 horizontal/vertical position registers) with the addresses displayed in the table.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_0_1",
+          "topic": "position registers for sprites 0 and 1 and the table header"
+        },
+        {
+          "chunk": "sprite_position_registers_2_3",
+          "topic": "position registers for sprites 2 and 3"
+        },
+        {
+          "chunk": "sprite_position_registers_6_7_and_xmsb",
+          "topic": "position registers for sprites 6 and 7 and the XMSB register"
+        }
+      ]
+    },
+    {
+      "start": 3736,
+      "end": 3779,
+      "name": "sprite_position_registers_6_7_and_xmsb",
+      "description": "Table rows for the last sprite position registers and the X most-significant-bit register. Contains SPR6X and SPR6Y (sprite 6 horizontal/vertical position registers), SPR7X and SPR7Y (sprite 7 horizontal/vertical position registers) with their addresses, and the XMSB register (most significant bit of sprite X positions).",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_0_1",
+          "topic": "position registers for sprites 0 and 1 and the table header"
+        },
+        {
+          "chunk": "sprite_position_registers_2_3",
+          "topic": "position registers for sprites 2 and 3"
+        },
+        {
+          "chunk": "sprite_position_registers_4_5",
+          "topic": "position registers for sprites 4 and 5"
+        }
+      ]
+    },
+    {
+      "start": 3780,
+      "end": 3804,
+      "name": "sprite_position_visibility_limits",
+      "description": "Visibility limits: Y register values 0-255; an unexpanded sprite is fully visible if Y between $32 and $E9. X position is 9-bit (8 bits in X register + bit in XMSB $D010). Unexpanded sprite fully visible if 9-bit X value is > $18 and < $140. HINC/HDEC macros help handle 9-bit increments/decrements. Table 7-6 shows coordinates for fully visible normal/expanded sprites.",
+      "references": [
+        {
+          "chunk": "sprite_position_registers_table",
+          "topic": "which registers to set for X/Y positions and XMSB"
+        }
+      ]
+    },
+    {
+      "start": 3805,
+      "end": 3862,
+      "name": "sprite_priorities_and_bprior_register",
+      "description": "Sprite-to-sprite and sprite-to-background priorities: VIC predefines sprite-to-sprite priority (sprite 0 highest, sprite 7 lowest). Sprite-to-background priority is individually selected via BPRIOR ($D01B): clear bit -> sprite in front of background; set bit -> sprite behind background image (but in front of border color). Transparent areas let background or lower-priority sprites show through.",
+      "references": [
+        {
+          "chunk": "sprites_overview",
+          "topic": "general sprite ordering and use in scenes"
+        }
+      ]
+    },
+    {
+      "start": 3863,
+      "end": 3912,
+      "name": "sprite_collision_detection_registers",
+      "description": "Collision detection: VIC detects collisions between nontransparent portions of sprites and between sprite and background. Sprite-to-sprite collisions set bits in SSCOL ($D01E); reading SSCOL clears it, so store value before analyzing. SSCOL shows which sprites were involved but not pair-wise which hit which. Sprite-to-background collisions use SBCOL ($D01F); in multicolor modes bit pair 01 is treated as transparent for collision detection. Data cleared after read.",
+      "references": [
+        {
+          "chunk": "video_interrupts_virq_and_virqm",
+          "topic": "sprite/scanline collisions can set VIRQ bits for interrupts"
+        }
+      ]
+    },
+    {
+      "start": 3913,
+      "end": 3922,
+      "name": "screen_blanking_via_yscrl",
+      "description": "Screen blanking: clear bit 4 of YSCRL to blank the entire screen to the border color; set bit 4 to turn screen on. Blanking doesn't alter screen memory and slightly speeds program because VIC fetches no display data while blanked.",
+      "references": [
+        {
+          "chunk": "hardware_scrolling_and_registers",
+          "topic": "YSCRL also holds scroll fine bits"
+        }
+      ]
+    },
+    {
+      "start": 3923,
+      "end": 3943,
+      "name": "raster_register_and_interrupt_setup",
+      "description": "Raster register: VIC tracks current scan line as a 9-bit value. Low 8 bits available in RASTER ($D012), 9th bit in bit 7 of YSCRL. You can write 9-bit values to RASTER and YSCRL bit7; when scanline equals stored value bit of VIRQ ($D019) is set. If corresponding bit in VIRQM ($D01A) is set, an interrupt is generated. Use RAST macro to set 9-bit raster number. Remember to store the 9th bit when scheduling raster interrupts.",
+      "references": [
+        {
+          "chunk": "video_interrupts_virq_and_virqm",
+          "topic": "how raster compares set VIRQ and can cause interrupts"
+        }
+      ]
+    },
+    {
+      "start": 3944,
+      "end": 3979,
+      "name": "video_interrupts_virq_and_virqm",
+      "description": "Video interrupts: VIRQ ($D019) holds interrupt status bits (raster, sprite-background collision, sprite-sprite collision, light pen, and a 'any enabled interrupt' flag). To clear an interrupt bit you must write a 1 to that bit. Interrupts are only signaled to the CPU if corresponding bits are set in the video interrupt mask register VIRQM ($D01A); however VIRQ can still be read even if VIRQM doesn't enable CPU interrupts.",
+      "references": [
+        {
+          "chunk": "raster_register_and_interrupt_setup",
+          "topic": "writing raster value triggers VIRQ when matched"
+        }
+      ]
+    },
+    {
+      "start": 3980,
+      "end": 4009,
+      "name": "hardware_scrolling_and_registers",
+      "description": "Hardware scrolling: VIC can perform fine scrolling within an 8-pixel range in X and/or Y freeing CPU from pixel-level moves. Lower 3 bits of YSCRL ($D011) control vertical scroll; lower 3 bits of XSCRL ($D016) control horizontal scroll. Because these registers also hold other control bits, read-modify-write is required when changing fine scroll values (mask lower 3 bits and OR new value).",
+      "references": [
+        {
+          "chunk": "example_and_border_expansion",
+          "topic": "example code to safely modify YSCRL/XSCRL fine scroll bits"
+        },
+        {
+          "chunk": "scrolling_repositioning_and_performance",
+          "topic": "when to shift screen memory and swap display base"
+        }
+      ]
+    },
+    {
+      "start": 4010,
+      "end": 4050,
+      "name": "example_and_border_expansion",
+      "description": "Example routine to set YSCRL fine scroll safely: LDA YSCRL; AND #$F8; ORA #$07; STA YSCRL (sets vertical scroll to 7 without disturbing upper bits). Border expansion for scrolling: 38-column mode via clearing bit 3 of XSCRL (gives hidden buffer columns), normal 40-column by setting bit 3. Vertical border expansion by clearing bit 3 of YSCRL when vertical scroll = 3 (covers halves of top/bottom rows); set bit 3 to return to normal 25-row mode.",
+      "references": [
+        {
+          "chunk": "hardware_scrolling_and_registers",
+          "topic": "masking lower 3 bits before OR'ing new fine scroll value"
+        }
+      ]
+    },
+    {
+      "start": 4051,
+      "end": 4102,
+      "name": "scrolling_repositioning_and_performance",
+      "description": "When fine scroll reaches maximum, CPU must shift character-screen memory by one character and reset fine scroll. Advice: fast routines are necessary to avoid visual breaks; if moving the whole screen is too slow, prepare scrolled memory in an off-screen buffer and use TXBAS or GRABAS macro to point VIC to the prepared area once ready. Choose macro depending on current graphics mode.",
+      "references": [
+        {
+          "chunk": "graphics_memory_byte_organization_table",
+          "topic": "repositioning screen memory layout for scrolling"
+        }
+      ]
+    },
+    {
+      "start": 4103,
+      "end": 4199,
+      "name": "joystick_ports_and_button_bits",
+      "description": "Joysticks: C64 has two joystick ports. Configure as inputs by setting DDRA ($DC02) and DDRB ($DC03) to $00. Read data from JOY1 ($DC00) or JOY2 ($DC01). Bit 4 = fire button (cleared when pressed). Lower five bits represent directions: bits for UP, DOWN, LEFT, RIGHT and FIRE (table shown). Often useful to invert input (NOT) and mask unused bits before use; sample code shows reading, NOT, AND #$0F to get 4-bit direction value.",
+      "references": [
+        {
+          "chunk": "hardware_scrolling_and_registers",
+          "topic": "example code uses bit masking similar to joystick handling"
+        }
+      ]
+    },
+    {
+      "start": 4200,
+      "end": 4258,
+      "name": "sid_overview_waveforms_and_noise",
+      "description": "SID overview: Sound Interface Device (SID) supports 3 independent voices over >6 octaves, ADSR envelope controls (attack, decay, sustain, release), multiple waveforms (triangle, sawtooth, pulse/rectangular with pulse-width control, and noise). Channel 3 noise mode can be read by CPU to obtain a random value.",
+      "references": [
+        {
+          "chunk": "sid_filters_and_subtractive_synthesis",
+          "topic": "send voices through SID filters for richer timbres"
+        },
+        {
+          "chunk": "sound_generator_demo",
+          "topic": "demo of SID waveforms and envelopes"
+        }
+      ]
+    },
+    {
+      "start": 4259,
+      "end": 4331,
+      "name": "sid_filters_and_subtractive_synthesis",
+      "description": "SID filtering and subtractive synthesis: SID provides low-pass, band-pass, and high-pass filters. Filters can be combined (effects additive) — e.g., low+high = notch. Low-pass attenuates >cutoff at 12dB/octave (full sound); band-pass attenuates above and below cutoff at 6dB/octave (thin sound); high-pass attenuates <cutoff at 12dB/octave (tinny). Filters can be modulated in real time to produce dynamic effects like wind or jets.",
+      "references": [
+        {
+          "chunk": "sid_overview_waveforms_and_noise",
+          "topic": "filtering applied to base waveforms (triangle, saw, pulse, noise)"
+        }
+      ]
+    },
+    {
+      "start": 4332,
+      "end": 4400,
+      "name": "filter_cutoff_effects_and_figures",
+      "description": "Illustrations and discussion of how filter cutoff frequency changes affect frequency amplitude for low-pass, high-pass, and band-pass filters (figures referenced). Visual explanation of filter effects on spectrum as cutoff is varied.",
+      "references": [
+        {
+          "chunk": "sid_filters_and_subtractive_synthesis",
+          "topic": "graphical depiction of filter responses"
+        }
+      ]
+    },
+    {
+      "start": 4401,
+      "end": 4429,
+      "name": "sound_generator_demo",
+      "description": "Sound generator demo (Appendix C): machine language files and data loadable from disk. Example: LOAD \"SOUND DEMO\",8,1 then SYS 4096. Demonstrates SID capabilities, waveforms, envelopes and includes routines to play tunes by reading note/time tables until $00 note value encountered.",
+      "references": [
+        {
+          "chunk": "sound_editor_description_and_controls",
+          "topic": "sound editor can produce values used by demo"
+        }
+      ]
+    },
+    {
+      "start": 4430,
+      "end": 4452,
+      "name": "sid_sound_effects_and_tremolo",
+      "description": "Discussion of the variety of sound effects possible with the SID chip. Notes that sophisticated real-time control (for example, changing a channel's volume) enables effects like tremolo. Describes demo program segments that generate sounds and a tune-playing routine which reads note and time tables; a note value of $00 terminates the tune. Explains that changing the note and time tables will produce different tunes.",
+      "references": [
+        {
+          "chunk": "sound_editor_intro",
+          "topic": "Introduces the Sound Editor utility (Appendix C) used to select SID register values referenced here"
+        },
+        {
+          "chunk": "sound_editor_usage_and_controls",
+          "topic": "Explains how to run the Sound Editor and transfer edited register values to the SID"
+        }
+      ]
+    },
+    {
+      "start": 4453,
+      "end": 4461,
+      "name": "sound_editor_intro",
+      "description": "Header and brief introduction to the Sound Editor utility (THE SOUND EDITOR). States that a sound-editing program is included in Appendix C (listings referenced) to help choose SID register values and mentions the listing identifiers (C-10/C-11).",
+      "references": [
+        {
+          "chunk": "sid_sound_effects_and_tremolo",
+          "topic": "Context on sounds and tune routines that the Sound Editor can help configure"
+        },
+        {
+          "chunk": "figure_pages_41_44_ignored",
+          "topic": "Nearby figure pages/diagrams in the source document"
+        }
+      ]
+    },
+    {
+      "start": 4462,
+      "end": 4511,
+      "name": "figure_pages_41_44_ignored",
+      "description": "IGNORED: Non-technical figure and page-artifact material (frequency graphs, page numbers, and figure captions spanning pages ~41-44). This block contains graphical/layout remnants and captions that do not convey standalone technical instructions and are marked ignored for the semantic knowledge database.",
+      "references": [
+        {
+          "chunk": "sound_editor_intro",
+          "topic": "Figures are adjacent to the Sound Editor introduction"
+        },
+        {
+          "chunk": "sound_editor_usage_and_controls",
+          "topic": "Figures are interleaved with the Sound Editor usage and controls description"
+        }
+      ]
+    },
+    {
+      "start": 4512,
+      "end": 4560,
+      "name": "sound_editor_usage_and_controls",
+      "description": "Details on the Sound Editor program: lists that C-10 is the source and C-11 the assembled code; describes the editor's screen display of all SID registers using Chapter 3 naming conventions; explains cursor-driven editing of SID register fields where values are entered in hexadecimal notation so they can be used in an assembler; notes the ability to transfer edited data to the SID (producing sound if a channel is enabled); gives the commands to load and run the editor (LOAD \"SOUND EDIT\",8,1 and SYS 4096); and begins Table 8-1 listing controls (cursor keys to move between fields and the hex digit keys 0-9 shown within the covered lines).",
+      "references": [
+        {
+          "chunk": "sid_sound_effects_and_tremolo",
+          "topic": "Explains how to implement and test the sound effects and tunes described earlier using the Sound Editor"
+        },
+        {
+          "chunk": "sound_editor_intro",
+          "topic": "Continues the introduction and points to the Appendix C listings"
+        },
+        {
+          "chunk": "figure_pages_41_44_ignored",
+          "topic": "Figures that appear nearby in the original source document"
+        }
+      ]
+    },
+    {
+      "start": 4561,
+      "end": 4588,
+      "name": "editor_ui_labels_and_intro_to_sid_registers",
+      "description": "Editor UI labels and brief introduction to the SID register descriptions used by the Sound Editor. Contains UI text: 'Allowable numbers for the data fields', 'Allowable letters for the data fields', 'Transfers the data from the screen to the SID chip and the software timer.' Also includes the opening paragraph: 'A brief description of the registers used by the Sound Editor follows...' and a pointer to the COMMON file for a hex note list.",
+      "references": [
+        {
+          "chunk": "sid_voice_registers_descriptions",
+          "topic": "Per-voice SID register names and explanations (voice #1 used as example)"
+        },
+        {
+          "chunk": "sid_global_filter_registers",
+          "topic": "Registers that affect all three voice channels (filter, mode, volume, resonance)"
+        }
+      ]
+    },
+    {
+      "start": 4589,
+      "end": 4627,
+      "name": "sid_voice_registers_descriptions",
+      "description": "Names and detailed descriptions of the per-voice SID registers used by the Sound Editor. Lists registers for voice #1 as example: V1ATDC (Attack/Decay nibbles), V1SURL (Sustain/Release nibbles), V1FRLO and V1FRHI (low/high bytes of 16-bit frequency), V1PWLO and V1PWHI (12-bit pulse width split across low byte and upper nibble), and V1CORG (control register: waveform, sync, enable).",
+      "references": [
+        {
+          "chunk": "editor_ui_labels_and_intro_to_sid_registers",
+          "topic": "Intro and where the register descriptions are introduced"
+        },
+        {
+          "chunk": "sid_global_filter_registers",
+          "topic": "Global registers that affect all three voices"
+        }
+      ]
+    },
+    {
+      "start": 4628,
+      "end": 4644,
+      "name": "sid_global_filter_registers",
+      "description": "Descriptions of SID registers that affect all three voice channels: FLCNLO (low 3 bits of 11-bit filter frequency), FLCNHI (high 8 bits of 11-bit filter frequency), MODVOL (filtering mode and master volume for all voices), and RESFLT (resonance value and filter enables for all channels).",
+      "references": [
+        {
+          "chunk": "sid_voice_registers_descriptions",
+          "topic": "Per-voice registers and how they differ from global filter registers"
+        },
+        {
+          "chunk": "software_timer_registers_sndtm",
+          "topic": "Software timer registers used by the Sound Editor (non-SID RAM locations)"
+        }
+      ]
+    },
+    {
+      "start": 4645,
+      "end": 4668,
+      "name": "software_timer_registers_sndtm",
+      "description": "Explanation of the two Sound Editor timer registers (RAM locations, not SID registers) treated as a 16-bit countdown timer decremented every 1/60 second. When the 16-bit value reaches $0000, the release sequence is initiated for all three channels. Defines SNDTM1 (low-order 8 bits of the 16-bit timer) and SNDTM1+1 (high-order 8 bits).",
+      "references": [
+        {
+          "chunk": "sid_global_filter_registers",
+          "topic": "Global SID registers; these are separate RAM-based timer registers used by the editor"
+        },
+        {
+          "chunk": "sound_editor_tuning_tips",
+          "topic": "Practical advice on experimenting with registers and timing to refine sounds"
+        }
+      ]
+    },
+    {
+      "start": 4669,
+      "end": 4683,
+      "name": "sound_editor_tuning_tips",
+      "description": "Practical advice for using the Sound Editor: experiment with different register values to learn how they affect sound, adjust play time values to speed up sound polishing, and note that sound values can be determined separately from the main program.",
+      "references": [
+        {
+          "chunk": "editor_ui_labels_and_intro_to_sid_registers",
+          "topic": "Where the editor UI and register editing functions were introduced"
+        },
+        {
+          "chunk": "sid_voice_registers_descriptions",
+          "topic": "Which per-voice registers to tweak during experimentation"
+        },
+        {
+          "chunk": "software_timer_registers_sndtm",
+          "topic": "How timer values control sound playback duration and release sequencing"
+        }
+      ]
+    },
+    {
+      "start": 4684,
+      "end": 4711,
+      "name": "creating_graphics_intro",
+      "description": "Chapter 9 introduction: importance of graphics in games and overview of options for creating/entering graphics data. Mentions graphics utility programs in Appendix C.",
+      "references": [
+        {
+          "chunk": "hand_coding_graphics",
+          "topic": "manual methods for entering graphics data"
+        }
+      ]
+    },
+    {
+      "start": 4712,
+      "end": 4720,
+      "name": "hand_coding_graphics",
+      "description": "Hand-coding graphics: preliminary advice — know final object shape, chosen graphics mode, and chosen colors before entering data to make the process faster and consistent (e.g., multicolor sprites share common colors).",
+      "references": [
+        {
+          "chunk": "graphics_layout_sheets_and_forms",
+          "topic": "use of grid sheets to design pixels/characters"
+        }
+      ]
+    },
+    {
+      "start": 4721,
+      "end": 4743,
+      "name": "planning_and_graphics_mode_choice",
+      "description": "Graphics planning: decide on graphics mode and colors beforehand, consider common colors for multicolor sprites and character shapes, and use the provided sample layout sheets for pixel-accurate design.",
+      "references": [
+        {
+          "chunk": "graphics_grid_figures",
+          "topic": "different sheet types for standard, multicolor and character modes"
+        }
+      ]
+    },
+    {
+      "start": 4744,
+      "end": 4751,
+      "name": "graphics_layout_sheets_and_forms",
+      "description": "Reference to sample graphics layout sheets (Figs. 9-1 through 9-7) with fine grids proportional to TV pixels and heavy grid for character cell boundaries (25 lines x 40 chars on C64).",
+      "references": [
+        {
+          "chunk": "graphics_grid_figures",
+          "topic": "captions and usage notes for figure forms"
+        }
+      ]
+    },
+    {
+      "start": 4752,
+      "end": 4764,
+      "name": "graphics_grid_figures",
+      "description": "Figure captions: Fig. 9-1 shows a grid with character spaces and individual pixels (standard bitmap); Fig. 9-2 shows double-wide dots for multicolor modes; Fig. 9-3 shows character-space grid.",
+      "references": [
+        {
+          "chunk": "graphics_layout_sheets_and_forms",
+          "topic": "which figure to use for which graphics mode"
+        }
+      ]
+    },
+    {
+      "start": 4765,
+      "end": 4773,
+      "name": "multicolor_grid_and_sprite_forms",
+      "description": "Additional forms: multicolor sheets show pixels twice as wide (two bits per pixel in multicolor modes). Sprite design sheets (Figs. 9-4..9-7) provided for different sprite sizes, including expanded sprite grids that match the other forms for placing sprites over backgrounds.",
+      "references": [
+        {
+          "chunk": "sprite_basic_properties_and_sizes",
+          "topic": "sprite grid sizes correspond to multiplier options"
+        }
+      ]
+    },
+    {
+      "start": 4774,
+      "end": 4844,
+      "name": "pixel_visibility_tv_and_pixel_aspect_ratio",
+      "description": "TV display considerations: single isolated pixels of a color on a line may not be visible due to TV electron gun response time; use at least two adjacent pixels of same color for reliability. Pixel aspect is rectangular (not square); take 4/3 aspect ratio into account when drawing geometric shapes. Multicolor pixels are double-wide; care required for shapes. Sprite forms align with background grids for previewing.",
+      "references": [
+        {
+          "chunk": "graphics_grid_figures",
+          "topic": "use appropriate form for chosen mode to account for pixel aspect"
+        }
+      ]
+    },
+    {
+      "start": 4845,
+      "end": 4861,
+      "name": "entering_graphics_into_memory_monitor_vs_assembler",
+      "description": "Entering graphics data: options include using a machine language monitor's Memory Display to write bytes directly into RAM (then save to disk and reference address in program) or entering data into an assembler using .BYTE directives and naming areas. Monitor approach writes memory directly; assembler approach stores graphics in assembled object code.",
+      "references": [
+        {
+          "chunk": "assembler_bytes_and_reassembly_considerations",
+          "topic": "tradeoffs of assembler approach vs monitor"
+        }
+      ]
+    },
+    {
+      "start": 4862,
+      "end": 4870,
+      "name": "assembler_bytes_and_reassembly_considerations",
+      "description": "Assembler entry caveat: using .BYTE directives stores graphics in assembled program but forces reassembly each time you change assembler source; consider workflow tradeoffs between ease of editing and rebuild time.",
+      "references": [
+        {
+          "chunk": "entering_graphics_into_memory_monitor_vs_assembler",
+          "topic": "choose monitor vs assembler method"
+        }
+      ]
+    },
+    {
+      "start": 4871,
+      "end": 5600,
+      "name": "chapter_9_trailing_blank_and_figure_placeholders_ignored",
+      "description": "Non-technical trailing content following Chapter 9 (graphics). Covers a large block of blank lines and page/figure layout whitespace; includes a single page-number placeholder '51' at line 4873. This section contains no technical information and is marked to be ignored in the semantic index.",
+      "references": [
+        {
+          "chunk": "chapter_9_graphics",
+          "topic": "Main graphics chapter preceding these trailing blanks and figure placeholders"
+        }
+      ],
+      "no_refine": true
+    },
+    {
+      "start": 5601,
+      "end": 5800,
+      "ignore": true,
+      "reason": "Region is entirely blank/placeholder lines (figure/placeholders/whitespace) and contains no technical content to preserve."
+    },
+    {
+      "start": 5801,
+      "end": 5918,
+      "name": "assembling_graphics_data_and_build_options",
+      "description": "Notes on assembling graphics data with your program: tradeoffs of assembling graphics inline vs separately, relocation of graphics data, impact on assembly time, and the requirement to give the main program addresses if graphics are assembled independently.",
+      "references": [
+        {
+          "chunk": "koala_pad_overview_and_file_format",
+          "topic": "using externally created graphics from a tablet (Koala Pad)"
+        },
+        {
+          "chunk": "display_pic_usage_and_relocation",
+          "topic": "displaying and relocating graphics data after loading"
+        }
+      ]
+    },
+    {
+      "start": 5919,
+      "end": 6028,
+      "name": "graphics_tablet_and_package_selection",
+      "description": "Guidance on using graphics tablets and commercial graphics packages: the Koala Pad as an example, important selection criteria (what graphics mode the package uses; how pictures are retrieved from disk), useful features such as zoom mode and OOPS (undo), concerns about packages that limit colors or resolution, and palette mixing to extend apparent color choices.",
+      "references": [
+        {
+          "chunk": "koala_pad_overview_and_file_format",
+          "topic": "detailed Koala Pad information and file format"
+        },
+        {
+          "chunk": "sprite_maker_utility",
+          "topic": "creating sprites with supplied utilities"
+        }
+      ]
+    },
+    {
+      "start": 6029,
+      "end": 6071,
+      "name": "koala_pad_overview_and_file_format",
+      "description": "Koala Pad specifics: hardware overview (4\" x 4\" active area, 256x256 resolution, plugs into joystick port as paddles) and the Koala file format details (saved filenames prefixed with character $81 (inverted spade), followed by 'PIC' and a picture letter and space).",
+      "references": [
+        {
+          "chunk": "koala_filename_utils_and_memory_map",
+          "topic": "utilities to change Koala file names and memory layout of Koala files"
+        },
+        {
+          "chunk": "display_pic_usage_and_relocation",
+          "topic": "using the DISPLAY PIC program to show Koala images"
+        }
+      ]
+    },
+    {
+      "start": 6072,
+      "end": 6111,
+      "name": "koala_filename_utils_and_memory_map",
+      "description": "Utilities (COM-KO and KO-COM BASIC programs) to convert file names to/from Koala format; instructions to change names for loading. Koala memory map for a saved picture: $6000-$7F3F graphics image, $7F40-$8327 color memory image, $8328-$870F color RAM image, $8710 background color. Note about cartridge-based monitors possibly preventing reading of the file.",
+      "references": [
+        {
+          "chunk": "koala_pad_overview_and_file_format",
+          "topic": "how Koala saves files and why filename conversion is needed"
+        },
+        {
+          "chunk": "display_pic_usage_and_relocation",
+          "topic": "relocating and saving Koala data for display"
+        }
+      ]
+    },
+    {
+      "start": 6112,
+      "end": 6158,
+      "name": "display_pic_usage_and_relocation",
+      "description": "How to load, relocate and display a Koala Pad picture: advice to relocate graphics and color data to convenient addresses (preferably page boundaries), set the VIC multicolor bit before displaying, set the border color (not stored in Koala file), and how to run the supplied DISPLAY PIC program (loads machine code MVIT and displays until shift is pressed). Example RUN sequence: LOAD \"DISPLAY PIC\",8 then RUN; file names must be converted with KO-COM.",
+      "references": [
+        {
+          "chunk": "koala_filename_utils_and_memory_map",
+          "topic": "where Koala stores graphics and color data in memory"
+        },
+        {
+          "chunk": "sprite_maker_utility",
+          "topic": "other utilities for generating graphics (sprites)"
+        }
+      ]
+    },
+    {
+      "start": 6159,
+      "end": 6256,
+      "name": "sprite_maker_utility",
+      "description": "Description of the supplied Sprite Maker utility (LISTING C-17 with ML routines SLIB.O and CLSP2). Features: create one-color or multicolor sprites, change sprite/background colors, view sprite zoomed and in true size; control interface: joystick to move cursor; FIRE to plot/unplot; F1 toggles plot mode; F3/F4 enable/disable multicolor mode; F5 changes sprite color; F6 background color; F7/F8 change multicolor registers; S saves sprite; L loads sprite. Sprite binary data saved at $4000-$403F by the program; advice to move data to a safe area if merging sprites.",
+      "references": [
+        {
+          "chunk": "screen_maker_utility",
+          "topic": "related utility for building character screens"
+        }
+      ]
+    },
+    {
+      "start": 6257,
+      "end": 6351,
+      "name": "screen_maker_utility",
+      "description": "SCREEN MAKER utility (Listing C-20) for character graphics screens. Loads CLBACK1, CLSP1 and SLIB.O. Allows selection of any character in the character set and placement anywhere on the screen; shows current character and its color; controls: joystick to move cursor, FIRE to plot selected character, F1 increments character number, F3 decrements character number, F5 increments character color (writes to color RAM), F7 increments background color, L loads a file, S saves a file. Color information is saved with the character placement.",
+      "references": [
+        {
+          "chunk": "sprite_maker_utility",
+          "topic": "sprite utilities and complementary tools for backgrounds"
+        }
+      ]
+    },
+    {
+      "start": 6352,
+      "end": 6367,
+      "name": "chapter10_arcade_games_introduction",
+      "description": "Introduction to Chapter 10: rationale for studying popular arcade games to learn programming techniques and constraints; caution that arcade machines often have specialized hardware.",
+      "references": [
+        {
+          "chunk": "pac_man_overview_implementation",
+          "topic": "PAC-MAN translation to the C64"
+        },
+        {
+          "chunk": "donkey_kong_translation",
+          "topic": "DONKEY-KONG translation to the C64"
+        }
+      ]
+    },
+    {
+      "start": 6368,
+      "end": 6412,
+      "name": "pac_man_overview_implementation",
+      "description": "Overview of PAC-MAN and how to implement it on the C64: maze game with ghosts and power pellets that turn ghosts blue temporarily; difficulty by changing speeds and duration; use multicolor character graphics for maze/pellets and sprites for PAC-MAN, ghosts and bonus character. Sprite reuse: with eight hardware sprites, reassign remaining sprites to represent multiple pellets by repositioning after top pellets displayed.",
+      "references": [
+        {
+          "chunk": "sprite_collision_and_playfield_mapping",
+          "topic": "using collision registers to detect hits and pellet consumption"
+        }
+      ]
+    },
+    {
+      "start": 6413,
+      "end": 6428,
+      "name": "sprite_collision_and_playfield_mapping",
+      "description": "Use of Commodore 64 collision registers to detect sprite-to-sprite and sprite-to-background collisions (e.g., PAC-MAN hitting ghosts or pellets). Notes on potential difficulty in tracking which pellets have been eaten and the screen orientation difference (arcade monitors rotated 90 degrees) affecting layout.",
+      "references": [
+        {
+          "chunk": "pac_man_overview_implementation",
+          "topic": "practical collision detection in PAC-MAN implementations"
+        }
+      ]
+    },
+    {
+      "start": 6429,
+      "end": 6494,
+      "name": "donkey_kong_translation",
+      "description": "DONKEY-KONG overview and translation notes: Mario climbs structures while avoiding barrels, hammers, fireballs; arcade screens are rotated 90 degrees (taller than wide). On the C64, backgrounds (structures, Donkey Kong, girl, dropped items) can be character graphics; sprites used for Mario, barrels and fireballs. Technique: reduce sprite count by letting barrels roll off-screen when they descend between levels (player focus hides disappearance), allowing fewer sprites to represent many barrels; sprite repositioning (multiplexing) across scanlines increases flexibility.",
+      "references": [
+        {
+          "chunk": "sprite_multiplexing_benefits",
+          "topic": "reusing sprites on different lines to show more moving objects"
+        }
+      ]
+    },
+    {
+      "start": 6495,
+      "end": 6539,
+      "name": "centipede_translation_and_sprite_multiplexing",
+      "description": "CENTIPEDE overview and translation strategy: centipede of 11 segments that breaks apart when hit; mushrooms, spiders, fleas, and scorpions affect play. Mushrooms can be multicolor programmable characters. Because many moving objects are required (11 segments + player + shot + flea + spider + scorpion = 16 sprites), use sprite multiplexing (tricking the VIC-II into appearing to have more sprites) to display the necessary sprites.",
+      "references": [
+        {
+          "chunk": "sprite_multiplexing_benefits",
+          "topic": "details on sprite multiplexing technique for C64"
+        }
+      ]
+    },
+    {
+      "start": 6540,
+      "end": 6562,
+      "name": "revenge_of_the_phoenix_intro_and_run",
+      "description": "Introduction to the included arcade-style example game 'Revenge of the Phoenix' (Listing C-23). Contains many techniques from the book. How to load and run: LOAD \"PHOENIX V1.4N\",8,1 then SYS 32768. Program starts in demo/intro mode and can be interrupted with a fire button. Supports one or two players; select mode via joystick on the title page.",
+      "references": [
+        {
+          "chunk": "phoenix_gameplay_mechanics",
+          "topic": "gameplay mechanics and objectives for Phoenix"
+        },
+        {
+          "chunk": "phoenix_scoring_table",
+          "topic": "scoring specifics for Phoenix"
+        }
+      ]
+    },
+    {
+      "start": 6563,
+      "end": 6610,
+      "name": "phoenix_gameplay_mechanics",
+      "description": "Gameplay description for 'Return of the Phoenix': player(s) control a wizard protecting a castle from a phoenix by shooting spells to prevent the phoenix from building a three-tier bridge. One wizard can fly freely; the other must stay near the bottom (different play styles). Nine difficulty levels; the program monitors player ability and adjusts difficulty. Starting at level 2, phoenix drop sleep spells that stun the player (~3 seconds). Higher levels increase phoenix speed and firing rate, and may increase wizard speed.",
+      "references": [
+        {
+          "chunk": "phoenix_scoring_overview",
+          "topic": "how phoenix scoring is computed over time"
+        },
+        {
+          "chunk": "difficulty_levels_and_self_adjusting_system",
+          "topic": "self-adjusting difficulty (SAD) described later"
+        }
+      ]
+    },
+    {
+      "start": 6611,
+      "end": 6651,
+      "name": "phoenix_scoring_overview",
+      "description": "Scoring overview for 'Return of the Phoenix': players and phoenix compete for high score. Phoenix brick values decrease every four seconds (range 5 to 98 points depending on delay). Other scoring items are described in the game's scoring table. Two-player mode uses a shared player score (upper left) and a separate phoenix score (upper right); if players' score beats phoenix, the bridge flashes and falls; otherwise phoenix wins.",
+      "references": [
+        {
+          "chunk": "phoenix_scoring_table",
+          "topic": "detailed point values for specific actions"
+        }
+      ]
+    },
+    {
+      "start": 6652,
+      "end": 6665,
+      "name": "phoenix_scoring_table",
+      "description": "Table 10-1: specific scoring values in 'Revenge of the Phoenix' including: wizard shooting phoenix with energy brick = 98 points; wizard shooting phoenix without brick = 26 points; wizard shooting all 4 phoenix = 1000 points; phoenix putting a wizard to sleep = 325 points.",
+      "references": [
+        {
+          "chunk": "phoenix_scoring_overview",
+          "topic": "how brick values change over time and table entries relate"
+        }
+      ]
+    },
+    {
+      "start": 6666,
+      "end": 6696,
+      "name": "chapter11_elements_of_game_design_intro",
+      "description": "Chapter 11 introduction: transition from programming techniques to game design concepts; key qualities of a good game: be fun, have interesting plot, be visually stimulating, have sound effects/music, varying difficulty levels, and keeping score. Discussion of the risk that a good idea can become boring if not well implemented.",
+      "references": [
+        {
+          "chunk": "visual_impact_and_animation",
+          "topic": "visual choices and animation techniques"
+        },
+        {
+          "chunk": "sound_and_difficulty_levels_self_adjusting",
+          "topic": "sound effects, music and difficulty level considerations"
+        }
+      ]
+    },
+    {
+      "start": 6697,
+      "end": 6727,
+      "name": "avoiding_predictability_and_considering_capabilities",
+      "description": "Design advice: avoid deterministic play by adding random elements so games remain unpredictable; consider the hardware capabilities of the C64 during design to avoid attempting impossible displays; use the programming techniques from the book (e.g., sprite multiplexing) to extend possibilities.",
+      "references": [
+        {
+          "chunk": "sprite_multiplexing_benefits",
+          "topic": "use multiplexing to increase sprite capacity and allow richer designs"
+        }
+      ]
+    },
+    {
+      "start": 6728,
+      "end": 6736,
+      "name": "sprite_multiplexing_benefits",
+      "description": "Sprite multiplexing explanation (brief): multiplexing tricks the C64 into displaying more sprites in the same area than the hardware nominally allows, enabling more complex animations and more moving objects in a game.",
+      "references": [
+        {
+          "chunk": "centipede_translation_and_sprite_multiplexing",
+          "topic": "example use of multiplexing to simulate 16 sprites in Centipede"
+        },
+        {
+          "chunk": "donkey_kong_translation",
+          "topic": "sprite reuse techniques in DONKEY-KONG translations"
+        }
+      ]
+    },
+    {
+      "start": 6737,
+      "end": 6770,
+      "name": "playtesting_collaboration_and_music_on_title_pages",
+      "description": "Design tips: discuss ideas with others (brainstorming sessions) to get creative input and improve game appeal. Use brief music on title pages or short animations between levels to retain player interest; background music should be low-volume relative to sound effects and optionally player-toggleable.",
+      "references": [
+        {
+          "chunk": "visual_impact_and_animation",
+          "topic": "use of short animations and visual cues to enhance appeal"
+        }
+      ]
+    },
+    {
+      "start": 6771,
+      "end": 6796,
+      "name": "visual_impact_and_animation",
+      "description": "Visual design advice: visual impact is critical; choose color combinations that display well on a TV (high contrast works best); vary animation sequences for moving figures to increase interest (explosions, fades, carrying animations), and use flashing colors or changed sprites to indicate state changes.",
+      "references": [
+        {
+          "chunk": "sprite_maker_utility",
+          "topic": "tools to design and preview sprites and their colors"
+        }
+      ]
+    },
+    {
+      "start": 6797,
+      "end": 6844,
+      "name": "sound_and_difficulty_levels_self_adjusting",
+      "description": "Importance of sound effects and difficulty design: sound effects/music add immersion; keep background music low relative to effects and provide option to disable. Difficulty levels should vary speed, enemy behavior, and possibly introduce new characters; changing difficulty based on player skill (self-adjusting difficulty, SAD) keeps play engaging (example: Return of the Phoenix adjusts skill level automatically and reduces difficulty when player performance drops).",
+      "references": [
+        {
+          "chunk": "phoenix_gameplay_mechanics",
+          "topic": "example of self-adjusting difficulty in Return of the Phoenix"
+        }
+      ]
+    },
+    {
+      "start": 6845,
+      "end": 6874,
+      "name": "scoring_principles",
+      "description": "Principles for scoring systems: display the score constantly, award points for actions that help the player toward the goal, vary point values by action and difficulty level, and use sound cues to indicate score events. Consider bonuses to tempt certain behavior. Scoring values are subjective and usually refined during testing.",
+      "references": [
+        {
+          "chunk": "score_storage_and_high_score_table",
+          "topic": "technical considerations for storing scores and high score tables"
+        }
+      ]
+    },
+    {
+      "start": 6875,
+      "end": 6891,
+      "name": "score_storage_and_high_score_table",
+      "description": "Practical scoring considerations: reserve enough bytes to store extremely high scores to avoid rollover; provide optional high-score tables to let top players record names for competition.",
+      "references": [
+        {
+          "chunk": "scoring_principles",
+          "topic": "how scoring design should be made visible and meaningful"
+        }
+      ]
+    },
+    {
+      "start": 6892,
+      "end": 6908,
+      "name": "boghop_and_assembly_exercise",
+      "description": "Introduction to the BOGHOP example (Appendix C): the next chapter explains the BOGHOP game's operation; if you're new to assembly, assemble the program as an exercise (work on a copy of the source disk), read comments to find where small changes affect gameplay, and use it to learn assembly language by experimentation.",
+      "references": [
+        {
+          "chunk": "revenge_of_the_phoenix_intro_and_run",
+          "topic": "example included earlier of a full game illustrating techniques"
+        },
+        {
+          "chunk": "sprite_maker_utility",
+          "topic": "use provided libraries to speed development when modifying example games"
+        }
+      ]
+    },
+    {
+      "start": 6909,
+      "end": 6926,
+      "name": "conclusion_and_next_steps",
+      "description": "Final remarks: summary that the book provides a strong foundation for writing games on the C64, encouragement to use appendix libraries and definition files to speed development, and a closing wish that readers enjoy writing and sharing games.",
+      "references": [
+        {
+          "chunk": "boghop_and_assembly_exercise",
+          "topic": "next chapter's example game to practice on"
+        }
+      ]
+    }
+  ],
+  "source_md5": "9a6cd4f51580a12b59e16ab5f4eca4fb"
+}

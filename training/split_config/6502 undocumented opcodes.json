@@ -1,0 +1,3972 @@
+{
+  "source_file": "6502 undocumented opcodes.txt",
+  "context": "NMOS 6510",
+  "splits": [
+    {
+      "start": 1,
+      "end": 9,
+      "ignore": true,
+      "reason": "Document title, version and author/credit information"
+    },
+    {
+      "start": 10,
+      "end": 198,
+      "ignore": true,
+      "reason": "Table of contents (non-technical index)"
+    },
+    {
+      "start": 199,
+      "end": 214,
+      "name": "preface",
+      "description": "Historical background on research into illegal/undocumented 6502 opcodes, notes about misinformation, reference to Wolfgang Lorenz test suite, and document authorship/date.",
+      "references": [
+        {
+          "chunk": "scope_and_audience",
+          "topic": "applies-to / scope"
+        }
+      ]
+    },
+    {
+      "start": 215,
+      "end": 241,
+      "name": "scope_and_intended_audience",
+      "description": "Scope: targets MOS6510 (Commodore 64/128 related CPUs) and notes compatibility with various 6502 second sources; exclusions (65C02, 65816, etc.); Intended audience: assumes familiarity with 6502 assembly and CPU flags.",
+      "references": [
+        {
+          "chunk": "preface",
+          "topic": "document background"
+        },
+        {
+          "chunk": "processor_flags",
+          "topic": "assumed knowledge of flags"
+        }
+      ]
+    },
+    {
+      "start": 242,
+      "end": 246,
+      "name": "license",
+      "description": "License statement: documentation free to use (humorous wording), warning about side effects.",
+      "references": []
+    },
+    {
+      "start": 247,
+      "end": 279,
+      "name": "what_you_get",
+      "description": "Overview of what the document provides: opcode charts for illegal opcodes, cycle-by-cycle addressing breakdowns, per-opcode formal descriptions (flags, behavior), test code references (VICE test-programs), examples and notes on dummy memory accesses and other CPU quirks.",
+      "references": [
+        {
+          "chunk": "opcode_matrix",
+          "topic": "full opcode matrix and per-opcode descriptions"
+        }
+      ]
+    },
+    {
+      "start": 280,
+      "end": 348,
+      "name": "naming_conventions_and_symbols",
+      "description": "Naming conventions and shorthand used in the document: register names (A, X, Y, SP, PC), status flags (NV-BDIZC), notation for immediate values {imm}, effective address {addr}, high byte {H+1}, {CONST} magic constant, and common operator symbols (&, |, ^, +, -, *, /).",
+      "references": [
+        {
+          "chunk": "address_mode_abbreviations",
+          "topic": "abbreviations used with these names"
+        },
+        {
+          "chunk": "processor_flags",
+          "topic": "flag notation and meanings"
+        }
+      ]
+    },
+    {
+      "start": 349,
+      "end": 353,
+      "name": "opcode_color_coding",
+      "description": "Color coding used in tables: GREEN = stable opcodes, YELLOW = partially unstable, RED = highly unstable; guidance on precautions when using non-green opcodes.",
+      "references": [
+        {
+          "chunk": "opcode_matrix",
+          "topic": "matrix uses this color coding"
+        }
+      ]
+    },
+    {
+      "start": 354,
+      "end": 370,
+      "name": "address_mode_abbreviations",
+      "description": "Abbreviations used for addressing modes: AA (Absolute Address), AAH (Absolute Address High), AAL (Absolute Address Low), DO (Direct Offset), and similar shorthand used throughout the document.",
+      "references": [
+        {
+          "chunk": "naming_conventions_and_symbols",
+          "topic": "registers and notation"
+        }
+      ]
+    },
+    {
+      "start": 371,
+      "end": 375,
+      "name": "mnemonics_conventions",
+      "description": "Explanation of mnemonic variants: document lists previously used mnemonics for opcodes and selects one variant for consistent usage; pointer to appendix for assembler differences.",
+      "references": [
+        {
+          "chunk": "appendix_opcode_naming",
+          "topic": "assembler-specific naming (appendix)"
+        }
+      ]
+    },
+    {
+      "start": 376,
+      "end": 433,
+      "name": "processor_flags",
+      "description": "Processor status flags summary: N (Negative), V (Overflow), B (Break), D (Decimal), I (Interrupt), Z (Zero), C (Carry). Also explains notation used to indicate instruction dependence/usage of flags: 'i' = depends on (input only), 'o' = sets/clears (output only), 'x' = both depends on and changes the flag.",
+      "references": [
+        {
+          "chunk": "what_you_get",
+          "topic": "flag notation used in opcode descriptions"
+        }
+      ]
+    },
+    {
+      "start": 434,
+      "end": 441,
+      "name": "opcode_matrix_overview_and_block_labels",
+      "description": "Introductory explanation of arranging the 6502 opcode matrix to expose symmetries; labels the major blocks used in the matrix: A (Control Instructions + Load/Store Y) and B (ALU Operations + Load/Store A).",
+      "references": [
+        {
+          "chunk": "opcode_matrix_columns_plus00_to_plus1c_blocks_A_B",
+          "topic": "Full decode table for the +00..+1C columns (blocks A and B)"
+        },
+        {
+          "chunk": "opcode_matrix_columns_plus02_to_plus1f_blocks_C_D_and_notes",
+          "topic": "Full decode table for the +02..+1F columns (blocks C and D) and concluding notes"
+        }
+      ]
+    },
+    {
+      "start": 442,
+      "end": 489,
+      "name": "opcode_row_00_brk_php_bpl_ora",
+      "description": "Opcode decode row for base 0x00 (lines include the header for columns +00..+1C and +01..+1D). Covers BRK, several NOP variants (zero page and absolute placeholders), PHP/PLP pair (PHP shown here), BPL relative, CLC, and the ORA family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. Includes the arrangement of official and undocumented NOPs used as fillers.",
+      "references": [
+        {
+          "chunk": "opcode_row_20_jsr_bit_and",
+          "topic": "JSR / BIT / PLP / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_jmp_eor",
+          "topic": "RTI / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_jmpind_adc",
+          "topic": "RTS / JMP (indirect) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tya_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 490,
+      "end": 537,
+      "name": "opcode_row_20_jsr_bit_plp_bmi_and",
+      "description": "Opcode decode row for base 0x20. Covers JSR (abs), BIT (zp and abs), PLP, BMI relative, SEC, and the AND family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. Includes NOP placeholders in zero page/X and absolute/X slots where shown.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_jmp_eor",
+          "topic": "RTI / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_jmpind_adc",
+          "topic": "RTS / JMP (indirect) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tya_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 538,
+      "end": 584,
+      "name": "opcode_row_40_rti_pha_jmp_bvc_eor",
+      "description": "Opcode decode row for base 0x40. Covers RTI, NOP (zp placeholder), PHA, JMP (abs), BVC relative, CLI, and the EOR family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. Shows the common NOP/placeholder positions and standard flag/branch/control instructions in this row.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_jmpind_adc",
+          "topic": "RTS / JMP (indirect) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tya_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 585,
+      "end": 631,
+      "name": "opcode_row_60_rts_pla_jmpind_bvs_adc",
+      "description": "Opcode decode row for base 0x60. Covers RTS, NOP (zp), PLA, JMP (indirect), BVS relative, SEI, and the ADC family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. Lists the control/stack instructions and ADC variants, with NOP placeholders in several slots.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_pha_jmp_bvc_eor",
+          "topic": "RTI / PHA / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tya_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 632,
+      "end": 679,
+      "name": "opcode_row_80_nop_sty_dey_tya_shy_sta",
+      "description": "Opcode decode row for base 0x80. Contains a NOP immediate variant, STY (zp and abs and zp,x), DEY, BCC relative, TYA, and the undocumented SHY (abs,x) entry. Also covers STA variants across addressing modes: (zp,x), zp, #imm placeholder, abs, (zp),y, zp,x, abs,y, abs,x. Notes presence of undocumented/store-related instructions and filler NOPs.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_pha_jmp_bvc_eor",
+          "topic": "RTI / PHA / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_pla_jmpind_bvs_adc",
+          "topic": "RTS / PLA / JMP (ind) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tya_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 680,
+      "end": 727,
+      "name": "opcode_row_a0_ldy_tay_bcs_clv_lday_lda",
+      "description": "Opcode decode row for base 0xA0. Covers LDY (#imm, zp, abs, zp,x, abs,x), TAY, BCS relative, CLV, and the LDA family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. This row groups load/transfer operations for Y and accumulator with their addressing-mode variants.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_pha_jmp_bvc_eor",
+          "topic": "RTI / PHA / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_pla_jmpind_bvs_adc",
+          "topic": "RTS / PLA / JMP (ind) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_dey_tya_shy_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 728,
+      "end": 775,
+      "name": "opcode_row_c0_cpy_iny_bne_cld_cmp",
+      "description": "Opcode decode row for base 0xC0. Covers CPY (#imm, zp, abs), INY, BNE relative, CLD, NOP placeholders, and the CMP family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. This row groups compare operations for Y and A plus common control flags/branches and CMP variants.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_pha_jmp_bvc_eor",
+          "topic": "RTI / PHA / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_pla_jmpind_bvs_adc",
+          "topic": "RTS / PLA / JMP (ind) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_dey_tya_shy_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tay_bcs_clv_lday_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_e0_cpx_sbc",
+          "topic": "CPX / INX / SBC group (base 0xE0)"
+        }
+      ]
+    },
+    {
+      "start": 776,
+      "end": 823,
+      "name": "opcode_row_e0_cpx_inx_beq_sed_sbc",
+      "description": "Opcode decode row for base 0xE0. Covers CPX (#imm, zp, abs), INX, BEQ relative, SED, NOP placeholders, and the SBC family across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x. This row groups compare and subtract-with-carry operations and standard increments/flag-setting instructions.",
+      "references": [
+        {
+          "chunk": "opcode_row_00_brk_php_bpl_ora",
+          "topic": "BRK / PHP / BPL / ORA group (base 0x00)"
+        },
+        {
+          "chunk": "opcode_row_20_jsr_plp_bit_and",
+          "topic": "JSR / PLP / BIT / AND group (base 0x20)"
+        },
+        {
+          "chunk": "opcode_row_40_rti_pha_jmp_bvc_eor",
+          "topic": "RTI / PHA / JMP / EOR group (base 0x40)"
+        },
+        {
+          "chunk": "opcode_row_60_rts_pla_jmpind_bvs_adc",
+          "topic": "RTS / PLA / JMP (ind) / ADC group (base 0x60)"
+        },
+        {
+          "chunk": "opcode_row_80_nop_sty_dey_tya_shy_sta",
+          "topic": "NOP / STY / STA group (base 0x80)"
+        },
+        {
+          "chunk": "opcode_row_a0_ldy_tay_bcs_clv_lday_lda",
+          "topic": "LDY / TAY / LDA group (base 0xA0)"
+        },
+        {
+          "chunk": "opcode_row_c0_cpy_iny_bne_cld_cmp",
+          "topic": "CPY / INY / CMP group (base 0xC0)"
+        }
+      ]
+    },
+    {
+      "start": 824,
+      "end": 869,
+      "name": "opcode_matrix_row_00",
+      "description": "Opcode matrix row for 00..1F (columns +02,+06,+0A,+0E,+12,+16,+1A,+1E and +03,+07,+0B,+0F,+13,+17,+1B,+1F). Shows operations for the 00-row: JAM (illegal lockup), ASL (accumulator, zeropage, absolute, zp,x, abs,x), NOP (#imm), and undocumented combined/illegal opcodes like SLO and ANC with their addressing modes (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_20",
+          "topic": "next opcode row (20..3F) with ROL/RLA variants"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 870,
+      "end": 916,
+      "name": "opcode_matrix_row_20",
+      "description": "Opcode matrix row for 20..3F. Contains JAM entries, ROL (accumulator, zp, abs, zp,x, abs,x), NOP, and undocumented/combined opcodes RLA and ANC with addressing modes including (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_00",
+          "topic": "previous opcode row (00..1F) with ASL/SLO/ANC"
+        },
+        {
+          "chunk": "opcode_matrix_row_40",
+          "topic": "next opcode row (40..5F) with LSR/SRE/ALR"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 917,
+      "end": 962,
+      "name": "opcode_matrix_row_40",
+      "description": "Opcode matrix row for 40..5F. Shows JAM and LSR variants (accumulator, zp, abs, zp,x, abs,x), NOP, and undocumented combined/illegal instructions SRE and ALR with addressing modes (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_20",
+          "topic": "previous opcode row (20..3F) with ROL/RLA"
+        },
+        {
+          "chunk": "opcode_matrix_row_60",
+          "topic": "next opcode row (60..7F) with ROR/RRA/ARR"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 963,
+      "end": 1008,
+      "name": "opcode_matrix_row_60",
+      "description": "Opcode matrix row for 60..7F. Lists JAM and ROR variants (accumulator, zp, abs, zp,x, abs,x), NOP, and undocumented/combined opcodes RRA and ARR with addressing modes (zp,x), zp, #imm, abs, (zp),y, zp,x, abs,y, abs,x.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_40",
+          "topic": "previous opcode row (40..5F) with LSR/SRE/ALR"
+        },
+        {
+          "chunk": "opcode_matrix_row_80",
+          "topic": "next opcode row (80..9F) with various NOP/STX/TXA/SAX/etc."
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 1009,
+      "end": 1055,
+      "name": "opcode_matrix_row_80",
+      "description": "Opcode matrix row for 80..9F. Covers immediate-mode NOPs, STX (zp, abs, zp,y), TXA/TXS, undocumented store/transfer variants SHX/SHY/SAX/SHA/TAS with addressing modes including (zp,x), zp, #imm, abs, (zp),y, zp,y, abs,y and associated JAM entries.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_60",
+          "topic": "previous opcode row (60..7F) with ROR/RRA"
+        },
+        {
+          "chunk": "opcode_matrix_row_a0",
+          "topic": "next opcode row (A0..BF) with LDX/TAX/LAX/LAS"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 1056,
+      "end": 1102,
+      "name": "opcode_matrix_row_a0",
+      "description": "Opcode matrix row for A0..BF. Shows LDX (immediate, zp, abs, zp,y, abs,y), TAX/TSX, and many undocumented/multiple-load opcodes LAX and LAS across addressing modes: (zp,x), zp, #imm, abs, (zp),y, zp,y, abs,y. Contains one JAM entry in this row.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_80",
+          "topic": "previous opcode row (80..9F) with store/transfer variants"
+        },
+        {
+          "chunk": "opcode_matrix_row_c0",
+          "topic": "next opcode row (C0..DF) with DEC/DEX/DCP/SBX"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 1103,
+      "end": 1149,
+      "name": "opcode_matrix_row_c0",
+      "description": "Opcode matrix row for C0..DF. Contains NOP (#imm), DEC (zp, abs, zp,x, abs,x), DEX, and undocumented/combined opcodes DCP with addressing modes (zp,x), zp, abs, (zp),y, zp,x, abs,y, abs,x. Also includes the undocumented immediate SBX entry.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_a0",
+          "topic": "previous opcode row (A0..BF) with LDX/LAX"
+        },
+        {
+          "chunk": "opcode_matrix_row_e0",
+          "topic": "next opcode row (E0..FF) with INC/ISC/SBC"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 1150,
+      "end": 1196,
+      "name": "opcode_matrix_row_e0",
+      "description": "Opcode matrix row for E0..FF. Shows NOP (#imm), INC (zp, abs, zp,x, abs,x), and undocumented combined opcodes ISC with addressing modes (zp,x), zp, abs, (zp),y, zp,x, abs,y, abs,x. Also lists immediate-mode undocumented SBC variants and JAM entries where present.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_c0",
+          "topic": "previous opcode row (C0..DF) with DEC/DCP/SBX"
+        },
+        {
+          "chunk": "opcode_matrix_notes_and_labels",
+          "topic": "block labels and concluding note about variant grouping"
+        }
+      ]
+    },
+    {
+      "start": 1197,
+      "end": 1206,
+      "name": "opcode_matrix_notes_and_labels",
+      "description": "Labels and brief notes for the opcode matrix: definitions for block C (RMW Operations + Load/Store X) and block D (Unintended Operations), a page marker and a concluding note that variants of the same instruction within a block are mostly in the same row.",
+      "references": [
+        {
+          "chunk": "opcode_matrix_row_00",
+          "topic": "opcode row 00..1F containing ASL/SLO/ANC entries"
+        },
+        {
+          "chunk": "opcode_matrix_row_20",
+          "topic": "opcode row 20..3F containing ROL/RLA/ANC entries"
+        },
+        {
+          "chunk": "opcode_matrix_row_40",
+          "topic": "opcode row 40..5F containing LSR/SRE/ALR entries"
+        },
+        {
+          "chunk": "opcode_matrix_row_60",
+          "topic": "opcode row 60..7F containing ROR/RRA/ARR entries"
+        },
+        {
+          "chunk": "opcode_matrix_row_80",
+          "topic": "opcode row 80..9F containing store/transfer and SAX/SHA variants"
+        },
+        {
+          "chunk": "opcode_matrix_row_a0",
+          "topic": "opcode row A0..BF containing LDX/LAX/LAS variants"
+        },
+        {
+          "chunk": "opcode_matrix_row_c0",
+          "topic": "opcode row C0..DF containing DEC/DCP/SBX variants"
+        },
+        {
+          "chunk": "opcode_matrix_row_e0",
+          "topic": "opcode row E0..FF containing INC/ISC/SBC variants"
+        }
+      ]
+    },
+    {
+      "start": 1207,
+      "end": 1270,
+      "name": "opcode_matrix_notes",
+      "description": "Notes and observations about the opcode matrix: layout conventions, exceptions (JSR abs decoding to stack behavior, JMP (ind) mapping), peculiarities like 9C/9E non-working STY abs,x / STX abs,y, NOP #imm decoding oddity, and the general rule that block D contains unintended combined operations.",
+      "references": [
+        {
+          "chunk": "opcode_matrix",
+          "topic": "full matrix context"
+        },
+        {
+          "chunk": "types_intro",
+          "topic": "how unintended opcodes combine operations"
+        }
+      ]
+    },
+    {
+      "start": 1271,
+      "end": 1326,
+      "name": "grouped_unintended_opcodes_rla_sre_rra_sax_lax_dcp_isc",
+      "description": "Lists opcode bytes for several multi-byte undocumented instructions grouped by mnemonic: RLA (lines 1271–1277), SRE (1279–1285), RRA (1287–1293), SAX (1295–1301), LAX (1303–1309), DCP (1311–1317), and ISC (1319–1325). Includes blank/separator line(s) where present. This chunk is an index of which opcode bytes correspond to each of these undocumented operations.",
+      "references": [
+        {
+          "chunk": "functions_and_flag_effects_for_grouped_opcodes",
+          "topic": "Describes the high-level function each opcode performs and which status flags are affected."
+        },
+        {
+          "chunk": "single_byte_immediate_anc_alr_arr_sbx_sbc",
+          "topic": "Covers the single-byte immediate variants (ANC/ALR/ARR/SBX/SBC) listed later in the same table."
+        }
+      ]
+    },
+    {
+      "start": 1327,
+      "end": 1378,
+      "name": "functions_and_flag_effects_for_grouped_opcodes",
+      "description": "Gives the high-level functional semantics for the grouped undocumented opcodes (e.g., {addr} = {addr} * 2, A = A or {addr}, {addr} = rol {addr}, A = A and {addr}, etc., lines 1327–1335). Lists the processor status flag columns (N V - B D I Z C) and the observed/affected flag behavior for each function (1337–1355). Continues with additional functions for SAX/LAX/DCP/ISC variants (1356–1363) and their flag effects (1365–1378). This chunk maps the opcode groups to what they do and how they affect CPU flags.",
+      "references": [
+        {
+          "chunk": "grouped_unintended_opcodes_rla_sre_rra_sax_lax_dcp_isc",
+          "topic": "Shows the actual opcode bytes corresponding to the functions documented here."
+        },
+        {
+          "chunk": "single_byte_immediate_anc_alr_arr_sbx_sbc",
+          "topic": "Single-byte immediate opcodes share similar flag/behavior conventions explained here."
+        }
+      ]
+    },
+    {
+      "start": 1379,
+      "end": 1432,
+      "name": "single_byte_immediate_anc_alr_arr_sbx_sbc",
+      "description": "Documents single-byte immediate undocumented opcodes and their semantics: ANC ($0B at 1381 and $2B at 1391), ALR ($4B at 1401), ARR ($6B at 1411), SBX ($CB at 1419), SBC ($EB at 1427). For each it shows the opcode byte, the high-level operation (e.g., A = A & #{imm}, A = (A & #{imm}) / 2, X = A & X - #{imm}, A = A - #{imm}), and the flags affected/observed (lines 1379–1432).",
+      "references": [
+        {
+          "chunk": "functions_and_flag_effects_for_grouped_opcodes",
+          "topic": "Provides general flag-behavior conventions used by both multi-byte and single-byte undocumented opcodes."
+        },
+        {
+          "chunk": "stack_and_memory_logical_sha_shy_shx_tas_las",
+          "topic": "Other unusual memory/SP-affecting undocumented opcodes (SHA/SHY/SHX/TAS/LAS) are listed in the next section."
+        }
+      ]
+    },
+    {
+      "start": 1433,
+      "end": 1474,
+      "name": "stack_and_memory_logical_sha_shy_shx_tas_las",
+      "description": "Describes SHA ($93), SHY ($9F, $9C), SHX ($9E), TAS ($9B), and LAS ($BB) undocumented opcodes (lines 1433–1464). Lists their opcode bytes, the memory/SP interactions (e.g., {addr} = A & X & {H+1}, {addr} = Y & {H+1}, {addr} = X & {H+1}, SP = A & X, {addr} = SP & {H+1}, A,X,SP = {addr} & SP), and the observed flag behaviors (lines 1442–1474). This chunk focuses on opcodes that combine register logic with memory writes or affect the stack pointer.",
+      "references": [
+        {
+          "chunk": "single_byte_immediate_anc_alr_arr_sbx_sbc",
+          "topic": "Nearby single-byte variants and their flag behavior."
+        },
+        {
+          "chunk": "lax_and_ane_single_byte_variants",
+          "topic": "Continues into other single-byte combined-register undocumented opcodes like LAX and ANE."
+        }
+      ]
+    },
+    {
+      "start": 1475,
+      "end": 1494,
+      "name": "lax_and_ane_single_byte_variants",
+      "description": "Documents LAX ($AB, lines 1475–1479) and ANE ($8B, lines 1485–1489) undocumented opcodes. Shows opcode bytes and high-level semantics: LAX sets A and X from memory with a bitmask/style (A,X = (A | CONST) & #{imm}); ANE performs A = (A | CONST) & X & #{imm}. Also lists the reported flag effects for these opcodes (lines 1481–1493).",
+      "references": [
+        {
+          "chunk": "stack_and_memory_logical_sha_shy_shx_tas_las",
+          "topic": "Related memory/SP-affecting undocumented instructions and their behaviors."
+        },
+        {
+          "chunk": "nop_and_page_header_continuation",
+          "topic": "The following page continues with NOP and other undocumented multi-byte NOPs."
+        }
+      ]
+    },
+    {
+      "start": 1495,
+      "end": 1495,
+      "name": "page_number_footer_ignored",
+      "description": "IGNORED: Non-technical page footer marker ('-3-'). This line is a page number/footer and is not considered technical content.",
+      "ignored": true,
+      "references": [
+        {
+          "chunk": "lax_and_ane_single_byte_variants",
+          "topic": "Preceding content on this page."
+        },
+        {
+          "chunk": "nop_and_page_header_continuation",
+          "topic": "Subsequent page header and continuation content."
+        }
+      ]
+    },
+    {
+      "start": 1496,
+      "end": 1505,
+      "name": "nop_and_page_header_continuation",
+      "description": "Page header for the opcode table (line 1496) and the start of the next section listing undocumented NOP-like opcodes. Includes the NOP entry and its opcode bytes: NOP $1A $80 $04 $14 ... $0C $1C (lines 1497–1505). This chunk begins the next table of undocumented opcodes (NOP variants) and acts as the continuation from the previous page.",
+      "references": [
+        {
+          "chunk": "lax_and_ane_single_byte_variants",
+          "topic": "Previous-page single-byte undocumented opcodes."
+        }
+      ]
+    },
+    {
+      "start": 1506,
+      "end": 1604,
+      "name": "nop_and_jam_table",
+      "description": "Table and explanations of NOP variants and JAM (KIL) behavior: lists many NOP opcodes (including multi-byte 'DOP' variants), their addressing modes, and the JAM opcodes that lock/halt the CPU (buses set to $FF). Includes notes about specific problematic opcodes ($D2/$F2 causing CPU lock-up).",
+      "references": [
+        {
+          "chunk": "opcode_matrix",
+          "topic": "where these NOPs/JAMs appear in the matrix"
+        },
+        {
+          "chunk": "lock_up",
+          "topic": "detailed lock-up behavior"
+        }
+      ]
+    },
+    {
+      "start": 1605,
+      "end": 1627,
+      "name": "types_intro",
+      "description": "Classification of unintended opcode types: combinations of two operations with same addressing mode (e.g., SLO = ASL + ORA, RLA = ROL + AND, SRE = LSR + EOR, RRA = ROR + ADC, SAX = STA + STX, LAX = LDA + LDX, DCP = DEC + CMP, ISC = INC + SBC), combinations of immediate and implied commands (ANE, LAX #imm, ANC, ALR, ARR, SBX), and special STA/STX/STY combos (SHA/SHX/SHY) and TAS/LAS behavior.",
+      "references": [
+        {
+          "chunk": "unintended_opcodes_overview",
+          "topic": "summary table of opcodes by type"
+        }
+      ]
+    },
+    {
+      "start": 1628,
+      "end": 1647,
+      "name": "combinations_immediate_and_implied",
+      "description": "Details of opcodes that combine an immediate operation with an implied instruction: ANE #{imm} (TXA + AND #{imm}), LAX #{imm} (LDA #{imm} + TAX), ANC #{imm} (AND #{imm} + ASL/ROL effect), ALR/ARR (AND + LSR/ROR combinations), SBX #{imm} (CMP + DEX), and SBC #{imm} combining SBC with NOP behavior. Notes that these put computed results into registers in combined ways (e.g., X = A & X - #{imm}).",
+      "references": [
+        {
+          "chunk": "lax_description",
+          "topic": "LAX #imm behavior"
+        },
+        {
+          "chunk": "opcode_matrix",
+          "topic": "locations of these immediate opcodes"
+        }
+      ]
+    },
+    {
+      "start": 1648,
+      "end": 1656,
+      "name": "combinations_sta_stx_sty",
+      "description": "Unintended opcodes that combine STA/STX/STY behavior with additional masking of the high byte: SHA stores A & X & H into memory, SHX stores X & H, SHY stores Y & H (H = high byte of address + 1).",
+      "references": [
+        {
+          "chunk": "unintended_opcodes_overview",
+          "topic": "SHA/SHX/SHY listing"
+        }
+      ]
+    },
+    {
+      "start": 1657,
+      "end": 1664,
+      "name": "combinations_sta_txs_lda_tsx",
+      "description": "TAS/LAS behaviors: TAS {addr} stores A & X into SP and stores A & X & H into memory; LAS {addr} loads A,X,SP from memory & SP (A,X,SP = {addr} & SP). These are combinations involving stack pointer operations and masked stores/loads.",
+      "references": [
+        {
+          "chunk": "unintended_opcodes_overview",
+          "topic": "TAS/LAS entries"
+        }
+      ]
+    },
+    {
+      "start": 1665,
+      "end": 1675,
+      "name": "no_effect_nop_variants",
+      "description": "NO-EFFECT opcodes: certain NOP variants (immediate and memory forms) fetch operands but have no side effects; used to indicate that some opcode encodings simply do nothing aside from consuming cycles/fetching data.",
+      "references": [
+        {
+          "chunk": "nop_and_jam_table",
+          "topic": "NOP variants and their fetch behavior"
+        }
+      ]
+    },
+    {
+      "start": 1676,
+      "end": 1685,
+      "name": "lock_up",
+      "description": "JAM (KIL) description: opcodes that halt the CPU permanently (buses set to $FF), causing CPU lock-up; used in copy-protection and test cases. Notes particular opcodes that cause lock-up and the halted state.",
+      "references": [
+        {
+          "chunk": "nop_and_jam_table",
+          "topic": "JAM opcodes in the NOP/JAM table"
+        }
+      ]
+    },
+    {
+      "start": 1686,
+      "end": 1771,
+      "name": "slo_opcodes_and_flags",
+      "description": "SLO (also called ASO) undocumented opcode: opcode-level specification and encodings. Covers the low-level function lines ({addr} = {addr} * 2 and A = A OR {addr}), size/cycle/flags header, and the opcode encodings for various addressing modes as printed in the table (including entries for SLO zp,x; SLO (zp,x); SLO (zp),y; SLO abs; SLO abs,x; SLO abs,y with their listed sizes, cycle counts, and opcode bytes such as $03, $13, $0F, $1F, $1B).",
+      "references": [
+        {
+          "chunk": "slo_operation_and_examples",
+          "topic": "operation details, equivalent instructions, and usage examples for SLO"
+        },
+        {
+          "chunk": "rla_intro_opcodes",
+          "topic": "another undocumented combined-opcode (RLA) that follows in the document"
+        }
+      ]
+    },
+    {
+      "start": 1772,
+      "end": 1832,
+      "name": "slo_operation_and_examples",
+      "description": "SLO operation semantics and usage examples. Explains the operation: shift left one bit in memory (leftmost bit -> carry), then OR the accumulator with that memory; notes that N and Z are set after the ORA. Includes an example usage (SLO $C010) and equivalence to ASL $C010 followed by ORA $C010. Contains two practical examples: a multibyte arithmetic left-shift sequence that replaces ASL/ROL/ROL/LDA with a shorter/faster sequence using SLO (and the requirement that A be zero), and an explanation of using SLO to simulate addressing modes for ASL (abs,y and indirect zp modes) when clobbering A/flags is acceptable.",
+      "references": [
+        {
+          "chunk": "slo_opcodes_and_flags",
+          "topic": "opcode encodings and cycles for SLO addressing modes"
+        },
+        {
+          "chunk": "rla_intro_opcodes",
+          "topic": "other undocumented combined instructions (similar patterns of combining shift and logic)"
+        }
+      ]
+    },
+    {
+      "start": 1833,
+      "end": 1849,
+      "name": "rla_intro_opcodes",
+      "description": "RLA (also shown as RLN) undocumented opcode introduction and opcode table header. States the type (combination of ROL then AND), lists sub-instructions (ROL, AND), and begins the opcode table with entries such as $27 -> RLA zp and $37. Shows the function line ({addr} = rol {addr}) and the start of the size/cycle table header.",
+      "references": [
+        {
+          "chunk": "slo_opcodes_and_flags",
+          "topic": "previous undocumented combined opcode (SLO) for comparison"
+        },
+        {
+          "chunk": "slo_operation_and_examples",
+          "topic": "practical examples demonstrating how combined opcodes are used in place of separate instructions"
+        }
+      ]
+    },
+    {
+      "start": 1850,
+      "end": 1932,
+      "name": "rla_opcodes_and_addressing_modes",
+      "description": "RLA (undocumented) opcode table entries: shows the effect on A (A = A and {addr}), flags header, and opcode-by-addressing-mode listing for RLA including zp, zp,X, (zp,X), (zp),Y, abs, abs,X, abs,Y with their instruction sizes, cycle counts and opcode bytes ($27,$37,$23,$33,$2F,$3F,$3B).",
+      "references": [
+        {
+          "chunk": "rla_operation_flags_and_equivalents",
+          "topic": "explains the combined operation and flag effects for RLA"
+        },
+        {
+          "chunk": "rla_examples_scrolling_and_addressing_modes",
+          "topic": "shows usage examples and optimizations using RLA"
+        }
+      ]
+    },
+    {
+      "start": 1933,
+      "end": 1951,
+      "name": "rla_operation_flags_and_equivalents",
+      "description": "Describes RLA operation: rotate one bit left in memory then AND accumulator with that memory ({addr} = ROL {addr}; A = A & {addr}). Explains carry behavior (carry shifted in as LSB, bit 7 shifted into Carry) and that N and Z are set according to the AND result. Includes a short example (RLA $FC,X), the equivalent instruction sequence (ROL then AND), and references to test programs (Lorenz-2.15/*.prg).",
+      "references": [
+        {
+          "chunk": "rla_opcodes_and_addressing_modes",
+          "topic": "lists the addressing modes and opcode bytes for RLA"
+        },
+        {
+          "chunk": "rla_examples_scrolling_and_addressing_modes",
+          "topic": "provides applied examples and optimizations using this behavior"
+        }
+      ]
+    },
+    {
+      "start": 1952,
+      "end": 1952,
+      "name": "page_footer_9_ignored",
+      "description": "Non-technical page footer marker '-9-' (ignored section).",
+      "references": [
+        {
+          "chunk": "rla_examples_scrolling_and_addressing_modes",
+          "topic": "continues the RLA examples on the following page"
+        }
+      ]
+    },
+    {
+      "start": 1953,
+      "end": 1992,
+      "name": "rla_examples_scrolling_and_addressing_modes",
+      "description": "Practical examples using RLA: (1) 'scroll over a background layer' showing how RLA can replace a ROL+LDA+AND+STA sequence to save cycles and bytes (code sample, cycle/byte comparison: 18 cycles/16 bytes vs 14 cycles/12 bytes). (2) 'simulate extra addressing modes for ROL' — using RLA when clobbering A and flags is acceptable to emulate addressing modes not available to ROL (examples: RLA abs,Y ; RLA (zp),Y ; RLA (zp,X)). Notes that A and N/Z are affected by the AND portion.",
+      "references": [
+        {
+          "chunk": "rla_opcodes_and_addressing_modes",
+          "topic": "addressing modes and opcode bytes that enable these usage patterns"
+        },
+        {
+          "chunk": "rla_operation_flags_and_equivalents",
+          "topic": "details the combined ROL+AND behavior which these examples exploit"
+        }
+      ]
+    },
+    {
+      "start": 1993,
+      "end": 1993,
+      "name": "page_footer_10_ignored",
+      "description": "Non-technical page footer marker '- 10 -' (ignored section).",
+      "references": [
+        {
+          "chunk": "sre_lse_introduction",
+          "topic": "SRE description begins on the next page"
+        }
+      ]
+    },
+    {
+      "start": 1994,
+      "end": 2013,
+      "name": "sre_lse_introduction",
+      "description": "Introduction to SRE (aka LSE) undocumented opcode: a combination instruction that performs LSR on memory then EOR with the accumulator. Shows type (LSR + EOR), example opcode bytes ($47, $57 shown), mnemonic forms (SRE zp, SRE zp,X etc), the memory effect ({addr} = {addr} / 2) and the accumulator effect (A = A eor {addr}) along with size/cycle columns as presented in the listing.",
+      "references": [
+        {
+          "chunk": "rla_opcodes_and_addressing_modes",
+          "topic": "previous undocumented opcode (RLA) for comparison of combined-shift+logical instructions"
+        },
+        {
+          "chunk": "rla_examples_scrolling_and_addressing_modes",
+          "topic": "example techniques for using combined shift+logic undocumented opcodes"
+        }
+      ]
+    },
+    {
+      "start": 2014,
+      "end": 2113,
+      "name": "sre_opcode_and_addressing_modes",
+      "description": "SRE (aka LSE) undocumented opcode: lists opcode bytes and addressing modes ($47,$57,$43,$53,$4F,$5F,$5B) with their sizes, cycle counts and flag effects; per-addressing-mode mnemonics (SRE zp, x; SRE (zp, x); SRE (zp), y; SRE abs; SRE abs, x; SRE abs, y). Operation summary: performs LSR on memory then EORs the accumulator with that memory; LSB goes into carry, N and Z are set after the EOR. Includes a short example invocation (SRE $C100,X), equivalent instruction sequence (LSR then EOR) and filenames of test programs.",
+      "references": [
+        {
+          "chunk": "sre_8bit_one_of_eight_counter_example",
+          "topic": "Practical 8-bit counter example using SRE and how it integrates with pixel setting"
+        },
+        {
+          "chunk": "sre_parity_example_and_lsr_addressing_simulation",
+          "topic": "Parity example using repeated SRE and notes on simulating extra LSR addressing modes"
+        },
+        {
+          "chunk": "rra_opcode_header",
+          "topic": "Next undocumented opcode section (RRA) following SRE"
+        }
+      ]
+    },
+    {
+      "start": 2114,
+      "end": 2160,
+      "name": "sre_8bit_one_of_eight_counter_example",
+      "description": "Example: 8-bit 1-of-8 counter using SRE to shift a mask in memory and EOR it with A to set pixels. Full assembly snippet showing initialization (LDA #$80; STA pix), loading pointer (LDA (zp),y), SRE pix to shift mask and EOR with A, branch on carry to handle underflow (advance_column), ROR pix to reset counter, ORA #$80 to set first pixel, storing back to (zp),y, and advancing the 16-bit counter (ADC/INC sequence). Comments explain each step and how SRE both shifts memory and affects A via EOR.",
+      "references": [
+        {
+          "chunk": "sre_opcode_and_addressing_modes",
+          "topic": "Detailed SRE opcode behaviors and addressing modes used by the example"
+        },
+        {
+          "chunk": "sre_parity_example_and_lsr_addressing_simulation",
+          "topic": "Other example uses of SRE, including parity computation and LSR-addressing simulation"
+        }
+      ]
+    },
+    {
+      "start": 2161,
+      "end": 2194,
+      "name": "sre_parity_example_and_lsr_addressing_simulation",
+      "description": "Two SRE-related examples: (1) Compute parity of a byte in A by storing it to memory and executing SRE seven times to rotate bits into A, then AND #$01 to leave parity (A=0 and Z=1 for even parity; A=1 and Z=0 for odd parity). (2) Technique to simulate extra LSR addressing modes using SRE when clobbering A and flags is acceptable: using SRE abs,y, SRE (zp),y, or SRE (zp,x) to get LSR-like behavior (0 shifted into MSB), with notes that A and N/Z will be modified due to the EOR side-effect.",
+      "references": [
+        {
+          "chunk": "sre_opcode_and_addressing_modes",
+          "topic": "Behavior and effects of SRE that make these examples possible"
+        },
+        {
+          "chunk": "sre_8bit_one_of_eight_counter_example",
+          "topic": "Related example of using SRE for bit-mask rotation in graphics"
+        }
+      ]
+    },
+    {
+      "start": 2195,
+      "end": 2218,
+      "name": "rra_opcode_header",
+      "description": "Header for the RRA (aka RRD) undocumented opcode: describes it as a combination of two operations with the same addressing mode (sub-instructions: ROR on memory, then ADC with memory). Lists opcode bytes and mnemonics for zero-page variants ($67, $77) and shows the function summary ({addr} = ror {addr}; A = A adc {addr}) and placeholders for size and cycle/flag header. This entry is the immediate follow-up section after the SRE examples.",
+      "references": [
+        {
+          "chunk": "sre_opcode_and_addressing_modes",
+          "topic": "Previous undocumented opcode section (SRE) and examples"
+        }
+      ]
+    },
+    {
+      "start": 2219,
+      "end": 2333,
+      "name": "rra_opcodes_and_operation",
+      "description": "Complete listing of the undocumented RRA (RRD) opcodes and addressing modes with opcode bytes, operand sizes and cycles; the operation semantics (ROR memory then ADC A,{addr}+C), how ROR shifts bits and that ADC sets flags N,V,Z,C and depends on the decimal flag; example usage (RRA $030C) and equivalent instruction sequence (ROR then ADC); test program references.",
+      "references": [
+        {
+          "chunk": "noise_lfsr_example_of_rra",
+          "topic": "example using RRA as a fast noise/LFSR generator"
+        },
+        {
+          "chunk": "rra_as_ror_simulation_addressing_modes",
+          "topic": "how RRA can simulate extra ROR addressing modes if clobbering A/flags is acceptable"
+        },
+        {
+          "chunk": "ignored_page_14",
+          "topic": "page footer near this section"
+        }
+      ]
+    },
+    {
+      "start": 2334,
+      "end": 2335,
+      "name": "ignored_page_14",
+      "description": "Non-technical page footer marker (\"- 14 -\"). This chunk is marked ignored for semantic indexing; no technical content.",
+      "references": [
+        {
+          "chunk": "rra_opcodes_and_operation",
+          "topic": "preceding technical section"
+        },
+        {
+          "chunk": "noise_lfsr_example_of_rra",
+          "topic": "following technical section"
+        }
+      ]
+    },
+    {
+      "start": 2336,
+      "end": 2356,
+      "name": "noise_lfsr_example_of_rra",
+      "description": "Example demonstrating a fast 'noise' generator (LFSR-like) using RRA: initial seed setup in zero page, restoring accumulator and carry, performing RRA on the seed, EOR and ROR to produce a 'noise' value in A while preserving A and carry where needed. Includes brief code fragments and comments showing preservation/restoration of A and carry.",
+      "references": [
+        {
+          "chunk": "rra_opcodes_and_operation",
+          "topic": "RRA opcode semantics used by this example"
+        },
+        {
+          "chunk": "rra_as_ror_simulation_addressing_modes",
+          "topic": "related use of RRA for bit-rotation/addressing tricks"
+        }
+      ]
+    },
+    {
+      "start": 2357,
+      "end": 2370,
+      "name": "rra_as_ror_simulation_addressing_modes",
+      "description": "Notes on using RRA to simulate extra addressing modes of ROR when clobbering the A register and flags is acceptable: shows that RRA abs,y, RRA (zp),y and RRA (zp,x) behave like ROR with those addressing modes except A and flags are modified due to the subsequent ADC. Mentions that C is shifted into MSB and lists consequences (A changed, N/V/Z/C set by ADC).",
+      "references": [
+        {
+          "chunk": "rra_opcodes_and_operation",
+          "topic": "base semantics of RRA (ROR then ADC)"
+        },
+        {
+          "chunk": "noise_lfsr_example_of_rra",
+          "topic": "another practical use of RRA's rotation behavior"
+        },
+        {
+          "chunk": "ignored_page_15",
+          "topic": "page footer after this section"
+        }
+      ]
+    },
+    {
+      "start": 2371,
+      "end": 2372,
+      "name": "ignored_page_15",
+      "description": "Non-technical page footer marker (\"- 15 -\") and following form-feed/spacing. Marked ignored; contains no technical content to index.",
+      "references": [
+        {
+          "chunk": "rra_as_ror_simulation_addressing_modes",
+          "topic": "preceding technical section"
+        },
+        {
+          "chunk": "sax_axs_aax_description",
+          "topic": "following technical section (SAX)"
+        }
+      ]
+    },
+    {
+      "start": 2373,
+      "end": 2396,
+      "name": "sax_axs_aax_description",
+      "description": "Description of the undocumented SAX (also called AXS or AAX) instruction: type (combination of STA and STX with same addressing mode), listed opcodes ($87, $97, ...), mnemonic forms (SAX zp, etc.), the functional effect ({addr} = A & X), and size/cycle/flag notes where present in the source snippet.",
+      "references": [
+        {
+          "chunk": "rra_opcodes_and_operation",
+          "topic": "another undocumented opcode group in the same document"
+        },
+        {
+          "chunk": "ignored_page_15",
+          "topic": "page footer immediately before this section"
+        }
+      ]
+    },
+    {
+      "start": 2397,
+      "end": 2453,
+      "name": "sax_overview_and_operation",
+      "description": "SAX undocumented opcode (also called AXS/AAX) addressing-mode summary and core behavior. Includes opcode bytes and size/cycle info for zero-page,Y, (zp,X) and absolute modes; the formal operation (store A & X into memory without changing A/X or flags); a small usage example (SAX $FE); an equivalent sequence of legal instructions that mimics the effect; test program filenames; a note that abs,Y and (zp),Y modes are missing and can be simulated with SHA; and a hardware-level explanation of why SAX stores the bitwise AND of A and X (internal bus/output-enable behaviour).",
+      "references": [
+        {
+          "chunk": "sax_examples_mask_and_sprite_primary",
+          "topic": "practical examples using SAX (masking, sprite pointer setup)"
+        },
+        {
+          "chunk": "sax_alternative_sprite_method",
+          "topic": "alternate sprite-pointer technique swapping A/X"
+        },
+        {
+          "chunk": "lax_overview",
+          "topic": "other undocumented combined-load opcode (LAX)"
+        }
+      ]
+    },
+    {
+      "start": 2454,
+      "end": 2454,
+      "name": "ignored_page_footer_16",
+      "description": "Non-technical page footer marker \"- 16 -\". Marked ignored (not a technical content node).",
+      "references": [
+        {
+          "chunk": "sax_overview_and_operation",
+          "topic": "precedes SAX examples"
+        },
+        {
+          "chunk": "sax_examples_mask_and_sprite_primary",
+          "topic": "follows this page marker"
+        }
+      ]
+    },
+    {
+      "start": 2455,
+      "end": 2526,
+      "name": "sax_examples_mask_and_sprite_primary",
+      "description": "Practical SAX examples: 1) \"store values with mask\" — using LDX to set up a mask and SAX $80,y to store A & X from memory; 2) \"update Sprite Pointers\" — a compact sequence demonstrating setting eight sprite pointers using SAX and STA (loads of A and X values, SAX to store masked pointer bytes, and subsequent STA), with comments showing resulting stored byte values.",
+      "references": [
+        {
+          "chunk": "sax_overview_and_operation",
+          "topic": "explains SAX semantics and effects used by these examples"
+        },
+        {
+          "chunk": "sax_alternative_sprite_method",
+          "topic": "alternative approach that swaps roles of A and X"
+        }
+      ]
+    },
+    {
+      "start": 2527,
+      "end": 2527,
+      "name": "ignored_page_footer_17",
+      "description": "Non-technical page footer marker \"- 17 -\". Marked ignored (not a technical content node).",
+      "references": [
+        {
+          "chunk": "sax_examples_mask_and_sprite_primary",
+          "topic": "precedes the alternative sprite-pointer example"
+        },
+        {
+          "chunk": "sax_alternative_sprite_method",
+          "topic": "follows this page marker"
+        }
+      ]
+    },
+    {
+      "start": 2528,
+      "end": 2559,
+      "name": "sax_alternative_sprite_method",
+      "description": "Alternative method for updating sprite pointers by swapping the roles of A and X. Contains code showing LDX/LDA setup, SAX and STX interleaving, INX increments, stored pointer results comments, and a note that this approach saves 3 bytes (not cycles).",
+      "references": [
+        {
+          "chunk": "sax_examples_mask_and_sprite_primary",
+          "topic": "original sprite-pointer example for comparison"
+        },
+        {
+          "chunk": "sax_overview_and_operation",
+          "topic": "SAX operation semantics used by these snippets"
+        }
+      ]
+    },
+    {
+      "start": 2560,
+      "end": 2560,
+      "name": "ignored_page_footer_18",
+      "description": "Non-technical page footer marker \"- 18 -\". Marked ignored (not a technical content node).",
+      "references": [
+        {
+          "chunk": "sax_alternative_sprite_method",
+          "topic": "precedes the LAX opcode description"
+        },
+        {
+          "chunk": "lax_overview",
+          "topic": "follows this page marker"
+        }
+      ]
+    },
+    {
+      "start": 2561,
+      "end": 2588,
+      "name": "lax_overview",
+      "description": "Beginning of the LAX undocumented opcode entry. Describes LAX as a combination of LDA and LDX (same addressing mode performs both loads), shows opcode bytes ($A7, $B7) and mnemonic for zero-page addressing, and states the function (A,X = {addr}) along with size/cycle/flag header fields (partial header information present). This chunk is the intro/header for the LAX instruction entry and links conceptually to SAX as another combined operation opcode.",
+      "references": [
+        {
+          "chunk": "sax_overview_and_operation",
+          "topic": "another undocumented combination opcode (SAX) with similar combined-op behavior"
+        }
+      ]
+    },
+    {
+      "start": 2589,
+      "end": 2662,
+      "name": "lax_opcodes_and_overview",
+      "description": "Undocumented LAX opcode summary and overview: addressing-mode opcode bytes ($A3,$B3,$AF,$BF etc.), sizes and cycle counts (including +1 cycle for some indexed modes), operation description (loads both A and X from memory), short example LAX $8400,Y with encoded bytes, equivalent instruction sequence (LDA then TAX), and list of test program names.",
+      "references": [
+        {
+          "chunk": "lax_example_simulate_lda_zp_y",
+          "topic": "Demonstrates using LAX zp,y to save a byte by trashing X"
+        },
+        {
+          "chunk": "lax_load_a_x_same_value",
+          "topic": "Shows technique of loading A and X together for later reuse"
+        }
+      ]
+    },
+    {
+      "start": 2663,
+      "end": 2663,
+      "name": "ignored_page_marker_19",
+      "description": "Non-technical page footer marker '- 19 -' (ignored).",
+      "references": [
+        {
+          "chunk": "lax_opcodes_and_overview",
+          "topic": "Preceding content (LAX summary)"
+        },
+        {
+          "chunk": "lax_example_simulate_lda_zp_y",
+          "topic": "Following example section"
+        }
+      ]
+    },
+    {
+      "start": 2664,
+      "end": 2688,
+      "name": "lax_example_simulate_lda_zp_y",
+      "description": "Example: simulate 'LDA zp,y' using LAX zp,y when X can be clobbered to save one byte. Includes explanation and side-by-side code: original sequence using LDA abs,y plus saves to stack vs. the shorter sequence using LAX <ZEROPAGE_ADDRESS-1>,y and subsequent instructions. Shows how LAX can copy code to zeropage and push the old value to the stack while being one byte shorter.",
+      "references": [
+        {
+          "chunk": "lax_opcodes_and_overview",
+          "topic": "Opcode reference and operation for LAX"
+        },
+        {
+          "chunk": "lax_load_a_x_same_value",
+          "topic": "Another LAX usage pattern: preserving a value in both A and X"
+        }
+      ]
+    },
+    {
+      "start": 2689,
+      "end": 2689,
+      "name": "ignored_page_marker_20",
+      "description": "Non-technical page footer marker '- 20 -' (ignored).",
+      "references": [
+        {
+          "chunk": "lax_example_simulate_lda_zp_y",
+          "topic": "Preceding example section"
+        },
+        {
+          "chunk": "lax_load_a_x_same_value",
+          "topic": "Following example section"
+        }
+      ]
+    },
+    {
+      "start": 2690,
+      "end": 2742,
+      "name": "lax_load_a_and_x_same_value_example",
+      "description": "Example: load A and X with the same value using LAX $1000,y. Describes use-cases where you manipulate A but need the original value later; shows code sequences: using LAX then EOR/STA and SAX to store A & X, and an alternate sequence using TXA to fetch the preserved value back into A for further manipulation and storing. Includes comments and step-by-step notes.",
+      "references": [
+        {
+          "chunk": "lax_opcodes_and_overview",
+          "topic": "Opcode reference and operation for LAX"
+        },
+        {
+          "chunk": "lax_example_simulate_lda_zp_y",
+          "topic": "Related LAX usage example (simulating LDA zp,y)"
+        },
+        {
+          "chunk": "dcp_description",
+          "topic": "Next undocumented opcode described in the document"
+        }
+      ]
+    },
+    {
+      "start": 2743,
+      "end": 2743,
+      "name": "ignored_page_marker_21",
+      "description": "Non-technical page footer marker '- 21 -' (ignored).",
+      "references": [
+        {
+          "chunk": "lax_load_a_and_x_same_value_example",
+          "topic": "Preceding example section"
+        },
+        {
+          "chunk": "dcp_description",
+          "topic": "Following instruction description"
+        }
+      ]
+    },
+    {
+      "start": 2744,
+      "end": 2774,
+      "name": "dcp_description",
+      "description": "Start of DCP (also called DCM) undocumented opcode description: combination of DEC and CMP applied to the same addressing mode. Contains opcode/mnemonic listing (e.g. $C7 DCP zp, $D7 ...), description of sub-instructions (DEC, CMP), the effective function ({addr} = {addr} - 1 then A cmp {addr}), size and cycle count fields, and status flag effects layout.",
+      "references": [
+        {
+          "chunk": "lax_opcodes_and_overview",
+          "topic": "Previous undocumented opcode (LAX) for context on illegal opcode behaviors"
+        },
+        {
+          "chunk": "lax_load_a_and_x_same_value_example",
+          "topic": "Example usage of other undocumented opcodes (SAX) referenced in examples"
+        }
+      ]
+    },
+    {
+      "start": 2775,
+      "end": 2844,
+      "name": "dcp_opcode_variants_table",
+      "description": "Opcode table entries for the undocumented DCP (also called DCM) instruction. Lists DCP addressing modes and their encoded bytes, instruction sizes, cycle counts and addressing flags for: DCP zp,x ($C3), DCP (zp,x) ($D3), DCP (zp),y ($CF), DCP abs ($DF), DCP abs,x ($DB) and DCP abs,y (fields shown). This chunk contains the per-form fields (size, cycles, addressing characteristics, opcode bytes) for each addressing mode.",
+      "references": [
+        {
+          "chunk": "dcp_operation_equivalents",
+          "topic": "Operation semantics and equivalent legal instructions (DEC + CMP)"
+        },
+        {
+          "chunk": "dcp_example_decrement_indirect_indexed_memory",
+          "topic": "Example using the (zp),y variant to emulate DEC (zp),y"
+        }
+      ]
+    },
+    {
+      "start": 2845,
+      "end": 2862,
+      "name": "dcp_operation_equivalents",
+      "description": "Describes DCP operation: decrement the contents of memory and then compare the result with the A register. Notes that N, Z and C are set according to the compare after the decrement. Includes a short example (DCP $FF) and the equivalent legal instruction sequence (DEC $FF followed by CMP $FF). Lists test program filenames used to verify behavior.",
+      "references": [
+        {
+          "chunk": "dcp_opcode_variants_table",
+          "topic": "Which opcode bytes and addressing modes implement this operation"
+        },
+        {
+          "chunk": "dcp_example_decrement_loop_counter",
+          "topic": "Practical use replacing DEC+LDA+CMP with DCP in loops"
+        }
+      ]
+    },
+    {
+      "start": 2863,
+      "end": 2869,
+      "name": "dcp_example_decrement_loop_counter",
+      "description": "Code example showing how to use DCP to decrement a loop counter and compare it in one instruction. Demonstrates replacing a sequence of DEC/LDA/CMP/BNE with a single DCP-based compare and branch, saving code and cycles. Includes the small data definitions and the rewritten loop sequence.",
+      "references": [
+        {
+          "chunk": "dcp_operation_equivalents",
+          "topic": "Explains the DCP semantics that make this replacement possible"
+        },
+        {
+          "chunk": "dcp_opcode_variants_table",
+          "topic": "Which DCP addressing mode to use for the shown memory locations"
+        }
+      ]
+    },
+    {
+      "start": 2870,
+      "end": 2892,
+      "name": "dcp_operation_and_equivalents",
+      "description": "Operation of DCP: decrement memory then CMP with A. Flags affected: N/Z/C set according to the compare after decrement. Example single-byte form and equivalent legal instructions (DEC then CMP). Test program references.",
+      "references": [
+        {
+          "chunk": "dcp_opcode_variants_table",
+          "topic": "opcode bytes and addressing modes for DCP"
+        },
+        {
+          "chunk": "dcp_example_decrementing_loop_counter",
+          "topic": "example usage replacing DEC+LDA+CMP+BNE with DCP"
+        }
+      ]
+    },
+    {
+      "start": 2893,
+      "end": 2921,
+      "name": "dcp_example_decrementing_loop_counter",
+      "description": "Example: using DCP to implement a decrementing loop counter. Shows how DEC+LDA+CMP+BNE can be replaced by LDA, DCP and BNE to save cycles/bytes and leave A usable.",
+      "references": [
+        {
+          "chunk": "dcp_operation_and_equivalents",
+          "topic": "behavior and equivalence of DCP to DEC + CMP"
+        }
+      ]
+    },
+    {
+      "start": 2922,
+      "end": 2931,
+      "name": "dcp_example_decrementing_16bit_counter",
+      "description": "Example: using DCP in multi-byte (16-bit) decrement sequences. Shows how DCP saves operations when decrementing low byte and conditionally decrementing high byte, while leaving carry set appropriately.",
+      "references": [
+        {
+          "chunk": "dcp_operation_and_equivalents",
+          "topic": "flags and compare behavior that makes this trick work"
+        }
+      ]
+    },
+    {
+      "start": 2932,
+      "end": 2965,
+      "name": "dcp_example_decrement_indirect_indexed_memory",
+      "description": "Example: DCP (zp),y as a compact replacement for LDA (zp),Y / SEC / SBC #1 / STA (zp),Y. Using DCP (zp),y saves bytes and cycles and leaves A untouched while giving a compare for free.",
+      "references": [
+        {
+          "chunk": "dcp_opcode_variants_table",
+          "topic": "DCP (zp),y opcode variant and cycles"
+        }
+      ]
+    },
+    {
+      "start": 2966,
+      "end": 3006,
+      "name": "dcp_16bit_lowbyte_in_accu_and_extra_addressing_modes",
+      "description": "Examples: using DCP when low byte is in accumulator to set carry and perform multi-byte decrement. Also showing how DCP can simulate addressing modes for DEC that the legal ISA lacks (DCP abs,y, DCP (zp),y, DCP (zp,x)).",
+      "references": [
+        {
+          "chunk": "dcp_operation_and_equivalents",
+          "topic": "DCP semantics that enable these tricks"
+        }
+      ]
+    },
+    {
+      "start": 3007,
+      "end": 3106,
+      "name": "isc_opcode_variants_and_addressing_modes",
+      "description": "Complete opcode table for the undocumented ISC (also called ISB or INS) instruction variants. Contains opcode hex bytes and addressing-mode labels for: ISC zp ($E7), ISC zp,x ($F7), ISC (zp,x) ($E3), ISC (zp),y ($F3), ISC abs ($EF), ISC abs,x ($FF), ISC abs,y ($FB). The table entries include instruction sizes, cycle counts, and the documented status of affected flags for each addressing mode.",
+      "references": [
+        {
+          "chunk": "isc_operation_equivalents_and_tests",
+          "topic": "operation summary, equivalent instructions, decimal-mode notes, and test programs"
+        },
+        {
+          "chunk": "isc_examples_and_usage_patterns",
+          "topic": "practical example sequences using ISC and patterns to replace INC/LDA/CMP etc."
+        }
+      ]
+    },
+    {
+      "start": 3107,
+      "end": 3128,
+      "name": "isc_operation_equivalents_and_tests",
+      "description": "Operation and behaviour summary for ISC/ISB/INS: increments memory by one then performs SBC (subtract with borrow) using that memory. Notes that the carry (C) affects the SBC and SBC sets N/V/Z/C as expected. Mentions that ISC inherits SBC's decimal-mode dependency and points to the decimal-mode notes. Provides a short example (ISC $FF) and lists equivalent instruction sequence (INC $FF; SBC $FF) and test files (Lorenz/*.prg, 64doc/dincsbc.prg).",
+      "references": [
+        {
+          "chunk": "isc_opcode_variants_and_addressing_modes",
+          "topic": "opcode hex bytes and addressing modes for ISC"
+        },
+        {
+          "chunk": "isc_examples_and_usage_patterns",
+          "topic": "code examples showing how to use ISC in place of INC+LDA/CMP patterns"
+        }
+      ]
+    },
+    {
+      "start": 3129,
+      "end": 3168,
+      "name": "isc_examples_and_usage_patterns",
+      "description": "Practical examples and techniques using ISC: an incrementing loop-counter idiom that saves cycles by combining INC+LDA+CMP into LDA #endvalue; SEC; ISC counter; BNE nooverflow; STA counter (benefit: A ends up zero), an indexed increment-and-load example using ISC buffer,x plus EOR #$ff (saves a byte and can be faster), and using ISC to simulate addressing modes not provided by INC (e.g., ISC abs,y, ISC (zp),y, ISC (zp,x)) when A is known to be zero and C cleared. Includes brief notes on conditions required for these substitutions.",
+      "references": [
+        {
+          "chunk": "isc_opcode_variants_and_addressing_modes",
+          "topic": "which ISC addressing modes/opcodes allow the described examples"
+        },
+        {
+          "chunk": "isc_operation_equivalents_and_tests",
+          "topic": "semantics (INC then SBC) and decimal-mode caveats to be aware of when using the examples"
+        }
+      ]
+    },
+    {
+      "start": 3169,
+      "end": 3201,
+      "name": "anc_opcode_introduction_and_table",
+      "description": "Introduction to the undocumented ANC (also called ANC2, ANA, ANB) instruction: described as a combination of immediate AND with A plus a following implied shift/rotate sub-instruction (AND then ASL/ROL behavior). Presents the opcode table entries shown here, including $0B and $2B, the mnemonic form 'ANC #imm', the function 'A = A & #imm', the instruction size (2) and cycles (2), and the affected flags (N, V, C etc as indicated in the table).",
+      "references": [
+        {
+          "chunk": "isc_examples_and_usage_patterns",
+          "topic": "nearby examples for ISC (related undocumented opcodes)"
+        },
+        {
+          "chunk": "isc_opcode_variants_and_addressing_modes",
+          "topic": "other undocumented arithmetic/logical opcode patterns in this document"
+        }
+      ]
+    },
+    {
+      "start": 3202,
+      "end": 3307,
+      "name": "anc_opcode_and_behavior",
+      "description": "ANC (aka ANC2, ANA, ANB) undocumented immediate opcode ($0B/$2B): AND A with immediate then set Carry to bit 7 of A (as if ASL/ROL would have been executed). Opcodes, sizes, cycles, and description. Examples: enforcing carry state, setting A to 0 while clearing carry, and using ANC to remember a high bit in Carry.",
+      "references": [
+        {
+          "chunk": "arr_opcode_and_behavior",
+          "topic": "ARR is another combined AND+rotate opcode and also affects flags in unusual ways"
+        }
+      ]
+    },
+    {
+      "start": 3308,
+      "end": 3420,
+      "name": "alr_opcode_and_examples",
+      "description": "ALR (ASR) undocumented opcode ($4B): AND A with immediate then LSR A. Effects: result is (A & imm) >> 1 with bit 1 shifted into Carry; sets N and Z. Includes opcode, size, cycles, example uses (mask+shift), fetch 2 bits, and using LSB to conditionally add offsets.",
+      "references": [
+        {
+          "chunk": "anc_opcode_and_behavior",
+          "topic": "both ANC and ALR combine AND with a shift/rotate and set flags accordingly"
+        }
+      ]
+    },
+    {
+      "start": 3421,
+      "end": 3423,
+      "name": "arr_carry_and_overflow_intro",
+      "description": "Introductory explanation of how the undocumented ARR ($6B) opcode sets the Carry and Overflow flags: the resulting Carry equals bit 7 before (or bit 6 after) the rotate; the Overflow depends on whether the rotate changes bit 6. Indicates that a detailed mapping table follows.",
+      "references": [
+        {
+          "chunk": "arr_flag_mapping_table",
+          "topic": "complete mapping table showing how inputs map to output bits, Carry and Overflow"
+        },
+        {
+          "chunk": "arr_example_equivalent_instructions",
+          "topic": "example usage and equivalent instruction sequence"
+        }
+      ]
+    },
+    {
+      "start": 3424,
+      "end": 3448,
+      "name": "arr_flag_mapping_table_header",
+      "description": "Header and explanation for the ARR flag-mapping table. Includes column labels for 'Input before ROR' (Carry, Bit 7, Bit 6) and 'Output' (Bit 7, Bit 6, Carry, Overflow), and the formulas that define each resulting output/flag in terms of the inputs: Output Bit 7 = Input Bit 7; Output Bit 6 = Input Bit 7 ^ Input Bit 6; Output Carry = Input Carry; Output Overflow = Input Bit 7.",
+      "references": [
+        {
+          "chunk": "arr_flag_mapping_table_data",
+          "topic": "Complete lookup table rows for all input combinations (raw output bits listed)"
+        }
+      ]
+    },
+    {
+      "start": 3449,
+      "end": 3560,
+      "name": "arr_flag_mapping_table_data",
+      "description": "Raw lookup-table data for the ARR opcode showing the resulting output bits and flags for each enumerated input combination. This is the data portion (rows of 0/1 values) corresponding to the header/formula definitions in 'arr_flag_mapping_table_header'. Use the header chunk to interpret these bit/flag columns.",
+      "references": [
+        {
+          "chunk": "arr_flag_mapping_table_header",
+          "topic": "Column labels and formulas needed to interpret these rows (mapping of outputs to inputs)"
+        }
+      ]
+    },
+    {
+      "start": 3561,
+      "end": 3573,
+      "name": "arr_example_and_equivalent_instructions",
+      "description": "Concrete example and notes for ARR: shows 'ARR #$7F' (opcode bytes ;6B 7F), lists the equivalent instruction sequence 'AND #$7F / ROR A', and warns that flags differ between ARR and the equivalent sequence. Also lists test files that exercise ARR behavior (CPU/asap/cpu_decimal.prg, Lorenz-2.15/arrb.prg).",
+      "references": [
+        {
+          "chunk": "arr_flag_mapping_table",
+          "topic": "use the mapping table to see exactly how the flags differ for this example"
+        },
+        {
+          "chunk": "arr_carry_and_overflow_intro",
+          "topic": "background on why the Carry and Overflow differ"
+        }
+      ]
+    },
+    {
+      "start": 3574,
+      "end": 3575,
+      "name": "page_footer_32_ignored",
+      "description": "IGNORED: non-technical page footer ('- 32 -'). Marked ignored for the semantic index.",
+      "references": [
+        {
+          "chunk": "arr_example_and_equivalent_instructions",
+          "topic": "adjacent technical content before the footer"
+        }
+      ]
+    },
+    {
+      "start": 3576,
+      "end": 3598,
+      "name": "arr_rotate_16bit_example",
+      "description": "Example demonstrating how ARR can be used when rotating 16-bit values across two bytes. Shows code sequences storing high/low bytes (STA $fc / STA $fb) and compares ARR-based approach to explicit LDA / ROR sequence. Notes explain how the final Carry state can be influenced by the initial LDA value (#$00 vs #$01 and special cases for ARR when A has bit 7 set).",
+      "references": [
+        {
+          "chunk": "arr_opcode_flags_and_table",
+          "topic": "explains ARR flags and the mapping table used to understand the effect on multi-byte rotates"
+        },
+        {
+          "chunk": "arr_load_register_depending_on_carry",
+          "topic": "another example of exploiting ARR's effect on Carry for control flow or data loading"
+        }
+      ]
+    },
+    {
+      "start": 3599,
+      "end": 3617,
+      "name": "arr_load_register_depending_on_carry",
+      "description": "Technique to load a register (example uses Y) depending on a comparison result without branches: compare (CMP), execute ARR #$00 to capture the comparison result into the Carry/Accumulator, then TAY to transfer the result into Y. Includes example showing how this replaces a branch and two loads with a shorter sequence.",
+      "references": [
+        {
+          "chunk": "arr_opcode_flags_and_table",
+          "topic": "background on ARR's flag behavior necessary to understand why this trick works"
+        },
+        {
+          "chunk": "arr_rotate_16bit_example",
+          "topic": "another ARR usage pattern for manipulating multi-byte values"
+        },
+        {
+          "chunk": "arr_shift_zeros_ones_into_accumulator",
+          "topic": "demonstrates other ways to derive data patterns in A using ARR and Carry"
+        }
+      ]
+    },
+    {
+      "start": 3618,
+      "end": 3652,
+      "name": "arr_shift_zeros_ones_into_accumulator",
+      "description": "Shows how repeated ARR #$FF (with SEC) or ARR #$FF (with CLC and A initialized appropriately) can be used to shift zeros or ones into the accumulator. Includes sequences demonstrating progressive accumulation of ones (A = $c0 -> $e0 -> $f0 -> ...) and zeros (starting with A = $7F and using CLC to produce $3F -> $1F -> $0F ...). Explains the role of the Carry resembling bit 7 after ARR.",
+      "references": [
+        {
+          "chunk": "arr_opcode_flags_and_table",
+          "topic": "explains the flag behavior behind why repeated ARR changes bits predictably"
+        },
+        {
+          "chunk": "arr_load_register_depending_on_carry",
+          "topic": "related trick that uses ARR to move carry state into a register"
+        }
+      ]
+    },
+    {
+      "start": 3653,
+      "end": 3695,
+      "name": "sbx_opcode_description",
+      "description": "Documentation for the undocumented SBX (also seen as AXS/SAX/XMA variants) opcode ($CB). Provides opcode, mnemonic (SBX #imm), function (X = A & X - #imm), size (2 bytes), timing and flag effects. Explains that SBX performs an AND of A and X, subtracts an immediate like CMP, stores result in X, sets N and Z according to X, affects Carry like CMP, does not affect Overflow, and is not influenced by Decimal mode (it behaves like CMP-derived subtraction). Notes use cases such as tight interrupt routines where Decimal need not be cleared.",
+      "references": [
+        {
+          "chunk": "arr_opcode_flags_and_table",
+          "topic": "previous undocumented opcode coverage in the same document for related reading"
+        }
+      ]
+    },
+    {
+      "start": 3696,
+      "end": 3760,
+      "name": "sbx_opcode_and_description",
+      "description": "SBX (AXS, SAX, XMA) undocumented opcode ($CB): performs X = (A & X) - imm. Immediate-mode combined effect derived from CMP semantics; sets flags like CMP (N/Z set per X), not affected by decimal mode. Includes opcode byte, size, cycles, and notes on behavior and equivalence attempts.",
+      "references": [
+        {
+          "chunk": "lax_and_ane_magic_constant",
+          "topic": "SBX is a combined immediate opcode similar in spirit to combined A/X ops like LAX"
+        }
+      ]
+    },
+    {
+      "start": 3761,
+      "end": 3772,
+      "name": "sbx_txa_disarm_trick",
+      "description": "Shows how to use SBX #$xx to subtract an immediate from X while disarming the AND effect by making A equal to X first. Explains that A is clobbered, the TXA shortcut (instead of LDA #$FF) makes A == X so SBX performs a plain subtraction, and notes the cycle/byte cost (4 cycles, 3 bytes) and that carry need not be handled in this variant.",
+      "references": [
+        {
+          "chunk": "sbx_decrement_nibbles_example",
+          "topic": "Uses SBX in a multi-nibble decrement example; demonstrates similar carry/flag considerations"
+        }
+      ]
+    },
+    {
+      "start": 3773,
+      "end": 3864,
+      "name": "sbx_decrement_nibbles_example",
+      "description": "Example: decrement two packed 4-bit nibbles in one byte. Provides a conventional sequence using BIT/ADC/SBC to detect and handle low-nibble underflow, with cycle comments. Then presents an alternative using SBX: set X as mask ($0F), use SBX #$00 to check whether low nibble underflows (affects X), branch accordingly, and then perform SBC-based adjustments to decrement both nibbles with manual wrap-around. Explains how SBX can substitute longer sequences and how carry is affected.",
+      "references": [
+        {
+          "chunk": "sbx_txa_disarm_trick",
+          "topic": "Shows the TXA trick to prepare A/X before using SBX"
+        },
+        {
+          "chunk": "sbx_apply_mask_to_index_example",
+          "topic": "Another SBX trick that uses masking of A/X to set up indices"
+        }
+      ]
+    },
+    {
+      "start": 3865,
+      "end": 3908,
+      "name": "sbx_apply_mask_to_index_example",
+      "description": "Example: use SBX to apply a mask to derive an index from a value without clobbering A. Demonstrates LDX #$03 (mask), LDA val1, SBX #$00 to mask lower 2 bits into X, two LSRs to shift the value while preserving A, and then LDA colours,x to fetch from a table. Compares this to the conventional AND/TAX approach which clobbers A and requires extra cycles. Notes this is useful to decode 4 multicolour pixel pairs by deriving an index from the lowest two bits.",
+      "references": [
+        {
+          "chunk": "sbx_decrement_nibbles_example",
+          "topic": "Another use of SBX for nibble/bit manipulation and branch detection"
+        },
+        {
+          "chunk": "sbx_toggle_bit_with_carry_example",
+          "topic": "Shows SBX behaviour with flags useful in tight bit-manipulation loops"
+        }
+      ]
+    },
+    {
+      "start": 3909,
+      "end": 3940,
+      "name": "sbx_toggle_bit_with_carry_example",
+      "description": "Example: use SBX and flag behaviour to toggle one bit each loop and set another bit depending on carry, useful for clock/data bit handling. Shows a loop that shifts data into carry (SEC / ROR), stores to databits, prepares a value in A, toggles a clock bit with EOR, uses TAX to disarm SBX's AND, checks carry (BCC) and conditionally runs SBX #$10 to adjust X while preserving A, then shifts databits and loops. Explains how SBX's flag effects make this tight loop possible while preserving A.",
+      "references": [
+        {
+          "chunk": "sbx_apply_mask_to_index_example",
+          "topic": "Also exploits SBX's non-destructive behaviour on A for bit/index handling"
+        },
+        {
+          "chunk": "sbc_opcode_entry",
+          "topic": "Related flag behaviours when performing subtract operations"
+        }
+      ]
+    },
+    {
+      "start": 3941,
+      "end": 3975,
+      "name": "sbc_opcode_entry",
+      "description": "Undocumented opcode $EB: SBC #imm. Documents opcode type as a combination of immediate and implied commands, mnemonic SBC #imm, function A = A - #{imm}, size 2 bytes, cycles and flags affected (mentions N V - B D I Z and carry behaviour). Notes it operates like the regular SBC immediate and references test code (Lorenz-2.15/sbcb-eb.prg).",
+      "references": [
+        {
+          "chunk": "sbx_toggle_bit_with_carry_example",
+          "topic": "Related discussion of subtraction and carry/flag effects in tight loops"
+        },
+        {
+          "chunk": "las_opcode_entry",
+          "topic": "Next undocumented opcode entry in sequence"
+        }
+      ]
+    },
+    {
+      "start": 3976,
+      "end": 3986,
+      "name": "las_instruction_intro",
+      "description": "Introduces the undocumented LAS (also shown as LAR) opcode $BB. Lists its type as combinations of STA/TXS and LDA/TSX and shows the mnemonic form 'LAS abs, y'. This entry begins the LAS opcode documentation (truncated here).",
+      "references": [
+        {
+          "chunk": "sbc_opcode_entry",
+          "topic": "Previous undocumented opcode entry ($EB SBC #imm) in the document"
+        }
+      ]
+    },
+    {
+      "start": 3987,
+      "end": 4022,
+      "name": "sbc_immediate_undocumented_eb",
+      "description": "SBC immediate undocumented opcode ($EB): subtract immediate from accumulator with carry, same behavior as standard SBC #imm. Opcode, size (2 bytes), cycles, and flags. Test code reference.",
+      "references": []
+    },
+    {
+      "start": 4023,
+      "end": 4111,
+      "name": "las_opcode_las_abs_y",
+      "description": "LAS (aka LAR) undocumented opcode ($BB) with abs,Y addressing: A, X, SP = memory & SP (i.e. memory AND stack pointer), transfers result into A, X, and SP. Describes size, cycles (4+1 potential), flags (N/Z set as loads), example usage, equivalent instruction sequence, and note about reliability and stack use.",
+      "references": [
+        {
+          "chunk": "tas_opcode_and_examples",
+          "topic": "TAS and LAS are related combined STA/TSX patterns that interact with SP"
+        }
+      ]
+    },
+    {
+      "start": 4112,
+      "end": 4135,
+      "name": "single_byte_nops",
+      "description": "Entries for single-byte undocumented NOP opcodes in this section: presents $DA and $FA (mnemonic NOP), labeled 'No operation', and their basic size/cycle fields (single-byte NOPs that consume one byte and two clock cycles on the 6502/C64).",
+      "references": [
+        {
+          "chunk": "immediate_nop_variants",
+          "topic": "immediate-mode undocumented NOPs (#imm), follow-on multi-byte NOP types"
+        }
+      ]
+    },
+    {
+      "start": 4136,
+      "end": 4203,
+      "name": "immediate_nop_variants",
+      "description": "Undocumented immediate-mode NOPs (DOP / SKB): opcodes $80, $82, $C2, $E2, $89. Each shown as 'NOP #imm' with action 'Fetch #imm', size = 2 bytes, cycles = 2. Includes a note that some sources incorrectly claim $82/$C2/$E2 may JAM; authors conclude they behave as no-ops on the vast majority of machines and advise caution.",
+      "references": [
+        {
+          "chunk": "single_byte_nops",
+          "topic": "other simple undocumented NOP forms"
+        },
+        {
+          "chunk": "zero_page_nops",
+          "topic": "zero-page NOP variants (short read NOPs)"
+        }
+      ]
+    },
+    {
+      "start": 4204,
+      "end": 4245,
+      "name": "zero_page_nops",
+      "description": "Undocumented zero-page NOPs (DOP, SKB, IGN): opcodes $04, $44, $64. Each listed as 'NOP zp' with function 'Fetch {addr}', size = 2 bytes, cycles = 3. (These NOPs perform a memory read from the zero page address, but the value is not stored in any register.)",
+      "references": [
+        {
+          "chunk": "immediate_nop_variants",
+          "topic": "other small-sized undocumented NOPs"
+        },
+        {
+          "chunk": "zero_page_x_nops",
+          "topic": "zero-page,X variants that behave similarly but use indexing"
+        }
+      ]
+    },
+    {
+      "start": 4246,
+      "end": 4319,
+      "name": "zero_page_x_nops",
+      "description": "Undocumented zero-page,X NOPs (DOP, SKB, IGN): opcodes $14, $34, $54, $74, $D4, $F4. Each listed as 'NOP zp, x' with 'Fetch {addr}', size = 2 bytes, cycles = 4. Operation note: NOP zp and NOP zp,x perform a memory read (the fetched value is discarded), i.e., they have the timing/read behavior of the addressing mode but no effect on registers or flags.",
+      "references": [
+        {
+          "chunk": "zero_page_nops",
+          "topic": "zero-page non-indexed NOP variants and their read-only behavior"
+        },
+        {
+          "chunk": "absolute_nops_and_abs_x_variants",
+          "topic": "3-byte absolute and absolute,X NOP variants and page-cross timing"
+        }
+      ]
+    },
+    {
+      "start": 4320,
+      "end": 4419,
+      "name": "absolute_nops_and_abs_x_variants",
+      "description": "Undocumented absolute and absolute,X NOPs (TOP, SKW, IGN): $0C (NOP abs) and the absolute,X group $1C, $3C, $5C, $7C, $DC, $FC (NOP abs, x). $0C uses absolute addressing: the two bytes following form the absolute address; size = 3 bytes, cycles = 4. The abs,X variants use absolute indexed X addressing: size = 3 bytes, cycles = 4 (increased by +1 cycle when a page boundary is crossed). Operation note: these opcodes perform a memory read from the computed address; the read value is discarded. Test file references for validation are listed (Lorenz test programs).",
+      "references": [
+        {
+          "chunk": "zero_page_x_nops",
+          "topic": "zero-page,X NOPs as analogous indexed-mode read-only NOPs"
+        },
+        {
+          "chunk": "examples_irq_and_skip_examples",
+          "topic": "practical examples showing use of abs,X NOPs (acknowledge IRQ, skipping instructions)"
+        }
+      ]
+    },
+    {
+      "start": 4420,
+      "end": 4460,
+      "name": "examples_irq_and_skip_examples",
+      "description": "Practical examples using undocumented NOPs: acknowledging an IRQ by performing a read with an abs,X NOP (example: 'NOP $DCOD'), and techniques for skipping or disabling instructions using undocumented NOPs rather than BIT/other instructions. Includes code examples demonstrating how multi-byte or single-byte undocumented NOPs can be used to skip the next instruction without affecting registers or flags, and commentary about why this is useful for merging code paths.",
+      "references": [
+        {
+          "chunk": "absolute_nops_and_abs_x_variants",
+          "topic": "example uses of abs,X NOPs (IRQ acknowledgment) and page-cross behavior"
+        },
+        {
+          "chunk": "zero_page_nops",
+          "topic": "using zero-page and zero-page,X NOPs as one- or two-byte skips depending on instruction size"
+        }
+      ]
+    },
+    {
+      "start": 4461,
+      "end": 4560,
+      "name": "nop_usage_examples",
+      "description": "Examples of using undocumented NOPs: acknowledge IRQ by performing a read (NOP abs), skip instructions without altering flags/registers (use DOP/DOP variants instead of BIT), disable instructions by replacing opcodes (JMP vs TOP), and interleaving code and data using NOP #imm bytes to save memory at the cost of cycles.",
+      "references": [
+        {
+          "chunk": "nop_variants",
+          "topic": "which NOP opcode to use for each technique"
+        }
+      ]
+    },
+    {
+      "start": 4561,
+      "end": 4661,
+      "name": "jam_opcodes_cpu_lockup",
+      "description": "Documentation of the JAM (also known as KIL/HLT/CIM/CRP) group of opcodes that lock up the 6502 CPU. Lists individual opcode bytes ($42, $52, $62, $72, $92, $B2, $D2, $F2) and states their effect: on execution the following byte is fetched, data and address buses are driven to $FF, program execution ceases, interrupts do not run, and only a reset can restart the CPU. Notes that these opcodes leave no register or flag trace. Provides a test-code reference (CPU/cpujam/cpujamXX.prg), a minimal example use-case to stop execution in tight demos (example assembly snippet: LDA #0 / STA $D418 / JAM / ;02), and a simulation link to the visual6502 JSSim. Includes page footer.",
+      "references": [
+        {
+          "chunk": "unstable_opcodes_unstable_address_high_byte_group",
+          "topic": "continues with the next section 'Unstable Opcodes' describing other classes of undocumented opcodes"
+        }
+      ]
+    },
+    {
+      "start": 4662,
+      "end": 4715,
+      "name": "unstable_opcodes_unstable_address_high_byte_group",
+      "description": "Start of the 'Unstable Opcodes' section: overview of seven opcodes classed as unstable (two truly unpredictable, five predictable under conditions). Introduces the 'unstable address high byte' subgroup (five opcodes) that do not affect A, X, Y, or P but have two failure modes to guard against: (1) if index-based addressing crosses a page boundary the high byte may be incremented and ANDed with the stored value (causing an unexpected store address), and (2) when RDY is used to stop the CPU (e.g., bad line or sprite DMA starting late) the AND-with-<addrhi+1> step may be skipped, causing the raw value to be written (examples when this does or does not occur are described). Advises avoiding page crossings or DMA during these instructions and choosing target addresses appropriately (e.g., $FE00 or values tolerant to AND). Lists the related opcodes and addressing modes: SHA (zp),Y; TAS ABS,Y; SHY ABS,X; SHX ABS,Y; SHA ABS,Y with their opcode bytes ($93, $9B, $9C, $9E, $93 as shown).",
+      "references": [
+        {
+          "chunk": "jam_opcodes_cpu_lockup",
+          "topic": "previous section covering JAM/KIL opcodes that lock the CPU"
+        }
+      ]
+    },
+    {
+      "start": 4716,
+      "end": 4751,
+      "name": "unstable_opcodes_overview",
+      "description": "Overview of seven 'unstable' undocumented opcodes: distinctions between opcodes that are truly unpredictable (magic-constant group) and those with predictable but unexpected results. Advises on preconditions to use them safely, and lists two main instability sources for the 'unstable address high byte' group (page-boundary/index crossing AND RDY/ DMA causing &{H+1} masking to drop off).",
+      "references": [
+        {
+          "chunk": "unstable_address_high_byte_group",
+          "topic": "the five opcodes in the 'unstable address high byte' group"
+        },
+        {
+          "chunk": "ane_and_lax_magic_constant",
+          "topic": "the two truly unstable opcodes involving a chip-dependent magic constant"
+        }
+      ]
+    },
+    {
+      "start": 4752,
+      "end": 4830,
+      "name": "unstable_address_high_byte_group",
+      "description": "Five unstable opcodes that AND the stored value with the high byte of the target address plus one (&{H+1}): SHA (zp),y ($93), TAS abs,y ($9B), SHY abs,x ($9C), SHX abs,y ($9E), SHA abs,y ($9F). Table: opcode, stored value (A&X, Y, X), cycle counts, and behaviour with/without DMA and page-cross conditions (shows when &{H+1} applies or drops off).",
+      "references": [
+        {
+          "chunk": "sha_opcode",
+          "topic": "details for SHA (AXA/AHX/TEA) specific behavior"
+        },
+        {
+          "chunk": "shx_opcode",
+          "topic": "details for SHX behavior"
+        }
+      ]
+    },
+    {
+      "start": 4831,
+      "end": 4846,
+      "name": "page_cross_and_sta_fixup_explanation",
+      "description": "Explanation of why STA ABX has a fix-up (always takes 5 cycles) while some undocumented store opcodes (SHX/SHY/etc.) lack the fix-up leading to collisions between value and high address byte computation when a page-cross occurs. Explains buffered reads and write timing causing the instability.",
+      "references": [
+        {
+          "chunk": "unstable_address_high_byte_group",
+          "topic": "applies to SHX/SHY/SHA/TAS"
+        }
+      ]
+    },
+    {
+      "start": 4847,
+      "end": 4923,
+      "name": "sha_opcode",
+      "description": "SHA (AXA/AHX/TEA) opcodes: SHA (zp),y ($93) and SHA abs,y ($9F). Operation: store (A & X & {H+1}) into memory. Instabilities: &{H+1} masking may drop off if RDY goes low during specific cycles; page-boundary crossing will increment high byte then AND it with (A & X). Includes examples, equivalent instruction sequences to emulate SHA (using PHP/PHA/AND/TAX/PLP), and test references.",
+      "references": [
+        {
+          "chunk": "unstable_address_high_byte_group",
+          "topic": "group containing SHA opcodes and their instabilities"
+        }
+      ]
+    },
+    {
+      "start": 4924,
+      "end": 4946,
+      "name": "sha_examples_sax_variants",
+      "description": "SHA examples showing when SHA reduces to SAX (SAX = A & X store) for addresses where (H+1) yields $FF (e.g., $FE00), and SAX-like behavior for indirect,Y forms when high byte masking is effectively $FF.",
+      "references": [
+        {
+          "chunk": "sha_opcode",
+          "topic": "basic SHA behavior and &{H+1} masking"
+        }
+      ]
+    },
+    {
+      "start": 4947,
+      "end": 5011,
+      "name": "shx_opcode",
+      "description": "SHX (A11,SXA,XAS,TEX) undocumented opcode ($9E) using abs,Y addressing: store X & {H+1}. Details: opcode, size, cycles (5), operation, instabilities (RDY dropoff and page-cross &{H+1} increment-and-AND), example usage and equivalent instruction sequence; test code list and simulation links.",
+      "references": [
+        {
+          "chunk": "unstable_address_high_byte_group",
+          "topic": "SHX is part of this group"
+        },
+        {
+          "chunk": "shx_examples_and_sync",
+          "topic": "practical examples of SHX used to sync with raster beam"
+        }
+      ]
+    },
+    {
+      "start": 5012,
+      "end": 5081,
+      "name": "shx_examples_and_sync",
+      "description": "SHX examples and raster-beam sync tricks: using SHX to create a stable synchronization point (remove cycle variance) for raster effects by exploiting &{H+1} masking behavior and RDY induced dropoffs. Includes several code snippets illustrating how to detect a cycle where &{H+1} drops and use it to align to an exact horizontal cycle.",
+      "references": [
+        {
+          "chunk": "shx_opcode",
+          "topic": "instabilities that enable the sync trick"
+        }
+      ]
+    },
+    {
+      "start": 5082,
+      "end": 5136,
+      "name": "shy_opcode",
+      "description": "SHY (A11,SYA,SAY,TEY) undocumented opcode ($9C) abs,X: store Y & {H+1}. Describes opcode details, cycles, operation and instabilities (RDY dropoff, page-cross increment then AND), example usage, and equivalent instruction sequence via stack and AND hacks. Test code references.",
+      "references": [
+        {
+          "chunk": "unstable_address_high_byte_group",
+          "topic": "SHY's role in the unstable group"
+        }
+      ]
+    },
+    {
+      "start": 5137,
+      "end": 5147,
+      "name": "shy_example_sty_abs_x",
+      "description": "Example: when using $FE00 as address, SHY acts like STY (since &{H+1} becomes $FF). Shows SHY $FE00,X -> STY $FE00,X equivalence.",
+      "references": [
+        {
+          "chunk": "shy_opcode",
+          "topic": "example of &{H+1} = $FF making SHY equivalent to STY"
+        }
+      ]
+    },
+    {
+      "start": 5148,
+      "end": 5201,
+      "name": "shy_sync_raster_and_frame_examples",
+      "description": "SHY sync examples: using SHY and related sequences to synchronize to a stable cycle for raster-timed timers (both per-line and per-frame sync techniques). Includes code snippets that use SHY to write a value that is then read to break out of a loop at a precise raster position, with notes about initialization requirements (e.g., specific register values).",
+      "references": [
+        {
+          "chunk": "shy_opcode",
+          "topic": "instabilities used to derive sync behavior"
+        }
+      ]
+    },
+    {
+      "start": 5202,
+      "end": 5276,
+      "name": "tas_opcode",
+      "description": "TAS (XAS, SHS) undocumented opcode ($9B) abs,Y: sets SP = A & X, then stores (A & X & {H+1}) into memory. Describes operation, size, cycles, instabilities (RDY dropoff, page-cross behavior), and an equivalent (long) instruction sequence using PHP/STA/AND/TXS to emulate TAS effects. Notes that TAS does not use the stack and test-code references.",
+      "references": [
+        {
+          "chunk": "las_opcode_las_abs_y",
+          "topic": "LAS/TAS both combine AND results with SP or transfers"
+        }
+      ]
+    },
+    {
+      "start": 5277,
+      "end": 5325,
+      "name": "tas_examples_and_sax_usage",
+      "description": "TAS examples: when used with addresses where (H+1) is $FF, TAS reduces to SAX (store A & X) and also sets SP=A&X. Demonstrates how to use TAS to get A&X value into SP for repeated use and suggests saving/restoring SP when appropriate. Test code references for TAS instabilities and page-boundary behaviors.",
+      "references": [
+        {
+          "chunk": "tas_opcode",
+          "topic": "TAS semantics and instability details"
+        }
+      ]
+    },
+    {
+      "start": 5326,
+      "end": 5349,
+      "name": "magic_constant_group_overview",
+      "description": "Overview of 'Magic Constant' group: two opcodes whose behavior depends on a chip- and temperature-dependent 'magic constant', and on RDY line. These opcodes are considered truly unstable: the constant may vary over chips/temperature and bits 0/4 are 'weaker'. Advises to avoid relying on reading the constant and to remove its effect by choosing immediates or accumulator values that mask it out.",
+      "references": [
+        {
+          "chunk": "ane_and_lax_magic_constant",
+          "topic": "ANE and LAX are the two opcodes in this unstable category"
+        }
+      ]
+    },
+    {
+      "start": 5350,
+      "end": 5410,
+      "name": "ane_opcode_and_description",
+      "description": "ANE (XAA/AXM) undocumented opcode ($8B) #imm: A = (A | CONST) & X & imm. Operation and instability: CONST is chip/temperature dependent (the 'magic constant', commonly but not reliably $EE/$EF/$FF), with RDY-related bit instability (bits 0 and 4 may drop during DMA). Advises safe usage patterns (imm=0 or A=$FF to remove CONST influence), example sequences, equivalence notes, and test-code/simulation references.",
+      "references": [
+        {
+          "chunk": "magic_constant_group_overview",
+          "topic": "ANE is a member of the magic-constant unstable opcodes"
+        },
+        {
+          "chunk": "ane_real_world_and_emulation",
+          "topic": "real-world usage and emulation recommendations for ANE"
+        }
+      ]
+    },
+    {
+      "start": 5411,
+      "end": 5486,
+      "name": "ane_real_world_and_emulation_examples",
+      "description": "ANE real-world examples and notes: lists programs known to use ANE (Ocean/Imagine loader, Mastertronic burner, Turrican 3) and explains which usages are stable/unstable. Emulation advice: use $EF in regular cycles and $EE in RDY cycles as compromise. Examples of safe uses: ANE #0 to clear A, ANE to compute X AND immediate when A=$FF. Test and simulation references.",
+      "references": [
+        {
+          "chunk": "ane_opcode_and_description",
+          "topic": "ANE details and magic-constant behavior"
+        }
+      ]
+    },
+    {
+      "start": 5487,
+      "end": 5511,
+      "name": "lax_opcode_example_lax_ff",
+      "description": "Assembly listing demonstrating use of the undocumented LAX immediate opcode (AB). Shows LDA #$00 followed by LAX #$FF (AB FF), a subsequent DCP instruction that accesses memory $FF97,X, and an RTS. Comments record the observed effect: A and X become (($00 | CONST) & $FF) = $EE (magic-constant behaviour) and the accumulator value ($EE).",
+      "references": [
+        {
+          "chunk": "lax_wizball_emulator_recommendation",
+          "topic": "empirical test results and emulator guidance for the LAX magic constant"
+        },
+        {
+          "chunk": "lax_safe_usage_examples_and_magic_constant_detection",
+          "topic": "safe example usages and method to read the magic constant"
+        }
+      ]
+    },
+    {
+      "start": 5512,
+      "end": 5522,
+      "name": "lax_wizball_emulator_recommendation",
+      "description": "Empirical notes from testing Wizball binaries in emulation: specific magic-constant immediate values that cause game crashes ($63, $64, $67, $68, $69, $6A, $D1, $D2, $EF). Concludes $EF likely didn't occur on real C64s. Recommends emulators use $EE (not $EF) for the undocumented LAX magic constant in both normal and RDY cycles. Notes that one known program ('Blackmail FLI') uses LAX #imm and may break but was historically flaky.",
+      "references": [
+        {
+          "chunk": "lax_opcode_example_lax_ff",
+          "topic": "example showing LAX #$FF and resulting magic-constant behaviour"
+        },
+        {
+          "chunk": "lax_safe_usage_examples_and_magic_constant_detection",
+          "topic": "examples and guidance for safe LAX immediate usage"
+        }
+      ]
+    },
+    {
+      "start": 5523,
+      "end": 5561,
+      "name": "lax_safe_usage_examples_and_magic_constant_detection",
+      "description": "Practical examples and tests for using the undocumented LAX immediate opcode safely. Example: LAX #0 (AB 00) is equivalent to LDA #0; TAX and is safe because using 0 removes the magic constant from the result. Example: LAX #<value> when A was $FF is equivalent to LDA #<value>; TAX and safe because A=$FF neutralizes the magic constant. Also shows a method to read the current machine's magic constant: LDA #0; LAX #$FF — afterwards A and X contain the magic constant. Warns the constant can be unstable on the same chip and depend on temperature and supply voltage; do not rely on it.",
+      "references": [
+        {
+          "chunk": "lax_opcode_example_lax_ff",
+          "topic": "raw example where the magic constant manifests (shows why using 0 or $FF is safe)"
+        },
+        {
+          "chunk": "lax_wizball_emulator_recommendation",
+          "topic": "empirical emulator guidance and problematic magic-constant values"
+        }
+      ]
+    },
+    {
+      "start": 5562,
+      "end": 5635,
+      "name": "unintended_addressing_modes_absolute_y_rmw",
+      "description": "Documentation of unintended Absolute Y indexed (read-modify-write) addressing-mode behavior for a set of undocumented opcodes. Specifies instruction length (3 bytes) and timing (7 cycles). Lists opcode encodings (db lo hi, fb lo hi, 7b lo hi, 3b lo hi, 1b lo hi, 5b lo hi) and corresponding mnemonic opcodes: DCP abs,Y; ISC abs,Y; RRA abs,Y; RLA abs,Y; SLO abs,Y; SRE abs,Y. Provides a per-cycle bus activity table (cycles 1–6) showing address bus, data bus, and read/write actions: opcode fetch from PC, absolute address low/high reads, a read of the byte at the (AAH,AAL+Y) address before the high byte is corrected, and subsequent reads of the old data at AA+Y for the R-M-W sequence.",
+      "references": [
+        {
+          "chunk": "lax_safe_usage_examples_and_magic_constant_detection",
+          "topic": "related undocumented opcode behaviours and practical testing"
+        }
+      ]
+    },
+    {
+      "start": 5636,
+      "end": 5636,
+      "ignore": true,
+      "reason": "Single blank/page line between sections (non-technical formatting)."
+    },
+    {
+      "start": 5637,
+      "end": 5723,
+      "name": "unintended_addressing_modes_abs_y_rmw",
+      "description": "Unintended addressing modes: absolute,Y indexed R-M-W sequence for several undocumented opcodes (DCP, ISC, RRA, RLA, SLO, SRE) showing the 7-cycle timing and detailed per-cycle bus operations (PC/opcode fetch, address low/high fetch, read before high-byte correction, two reads of old data and final write). Simulation link provided and note that legal equivalent is Absolute X Indexed R-M-W for certain instructions.",
+      "references": [
+        {
+          "chunk": "dcp_opcode_variants_table",
+          "topic": "DCP appears in this unintended addressing mode mapping"
+        },
+        {
+          "chunk": "isc_opcode_variants_and_examples",
+          "topic": "ISC appears in this unintended abs,Y R-M-W mapping"
+        }
+      ]
+    },
+    {
+      "start": 5724,
+      "end": 5800,
+      "name": "unintended_addressing_modes_abs_x_rmw",
+      "description": "Equivalent legal-mode mapping: Absolute X indexed R-M-W sequences for undocumented opcodes (ASL abs,x; DEC abs,x; LSR/ROL/ ROR etc) and undocumented variants (DCP, ISC, RRA, RLA, SLO, SRE) with 7-cycle behavior. Includes per-cycle bus operations showing when old data is read and when new data is written, and lists opcode byte examples. Simulation link provided.",
+      "references": [
+        {
+          "chunk": "unintended_addressing_modes_abs_y_rmw",
+          "topic": "related R-M-W timing sequence but with X vs Y indexing"
+        }
+      ]
+    },
+    {
+      "start": 5801,
+      "end": 5812,
+      "name": "unintended_addressing_modes_absolute_x_rmw",
+      "description": "Unintended addressing mode: Absolute X Indexed (R-M-W). Lists undocumented opcodes (df, ff, 7f, 3f, 1f, 5f) mapped to DCP, ISC, RRA, RLA, SLO, SRE and shows equivalent legal mode ASL/DEC/INC/LSR/ROL/ROR behaviour in timing diagrams (3-byte, 7-cycle) and per-cycle bus activity. Includes note about dummy fetch and page crossing.",
+      "references": [
+        {
+          "chunk": "unintended_addressing_modes_absolute_y_rmw",
+          "topic": "related unintended mode (Absolute Y)"
+        },
+        {
+          "chunk": "indexed_read_modify_write_absx",
+          "topic": "indexed read-modify-write behaviour for abs,X"
+        }
+      ]
+    },
+    {
+      "start": 5813,
+      "end": 5816,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 5817,
+      "end": 5907,
+      "name": "zeropage_x_indexed_indirect_rmw_unintended",
+      "description": "Unintended addressing mode: Zeropage X Indexed Indirect (R-M-W). Lists undocumented opcodes C3,E3,23,63,03,43 -> DCP/ISC/RLA/RRA/SLO/SRE (2-byte, 8-cycle) with detailed per-cycle address/data bus actions and a visual6502 simulation link.",
+      "references": [
+        {
+          "chunk": "zeropage_x_indexed_indirect_legal",
+          "topic": "related legal (non-RMW) (zp,x) addressing modes"
+        }
+      ]
+    },
+    {
+      "start": 5908,
+      "end": 5988,
+      "name": "zeropage_x_indexed_indirect_legal",
+      "description": "Related legal mode: Zeropage X Indexed Indirect addressing (2 bytes, ~6 cycles). Lists legal opcodes (a3,83 etc) for ADC/STA/AND/CMP/EOR/LDA/ORA/SBC/LAX/SAX and shows the per-cycle behaviour and final data read/write timing of normal (zp,X)->abs address access.",
+      "references": [
+        {
+          "chunk": "zeropage_x_indexed_indirect_rmw_unintended",
+          "topic": "unintended R-M-W variants using similar addressing"
+        }
+      ]
+    },
+    {
+      "start": 5989,
+      "end": 5991,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 5992,
+      "end": 6084,
+      "name": "zeropage_indirect_y_indexed_rmw_unintended",
+      "description": "Unintended addressing mode: Zeropage Indirect Y Indexed (R-M-W). Lists undocumented opcodes D3,F3,33,73,13,53 mapping to DCP/ISC/RLA/RRA/SLO/SRE (2-byte, 8-cycle) with detailed cycle-by-cycle address/data bus actions and visual6502 simulation link.",
+      "references": [
+        {
+          "chunk": "zeropage_indirect_y_indexed_legal",
+          "topic": "related legal (zp),y addressing mode"
+        }
+      ]
+    },
+    {
+      "start": 6085,
+      "end": 6166,
+      "name": "zeropage_indirect_y_indexed_legal",
+      "description": "Related legal mode: Zeropage Indirect Y Indexed addressing (2 bytes, 5+1 cycles). Lists legal opcodes (b3,93 etc) for ADC/STA/AND/CMP/EOR/LDA/ORA/SBC/LAX/SHA and shows the per-cycle behaviour including the extra cycle on page-cross or write and the dummy read timing.",
+      "references": [
+        {
+          "chunk": "zeropage_indirect_y_indexed_rmw_unintended",
+          "topic": "unintended R-M-W variants using same addressing"
+        }
+      ]
+    },
+    {
+      "start": 6167,
+      "end": 6170,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6171,
+      "end": 6196,
+      "name": "unintended_decimal_mode_introduction",
+      "description": "Introduction to the 6502 decimal (BCD) mode: overview of how ADC/SBC and undocumented instructions derived from them behave when the D flag is set. Notes this applies specifically to NMOS 6502/6510 behaviour (65C02/65816 differ) and references test programs.",
+      "references": [
+        {
+          "chunk": "adc_instruction_decimal_mode",
+          "topic": "detailed ADC behaviour in decimal mode"
+        },
+        {
+          "chunk": "sbc_instruction_decimal_mode",
+          "topic": "detailed SBC behaviour in decimal mode"
+        },
+        {
+          "chunk": "arr_decimal_mode",
+          "topic": "ARR undocumented instruction (decimal specifics)"
+        }
+      ]
+    },
+    {
+      "start": 6197,
+      "end": 6201,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6202,
+      "end": 6238,
+      "name": "decimal_mode_in_a_nutshell",
+      "description": "Concise summary of BCD/decimal mode: how BCD is encoded (one digit per nibble), which instructions are affected (ADC, SBC and derivatives), the ALU nibble treatment and BCD fixup rules for addition and subtraction, and how flags (C, N, V, Z) are set in decimal mode.",
+      "references": [
+        {
+          "chunk": "unintended_decimal_mode_introduction",
+          "topic": "overview and caveats"
+        }
+      ]
+    },
+    {
+      "start": 6239,
+      "end": 6241,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6242,
+      "end": 6257,
+      "name": "decimal_mode_examples_and_invalid_bcd",
+      "description": "Examples illustrating decimal mode behaviour: code sample (SED/CLC/LDA/ADC) and examples showing results for invalid BCD inputs (nibbles A-F) and how results can be non-BCD. Advises to refer to pseudocode for exact details.",
+      "references": [
+        {
+          "chunk": "adc_instruction_decimal_mode",
+          "topic": "ADC pseudocode and detailed examples"
+        }
+      ]
+    },
+    {
+      "start": 6258,
+      "end": 6261,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6262,
+      "end": 6266,
+      "name": "affected_instructions_decimal_mode",
+      "description": "Statement that ADC and SBC (and undocumented instructions derived from them: ARR, RRA, ISC and the undocumented $EB SBC) are affected by the decimal flag. References test code scanner.",
+      "references": [
+        {
+          "chunk": "arr_decimal_mode",
+          "topic": "ARR behaviour in decimal mode"
+        },
+        {
+          "chunk": "rra_instruction",
+          "topic": "RRA behaviour (inherits ADC decimal mode)"
+        }
+      ]
+    },
+    {
+      "start": 6267,
+      "end": 6267,
+      "ignore": true,
+      "reason": "Spacing / blank line before ADC section"
+    },
+    {
+      "start": 6268,
+      "end": 6355,
+      "name": "adc_opcode_table_and_decimal_flags",
+      "description": "ADC instruction opcode entries and a summary of decimal-mode flag behavior. Covers ADC (zp,X), ADC zp,X, ADC zp, ADC #imm (A = A + #{imm}), notes on how N and V are set (after low-nibble fixup, using binary-ADC logic), Z flag behavior in decimal mode (Z reflects the binary addition result), C as multi-byte carry, and references to test programs for ADC in decimal mode.",
+      "references": [
+        {
+          "chunk": "adc_decimal_mode_pseudocode",
+          "topic": "Shows the detailed pseudocode BCD fixups and exact flag computations referenced by the flag summary"
+        },
+        {
+          "chunk": "adc_decimal_examples_and_compatibility",
+          "topic": "Provides worked examples (hex→ASCII, hex→BCD) and a compatibility test (NMOS vs CMOS Z flag behavior)"
+        }
+      ]
+    },
+    {
+      "start": 6356,
+      "end": 6382,
+      "name": "adc_decimal_mode_pseudocode",
+      "description": "Detailed pseudocode implementing ADC in decimal (BCD) mode. Shows step-by-step lower-nibble addition and BCD fixup, conditional carry into the upper nibble, setting of Z (based on binary result), N and V flags (set after lower-nibble fixup using binary logic), high-nibble BCD fixup, final carry computation, and assignment of the accumulator.",
+      "references": [
+        {
+          "chunk": "adc_opcode_table_and_decimal_flags",
+          "topic": "High-level ADC decimal-mode flag behavior and opcode contexts referenced by the pseudocode"
+        },
+        {
+          "chunk": "adc_decimal_examples_and_compatibility",
+          "topic": "Example usage patterns that rely on decimal-mode ADC behavior and the pseudocode's results"
+        }
+      ]
+    },
+    {
+      "start": 6383,
+      "end": 6418,
+      "name": "adc_decimal_examples_and_compatibility",
+      "description": "Practical examples and notes for ADC in decimal mode: converting a hex digit to ASCII using SED/CMP/ADC/CLD sequence (and an alternative non-BCD approach), converting a hex nibble into BCD with ADC #$00, and a compatibility test illustrating the difference between NMOS 6502 and CMOS 65C02 regarding the Z flag after decimal ADC.",
+      "references": [
+        {
+          "chunk": "adc_opcode_table_and_decimal_flags",
+          "topic": "Explains which ADC opcodes and flags the examples exercise"
+        },
+        {
+          "chunk": "adc_decimal_mode_pseudocode",
+          "topic": "Underlying BCD fixup and flag-setting logic that explains the examples' behavior"
+        }
+      ]
+    },
+    {
+      "start": 6419,
+      "end": 6462,
+      "name": "sbc_opcode_table_fragment",
+      "description": "Beginning of the SBC (USBC) instruction section. Contains the header for SBC including type note (combination of immediate and implied), listing of opcode bytes for SBC addr,Y ($f9) and SBC addr,X ($fd), and the associated function/size/cycle/flag columns (including N V - B D I Z and C). This fragment covers the opcode table lines for indexed absolute SBC variants and their size/cycle/flag layout.",
+      "references": [
+        {
+          "chunk": "adc_opcode_table_and_decimal_flags",
+          "topic": "Related arithmetic instruction coverage (ADC) and how ADC/SBC flag behaviors compare"
+        }
+      ]
+    },
+    {
+      "start": 6463,
+      "end": 6464,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6465,
+      "end": 6465,
+      "ignore": true,
+      "reason": "Blank line before ADC examples"
+    },
+    {
+      "start": 6466,
+      "end": 6488,
+      "name": "adc_decimal_mode_examples_conversion_tricks",
+      "description": "Practical examples using ADC in decimal mode: convert a hex digit to ASCII (using SED/ADC/CLD or non-BCD sequence), convert a hex digit to BCD (SED/CLC/ADC/CLD), and a test to distinguish NMOS 6502 from CMOS 65C02 via Z flag behaviour.",
+      "references": [
+        {
+          "chunk": "adc_instruction_decimal_mode",
+          "topic": "pseudocode and flags details"
+        }
+      ]
+    },
+    {
+      "start": 6489,
+      "end": 6498,
+      "name": "adc_decimal_mode_nmos_vs_cmos_example",
+      "description": "Short code snippet (SED/CLC/LDA/ADC/CLD) demonstrating difference in Z flag behaviour between NMOS 6502 and CMOS 65C02 — used to distinguish CPU variants.",
+      "references": [
+        {
+          "chunk": "adc_instruction_decimal_mode",
+          "topic": "Z flag handling in decimal mode"
+        }
+      ]
+    },
+    {
+      "start": 6499,
+      "end": 6501,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6502,
+      "end": 6502,
+      "ignore": true,
+      "reason": "Blank line before SBC section"
+    },
+    {
+      "start": 6503,
+      "end": 6613,
+      "name": "sbc_instruction_decimal_mode_overview",
+      "description": "SBC (Subtract with Carry) opcode mappings for multiple addressing modes (zp,x: $F5, zp: $E5, #imm: $E9 and undocumented immediate $EB), short mnemonic forms and examples (A = A - {addr}, A = A - #{imm}). Explains the operation difference in decimal (BCD) mode vs binary mode: only a result-fixup is applied, how the internal half-carry is used for the lower nibble, behavior of high-nibble fixup, examples of wraparound ($00 - $01 => $99 in BCD), and detailed flag semantics (N and V unaffected by decimal mode; Z determined by binary op; C used as multi-byte carry). Also lists CPU/decimalmode test program filenames for SBC and its undocumented immediate variant.",
+      "references": [
+        {
+          "chunk": "sbc_pseudocode",
+          "topic": "pseudocode implementing the decimal-mode fixups and flag updates for SBC"
+        },
+        {
+          "chunk": "arr_instruction_decimal_mode",
+          "topic": "related decimal-mode instruction (ARR) and how it does BCD fixups"
+        }
+      ]
+    },
+    {
+      "start": 6614,
+      "end": 6615,
+      "name": "page_footer_76_ignored",
+      "description": "Ignored non-technical page footer marker and following blank line (\"- 76 -\"). This is a layout/footer element, not part of instruction semantics.",
+      "references": []
+    },
+    {
+      "start": 6616,
+      "end": 6636,
+      "name": "sbc_pseudocode",
+      "description": "Pseudocode implementing SBC's behavior (binary flag setup and BCD correction). Includes computing tmp = A - imm - (C ^ 1), setting C, N, Z, V as in binary subtraction, calculating the lower nibble tmp2, conditional BCD correction for the low nibble and combining with high nibble result, final high-nibble overflow correction, and assigning the corrected value back to A.",
+      "references": [
+        {
+          "chunk": "sbc_instruction_decimal_mode_overview",
+          "topic": "explains the decimal-mode differences and flags that this pseudocode implements"
+        }
+      ]
+    },
+    {
+      "start": 6637,
+      "end": 6638,
+      "name": "page_footer_77_ignored",
+      "description": "Ignored non-technical page footer marker and following blank line (\"- 77 -\"). This is a layout/footer element, not part of instruction semantics.",
+      "references": []
+    },
+    {
+      "start": 6639,
+      "end": 6708,
+      "name": "arr_instruction_decimal_mode",
+      "description": "Documentation for the undocumented ARR instruction (opcode $6B). Covers type (combination: AND then ROR), mnemonic (ARR #imm), functional definition (A = (A & #imm) >> 1 with ROR semantics), notes that ARR contains ADC-like mechanisms in decimal mode, and detailed decimal-mode behavior: N is copied from initial C, Z set from ROR result, V set if bit 6 changed between AND and ROR, and BCD fixups for low and high nibbles (low nibble may overflow while high nibble fixup sets/clears C). Includes full ARR pseudocode (AND, ROR, N/Z/V calculation, low/high nibble BCD corrections and carry update) and CPU/decimalmode ARR test program filenames.",
+      "references": [
+        {
+          "chunk": "sbc_instruction_decimal_mode_overview",
+          "topic": "related decimal-mode fixup behavior for subtraction (SBC) and general BCD rules"
+        }
+      ]
+    },
+    {
+      "start": 6709,
+      "end": 6710,
+      "name": "page_footer_78_ignored",
+      "description": "Ignored non-technical page footer marker and following blank line (\"- 78 -\"). This is a layout/footer element, not part of instruction semantics.",
+      "references": []
+    },
+    {
+      "start": 6711,
+      "end": 6721,
+      "name": "isc_isb_ins_header",
+      "description": "Header entry for ISC (also called ISB or INS). Specifies the instruction type (combination of two operations with the same addressing mode; sub-instructions INC and SBC), and provides the high-level semantic effect on memory ({addr} = {addr} + 1). This is the initial header block for the ISC family; detailed opcodes and addressing-mode specifics follow elsewhere in the document.",
+      "references": [
+        {
+          "chunk": "sbc_instruction_decimal_mode_overview",
+          "topic": "SBC is one of ISC's sub-instructions; see SBC for subtraction and decimal-mode behavior"
+        }
+      ]
+    },
+    {
+      "start": 6722,
+      "end": 6724,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6725,
+      "end": 6792,
+      "name": "arr_decimal_mode",
+      "description": "ARR undocumented instruction ($6B): performs AND #imm then ROR; description of result semantics in decimal mode (additional BCD fixups similar to ADC), pseudocode showing AND, ROR, update of N/V/Z and BCD corrections for low/high nibbles, and test references.",
+      "references": [
+        {
+          "chunk": "adc_instruction_decimal_mode",
+          "topic": "ARR uses ADC-like BCD mechanisms"
+        }
+      ]
+    },
+    {
+      "start": 6793,
+      "end": 6797,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6798,
+      "end": 6849,
+      "name": "isc_instruction",
+      "description": "Undocumented ISC (also called ISB/INS) instruction: entries for absolute indexed addressing modes (abs,X and abs,Y) with opcode bytes ($FF for ISC abs,X and $FB for ISC abs,Y). Includes the cycle/size/flags layout and the operation semantics: increment memory by one, then subtract memory from the accumulator with borrow (behaves exactly like INC followed by SBC, with SBC inheriting decimal-mode behavior). Lists test program filenames for verifying CPU and decimal-mode behavior (CPU/decimalmode/isc00.prg through isc13.prg).",
+      "references": [
+        {
+          "chunk": "rra_rrd_instruction",
+          "topic": "Related undocumented combined ROR+ADC instruction family (RRA/RRD) described next"
+        }
+      ]
+    },
+    {
+      "start": 6850,
+      "end": 6936,
+      "name": "rra_rrd_instruction",
+      "description": "Undocumented RRA (also shown as RRD) instruction family — a combination instruction that performs ROR on memory followed by ADC into A with the same addressing mode. Covers the instruction type, sample opcodes and mnemonics for zero page, zero page,X, (zp,X), (zp),Y, and absolute addressing modes ($67 RRA zp, $77 RRA zp,X, $63 RRA (zp,X), $73 RRA (zp),Y, $6F RRA abs). Includes the function semantics ({addr} = ROR {addr} then A = A ADC {addr}), and the table entries for byte size, cycle counts, and affected flags (status flags layout).",
+      "references": [
+        {
+          "chunk": "isc_instruction",
+          "topic": "Related undocumented INC+SBC combination (ISC) described immediately before"
+        }
+      ]
+    },
+    {
+      "start": 6937,
+      "end": 6939,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 6940,
+      "end": 6972,
+      "name": "rra_ror_then_adc_instruction",
+      "description": "Documentation for the undocumented RRA (also called RRD) instruction: shows the abs,X and abs,Y opcode listings, the operation description (performs a memory ROR then ADC to the accumulator; ADC inherits decimal-mode behavior), and references to test programs (CPU/decimalmode/rra00.prg ... rra13.prg).",
+      "references": [
+        {
+          "chunk": "unintended_memory_accesses_and_dummy_fetches_accumulator",
+          "topic": "Follow-up: general unintended memory-access behavior and dummy fetches that affect instruction bus cycles"
+        },
+        {
+          "chunk": "dummy_fetches_implied_instructions",
+          "topic": "Related: dummy fetch behavior for implied instructions (different cycle pattern)"
+        }
+      ]
+    },
+    {
+      "start": 6973,
+      "end": 7020,
+      "name": "unintended_memory_accesses_and_dummy_fetches_accumulator",
+      "description": "Introduces unintended memory accesses on the 6502 (every cycle is a memory access; some are dummy fetches) and covers dummy-fetch behavior for single-byte and accumulator addressing-mode instructions. Notes that single-byte instructions fetch PC+1 after the opcode and shows the accumulator-operation listing (ASL, LSR, ROL, ROR) with the associated opcode-fetch / PC+1 dummy fetch cycle diagram and the '(*) fetch after opcode' remark.",
+      "references": [
+        {
+          "chunk": "rra_ror_then_adc_instruction",
+          "topic": "Example undocumented instruction (RRA) whose behavior can be affected by internal memory fetches"
+        },
+        {
+          "chunk": "dummy_fetches_implied_instructions",
+          "topic": "See also: dummy fetch patterns for implied instructions (different single-byte behavior)"
+        }
+      ]
+    },
+    {
+      "start": 7021,
+      "end": 7061,
+      "name": "dummy_fetches_implied_instructions",
+      "description": "Continuation of unintended-memory-access coverage: lists implied (single-byte) instructions (CLC, CLD, CLI, CLV, DEX, DEY, INX, INY, NOP, SEC, SED, SEI, TAX, TAY, TSX, TXA, TYA) and presents their dummy-fetch cycle/bus activity layout (Address-Bus, Data-Bus, Read/Write columns) for implied addressing-mode instructions.",
+      "references": [
+        {
+          "chunk": "unintended_memory_accesses_and_dummy_fetches_accumulator",
+          "topic": "Accumulator-mode dummy fetch pattern and general introduction to dummy fetches"
+        },
+        {
+          "chunk": "rra_ror_then_adc_instruction",
+          "topic": "Related undocumented opcode whose semantics (ROR then ADC) may interact with internal fetch behavior"
+        }
+      ]
+    },
+    {
+      "start": 7062,
+      "end": 7063,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 7064,
+      "end": 7071,
+      "name": "unintended_memory_accesses_overview",
+      "description": "Overview of unintended memory accesses: explanation that the 6502 always performs a memory access each execution cycle (reads/writes), that some accesses are dummy and can cause side effects when interacting with I/O registers, and mention that dummy fetches and writes can be (ab)used.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "dummy writes in R-M-W instructions"
+        }
+      ]
+    },
+    {
+      "start": 7072,
+      "end": 7109,
+      "name": "dummy_fetch_single_byte_accumulator_ops",
+      "description": "Dummy fetch behaviour for single-byte accumulator operations (ASL, LSR, ROL, ROR acting on accumulator): shows that after opcode fetch the CPU performs a dummy fetch of PC+1 (byte after opcode). Includes the per-cycle address/data bus sequence and note 'fetch after opcode'.",
+      "references": [
+        {
+          "chunk": "dummy_fetch_implied_instructions",
+          "topic": "other implied-address dummy fetch behaviour"
+        }
+      ]
+    },
+    {
+      "start": 7110,
+      "end": 7171,
+      "name": "dummy_fetch_implied_instructions",
+      "description": "Dummy fetch behaviour for implied-mode instructions (CLC, CLD, CLI, CLV, DEX, DEY, INX, INY, NOP, SEC, SED, SEI, TAX, TAY, TSX, TXA, TYA, TXS): after opcode fetch the CPU does a dummy read of PC+1. Shows per-cycle sequence and notes \"fetch after opcode\".",
+      "references": [
+        {
+          "chunk": "dummy_fetch_single_byte_accumulator_ops",
+          "topic": "single-byte accumulator op fetch behaviour"
+        }
+      ]
+    },
+    {
+      "start": 7172,
+      "end": 7209,
+      "name": "dummy_fetch_stack_push",
+      "description": "Dummy fetch behaviour for stack push operations (PHA, PHP): after opcode fetch the CPU does a fetch of PC+1 then proceeds to push value to stack (cycle sequence shown). Notes that the PC+1 fetch is a dummy fetch.",
+      "references": [
+        {
+          "chunk": "stack_jsr_dummy_fetches",
+          "topic": "other stack-related dummy fetches (JSR/RTS/RTI)"
+        }
+      ]
+    },
+    {
+      "start": 7210,
+      "end": 7212,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 7213,
+      "end": 7213,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 7214,
+      "end": 7281,
+      "name": "stack_software_interrupts_brk",
+      "description": "BRK (software interrupt) cycle sequence: opcode fetch, dummy fetch of PC+1 (signature), pushes PC high/low and status to stack, then loads IRQ vector from $FFFE/$FFFF. Detailed cycle-by-cycle address/data bus actions and note about fetch after opcode.",
+      "references": [
+        {
+          "chunk": "hardware_interrupts_cycles",
+          "topic": "comparison with hardware interrupt sequence (IRQ/NMI/RESET)"
+        }
+      ]
+    },
+    {
+      "start": 7282,
+      "end": 7353,
+      "name": "stack_rti",
+      "description": "RTI (return from interrupt) cycle sequence: opcode fetch, dummy fetch from PC+1, read status and PC low/high from stack, with notes on dummy reads from PC+1 and S+0 and an example of acknowledging CIA interrupts by executing RTI at a CIA vector.",
+      "references": [
+        {
+          "chunk": "stack_software_interrupts_brk",
+          "topic": "BRK stack behaviour for comparison"
+        }
+      ]
+    },
+    {
+      "start": 7354,
+      "end": 7356,
+      "ignore": true,
+      "reason": "Page footer / spacing"
+    },
+    {
+      "start": 7357,
+      "end": 7429,
+      "name": "hardware_interrupts_cycles",
+      "description": "Cycle sequence for hardware interrupts (IRQ, NMI, RESET): shows the sequence of dummy fetches (PC, PC+1), pushes to stack, and vector fetches for low/high bytes. Notes specificities: dummy fetches and that RESET doesn't write to stack (R/W remains high), plus a visual6502 simulation link.",
+      "references": [
+        {
+          "chunk": "stack_software_interrupts_brk",
+          "topic": "BRK stack behaviour and vector fetches"
+        }
+      ]
+    },
+    {
+      "start": 7430,
+      "end": 7526,
+      "name": "indexed_instructions_dummy_read_on_page_cross",
+      "description": "Indexed addressing: description of dummy read behaviour for absolute indexed instructions when indexing causes a page crossing. Lists many instructions (ADC/AND/CMP/EOR/LDA/ORA/SBC/STA/LDX/LDY/TAS/SHX/SHY etc) and supplies a per-cycle diagram showing the dummy read from <AAH,AAL+IL> before the high byte is corrected. Notes to add a cycle on page-cross or write.",
+      "references": [
+        {
+          "chunk": "zeropage_indirect_y_indexed_rmw_unintended",
+          "topic": "related zero-page (indirect),y behaviour"
+        }
+      ]
+    },
+    {
+      "start": 7527,
+      "end": 7561,
+      "name": "examples_using_indexed_dummy_read",
+      "description": "Practical examples using the dummy-read behaviour of absolute indexed accesses: acknowledging both CIA interrupts with a single LDA $DC1D,X, 5-cycle-wide raster splits using STA/LDX/LDY sequences, and feeding VIC sprite pattern pipe using STA VIC_REG,X timed to DMA cycles. Includes testcode references.",
+      "references": [
+        {
+          "chunk": "indexed_instructions_dummy_read_on_page_cross",
+          "topic": "exploits of the dummy read on page crossing"
+        },
+        {
+          "chunk": "vicii_sprite_fetch_examples",
+          "topic": "VIC-II sprite fetch timing (external, not provided here)"
+        }
+      ]
+    },
+    {
+      "start": 7562,
+      "end": 7564,
+      "ignore": true,
+      "reason": "Page number and form-feed markers (non-technical formatting)."
+    },
+    {
+      "start": 7565,
+      "end": 7636,
+      "name": "zeropage_indirect_y_indexed_normal",
+      "description": "Zeropage Indirect Y Indexed (normal, non-RMW) per-cycle behaviour for ADC/STA/AND/CMP/EOR/LDA/ORA/SBC/LAX and related instructions: shows the sequence PC, PC+1 (offset), DO, DO+1 (abs high), dummy/corrected read <AAH,AAL+Y>, and the data cycle with note to add a cycle for page-cross or write.",
+      "references": [
+        {
+          "chunk": "zeropage_indirect_y_indexed_rmw_unintended",
+          "topic": "unintended R-M-W variants and their similar cycles"
+        }
+      ]
+    },
+    {
+      "start": 7637,
+      "end": 7710,
+      "name": "zp_indexed_instructions_dummy_fetch",
+      "description": "Zero-page indexed instruction behaviour: explains that ZP-indexed instructions perform a dummy fetch from the zero-page address before adding the index. Lists example instructions (ADC zp,X STY zp,X AND zp,X CMP zp,X EOR zp,X etc) and shows the per-cycle sequence including the dummy DO fetch and subsequent data read/write.",
+      "references": [
+        {
+          "chunk": "zeropage_x_indexed_indirect_legal",
+          "topic": "zp,x indirect vs direct differences"
+        }
+      ]
+    },
+    {
+      "start": 7711,
+      "end": 7792,
+      "name": "zeropage_x_indexed_indirect_normal",
+      "description": "Zeropage X Indexed Indirect (normal) cycles for ADC/STA/AND/CMP/EOR/LDA etc: shows the PC, PC+1 (offset), dummy DO fetch (before index added), DO+X => absolute low/high, and final data cycle. Provides a simulation link. Notes dummy fetch from direct offset.",
+      "references": [
+        {
+          "chunk": "zeropage_x_indexed_indirect_rmw_unintended",
+          "topic": "related R-M-W unintended variants"
+        }
+      ]
+    },
+    {
+      "start": 7793,
+      "end": 7852,
+      "name": "stack_jsr_dummy_fetches",
+      "description": "JSR (absolute) cycle behaviour: opcode fetch, PC+1 new PC low fetch, dummy fetch from stack, push PC high to stack, push PC low to stack, and final fetch of new PC high. Notes dummy fetch from stack and per-cycle sequencing.",
+      "references": [
+        {
+          "chunk": "stack_rts_dummy_fetches",
+          "topic": "RTS stack behaviour for comparison"
+        }
+      ]
+    },
+    {
+      "start": 7853,
+      "end": 7855,
+      "ignore": true,
+      "reason": "Page footer/form-feed (non-technical)."
+    },
+    {
+      "start": 7856,
+      "end": 7916,
+      "name": "stack_rts_dummy_fetches",
+      "description": "RTS (return from subroutine) cycle behaviour: opcode fetch, dummy fetch PC+1, dummy fetch from stack, read new PC-1 low/high from stack, final dummy fetch from (new PC-1) target address. Notes which fetches are dummy and per-cycle sequence.",
+      "references": [
+        {
+          "chunk": "stack_jsr_dummy_fetches",
+          "topic": "JSR push behaviour comparison"
+        }
+      ]
+    },
+    {
+      "start": 7917,
+      "end": 7964,
+      "name": "stack_pull_dummy_fetches",
+      "description": "Pull operations (PLA, PLP) cycle behaviour: opcode fetch, dummy fetch PC+1, dummy fetch from stack, actual pull from stack and final read of pulled value with sequence of cycles and notes on dummy fetches.",
+      "references": [
+        {
+          "chunk": "stack_rts_dummy_fetches",
+          "topic": "RTS uses similar dummy stack fetches"
+        }
+      ]
+    },
+    {
+      "start": 7965,
+      "end": 8022,
+      "name": "branch_dummy_reads",
+      "description": "Branch instruction dummy-read behaviour: opcode fetch, read of offset (PC+1), dummy read of PC+2, and additional cycles when branch is taken or crosses page boundaries. Shows per-cycle addresses and conditions for extra dummy reads.",
+      "references": [
+        {
+          "chunk": "indexed_instructions_dummy_read_on_page_cross",
+          "topic": "page crossing causes dummy reads in indexed modes"
+        }
+      ]
+    },
+    {
+      "start": 8023,
+      "end": 8024,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 8025,
+      "end": 8108,
+      "name": "read_modify_write_dummy_write_behavior",
+      "description": "Read-Modify-Write (R-M-W) dummy-write behaviour: R-M-W instructions read the address, perform an unmodified write-back (dummy write of the original value) then write the modified value. Provides per-cycle timing for absolute R-M-W instructions (ASL/DEC/INC/ISC/LSR/ROL/ROR/RRA/SLO/SRE/DCP/RLA etc) and notes that the unmodified original is written back before the modified data.",
+      "references": [
+        {
+          "chunk": "ghostbyte_under_rom",
+          "topic": "using R-M-W dummy writes to affect ROM/underlying RAM (ghostbyte)"
+        },
+        {
+          "chunk": "start_reu_transfer_with_rmw",
+          "topic": "starting REU transfer via R-M-W dummy write"
+        }
+      ]
+    },
+    {
+      "start": 8109,
+      "end": 8116,
+      "name": "example_acknowledge_vicii_interrupt_with_rmw",
+      "description": "Example: acknowledge a VIC-II interrupt using any R-M-W instruction instead of LDA/STA; demonstrates that INC $D019 will perform the required read/write sequence to acknowledge the interrupt.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "R-M-W dummy write effect used to acknowledge I/O"
+        }
+      ]
+    },
+    {
+      "start": 8117,
+      "end": 8120,
+      "name": "example_acknowledge_and_disable_timer_interrupt",
+      "description": "Example showing DEC $DC0D after Timer A IRQ will acknowledge and disable the timer IRQ (acknowledge and stop further ones) by using an R-M-W instruction on the timer control register.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "using R-M-W to write to I/O registers"
+        }
+      ]
+    },
+    {
+      "start": 8121,
+      "end": 8124,
+      "ignore": true,
+      "reason": "Page footer/form-feed between examples (non-technical)."
+    },
+    {
+      "start": 8125,
+      "end": 8135,
+      "name": "example_write_two_values_to_io_one_cycle_apart",
+      "description": "Example (Fred Gray music routine): shows LDA #$40; STA $D404; INC $D404 toggles a SID control bit by using R-M-W behaviour to write two values one cycle apart. Also suggests using INC $D020 to create 'grey dots' spaced 8 pixels apart.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "R-M-W timing exploited to produce two writes in quick succession"
+        }
+      ]
+    },
+    {
+      "start": 8136,
+      "end": 8234,
+      "name": "ghostbyte_under_rom_and_pixel_timing",
+      "description": "Detailed example 'ghostbyte under ROM': when reading from ROM the CPU reads ROM, but writing falls through to RAM beneath ROM. Using R-M-W instructions you can write two values to RAM one cycle apart where the first write isn't necessarily the original value. Discusses limitations (values determined by ROM content) and gives possibilities for pixel/chars timing, including a large table of example byte patterns and discussion of using this for precise rendering tricks.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "R-M-W dummy writes and ghostbyte writes"
+        },
+        {
+          "chunk": "vicii_sprite_fetch_examples",
+          "topic": "VIC-II sprite fetch timing (external reference)"
+        }
+      ]
+    },
+    {
+      "start": 8235,
+      "end": 8249,
+      "name": "start_reu_transfer_with_rmw",
+      "description": "Example: starting a REU transfer by writing to $FF00. Instead of LDA/STA $FF00 one can use INC $FF00; the dummy write causes the REU to seize the bus and the second write never reaches RAM. Notes this saves three cycles and references test programs.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "R-M-W dummy write interaction with REU"
+        }
+      ]
+    },
+    {
+      "start": 8250,
+      "end": 8272,
+      "name": "bus_control_rdy_aec_vic_reu",
+      "description": "Discussion of CPU control inputs (/RDY and /AEC) and VIC/REU interactions: explains how RDY pauses CPU on read cycles, AEC disconnects CPU from buses, how VIC uses BA and AEC to halt CPU during badlines and sprite fetches, and how the REU monitors BA and uses /DMA to pull CPU off the bus, including consequences for R-M-W cycles.",
+      "references": [
+        {
+          "chunk": "start_reu_transfer_with_rmw",
+          "topic": "how REU takeover interacts with R-M-W dummy writes"
+        }
+      ]
+    },
+    {
+      "start": 8273,
+      "end": 8343,
+      "name": "zeropage_rmw_dummy_writes",
+      "description": "Zeropage (R-M-W) instruction timing: lists ASL/DEC/INC/ISC/LSR/ROL/ROR/RRA etc on zero page and shows the per-cycle sequence (opcode fetch, PC+1, absolute low, read old data, dummy write of old data, final write of new data). Notes unmodified original is written back during dummy write.",
+      "references": [
+        {
+          "chunk": "read_modify_write_dummy_write_behavior",
+          "topic": "general R-M-W behaviour and dummy write consequences"
+        }
+      ]
+    },
+    {
+      "start": 8344,
+      "end": 8344,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 8345,
+      "end": 8428,
+      "name": "indexed_read_modify_write_absx",
+      "description": "Indexed Read-Modify-Write behaviour for Absolute X Indexed forms: ASL/DEC/INC/LSR/ROL/ROR/DCP/ISC etc on abs,X. Shows the per-cycle sequence including dummy fetch from target address before high byte corrected on page-cross, the unmodified data write-back, and the final write of modified data. Notes dummy fetch and unmodified write-back semantics.",
+      "references": [
+        {
+          "chunk": "unintended_addressing_modes_absolute_x_rmw",
+          "topic": "unintended abs,X R-M-W opcodes that use same timing"
+        }
+      ]
+    },
+    {
+      "start": 8429,
+      "end": 8431,
+      "ignore": true,
+      "reason": "Page footer/form-feed separating sections (non-technical)."
+    },
+    {
+      "start": 8432,
+      "end": 8506,
+      "name": "absolute_y_indexed_rmw_section",
+      "description": "Absolute Y Indexed (R-M-W) timing: DCP/ISC/RRA/RLA/SLO/SRE on abs,Y with per-cycle diagram (opcode fetch, absolute address low/high, dummy read <AAH,AAL+Y> prior to high-byte correction, old data reads, unmodified write-back, final write). Includes visual6502 simulation link and notes.",
+      "references": [
+        {
+          "chunk": "unintended_addressing_modes_absolute_y_rmw",
+          "topic": "unintended abs,Y opcodes and timing"
+        }
+      ]
+    },
+    {
+      "start": 8507,
+      "end": 8582,
+      "name": "zeropage_x_indexed_rmw",
+      "description": "Zero-page X indexed (R-M-W) timing: ASL/DEC/INC/ISC/LSR/ROL/ROR/RRA etc on zp,X. Shows the per-cycle sequence including dummy fetch from direct offset before the index was added, then reads/writes at DO+X, and unmodified data write-back before final write. Notes dummy fetch and unmodified write-back semantics.",
+      "references": [
+        {
+          "chunk": "zeropage_x_indexed_indirect_rmw_unintended",
+          "topic": "zp,X indirect R-M-W unintended variants"
+        }
+      ]
+    },
+    {
+      "start": 8583,
+      "end": 8586,
+      "ignore": true,
+      "reason": "Page footer/form-feed (non-technical)."
+    },
+    {
+      "start": 8587,
+      "end": 8656,
+      "name": "zp_indirect_y_rmw_cycle_timeline",
+      "description": "Cycle-by-cycle read/write timeline for a Zeropage Indirect,Y read-modify-write sequence. Covers the data-bus read/write columns, program counter fetches, direct offset fetch, dummy read before index addition, DO+X low/high address fetches, reads of old data and the dummy/unmodified write-back of old data. Includes the simulation link and the two footnotes explaining the dummy read and write-back behaviour.",
+      "references": [
+        {
+          "chunk": "unintended_bugs_and_quirks_zeropage_indirect_interrupts",
+          "topic": "Context: follows the 'Unintended bugs and quirks' chapter which discusses related addressing and interrupt behaviours"
+        },
+        {
+          "chunk": "opcode_naming_in_different_assemblers_matrix",
+          "topic": "Related: many of the R-M-W undocumented opcodes listed in the opcode matrix use this cycle behaviour"
+        }
+      ]
+    },
+    {
+      "start": 8657,
+      "end": 8707,
+      "name": "unintended_bugs_and_quirks_zeropage_indirect_interrupts",
+      "description": "Chapter 'Unintended bugs and quirks'. Contains: explanation that indexed-zeropage addressing modes wrap within page and cannot cross into the next page (examples with LDX/LDA and indirect forms), indirect JMP page-wrap behaviour (JMP ($C0FF) example), note that interrupts push status but do not modify the decimal flag (handlers must manage decimal flag explicitly), and the behaviour of the Break (B) flag (always set in status byte during normal execution; distinguishing BRK vs hardware interrupts requires inspecting the pushed status on the stack).",
+      "references": [
+        {
+          "chunk": "zp_indirect_y_rmw_cycle_timeline",
+          "topic": "Related cycle behaviour for R-M-W opcodes which can be affected by addressing quirks"
+        },
+        {
+          "chunk": "opcode_naming_in_different_assemblers_matrix",
+          "topic": "Reference: opcode names and usage elsewhere in the appendix"
+        }
+      ]
+    },
+    {
+      "start": 8708,
+      "end": 8721,
+      "name": "opcode_naming_table_header",
+      "description": "Appendix header and column labels for the opcode naming matrix. Contains the title 'Opcode naming in different Assemblers', the addressing-mode column headings (imp, imm, zp, zpx, zpy, izx, izy, abs, abx, aby, ind, rel) and the assembler column labels (KickAss, Acme, ca65, dasm, 64tass). This node explains the table layout used by the following mnemonic rows.",
+      "references": [
+        {
+          "chunk": "slo_mnemonic_mapping",
+          "topic": "SLO mnemonic and opcode bytes (first mnemonic in the table)"
+        },
+        {
+          "chunk": "rla_mnemonic_mapping",
+          "topic": "RLA mnemonic (next row)"
+        }
+      ]
+    },
+    {
+      "start": 8722,
+      "end": 8741,
+      "name": "slo_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic SLO across multiple assemblers. Lists the opcode byte values for each addressing mode column for SLO as represented in KickAss, Acme, ca65, dasm and 64tass (including variants such as $07, $17, $03, $13, $0F, $1F, $1B and repeated assembler-specific entries).",
+      "references": [
+        {
+          "chunk": "opcode_naming_table_header",
+          "topic": "table format and assembler columns"
+        },
+        {
+          "chunk": "rla_mnemonic_mapping",
+          "topic": "next related illegal opcode RLA"
+        }
+      ]
+    },
+    {
+      "start": 8742,
+      "end": 8761,
+      "name": "rla_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic RLA across multiple assemblers. Shows opcode bytes for RLA in the addressing-mode columns (examples include $27, $37, $23, $33, $2F, $3F, $3B and other assembler-specific forms).",
+      "references": [
+        {
+          "chunk": "slo_mnemonic_mapping",
+          "topic": "previous mnemonic (SLO)"
+        },
+        {
+          "chunk": "sre_mnemonic_mapping",
+          "topic": "next related illegal opcode SRE"
+        }
+      ]
+    },
+    {
+      "start": 8762,
+      "end": 8781,
+      "name": "sre_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic SRE as named by various assemblers. Provides opcode byte listings for multiple addressing modes and assembler mnemonics (examples include $47, $57, $43, $53, $4F, $5F, $5B, and repeated entries where applicable).",
+      "references": [
+        {
+          "chunk": "rla_mnemonic_mapping",
+          "topic": "previous mnemonic (RLA)"
+        },
+        {
+          "chunk": "rra_mnemonic_mapping",
+          "topic": "next related illegal opcode RRA"
+        }
+      ]
+    },
+    {
+      "start": 8782,
+      "end": 8801,
+      "name": "rra_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic RRA from multiple assemblers. Contains opcode byte values by addressing mode (examples include $67, $77, $63, $73, $6F, $7F, $7B and other assembler-specific forms).",
+      "references": [
+        {
+          "chunk": "sre_mnemonic_mapping",
+          "topic": "previous mnemonic (SRE)"
+        },
+        {
+          "chunk": "sax_mnemonic_mapping",
+          "topic": "next group (SAX)"
+        }
+      ]
+    },
+    {
+      "start": 8802,
+      "end": 8817,
+      "name": "sax_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic SAX as used by various assemblers. Lists opcode bytes for SAX across addressing modes (including entries such as $87, $97, $83 and repeated forms) and shows assembler naming differences.",
+      "references": [
+        {
+          "chunk": "rra_mnemonic_mapping",
+          "topic": "previous mnemonic (RRA)"
+        },
+        {
+          "chunk": "lax_lax_mnemonic_mapping",
+          "topic": "next group (LAX)"
+        }
+      ]
+    },
+    {
+      "start": 8818,
+      "end": 8835,
+      "name": "lax_lax_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic LAX (and related LXA) across assemblers. Shows opcode byte values for different addressing modes (examples: $A7, $B7, $A3, $B3, $AF, $BF) and how assemblers name and represent LAX/LXA variants.",
+      "references": [
+        {
+          "chunk": "sax_mnemonic_mapping",
+          "topic": "previous mnemonic (SAX)"
+        },
+        {
+          "chunk": "dcp_dcp_mnemonic_mapping",
+          "topic": "next group (DCP)"
+        }
+      ]
+    },
+    {
+      "start": 8836,
+      "end": 8855,
+      "name": "dcp_dcp_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic DCP (also sometimes called DCM) across assemblers. Provides opcode byte values for the addressing modes as represented by different assemblers (examples include $C7, $D7, $C3, $D3, $CF, $DF, $DB and repeated assembler entries).",
+      "references": [
+        {
+          "chunk": "lax_lax_mnemonic_mapping",
+          "topic": "previous mnemonic (LAX)"
+        },
+        {
+          "chunk": "isc_isc_mnemonic_mapping",
+          "topic": "next group (ISC/ISB/INS)"
+        }
+      ]
+    },
+    {
+      "start": 8856,
+      "end": 8875,
+      "name": "isc_isc_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic ISC (also listed as ISB or INS in some assemblers). Lists opcode bytes for ISC across addressing modes and notes alternative assembler mnemonics (examples: $E7, $F7, $E3, $F3, $EF, $FF, $FB and variants).",
+      "references": [
+        {
+          "chunk": "dcp_dcp_mnemonic_mapping",
+          "topic": "previous mnemonic (DCP)"
+        },
+        {
+          "chunk": "anc_anc_mnemonic_mapping",
+          "topic": "next group (ANC)"
+        }
+      ]
+    },
+    {
+      "start": 8876,
+      "end": 8897,
+      "name": "anc_anc_mnemonic_mapping",
+      "description": "Table rows for the ANC mnemonic (and variants) used by assemblers. Shows opcode byte usages and noted variants such as $8F, $0B, $2B and mentions an ANC2 variant. Covers how ANC is presented across different assemblers and addressing modes.",
+      "references": [
+        {
+          "chunk": "isc_isc_mnemonic_mapping",
+          "topic": "previous mnemonic (ISC)"
+        },
+        {
+          "chunk": "alr_alr_mnemonic_mapping",
+          "topic": "next group (ALR)"
+        }
+      ]
+    },
+    {
+      "start": 8898,
+      "end": 8911,
+      "name": "alr_alr_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic ALR (also called ASR in some assemblers). Lists opcode byte values for ALR across addressing modes (example includes $4B) and shows assembler naming differences (ALR, ASR).",
+      "references": [
+        {
+          "chunk": "anc_anc_mnemonic_mapping",
+          "topic": "previous mnemonic (ANC)"
+        },
+        {
+          "chunk": "arr_arr_mnemonic_mapping",
+          "topic": "next group (ARR)"
+        }
+      ]
+    },
+    {
+      "start": 8912,
+      "end": 8925,
+      "name": "arr_arr_mnemonic_mapping",
+      "description": "Table rows for the undocumented mnemonic ARR as represented by various assemblers. Provides opcode byte listings (including $6B and other forms) for different addressing modes and shows assembler naming instances.",
+      "references": [
+        {
+          "chunk": "alr_alr_mnemonic_mapping",
+          "topic": "previous mnemonic (ALR)"
+        },
+        {
+          "chunk": "sbx_axs_mnemonics",
+          "topic": "next related group (SBX / AXS)"
+        }
+      ]
+    },
+    {
+      "start": 8926,
+      "end": 8939,
+      "name": "sbx_axs_mnemonics",
+      "description": "Table rows covering the SBX and AXS mnemonics and their assembler-specific names. Lists opcode bytes for these related undocumented operations (examples include $CB and other forms) and shows how different assemblers label the same opcode as SBX or AXS.",
+      "references": [
+        {
+          "chunk": "arr_arr_mnemonic_mapping",
+          "topic": "previous mnemonic (ARR)"
+        },
+        {
+          "chunk": "sbc_sbc_mnemonic",
+          "topic": "next related illegal opcode (SBC)"
+        }
+      ]
+    },
+    {
+      "start": 8940,
+      "end": 8943,
+      "name": "sbc_sbc_mnemonic",
+      "description": "Row for the SBC undocumented variant (noted as $EB here). Lists the assembler naming for this SBC-like illegal opcode and its opcode byte value in the table.",
+      "references": [
+        {
+          "chunk": "sbx_axs_mnemonics",
+          "topic": "previous group (SBX/AXS)"
+        },
+        {
+          "chunk": "sbc2_ahx_sha_group",
+          "topic": "next group (SBC2, AHX, SHA)"
+        }
+      ]
+    },
+    {
+      "start": 8944,
+      "end": 8955,
+      "name": "sbc2_ahx_sha_group",
+      "description": "Rows covering SBC2 and AHX and the SHA family. Shows assembler-specific mnemonics and opcode byte values (SBC2 entry, AHX entry, multiple SHA entries and a combined 'AHX, SHA' notation). Documents how these uncommon illegal opcodes are named across different assemblers.",
+      "references": [
+        {
+          "chunk": "sbc_sbc_mnemonic",
+          "topic": "previous SBC entry"
+        },
+        {
+          "chunk": "shy_shy_mnemonic",
+          "topic": "next related family (SHY)"
+        }
+      ]
+    },
+    {
+      "start": 8956,
+      "end": 8974,
+      "name": "shy_shy_mnemonic",
+      "description": "Rows for SHY (and related entries). Lists opcode bytes for SHY across assemblers (including references to $93, $9F, $9C where applicable) and shows how SHY is represented in the table.",
+      "references": [
+        {
+          "chunk": "sbc2_ahx_sha_group",
+          "topic": "previous group (SBC2/AHX/SHA)"
+        },
+        {
+          "chunk": "shx_shx_mnemonic",
+          "topic": "next related family (SHX)"
+        }
+      ]
+    },
+    {
+      "start": 8975,
+      "end": 8988,
+      "name": "shx_shx_mnemonic",
+      "description": "Rows for SHX and its assembler variants. Lists opcode bytes for SHX across addressing modes and shows multiple assembler entries for SHX (including $9E and other forms).",
+      "references": [
+        {
+          "chunk": "shy_shy_mnemonic",
+          "topic": "previous group (SHY)"
+        },
+        {
+          "chunk": "tas_shs_mnemonics",
+          "topic": "next related group (TAS / SHS)"
+        }
+      ]
+    },
+    {
+      "start": 8989,
+      "end": 9002,
+      "name": "tas_shs_mnemonics",
+      "description": "Rows for the TAS mnemonic and the SHS variant. Provides opcode byte values (for example $9B and related bytes) and shows combined assembler notations 'TAS, SHS' where applicable.",
+      "references": [
+        {
+          "chunk": "shx_shx_mnemonic",
+          "topic": "previous group (SHX)"
+        },
+        {
+          "chunk": "las_las_mnemonic",
+          "topic": "next group (LAS)"
+        }
+      ]
+    },
+    {
+      "start": 9003,
+      "end": 9016,
+      "name": "las_las_mnemonic",
+      "description": "Rows for the LAS mnemonic and its assembler variants (also shown as LAE or LDS in some assemblers). Lists opcode byte values (example $BB and other variants) and documents how LAS is represented across assemblers and addressing modes.",
+      "references": [
+        {
+          "chunk": "tas_shs_mnemonics",
+          "topic": "previous group (TAS/SHS)"
+        },
+        {
+          "chunk": "lax_lxa_variants",
+          "topic": "adjacent LAX / LXA variants"
+        }
+      ]
+    },
+    {
+      "start": 9017,
+      "end": 9030,
+      "name": "lax_lxa_variants",
+      "description": "Additional rows showing LAX / LXA variants and assembler names. Covers further assembler-specific labels for LAX/LXA (including $AB and other forms) and how they appear across addressing modes.",
+      "references": [
+        {
+          "chunk": "las_las_mnemonic",
+          "topic": "previous group (LAS)"
+        },
+        {
+          "chunk": "ane_xaa_mnemonics",
+          "topic": "next group (ANE / XAA)"
+        }
+      ]
+    },
+    {
+      "start": 9031,
+      "end": 9044,
+      "name": "ane_xaa_mnemonics",
+      "description": "Rows for the ANE mnemonic and the related XAA name used by some assemblers. Lists opcode byte values (example $8B and related entries) and shows how ANE/XAA variants are named across assemblers and addressing modes.",
+      "references": [
+        {
+          "chunk": "lax_lxa_variants",
+          "topic": "previous LAX/LXA variants"
+        },
+        {
+          "chunk": "nops_tops_dops_and_jam",
+          "topic": "following section on NOP/TOP/DOP/JAM opcode variants"
+        }
+      ]
+    },
+    {
+      "start": 9045,
+      "end": 9136,
+      "name": "nops_tops_dops_and_jam",
+      "description": "Rows covering single- and multi-byte NOP variants (NOP, TOP, DOP), the many assembler mnemonics used for harmless illegal opcodes, and the JAM (CPU lockup) opcodes. This node lists numerous opcode byte values used as NOPs or illegal NOP-like operations across addressing modes and assemblers (examples include $0C, $1C, $80, $04, $14, $1A, $3A, $82, $44, $34, $3C, $5A, $C2, $64, $54, $5C, $7A, $E2, $74, $7C, $DA, $89, $D4, $DC, $FA, $F4, $FC and the JAM opcodes such as $02, $12, $22, $32, $42, $52, $62, $72, $92, $B2, $D2, $F2). It documents how different assemblers label these bytes (NOP, TOP, DOP, JAM) and shows grouped byte-lists for each variant.",
+      "references": [
+        {
+          "chunk": "ane_xaa_mnemonics",
+          "topic": "previous group (ANE/XAA)"
+        },
+        {
+          "chunk": "opcode_naming_table_header",
+          "topic": "table format and addressing-mode columns"
+        }
+      ]
+    },
+    {
+      "start": 9137,
+      "end": 9217,
+      "name": "combined_examples_misc_tricks",
+      "description": "Combined examples and small tricks using undocumented opcodes. Includes: negating a 16-bit number using LAX/SBX/SBC, a 'smart addition' trick using LAX/SBX to save cycles, a fast method to multiply an 8-bit index by 8 (using LAX/AND/SAX stores) to compute 16-bit offsets, and a sequence to read and clear the rightmost set bit in memory (using LAX/DEX/SAX/EOR).",
+      "references": [
+        {
+          "chunk": "opcode_naming_in_different_assemblers_matrix",
+          "topic": "Uses mnemonics such as LAX and SBX from the opcode matrix"
+        },
+        {
+          "chunk": "six_sprites_over_fli_routines",
+          "topic": "The 6-sprites FLI routine (next) uses similar undocumented R-M-W opcodes and side-effects"
+        }
+      ]
+    },
+    {
+      "start": 9218,
+      "end": 9293,
+      "name": "six_sprites_over_fli_initial_variant",
+      "description": "Introduction and the first full assembly listing for the '6 sprites over FLI' routine (as used in 'Darwin'). Explains the use of undocumented Read-Modify-Write opcodes to produce side-effects on the accumulator to meet tight cycle constraints, notes the register and hardware initial values, and provides the step-by-step instruction sequence for the variant that begins with A=$A0 (includes per-instruction cycle counts, effective values written, and accumulator transformations up to the page marker).",
+      "references": [
+        {
+          "chunk": "six_sprites_over_fli_alternate_and_repetition",
+          "topic": "shows how this block is repeated across the screen and provides the alternate variant starting with A=$20"
+        }
+      ]
+    },
+    {
+      "start": 9294,
+      "end": 9364,
+      "name": "six_sprites_over_fli_alternate_and_repetition",
+      "description": "Continuation describing how the block is repeated every 8 lines of the graphics area, and the alternate full assembly listing for the second variant which starts with A=$20. Includes the per-instruction comments, cycle counts, effective accumulator changes for the alternate pass, and the final note restoring initial values and page footer.",
+      "references": [
+        {
+          "chunk": "six_sprites_over_fli_initial_variant",
+          "topic": "contains the original variant starting with A=$A0 and the core explanation of using undocumented RMW opcodes for side-effects"
+        }
+      ]
+    },
+    {
+      "start": 9365,
+      "end": 9432,
+      "name": "blackmail_fli_overview_and_common_prologue",
+      "description": "Overview of Blackmail's \"FLI Graph v2.2\" FLI display trick and the display-routine requirements. Explains that the VIC-II will fetch colour-ram data from the open bus in the first 3 columns, so the opcode placed directly after the store to $D011 determines the colour. Lists the per-line requirements (23 cycles, change $D018, force a badline via $D011 at a fixed cycle, place a specific opcode after the $D011 store to set colour-ram fetch opcode, change background colour in $D021). Presents the common prologue sequence used each line: LDX zp (value for $D011), LDA #<screen> (value for $D018), STA $D018, STX $D011, and the cycle counts (13 cycles total). Notes that the following per-opcode part uses opcodes from the $A* row (loads) and always takes 10 cycles; includes the small fix (using A=$0f..$7f) to make the LAX#imm variant work for all 16 colours.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_variants_0_black_to_3_cyan",
+          "topic": "Variants 0-3 (black, white, red, cyan) — opcode sequences and background writes"
+        },
+        {
+          "chunk": "blackmail_fli_variants_4_violet_to_7_yellow",
+          "topic": "Variants 4-7 (violet, green, blue, yellow) — opcode sequences and background writes"
+        },
+        {
+          "chunk": "blackmail_fli_variants_8_orange_to_9_brown",
+          "topic": "Variants 8-9 (orange, brown) — opcode sequences and background writes"
+        },
+        {
+          "chunk": "blackmail_fli_variants_a_lred_to_b_dgrey",
+          "topic": "Variants a-b (light red, dark grey) — opcode sequences and notes on LAX#imm"
+        },
+        {
+          "chunk": "blackmail_fli_variants_c_mgrey_to_f_lgrey",
+          "topic": "Variants c-f (mid-grey, light green, light blue, light grey) — absolute addressing variants"
+        }
+      ]
+    },
+    {
+      "start": 9433,
+      "end": 9490,
+      "name": "blackmail_fli_variants_0_black_to_3_cyan",
+      "description": "Detailed code sequences for opcode variants 0..3 used to set the colour fetched into colour-ram for the first 3 columns and to write the background colour to $D021. Covers: 0 (black) — LDY #<bg>, STY $D021, two NOPs; 1 (white) — LDA (zp,X), STA $D021; 2 (red) — LDX #<bg>, STX $D021, two NOPs; 3 (cyan) — LAX (zp,X), SAX $D021. Includes cycle counts and the comments showing how the fetched value is derived (e.g. ((background colour << 1) + $59) - ((line & 7) | $b8)). These sequences are the 10-cycle tail that follows the common prologue and intentionally use $A* row load opcodes to control the open-bus colour fetch.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_overview_and_common_prologue",
+          "topic": "Overview and common prologue that precede these 10-cycle opcode variants"
+        },
+        {
+          "chunk": "blackmail_fli_variants_4_violet_to_7_yellow",
+          "topic": "Next set of opcode variants (4-7) continuing the per-nibble organisation"
+        }
+      ]
+    },
+    {
+      "start": 9491,
+      "end": 9552,
+      "name": "blackmail_fli_variants_4_violet_to_7_yellow",
+      "description": "Detailed code sequences for opcode variants 4..7 used to force specific colour-ram fetch opcodes and write the corresponding background colour to $D021. Covers: 4 (violet) — LDY zp, STY $D021, BIT $24; 5 (green) — LDA zp, STA $D021, BIT $24; 6 (blue) — LDX zp, STX $D021, BIT $24; 7 (yellow) — LAX zp, SAX $D021, BIT $24. Each variant shows opcode bytes, addressing modes (zero-page), writes to $D021 and the extra BIT $24 used in some sequences; includes cycle notes and the same intent of using $A* row loads to control the open-bus colour fetch.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_variants_0_black_to_3_cyan",
+          "topic": "Previous variants 0-3 (black through cyan) with similar structure"
+        },
+        {
+          "chunk": "blackmail_fli_variants_8_orange_to_9_brown",
+          "topic": "Next variants (8-9) which switch addressing/loads and keep the same pattern"
+        }
+      ]
+    },
+    {
+      "start": 9553,
+      "end": 9588,
+      "name": "blackmail_fli_variants_8_orange_to_9_brown",
+      "description": "Detailed code sequences for opcode variants 8 and 9. Covers: 8 (orange) — implied sequence using TAY then LDY #<bg>, STY $D021, plus NOPs; 9 (brown) — LDA #<bg>, STA $D021, NOPs. Includes the opcode bytes, the small 10-cycle tail structure, and the placement of NOPs to pad timing. Also includes surrounding page markers and spacing from the original listing. These variants continue the technique of selecting the opcode written immediately after the $D011 store to choose the open-bus colour.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_variants_4_violet_to_7_yellow",
+          "topic": "Previous variants 4-7 (violet through yellow)"
+        },
+        {
+          "chunk": "blackmail_fli_variants_a_lred_to_b_dgrey",
+          "topic": "Next variants a and b which use register transfers and immediate LAX"
+        }
+      ]
+    },
+    {
+      "start": 9589,
+      "end": 9633,
+      "name": "blackmail_fli_variants_a_lred_to_b_dgrey",
+      "description": "Detailed code sequences for variants a and b. Covers: a (light red) — TAX then LDX #<bg>, STX $D021 with NOPs; b (dark grey) — LAX #<bg> (LAX immediate variant) then SAX $D021 with NOPs. Includes the original code's note that using A=$08,$18...$78 made LAX#imm rely on bits of a 'magic constant', and documents the small fix (using A=$0f,$1f...$7f) to make lax#imm work for all 16 colours. Shows the opcode bytes and cycle padding used to meet the 10-cycle tail requirement.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_variants_8_orange_to_9_brown",
+          "topic": "Previous variants 8-9 (orange, brown)"
+        },
+        {
+          "chunk": "blackmail_fli_variants_c_mgrey_to_f_lgrey",
+          "topic": "Following variants c-f which use absolute addressing for background table lookups"
+        }
+      ]
+    },
+    {
+      "start": 9634,
+      "end": 9695,
+      "name": "blackmail_fli_variants_c_mgrey_to_f_lgrey",
+      "description": "Detailed code sequences for variants c..f which use absolute addressing to fetch background colour values and then write them to $D021. Covers: c (mid-grey) — LDY abs, STY $D021, NOP; d (light green) — LDA abs, STA $D021, NOP; e (light blue) — LDX abs, STX $D021, NOP; f (light grey) — LAX abs, SAX $D021, NOP. Each variant shows opcode bytes (abs addressing with a base like $03b0 + <background colour>), cycle counts and padding. This chunk completes the enumeration of all 16 per-nibble variants used in the Blackmail FLI trick.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_variants_a_lred_to_b_dgrey",
+          "topic": "Previous variants a-b and the LAX#imm note/fix"
+        },
+        {
+          "chunk": "blackmail_fli_overview_and_common_prologue",
+          "topic": "Overview and common prologue that precede these per-opcode tails"
+        }
+      ]
+    },
+    {
+      "start": 9696,
+      "end": 9733,
+      "name": "blackmail_tables_for_indirect_loads",
+      "description": "Tables used by the Blackmail FLI code. Lists the values read by indirect X-indexed loads and absolute loads ($03b0 + <background colour>), the byte values arranged in ranges ($b0..$bf etc.), and the address mappings for the indirect X-indexed loads. These tables are the data that the Blackmail FLI code reads to produce the desired colours and $D011 values.",
+      "references": [
+        {
+          "chunk": "blackmail_fli_display_trick",
+          "topic": "Direct data used by the Blackmail FLI instruction sequences"
+        }
+      ]
+    },
+    {
+      "start": 9734,
+      "end": 9825,
+      "name": "references_and_test_programs",
+      "description": "References and sources used to verify the document. Lists test-program collections (VICE test-programs), emulator test suites, test programs by named authors, specific demos and games that use undocumented opcodes (Blackmail FLI, Wizball, Spectipede, Turrican 3), historical opcode lists and wiki pages, forum threads and blog posts used for details, and archived visual6502 pages. Also notes that some example code snippets were borrowed from Codebase64 and other sources.",
+      "references": [
+        {
+          "chunk": "opcode_naming_in_different_assemblers_matrix",
+          "topic": "Some of the historical opcode matrices and external resources informed the appendix matrix"
+        },
+        {
+          "chunk": "wanted_contributions_and_open_issues",
+          "topic": "Lists areas where the authors request further verification and test-case porting (see Wanted)"
+        }
+      ]
+    },
+    {
+      "start": 9826,
+      "end": 9858,
+      "name": "acknowledgements_greets_and_intro_first_contributors",
+      "description": "Ignored (non-technical) acknowledgements section header and the first group of individual contributors: 'Greets and Thanks' followed by 0xF/Taquart, Marco Baye, AndroSID, Mist/R.O.L.E., Atomcode, Ninja/The Dreams, Bitbreaker/Oxyron, and NoobTracker/The Solution.",
+      "references": [
+        {
+          "chunk": "acknowledgements_contributors_christopher_to_ses",
+          "topic": "continues the alphabetical list of individual contributors"
+        },
+        {
+          "chunk": "acknowledgements_contributors_cyberbrain_to_tlr",
+          "topic": "follows with additional contributors"
+        },
+        {
+          "chunk": "acknowledgements_contributors_jac_to_closing_credits",
+          "topic": "contains the final contributors and closing lines"
+        }
+      ]
+    },
+    {
+      "start": 9859,
+      "end": 9898,
+      "name": "acknowledgements_contributors_christopher_to_ses",
+      "description": "Ignored (non-technical) acknowledgements listing contributors from ChristopherJam through S.E.S./Crest: ChristopherJam; Peiselulli/TRSI^Oxyron; Clint Gamlin; pwsoft; Color Bar; Quiss/Reflex; Copyfault/The Solution; Segher Boessenkool; Count Zero/Cyberpunx; S.E.S./Crest.",
+      "references": [
+        {
+          "chunk": "acknowledgements_greets_and_intro_first_contributors",
+          "topic": "preceding contributors and section header"
+        },
+        {
+          "chunk": "acknowledgements_contributors_cyberbrain_to_tlr",
+          "topic": "continues with the next set of contributors"
+        },
+        {
+          "chunk": "acknowledgements_contributors_jac_to_closing_credits",
+          "topic": "final contributors and closing credits"
+        }
+      ]
+    },
+    {
+      "start": 9899,
+      "end": 9939,
+      "name": "acknowledgements_contributors_cyberbrain_to_tlr",
+      "description": "Ignored (non-technical) acknowledgements listing contributors from Cyberbrain/Noname through TLR/VICE Team: Cyberbrain/Noname; Se7en/Digital Excess; Fungus/Nostalgia; Soci/Singular; Graham/Oxyron; Strobe/VICE Team; Geir Straume; SvOlli/XayaX; Hoogo/Padua; TLR/VICE Team.",
+      "references": [
+        {
+          "chunk": "acknowledgements_contributors_christopher_to_ses",
+          "topic": "previous block of contributors"
+        },
+        {
+          "chunk": "acknowledgements_greets_and_intro_first_contributors",
+          "topic": "section header and initial contributors"
+        },
+        {
+          "chunk": "acknowledgements_contributors_jac_to_closing_credits",
+          "topic": "final contributors and closing credits"
+        }
+      ]
+    },
+    {
+      "start": 9940,
+      "end": 9983,
+      "name": "acknowledgements_contributors_jac_to_closing_credits",
+      "description": "Ignored (non-technical) acknowledgements listing the final contributors and closing lines: JAC!; Unseen/VICE Team; Kabuto/Latency; Wil; Kakka; Wilfred Bos; Krill/Plush; Wolfgang Lorenz; LFT/Kryo; WoMo; plus the closing sentence '… and all contributors to Codebase64, Visual6502, VICE, and last not least the dark knights behind the scenes who shall remain unmentioned - you know who you are.' Includes the page footer '- 107 -'.",
+      "references": [
+        {
+          "chunk": "acknowledgements_contributors_cyberbrain_to_tlr",
+          "topic": "previous block of contributors"
+        },
+        {
+          "chunk": "acknowledgements_contributors_christopher_to_ses",
+          "topic": "earlier contributors in the list"
+        },
+        {
+          "chunk": "acknowledgements_greets_and_intro_first_contributors",
+          "topic": "section header and first contributors"
+        }
+      ]
+    },
+    {
+      "start": 9984,
+      "end": 10019,
+      "name": "wanted_contributions_and_open_issues",
+      "description": "Wanted / open issues and calls for contribution. Describes outstanding verification tasks (RDY dependency of ANE#imm and LAX#imm needing die-shot investigation), requests for more real-world examples, opcode page-boundary behaviour testing on different CPUs, ARR testing on disk drives, and requests for more code snippets demonstrating decimal mode, dummy memory access quirks, and porting tests to other 6502 variants and platforms.",
+      "references": [
+        {
+          "chunk": "references_and_test_programs",
+          "topic": "Provides links and test programs that can be used to reproduce/verify the wanted checks"
+        },
+        {
+          "chunk": "history_and_revisions",
+          "topic": "History contains prior changes and notes that motivated some of the wanted items"
+        }
+      ]
+    },
+    {
+      "start": 10020,
+      "end": 10027,
+      "name": "history_header_and_2024_v0_99",
+      "description": "IGNORED: Revision history header plus December 24th, 2024 (V0.99) entry. Notes: removed incorrect N/Z note for ANE#imm and LAX#imm (credit Geir Straume), fixed opcode $73 in opcode matrix (should be RRA, credit Kakka), updated ISC loopcounter example (credit Quiss), added 'set rightmost set bit to 0' example (credit Quiss).",
+      "references": [
+        {
+          "chunk": "history_2023_v0_98",
+          "topic": "next chronological revision (2023)"
+        },
+        {
+          "chunk": "history_overview",
+          "topic": "full revision history (meta)"
+        }
+      ]
+    },
+    {
+      "start": 10028,
+      "end": 10034,
+      "name": "history_2023_v0_98",
+      "description": "IGNORED: December 24th, 2023 (V0.98) entry. Added raster sync snippet (posted by Quiss), note on D flag not being cleared by interrupts (inspired by Fungus), note that B flag is always set (inspired by Fungus), and fixes to description of dummy fetches done by branches (credit Mac Bacon).",
+      "references": [
+        {
+          "chunk": "history_header_and_2024_v0_99",
+          "topic": "previous chronological revision (2024)"
+        },
+        {
+          "chunk": "history_2022_v0_97",
+          "topic": "next chronological revision (2022)"
+        }
+      ]
+    },
+    {
+      "start": 10035,
+      "end": 10042,
+      "name": "history_2022_v0_97",
+      "description": "IGNORED: December 24th, 2022 (V0.97) entry. Added DOP/TOP/LAX/DCP examples (Bitbreaker), fixed errors in Zeropage X Indexed Indirect and RTS access cycle tables (OldWoman37), corrected naming of LSB in RRA, added examples for simulating addressing modes for ISC/DCP/RRA/RLA/SRE/SLO (inspired by Bitbreaker), and added SBX example (inspired by Bitbreaker).",
+      "references": [
+        {
+          "chunk": "history_2023_v0_98",
+          "topic": "previous chronological revision (2023)"
+        },
+        {
+          "chunk": "history_2021_v0_96",
+          "topic": "next chronological revision (2021)"
+        }
+      ]
+    },
+    {
+      "start": 10043,
+      "end": 10051,
+      "name": "history_2021_v0_96",
+      "description": "IGNORED: December 24th, 2021 (V0.96) entry. Added note on 6507 CPU, parity example for SRE, indirect indexed decrement example for DCP, fixed LAX #imm note in Wizball (credit Atomcode), fixed execution cycle table for hardware interrupts and RTI (credit NoobTracker), and clarified SLO example (credit Strobe).",
+      "references": [
+        {
+          "chunk": "history_2022_v0_97",
+          "topic": "previous chronological revision (2022)"
+        },
+        {
+          "chunk": "history_2020_v0_95",
+          "topic": "next chronological revision (2020)"
+        }
+      ]
+    },
+    {
+      "start": 10052,
+      "end": 10061,
+      "name": "history_2020_v0_95",
+      "description": "IGNORED: December 24th, 2020 (V0.95) entry. Removed invalid RLA example, added chapter on unintended memory accesses, added opcode matrix with comments, noted LAX #imm in Wizball, added real-world notes on ANE#imm, added note on supposedly unstable NOPs, fixed spelling and links, added raster sync SHX/SHY examples, added alternate NOP mnemonics used on NES, and other proofreading fixes (credit Copyfault and Mac Bacon).",
+      "references": [
+        {
+          "chunk": "history_2021_v0_96",
+          "topic": "previous chronological revision (2021)"
+        },
+        {
+          "chunk": "history_2019_v0_94",
+          "topic": "next chronological revision (2019)"
+        }
+      ]
+    },
+    {
+      "start": 10062,
+      "end": 10075,
+      "name": "history_2019_v0_94",
+      "description": "IGNORED: December 24th, 2019 (V0.94) entry. Added detailed flag behaviour for some opcodes, updated ANE/LAX details, fixed carry flag description for ARR, clarified SHA/SHX/SHY/TAS unstable behavior and added tests, updated TAS example code, added more detailed decimal mode BCD fixup and flags behavior, cross-references to decimal mode chapter, added bug/quirk chapter, described 'Blackmail FLI' in combined examples, expanded opcode example coverage, added test program references, and sorted greetings.",
+      "references": [
+        {
+          "chunk": "history_2020_v0_95",
+          "topic": "previous chronological revision (2020)"
+        },
+        {
+          "chunk": "history_2018_v0_93",
+          "topic": "next chronological revision (2018)"
+        }
+      ]
+    },
+    {
+      "start": 10076,
+      "end": 10081,
+      "name": "history_2018_v0_93",
+      "description": "IGNORED: December 24th, 2018 (V0.93) entry. Added CPU flags naming description, expanded flag usage details in tables, added decimal mode notes, reordered sub-instructions in some descriptions for logical flow, noted RDY line dependency of ANE and LAX, and added proper section headers.",
+      "references": [
+        {
+          "chunk": "history_2019_v0_94",
+          "topic": "previous chronological revision (2019)"
+        },
+        {
+          "chunk": "history_2017_v0_92",
+          "topic": "next chronological revision (2017)"
+        }
+      ]
+    },
+    {
+      "start": 10082,
+      "end": 10089,
+      "name": "history_2017_v0_92_and_page_footer",
+      "description": "IGNORED: Page footer marker and December 24th, 2017 (V0.92) entry. Notes: added unusual mnemonics used by Ataricentric MAD-Assembler, typography recommendation to use 'Andale Mono' instead of 'Aerial Mono' to avoid broken ligatures, formatting fixes, and corrected description of page-crossing anomaly for the 'unstable address high byte' group.",
+      "references": [
+        {
+          "chunk": "history_2018_v0_93",
+          "topic": "previous chronological revision (2018)"
+        },
+        {
+          "chunk": "history_2016_v0_91",
+          "topic": "next chronological revision (2016)"
+        }
+      ]
+    },
+    {
+      "start": 10090,
+      "end": 10093,
+      "name": "history_2016_v0_91",
+      "description": "IGNORED: December 24th, 2016 (V0.91) entry. Minor fixes: typos corrected and a few more examples added.",
+      "references": [
+        {
+          "chunk": "history_2017_v0_92_and_page_footer",
+          "topic": "previous chronological revision (2017)"
+        },
+        {
+          "chunk": "history_2015_v0_9",
+          "topic": "next chronological revision (2015)"
+        }
+      ]
+    },
+    {
+      "start": 10094,
+      "end": 10101,
+      "name": "history_2015_v0_9",
+      "description": "IGNORED: December 24th, 2015 (V0.9) entry. Cosmetic fixes (justification), fixed reference links, added notes on ANE/LAX #imm usage, added chapter on unintended addressing modes, references to 64doc.txt tests, noted decimal flag effects for RRA and ISC, corrected ANE example, and added examples/explanations for RLA and LAS (credit Color Bar).",
+      "references": [
+        {
+          "chunk": "history_2016_v0_91",
+          "topic": "previous chronological revision (2016)"
+        },
+        {
+          "chunk": "history_2014_first_public_release",
+          "topic": "next chronological entry (2014 public release)"
+        }
+      ]
+    },
+    {
+      "start": 10102,
+      "end": 10105,
+      "name": "history_2014_first_public_release",
+      "description": "IGNORED: December 24th, 2014 entry marking the first public release of the document.",
+      "references": [
+        {
+          "chunk": "history_2015_v0_9",
+          "topic": "previous chronological revision (2015)"
+        },
+        {
+          "chunk": "history_2014_unreleased_november",
+          "topic": "related unreleased November 2014 note"
+        }
+      ]
+    },
+    {
+      "start": 10106,
+      "end": 10110,
+      "name": "history_2014_unreleased_november",
+      "description": "IGNORED: November 2014 (unreleased) note. The author cleaned up the document and had it proofread by multiple people prior to the first public release.",
+      "references": [
+        {
+          "chunk": "history_2014_first_public_release",
+          "topic": "subsequent public release (Dec 2014)"
+        },
+        {
+          "chunk": "history_2013_initial_notes",
+          "topic": "origin of the collected notes (2013)"
+        }
+      ]
+    },
+    {
+      "start": 10111,
+      "end": 10115,
+      "name": "history_2013_initial_notes",
+      "description": "IGNORED: 'some time 2013' entry. Notes that the author started collecting and pasting together various information about undocumented opcodes for personal use.",
+      "references": [
+        {
+          "chunk": "history_2014_unreleased_november",
+          "topic": "later cleanup and proofreading (Nov 2014)"
+        },
+        {
+          "chunk": "history_overview",
+          "topic": "complete revision history index"
+        }
+      ]
+    },
+    {
+      "start": 10116,
+      "end": 10238,
+      "name": "history_epigraph_and_footer_ignored",
+      "description": "IGNORED: Closing lines of the revision history section. Covers the epigraph line 'The Truth is out there', the page marker '- 110 -', a form-feed/page-break and the trailing footer/blank content through the end of the chunk (lines 10116-10238). This is a non-technical closing/footer block and should be excluded from semantic indexing of technical content.",
+      "references": [
+        {
+          "chunk": "revision_history",
+          "topic": "Main revision history entries and changelog preceding this footer"
+        }
+      ],
+      "no_refine": true
+    }
+  ],
+  "source_md5": "2e7b52b6be582afd91ed240989ffbb4c"
+}

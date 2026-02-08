@@ -1,0 +1,759 @@
+{
+  "source_file": "SID 6581 Programming Guide.txt",
+  "context": "SID 6581/8580 Sound Interface Device - Programming Guide",
+  "splits": [
+    {
+      "start": 1,
+      "end": 11,
+      "ignore": true,
+      "reason": "Title, document header and sources — metadata (non-technical)"
+    },
+    {
+      "start": 12,
+      "end": 34,
+      "name": "overview_and_capabilities",
+      "description": "High-level overview of the SID chip (designer, platforms) and capabilities: 3 voices, 4 waveforms, 16-bit frequency, 12-bit pulse width, ADSR envelopes, ring modulation, sync, 4-bit master volume, multi-mode filter, ADC paddle inputs, external audio input.",
+      "references": [
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "differences between 6581 and 8580"
+        },
+        {
+          "chunk": "complete_register_map_intro",
+          "topic": "register base address and mirror range"
+        }
+      ]
+    },
+    {
+      "start": 35,
+      "end": 63,
+      "name": "chip_variants_6581_8580",
+      "description": "Comparison of MOS 6581 vs MOS 8580: production years, process (NMOS vs HMOS-II), supply voltages, filter capacitor values, tonal differences, DC offset, digi playback quirk on 6581 and hardware mod for 8580, and 6581 sub-revisions R1/R2/R3/R4AR.",
+      "references": [
+        {
+          "chunk": "filter_resonance_and_characteristics",
+          "topic": "filter behavior differences (6581 vs 8580)"
+        },
+        {
+          "chunk": "sample_playback_digi_techniques",
+          "topic": "4-bit digi playback differences and resistor mod"
+        }
+      ]
+    },
+    {
+      "start": 64,
+      "end": 76,
+      "name": "complete_register_map_intro",
+      "description": "SID register base address $D400 (54272), mirror range $D400-$D7FF (32-byte mirror), voice register offsets (Voice1 $D400-$D406, Voice2 $D407-$D40D, Voice3 $D40E-$D414), and note that registers $D400-$D418 are write-only except $D419-$D41C.",
+      "references": [
+        {
+          "chunk": "voice1_registers",
+          "topic": "Voice register layout and addresses"
+        },
+        {
+          "chunk": "read_only_registers",
+          "topic": "which registers are readable ($D419-$D41C)"
+        }
+      ]
+    },
+    {
+      "start": 77,
+      "end": 133,
+      "name": "voice1_registers",
+      "description": "Voice 1 registers $D400-$D406: $D400 Frequency low byte, $D401 Frequency high byte (16-bit frequency, PAL/NTSC clocks and Fout calculation), $D402/$D403 Pulse Width (12-bit, PW% and special values), $D404 Control bits (waveform selects, TEST, RING MOD, SYNC, GATE), $D405 Attack/Decay (nibbles), $D406 Sustain/Release (nibbles). Notes on combined waveforms and LFSR lockup.",
+      "references": [
+        {
+          "chunk": "voice2_registers",
+          "topic": "identical layout for Voice 2"
+        },
+        {
+          "chunk": "waveforms_triangle",
+          "topic": "triangle waveform behavior and ring mod"
+        },
+        {
+          "chunk": "adsr_overview",
+          "topic": "ADSR rates and usage with GATE"
+        }
+      ]
+    },
+    {
+      "start": 134,
+      "end": 148,
+      "name": "voice2_registers",
+      "description": "Voice 2 registers $D407-$D40D: Frequency low/high ($D407/$D408), Pulse Width low/high ($D409/$D40A), Control register $D40B (bit 2 RING MOD modulates with Voice 1, bit 1 SYNC syncs with Voice 1; other bits same as Voice 1), $D40C Attack/Decay, $D40D Sustain/Release.",
+      "references": [
+        {
+          "chunk": "voice1_registers",
+          "topic": "same register layout pattern"
+        },
+        {
+          "chunk": "synchronization",
+          "topic": "voice pairing for SYNC and RING MOD"
+        }
+      ]
+    },
+    {
+      "start": 149,
+      "end": 163,
+      "name": "voice3_registers",
+      "description": "Voice 3 registers $D40E-$D414: Frequency low/high ($D40E/$D40F), Pulse Width low/high ($D410/$D411), Control register $D412 (bit 2 RING MOD modulates with Voice 2, bit 1 SYNC syncs with Voice 2), $D413 Attack/Decay, $D414 Sustain/Release. Voice 3 can be read out for modulation at $D41B/$D41C.",
+      "references": [
+        {
+          "chunk": "voice3_modulation_source",
+          "topic": "using Voice 3 oscillator/envelope as LFO"
+        },
+        {
+          "chunk": "read_only_registers",
+          "topic": "location of $D41B/$D41C readbacks"
+        }
+      ]
+    },
+    {
+      "start": 164,
+      "end": 209,
+      "name": "filter_registers_and_modes_overview",
+      "description": "Filter registers $D415-$D418: $D415 Filter cutoff low 3 bits, $D416 Filter cutoff high 8 bits (11-bit cutoff 0-2047, mapping differs 6581 vs 8580), $D417 Resonance (bits 7-4), external input route (bit 3) and voice routing bits (bits 0-2), $D418 Filter mode bits (mute voice 3 bit 7, HP bit6, BP bit5, LP bit4) and master volume (bits 3-0). Explains filter mode combinations and approximate cutoff ranges for 6581/8580.",
+      "references": [
+        {
+          "chunk": "filter_cutoff_frequency",
+          "topic": "detailed cutoff mapping and differences"
+        },
+        {
+          "chunk": "resonance_control",
+          "topic": "resonance behavior and self-oscillation (6581)"
+        },
+        {
+          "chunk": "pinout_reference",
+          "topic": "EXT IN pin and external audio routing"
+        }
+      ]
+    },
+    {
+      "start": 210,
+      "end": 234,
+      "name": "read_only_registers",
+      "description": "Readable SID registers $D419-$D41C: $D419 Paddle X (8-bit analog value), $D41A Paddle Y, $D41B Voice 3 oscillator output (upper 8 bits of waveform; saw: ramp 0-255, triangle: up/down, pulse: 0/255, noise: random), $D41C Voice 3 envelope output (ADSR envelope 0-255). Updated timing notes and typical usage for modulation.",
+      "references": [
+        {
+          "chunk": "voice3_modulation_source",
+          "topic": "using $D41B/$D41C for vibrato/tremolo/filter sweeps"
+        },
+        {
+          "chunk": "complete_register_map_intro",
+          "topic": "which registers are read-only vs write-only"
+        }
+      ]
+    },
+    {
+      "start": 235,
+      "end": 283,
+      "name": "adsr_overview",
+      "description": "ADSR envelope operation per voice: Attack (rise to peak), Decay (fall to Sustain level), Sustain (level while GATE=1), Release (fall to 0 when GATE=0). Notes on retrigger behavior. Includes timing table mapping ADSR nibble values (0-15) to approximate Attack/Decay/Release times and comments on PAL/NTSC variations and internal non-linear counters.",
+      "references": [
+        {
+          "chunk": "adsr_bug",
+          "topic": "known ADSR bug and workarounds"
+        },
+        {
+          "chunk": "voice1_registers",
+          "topic": "ADSR register encodings $D405/$D406"
+        }
+      ]
+    },
+    {
+      "start": 284,
+      "end": 297,
+      "name": "adsr_bug",
+      "description": "Description of the SID ADSR bug: internal rate counter can delay Attack when triggered during Release due to LFSR-based rate counter. Workarounds include setting GATE=0 then GATE=1 or 'hard restart' techniques to preset envelope state before retriggering.",
+      "references": [
+        {
+          "chunk": "adsr_overview",
+          "topic": "ADSR operation and timing table"
+        },
+        {
+          "chunk": "programming_initialization",
+          "topic": "initialization/hard restart techniques in player code"
+        }
+      ]
+    },
+    {
+      "start": 298,
+      "end": 301,
+      "name": "waveforms_section_header",
+      "description": "Section header introducing SID waveforms: triangle, sawtooth, pulse/rectangle, noise, and combinations.",
+      "references": [
+        {
+          "chunk": "waveforms_triangle",
+          "topic": "triangle waveform details"
+        },
+        {
+          "chunk": "waveforms_noise",
+          "topic": "noise behavior and LFSR lockup"
+        }
+      ]
+    },
+    {
+      "start": 302,
+      "end": 311,
+      "name": "waveforms_triangle",
+      "description": "Triangle waveform: linear up/down ramp, contains only odd harmonics with amplitudes proportional to 1/(n^2), produces soft flute-like tone, can be ring-modulated (requires TRIANGLE bit), used for smooth modulation when used as LFO.",
+      "references": [
+        {
+          "chunk": "ring_modulation",
+          "topic": "triangle requirement for ring mod"
+        },
+        {
+          "chunk": "voice3_modulation_source",
+          "topic": "use triangle on Voice 3 for smooth LFO"
+        }
+      ]
+    },
+    {
+      "start": 312,
+      "end": 321,
+      "name": "waveforms_sawtooth",
+      "description": "Sawtooth waveform: linear rise then sharp drop, contains all harmonics with amplitudes proportional to 1/n, bright/brassy tone ideal for strings, brass, pads, high harmonic content.",
+      "references": [
+        {
+          "chunk": "voice1_registers",
+          "topic": "select sawtooth via control register bit"
+        },
+        {
+          "chunk": "combined_waveforms",
+          "topic": "combining sawtooth with triangle/pulse for timbral variation"
+        }
+      ]
+    },
+    {
+      "start": 322,
+      "end": 335,
+      "name": "waveforms_pulse_rectangle",
+      "description": "Pulse/Rectangle waveform: variable duty cycle (12-bit PWn), at 50% PWn=2048 produces square wave (only odd harmonics), other duty cycles include even harmonics, PWM produces chorus-like effect, PWM examples and recommended use.",
+      "references": [
+        {
+          "chunk": "pwm_technique",
+          "topic": "implementation of PWM via $D402/$D403"
+        },
+        {
+          "chunk": "typical_instrument_patches",
+          "topic": "patch examples using PWM (Piano, Synth Lead)"
+        }
+      ]
+    },
+    {
+      "start": 336,
+      "end": 347,
+      "name": "waveforms_noise",
+      "description": "Noise waveform: pseudo-random noise via 23-bit LFSR, LFSR shift rate controlled by frequency register (higher frequency = brighter noise), used for percussion/effects. Warning: selecting noise with other waveforms can lock LFSR; fix by writing TEST then desired waveform.",
+      "references": [
+        {
+          "chunk": "known_quirks",
+          "topic": "noise LFSR lockup and recovery"
+        },
+        {
+          "chunk": "sound_effect_hand_clap",
+          "topic": "using filtered noise for hand clap"
+        }
+      ]
+    },
+    {
+      "start": 348,
+      "end": 361,
+      "name": "combined_waveforms",
+      "description": "Combined waveforms: multiple waveform bits produce a logical AND of waveforms. On 6581 combined waveforms produce unique timbres; on 8580 they are quieter or silent. Common combos: Triangle+Saw ($30), Triangle+Pulse ($50), Saw+Pulse ($60). Avoid combining Noise with others (locks LFSR).",
+      "references": [
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "different combined waveform behavior on 6581 vs 8580"
+        },
+        {
+          "chunk": "known_quirks",
+          "topic": "combined waveform differences and pitfalls"
+        }
+      ]
+    },
+    {
+      "start": 362,
+      "end": 364,
+      "name": "frequency_section_header",
+      "description": "Section header: Frequency reference for SID oscillators and formula introduction.",
+      "references": [
+        {
+          "chunk": "frequency_calculation",
+          "topic": "formula for converting Fn to Fout"
+        }
+      ]
+    },
+    {
+      "start": 365,
+      "end": 392,
+      "name": "frequency_calculation",
+      "description": "Frequency formula: Fout = (Fn * Fclk) / 16777216 where Fn is 16-bit frequency register (0-65535). PAL Fclk=985248 Hz, NTSC Fclk=1022727 Hz. Inverse formula and examples (PAL/NTSC minimum/maximum frequencies).",
+      "references": [
+        {
+          "chunk": "note_frequency_table_pal",
+          "topic": "PAL Fn table and A4=440Hz example"
+        },
+        {
+          "chunk": "voice1_registers",
+          "topic": "writing frequency low/high bytes ($D400/$D401)"
+        }
+      ]
+    },
+    {
+      "start": 393,
+      "end": 418,
+      "name": "note_frequency_table_pal",
+      "description": "Approximate 16-bit SID frequency register values (PAL clock 985248 Hz) for notes C..B across octaves 0-7. Includes tuning note A4 = 440 Hz => Fn = $1CC8 and note on calculating precise Fn.",
+      "references": [
+        {
+          "chunk": "frequency_calculation",
+          "topic": "formula used to compute table values"
+        }
+      ]
+    },
+    {
+      "start": 419,
+      "end": 437,
+      "name": "note_frequency_table_ntsc",
+      "description": "Approximate 16-bit SID frequency register values (NTSC clock 1022727 Hz) for notes C..B across octaves 0-7. Use for NTSC machines; values differ slightly from PAL.",
+      "references": [
+        {
+          "chunk": "frequency_calculation",
+          "topic": "NTSC clock differences in Fn calculation"
+        }
+      ]
+    },
+    {
+      "start": 438,
+      "end": 446,
+      "name": "filter_overview",
+      "description": "Overview: single multi-mode resonant filter shared by all three voices and external input. Voices can be routed individually via $D417 bits 0-2; voices not routed bypass the filter and go directly to the mixer.",
+      "references": [
+        {
+          "chunk": "filter_modes",
+          "topic": "LP/BP/HP and combinations"
+        },
+        {
+          "chunk": "filter_registers_and_modes_overview",
+          "topic": "register locations $D415-$D418"
+        }
+      ]
+    },
+    {
+      "start": 447,
+      "end": 480,
+      "name": "filter_modes",
+      "description": "Filter modes described: Low-pass (LP, bit4 $D418), Band-pass (BP, bit5), High-pass (HP, bit6). Effects on tone and combined mode behaviors: LP+HP (notch), LP+BP, HP+BP, LP+BP+HP (all-pass/phase shift).",
+      "references": [
+        {
+          "chunk": "resonance_control",
+          "topic": "resonance impact on filter sound"
+        },
+        {
+          "chunk": "filter_cutoff_frequency",
+          "topic": "how cutoff value affects these modes"
+        }
+      ]
+    },
+    {
+      "start": 481,
+      "end": 502,
+      "name": "filter_cutoff_frequency",
+      "description": "Cutoff frequency is 11-bit value across $D415 (low 3 bits) and $D416 (high 8 bits). CutoffValue = (HighByte << 3) | (LowByte & 0x07). Mapping differs by chip: 6581 non-linear ~200Hz–12kHz and temperature dependent; 8580 more linear ~30Hz–12kHz.",
+      "references": [
+        {
+          "chunk": "filter_overview",
+          "topic": "routing voices through the filter"
+        },
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "differences in cutoff mapping between revisions"
+        }
+      ]
+    },
+    {
+      "start": 503,
+      "end": 521,
+      "name": "resonance_control",
+      "description": "Resonance bits 7-4 of $D417 (0-15). Resonance emphasizes frequencies at cutoff; high values create pronounced peaks and on 6581 can self-oscillate (used as a crude fourth oscillator); 8580 less prone to self-oscillation.",
+      "references": [
+        {
+          "chunk": "filter_cutoff_frequency",
+          "topic": "cutoff + resonance interaction"
+        },
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "6581 self-oscillation tendency"
+        }
+      ]
+    },
+    {
+      "start": 522,
+      "end": 548,
+      "name": "synchronization",
+      "description": "Oscillator synchronization forces one voice's accumulator to reset every cycle of the synchronizing voice producing complex harmonics. Hard-wired pairings: Voice1 syncs to Voice3 (bit1 $D404), Voice2 -> Voice1 (bit1 $D40B), Voice3 -> Voice2 (bit1 $D412). Example 'mosquito' effect and sweeping technique described.",
+      "references": [
+        {
+          "chunk": "voice1_registers",
+          "topic": "SYNC bit location in control register"
+        },
+        {
+          "chunk": "ring_modulation",
+          "topic": "related modulation techniques for complex timbres"
+        }
+      ]
+    },
+    {
+      "start": 549,
+      "end": 581,
+      "name": "ring_modulation",
+      "description": "Ring modulation replaces a voice's triangle output with product of that triangle and the modulating voice oscillator, creating sum/difference frequencies (non-harmonic metallic timbres). Pairings: Voice1 mod by Voice3 (bit2 $D404), Voice2 by Voice1 (bit2 $D40B), Voice3 by Voice2 (bit2 $D412). Triangle bit must be set on modulated voice; modulator must run but needn't be gated.",
+      "references": [
+        {
+          "chunk": "waveforms_triangle",
+          "topic": "triangle waveform is required for ring mod"
+        },
+        {
+          "chunk": "voice3_modulation_source",
+          "topic": "using voice 3 as modulator/LFO"
+        }
+      ]
+    },
+    {
+      "start": 582,
+      "end": 591,
+      "name": "voice3_modulation_intro",
+      "description": "Voice 3 can be muted (bit7 $D418) while still providing oscillator/envelope readouts at $D41B/$D41C, allowing it to serve as a dedicated modulation source (LFO) without audible output.",
+      "references": [
+        {
+          "chunk": "vibrato_technique",
+          "topic": "frequency modulation using $D41B"
+        },
+        {
+          "chunk": "filter_sweeps",
+          "topic": "filter modulation using Voice 3"
+        }
+      ]
+    },
+    {
+      "start": 592,
+      "end": 608,
+      "name": "vibrato_technique",
+      "description": "Vibrato via Voice 3 oscillator read ($D41B): set Voice3 low frequency (4-7Hz), triangle waveform, mute Voice3 (bit7 $D418), read $D41B each frame and add a scaled value to target voice's frequency registers to produce pitch oscillation. Depth controlled by scaling/division.",
+      "references": [
+        {
+          "chunk": "voice3_modulation_intro",
+          "topic": "muting Voice 3 and reading $D41B/$D41C"
+        },
+        {
+          "chunk": "frequency_calculation",
+          "topic": "how added modulation affects Fn and Fout"
+        }
+      ]
+    },
+    {
+      "start": 609,
+      "end": 617,
+      "name": "tremolo_technique",
+      "description": "Tremolo (amplitude modulation) using Voice 3: configure Voice3 as low-frequency triangle, read $D41B and use to modify master volume or target voice's sustain level to vary amplitude over time.",
+      "references": [
+        {
+          "chunk": "vibrato_technique",
+          "topic": "similar setup but modulates frequency vs amplitude"
+        },
+        {
+          "chunk": "read_only_registers",
+          "topic": "reading $D41B for modulator value"
+        }
+      ]
+    },
+    {
+      "start": 618,
+      "end": 632,
+      "name": "filter_sweeps",
+      "description": "Using Voice3 to modulate filter cutoff ($D415/$D416): set Voice3 as LFO, read $D41B and add/write scaled values to cutoff registers to perform automatic sweeps (wah-wah). Waveform selection (triangle, sawtooth, pulse, noise) affects sweep shape.",
+      "references": [
+        {
+          "chunk": "filter_cutoff_frequency",
+          "topic": "target registers $D415/$D416 and mapping"
+        },
+        {
+          "chunk": "vibrato_technique",
+          "topic": "using Voice3 as an LFO for different parameters"
+        }
+      ]
+    },
+    {
+      "start": 633,
+      "end": 636,
+      "name": "programming_section_header",
+      "description": "Section header introducing SID programming techniques and example code snippets in 6502 assembly.",
+      "references": [
+        {
+          "chunk": "programming_initialization",
+          "topic": "recommended register clearing"
+        },
+        {
+          "chunk": "music_engine_structure",
+          "topic": "example music engine layout"
+        }
+      ]
+    },
+    {
+      "start": 637,
+      "end": 654,
+      "name": "programming_initialization",
+      "description": "Initialization example: clear SID registers ($D400..), set master volume ($D418) to desired value. Example code clearing 24 registers and setting volume to maximum.",
+      "references": [
+        {
+          "chunk": "complete_register_map_intro",
+          "topic": "SID base address $D400 and mirror behavior"
+        },
+        {
+          "chunk": "known_quirks",
+          "topic": "write-only behavior and safe clearing"
+        }
+      ]
+    },
+    {
+      "start": 655,
+      "end": 680,
+      "name": "playing_a_simple_note",
+      "description": "Assembly example to play a simple note on Voice 1: set ADSR ($D405/$D406), write frequency bytes ($D400/$D401) for A4=$1CC8 (PAL), select waveform and GATE ($D404), then later clear GATE to start release.",
+      "references": [
+        {
+          "chunk": "adsr_overview",
+          "topic": "ADSR setup for the note example"
+        },
+        {
+          "chunk": "frequency_calculation",
+          "topic": "frequency register values used in example"
+        }
+      ]
+    },
+    {
+      "start": 681,
+      "end": 711,
+      "name": "pwm_technique",
+      "description": "Pulse Width Modulation (PWM) technique: initialize PW to 50% ($D402/$D403 = $0800), select pulse waveform + gate ($D404), and increment PW each frame (example loop using $D402/$D403). Suggestion: use 16-bit counter and delta for smoother PWM.",
+      "references": [
+        {
+          "chunk": "waveforms_pulse_rectangle",
+          "topic": "role of pulse width in timbre"
+        },
+        {
+          "chunk": "raster_synchronized_playback",
+          "topic": "timing PWM updates with raster or timer"
+        }
+      ]
+    },
+    {
+      "start": 712,
+      "end": 774,
+      "name": "music_engine_structure",
+      "description": "Example music engine structure (KickAssembler syntax): program counter, frequency table of 16-bit values, initialization clearing SID and setting volume/ADSR, play routine called per frame that reads frequency table, writes $D400/$D401, gates voice, checks end marker and loops. Includes pseudocode for note advancement.",
+      "references": [
+        {
+          "chunk": "raster_synchronized_playback",
+          "topic": "calling play per frame via raster IRQ"
+        },
+        {
+          "chunk": "note_frequency_table_pal",
+          "topic": "example frequency table values"
+        }
+      ]
+    },
+    {
+      "start": 775,
+      "end": 810,
+      "name": "raster_synchronized_playback",
+      "description": "Tie music playback to VIC-II raster interrupt for consistent timing: sample code to set IRQ vector at $0314/$0315, configure rasterline ($D012/$D011), enable raster IRQ ($D01A), IRQ handler acknowledges ($D019) and calls play routine, then jp to KERNAL IRQ handler. Typical rates: 50Hz PAL / 60Hz NTSC; alternative timers suggested for higher resolution.",
+      "references": [
+        {
+          "chunk": "music_engine_structure",
+          "topic": "play routine called from IRQ"
+        },
+        {
+          "chunk": "pwm_technique",
+          "topic": "synchronizing PWM updates to raster"
+        }
+      ]
+    },
+    {
+      "start": 811,
+      "end": 813,
+      "name": "sound_effects_section_header",
+      "description": "Header introducing several sound-effect code examples: laser/zap, explosion, drum kick, hand clap.",
+      "references": [
+        {
+          "chunk": "sound_effect_laser",
+          "topic": "laser/zap example"
+        },
+        {
+          "chunk": "sound_effect_explosion",
+          "topic": "explosion example"
+        }
+      ]
+    },
+    {
+      "start": 814,
+      "end": 826,
+      "name": "sound_effect_laser",
+      "description": "Laser/Zap example: ADSR settings A=0 D=15, S/R low, start with high frequency ($D401), select sawtooth or noise+gate ($D404 = $81 for noise laser), sweep frequency down each frame by decrementing $D401.",
+      "references": [
+        {
+          "chunk": "waveforms_noise",
+          "topic": "noise-based laser variant"
+        },
+        {
+          "chunk": "adsr_overview",
+          "topic": "percussive ADSR settings used"
+        }
+      ]
+    },
+    {
+      "start": 827,
+      "end": 836,
+      "name": "sound_effect_explosion",
+      "description": "Explosion example: short ADSR (A=0,D=0; S=15,R=9), low frequency ($D401 low), noise + gate ($D404 = $81), optional filter cutoff sweep down for extra effect.",
+      "references": [
+        {
+          "chunk": "waveforms_noise",
+          "topic": "use of noise for explosion"
+        },
+        {
+          "chunk": "filter_sweeps",
+          "topic": "sweeping filter cutoff to enhance impact"
+        }
+      ]
+    },
+    {
+      "start": 837,
+      "end": 852,
+      "name": "sound_effect_drum_kick",
+      "description": "Drum kick example: short noise burst followed by low-frequency tone. Sequence: set ADSR for short envelope, set initial freq high and noise+gate for a burst, after 1-2 frames switch to low frequency triangle ($D401/$D404) to simulate kick pitch drop.",
+      "references": [
+        {
+          "chunk": "waveforms_triangle",
+          "topic": "use triangle for low tone tail"
+        },
+        {
+          "chunk": "waveforms_noise",
+          "topic": "initial noise burst"
+        }
+      ]
+    },
+    {
+      "start": 853,
+      "end": 876,
+      "name": "sound_effect_hand_clap_filtered_noise",
+      "description": "Hand clap (filtered noise) example: set master volume and filter ($D416/$D415), set resonance and route voice to filter ($D417), enable low-pass and set volume on $D418, set noise burst with short ADSR ($D405/$D406), select noise + gate ($D404 = $81).",
+      "references": [
+        {
+          "chunk": "filter_registers_and_modes_overview",
+          "topic": "routing voice through filter and resonance settings"
+        },
+        {
+          "chunk": "waveforms_noise",
+          "topic": "filtered noise for percussive sounds"
+        }
+      ]
+    },
+    {
+      "start": 877,
+      "end": 924,
+      "name": "sample_playback_digi_techniques",
+      "description": "Digitized sample playback on 6581 using volume-register click: code example for nybble-packed 4-bit samples played via writes to $D418 (two 4-bit samples per byte). Notes: produces 4-bit audio (16 levels), CPU intensive, conflicts with normal music (shared volume register), works well on 6581 but barely on 8580 without ~330kΩ resistor on EXT IN. Mentions advanced Mahoney 8-bit techniques.",
+      "references": [
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "why 8580 requires resistor mod for digi"
+        },
+        {
+          "chunk": "known_quirks",
+          "topic": "volume register click exploited for digi playback"
+        }
+      ]
+    },
+    {
+      "start": 925,
+      "end": 944,
+      "name": "typical_instrument_patches",
+      "description": "Starting-point ADSR and waveform settings (patch table) for common sounds: Piano (Pulse, A=0 D=9 S=0 R=0), Organ, Violin/String, Flute, Brass, Xylophone, Bass, Synth Lead, Snare, Hi-Hat, Kick Drum. Includes notes on PWM and filter usage.",
+      "references": [
+        {
+          "chunk": "pwm_technique",
+          "topic": "PWM usage in Piano and Synth Lead examples"
+        },
+        {
+          "chunk": "filter_modes",
+          "topic": "filter usage for snare and hand clap"
+        }
+      ]
+    },
+    {
+      "start": 945,
+      "end": 981,
+      "name": "pinout_reference",
+      "description": "MOS 6581/8580 28-pin DIP pinout: CAP1A/B, CAP2A/B, /RES, PHI2, R/W, /CS, A0-A4 address lines, GND, D0-D7 data bus, POT X/Y (pins 23/24), Vcc +5V, EXT IN, AUDIO OUT, Vdd supply (+12V 6581 or +9V 8580). Notes on filter capacitor differences per chip.",
+      "references": [
+        {
+          "chunk": "filter_registers_and_modes_overview",
+          "topic": "external input pin (EXT IN) and filtering"
+        },
+        {
+          "chunk": "chip_variants_6581_8580",
+          "topic": "CAP values used by different revisions"
+        }
+      ]
+    },
+    {
+      "start": 982,
+      "end": 1019,
+      "name": "known_quirks_and_bugs",
+      "description": "List of SID quirks: ADSR bug (delayed retrigger), noise LFSR lockup and recovery (write TEST then waveform), write-only register readback returns bus value, 6581 filter distortion and DC offset, combined waveform differences between 6581/8580, TEST bit behavior (oscillator reset/hold), and volume-register click exploited for digi playback on 6581.",
+      "references": [
+        {
+          "chunk": "adsr_bug",
+          "topic": "ADSR retriggering issue and workarounds"
+        },
+        {
+          "chunk": "waveforms_noise",
+          "topic": "LFSR lockup warnings and fixes"
+        },
+        {
+          "chunk": "sample_playback_digi_techniques",
+          "topic": "volume click exploitation and differences across chips"
+        }
+      ]
+    },
+    {
+      "start": 1020,
+      "end": 1067,
+      "name": "sid_register_quick_reference_card",
+      "description": "Concise SID register quick reference table: addresses $D400-$D41C, decimal equivalents, register names and bit layouts (Freq Lo/Hi, PW Lo/Hi, Control NPSTWRSG, Attack/Decay AAAADDDD, Sustain/Release SSSSRRRR, Filter Cutoff Lo/Hi, Resonance/Route RRRREFFF, Mode/Volume MHBL VVVV). Includes control register bit mnemonic and filter bit definitions.",
+      "references": [
+        {
+          "chunk": "complete_register_map_intro",
+          "topic": "full register map and mirror range"
+        },
+        {
+          "chunk": "voice1_registers",
+          "topic": "control register bit meanings (NPSTWRSG)"
+        },
+        {
+          "chunk": "read_only_registers",
+          "topic": "readable registers $D419-$D41C"
+        }
+      ]
+    },
+    {
+      "start": 1068,
+      "end": 1070,
+      "ignore": true,
+      "reason": "End-of-document footer and separator (non-technical closing lines)"
+    }
+  ],
+  "source_md5": "ce3d8a2773c8177b1342c239e1cdc160"
+}

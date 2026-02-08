@@ -1,0 +1,267 @@
+{
+  "source_file": "Scrolling Techniques by Cadaver.txt",
+  "context": "Multidirectional Scrolling Techniques by Cadaver",
+  "splits": [
+    {
+      "start": 1,
+      "end": 6,
+      "ignore": true,
+      "reason": "Title, header and source attribution"
+    },
+    {
+      "start": 7,
+      "end": 11,
+      "name": "introduction_scope",
+      "description": "Short introduction stating this is a theoretical rant about making a block-based, multidirectionally-scrolled game world and populating it with objects. Clarifies it won't go deep into technical specifics.",
+      "references": [
+        {
+          "chunk": "background_credits",
+          "topic": "author background and influences"
+        }
+      ]
+    },
+    {
+      "start": 12,
+      "end": 22,
+      "name": "background_credits",
+      "description": "Credits and background: cites C-64 Pelintekijan Opas and personal experiments; notes that the methods are the author's own experience and not necessarily optimal.",
+      "references": [
+        {
+          "chunk": "introduction_scope",
+          "topic": "document scope"
+        }
+      ]
+    },
+    {
+      "start": 23,
+      "end": 33,
+      "name": "map_data_block_data_overview",
+      "description": "Overview of the map-data & block-data (tile) system used in many C64 tools (e.g., SEUCK). States map data are 8-bit block numbers allowing up to 256 blocks and that the rant assumes familiarity with this system.",
+      "references": [
+        {
+          "chunk": "map_row_storage_and_precalculation",
+          "topic": "how map rows are stored and accessed"
+        },
+        {
+          "chunk": "block_data_row_major_storage_example",
+          "topic": "how block pixels/characters are stored"
+        }
+      ]
+    },
+    {
+      "start": 34,
+      "end": 47,
+      "name": "map_row_storage_and_precalculation",
+      "description": "How map data is organized in memory: horizontal rows stored sequentially from top to bottom. Store row length in a 'map header' and precalculate starting address of each map row and each block (maptbllo/hi and blktbllo/hi tables) to avoid multiplications.",
+      "references": [
+        {
+          "chunk": "map_data_block_data_overview",
+          "topic": "concept of 8-bit block numbers"
+        },
+        {
+          "chunk": "block_size_choice_and_character_codes",
+          "topic": "block size choice affects indexing and addressing"
+        }
+      ]
+    },
+    {
+      "start": 48,
+      "end": 48,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 49,
+      "end": 55,
+      "name": "block_data_row_major_storage_example",
+      "description": "Example of block data storage: a block drawn row-by-row (e.g. ABCD / EFGH / IJKL / MNOP) is stored in memory sequentially as 'ABCDEFGHIJKLMNOP' — i.e., row-major order.",
+      "references": [
+        {
+          "chunk": "map_row_storage_and_precalculation",
+          "topic": "similar storage approach for map rows"
+        }
+      ]
+    },
+    {
+      "start": 56,
+      "end": 56,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 57,
+      "end": 63,
+      "name": "block_size_choice_and_character_codes",
+      "description": "Discussion of block size choice: author prefers 4x4 blocks (power-of-two sizes recommended for easy calculations). Block data usually 8-bit values representing character/screen codes used for display.",
+      "references": [
+        {
+          "chunk": "map_data_block_data_overview",
+          "topic": "map & block data system constraints (256 blocks)"
+        }
+      ]
+    },
+    {
+      "start": 64,
+      "end": 83,
+      "name": "scrolling_overview_doublebuffering",
+      "description": "Overview of scrolling on the C64: hardware character-scroll requires shifting screen memory and color memory, which is expensive (shifting ~1000 bytes can take > half a frame). Recommends splitting shifts across frames according to max scroll speed and using doublebuffering (two screens) to hide intermediate states.",
+      "references": [
+        {
+          "chunk": "eight_directional_scrolling_centered_scroll_registers",
+          "topic": "how splitting affects scroll-register-centered methods"
+        },
+        {
+          "chunk": "freedirectional_scrolling_two_frame_method",
+          "topic": "alternative freedirectional approach"
+        },
+        {
+          "chunk": "screen_memory_shifting_doublebuffered_copying_direction_handling",
+          "topic": "practical implications of doublebuffered shifting"
+        }
+      ]
+    },
+    {
+      "start": 84,
+      "end": 122,
+      "name": "eight_directional_scrolling_centered_scroll_registers",
+      "description": "Describes the 'scroll registers centered when idle' approach and how splitting shifting across frames imposes restrictions. Shows scroll-register value sequences for right-to-left scrolling (4,2,0,6,4 ...) and for left-to-right scrolling after resetting to 3 (3,5,7,1,3 ...). Explains this method enables 8-directional but not free-directional scrolling.",
+      "references": [
+        {
+          "chunk": "scrolling_overview_doublebuffering",
+          "topic": "why splitting frames requires doublebuffering and affects scroll timing"
+        },
+        {
+          "chunk": "freedirectional_scrolling_two_frame_method",
+          "topic": "contrast with freedirectional approach"
+        }
+      ]
+    },
+    {
+      "start": 123,
+      "end": 149,
+      "name": "freedirectional_scrolling_two_frame_method",
+      "description": "Freedirectional scrolling method: don't center the hardware scroll register when idle; allow speeds up to 4 pixels/frame. Use two kinds of frames: (1) add speed to scroll registers and precalculate next-frame scroll values (allow wrapping on precalc); if wrapping occurs, shift screen memory in hidden screen and draw new side data; (2) shift color memory, swap doublebuffer screens, and apply precalculated scroll values. More CPU-intensive but simpler and supports freer directions. References a test program (freedir.zip).",
+      "references": [
+        {
+          "chunk": "scrolling_overview_doublebuffering",
+          "topic": "doublebuffering usage"
+        },
+        {
+          "chunk": "screen_memory_shifting_doublebuffered_copying_direction_handling",
+          "topic": "how to perform the hidden-screen shifts"
+        }
+      ]
+    },
+    {
+      "start": 150,
+      "end": 161,
+      "name": "screen_memory_shifting_doublebuffered_copying_direction_handling",
+      "description": "Shifting screen-memory with doublebuffering: copying from currently visible screen to the hidden screen avoids overwriting source data. Use X as source index and Y as target index and adjust initial indices to achieve all 8 directions. Need two actual loops (screen1->screen2 and screen2->screen1).",
+      "references": [
+        {
+          "chunk": "freedirectional_scrolling_two_frame_method",
+          "topic": "when to perform screen shifts (hidden screen)"
+        },
+        {
+          "chunk": "drawing_new_data_on_sides_block_examples",
+          "topic": "drawing the new map data to the sides after shifting"
+        }
+      ]
+    },
+    {
+      "start": 162,
+      "end": 235,
+      "name": "drawing_new_data_on_sides_block_examples",
+      "description": "How to draw new data into the newly revealed screen edges: track the screen top-left edge in block-coordinates and position within a block. Includes examples of screen contents before and after a left scroll, demonstrating how blocks line up and how X/Y within-block offsets affect the result. Emphasizes the need to calculate which blocks/columns must be drawn on each side depending on scroll direction and within-block offsets.",
+      "references": [
+        {
+          "chunk": "map_row_storage_and_precalculation",
+          "topic": "accessing map rows/blocks to fetch new side data"
+        },
+        {
+          "chunk": "screen_memory_shifting_doublebuffered_copying_direction_handling",
+          "topic": "performing the actual hidden-screen copy before drawing new sides"
+        }
+      ]
+    },
+    {
+      "start": 236,
+      "end": 308,
+      "name": "color_memory_updating_ntsc_and_block_color_optimization",
+      "description": "Color-memory update considerations: color memory cannot be doublebuffered and must be updated when that portion isn't being displayed. For NTSC compatibility split color updates in two halves (upper half while lower half displays, then lower half after screen ends) and buffer the row at the split. Warns against an inefficient per-character lookup/sta approach (example assembly) that wastes cycles and kills NTSC compatibility. Explains optimization when colors are per-block (not per-char): only every Nth column changes (example shows 4x4 blocks) allowing color updates to be reduced to ~1/4th of naive accesses.",
+      "references": [
+        {
+          "chunk": "scrolling_overview_doublebuffering",
+          "topic": "why doublebuffering doesn't solve color memory update timing"
+        },
+        {
+          "chunk": "drawing_new_data_on_sides_block_examples",
+          "topic": "if colors are block-based, side drawing requires fewer color updates"
+        }
+      ]
+    },
+    {
+      "start": 309,
+      "end": 326,
+      "name": "coordinate_systems_screen_vs_world_and_issues",
+      "description": "Discussion of coordinate systems: using screen (sprite) coordinates is fastest but can cause incorrect behavior near screen edges (example: Turrican enemies acting erratically). Recommends using a world-coordinate system and checking collisions against map & block data rather than relying solely on on-screen data.",
+      "references": [
+        {
+          "chunk": "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy",
+          "topic": "efficient world-coordinate representation and subpixel accuracy"
+        },
+        {
+          "chunk": "object_activation_actor_leveldata_and_spawning",
+          "topic": "how world coordinates simplify deciding which objects are active/on-screen"
+        }
+      ]
+    },
+    {
+      "start": 327,
+      "end": 351,
+      "name": "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy",
+      "description": "Two world-coordinate representations: (1) pixel-counting from map top-left as 16-bit values (simple but slow collisions and lacks subpixel accuracy); (2) highbyte = block coordinate, lowbyte = position within block (author's preference). With 4 chars per block = 32 pixels, lowbyte gives 3 bits of subpixel accuracy, makes background collision checking fast since map position is the highbyte. Sprite display and sprite-sprite collision need bit-rotates to remove subpixel bits, which is a minor slowdown.",
+      "references": [
+        {
+          "chunk": "coordinate_systems_screen_vs_world_and_issues",
+          "topic": "why choose world coordinates"
+        }
+      ]
+    },
+    {
+      "start": 352,
+      "end": 376,
+      "name": "object_activation_actor_leveldata_and_spawning",
+      "description": "Managing many objects: distinguish active 'actors' (near/on-screen) from inactive 'leveldata' (store positions and types, minimal info). Each frame process a portion of leveldata (e.g. 16 objects); if they fit the visible rectangle (or margin), spawn as actors and remove from leveldata; if active objects leave the rectangle, put them back into leveldata. Storing level positions at block accuracy simplifies checks by testing highbytes against visible rectangle.",
+      "references": [
+        {
+          "chunk": "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy",
+          "topic": "storing positions at block accuracy leverages the highbyte representation"
+        }
+      ]
+    },
+    {
+      "start": 377,
+      "end": 387,
+      "name": "conclusion_summary",
+      "description": "Short conclusion: reiterates the rant is brief, aims to shed light on multidirectional scrolling and game-world construction on the C64. Expresses the author's enthusiasm for C64 multidirectional games and personal dedication to making them.",
+      "references": [
+        {
+          "chunk": "scrolling_overview_doublebuffering",
+          "topic": "summary of main technical tradeoffs (doublebuffering, split updates)"
+        },
+        {
+          "chunk": "object_activation_actor_leveldata_and_spawning",
+          "topic": "summary of handling many world objects"
+        }
+      ]
+    },
+    {
+      "start": 388,
+      "end": 390,
+      "ignore": true,
+      "reason": "Author signature and contact information"
+    }
+  ],
+  "source_md5": "b27949943aa7c9743c5cca4762e47a90"
+}

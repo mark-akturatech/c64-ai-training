@@ -26,6 +26,15 @@ from pathlib import Path
 
 from openai import OpenAI
 
+def _fmt_response(response):
+    """Format a one-line summary of an OpenAI API response."""
+    usage = response.usage
+    parts = [f"model={response.model}"]
+    if usage:
+        parts.append(f"tokens={usage.prompt_tokens}+{usage.completion_tokens}={usage.total_tokens}")
+    return ', '.join(parts)
+
+
 SYSTEM_PROMPT = """\
 You are a technical documentation editor specializing in Commodore 64 and MOS 6502 assembly programming.
 
@@ -120,7 +129,7 @@ def save_cache(cache_path, cache):
 
 
 def clean_chunk(client, model, chunk_content, split_dir):
-    """Send a chunk to OpenAI for cleaning. Returns cleaned markdown.
+    """Send a chunk to OpenAI for cleaning. Returns (cleaned_markdown, ref_name, response_info).
 
     If GPT responds with NEED_REFERENCE: chunk_name, loads that chunk
     from split_dir and sends a follow-up message with the reference content.
@@ -155,7 +164,7 @@ def clean_chunk(client, model, chunk_content, split_dir):
                 model=model, messages=messages,
             )
             result = response.choices[0].message.content.strip()
-            return result, ref_name
+            return result, ref_name, _fmt_response(response)
         else:
             # Reference not found, ask GPT to proceed without it
             messages.append({"role": "assistant", "content": result})
@@ -171,9 +180,9 @@ def clean_chunk(client, model, chunk_content, split_dir):
                 model=model, messages=messages,
             )
             result = response.choices[0].message.content.strip()
-            return result, None
+            return result, None, _fmt_response(response)
 
-    return result, None
+    return result, None, _fmt_response(response)
 
 
 def main():
@@ -186,7 +195,7 @@ def main():
     # Parse arguments
     force = '--force' in sys.argv
     dry_run = '--dry-run' in sys.argv
-    model = 'gpt-5'
+    model = 'gpt-5-mini'
 
     if '--model' in sys.argv:
         idx = sys.argv.index('--model')
@@ -276,7 +285,7 @@ def main():
 
         try:
             chunk_content = chunk_path.read_text(encoding='utf-8', errors='replace')
-            result, ref_used = clean_chunk(client, model, chunk_content, split_dir)
+            result, ref_used, resp_info = clean_chunk(client, model, chunk_content, split_dir)
 
             output_path.write_text(result, encoding='utf-8')
 
@@ -292,6 +301,7 @@ def main():
                 print(f" done -> {output_name} (ref: {ref_used})")
             else:
                 print(f" done -> {output_name}")
+            print(f"    [{resp_info}]")
 
             # Rate limiting: small delay between API calls
             if i < total:

@@ -1,0 +1,2572 @@
+{
+  "source_file": "c64ref ROM Disassembly Naberezny.txt",
+  "context": "- Commented Commodore 64 KERNAL Disassembly (Magnus Nyman)",
+  "splits": [
+    {
+      "start": 1,
+      "end": 29,
+      "ignore": true,
+      "reason": "Title, file header, formatting notes and top-level metadata (non-technical)"
+    },
+    {
+      "start": 30,
+      "end": 82,
+      "name": "basic_io_error_and_simple_io",
+      "description": "BASIC I/O error handling and simple input/output wrappers: BIOERR error dispatcher, BCHOUT (calls CHROUT at $FFD2), BCHIN (calls CHRIN at $FFCF), BCKOUT (CHKOUT wrapper calling $E4AD/$FFC9), BCKIN (CHKIN wrapper). Includes checks for carry and branching to the I/O error handler. Registers and vectors referenced: JSR $FFD2, $FFCF, $FFC6, $E4AD, error vector $A437, MEMSIZ ($38), SPREG/SAREG/SXREG/SYREG at $030F-$030E.",
+      "references": [
+        {
+          "chunk": "parameter_parsing_and_open_close_helpers",
+          "topic": "parsing of device/file params for OPEN/CLOSE"
+        },
+        {
+          "chunk": "file_io_and_serial_open_close",
+          "topic": "higher-level OPEN/CLOSE/CHKIN/CHKOUT semantics"
+        }
+      ]
+    },
+    {
+      "start": 83,
+      "end": 192,
+      "name": "basic_file_commands_sys_save_load_verify_open_close",
+      "description": "BASIC command handlers and file operations: SYS (execute machine language from BASIC — calls evaluator at $AD8A, pushes user registers into $030C-$030F), SAVET (perform SAVE using TXTTAB/VARTAB and JSR $FFD8), VERFYT (LOAD/VERIFY shared flow, VRECK flag at $0A, calls KERNAL LOAD $FFD5 and READST $FFB7; updates TXTPTR/VARTAB and branches to CLR), OPENT/CLOSET (wrappers that call KERNAL OPEN/CLOSE $FFC0/$FFC3 and handle I/O errors). References TXTTAB/VARTAB ($2B-$2E), TXTPTR ($7A/$7B).",
+      "references": [
+        {
+          "chunk": "basic_io_error_and_simple_io",
+          "topic": "I/O error handling (BIOERR) used by these routines"
+        },
+        {
+          "chunk": "parameter_parsing_and_open_close_helpers",
+          "topic": "SLPARA/OCPARA parameter extraction for OPEN/CLOSE/SAVE/LOAD"
+        }
+      ]
+    },
+    {
+      "start": 193,
+      "end": 287,
+      "name": "parameter_parsing_and_open_close_helpers",
+      "description": "Helpers for parsing BASIC parameters and preparing KERNAL calls: SLPARA (SETNAM/SETLFS sequence for SAVE/LOAD with default FA/SA handling), COMBYT (get next one-byte parameter), DEFLT (test CHRGOT for presence of optional parameter), CMMERR (check for comma then terminator test), OCPARA (parameters for OPEN/CLOSE - logical file, device, secondary address and filename; uses SETNAM $FFBD and SETLFS $FFBA). Uses CHRGOT and text pointer routines at $E200-$E21F range; stores FA/SA in $49/$4A and calls $FFBD/$FFBA.",
+      "references": [
+        {
+          "chunk": "basic_file_commands_sys_save_load_verify_open_close",
+          "topic": "used by SAVE/LOAD/OPEN/CLOSE routines"
+        },
+        {
+          "chunk": "file_io_and_serial_open_close",
+          "topic": "serial device handling when opening/closing files"
+        }
+      ]
+    },
+    {
+      "start": 288,
+      "end": 296,
+      "name": "cos_via_sin",
+      "description": "COS routine wrapper that converts a cosine call to a sine call using the identity COS(x) = SIN(x + pi/2). Shows the code that loads the 5-byte floating-point constant pointer for pi/2 (address $E2E0) into A/Y and calls the floating-point addition routine (JSR $B867) to add pi/2 to the argument (fac#1) before calling SIN.",
+      "references": [
+        {
+          "chunk": "sin_routine_sequence",
+          "topic": "calls SIN implementation after adding pi/2"
+        },
+        {
+          "chunk": "pi2_trig_constants_table",
+          "topic": "contains the pi/2 constant at $E2E0 used by this routine"
+        }
+      ]
+    },
+    {
+      "start": 297,
+      "end": 330,
+      "name": "sin_routine_sequence",
+      "description": "Complete SIN routine implementation entry sequence used by BASIC: prepares and invokes the floating-point sine evaluation. Includes several JSRs to support routines ($BC0C, $BB07, $BCCC, $BFB4, $B853, $B850, $B849, $B867), register setups (loading indices and flags), stack operations and branch logic, and finally jumps to a floating-point result handling routine at $E043. This sequence references the SIN series constants and counters stored in the PI2 table.",
+      "references": [
+        {
+          "chunk": "cos_via_sin",
+          "topic": "COS uses this SIN implementation after adding pi/2"
+        },
+        {
+          "chunk": "pi2_trig_constants_table",
+          "topic": "holds SIN series constants and counters referenced by this routine"
+        },
+        {
+          "chunk": "tan_routine",
+          "topic": "TAN calls SIN to compute sine as part of tangent evaluation"
+        }
+      ]
+    },
+    {
+      "start": 331,
+      "end": 351,
+      "name": "tan_routine",
+      "description": "TAN routine for BASIC: computes tangent by using the SIN implementation and other support routines. It performs setup (clearing flags, loading constants), calls the SIN routine at $E26B, uses additional helper routines ($E0F6, $BBA2, $BB0F) and branching logic, and ends with transfer/jump sequences. Includes a local push/branch sequence that returns control depending on intermediate flags.",
+      "references": [
+        {
+          "chunk": "sin_routine_sequence",
+          "topic": "invokes SIN routine to obtain sine components used in tangent calculation"
+        },
+        {
+          "chunk": "pi2_trig_constants_table",
+          "topic": "sin/tan series constants used indirectly during evaluation"
+        }
+      ]
+    },
+    {
+      "start": 352,
+      "end": 365,
+      "name": "pi2_trig_constants_table",
+      "description": "PI2 table: table of floating-point trig constants stored as 5-byte floating-point words for trigonometry evaluation. Entries include pi/2 at $E2E0, 2*pi at $E2E5, a 0.25 constant, a one-byte counter (5) for the SIN series, and several SIN series floating-point constants (SIN constant 1..6). Addresses shown: $E2E0-$E309.",
+      "references": [
+        {
+          "chunk": "sin_routine_sequence",
+          "topic": "provides SIN series constants and counter used by SIN"
+        },
+        {
+          "chunk": "cos_via_sin",
+          "topic": "provides pi/2 constant used to convert COS to SIN"
+        },
+        {
+          "chunk": "tan_routine",
+          "topic": "holds constants referenced indirectly during tangent computation"
+        }
+      ]
+    },
+    {
+      "start": 366,
+      "end": 392,
+      "name": "atn_routine",
+      "description": "ATN routine (arctangent) used by BASIC: prepares and manipulates flags and registers, pushes/pops bytes on the stack, performs comparisons and conditional branches, and calls helper floating-point routines ($BB0F, $E043, $B850, $BFB4). It sets up indexing to the ATN constants table and handles sign/edge conditions before returning with RTS. This sequence references the ATNCON table for series evaluation constants.",
+      "references": [
+        {
+          "chunk": "atncon_constants_table",
+          "topic": "contains the ATN series counter and 5-byte floating-point constants used by this routine"
+        }
+      ]
+    },
+    {
+      "start": 393,
+      "end": 409,
+      "name": "atncon_constants_table",
+      "description": "ATNCON table: table of arctangent (ATN) series constants. Begins with a one-byte counter (13) followed by thirteen 5-byte floating-point constants used in the ATN series expansion (ATN constant 1..13). Values include small coefficients and terminating constant 1. Table occupies addresses $E33E-$E376.",
+      "references": [
+        {
+          "chunk": "atn_routine",
+          "topic": "provides the ATN series constants and counter used by the ATN implementation"
+        }
+      ]
+    },
+    {
+      "start": 410,
+      "end": 428,
+      "name": "bassft_basic_warm_start",
+      "description": "BASSFT: BASIC warm-start routine vectored at the start of the BASIC ROM. Called by BRK or STOP/RESTORE, closes I/O channels (CLRCHN), clears input prompt flag ($13), calls CLR, enables IRQ (CLI), sets up an error code in X (#$80) and calls the IERROR vector at $0300. Handles returned error number in A (TXA/BMI) to either jump to the generic error-print routine or print the READY prompt. Key instructions: JSR $FFCC (CLRCHN), STA $13, JSR $A67A, CLI, LDX #$80, JMP ($0300), TXA, BMI to READY or JMP to error printer.",
+      "references": [
+        {
+          "chunk": "init_cold_start",
+          "topic": "BASIC cold start sequence that follows warm start"
+        },
+        {
+          "chunk": "initcz_initialize_basic_ram",
+          "topic": "zero-page variables and vectors set up during cold init referenced by warm-start behavior"
+        }
+      ]
+    },
+    {
+      "start": 429,
+      "end": 440,
+      "name": "init_cold_start",
+      "description": "INIT: BASIC cold-start routine vectored at the BASIC ROM entry. Performs the full initialization sequence: calls initialization helper $E453, runs BASIC initialization at $E3BF, outputs the power-up message via $E422, resets the stack pointer to #$FB (TXS), then branches to the warm-start path to output READY and restart BASIC. Key operations: JSR $E453, JSR $E3BF, JSR $E422, LDX #$FB / TXS, BNE to warm-start continuation.",
+      "references": [
+        {
+          "chunk": "bassft_basic_warm_start",
+          "topic": "warm-start entry and READY prompt handling"
+        },
+        {
+          "chunk": "initms_output_powerup_message",
+          "topic": "power-up message output called during cold start"
+        }
+      ]
+    },
+    {
+      "start": 441,
+      "end": 457,
+      "name": "initat_chrget_for_zeropage",
+      "description": "INITAT: CHRGET routine copied into RAM at $0073 on power-up/reset. Implements a character-get loop that increments the TXTPTR low ($7A) and high ($7B) bytes, reads characters from the CHRGOT entry ($EA60), treats colon (':') as terminator and space as skip, and includes numeric character conversion logic using SEC/SBC sequences (subtracting ASCII '0' and an adjusted value). Ends with RTS. This copyable routine is the source for the CHRGET code relocated into zeropage RAM.",
+      "references": [
+        {
+          "chunk": "rndsed_random_seed",
+          "topic": "RNDSED data that is also copied into zeropage alongside CHRGET"
+        },
+        {
+          "chunk": "initcz_initialize_basic_ram",
+          "topic": "routine that copies this CHRGET into RAM at $0073"
+        }
+      ]
+    },
+    {
+      "start": 458,
+      "end": 463,
+      "name": "rndsed_random_seed",
+      "description": "RNDSED: Initial random-number seed data copied into RAM from $008B-$008F. Provides the floating-point seed value (fltp 0.811635157) used to initialize the BASIC RNG. The raw bytes for the seed are listed in-place.",
+      "references": [
+        {
+          "chunk": "initat_chrget_for_zeropage",
+          "topic": "CHRGET and RNDSED are both copied into zeropage RAM during initialization"
+        },
+        {
+          "chunk": "initcz_initialize_basic_ram",
+          "topic": "routine that copies this seed into RAM"
+        }
+      ]
+    },
+    {
+      "start": 464,
+      "end": 518,
+      "name": "initcz_initialize_basic_ram",
+      "description": "INITCZ: Initialize BASIC RAM and key zero-page structures. Actions performed include: write JMP opcode (#$4C) into JMPER and store USR JMP instruction at $0310/$0311 (USRPOK/USRADD), set ADRAY1 and ADRAY2 zero-page vectors ($03/$04 and $05/$06), copy the CHRGET routine and RNDSED data from ROM ($E3A2 onward) into RAM at $0073 (loop using LDX/DEX/BPL), initialize runtime variables (FOUR6 $53 = #3, BITS $68 = 0, input prompt flag $13 = 0, LASTPT $18 = 0), set stack pointers $01FD/$01FC, set TEMPPT $16, call KERNAL $FF9C/$FF99 (with carry set) to read MEMBOT/MEMTOP and store TXTTAB ($2B/$2C), MEMSIZ ($37/$38) and copy MEMTOP to FRETOP ($33/$34), write a zero at the start of BASIC via indirect STA ($2B),Y and increment TXTTAB (including carry into $2C) before returning with RTS.",
+      "references": [
+        {
+          "chunk": "initat_chrget_for_zeropage",
+          "topic": "source CHRGET routine that is copied into RAM here"
+        },
+        {
+          "chunk": "rndsed_random_seed",
+          "topic": "random seed data copied into RAM during this initialization"
+        },
+        {
+          "chunk": "initms_output_powerup_message",
+          "topic": "startup message output and BASIC bytes-free calculation that use TXTTAB/MEMSIZ set here"
+        }
+      ]
+    },
+    {
+      "start": 519,
+      "end": 541,
+      "name": "initms_output_powerup_message",
+      "description": "INITMS: Output the power-up/startup message and compute BASIC memory available. Reads TXTTAB ($2B/$2C) and MEMSIZ ($37/$38), calls a memory-overlap check (JSR $A408), outputs the startup message string, computes BASIC bytes free by subtracting TXTTAB from MEMSIZ using SEC/SBC into A/X, outputs the numeric value via JSR $BDCD, prints the 'BASIC BYTES FREE' message at pointer $E460, and exits to perform NEW by jumping to $A644. Key operations: LDA/LDY of TXTTAB, JSR $A408, output string via JSR $AB1E, SBC to compute free bytes, JSR $BDCD for number output, JMP $A644.",
+      "references": [
+        {
+          "chunk": "initcz_initialize_basic_ram",
+          "topic": "initialization that sets TXTTAB and MEMSIZ used in the bytes-free calculation"
+        },
+        {
+          "chunk": "init_cold_start",
+          "topic": "cold start calls this routine to show the message before restarting BASIC"
+        }
+      ]
+    },
+    {
+      "start": 542,
+      "end": 577,
+      "name": "vectors_and_powerup_message",
+      "description": "BASIC KERNAL vectors and power-up message data: initializes vectors at $0300-$030B via copying table at $E447-$E451. Also contains the 'COMMODORE 64 BASIC V2' power-up message string table at $E45F-$E4AB and startup message pointers used by INITMS. Vectors include IERROR, IMAIN, ICRNCH, IQPLOP, IGONE, IEVAL.",
+      "references": [
+        {
+          "chunk": "basic_startup_and_init",
+          "topic": "INIT uses these vectors and prints power-up message"
+        }
+      ]
+    },
+    {
+      "start": 578,
+      "end": 623,
+      "name": "patches_and_misc_small_routines",
+      "description": "KERNAL patches and small utility routines: patch to preserve (A) across CHKOUT call ($E4AD-$E4B6) to fix early PRINT#/CMD bug, padding bytes at $E4B7-$E4CF, RS232 input parity patch ($E4D3-$E4D9), reset character colour patch ($E4DA-$E4DF), tape-file pause loop ($E4E0-$E4EB). These are small fixes/patches for KERNAL v3 and JiffyDOS variants.",
+      "references": [
+        {
+          "chunk": "serial_bus_protocol_and_io",
+          "topic": "RS232 parity and NMI behavior"
+        }
+      ]
+    },
+    {
+      "start": 624,
+      "end": 643,
+      "name": "rs232_timing_table_pal",
+      "description": "RS232 timing prescaler table for PAL machines (prescaler values for baudrates). Table at $E4EC-$E4FE contains prescalers for 50, 75, 110, 134.5, 150, 300, 600, 1200, (1800)2400, 2400 baud. NOTE: NTSC table is separate at $FEC2 in KERNAL.",
+      "references": [
+        {
+          "chunk": "rs232_send_receive_helpers",
+          "topic": "RS232 routines use these timing constants for baud configuration"
+        }
+      ]
+    },
+    {
+      "start": 644,
+      "end": 672,
+      "name": "screen_io_properties",
+      "description": "Simple I/O utility routines: IOBASE ($FFF3) returns VIC base $DC00 in (X/Y) at $E500; SCREEN ($FFED) returns screen size (40 columns in X = $28, 25 rows in Y = $19) at $E505; PLOT ($FFF0) get/put row and column depending on carry — reads/writes PNTR/TBLX pointers and sets screen pointers via $E56C.",
+      "references": [
+        {
+          "chunk": "screen_initialization_and_io_defaults",
+          "topic": "initial VIC register setup and I/O defaults at startup"
+        },
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "screen pointers and color RAM mapping used later"
+        }
+      ]
+    },
+    {
+      "start": 673,
+      "end": 782,
+      "name": "screen_initialization_and_io_defaults",
+      "description": "I/O and screen initialization: CINT1 (I/O defaults, disable SHIFT+CBM, set cursor off, keyboard table vector, keyboard buffer length etc.), CLEAR SCREEN (sets up LDTB1 screen line link table and clears screen lines), HOME CURSOR and SET SCREEN POINTERS. Also includes SET I/O DEFAULTS (DFLTO/DFLTN), VIC register setup via table $ECB8.. and copying to $CFFF etc. Uses $0286 COLOR, $0289 XMAX, $028B KOUNT and more screen-related zero page variables.",
+      "references": [
+        {
+          "chunk": "video_chip_setup",
+          "topic": "VIC register initial values copied during I/O defaults"
+        },
+        {
+          "chunk": "keyboard_input_and_screen_output",
+          "topic": "keyboard buffer length and input handling initialized here"
+        }
+      ]
+    },
+    {
+      "start": 783,
+      "end": 800,
+      "name": "lp2_get_char_from_keyboard_buffer",
+      "description": "LP2 routine to remove and return the first character from the keyboard buffer. Reads KEYD ($0277), shifts the remaining queue bytes up one, decrements NDX ($C6), transfers the removed byte into A, restores interrupts and returns (RTS). (Code: $E5B4..$E5C9).",
+      "references": [
+        {
+          "chunk": "input_from_keyboard",
+          "topic": "uses this routine to fetch characters from the keyboard queue"
+        },
+        {
+          "chunk": "input_from_screen_or_keyboard",
+          "topic": "keyboard input path uses LP2 when reading from keyboard"
+        }
+      ]
+    },
+    {
+      "start": 801,
+      "end": 857,
+      "name": "input_from_keyboard",
+      "description": "Main keyboard input loop. Waits for a key (uses LP2 to fetch chars) and echoes to the screen except for <shift/RUN>, which injects the string 'LOAD <CR> RUN <CR>' into the keyboard buffer. Handles carriage return detection, computes input line end (INDX), sets up cursor and flags (CRSV, AUTODN, PNTR, QTSW), and may call retreat cursor if required. (Code: $E5CA..$E65C).",
+      "references": [
+        {
+          "chunk": "lp2_get_char_from_keyboard_buffer",
+          "topic": "fetches characters using LP2"
+        },
+        {
+          "chunk": "setup_screen_print",
+          "topic": "calls print/setup routines to echo characters to screen"
+        },
+        {
+          "chunk": "retreat_cursor",
+          "topic": "may call retreat cursor when restoring previous cursor line"
+        }
+      ]
+    },
+    {
+      "start": 858,
+      "end": 911,
+      "name": "input_from_screen_or_keyboard",
+      "description": "INPUT helper that supports reading from screen memory (as well as keyboard). Preserves X/Y, branches depending on CRSW to keyboard or screen input, reads character at current screen pointer PNT ($D1), applies quote tests and reverse (RVS) handling, increments PNTR, calls QUOTES TSET, and prepares return value (handling special 0xDE mapping to 0xFF). Also interacts with default I/O device flags (DFLTN/DFLTO) and calls screen output as needed. (Code: $E632..$E683).",
+      "references": [
+        {
+          "chunk": "quotes_tset",
+          "topic": "calls QUOTES TSET to toggle quotes mode when reading a quote character"
+        },
+        {
+          "chunk": "input_from_keyboard",
+          "topic": "keyboard path branches here when CRSW indicates keyboard input"
+        }
+      ]
+    },
+    {
+      "start": 912,
+      "end": 922,
+      "name": "quotes_tset",
+      "description": "QUOTES TSET: tests A for ASCII quote (\" $22). If so, toggles the QTSW flag ($D4) and restores A to the quote character. Used to track whether an open quote is active for INPUT/editing behavior. (Code: $E684..$E690).",
+      "references": [
+        {
+          "chunk": "input_from_screen_or_keyboard",
+          "topic": "invokes this routine when reading screen characters to update quotes state"
+        },
+        {
+          "chunk": "output_to_screen_unshifted_and_control_codes",
+          "topic": "output path calls QUOTES TSET before printing characters to determine quotes mode"
+        }
+      ]
+    },
+    {
+      "start": 923,
+      "end": 951,
+      "name": "setup_screen_print",
+      "description": "Prepare and perform a single character print to screen. Tests RVS (reverse) and INSRT (insert mode) flags, toggles bit7 of the character for reversed display, decrements insert counter if active, fetches current COLOR ($0286) into X, calls the low-level print-to-screen routine ($EA13), advances cursor, and restores registers/flags before returning. (Code: $E691..$E6B5).",
+      "references": [
+        {
+          "chunk": "output_to_screen_unshifted_and_control_codes",
+          "topic": "used by the CHROUT output path to perform the actual character print and cursor advance"
+        },
+        {
+          "chunk": "advance_cursor",
+          "topic": "calls advance cursor after printing a character"
+        }
+      ]
+    },
+    {
+      "start": 952,
+      "end": 987,
+      "name": "advance_cursor",
+      "description": "Advance cursor one screen position. Increments PNTR ($D3) and checks against LNMX ($D5). Handles crossing a logical 40/80-column boundary: links logical lines via LDTB1 ($D9,X), updates LNMX to allow 80-character logical lines (adds $28), checks auto-scroll (AUTODN $0292) and either opens a space or scrolls the screen down when bottom is reached. (Code: $E6B6..$E6EB).",
+      "references": [
+        {
+          "chunk": "setup_screen_print",
+          "topic": "called after printing a character to move the cursor"
+        },
+        {
+          "chunk": "output_to_screen_unshifted_and_control_codes",
+          "topic": "advance cursor logic is used throughout screen output for wrapping and scrolling"
+        },
+        {
+          "chunk": "retreat_cursor",
+          "topic": "inverse operation to reposition the cursor when backing up across logical lines"
+        }
+      ]
+    },
+    {
+      "start": 988,
+      "end": 1002,
+      "name": "retreat_cursor",
+      "description": "Retreat cursor across logical line links. Scans the line-link table LDTB1 ($D9,X) clearing or testing bit7 to find the start of a logical line, then jumps to the routine that sets the start-of-line pointer. Also provides code to decrement TBLX (physical line) and set PNTR to 0 when moving to the previous physical line. (Code: $E6ED..$E700).",
+      "references": [
+        {
+          "chunk": "advance_cursor",
+          "topic": "used when advancing/wrapping the cursor needs to be reversed or when editing back past line start"
+        },
+        {
+          "chunk": "back_to_previous_line",
+          "topic": "used by delete/left-cursor operations to move onto the previous line"
+        }
+      ]
+    },
+    {
+      "start": 1003,
+      "end": 1021,
+      "name": "back_to_previous_line",
+      "description": "Handle moving the cursor to the end of the previous line (used by DEL and cursor-left). Tests top-of-screen, adjusts TBLX ($D6) and PNTR ($D3) and calls the routine to set screen pointers to the new line start. Cleans up saved registers on return. (Code: $E701..$E715).",
+      "references": [
+        {
+          "chunk": "retreat_cursor",
+          "topic": "adjusts line/table pointers related to retreating across logical/physical lines"
+        },
+        {
+          "chunk": "output_to_screen_unshifted_and_control_codes",
+          "topic": "invoked by DEL and cursor-left handling in the output path"
+        }
+      ]
+    },
+    {
+      "start": 1022,
+      "end": 1133,
+      "name": "output_to_screen_unshifted_and_control_codes",
+      "description": "CHROUT: output to screen entry and handling for unshifted characters. Saves registers, selects unshifted vs shifted paths, and implements unshifted character processing: printing ordinary ASCII/PET graphics, handling control codes (<RETURN>, <DEL>, cursor right/down, HOME, RVS, insert mode interaction, synchronising color RAM, moving text when deleting, opening a space for insertion, setting colours and invoking graphics/text control when needed). Integrates QUOTES TSET, SET UP SCREEN PRINT, ADVANCE/RETREAT logic and calls for scrolling. (Prologue + unshifted control handling: $E716..$E7D1 / $E716..$EC44 entry into graphics/text).",
+      "references": [
+        {
+          "chunk": "setup_screen_print",
+          "topic": "performs the actual character rendering (called from this output path)"
+        },
+        {
+          "chunk": "advance_cursor",
+          "topic": "used to move cursor after printing"
+        },
+        {
+          "chunk": "retreat_cursor",
+          "topic": "used when backspacing across logical lines"
+        },
+        {
+          "chunk": "quotes_tset",
+          "topic": "tests/toggles quote mode while echoing characters"
+        },
+        {
+          "chunk": "output_to_screen_shifted_characters",
+          "topic": "the shifted character branch continues in the shifted-character handler"
+        }
+      ]
+    },
+    {
+      "start": 1134,
+      "end": 1220,
+      "name": "output_to_screen_shifted_characters",
+      "description": "CHROUT: handling for shifted characters and control codes. Processes shifted ordinary ASCII and PET graphics and control keys in shifted state: shifted RETURN, INST (insert), cursor up, RVS OFF, cursor left, CLR, insertion routines (opening space and moving characters right), insert-mode toggling, and navigation (cursor up/down/left) including top/bottom checks and pointer adjustments. Calls routines to open space, synchronise color pointers, set colour codes and enter graphics/text mode as needed. (Code: $E7D4..$E874 and related jumps to $E8CB/$EC4F).",
+      "references": [
+        {
+          "chunk": "output_to_screen_unshifted_and_control_codes",
+          "topic": "shifted branch is the counterpart to the unshifted output handling and shares helpers like set colour and graphics/text routines"
+        },
+        {
+          "chunk": "setup_screen_print",
+          "topic": "also used when shifted characters are displayed as reversed/insertion output"
+        },
+        {
+          "chunk": "advance_cursor",
+          "topic": "cursor movement and line wrap logic relied upon by shifted-character operations"
+        }
+      ]
+    },
+    {
+      "start": 1221,
+      "end": 1236,
+      "name": "go_to_next_line",
+      "description": "Places the cursor at the start of the next logical screen line. Handles linked (double) logical lines by advancing two physical lines when necessary. Uses LXSP ($C9) and TBLX ($D6) pointers, tests for bottom-of-screen and calls the scroll routine when needed. Ends by storing updated TBLX and jumping to set screen pointers.",
+      "references": [
+        {
+          "chunk": "scroll_screen",
+          "topic": "called when cursor moves past bottom of screen (scroll down)"
+        },
+        {
+          "chunk": "set_start_of_line",
+          "topic": "sets screen pointers after moving to the next line"
+        },
+        {
+          "chunk": "output_carriage_return",
+          "topic": "used by carriage return to position cursor"
+        }
+      ]
+    },
+    {
+      "start": 1237,
+      "end": 1247,
+      "name": "output_carriage_return",
+      "description": "Handles the <CARRIAGE RETURN> action in the editor. Disables editor modes (insert, reversed, quotes), resets PNTR to column 0, and places the cursor at the start of the next line by calling go_to_next_line. Then jumps to finish screen print.",
+      "references": [
+        {
+          "chunk": "go_to_next_line",
+          "topic": "moves cursor to next line"
+        },
+        {
+          "chunk": "print_to_screen",
+          "topic": "follows carriage return behavior to finish screen print"
+        }
+      ]
+    },
+    {
+      "start": 1248,
+      "end": 1264,
+      "name": "check_line_decrement",
+      "description": "When moving the cursor backwards from the start of a screen line, places the cursor at the end of the line above. Tests both column 0 and column 40 by adding $28 (40) and adjusting the logical line index. Uses PNTR ($D3) and TBLX ($D6).",
+      "references": [
+        {
+          "chunk": "check_line_increment",
+          "topic": "inverse operation: moving forward past end of line"
+        }
+      ]
+    },
+    {
+      "start": 1265,
+      "end": 1283,
+      "name": "check_line_increment",
+      "description": "When moving the cursor forward from the end of a screen line, places the cursor at the start of the line below. Compares PNTR ($D3) with end-of-line positions (column 39 and +$28) and increments TBLX ($D6) unless at bottom of screen. Handles wrap between physical/logical double-lines.",
+      "references": [
+        {
+          "chunk": "check_line_decrement",
+          "topic": "inverse operation: moving backward past start of line"
+        }
+      ]
+    },
+    {
+      "start": 1284,
+      "end": 1297,
+      "name": "set_colour_code",
+      "description": "Compares the ASCII code in accumulator (A) against the 16-entry Commodore ASCII colour code table. If a match is found, stores the table offset (colour value) into COLOR at $0286. Iterates over 16 table entries.",
+      "references": [
+        {
+          "chunk": "colour_code_table",
+          "topic": "table of 16 Commodore ASCII codes used for comparison"
+        }
+      ]
+    },
+    {
+      "start": 1298,
+      "end": 1319,
+      "name": "colour_code_table",
+      "description": "Table of 16 Commodore ASCII codes representing available colours (black..grey3). Lists the byte values for colour0..colourF (example: red is $1C). Used by set_colour_code to map ASCII colour characters to colour values.",
+      "references": [
+        {
+          "chunk": "set_colour_code",
+          "topic": "compares (A) to this table to select COLOR"
+        }
+      ]
+    },
+    {
+      "start": 1320,
+      "end": 1393,
+      "name": "scroll_screen",
+      "description": "Scrolls the screen down by one physical line. If the top lines are linked, repeats scrolling. Saves/ restores SAL/EAL on the stack, decrements TBLX and LXSP, sets start-of-line for each line, moves lines up, clears bottom line, updates the screen line link table (LDTB1/LDTB arrays), and checks CIA#1 keyboard column for <CTRL> to possibly interrupt. Calls set_start_of_line, move_a_screen_line and clear_screen_line.",
+      "references": [
+        {
+          "chunk": "set_start_of_line",
+          "topic": "used to compute start address for each line during scroll"
+        },
+        {
+          "chunk": "move_a_screen_line",
+          "topic": "moves characters and colour bytes up one line during scroll"
+        },
+        {
+          "chunk": "clear_screen_line",
+          "topic": "clears new bottom line after moving lines"
+        }
+      ]
+    },
+    {
+      "start": 1394,
+      "end": 1446,
+      "name": "open_a_space_on_the_screen",
+      "description": "Implements INSERT: opens a space on the current screen line. Checks screen line link table for linked lines, may call scroll_screen when near bottom. Otherwise pushes SAL/EAL, loops to move and clear lines downwards, and adjusts the link table. Uses a temporary index ($02A5) and calls move_a_screen_line, clear_screen_line and adjust-link-table routine ($E6DA).",
+      "references": [
+        {
+          "chunk": "scroll_screen",
+          "topic": "called when space insertion requires scrolling"
+        },
+        {
+          "chunk": "move_a_screen_line",
+          "topic": "used to move individual screen lines down to open a space"
+        },
+        {
+          "chunk": "clear_screen_line",
+          "topic": "clears the inserted/emptied screen line"
+        }
+      ]
+    },
+    {
+      "start": 1447,
+      "end": 1464,
+      "name": "move_a_screen_line",
+      "description": "Moves a single screen line down (character-by-character) and moves the corresponding colour bytes. First calls synchronise_colour_transfer to set up colour pointers, then loops over 40 characters copying screen RAM from ($AC) to ($D1) and colour RAM from ($AE) to ($F3).",
+      "references": [
+        {
+          "chunk": "synchronise_colour_transfer",
+          "topic": "prepares the temporary colour RAM pointer before moving a line"
+        },
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "the colour pointer mechanism used to map screen addresses to colour RAM addresses"
+        }
+      ]
+    },
+    {
+      "start": 1465,
+      "end": 1477,
+      "name": "synchronise_colour_transfer",
+      "description": "Sets up a temporary pointer in EAL ($AE/$AF) to the colour RAM address that corresponds to the temporary screen address in EAL. Calls synchronise_colour_pointer and then prepares SAL/EAL to point to $D800-series colour RAM by ORing the high byte with $D8.",
+      "references": [
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "used to derive the colour RAM pointer from the current screen address"
+        },
+        {
+          "chunk": "move_a_screen_line",
+          "topic": "called before moving characters so colour transfer is aligned"
+        }
+      ]
+    },
+    {
+      "start": 1478,
+      "end": 1489,
+      "name": "set_start_of_line",
+      "description": "Given X=line number, loads the low byte of the screen-line address from a ROM table and derives the high byte from the screen link table and HIBASE ($0288). Stores the computed low/high bytes into $D1/$D2 (current screen line address pointer).",
+      "references": [
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "after start-of-line is set, colour pointer is synchronised for that line"
+        },
+        {
+          "chunk": "scroll_screen",
+          "topic": "used when iterating over lines to move or clear during scroll"
+        }
+      ]
+    },
+    {
+      "start": 1490,
+      "end": 1505,
+      "name": "clear_screen_line",
+      "description": "Sets the start of the specified screen line then fills it with ASCII spaces ($20). Also clears the corresponding colour RAM line by calling the colour-reset routine (sets colour to COLOR). Includes a free NOP byte after the routine.",
+      "references": [
+        {
+          "chunk": "set_start_of_line",
+          "topic": "computes the address to start clearing from"
+        },
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "used to position the colour RAM pointer before clearing colours"
+        },
+        {
+          "chunk": "print_to_screen",
+          "topic": "both routines write to screen and colour RAM at computed pointers"
+        }
+      ]
+    },
+    {
+      "start": 1506,
+      "end": 1521,
+      "name": "print_to_screen",
+      "description": "Directly stores a character to screen RAM and its colour to colour RAM. Saves the character in Y, initializes the blink timer (BLNCT), synchronises the colour pointer, then writes the character from (A) to ($D1),Y and colour from X to ($F3),Y.",
+      "references": [
+        {
+          "chunk": "synchronise_colour_pointer",
+          "topic": "ensures the colour RAM pointer corresponds to the current screen line"
+        },
+        {
+          "chunk": "set_colour_code",
+          "topic": "used earlier to compute the colour value stored by this routine"
+        }
+      ]
+    },
+    {
+      "start": 1522,
+      "end": 1534,
+      "name": "synchronise_colour_pointer",
+      "description": "Derives and writes the pointer to colour RAM based on the current screen line address in $D1/$D2. Copies low byte $D1 to $F3, masks and ORs the high byte $D2 with $D8 and stores it in $F4 so subsequent operations access the correct $D800 colour RAM area.",
+      "references": [
+        {
+          "chunk": "print_to_screen",
+          "topic": "called to sync colour pointer before printing a character"
+        },
+        {
+          "chunk": "clear_screen_line",
+          "topic": "used to position colour writes when clearing a line"
+        },
+        {
+          "chunk": "move_a_screen_line",
+          "topic": "used to prepare colour pointer prior to moving a line"
+        },
+        {
+          "chunk": "synchronise_colour_transfer",
+          "topic": "lower-level call that also uses this pointer setup"
+        }
+      ]
+    },
+    {
+      "start": 1535,
+      "end": 1587,
+      "name": "main_irq_entry",
+      "description": "Main IRQ entry routine invoked via hardware vector $FF48 -> CINV. Updates the realtime clock (JSR $FFEA -> UDTIM), handles cursor blinking (BLNSW at $00CC, BLNCT at $00CD, BLNON/BLNON toggling, inverts character under cursor at $00CE), synchronises colour pointer and GDCOL ($0287/$0286), prints the toggled cursor glyph via a screen-print routine, processes processor port flags in $01 (STOP key handling), calls the keyboard scanner (JSR $EA87), clears CIA#1 interrupt control register ($DC0D), restores registers from stack (PLA/TAY/PLA/TAX/PLA) and returns from interrupt (RTI).",
+      "references": [
+        {
+          "chunk": "scnkey_keyboard_scan",
+          "topic": "keyboard scanning entry point called by MAIN IRQ"
+        },
+        {
+          "chunk": "process_key_image_decode_and_buffer",
+          "topic": "processing of key once SCNKEY found a key"
+        }
+      ]
+    },
+    {
+      "start": 1588,
+      "end": 1639,
+      "name": "scnkey_keyboard_scan",
+      "description": "SCNKEY - keyboard scanning routine entered from KERNAL ($FF9F). Clears the shift-flag (SHFLAG $028D), initialises keyboard scan variables (loads $CB with #$40), writes to CIA keyboard port ($DC00) and reads from CIA data-in ($DC01). Implements an 8x8 matrix scan: sets the row mask ($DC00), loops 8 rows (LDX #$08), debounces reads by waiting for stable $DC01, tests bits (LSR/ROL) to detect a pressed key (0 bit = pressed), uses the KEYTAB vector (stored to $F5/$F6 pointing at $EB81) to translate matrix position to a key number/value, sets SHFLAG on special keys, stores the pressed key number in SFDX/$CB, counts up to 64 keys (CPY #$41) and iterates rows/columns accordingly. After scanning completes it cleans up stack and returns to PROCESS KEY IMAGE via the KEYLOG vector jump.",
+      "references": [
+        {
+          "chunk": "main_irq_entry",
+          "topic": "called from IRQ to scan the keyboard"
+        },
+        {
+          "chunk": "process_key_image_decode_and_buffer",
+          "topic": "next stage: decode the scanned key and handle repeat/buffering"
+        }
+      ]
+    },
+    {
+      "start": 1640,
+      "end": 1696,
+      "name": "process_key_image_decode_and_buffer",
+      "description": "PROCESS KEY IMAGE: Decodes a pressed key and calculates its ASCII value using the KEYTAB decode tables. Entry jumps via KEYLOG vector ($028F) to the handler at $EAE0. Loads the key index (SFDX from $CB), fetches the ASCII from the current KEYTAB table (($F5),Y), implements key-repeat detection by comparing to the last key (LSTX $C5) and managing repeat delay/counters (DELAY $028C, KOUNT $028B). Tests repeat mode (RPTFLG $028A) and special-case keys that do not repeat (<DEL>, <space>, cursor keys). When repeat conditions are met it decrements DELAY/KOUNT and, if allowed and buffer space exists (NDX $C6 vs XMAX $0289), stores the new character into the keyboard buffer ($0277,X), updates NDX and exits (RTS). Also writes #$7F to the keyboard write register ($DC00) before returning.",
+      "references": [
+        {
+          "chunk": "scnkey_keyboard_scan",
+          "topic": "provides the key index (SFDX) used here"
+        },
+        {
+          "chunk": "shift_cbm_toggle_keytab_select",
+          "topic": "handles shift/CBM combination and selects the appropriate KEYTAB vector before re-entering this decode routine"
+        }
+      ]
+    },
+    {
+      "start": 1697,
+      "end": 1718,
+      "name": "shift_cbm_toggle_keytab_select",
+      "description": "Shift/CBM handling and KEYTAB selection. Reads SHFLAG ($028D) to detect simultaneous <SHIFT> and <CBM> presses and compares against last shift pattern (LSTSHF $028E). If MODE ($0291) allows, toggles VIC memory control bit ($D018 EOR #$02) to switch upper/lower case character set. Handles <CTRL> detection by shifting the scanned key number to select an alternate KEYTAB offset, loads the low/high bytes of the appropriate KEYTAB pointer from the keyboard select vectors at $EB79/$EB7A into $F5/$F6, and then jumps back to the decode routine (JMP $EAE0) to produce the final ASCII value.",
+      "references": [
+        {
+          "chunk": "process_key_image_decode_and_buffer",
+          "topic": "after selecting KEYTAB vector this jumps back to the decode routine"
+        },
+        {
+          "chunk": "scnkey_keyboard_scan",
+          "topic": "sets SHFLAG/SFDX which this code inspects to select tables or toggle VIC"
+        }
+      ]
+    },
+    {
+      "start": 1719,
+      "end": 1726,
+      "name": "keyboard_select_vectors",
+      "description": "Table of four vectors pointing to the start addresses of the four keyboard decode tables: vectors to unshifted ($EB81), shifted ($EBC2), Commodore ($EC03) and control ($EC78) keyboard tables.",
+      "references": [
+        {
+          "chunk": "keyboard_table_unshifted",
+          "topic": "unshifted keyboard decode table (starts at $EB81)"
+        },
+        {
+          "chunk": "keyboard_table_shifted",
+          "topic": "shifted keyboard decode table (starts at $EBC2)"
+        },
+        {
+          "chunk": "keyboard_table_commodore",
+          "topic": "Commodore keyboard decode table (starts at $EC03)"
+        },
+        {
+          "chunk": "keyboard_table_control",
+          "topic": "control keyboard decode table (starts at $EC78)"
+        }
+      ]
+    },
+    {
+      "start": 1727,
+      "end": 1742,
+      "name": "keyboard_table_unshifted",
+      "description": "The unshifted keyboard decode table. Describes how the ASCII code for a pressed key is determined by the intersection of the row written to $DC00 and the column read from $DC01. Contains the 8x9 byte matrix of ASCII values for unshifted keys and a free byte ($FF) at the end.",
+      "references": [
+        {
+          "chunk": "keyboard_select_vectors",
+          "topic": "vectors pointing to this table"
+        },
+        {
+          "chunk": "keyboard_table_shifted",
+          "topic": "shifted keyboard decode table for shifted states"
+        },
+        {
+          "chunk": "keyboard_table_control",
+          "topic": "control table with special functions (Ctrl keys)"
+        }
+      ]
+    },
+    {
+      "start": 1743,
+      "end": 1757,
+      "name": "keyboard_table_shifted",
+      "description": "The shifted keyboard decode table. Same matrix format as the unshifted table: ASCII (and CBM) codes given by row (written to $DC00) and column (read from $DC01). Contains shifted-character values and a trailing free byte ($FF).",
+      "references": [
+        {
+          "chunk": "keyboard_select_vectors",
+          "topic": "vectors pointing to this table"
+        },
+        {
+          "chunk": "keyboard_table_unshifted",
+          "topic": "unshifted table for normal key states"
+        },
+        {
+          "chunk": "keyboard_table_commodore",
+          "topic": "Commodore key map with alternate symbols"
+        }
+      ]
+    },
+    {
+      "start": 1758,
+      "end": 1772,
+      "name": "keyboard_table_commodore",
+      "description": "The Commodore-key decode table (third keyboard table). Provides the mapping of keys to CBM/Commodore-specific characters (alternate symbol set). Matrix format is the same (row -> $DC00, column <- $DC01). Ends with a free byte ($FF).",
+      "references": [
+        {
+          "chunk": "keyboard_select_vectors",
+          "topic": "vectors pointing to this table"
+        },
+        {
+          "chunk": "keyboard_table_shifted",
+          "topic": "shifted keyboard decode table (for shifted symbols)"
+        },
+        {
+          "chunk": "graphics_text_control",
+          "topic": "routine that toggles character set (text/graphics) which affects Commodore character mapping"
+        }
+      ]
+    },
+    {
+      "start": 1773,
+      "end": 1800,
+      "name": "graphics_text_control",
+      "description": "Routine to toggle between text and graphics character sets and to enable/disable the <Shift-CBM> keys. Called by the main output-to-screen routine with A containing a CBM ASCII code on entry. Handles switching to lower/upper case by manipulating VIC memory control ($D018) and enables/disables MODE (<Shift-CBM>) via $0291.",
+      "references": [
+        {
+          "chunk": "keyboard_table_commodore",
+          "topic": "Commodore character set affected by this routine"
+        },
+        {
+          "chunk": "keyboard_table_control",
+          "topic": "control keys that can enable/disable upper/lower switching"
+        },
+        {
+          "chunk": "video_chip_setup_table",
+          "topic": "VIC register $D018 is part of the initial VIC setup"
+        }
+      ]
+    },
+    {
+      "start": 1801,
+      "end": 1822,
+      "name": "keyboard_table_control",
+      "description": "The control keyboard decode table (fourth table). Same row/column mapping via $DC00/$DC01. Contains special control functions (examples: Ctrl-H disables upper/lower switch, Ctrl-I enables it, Ctrl-S homes cursor, Ctrl-T deletes character). Matrix values listed with a trailing free byte ($FF).",
+      "references": [
+        {
+          "chunk": "keyboard_select_vectors",
+          "topic": "vectors pointing to this table"
+        },
+        {
+          "chunk": "graphics_text_control",
+          "topic": "uses the control-table functions to enable/disable upper/lower case"
+        }
+      ]
+    },
+    {
+      "start": 1823,
+      "end": 1863,
+      "name": "video_chip_setup_table",
+      "description": "Initial values for the VIC-II chip registers at startup. Lists default bytes for $D000-$D02D: sprite X/Y coordinates and MSBs, VIC control registers ($D011,$D012,$D018 etc.), light-pen positions, sprite enable/expansion, IRQ flag/mask, priority and multicolor settings, collision registers, border/background colors, multicolor and sprite color registers.",
+      "references": [
+        {
+          "chunk": "graphics_text_control",
+          "topic": "manipulates $D018 (VIC memory control) referenced here"
+        },
+        {
+          "chunk": "shift_run_equivalent",
+          "topic": "keyboard actions produce strings placed into keyboard buffer, displayed under VIC settings"
+        }
+      ]
+    },
+    {
+      "start": 1864,
+      "end": 1869,
+      "name": "shift_run_equivalent",
+      "description": "The string placed in the keyboard buffer when <Shift-RUN> is pressed: the message 'LOAD <CR> RUN <CR>' (bytes for 'LOAD', carriage return, 'RUN', carriage return).",
+      "references": [
+        {
+          "chunk": "keyboard_table_control",
+          "topic": "control-key behavior that can place strings into the keyboard buffer"
+        },
+        {
+          "chunk": "low_byte_screen_line_addresses",
+          "topic": "screen address tables used when output routines display text generated by keyboard input"
+        }
+      ]
+    },
+    {
+      "start": 1870,
+      "end": 1879,
+      "name": "low_byte_screen_line_addresses",
+      "description": "Table of low bytes of screen line addresses (eight-bit low bytes). The high byte is derived from the page on which the screen starts. Notes that some PET models had an additional high-byte table. Lists the low bytes for successive screen lines.",
+      "references": [
+        {
+          "chunk": "video_chip_setup_table",
+          "topic": "VIC memory setup determines screen base page used with these low bytes"
+        },
+        {
+          "chunk": "graphics_text_control",
+          "topic": "screen output routines use these addresses to write characters"
+        }
+      ]
+    },
+    {
+      "start": 1880,
+      "end": 1880,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 1881,
+      "end": 1983,
+      "name": "serial_bus_protocol_and_io",
+      "description": "Serial bus (IEC) TALK/LISTEN/UNTALK/UNLISTEN handling and low-level bit output: TALK/LISTEN entry points (vectors $FFB4/$FFB1) ORA commands (set TALK/LISTEN/UNTALK/UNLISTEN flags), wait for serial bus idle, handshake and send data via SEND DATA ON SERIAL BUS routine; manipulates ATN by writing to $DD00, uses BSOUR/BSOUT buffers ($95), C3PO flags ($94), and routines to set CLK and data lines. Uses helpers to send bits by rotating right and polling DD00. Error paths set ST status via FE1C and error flags for device not present or write timeout.",
+      "references": [
+        {
+          "chunk": "send_data_serial_bus_continued_and_errors",
+          "topic": "detailed send-data loop with bit-by-bit output and timeout via CIA timers"
+        },
+        {
+          "chunk": "acptr_receive_from_serial_bus",
+          "topic": "ACPTR complement routine to receive bytes from IEC bus"
+        }
+      ]
+    },
+    {
+      "start": 1984,
+      "end": 1997,
+      "name": "flag_errors",
+      "description": "FLAG ERRORS routine: loads A with one of two error flags (#$80 = device not present or #$03 = write timeout), stores the value into the I/O status word ST via JSR $FE1C, then clears/sets processor flags (CLI, CLC) and performs a final unconditional branch (BCC) to the final handshake. Covers the assembly sequence that sets ST and exits the serial transfer with the final handshake.",
+      "references": [
+        {
+          "chunk": "second_listen_sa",
+          "topic": "next KERNAL routines invoked after final handshake"
+        },
+        {
+          "chunk": "acptr_receive_from_serial_bus",
+          "topic": "related I/O status setting for read timeouts and EOI"
+        }
+      ]
+    },
+    {
+      "start": 1998,
+      "end": 2006,
+      "name": "second_listen_sa",
+      "description": "SECOND: SEND LISTEN SECONDARY ADDRESS. Entry: A contains the secondary address. Stores A into the serial buffer BSOUT ($95) and calls the handshake/send-byte routine at $ED36. This routine is the KERNAL SECOND ($FF93) vector implementation and drops through to CLEAR ATN afterwards.",
+      "references": [
+        {
+          "chunk": "clear_atn",
+          "topic": "drops through to CLEAR ATN to release attention line"
+        },
+        {
+          "chunk": "tksa_send_talk_sa",
+          "topic": "similar handling for sending TALK secondary address"
+        }
+      ]
+    },
+    {
+      "start": 2007,
+      "end": 2015,
+      "name": "clear_atn",
+      "description": "CLEAR ATN: Clears the ATN (attention) line on the serial bus so subsequent data is not interpreted as a command. Reads serial port at $DD00, AND# $F7 to clear bit 4 (ATN high/false), writes back to $DD00, and returns (RTS).",
+      "references": [
+        {
+          "chunk": "second_listen_sa",
+          "topic": "called after SECOND writes address to buffer"
+        },
+        {
+          "chunk": "untlk_unlisten",
+          "topic": "used after UN/TALK/UNLISTEN sequences to restore ATN"
+        }
+      ]
+    },
+    {
+      "start": 2016,
+      "end": 2024,
+      "name": "tksa_send_talk_sa",
+      "description": "TKSA: SEND TALK SECONDARY ADDRESS. KERNAL TKSA ($FF96) vector: A holds the secondary address which is stored in the serial buffer BSOUR ($95) and sent to the bus via JSR $ED36 (handshake/send). The routine then falls through to the routines that wait for the clock and clear ATN as needed.",
+      "references": [
+        {
+          "chunk": "wait_for_clock",
+          "topic": "subsequent routine to synchronize and wait for CLK"
+        },
+        {
+          "chunk": "clear_atn",
+          "topic": "clear ATN once talk/listen command completed"
+        }
+      ]
+    },
+    {
+      "start": 2025,
+      "end": 2035,
+      "name": "wait_for_clock",
+      "description": "WAIT FOR CLOCK helper routine: Disables interrupts (SEI), sets data=0 (JSR $EEA0), sets ATN=1 (JSR $EDBE), sets CLK=1 (JSR $EE85), then repeatedly reads the serial bus (JSR $EEA9) and loops until CLK becomes 0 (tests bit6 via BMI). Re-enables interrupts (CLI) and returns. Used to synchronize with remote device clock transitions.",
+      "references": [
+        {
+          "chunk": "tksa_send_talk_sa",
+          "topic": "used after sending TALK secondary address to await clock"
+        },
+        {
+          "chunk": "acptr_receive_from_serial_bus",
+          "topic": "CLK/data handling and serial I/O primitives"
+        }
+      ]
+    },
+    {
+      "start": 2036,
+      "end": 2051,
+      "name": "ciout_send_serial_deferred",
+      "description": "CIOUT: SEND SERIAL DEFERRED. KERNAL CIOUT ($FFA8) entry point. Tests C3PO flag (bit in $94) with BIT $94; if not set, it sets the deferred-output flag by rotating $94 (ROR) under SEC, then pushes A (PHA), calls send-data routine at $ED40 to place the byte on the serial bus, pulls A (PLA), stores the character into BSOUR ($95), clears carry (CLC) to indicate no error, and returns. Implements deferred output queuing for the serial driver.",
+      "references": [
+        {
+          "chunk": "tksa_send_talk_sa",
+          "topic": "both use the send-byte handshake $ED36/$ED40 primitives"
+        },
+        {
+          "chunk": "flag_errors",
+          "topic": "error flag setting and exit handshake when send fails"
+        }
+      ]
+    },
+    {
+      "start": 2052,
+      "end": 2077,
+      "name": "untlk_unlisten",
+      "description": "UNTLK / UNLISTEN sequence. KERNAL UNTALK ($FFAB) and UNLISTEN ($FFAE) vector here. Disables interrupts (SEI), performs serial bus I/O (JSR $EE8E), modifies $DD00 to set ATN=0 (ORA #$08; STA $DD00) and set CLK=0, loads A with command byte (#$5F for UNTALK or #$3F for UNLISTEN), sends the command (JSR $ED11), clears ATN (JSR $EDBE), then performs a short delay loop (LDX #$0A; DEX loop) before setting CLK=1 (JSR $EE85) and data=1 (JMP $EE97). Handles the bus-level toggling required to terminate talk/listen sessions.",
+      "references": [
+        {
+          "chunk": "clear_atn",
+          "topic": "uses clear ATN after sending UNTALK/UNLISTEN"
+        },
+        {
+          "chunk": "ciout_send_serial_deferred",
+          "topic": "shares serial bus I/O primitives and handshake patterns"
+        }
+      ]
+    },
+    {
+      "start": 2078,
+      "end": 2138,
+      "name": "acptr_receive_from_serial_bus",
+      "description": "ACPTR: RECEIVE FROM SERIAL BUS. KERNAL ACPTR ($FFA5) implementation. Disables interrupts, initializes a countdown ($A5) and sets CLK=1, then uses CIA#1 timer B ($DC07/$DC0F) as a ~65 ms one-shot timeout. If timer B fires, sets ST to read-timeout (#$02) via JSR $FE1C. Tests for EOI and sets ST #$40 (EOF) if present. Receives one byte bit-by-bit into temporary ($A4): waits for bus settle, samples data by ASL/ROR into $A4, repeats 8 times. On EOI returns without transferring the byte; otherwise transfers $A4 to A, re-enables interrupts (CLI), clears C (CLC) to indicate no error, and RTS. Covers timer setup, EOI handling, bit-loop receive, and status-word updates.",
+      "references": [
+        {
+          "chunk": "flag_errors",
+          "topic": "sets I/O status word (ST) on read timeout or EOI"
+        },
+        {
+          "chunk": "wait_for_clock",
+          "topic": "uses serial clock/data primitives (set CLK/data routines) to sample bits"
+        }
+      ]
+    },
+    {
+      "start": 2139,
+      "end": 2199,
+      "name": "rs232_control_and_delay",
+      "description": "RS232/6551 control helpers and small delays: ACPTR (receive from serial bus uses CIA timer, sets ST on timeouts or EOI), SERIAL CLOCK ON/OFF (manipulate DD00 bit for CLK), SERIAL OUTPUT 1/0 (set data out line via DD00), GET SERIAL DATA AND CLOCK IN (read DD00 and shift into carry & bit7), DELAY 1 MS (software delay loop). These low-level port manipulations are used by both RS232 and IEC code for timing and bit-level I/O.",
+      "references": [
+        {
+          "chunk": "rs232_send_receive_helpers",
+          "topic": "RS232 send/receive state machine uses these primitives"
+        },
+        {
+          "chunk": "send_data_serial_bus_continued_and_errors",
+          "topic": "CIA timer-based timeouts and handshake usage"
+        }
+      ]
+    },
+    {
+      "start": 2200,
+      "end": 2270,
+      "name": "rs232_send_receive_helpers",
+      "description": "RS232 transmit state machine and configuration: RS232 SEND main routine (handles sending bits under NMI, uses BITTS/BITNUM/RODATA/ROPRTY for parity and bits), SEND NEW RS232 BYTE (setup BITTS, ROPRTY, read out buffer pages RODBS/RODBE), checks for 3-line vs X-line handshake (DSR/CTS), and sets RS232 status RSSTAT on handshake errors. Uses 6551 command/control images in $0293-$029D and buffer pointers $0298-$029E.",
+      "references": [
+        {
+          "chunk": "rs232_error_and_timer_and_bitcount",
+          "topic": "error codes, timer control and bit count computation"
+        },
+        {
+          "chunk": "rs232_receive_and_processing",
+          "topic": "receiver-side state machine that complements this transmitter"
+        }
+      ]
+    },
+    {
+      "start": 2271,
+      "end": 2271,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2272,
+      "end": 2306,
+      "name": "rs232_error_and_timer_and_bitcount",
+      "description": "RS232 error handling, timer disabling and bit count computation: 'NO DSR/CTS' handler sets RSSTAT image flags, DISABLE TIMER (manipulate CIA#2 ICR and ENABL $02A1 to mask interrupts and clear NMI), COMPUTE BIT COUNT (derive number of bits/stop bits from M51CTR $0293 and start X with default 9). These utilities support RS232 send/receive routines and handshake.",
+      "references": [
+        {
+          "chunk": "rs232_send_receive_helpers",
+          "topic": "called when RS232 TX setup finds missing DSR/CTS"
+        }
+      ]
+    },
+    {
+      "start": 2307,
+      "end": 2307,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2308,
+      "end": 2397,
+      "name": "rs232_receive_and_processing",
+      "description": "RS232 receive path and processing: RS232 RECEIVE (build input byte RIDATA under NMI, use INBIT/INPRTY flag handling), SET UP TO RECEIVE (configure CIA#2 ICR for edge detection and enable ENABL), PROCESS RS232 BYTE (parity checking, buffer storage, set RSSTAT on errors). Includes patch initialization to set RIPRTY on reception of start bit. Uses buffer pointers RIDBS/RIDBE ($029C/$029B) and RIBUF for storage.",
+      "references": [
+        {
+          "chunk": "rs232_control_and_delay",
+          "topic": "uses DELAY and GET SERIAL DATA helpers"
+        },
+        {
+          "chunk": "rs232_send_receive_helpers",
+          "topic": "complements transmit-side routines (RODATA, RIBUF)"
+        }
+      ]
+    },
+    {
+      "start": 2398,
+      "end": 2457,
+      "name": "submit_to_rs232_and_buffer_management",
+      "description": "RS232 submission and buffer setup: SUBMIT_TO_RS232 (handshaking — check DSR/CTS depending on mode, set RTS etc.), NO DSR error handler (sets RSSTAT = #$40), SEND TO RS232 BUFFER routine (copying data to device register and configuring DD I/O registers with $DD04/$DD05/$DD0E etc.), helpers to set clock/data lines and transfer config to 6551 images. Also includes logic used to add bytes to RS232 output circular buffers (RODBS/RODBE).",
+      "references": [
+        {
+          "chunk": "rs232_send_receive_helpers",
+          "topic": "fills RODATA and manipulates buffer pointers used by transmitter"
+        }
+      ]
+    },
+    {
+      "start": 2458,
+      "end": 2458,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2459,
+      "end": 2522,
+      "name": "rs232_buffers_input_and_idle",
+      "description": "RS232 input helpers and serial idle handling: INPUT FROM RS232 and F086 GET FROM RS232 (reads from RIBUF using RIDBE/RIDBS pointers and sets status), SERIAL BUS IDLE (waits for RS232 bus to be idle and sets CIA ICR appropriately), and buffer index increment/clear logic. Interacts with status image $0297 and buffer pages $029B-$029E.",
+      "references": [
+        {
+          "chunk": "rs232_receive_and_processing",
+          "topic": "RIBUF/RIDATA handling used when receiving bytes"
+        }
+      ]
+    },
+    {
+      "start": 2523,
+      "end": 2563,
+      "name": "kernal_io_message_table_and_print_direct",
+      "description": "KERNAL I/O messages table and printing helper: TABLE OF KERNAL I/O MESSAGES (I/O error, searching for, press play on tape, loading/saving/verifying/found/ok etc.) at $F0BD onward. PRINT MESSAGE IF DIRECT ($F12B) prints a message from the table only in direct mode (tests MSGFLG $9D) and uses CHROUT ($FFD2) for character output until terminator with high-bit set.",
+      "references": [
+        {
+          "chunk": "basic_file_commands_sys_save_load_verify_open_close",
+          "topic": "messages used by save/load/verify routines"
+        }
+      ]
+    },
+    {
+      "start": 2564,
+      "end": 2564,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2565,
+      "end": 2639,
+      "name": "getin_chrin_and_device_dispatch",
+      "description": "GETIN/CHRIN device dispatchors: GETIN ($FFE4) picks a byte from default input device DFLTN (keyboard $00: uses keyboard buffer NDX $C6; RS232 $02 uses RS232 fetch sequence), CHRIN ($FFCF) similar but returns two bytes and supports screen input if DFLTN=0/3 (uses INPUT/GET routines), and dispatcher to get bytes from serial/RS232 calls (calls $F086/$EE13/$F14E/$EE13 as needed). Uses NDX, CRSW ($D0), PNTR/TBLX for screen input and status word handling for RS232.",
+      "references": [
+        {
+          "chunk": "keyboard_input_and_screen_output",
+          "topic": "keyboard buffer format and input echo behavior"
+        },
+        {
+          "chunk": "rs232_buffers_input_and_idle",
+          "topic": "RS232 get functions and status handling"
+        }
+      ]
+    },
+    {
+      "start": 2640,
+      "end": 2662,
+      "name": "get_from_serial_rs232",
+      "description": "GET FROM SERIAL/RS232: Two-path receive logic. If the STATUS (ST) byte indicates no serial device, returns a carriage return (#0D) in A; otherwise dispatches to the serial bus receiver (ACPTR) or the RS232 receive routine and handles RS232 status masking (RSSTAT $0297). Includes code for checking ST and branching to the appropriate receive routine.",
+      "references": [
+        {
+          "chunk": "chrout_output_character",
+          "topic": "sends output to devices (screen/serial/RS232)"
+        },
+        {
+          "chunk": "find_file_lat_search",
+          "topic": "uses STATUS and device checks elsewhere in file I/O"
+        }
+      ]
+    },
+    {
+      "start": 2663,
+      "end": 2709,
+      "name": "chrout_output_character",
+      "description": "CHROUT ($FFD2) implementation: outputs one character (A). Saves A on stack, inspects default output device (DFLTO $9A) and routes to screen, serial-deferred send, or RS232. Handles RS232-related subcalls ($F80D/$F864), buffering into indirect pointer at $B2, and returns cleanly. Implements device selection logic and final RTS.",
+      "references": [
+        {
+          "chunk": "get_from_serial_rs232",
+          "topic": "receiving counterpart for serial/RS232 I/O"
+        },
+        {
+          "chunk": "send_secondary_address",
+          "topic": "sends secondary address and filenames when opening serial files"
+        }
+      ]
+    },
+    {
+      "start": 2710,
+      "end": 2749,
+      "name": "chkin_set_input_device",
+      "description": "CHKIN ($FFC6): set logical input device for a given logical file (X). Finds file entry, validates it's open and an input file, handles keyboard/screen/RS232 or serial-bus devices. For serial-bus devices sends TALK and secondary address (SA). Checks ST (STATUS) for device presence and stores default input device (DFLTN $99). Returns appropriate I/O errors if checks fail.",
+      "references": [
+        {
+          "chunk": "find_file_lat_search",
+          "topic": "finds logical file index used here"
+        },
+        {
+          "chunk": "clrchn_restore_default_io",
+          "topic": "reverts default devices (UNTALK/UNLISTEN)"
+        }
+      ]
+    },
+    {
+      "start": 2750,
+      "end": 2790,
+      "name": "chkout_set_output_device",
+      "description": "CHKOUT ($FFC9): set logical output device for a given logical file (X). Finds file entry, validates it's open and an output file, prevents keyboard assignment for output, and handles screen/RS232/serial-bus devices. For serial-bus devices sends LISTEN and SA and checks ST. Stores default output device (DFLTO $9A) or returns I/O errors if necessary.",
+      "references": [
+        {
+          "chunk": "chkin_set_input_device",
+          "topic": "symmetrical input-device logic (TALK vs LISTEN)"
+        },
+        {
+          "chunk": "send_secondary_address",
+          "topic": "SA/send logic used when selecting serial devices"
+        }
+      ]
+    },
+    {
+      "start": 2791,
+      "end": 2846,
+      "name": "close_file_device_cleanup",
+      "description": "CLOSE (part 1) ($FFC3): begin close of logical file (A). Finds logical file and fetches file parameters. If device is RS232, resets RS232 port (invokes RS232 init path and clears RS232 buffers). If device is serial-bus, will UNTALK/UNLISTEN later. For keyboard or screen simple table update path. Removes entry from file tables when closing RS232 devices and calls subroutines to reset I/O buffers and MEMTOP as needed.",
+      "references": [
+        {
+          "chunk": "close_file_table_update",
+          "topic": "completes close by updating open-file tables and counts"
+        },
+        {
+          "chunk": "open_file_create_and_device_dispatch",
+          "topic": "reverse of open: sets up device-specific state when opening files"
+        }
+      ]
+    },
+    {
+      "start": 2847,
+      "end": 2847,
+      "ignore": true,
+      "reason": "Single blank/spacing line between routines; non-technical formatting artifact."
+    },
+    {
+      "start": 2848,
+      "end": 2863,
+      "name": "close_file_part2",
+      "description": "CLOSE file routine (second part). Handles serial device UNLISTEN/UNTALK via $F642 and stack adjustments. Updates LDTND ($98), moves last table entry into closed-file slot (LAT $0259, FAT $0263, SAT $026D) and clears status before returning. Instructions: PLA, TAX, DEC/CPX on $98, LDY/STA with indexed indirect addressing.",
+      "references": [
+        {
+          "chunk": "close_file_part1",
+          "topic": "complements close operations and updates file tables"
+        }
+      ]
+    },
+    {
+      "start": 2864,
+      "end": 2864,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2865,
+      "end": 2880,
+      "name": "find_file",
+      "description": "FIND FILE: search LAT (table of active logical files) for a logical file number. Entry: (X) holds logical file to find. Scans LAT ($0259) using LDTND ($98). On success X contains offset (index) to position and Z flag set; otherwise Z clear. Uses STA/LDX/DEX/CMP/BNE/RTS. Zero page STATUS $90 is cleared at start.",
+      "references": [
+        {
+          "chunk": "close_file_part1",
+          "topic": "used by CLOSE routine to locate file entries"
+        },
+        {
+          "chunk": "set_file_values",
+          "topic": "retrieves file parameter values after a successful find"
+        }
+      ]
+    },
+    {
+      "start": 2881,
+      "end": 2892,
+      "name": "set_file_values",
+      "description": "SET FILE VALUES (SEETF): Given an offset in (X) into the file tables, sets current logical number LA ($B8), device FA ($BA) and secondary address SA ($B9) by loading from LAT ($0259), FAT ($0263) and SAT ($026D). Uses indexed LDA/STA.",
+      "references": [
+        {
+          "chunk": "find_file",
+          "topic": "find_file returns offset used by this routine"
+        }
+      ]
+    },
+    {
+      "start": 2893,
+      "end": 2893,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2894,
+      "end": 2900,
+      "name": "clall_abort_all_files",
+      "description": "CLALL: Abort all files. Vectored from CLALL ($ffe7). Clears LDTND ($98) to zero (no open files) and returns. Simple STA to $98.",
+      "references": [
+        {
+          "chunk": "clrchn_restore_default_io",
+          "topic": "CLALL may be used before restoring default IO channels"
+        }
+      ]
+    },
+    {
+      "start": 2901,
+      "end": 2918,
+      "name": "clrchn_restore_default_io",
+      "description": "CLRCHN: Restore default I/O. Vectored from CLRCHN ($ffcc). If default output device (DFLTO $9A) or input device (DFLTI $99) is on the serial bus (device >3) sends UNLISTEN/UNTALK to serial bus using JSR $EDFE/$EDEF, then sets defaults: screen as output ($9A=3) and keyboard as input ($99=0). Uses CPX/BCS/JSR/STA.",
+      "references": [
+        {
+          "chunk": "output_kernal_error_messages",
+          "topic": "CLRCHN is called by error handling to close I/O channels"
+        }
+      ]
+    },
+    {
+      "start": 2919,
+      "end": 2919,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 2920,
+      "end": 2995,
+      "name": "open_file_part1",
+      "description": "OPEN: Open file (entry point $ffc0). On entry file parameters must be set (LA $B8, FA $BA, SA $B9, FNADR $BB, FNLEN $B7). Checks for illegal LA (if 0 triggers I/O error #6), finds existing file (calls find_file $F30F), counts open files LDTND $98, inserts file into LAT/FAT/SAT tables, and branches to device-specific handlers (keyboard/screen return; serial and RS232 handled later). Uses JSR, CPX/BEQ/BCC/INC/STA/ORA.",
+      "references": [
+        {
+          "chunk": "find_file",
+          "topic": "checks if file already exists"
+        },
+        {
+          "chunk": "send_sa",
+          "topic": "sends secondary address and filename for serial devices"
+        },
+        {
+          "chunk": "open_rs232",
+          "topic": "opens RS232 files via RS232-specific code"
+        }
+      ]
+    },
+    {
+      "start": 2996,
+      "end": 3026,
+      "name": "send_sa",
+      "description": "SEND SA: Send secondary address and filename to serial device. Exits if no SA or no filename. Clears I/O status ($90), sends LISTEN to device ($ED0C), sends LISTEN SA ($EDB9) and checks STATUS for device presence. Sends each filename byte to serial via CIOUT/EDDD loop (uses FNADR pointer at ($BB) and FNLEN $B7). Ends by UNLISTEN via $F654 ($EDFE and auxiliary logic).",
+      "references": [
+        {
+          "chunk": "open_file_part1",
+          "topic": "called by OPEN to send SA & filename for serial devices"
+        },
+        {
+          "chunk": "open_rs232",
+          "topic": "RS232 open path differs and uses different initialization"
+        }
+      ]
+    },
+    {
+      "start": 3027,
+      "end": 3027,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3028,
+      "end": 3092,
+      "name": "open_rs232",
+      "description": "OPEN RS232: RS232-specific open sequence. Calls RS232 initialization helper $F483, sets up RS232 parameter storage ($0293-$0297), copies filename bytes to buffer $0293,Y for up to 4 bytes, uses lookup tables for baud/parameters ($FEC1,$FEC0 or $E4EB,$E4EA) and stores results in $0295-$029B and RS232 state bytes ($F8/$FA/$F7/$F9). Finally jumps to MEMTOP/_ROBOF update via $FE2D. Uses STA/LDY/JSR/ASL/LSR/BCS/BNE.",
+      "references": [
+        {
+          "chunk": "open_file_part1",
+          "topic": "called from OPEN when device is RS232"
+        },
+        {
+          "chunk": "rs232_init_helper",
+          "topic": "initialization code at $F483 used here"
+        }
+      ]
+    },
+    {
+      "start": 3093,
+      "end": 3093,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3094,
+      "end": 3111,
+      "name": "load_setup",
+      "description": "LOAD: LOAD RAM entry (vectored from $ffd5). Stores relocated load address (MEMUSS) in $C3/$C4 via STX/STY and jumps to the ILOAD vector ($0330). Sets VERCK ($93) flag for load/verify and clears STATUS ($90). Checks FA ($BA) for illegal devices (keyboard or screen => I/O error #9).",
+      "references": [
+        {
+          "chunk": "load_from_serial_bus",
+          "topic": "actual serial-bus load implementation follows the vector"
+        }
+      ]
+    },
+    {
+      "start": 3112,
+      "end": 3181,
+      "name": "serial_bus_load_tape_rs232_receive_loop",
+      "description": "LOAD FROM SERIAL BUS (tape/RS232 path). Contains the high-level description and the code that prints 'SEARCHING', sends the filename and TALK/SA to the serial bus, receives the two-byte load address (<EAL and >EAL) via ACPTR ($EE13), and handles EOI (file not found). Implements relocated-load support by loading MEMUSS ($C3/$C4) into $AE/$AF when applicable. Enters the receive loop that: scans the <STOP> key ($FFE1), calls ACPTR to get bytes, checks STATUS for EOI/missing file, and either stores received bytes into memory (STA ($AE),Y) or compares them with memory (CMP ($AE),Y) when verifying (VERCK). The loop increments the low/high address ($AE/$AF), tests STATUS to continue or break, sends UNTALK, and performs end-of-routine branching and I/O error handling (JMP to error/finish addresses). Includes related JSRs used in this path.",
+      "references": [
+        {
+          "chunk": "disk_and_device_specific_load_address_handling",
+          "topic": "Alternate device handling and relocated-load address computation (device >= 3)"
+        }
+      ]
+    },
+    {
+      "start": 3182,
+      "end": 3241,
+      "name": "disk_and_device_specific_load_address_handling",
+      "description": "Alternate device branch and device-specific load-address handling. Covers code reached when the initial device test branches here (starts at $F533). Includes device validation and error handling calls, device setup JSRs, and logic to obtain or compute relocated load address from file header/buffer pointers. Reads data through indirect indexed addressing (($B2),Y), stores MEMUSS ($C3/$C4) or computes adjusted load address into $AE/$AF via SBC/ADC arithmetic, preserves originals into $C1/$C2, and calls post-setup routines (including $F5D2 and $F84A) before returning. This chunk implements the device-specific path (e.g., disk/CBM) for load-address extraction and relocation adjustments.",
+      "references": [
+        {
+          "chunk": "serial_bus_load_tape_rs232_receive_loop",
+          "topic": "Main serial/tape receive loop, TALK/UNTALK, ACPTR receive and verify/store logic"
+        }
+      ]
+    },
+    {
+      "start": 3242,
+      "end": 3249,
+      "name": "load_end",
+      "description": "LOAD END: Final part of loader. Sets (X/Y) registers from end address ($AE/$AF), clears carry flag and returns (CLC/LDX/LDY/RTS).",
+      "references": [
+        {
+          "chunk": "load_from_serial_bus",
+          "topic": "called after loading loop to return end address"
+        }
+      ]
+    },
+    {
+      "start": 3250,
+      "end": 3250,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3251,
+      "end": 3265,
+      "name": "print_searching",
+      "description": "PRINT 'SEARCHING': If MSGFLG ($9D) indicates direct mode, prints 'SEARCHING' from the KERNAL I/O message table via JSR $F12F. If filename length ($B7) > 0 prints 'FOR' and then drops through to print filename routine. Uses LDY and CHROUT calls.",
+      "references": [
+        {
+          "chunk": "print_filename",
+          "topic": "prints filename after 'SEARCHING'/'FOR'"
+        }
+      ]
+    },
+    {
+      "start": 3266,
+      "end": 3277,
+      "name": "print_filename",
+      "description": "PRINT FILENAME: Prints the filename pointed to by FNADR ($BB) with length FNLEN ($B7) using CHROUT ($FFD2). Loops through characters via (Y) indexing and JSR $FFD2 for output.",
+      "references": [
+        {
+          "chunk": "print_searching",
+          "topic": "called from PRINT 'SEARCHING' when filename is present"
+        }
+      ]
+    },
+    {
+      "start": 3278,
+      "end": 3278,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3279,
+      "end": 3288,
+      "name": "print_loading_verifying",
+      "description": "PRINT 'LOADING/VERIFYING': Chooses message based on VERCK ($93) load/verify flag. Loads Y with the message offset (verify or load) and jumps to the I/O message print routine at $F12B/$F12F.",
+      "references": [
+        {
+          "chunk": "load_from_serial_bus",
+          "topic": "used during load to print either 'LOADING' or 'VERIFYING'"
+        }
+      ]
+    },
+    {
+      "start": 3289,
+      "end": 3311,
+      "name": "save_setup",
+      "description": "SAVE: SAVE RAM (vector from $ffd8). On entry X/Y hold end addr+1 (EAL $AE/$AF), (A) holds pointer to start address in zeropage ($00/$01) which is transferred to STAL ($C1/$C2). Saves MEMUSS ($C3/$C4) via ISAVE vector ($0332 -> $F5ED). Ensures device number FA ($BA) is legal (not keyboard/screen).",
+      "references": [
+        {
+          "chunk": "save_to_serial_bus",
+          "topic": "actual save-to-serial implementation follows vector"
+        }
+      ]
+    },
+    {
+      "start": 3312,
+      "end": 3389,
+      "name": "save_to_serial_bus",
+      "description": "SAVE TO SERIAL BUS: Save memory block to serial device. Requires filename (FNLEN $B7). Sets SA $B9 to $61 (secondary addr #1), sends SA & filename via send_sa ($F3D5), prints 'SAVING', sends LISTEN & LISTEN SA then sends start address bytes (SAL $AC, $AD) and loops sending bytes from memory via CIOUT ($EDDD). Checks <STOP> ($FFE1) during transfer, bumps read/write pointer ($FCDB) until block complete, then UNLISTEN & clear flags. Uses CIA interactions for UNLISTEN path and top-of-buffer checks.",
+      "references": [
+        {
+          "chunk": "send_sa",
+          "topic": "used to send secondary address and filename"
+        },
+        {
+          "chunk": "print_saving",
+          "topic": "prints 'SAVING' message, then filename"
+        }
+      ]
+    },
+    {
+      "start": 3390,
+      "end": 3399,
+      "name": "print_saving",
+      "description": "PRINT 'SAVING': If MSGFLG ($9D) indicates direct mode, prints the 'SAVING' message from the kernel I/O message table (offset $51) and then prints the filename via the print filename routine ($F5C1).",
+      "references": [
+        {
+          "chunk": "save_to_serial_bus",
+          "topic": "message printed before saving to serial device"
+        },
+        {
+          "chunk": "print_filename",
+          "topic": "used to print the filename after 'SAVING'"
+        }
+      ]
+    },
+    {
+      "start": 3400,
+      "end": 3423,
+      "name": "udtim_bump_clock",
+      "description": "UDTIM: Increment jiffy clock ($A0/$A1/$A2). Increments low byte, cascades carry through mid/high bytes. If clock reaches $4F1A01 (5184001 jiffies = 24 hours) it resets to zero. Uses SEC/SBC to subtract constant and BCC to decide reset. Finally calls LOG CIA KEY READING routine.",
+      "references": [
+        {
+          "chunk": "log_cia_key_reading",
+          "topic": "called after bumping the jiffy clock to log key presses"
+        }
+      ]
+    },
+    {
+      "start": 3424,
+      "end": 3424,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3425,
+      "end": 3442,
+      "name": "log_cia_key_reading",
+      "description": "LOG CIA KEY READING: Reads CIA keyboard register ($DC01), waits for stable value, stores result in $91 (STKEY) if <STOP> or <RVS> keys are detected. Uses CIO port $DC00/$DC01 and writes to CIA data registers ($DC00) to latch key status. Uses TAX/LDX/STA loops and small delay polls.",
+      "references": [
+        {
+          "chunk": "stop_check_stop_key",
+          "topic": "STKEY ($91) read here is used by STOP routine"
+        }
+      ]
+    },
+    {
+      "start": 3443,
+      "end": 3443,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3444,
+      "end": 3455,
+      "name": "rdtim_get_time",
+      "description": "RDTIM: Read realtime jiffy clock (vectored at $ffde). Returns clock in (A/X/Y) formatted as high/mid/low bytes ($A0/$A1/$A2). Executes SEI to disable interrupts during read. Uses LDA/LDX/LDY to load values and returns.",
+      "references": [
+        {
+          "chunk": "udtim_bump_clock",
+          "topic": "shared jiffy clock storage ($A0/$A1/$A2)"
+        }
+      ]
+    },
+    {
+      "start": 3456,
+      "end": 3467,
+      "name": "settim_set_time",
+      "description": "SETTIM: Set realtime jiffy clock (vectored at $ffdb). On entry (A/X/Y) holds high/mid/low clock bytes to store into $A0/$A1/$A2. Disables interrupts (SEI) during write, then enables CLI and returns.",
+      "references": [
+        {
+          "chunk": "rdtim_get_time",
+          "topic": "complementary get/set routines for the jiffy clock"
+        }
+      ]
+    },
+    {
+      "start": 3468,
+      "end": 3468,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3469,
+      "end": 3482,
+      "name": "stop_check_stop_key",
+      "description": "STOP: Check <STOP> key (vectored at $ffe1). Tests STKEY ($91) for value $7F (STOP pressed while jiffy clock updated). If detected it calls CLRCHN ($FFCC) to close all I/O channels, saves keyboard buffer count in $C6 and resets keyboard buffer pointer. Preserves processor flags around CLRCHN call (PHP/PLP).",
+      "references": [
+        {
+          "chunk": "clrchn_restore_default_io",
+          "topic": "CLRCHN is called to close I/O channels when STOP is detected"
+        }
+      ]
+    },
+    {
+      "start": 3483,
+      "end": 3517,
+      "name": "output_kernal_error_messages",
+      "description": "OUTPUT KERNAL ERROR MESSAGES: Centralized I/O error printing. Different entry points load an error number into (A) (e.g. #1..#9), then CLRCHN is called to close channels. If KERNAL messages enabled (MSGFLG $9D), prints 'I/O ERROR #' and converts numeric code to ASCII by ORA #$30 and outputs via CHROUT ($FFD2). Preserves stack entries around printing. Handles multiple preset error entry points via a sequence of LDA #$nn followed by JSR $FFCC and message printing.",
+      "references": [
+        {
+          "chunk": "clrchn_restore_default_io",
+          "topic": "used to close all channels before printing error messages"
+        }
+      ]
+    },
+    {
+      "start": 3518,
+      "end": 3518,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 3519,
+      "end": 3610,
+      "name": "error_message_output_and_io_helpers",
+      "description": "Error/message output and supporting I/O helpers: Code following error message entry that manipulates VERCK ($93), temporary stack saves, conditional message and device checks. Includes logic to print extended error messages (e.g. device-specific strings) using CHROUT and routines that serialize parameters into buffers for I/O commands. Uses indirect indexed addressing ( ($B2),Y ), status tests (BIT $9D), and various utility JSR calls ($F12F, $FFD2, $F7D7, $F76A). This block coordinates message output, file parameter serialization and some file-IO state management.",
+      "references": [
+        {
+          "chunk": "output_kernal_error_messages",
+          "topic": "continuation and helper code for error printing"
+        },
+        {
+          "chunk": "send_sa",
+          "topic": "some branches call send_sa and related serial helpers"
+        }
+      ]
+    },
+    {
+      "start": 3611,
+      "end": 3613,
+      "name": "compare_b3_with_two",
+      "description": "Tiny helper that loads $B3 into Y and compares it with #$02 (LDY $B3 / CPY #$02 / RTS). Used as a simple flag/selector check.",
+      "references": [
+        {
+          "chunk": "prepare_channel_registers",
+          "topic": "caller that often uses this check"
+        }
+      ]
+    },
+    {
+      "start": 3614,
+      "end": 3624,
+      "name": "prepare_channel_registers",
+      "description": "Sets up channel/device pointer bytes and offsets. Calls $F7D0, transfers A/Y into $C1/$C2, computes an offset adding #$C0 into $AE/$AF (TXA/STA $C1 / ADC #$C0 -> $AE / TYA/STA $C2 / ADC #$00 -> $AF / RTS).",
+      "references": [
+        {
+          "chunk": "compare_b3_with_two",
+          "topic": "small check used before/around setup"
+        },
+        {
+          "chunk": "compare_indirect_buffers",
+          "topic": "subsequent filename/buffer processing often follows this setup"
+        }
+      ]
+    },
+    {
+      "start": 3625,
+      "end": 3642,
+      "name": "compare_indirect_buffers",
+      "description": "Loop that calls $F72C and then compares bytes from two indirect pointers ($BB) and ($B2) using Y, increments index bytes $9E/$9F and loops until mismatch or exhaustion. Implements an indirect buffer/filename comparison routine.",
+      "references": [
+        {
+          "chunk": "prepare_channel_registers",
+          "topic": "prepares registers/pointers used by this compare"
+        },
+        {
+          "chunk": "increment_a6_and_check_limit",
+          "topic": "used in calling sequences after comparisons"
+        }
+      ]
+    },
+    {
+      "start": 3643,
+      "end": 3647,
+      "name": "increment_a6_and_check_limit",
+      "description": "Calls $F7D0, increments $A6 and returns with Y loaded from $A6; compares Y to #$C0 and returns. A short counter increment + bound check helper (INC $A6 / LDY $A6 / CPY #$C0 / RTS).",
+      "references": [
+        {
+          "chunk": "compare_indirect_buffers",
+          "topic": "used in multi-step comparisons and loops"
+        },
+        {
+          "chunk": "wait_for_device_ready_and_handle_flags",
+          "topic": "part of higher-level control flows"
+        }
+      ]
+    },
+    {
+      "start": 3648,
+      "end": 3662,
+      "name": "wait_for_device_ready_and_handle_flags",
+      "description": "Poll/wait sequence calling $F82E and handling result flags; calls device/listener routines ($F12F, $F8D0) and checks processor status bits (BIT $01) to determine flow. Ends by clearing carry and returning.",
+      "references": [
+        {
+          "chunk": "increment_a6_and_check_limit",
+          "topic": "invoked after counter updates"
+        },
+        {
+          "chunk": "initialize_system_and_device_state_for_io",
+          "topic": "higher-level init uses this wait loop"
+        }
+      ]
+    },
+    {
+      "start": 3663,
+      "end": 3739,
+      "name": "initialize_system_and_device_state_for_io",
+      "description": "Large initialization/configuration helper for I/O operations: sequences of JSRs ($F82E,$F12F,$F8D0,$FCBD,$FB97), manipulates I/O registers (D011,D012-like addresses), masks/clears interrupts, sets up runtime RAM locations ($02A2,$029F,$02A0), pushes/pops on the stack and exits. Prepares the system for subsequent file/device operations.",
+      "references": [
+        {
+          "chunk": "wait_for_device_ready_and_handle_flags",
+          "topic": "uses the same device-ready check & flag handling"
+        },
+        {
+          "chunk": "compute_tape_or_disk_offsets_and_dispatch",
+          "topic": "follows with address/offset computations"
+        }
+      ]
+    },
+    {
+      "start": 3740,
+      "end": 3778,
+      "name": "compute_tape_or_disk_offsets_and_dispatch",
+      "description": "Performs arithmetic on $B0/$B1 and uses table values at $DCxx to compute block offsets ($DC04/$DC05/$DC0E/$DC0D) and stores intermediate values into $02A2/$02A4. Pushes values to stack and conditionally jumps to dispatch routine $FF43 or returns. Used to compute device/disk/tape transfer offsets.",
+      "references": [
+        {
+          "chunk": "initialize_system_and_device_state_for_io",
+          "topic": "uses tables ($DCxx) set up during init"
+        },
+        {
+          "chunk": "store_c1_c2_into_ad_ac",
+          "topic": "other helpers that rearrange pointer bytes for I/O"
+        }
+      ]
+    },
+    {
+      "start": 3779,
+      "end": 3859,
+      "name": "parse_and_validate_filename_entries",
+      "description": "Long routine that compares directory/name entries, walks buffers, and validates file names. Uses indirect loads/stores, adjusts counters ($B4,$B0,$B1,$B6 etc), and jumps to central exit handler ($FEBC) on success/failure. Includes logic for different character classes (ASCII offsets) and branching to directory operations ($FAxx/$FBxx handlers).",
+      "references": [
+        {
+          "chunk": "compute_tape_or_disk_offsets_and_dispatch",
+          "topic": "parsing often follows offset computations for disk/tape entries"
+        },
+        {
+          "chunk": "handle_duplicate_filename_and_attributes",
+          "topic": "further name-handling and collision resolution"
+        }
+      ]
+    },
+    {
+      "start": 3860,
+      "end": 3928,
+      "name": "handle_duplicate_filename_and_attributes",
+      "description": "Handles duplicate-name detection and file attribute adjustments: toggles attribute bits, adjusts counters ($A3,$A4,$A7,$A8,$A9), updates temporary registers and status bytes ($92,$96,$9B,...), and jumps to final exit or continues iterative resolution. Contains arithmetic to compute name checksums and status flags.",
+      "references": [
+        {
+          "chunk": "parse_and_validate_filename_entries",
+          "topic": "continuation and refinement of name validation"
+        },
+        {
+          "chunk": "copy_name_to_directory_and_write_to_buffer",
+          "topic": "on success, name data is copied into directory buffers"
+        }
+      ]
+    },
+    {
+      "start": 3929,
+      "end": 3949,
+      "name": "initial_device_setup_and_flag_tests",
+      "description": "Setup and early checks before writing directory entries: calls initialization subroutine ($FB97), stores the result to $9C, sets X to #$DA and calls $F8E2 to prepare buffers. Loads $BE and conditionally stores it into $A7. Tests bits in $AA via BIT $AA / BPL and examines $B5/$B6 counters; may call $FE1C to communicate with the device and sets/clears $AA accordingly. Exits this path with a JMP to $FEBC if certain conditions fail.",
+      "references": [
+        {
+          "chunk": "determine_write_parameters_and_call_device_routine",
+          "topic": "continues with branch when BIT $AA indicates negative/overflow"
+        },
+        {
+          "chunk": "finalize_write_compute_xor_and_cleanup",
+          "topic": "overall flow eventually jumps to $FEBC which is the central exit handled later"
+        }
+      ]
+    },
+    {
+      "start": 3950,
+      "end": 3975,
+      "name": "determine_write_parameters_and_call_device_routine",
+      "description": "Handle the BVS branch (overflow set) and decide write parameters: checks $B5 and $B6 counters and shifts $A7 (LSR) to examine write flags. Uses $BD to decide between 4-bit and other limits, masks the low nibble, and loads that into $AA. Decrements $AA to test zero, or sets $AA to #$40/#$80 in alternative branches. Calls $FB8E to prepare device transfer and initializes $AB. Several branches lead back to the central exit ($FEBC) if conditions indicate abort; otherwise control flows on to conduct directory entry processing.",
+      "references": [
+        {
+          "chunk": "initial_device_setup_and_flag_tests",
+          "topic": "this is the follow-up branch when BIT $AA / BPL tested earlier redirects here"
+        },
+        {
+          "chunk": "store_name_bytes_into_directory_buffer_and_update_counters",
+          "topic": "when write parameters are decided successfully the code proceeds to copy bytes into the directory buffer"
+        }
+      ]
+    },
+    {
+      "start": 3976,
+      "end": 4009,
+      "name": "store_name_bytes_into_directory_buffer_and_update_counters",
+      "description": "Copy parsed filename bytes into the directory buffer at $0100+X and update counters: calls $FCD1 to talk to device, checks carry for device ack, then iterates using $A7 as a length/index. Compares the next character ($BD) against the current buffer pointer ($AC),Y; if different, sets $B6 to indicate modification. When modification is required, loops write $AD/$AC into $0101,X and $0100,X respectively, increments X twice and stores the result back to $9E. Finally jumps to the next processing stage at $FB3A.",
+      "references": [
+        {
+          "chunk": "determine_write_parameters_and_call_device_routine",
+          "topic": "uses the write parameters ($A7,$AA,$AB) determined earlier"
+        },
+        {
+          "chunk": "check_for_duplicate_entries_and_write_buffer_to_device",
+          "topic": "after copying bytes the routine proceeds to check for duplicates and write buffers to device"
+        }
+      ]
+    },
+    {
+      "start": 4010,
+      "end": 4038,
+      "name": "check_for_duplicate_entries_and_write_buffer_to_device",
+      "description": "Search the directory buffer for duplicate entries and prepare a device write: loads X from $9F and compares it to $9E (end pointer). If not equal, it compares the entry at $0100/0101+X against $AC/$AD (the new filename bytes). On match it increments $9F (twice) to advance and then checks $93/$BD for further conditions; if the in-memory comparison indicates a new value, it loads Y from $B6 and performs STA ($AC),Y to write the byte into the buffer. If no conflicts remain it will call $FCDB (device write helper) next.",
+      "references": [
+        {
+          "chunk": "store_name_bytes_into_directory_buffer_and_update_counters",
+          "topic": "examines the just-written $0100..$0101 entries for duplicates"
+        },
+        {
+          "chunk": "finalize_write_compute_xor_and_cleanup",
+          "topic": "successful checks lead to JSR $FCDB which is handled in the finalization step"
+        }
+      ]
+    },
+    {
+      "start": 4039,
+      "end": 4072,
+      "name": "finalize_write_compute_xor_and_cleanup",
+      "description": "Finalize the directory write, compute XOR checksum and perform cleanup: calls $FCDB to send the buffer to the device and handles non-acknowledge paths. Sets $AA and disables interrupts (SEI), saves X to $DC0D, adjusts $BE and $A7 counters, and calls $FC93/$FB8E as part of device protocol. Then reads bytes back from ($AC),Y XORs them with $AB to compute a simple checksum and calls $FCDB/$FCD1 to complete the transfer. Depending on results it may call $FE1C (device handshake) and finally jumps to the central exit at $FEBC.",
+      "references": [
+        {
+          "chunk": "check_for_duplicate_entries_and_write_buffer_to_device",
+          "topic": "continues after the JSR $FCDB found there were no immediate errors"
+        },
+        {
+          "chunk": "initial_device_setup_and_flag_tests",
+          "topic": "shares the same central exit ($FEBC) used when early abort conditions occur"
+        }
+      ]
+    },
+    {
+      "start": 4073,
+      "end": 4078,
+      "name": "store_c1_c2_into_ad_ac",
+      "description": "Small helper that stores $C2 into $AD and $C1 into $AC then returns (LDA $C2 / STA $AD / LDA $C1 / STA $AC / RTS). Used to transfer current pointer bytes into temporary AD/AC storage.",
+      "references": [
+        {
+          "chunk": "compute_tape_or_disk_offsets_and_dispatch",
+          "topic": "pointer rearrangement used for offset computations"
+        },
+        {
+          "chunk": "init_filename_state",
+          "topic": "initializes registers which may feed into AC/AD usage"
+        }
+      ]
+    },
+    {
+      "start": 4079,
+      "end": 4087,
+      "name": "init_filename_state",
+      "description": "Initializes filename/state variables: sets $A3,#$08, clears $A4,$A8,$9B,$A9 and returns. A compact initializer used before starting name/directory operations.",
+      "references": [
+        {
+          "chunk": "store_c1_c2_into_ad_ac",
+          "topic": "initialization used before storing pointer bytes"
+        },
+        {
+          "chunk": "setup_dc_pointers_and_status_flag",
+          "topic": "follows init when preparing DMA/IO pointers"
+        }
+      ]
+    },
+    {
+      "start": 4088,
+      "end": 4103,
+      "name": "setup_dc_pointers_and_status_flag",
+      "description": "Sets up DC06/DC07 zero page pointers and $DC0F, writes initial X to $DC06/$DC07, toggles status bit $01 EOR #$08 and returns. Prepares the $DC table pointers and a status flag used by device routines.",
+      "references": [
+        {
+          "chunk": "init_filename_state",
+          "topic": "called after initializing filename/state variables"
+        },
+        {
+          "chunk": "device_packet_assembly_and_control",
+          "topic": "status flags influence packet assembly"
+        }
+      ]
+    },
+    {
+      "start": 4104,
+      "end": 4135,
+      "name": "device_packet_assembly_and_control",
+      "description": "Control logic for assembling device packets and handling their side-effects: rotates/adjusts bitfields ($B6,$BD,$BF,$B1), conditionally calls FBxx routines, toggles $AA/$AB, and branches to central FEBC exit. Manages packet assembly steps and flow control for serial/device transfers.",
+      "references": [
+        {
+          "chunk": "setup_dc_pointers_and_status_flag",
+          "topic": "reads/writes flags and pointer bytes set up earlier"
+        },
+        {
+          "chunk": "transfer_loop_and_interrupt_masking",
+          "topic": "integrates with the transfer loop and interrupt handling"
+        }
+      ]
+    },
+    {
+      "start": 4136,
+      "end": 4215,
+      "name": "transfer_loop_and_interrupt_masking",
+      "description": "Higher-level transfer loop that masks/unmasks interrupts (PHP/SEI/PLP), toggles $D011 bits, calls helper routines ($FCBD,$FCCA,$FDDD,$FC93) to manage timed transfers, loads/stores state bytes, and loops until completion or error. Handles the interaction between the I/O transfer state and system interrupt flags.",
+      "references": [
+        {
+          "chunk": "device_packet_assembly_and_control",
+          "topic": "uses packet control results to progress transfers"
+        },
+        {
+          "chunk": "load_device_vectors_from_rom_table",
+          "topic": "may reload vectors as part of transfer completion"
+        }
+      ]
+    },
+    {
+      "start": 4216,
+      "end": 4222,
+      "name": "load_device_vectors_from_rom_table",
+      "description": "Copies two-word device vectors from the ROM table ($FD93,X and $FD94,X) into runtime locations $0314/$0315 (LDA $FD93,X -> STA $0314; LDA $FD94,X -> STA $0315; RTS). Used to load device driver vectors into zero page/IO table.",
+      "references": [
+        {
+          "chunk": "transfer_loop_and_interrupt_masking",
+          "topic": "vectors are reloaded during transfer setup/teardown"
+        },
+        {
+          "chunk": "set_status_bit_0x20",
+          "topic": "status bits modified around vector loads"
+        }
+      ]
+    },
+    {
+      "start": 4223,
+      "end": 4226,
+      "name": "set_status_bit_0x20",
+      "description": "Simple helper that sets bit $20 in $01 (LDA $01 / ORA #$20 / STA $01 / RTS). Used to enable a control/status flag in the processor status word area.",
+      "references": [
+        {
+          "chunk": "load_device_vectors_from_rom_table",
+          "topic": "often called near vector reconfiguration"
+        },
+        {
+          "chunk": "subtract_indirect_pair_offsets",
+          "topic": "status bit changes can accompany offset computations"
+        }
+      ]
+    },
+    {
+      "start": 4227,
+      "end": 4232,
+      "name": "subtract_indirect_pair_offsets",
+      "description": "Subtracts paired zero page bytes: performs SEC then subtracts $AE from $AC and $AF from $AD (A5 AC / SBC $AE ; A5 AD / SBC $AF ; RTS). Used to compute relative offsets or lengths between pointer pairs.",
+      "references": [
+        {
+          "chunk": "increment_indirect_address_counters",
+          "topic": "paired increments are the inverse of these subtractions"
+        },
+        {
+          "chunk": "set_status_bit_0x20",
+          "topic": "used near status changes during computations"
+        }
+      ]
+    },
+    {
+      "start": 4233,
+      "end": 4237,
+      "name": "increment_indirect_address_counters",
+      "description": "Increments indirect address low/high bytes: INC $AC ; BNE (skip) ; INC $AD ; RTS. Small carry-propagating helper to advance an indirect pointer pair. Includes the following blank line (end of original chunk).",
+      "references": [
+        {
+          "chunk": "subtract_indirect_pair_offsets",
+          "topic": "pairs with the subtraction helper for pointer math"
+        },
+        {
+          "chunk": "load_device_vectors_from_rom_table",
+          "topic": "used when stepping through ROM-sourced tables"
+        }
+      ]
+    },
+    {
+      "start": 4238,
+      "end": 4263,
+      "name": "power_reset_entry_point",
+      "description": "POWER RESET ENTRY POINT: Cold start vector ($FFFC) entry. Initializes stack pointer (TXS to #$FF), disables interrupts (SEI), clears decimal mode (CLD), checks for autostart cartridge at $8000 by calling $FD02, performs autostart indirect jump if present, otherwise initializes I/O ($FDA3), system constants ($FD50), KERNAL reset ($FD15) and PAL/NTSC setup ($FF5B). Ends by re-enabling interrupts (CLI) and jumping indirectly to BASIC coldstart ($A000).",
+      "references": [
+        {
+          "chunk": "check_for_8rom",
+          "topic": "checks ROM autostart parameters at $8004-$8008"
+        },
+        {
+          "chunk": "ioinit_init_io",
+          "topic": "initializes I/O chips after power-on"
+        }
+      ]
+    },
+    {
+      "start": 4264,
+      "end": 4274,
+      "name": "check_for_8rom",
+      "description": "CHECK FOR 8-ROM: Checks for an autostart ROM identifier at $8004-$8008 by comparing 5 bytes against the data at $FD10. Sets Z=1 if identical. Uses indexed LDA/CMP loops across five bytes.",
+      "references": [
+        {
+          "chunk": "8rom_identifier",
+          "topic": "identifier bytes compared by this routine"
+        },
+        {
+          "chunk": "power_reset_entry_point",
+          "topic": "called at reset to detect autostart cartridges"
+        }
+      ]
+    },
+    {
+      "start": 4275,
+      "end": 4279,
+      "name": "8rom_identifier",
+      "description": "8-ROM IDENTIFIER: Five-byte identifier string 'CBM80' stored at $FD10 used by autostart cartridges. Bytes: C3 C2 CD 38 30 (ASCII CBM80 in CBM encoding).",
+      "references": [
+        {
+          "chunk": "check_for_8rom",
+          "topic": "compares this identifier with ROM contents at $8004-$8008"
+        }
+      ]
+    },
+    {
+      "start": 4280,
+      "end": 4281,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4282,
+      "end": 4289,
+      "name": "restor_kernal_reset",
+      "description": "RESTOR: KERNAL RESET (vector $ff8a). Copies KERNAL vectors from $FD30 table into RAM locations $0314-$0333 (or sets them depending on carry). Uses VECTOR helper ($FD1A) to perform the move, storing MEMUSS into $C3/$C4 for temporary use. Resets carry handling before calling VECTOR.",
+      "references": [
+        {
+          "chunk": "vector_kernal_move",
+          "topic": "VECTOR does the actual vector copy/read"
+        },
+        {
+          "chunk": "kernal_reset_vectors",
+          "topic": "source table of vector addresses at $FD30"
+        }
+      ]
+    },
+    {
+      "start": 4290,
+      "end": 4308,
+      "name": "vector_kernal_move",
+      "description": "VECTOR: KERNAL MOVE ($FD1A). Reads/writes the vectors at $0314-$0333 or $FD30 depending on carry state. Uses MEMUSS temp in $C3/$C4 and moves 0x20 bytes (31 down to 0) between the two regions via indirect indexed addressing. Handles both read and write (controlled by carry) with LDA/STA loops and DEY/DEcrement counter.",
+      "references": [
+        {
+          "chunk": "restor_kernal_reset",
+          "topic": "RESTOR calls VECTOR to copy kernel vectors"
+        },
+        {
+          "chunk": "kernal_reset_vectors",
+          "topic": "VECTOR copies to/from this table region"
+        }
+      ]
+    },
+    {
+      "start": 4309,
+      "end": 4309,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4310,
+      "end": 4329,
+      "name": "kernal_reset_vectors",
+      "description": "KERNAL RESET VECTORS ($FD30-$FD4E): Table of default KERNAL vector addresses that RESTOR copies into $0314-$0333. Contains vectors for interrupts and core I/O: CINV ($EA31), CBINV ($FE66), NMINV ($FE47), IOPEN ($F34A), ICLOSE ($F291), ICHKIN ($F20E), ICKOUT ($F250), ICLRCH ($F333), IBASIN ($F157), IBSOUT ($F1CA), ISTOP ($F6ED), IGETIN ($F13E), ICLALL ($F32F), USRCMD ($FE66), ILOAD ($F4A5), ISAVE ($F5ED).",
+      "references": [
+        {
+          "chunk": "vector_kernal_move",
+          "topic": "used by VECTOR to restore these KERNAL vectors"
+        }
+      ]
+    },
+    {
+      "start": 4330,
+      "end": 4380,
+      "name": "ramtas_init_system_constants",
+      "description": "RAMTAS: INIT SYSTEM CONSTANTS (vectored from $ff87). Clears pages 0,2 and 3 (zeroes first 256 bytes of each page), initializes tape buffer location ($033C) by setting $B2/$B3, performs memory check starting at $0400 upwards by writing test patterns #$55 and #$AA to detect ROM boundary (restores original memory contents afterwards). Finally calls FE2D to set top of memory (MEMTOP) and initializes pointers for bottom of memory ($0282) and bottom of screen ($0288).",
+      "references": [
+        {
+          "chunk": "memtop_read_set_top_of_memory",
+          "topic": "FE2D called here to set top of memory"
+        }
+      ]
+    },
+    {
+      "start": 4381,
+      "end": 4381,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4382,
+      "end": 4389,
+      "name": "tape_irq_vectors",
+      "description": "TAPE IRQ VECTORS (table at $FD9B-$FDA1): Contains vectors to four tape IRQ routines: $FC6A (tape write), $FBCD (tape write II), $EA31 (normal IRQ), $F92C (tape read). Used by tape handling to dispatch IRQs.",
+      "references": [
+        {
+          "chunk": "fake_irq_tape",
+          "topic": "FAKE IRQ TAPE manipulates processor stack and IRQ flags"
+        }
+      ]
+    },
+    {
+      "start": 4390,
+      "end": 4417,
+      "name": "ioinit_init_io",
+      "description": "IOINIT: INIT I/O (vectored from $ff84). Initializes CIAs and system I/O: sets CIA#1/#2 IRQ control registers ($DC0D/$DD0D), clears CIA data ports ($DC00), sets control registers (timers A/B), sets DDRs for CIA ports (DDRB/DDRA), disables SID sound ($D418), configures 6510 I/O port ($01) and DDR ($00), and sets video bank and serial bus control ($DD00/$DD02). Prepares system hardware for operation.",
+      "references": [
+        {
+          "chunk": "enable_timer",
+          "topic": "called later to start CIA1 timer based on PAL/NTSC"
+        },
+        {
+          "chunk": "start_timer",
+          "topic": "actual timer start sequence references these registers"
+        }
+      ]
+    },
+    {
+      "start": 4418,
+      "end": 4432,
+      "name": "enable_timer",
+      "description": "ENABLE TIMER: Initialize and start CIA#1 timer A according to PAL/NTSC ($02A6 flag). Loads timer low/high bytes for PAL ($#4025) or NTSC (#4295) setups into CIA#1 timer registers $DC04/$DC05 and then jumps to start timer ($FF6E / $FF6E -> $FF6E eventually starting).",
+      "references": [
+        {
+          "chunk": "power_reset_entry_point",
+          "topic": "ENABLE TIMER is used during reset sequence"
+        },
+        {
+          "chunk": "start_timer",
+          "topic": "starts CIA#1 timer and continues to serial clock handler"
+        }
+      ]
+    },
+    {
+      "start": 4433,
+      "end": 4433,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4434,
+      "end": 4441,
+      "name": "setnam_save_filename_data",
+      "description": "SETNAM: Save filename data (vectored from $ffbd). On entry A contains filename length, X/Y the pointer to filename in memory. Stores FNLEN ($B7), FNADR ($BB/$BC) and returns. Uses STA/STX/STY to zero page.",
+      "references": [
+        {
+          "chunk": "print_filename",
+          "topic": "uses FNADR/FNLEN when printing filenames"
+        }
+      ]
+    },
+    {
+      "start": 4442,
+      "end": 4442,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4443,
+      "end": 4450,
+      "name": "setlfs_save_file_details",
+      "description": "SETLFS: Save file details (vectored from $ffba). On entry A holds logical file number (LA $B8), X device number (FA $BA), Y secondary address (SA $B9). Stores those into zero page and returns.",
+      "references": [
+        {
+          "chunk": "open_file_part1",
+          "topic": "OPEN expects these file parameters to be set before call"
+        }
+      ]
+    },
+    {
+      "start": 4451,
+      "end": 4451,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4452,
+      "end": 4466,
+      "name": "readst_read_status",
+      "description": "READST: Read status (vectored from $ffb7). If current device number FA ($BA) == $02 (RS232), returns RSSTAT ($0297) and clears it. Otherwise returns STATUS ($90). Uses LDA/STA/PLA on zero page to save/restore values.",
+      "references": [
+        {
+          "chunk": "open_rs232",
+          "topic": "RS232 open/read paths use RSSTAT ($0297)"
+        }
+      ]
+    },
+    {
+      "start": 4467,
+      "end": 4467,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4468,
+      "end": 4477,
+      "name": "setmsg_flag_status",
+      "description": "SETMSG: Flag status (vectored from $ff90). Stores A into MSGFLG ($9D) and merges I/O STATUS ($90) into STATUS by ORA $90 and STA $90. Also supports entry point $FE1C where A stored in STATUS. Controls whether KERNAL prints messages.",
+      "references": [
+        {
+          "chunk": "output_kernal_error_messages",
+          "topic": "MSGFLG controls whether error messages are printed"
+        }
+      ]
+    },
+    {
+      "start": 4478,
+      "end": 4478,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4479,
+      "end": 4484,
+      "name": "settmo_set_timeout",
+      "description": "SETTMO: Set IEEE timeout (vectored from $ffa2). Stores A into TIMOUT ($0285). Simple STA and RTS; used to control IEEE timeout flag.",
+      "references": []
+    },
+    {
+      "start": 4485,
+      "end": 4485,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4486,
+      "end": 4496,
+      "name": "memtop_read_set_top_of_memory",
+      "description": "MEMTOP: Read/Set top of memory (vectored from $ffa9). If carry set on entry: loads MEMTOP into X/Y from MEMSIZ ($0283/$0284). If carry clear: stores X/Y into MEMSIZ. Uses BCC/LDX/LDY/STX/STY and returns.",
+      "references": [
+        {
+          "chunk": "ramtas_init_system_constants",
+          "topic": "RAMTAS calls FE2D/FE27 variants to set top of memory after memory test"
+        }
+      ]
+    },
+    {
+      "start": 4497,
+      "end": 4497,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4498,
+      "end": 4510,
+      "name": "membot_read_set_bottom_of_memory",
+      "description": "MEMBOT: Read/Set bottom of memory (vectored from $ff9c). If carry set reads MEMSTR ($0281/$0282) into X/Y; if carry clear stores X/Y into MEMSTR via STX/STY. Handles BCC/LDX/LDY/STX/STY/RTS.",
+      "references": []
+    },
+    {
+      "start": 4511,
+      "end": 4546,
+      "name": "nmi_entry_point",
+      "description": "NMI ENTRY POINT (vectored at $fffa): Entry for every NMI. Disables interrupts (SEI), jumps to NMINV vector via indirect ($0318), pushes A/X/Y onto stack, sets CIA#2 IRQ control to mask RS232 interrupts, checks for autostart cartridge at $8000 (call $FD02), and continues into warm start or RS232 handling. Restores registers and RTI at end of NMI handler. Uses PHA/PLA/TXA/TYA/JSR/JMP/RTI.",
+      "references": [
+        {
+          "chunk": "warm_start_basic",
+          "topic": "NMI handler may warm-start BASIC or dispatch to warm start vector"
+        },
+        {
+          "chunk": "nmi_rs232_handling",
+          "topic": "NMI handler tests/dispatches RS232 in/out paths"
+        }
+      ]
+    },
+    {
+      "start": 4547,
+      "end": 4547,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4548,
+      "end": 4596,
+      "name": "nmi_rs232_handling",
+      "description": "NMI RS232 HANDLING: Handles RS232 activity inside NMI. Checks CIA#2 ENABL ($02A1) and bits that indicate sending/receiving. For send path: updates CIA#1 port DRA ($DD00) to drive RS232 TX line and sets UP/ENABL, then jumps to RS232 out NMI routine ($FF07). For receive path: handles timing, enabling and dispatch to RS232 in handler ($FED6). Uses bit tests AND #$01/#$12/#$10 and JSRs to RS232 IN/OUT processing code. Restores CIA#2 ICR at end.",
+      "references": [
+        {
+          "chunk": "nmi_rs232_in",
+          "topic": "NMI RS232 IN handler sets timer and calls RS232 receive routine"
+        },
+        {
+          "chunk": "nmi_rs232_out",
+          "topic": "NMI RS232 OUT handler sets up baud timers and counters"
+        }
+      ]
+    },
+    {
+      "start": 4597,
+      "end": 4606,
+      "name": "rs232_timing_table_ntsc",
+      "description": "RS232 TIMING TABLE - NTSC ($FEC2-$FED4): Table of timer values for RS232 NMI rates for NTSC machines. Ten entries corresponding to fixed baud rates from ~50 to 2400 baud. Values used to program CIA timer B for bit timing in RS232 NMI receive/transmit. Table entries include 50,75,110,134.5,150,300,600,1200,(1800/2400),2400 byte timing pairs.",
+      "references": [
+        {
+          "chunk": "nmi_rs232_in",
+          "topic": "uses timing entries to set timer for next incoming bit"
+        },
+        {
+          "chunk": "nmi_rs232_out",
+          "topic": "uses timing entries to set timer for outgoing bit timing"
+        }
+      ]
+    },
+    {
+      "start": 4607,
+      "end": 4628,
+      "name": "nmi_rs232_in",
+      "description": "NMI RS232 IN: Reads a received data bit from the RS232 port (CIA dataport $DD01), stores single-bit INBIT ($A7), loads and adjusts timer B (DD06/DD07) by subtracting a constant and adding BAUD offset (<BAUDOF >BAUDOF at $0299/$029A), starts CIA control register B ($DD0F) and re-enables CIA2 interrupts to continue receive. Jumps to RS232 receive routine at $EF59.",
+      "references": [
+        {
+          "chunk": "rs232_timing_table_ntsc",
+          "topic": "timing constants used to program timer B for next bit"
+        }
+      ]
+    },
+    {
+      "start": 4629,
+      "end": 4629,
+      "ignore": true,
+      "reason": "Blank lines"
+    },
+    {
+      "start": 4630,
+      "end": 4661,
+      "name": "nmi_rs232_out",
+      "description": "NMI RS232 OUT: Prepare for sending RS232 bits during NMI. Loads non-standard BPS low/high bytes ($0295/$0296) into CIA timer B ($DD06/$DD07), sets CIA control register B ($DD0F), updates ENABL flags ($02A1) and initializes BITNUM (bits remaining) from $0298 into BITC1 ($A8). Also contains helper FF2E/FF34 routines to scale timing values and store into BAUDOF ($0299/$029A).",
+      "references": [
+        {
+          "chunk": "rs232_timing_table_ntsc",
+          "topic": "timing presets used to compute BAUDOF and timer B"
+        }
+      ]
+    },
+    {
+      "start": 4662,
+      "end": 4669,
+      "name": "fake_irq_tape",
+      "description": "FAKE IRQ TAPE: Small helper that manipulates processor flags on the stack (PHP/PLA) and clears bit 4 of a stored status byte (AND #$EF) to fake/clear a tape IRQ condition. Used when simulating or handling tape IRQ state transitions.",
+      "references": [
+        {
+          "chunk": "tape_irq_vectors",
+          "topic": "related to tape IRQ handling table and routines"
+        }
+      ]
+    },
+    {
+      "start": 4670,
+      "end": 4684,
+      "name": "irq_entry",
+      "description": "IRQ ENTRY (vectored at $FFFE): Entry point for hardware IRQ and software BRK. Saves A/X/Y and determines HW vs SW interrupt by reading a byte on stack and testing bit 4. If BRK (software) jumps to CBINV via indirect ($0316) (usually warm start FE66), otherwise jumps to CINV via indirect ($0314) (normal IRQ handler at EA31). Stores registers on stack for later restore.",
+      "references": [
+        {
+          "chunk": "kernal_reset_vectors",
+          "topic": "CINV/CBINV vectors are part of the kernel vector table"
+        }
+      ]
+    },
+    {
+      "start": 4685,
+      "end": 4699,
+      "name": "cint_init_screen_editor",
+      "description": "CINT: INIT SCREEN EDITOR (vectored from $FF81). Sets up VIC-II for operation. Calls original CINT at $E518, uses raster compare at $D012 and $D019 to detect PAL vs NTSC by checking whether an IRQ occurs at raster 311. Stores PAL/NTSC flag ($02A6) and then calls ENABLE TIMER to configure CIA timers accordingly.",
+      "references": [
+        {
+          "chunk": "enable_timer",
+          "topic": "determines and sets CIA timer values according to PAL/NTSC"
+        }
+      ]
+    },
+    {
+      "start": 4700,
+      "end": 4710,
+      "name": "start_timer",
+      "description": "START TIMER: Starts CIA#1 timer A and configures CIA#1 control registers to enable IRQ when timer B reaches zero. Sets $DC0D to enable IRQ on timer B, forces load of timer A values by setting bits in $DC0E and jumps to serial clock-off routine at $EE8E to continue serial handling.",
+      "references": [
+        {
+          "chunk": "enable_timer",
+          "topic": "uses precomputed timer values to start the timer"
+        }
+      ]
+    },
+    {
+      "start": 4711,
+      "end": 4714,
+      "name": "kernal_version_id",
+      "description": "KERNAL VERSION ID byte at $FF80. Contains the kernel version number (value $03). This single byte identifies the ROM revision.",
+      "references": []
+    },
+    {
+      "start": 4715,
+      "end": 4752,
+      "name": "kernal_jump_table",
+      "description": "KERNAL JUMP TABLE ($FF81-$FFF3): Table of JSR/JMP vectors to standard KERNAL I/O routines (CINT, IOINIT, RAMTAS, RESTOR, VECTOR, SETMSG, SECOND/TKSA, MEMTOP/MEMBOT, SCNKEY, SETTMO, ACPTR/CIOUT/UNTALK/UNLSN/LISTEN/TALK/READST/SETLFS/SETNAM and vectored OPEN/CLOSE/CHKIN/CHKOUT/CLRCHN/CHRIN/CHROUT etc.). Standard Commodore I/O vectors are located here so systems (VIC20/C64/C128) can use the same vector table.",
+      "references": [
+        {
+          "chunk": "kernal_reset_vectors",
+          "topic": "these jump vectors point to the KERNAL vectors restored by RESTOR"
+        },
+        {
+          "chunk": "system_hardware_vectors",
+          "topic": "interrupt/reset vectors located at $FFFA-$FFFE"
+        }
+      ]
+    },
+    {
+      "start": 4753,
+      "end": 4759,
+      "name": "kernal_jump_table_tail",
+      "description": "Continuation of the KERNAL jump table (entries for LOAD/SAVE/SETTIM/RDTIM/STOP/GETIN/CLALL/UDTIM/SCREEN/PLOT/IOBASE). Contains indirect JMP entries for vectored file/IO operations: OPEN/CLOSE/CHKIN/CHKOUT etc. These entries route standard KERNAL calls through the ROM table.",
+      "references": [
+        {
+          "chunk": "kernal_jump_table",
+          "topic": "completes the I/O vector list"
+        }
+      ]
+    },
+    {
+      "start": 4760,
+      "end": 4769,
+      "name": "system_hardware_vectors",
+      "description": "SYSTEM HARDWARE VECTORS ($FFFA-$FFFE and padding). Contains the three standard hardware vectors: NMI vector ($FFFA-$FFFB -> $FE43), RESET vector ($FFFC-$FFFD -> $FCE2) and IRQ vector ($FFFE-$FFFF -> $FF48). Also includes a padding 4-byte signature at $FFF6 (bytes 52 52 42 59). These vectors point to ROM routines that perform indirect JMPs to RAM-based handlers.",
+      "references": [
+        {
+          "chunk": "power_reset_entry_point",
+          "topic": "reset vector points to the ROM power-on entry routine"
+        },
+        {
+          "chunk": "irq_entry",
+          "topic": "IRQ vector points to the IRQ entry handler"
+        },
+        {
+          "chunk": "nmi_entry_point",
+          "topic": "NMI vector points to the NMI entry handler"
+        }
+      ]
+    }
+  ],
+  "source_md5": "e1cfddd05ebb88688a3a9a2e14323089"
+}
