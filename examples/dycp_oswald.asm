@@ -1,3 +1,24 @@
+# Example: DYCP Text Scroller
+#
+# A 256-byte Different Y Character Position scroller that copies a charset
+# from ROM into RAM at $3000 by switching the CPU port to $33. The screen
+# is set up with character indices arranged across columns, and a sine
+# table provides vertical offsets. Each frame iterates through 8 sub-pixel
+# phases via $D016 scroll register, clearing and redrawing character data
+# at sine-derived Y positions within the RAM charset. Text is read from
+# ROM and rendered by copying character bitmaps into column-mapped
+# character slots.
+#
+# Key Registers:
+#   $D012 - VIC-II raster counter - polled for frame synchronization
+#   $D016 - VIC-II control register 2 - horizontal scroll bits cycled for sub-pixel phases
+#   $01 - CPU port - set to $33 to expose charset ROM, $37 for normal I/O
+#   53272 ($D018) - VIC-II memory pointer - set to 24 for charset at $3000
+#
+# Techniques: runtime character modification, sine-wave displacement, ROM charset copying, sub-character pixel scrolling, memory banking
+# Hardware: VIC-II
+#
+
          *= $1000
 
          ;dycp scroller in 256 bytes

@@ -1,3 +1,23 @@
+# Example: Raster Color Bars
+#
+# Creates animated color bars by generating sine wave lookup tables at
+# startup, then using those values to position colored bars on screen.
+# The main loop clears a raster buffer, calculates bar positions using
+# dual sine table lookups averaged together, and plots color values from
+# pre-defined bar palette tables. During display, $D012 is polled in a
+# tight loop to synchronize color writes to $D020 with each scanline.
+# A NOP/INX toggle via self-modifying code alternates timing every 256
+# frames.
+#
+# Key Registers:
+#   $D012 - VIC-II raster line counter - polled to sync color changes with beam position
+#   $D020 - VIC-II border color - written each raster line to create bar effect
+#   $D011 - VIC-II control register - cleared at startup for timing
+#
+# Techniques: raster polling, sine table generation, color palette lookup, self-modifying code, zero-page optimization
+# Hardware: VIC-II
+#
+
 ; 256 byte rasterbar fun
 ; coded by cruzer/cml
 ; compiled with mxass

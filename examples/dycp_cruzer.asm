@@ -1,3 +1,24 @@
+# Example: DYCP Text Scroller
+#
+# Creates a 256-byte Different Y Character Position effect by dynamically
+# modifying character bitmap data based on sine wave offsets. Random-looking
+# data from ROM is copied into RAM to serve as character pattern source. A
+# sine table is generated at startup. Each frame, text characters are rendered
+# at varying vertical positions by copying character ROM data into screen-mapped
+# character slots at sine-offset addresses. CPU memory register $01 is toggled
+# between $33 (RAM access for charset modification) and $B7 (normal I/O)
+# during rendering.
+#
+# Key Registers:
+#   $D012 - VIC-II raster counter - polled for frame synchronization
+#   $D018 - VIC-II memory pointer - written during setup for charset bank selection
+#   $D800 - VIC-II color RAM - character colors set during initialization
+#   $01 - CPU port - toggled between $33 and $B7 for RAM/IO switching
+#
+# Techniques: runtime character modification, sine-wave displacement, RAM charset manipulation, raster synchronization, memory banking, self-modifying code
+# Hardware: VIC-II
+#
+
 ;256 bytes dycper fun
 ;cryptic code by cruzer/cml 2003-04
 ;compiled with mxass

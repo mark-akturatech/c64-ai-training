@@ -1,0 +1,128 @@
+# Example: CIA Chip Register Definitions
+#
+# Defines all register addresses for both CIA-1 ($DC00) and CIA-2 ($DD00) with
+# labels for data ports, timers, TOD clock, serial buffer, and IRQ control.
+# Includes macros for VIC-II bank selection by manipulating CIA2 data port A
+# bits, and macros for disabling CIA interrupts. Provides joystick direction
+# flag constants.
+#
+# Key Registers:
+#   $DC00 - CIA1 data port A - keyboard/joystick input
+#   $DC0D - CIA1 interrupt control - enable/disable timer interrupts
+#   $DD00 - CIA2 data port A - VIC-II bank selection bits 0-1
+#   $DD0D - CIA2 interrupt control - NMI source control
+#
+# Techniques: register definition, bit masking, VIC bank switching, interrupt control
+# Hardware: CIA1, CIA2
+# Project: c64lib_chipset - KickAssembler library with register definitions and macros for VIC-II, CIA, SID, and MOS 6510
+#
+
+/*
+ * MIT License
+ *
+ * Copyright (c) 2017-2032 c64lib
+ * Copyright (c) 2017-2023 Maciej Małecki
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#importonce
+.filenamespace c64lib
+
+// CIA1
+.label CIA1               = $DC00 
+.label CIA1_DATA_PORT_A   = CIA1 + $00
+.label CIA1_DATA_PORT_B   = CIA1 + $01
+.label CIA1_DATA_DIR_A    = CIA1 + $02
+.label CIA1_DATA_DIR_B    = CIA1 + $03
+.label CIA1_TIMER_A_LO    = CIA1 + $04 
+.label CIA1_TIMER_A_HI    = CIA1 + $05 
+.label CIA1_TIMER_B_LO    = CIA1 + $06 
+.label CIA1_TIMER_B_HI    = CIA1 + $07 
+.label CIA1_TOD_SEC10     = CIA1 + $08 
+.label CIA1_TOD_SEC       = CIA1 + $09
+.label CIA1_TOD_MIN       = CIA1 + $0A
+.label CIA1_TOD_HOUR      = CIA1 + $0B
+.label CIA1_IO_BUFFER     = CIA1 + $0C
+.label CIA1_IRQ_CONTROL   = CIA1 + $0D
+.label CIA1_CONTROL_A     = CIA1 + $0E
+.label CIA1_CONTROL_B     = CIA1 + $0F
+
+// CIA2
+.label CIA2               = $DD00
+.label CIA2_DATA_PORT_A   = CIA2 + $00
+.label CIA2_DATA_PORT_B   = CIA2 + $01
+.label CIA2_DATA_DIR_A    = CIA2 + $02
+.label CIA2_DATA_DIR_B    = CIA2 + $03
+.label CIA2_TIMER_A_LO    = CIA2 + $04 
+.label CIA2_TIMER_A_HI    = CIA2 + $05 
+.label CIA2_TIMER_B_LO    = CIA2 + $06 
+.label CIA2_TIMER_B_HI    = CIA2 + $07 
+.label CIA2_TOD_SEC10     = CIA2 + $08 
+.label CIA2_TOD_SEC       = CIA2 + $09
+.label CIA2_TOD_MIN       = CIA2 + $0A
+.label CIA2_TOD_HOUR      = CIA2 + $0B
+.label CIA2_IO_BUFFER     = CIA2 + $0C
+.label CIA2_IRQ_CONTROL   = CIA2 + $0D
+.label CIA2_CONTROL_A     = CIA2 + $0E
+.label CIA2_CONTROL_B     = CIA2 + $0F
+
+// Joystick flags
+.label JOY_UP           = %00001
+.label JOY_DOWN         = %00010
+.label JOY_LEFT         = %00100
+.label JOY_RIGHT        = %01000
+.label JOY_FIRE         = %10000
+
+// VIC-II memory banks
+.label BANK_0           = %00000011
+.label BANK_1           = %00000010
+.label BANK_2           = %00000001
+.label BANK_3           = %00000000
+
+/*
+ * Configures memory "bank" (16K) which is directly addressable by VIC2 chip.
+ *
+ * MOD: A
+ */
+.macro setVICBank(bank) {
+  lda CIA2_DATA_PORT_A
+  and #%11111100
+  ora #[bank & %00000011]
+  sta CIA2_DATA_PORT_A
+}
+.assert "setVICBank(BANK_0) sets 11", { :setVICBank(BANK_0) }, {
+  lda $DD00
+  and #%11111100
+  ora #%00000011
+  sta $DD00
+}
+.assert "setVICBank(BANK_3) sets 00", { :setVICBank(BANK_3) }, {
+  lda $DD00
+  and #%11111100
+  ora #%00000000
+  sta $DD00
+}
+
+.macro disableCIAInterrupts() {
+  lda #$7F                     
+  sta CIA1_IRQ_CONTROL
+  sta CIA2_IRQ_CONTROL
+  lda CIA1_IRQ_CONTROL
+  lda CIA2_IRQ_CONTROL
+}

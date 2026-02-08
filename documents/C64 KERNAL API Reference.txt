@@ -1,0 +1,120 @@
+C64 KERNAL API Reference - Source: sta.c64.org
+
+Commodore 64 KERNAL Functions Reference
+
+$FF81 - SCINIT
+Initializes VIC chip, restores keyboard/screen I/O, clears display, sets PAL/NTSC mode and interrupt timer. No input/output parameters. Uses A, X, Y registers. Real address: $FF5B.
+
+$FF84 - IOINIT
+Initializes CIA chips and SID volume, configures memory, establishes interrupt timer. No input/output parameters. Uses A, X registers. Real address: $FDA3.
+
+$FF87 - RAMTAS
+Clears memory ranges $0002-$0101 and $0200-$03FF, performs memory test, configures BASIC workspace and datasette buffer at $033C. No input/output parameters. Uses A, X, Y registers. Real address: $FD50.
+
+$FF8A - RESTOR
+Restores default interrupt vector table at $0314-$0333. No parameters. Real address: $FD15.
+
+$FF8D - VECTOR
+Transfers vector table between system and user areas. Input: Carry flag (0=copy user to system, 1=copy system to user); X/Y pointer to user table. Uses A, Y registers. Real address: $FD1A.
+
+$FF90 - SETMSG
+Configures system error message display. Input: A = switch value. Real address: $FE18.
+
+$FF93 - LSTNSA
+Transmits LISTEN secondary address via serial bus (requires prior LISTEN call). Input: A = secondary address. Uses A register. Real address: $EDB9.
+
+$FF96 - TALKSA
+Transmits TALK secondary address via serial bus (requires prior TALK call). Input: A = secondary address. Uses A register. Real address: $EDC7.
+
+$FF99 - MEMTOP
+Manages BASIC workspace upper boundary. Input: Carry (0=restore, 1=save); X/Y = address if Carry=0. Output: X/Y = address if Carry=1. Uses X, Y registers. Real address: $FE25.
+
+$FF9C - MEMBOT
+Manages BASIC workspace lower boundary. Input: Carry (0=restore, 1=save); X/Y = address if Carry=0. Output: X/Y = address if Carry=1. Uses X, Y registers. Real address: $FE34.
+
+$FF9F - SCNKEY
+Scans keyboard matrix, stores code at $00CB, shift status at $028D, PETSCII code to buffer. Uses A, X, Y registers. Real address: $EA87.
+
+$FFA2 - SETTMO
+Sets serial bus timeout value. Input: A = timeout value. Real address: $FE21.
+
+$FFA5 - IECIN
+Reads byte from serial bus (requires prior TALK/TALKSA). Output: A = byte. Uses A register. Real address: $EE13.
+
+$FFA8 - IECOUT
+Writes byte to serial bus (requires prior LISTEN/LSTNSA). Input: A = byte. Real address: $EDDD.
+
+$FFAB - UNTALK
+Sends UNTALK command to serial bus. Uses A register. Real address: $EDEF.
+
+$FFAE - UNLSTN
+Sends UNLISTEN command to serial bus. Uses A register. Real address: $EDFE.
+
+$FFB1 - LISTEN
+Sends LISTEN command to serial bus. Input: A = device number. Uses A register. Real address: $ED0C.
+
+$FFB4 - TALK
+Sends TALK command to serial bus. Input: A = device number. Uses A register. Real address: $ED09.
+
+$FFB7 - READST
+Retrieves device status/ST variable (RS232 status cleared). Output: A = status. Uses A register. Real address: $FE07.
+
+$FFBA - SETLFS
+Configures file parameters. Input: A = logical number; X = device number; Y = secondary address. Real address: $FE00.
+
+$FFBD - SETNAM
+Establishes filename parameters. Input: A = name length; X/Y = name pointer. Real address: $FDF9.
+
+$FFC0 - OPEN
+Opens file (requires SETLFS/SETNAM). Uses A, X, Y registers. Real address: ($031A), $F34A.
+
+$FFC3 - CLOSE
+Closes specified file. Input: A = logical number. Uses A, X, Y registers. Real address: ($031C), $F291.
+
+$FFC6 - CHKIN
+Sets file as default input (requires OPEN). Input: X = logical number. Uses A, X registers. Real address: ($031E), $F20E.
+
+$FFC9 - CHKOUT
+Sets file as default output (requires OPEN). Input: X = logical number. Uses A, X registers. Real address: ($0320), $F250.
+
+$FFCC - CLRCHN
+Closes default I/O files, sends UNTALK/UNLISTEN as needed, restores keyboard/screen. Uses A, X registers. Real address: ($0322), $F333.
+
+$FFCF - CHRIN
+Reads from default input or line from screen. Output: A = byte. Uses A, Y registers. Real address: ($0324), $F157.
+
+$FFD2 - CHROUT
+Writes byte to default output. Input: A = byte. Real address: ($0326), $F1CA.
+
+$FFD5 - LOAD
+Loads or verifies file (requires SETLFS/SETNAM). Input: A (0=load, 1-255=verify); X/Y = load address if secondary address=0. Output: Carry (0=success, 1=error); A = error code if Carry=1; X/Y = last byte address if Carry=0. Uses A, X, Y registers. Real address: $F49E.
+
+$FFD8 - SAVE
+Saves file (requires SETLFS/SETNAM). Input: A = zero page register holding start address; X/Y = end address plus 1. Output: Carry (0=success, 1=error); A = error code if Carry=1. Uses A, X, Y registers. Real address: $F5DD.
+
+$FFDB - SETTIM
+Sets Time of Day at $00A0-$00A2. Input: A/X/Y = new TOD value. Real address: $F6E4.
+
+$FFDE - RDTIM
+Reads Time of Day from $00A0-$00A2. Output: A/X/Y = current TOD value. Uses A, X, Y registers. Real address: $F6DD.
+
+$FFE1 - STOP
+Queries STOP key status at $0091; if pressed, calls CLRCHN and clears buffer. Output: Zero flag (0=unpressed, 1=pressed); Carry flag (1=pressed). Uses A, X registers. Real address: ($0328), $F6ED.
+
+$FFE4 - GETIN
+Reads byte from default input. Output: A = byte. Uses A, X, Y registers. Real address: ($032A), $F13E.
+
+$FFE7 - CLALL
+Clears file table and calls CLRCHN. Uses A, X registers. Real address: ($032C), $F32F.
+
+$FFEA - UDTIM
+Updates Time of Day ($00A0-$00A2) and STOP key indicator ($0091). Uses A, X registers. Real address: $F69B.
+
+$FFED - SCREEN
+Returns screen dimensions. Output: X = 40 columns; Y = 25 rows. Uses X, Y registers. Real address: $E505.
+
+$FFF0 - PLOT
+Manages cursor position. Input: Carry (0=restore, 1=save); X/Y = column/row if Carry=0. Output: X/Y = column/row if Carry=1. Uses X, Y registers. Real address: $E50A.
+
+$FFF3 - IOBASE
+Returns CIA #1 base address. Output: X/Y = $DC00. Uses X, Y registers. Real address: $E500.

@@ -1,3 +1,29 @@
+# Example: Kefrens Bars
+#
+# A 256-byte Kefrens bar implementation using self-replicating code that
+# is copied 193 times into memory, each instance pre-loaded with a unique
+# $D011 vertical scroll value. During rendering, sine table values index
+# into the replicated code to position bars at varying heights. Character
+# bitmap data at $2007 (kefScr) is modified using AND/ORA mask tables
+# (kefAND1/kefORA1, kefAND2/kefORA2) to paint bar graphics at sub-character
+# 2-pixel precision. VIC-II multicolor character mode is configured with
+# charset at $2000 via $D018.
+#
+# Key Registers:
+#   $D011 - VIC-II control register - vertical scroll bits pre-calculated per bar copy
+#   $D012 - VIC-II raster counter - polled at line $30 for synchronization
+#   $D018 - VIC-II memory pointer - set to $18 for charset at $2000
+#   $D016 - VIC-II control register 2 - multicolor and scroll settings
+#   $D020 - VIC-II border color - cleared to black
+#   $D021 - VIC-II background color - cleared to black
+#   $D022 - VIC-II multicolor register 1 - palette color
+#   $D023 - VIC-II multicolor register 2 - palette color
+#   $D800 - VIC-II color RAM - initialized for character colors
+#
+# Techniques: self-replicating code generation, per-scanline $D011 manipulation, sine table lookup, AND/ORA bitmask rendering, sub-character pixel precision, real-time charset modification
+# Hardware: VIC-II
+#
+
 ;***NOTE: $0085 must be $E9 and $0086 must be $30 when running this fine megademo (which they are b'coz of basic)***
 ;***set tabs to 9 spaces***
 ;
@@ -18,7 +44,7 @@
 
 
 	.debuginfo +
-	.feature labels_without_colons 	;<- man behøver ikke bruge kolon i efter labels (labels skal starte på 1st char)
+	.feature labels_without_colons 	;<- man behï¿½ver ikke bruge kolon i efter labels (labels skal starte pï¿½ 1st char)
 	.feature pc_assignment	    	;<- man kan skrive *=xxxx istedetfor .org xxxx 
 	*=$0801
 	.word *
@@ -37,12 +63,12 @@ igenigenAdr = $30e9	; = hvor igenigen-coden skal smides hen
 
 sinus 	= $1000
 sinLo	= $1100		; = bit 0-1 af sinus -> bit 0-1 af sinLo
-sinHi	= $1200		; = bit 2-6 af sinus -> bit 3-7 af sinHi 	(skal være ganget med 8 fordi det kun er hver 8. byte i charet der skal plottes i)
+sinHi	= $1200		; = bit 2-6 af sinus -> bit 3-7 af sinHi 	(skal vï¿½re ganget med 8 fordi det kun er hver 8. byte i charet der skal plottes i)
 
 charset	= $2000
 kefScr	= charset+7	; = "screen to plot" = "the first byte in the char to be plotted to (kun hver 8. byte efter denne byte bli'r plottet i)"
 
-kefLines = 193		; = hvor mange pixels høj kefren-baren skal være. (hvor mange gange igenigen coden går igen) (SKAL ende med en $D011=%00011011 sta!)
+kefLines = 193		; = hvor mange pixels hï¿½j kefren-baren skal vï¿½re. (hvor mange gange igenigen coden gï¿½r igen) (SKAL ende med en $D011=%00011011 sta!)
 
 
 D011init = %00011011
@@ -54,7 +80,7 @@ col3	= 6
 basic	; inform user how many basic bytes that are free, when entering the secret park
 ;	.byte $2f ,$08 ,$00 ,$00  ,$81 ,$54 ,$b2 ,$30  ,$a4 ,$32 ,$35 ,$36  ,$3a ,$97 ,$34 ,$30
 ;	.byte $39 ,$36 ,$aa ,$54  ,$2c ,$bf ,$28 ,$54  ,$ad ,$28 ,$34 ,$ac  ,$ff ,$29 ,$29 ,$ac
-;	.byte $34 ,$30 ,$aa ,$38  ,$30 ,$3a ,$82 ,$3a  ,$9e ,$32 ,$30 ,$39  ,$34		;<- da der mangler 00 00 00 kan bytesne lige efter fucke up afhængig af deres værdi (ldx#0, lda sinus,x ser ud til at virke ok)
+;	.byte $34 ,$30 ,$aa ,$38  ,$30 ,$3a ,$82 ,$3a  ,$9e ,$32 ,$30 ,$39  ,$34		;<- da der mangler 00 00 00 kan bytesne lige efter fucke up afhï¿½ngig af deres vï¿½rdi (ldx#0, lda sinus,x ser ud til at virke ok)
 	
 	.byte $2d ,$08 ,$00 ,$00  ,$81 ,$54 ,$b2 ,$30  ,$a4 ,$32 ,$35 ,$36  ,$3a ,$97 ,$34 ,$30
 	.byte $39 ,$36 ,$aa ,$54  ,$2c ,$bf ,$28 ,$54  ,$ad ,$32 ,$32 ,$29  ,$ac ,$34 ,$30 ,$ac
@@ -110,11 +136,11 @@ loop2	lda igenigenCode,y
 	bpl loop2
 	
 	
-	ldy #igenSto - igenigenCode	; skriv $D011 værdi
+	ldy #igenSto - igenigenCode	; skriv $D011 vï¿½rdi
 sto	lda #D011init
 	sta (tmp1),y
 	
-	ldy sto+1			; ændr $D011 værdi
+	ldy sto+1			; ï¿½ndr $D011 vï¿½rdi
 	iny
 	tya
 	and #%00000111
@@ -201,25 +227,25 @@ loop	lda $d011
 ;****************TABLES*****************
 ;---------------------------------------
 
-kefORA1	;grafikken for de 4 positioner i et char som den venstre del af kefren-baren kan være i
+kefORA1	;grafikken for de 4 positioner i et char som den venstre del af kefren-baren kan vï¿½re i
 	.byte %01101110
 	.byte %00011011
 	.byte %00000110
 	.byte %00000001
 	
-kefAND1	;det der skal and'es væk af baggrunden for de 4 positioner i et char som den venstre del af kefren-baren kan være i
+kefAND1	;det der skal and'es vï¿½k af baggrunden for de 4 positioner i et char som den venstre del af kefren-baren kan vï¿½re i
 	.byte %00000000
 	.byte %11000000
 	.byte %11110000
 	.byte %11111100
 
-kefORA2	;grafikken for de 4 positioner i et char som den højre del af kefren-baren kan være i
+kefORA2	;grafikken for de 4 positioner i et char som den hï¿½jre del af kefren-baren kan vï¿½re i
 	.byte %01000000
 	.byte %10010000
 	.byte %11100100
 	.byte %10111001
 
-kefAND2	;det der skal and'es væk af baggrunden for de 4 positioner i et char som den højre del af kefren-baren kan være i
+kefAND2	;det der skal and'es vï¿½k af baggrunden for de 4 positioner i et char som den hï¿½jre del af kefren-baren kan vï¿½re i
 	.byte %00111111
 	.byte %00001111
 	.byte %00000011
@@ -227,7 +253,7 @@ kefAND2	;det der skal and'es væk af baggrunden for de 4 positioner i et char som
 	
 ;---------------------------------------
 
-; igenigencoden der tegner kefrens-barene, og inc'er $d011 sådan at charline 7 gentages
+; igenigencoden der tegner kefrens-barene, og inc'er $d011 sï¿½dan at charline 7 gentages
 igenigenCode
 igenSto = *+1	
 	lda #xx

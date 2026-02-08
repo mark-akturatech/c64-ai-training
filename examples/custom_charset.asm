@@ -1,3 +1,22 @@
+# Example: Custom Character Set
+#
+# Copies the built-in character ROM into RAM at $3000 by temporarily
+# switching the CPU memory map via register $01 to expose character ROM
+# at $D000. CIA1 interrupts are disabled during the copy to prevent
+# interference. After copying, custom character glyphs (smiley, heart,
+# diamond) are defined by writing bitmap data directly into the RAM
+# charset. VIC-II memory pointer $D018 is then configured to point to
+# the new charset at $3000.
+#
+# Key Registers:
+#   $01 - CPU port - bit 2 (CHAREN) cleared to expose character ROM at $D000
+#   $DC0D - CIA1 interrupt control - disabled ($7F) during ROM access
+#   $D018 - VIC-II memory pointer - bits 1-3 set to point charset to $3000
+#
+# Techniques: ROM bank switching, character data copying, custom glyph design, RAM charset redirection
+# Hardware: VIC-II, CIA1
+#
+
 //----------------------------------------------------------
 // Custom Character Set Demo
 // Creates a custom charset at $3000, modifies a few characters,

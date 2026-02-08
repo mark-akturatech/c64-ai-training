@@ -1,0 +1,260 @@
+C64 PAL/NTSC Raster Timing Reference
+=====================================
+
+Compiled from multiple sources:
+- c64-wiki.com/wiki/raster_time
+- unusedino.de/ec64/technical/misc/vic656x/pal-ntsc.html (content from cached/archived copies)
+- Christian Bauer, "The MOS 6567/6569 video controller (VIC-II) and its application
+  in the Commodore 64" (via zimmers.net/cbmpics/cbm/c64/vic-ii.txt)
+
+
+=============================================================================
+SECTION 1: VIC-II CHIP VARIANTS
+=============================================================================
+
+Chip Model   | System          | Video Standard | Cycles/Line | Raster Lines | CPU Clock (Hz)
+-------------|-----------------|----------------|-------------|--------------|---------------
+6567R56A     | C64 (early)     | NTSC-M         | 64          | 262          | 1,022,727
+6567R8       | C64, SX-64      | NTSC-M         | 65          | 263          | 1,022,727
+6569         | C64, SX-64      | PAL-B          | 63          | 312          | 985,248
+6572         | C64             | PAL-N (Drean)  | 65          | 312          | 1,023,440
+6573         | C64             | PAL-M          | 65          | 263          | 1,022,727
+8562         | C64C            | NTSC           | 65          | 263          | 1,022,727
+8564         | C128            | NTSC           | 65          | 263          | 1,022,727
+8565         | C64C            | PAL-B          | 63          | 312          | 985,248
+8566         | C128            | PAL-B          | 63          | 312          | 985,248
+8569         | C128            | PAL-N          | 65          | 312          | 1,023,440
+
+
+=============================================================================
+SECTION 2: FRAME TIMING COMPARISON
+=============================================================================
+
+                            6567R56A      6567R8        6569
+                            (NTSC early)  (NTSC)        (PAL)
+                            ------------- ------------- -------------
+System clock (Hz):          1,022,727     1,022,727     985,248
+Dot clock (MHz):            8.18          8.18          7.88
+Color clock (MHz):          14.31818      14.31818      17.734472
+Cycles per raster line:     64            65            63
+Total raster lines/frame:   262           263           312
+Visible raster lines:       234           235           284
+Cycles per frame:           16,768        17,095        19,656
+Frames per second (Hz):     ~60.99        ~59.83        ~50.12
+Pixels per line (total):    512           520           504
+
+Note: The 6567R56A is rare and found only in very early NTSC C64s. The 6567R8
+is the standard NTSC VIC-II. The 6569 is the standard PAL VIC-II.
+
+
+=============================================================================
+SECTION 3: RASTER TIME BASICS
+=============================================================================
+
+"Raster time" is the duration it takes the VIC-II to render one byte of graphic
+data (8 pixels) onto the screen. It is measured in raster lines or CPU cycles.
+
+One complete screen frame consists of:
+  - PAL:  63 cycles x 312 lines = 19,656 cycles per frame (~50.12 Hz)
+  - NTSC: 65 cycles x 263 lines = 17,095 cycles per frame (~59.83 Hz)
+
+Each raster line includes visible pixels plus horizontal blanking (borders
+and retrace). Similarly, the total raster lines include visible lines plus
+vertical blanking.
+
+
+=============================================================================
+SECTION 4: BAD LINES
+=============================================================================
+
+A Bad Line Condition occurs when ALL of the following are true:
+  1. RASTER >= $30 and RASTER <= $F7
+  2. The lower 3 bits of RASTER equal YSCROLL ($D011 bits 0-2)
+  3. The DEN bit ($D011 bit 4) was set during an arbitrary cycle of raster
+     line $30
+
+During normal operation, bad lines occur every 8th raster line (since YSCROLL
+typically matches every 8 lines). This is when the VIC-II fetches 40 bytes of
+character pointers from screen RAM.
+
+Cycle Stealing on Bad Lines:
+  - The VIC-II asserts BA (Bus Available) low 3 cycles before it needs the bus
+  - The CPU halts and releases the bus
+  - The VIC-II uses cycles 15-54 of the raster line for character pointer
+    fetches (c-accesses), stealing approximately 40 CPU cycles
+  - On a bad line, only ~23 CPU cycles are available (PAL)
+  - On a normal line, ~63 CPU cycles are available (PAL)
+
+Bad Line Summary (PAL 6569):
+  Normal line:   ~63 cycles available to CPU (no sprites)
+  Bad line:      ~23 cycles available to CPU (no sprites)
+  Bad line rate: Every 8th line in the visible display area (lines $30-$F7)
+  Total bad lines per frame: 25 (for a 200-line display, 200/8 = 25)
+
+Note: Programmers can force every line to be a bad line by manipulating YSCROLL
+each line. This technique is used in FLI (Flexible Line Interpretation) mode to
+achieve per-line color changes, but it costs significant CPU time.
+
+
+=============================================================================
+SECTION 5: SPRITE DMA TIMING
+=============================================================================
+
+Each active sprite requires DMA (Direct Memory Access) cycles that steal
+additional CPU time:
+
+Per sprite per raster line:
+  - 1 p-access (sprite pointer fetch) - occurs in the VIC-II phi1 half-cycle
+  - 3 s-accesses (sprite data fetch) - occur in the 3 half-cycles directly
+    after the p-access
+
+The BA line goes low 3 cycles before the first s-access for each sprite,
+effectively stealing 2 additional CPU cycles per sprite for bus handover.
+
+Total CPU cycles stolen per active sprite: approximately 2 cycles for the
+bus handover + the time of the 3 s-accesses = effectively 2 cycles overhead
+per sprite.
+
+Sprite DMA cycle positions vary slightly between chip variants due to the
+different total cycle counts per line.
+
+Worst case (8 sprites active on a bad line, PAL):
+  Bad line alone:      ~23 cycles available
+  8 sprites penalty:   ~16 additional cycles lost
+  Remaining for CPU:   ~7 cycles (extremely tight)
+
+
+=============================================================================
+SECTION 6: VIC-II MEMORY ACCESS PATTERN
+=============================================================================
+
+The VIC-II and CPU share the data bus using a two-phase clock:
+  - phi1 (low):  VIC-II accesses memory
+  - phi2 (high): CPU accesses memory
+
+During phi1, the VIC-II performs:
+  - g-accesses: Graphics data fetches (bitmap or character generator)
+  - Sprite p-accesses and s-accesses
+  - DRAM refresh cycles (5 per line)
+  - Idle accesses (when not fetching useful data)
+
+During phi2, normally the CPU has the bus. However, on bad lines and during
+sprite DMA, the VIC-II can also claim the phi2 phase by holding AEC low,
+blocking the CPU.
+
+Access sequence for a typical bad line (PAL, 63 cycles):
+  Cycles 1-10:   VIC-II phi1 idle/refresh, CPU has phi2
+  Cycles 11-14:  BA goes low, CPU finishes current instruction
+  Cycles 15-54:  VIC-II claims both phases for c-access (character pointers)
+                 and g-access (character generator data) = 40 cycles
+  Cycles 55-63:  Sprite pointer/data fetches, then idle
+
+
+=============================================================================
+SECTION 7: DISPLAY WINDOW COORDINATES
+=============================================================================
+
+The visible display area depends on the RSEL and CSEL bits in $D011/$D016.
+
+Vertical Display Window (raster lines):
+                    RSEL=0 (24 rows)     RSEL=1 (25 rows)
+  First line:       55 ($37)             51 ($33)
+  Last line:        246 ($F6)            250 ($FA)
+  Height (pixels):  192                  200
+
+Horizontal Display Window (X coordinates):
+                    CSEL=0 (38 cols)     CSEL=1 (40 cols)
+  First pixel:      31 ($1F)            24 ($18)
+  Last pixel:       334 ($14E)          343 ($157)
+  Width (pixels):   304                 320
+
+First/Last Visible Coordinates by Chip Variant:
+                    6567R56A    6567R8      6569
+  First vis. X:     488/$1E8   489/$1E9    480/$1E0
+  Last vis. X:      388/$184   396/$18C    380/$17C
+
+Vertical Blanking:
+                    6567R56A    6567R8      6569
+  First VBlank:     line 13     line 13     line 300
+  Last VBlank:      line 40     line 40     line 15
+
+The PAL 6569 wraps its vertical blank across the line counter boundary
+(lines 300-311, then 0-15).
+
+
+=============================================================================
+SECTION 8: PRACTICAL CYCLE BUDGETS
+=============================================================================
+
+These are approximate CPU cycles available per frame for program logic:
+
+PAL (6569) - 19,656 total cycles per frame:
+  Visible area: 200 lines
+    Normal lines (175 lines x 63 cycles):       11,025
+    Bad lines (25 lines x 23 cycles):              575
+  Border/VBlank area (112 lines x 63 cycles):    7,056
+  TOTAL available (no sprites):                 ~18,656
+  (Some cycles lost to VIC-II refresh accesses)
+
+NTSC (6567R8) - 17,095 total cycles per frame:
+  Visible area: 200 lines
+    Normal lines (175 lines x 65 cycles):       11,375
+    Bad lines (25 lines x 23 cycles):              575
+  Border/VBlank area (63 lines x 65 cycles):     4,095
+  TOTAL available (no sprites):                 ~16,045
+
+Key observations:
+  - PAL has ~2,600 more cycles per frame than NTSC
+  - PAL has significantly more vertical blank time (112 vs 63 lines)
+  - NTSC has 2 more cycles per raster line (65 vs 63)
+  - The extra VBlank time on PAL is valuable for screen updates, music
+    players, and other per-frame processing
+
+
+=============================================================================
+SECTION 9: COMMON RASTER TIME CONSIDERATIONS
+=============================================================================
+
+Music/Sound Routines:
+  - SID music players typically need 3,000-8,000 cycles per frame
+  - Should be called once per frame during vertical blank or a stable raster
+  - Digi sample playback may require disabling the VIC-II display entirely
+    to free up maximum CPU cycles
+
+Raster Effects:
+  - Raster splits (changing VIC-II registers mid-screen) require precise timing
+  - A stable raster interrupt setup is essential for flicker-free effects
+  - Bad lines cause timing jitter that must be compensated for
+  - The "double IRQ" technique is commonly used to achieve cycle-exact timing
+
+Screen Updates:
+  - Updating screen RAM should ideally happen during VBlank or border time
+  - Scrolling routines benefit from the extra cycles in the border area
+  - PAL's longer VBlank period gives more time for screen manipulation
+
+Sprite Multiplexing:
+  - Only 8 hardware sprites can appear on any single raster line
+  - By re-positioning sprites on different raster lines, more than 8 can
+    appear on screen simultaneously
+  - Each sprite reposition requires careful timing relative to the raster
+  - Sprite DMA cycle stealing must be accounted for in timing calculations
+
+
+=============================================================================
+SECTION 10: DETECTING PAL VS NTSC IN SOFTWARE
+=============================================================================
+
+Since PAL and NTSC have different raster line counts, software can detect
+the system type by monitoring the raster counter:
+
+  - Read $D012 (and bit 7 of $D011 for the 9th bit)
+  - Wait for the raster counter to reach its maximum value
+  - PAL: maximum raster line = 311 ($137)
+  - NTSC (6567R8): maximum raster line = 262 ($106)
+  - NTSC (6567R56A): maximum raster line = 261 ($105)
+
+This detection is important for:
+  - Adjusting music player speed (50 Hz vs 60 Hz)
+  - Adapting raster effects to the correct line counts
+  - Ensuring scroll routines work on both systems
+  - Setting correct timer values for CIA-based timing

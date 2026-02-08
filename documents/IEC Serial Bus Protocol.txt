@@ -1,0 +1,488 @@
+Commodore IEC Serial Bus Protocol Reference - Source: pagetable.com
+
+Based on the comprehensive series "Commodore Peripheral Bus" by Michael Steil
+https://www.pagetable.com/?p=1023 (Overview & IEEE-488)
+https://www.pagetable.com/?p=1135 (Standard Serial / IEC)
+https://www.pagetable.com/?p=1031 (Bus Arbitration - TALK/LISTEN Layer)
+https://www.pagetable.com/?p=1038 (Commodore DOS Layer)
+
+================================================================================
+PART 0: OVERVIEW AND SERIES STRUCTURE
+================================================================================
+
+The Commodore Peripheral Bus family spans from 1977 to 1991, covering these
+variants:
+
+  Part 1: IEEE-488         [PET/CBM Series; 1977]
+  Part 2: The TALK/LISTEN Layer (bus arbitration, shared across all variants)
+  Part 3: The Commodore DOS Layer (file system, shared across all variants)
+  Part 4: Standard Serial (IEC)  [VIC-20, C64; 1981]
+  Part 5: TCBM             [C16, C116, Plus/4; 1984]
+  Part 6: JiffyDOS         [1985]
+  Part 7: Fast Serial      [C128; 1986]
+  Part 8: CBDOS            [C65; 1991]
+
+Historical Context:
+Early personal computers typically connected peripherals through Centronics or
+RS-232 interfaces, with disk drives attached directly to internal buses.
+Commodore's 1977 PET computer adopted "a standard interface that would allow
+to connect several drives and printers to a single port: IEEE-488." This
+standardized bus, also known as IEC-625 internationally and "HP-IB," originated
+in the late 1960s for test equipment and printers.
+
+The Standard Serial bus (IEC) represents Commodore's serialization of the
+IEEE-488 parallel protocol. It maintains key IEEE-488 properties:
+  - Daisy-chained device connections
+  - Single computer controller managing up to 31 devices
+  - One-to-many transmission capability
+  - Multi-channel support per device
+  - Byte-stream data transmission
+  - Open collector logic on all signal lines
+
+================================================================================
+PART 1: IEEE-488 (PET/CBM ORIGINAL PARALLEL BUS)
+================================================================================
+
+The PET uses a proprietary 24-pin edge connector, while standard IEEE-488
+devices employ 24-pin micro ribbon connectors. These connectors feature male
+and female sides on cables, enabling daisy-chaining.
+
+Signal Lines and Protocol:
+
+  Data and Control Lines:
+    - Eight DIO (Data I/O) lines carry data bytes in parallel
+    - Three handshake lines:
+        NRFD (Not Ready For Data)
+        DAV  (Data Valid)
+        NDAC (No Data Accepted)
+    - Control lines:
+        EOI (End Or Identify)
+        ATN (Attention)
+        SRQ (Service Request)
+        REN (Remote Enable)
+        IFC (Interface Clear)
+
+  Byte Transfer Mechanism:
+    The protocol implements a 3-wire-handshake where receivers signal readiness
+    (NRFD = 0), the sender places data on DIO and signals validity (DAV = 1),
+    and receivers acknowledge acceptance (NDAC = 0).
+
+  PET-Specific Implementation Notes:
+    - REN remains grounded (logically true)
+    - No software support for SRQ line
+    - Default timeout implementation (64 microseconds) for sender/receiver ops
+    - Timeouts can be disabled via KERNAL call SETTMO
+
+================================================================================
+PART 4: STANDARD SERIAL (IEC) BUS - LAYER 1: ELECTRICAL
+================================================================================
+
+The Standard Serial bus serializes IEEE-488's 16 parallel signal lines down
+to just 5 serial lines.
+
+Connectors & Pinout:
+  Female 6-pin DIN 45322 connectors on both computers and peripherals.
+  Daisy-chainable design allowing multiple devices per bus.
+
+Signal Lines (6 pins):
+  Pin 1: SRQ   (Service Request) - largely unused
+  Pin 2: GND   (Ground)
+  Pin 3: ATN   (Attention) - command signaling
+  Pin 4: CLK   (Clock) - sender-controlled handshake
+  Pin 5: DATA  (Data) - bit transmission and receiver handshake
+  Pin 6: RESET - bus reset capability
+
+Open Collector Logic:
+  All signal lines use inverted open-collector logic: 5V = logical 0,
+  0V = logical 1. "When all participants write 0, the line will read back 0,
+  but if any device writes 1, the bus will read back as 1." This allows
+  multiple devices to safely share signal lines.
+
+  Key implications:
+    - Any device can pull a line to logical 1 (0V)
+    - A line reads 0 only when ALL devices release it
+    - This enables collective "ready" signaling (all must release DATA)
+    - A single device can hold a line regardless of other devices
+
+================================================================================
+PART 4: STANDARD SERIAL (IEC) BUS - LAYER 2: BYTE TRANSFER PROTOCOL
+================================================================================
+
+The sender controls CLK exclusively; receivers control DATA between bytes.
+
+Basic Byte Transmission Sequence:
+  1. Sender releases CLK to signal "ready to send"
+  2. Receivers release DATA when ready to receive
+  3. Sender pulls CLK (indicates data on DATA line is NOT yet valid)
+  4. Sender places bit on DATA line (LSB first)
+  5. Sender releases CLK (data valid) - held minimum 60 microseconds
+  6. Sender pulls CLK again (data no longer valid) - held minimum 60 microseconds
+  7. Steps 4-6 repeat for all 8 bits (LSB first)
+  8. Receivers pull DATA to signal busy/acknowledge
+  9. Sequence repeats for next byte or transmission ends
+
+Timing Evolution:
+  The timing requirements changed across Commodore computer models due to
+  hardware constraints:
+
+  Original design:  4 microsecond hold times (never shipped; 6522 VIA bug)
+  VIC-20:          20 microsecond hold times (~2 KB/sec theoretical throughput)
+  C64:             60 microsecond hold times (<1 KB/sec throughput)
+
+  The C64 slowdown was caused by VIC-II video chip DMA stealing CPU cycles,
+  making the CPU unavailable for precise timing. This reflects "a design goal
+  that its speed would be comparable to IEEE-488" that practical constraints
+  prevented.
+
+End-of-Information (EOI) Signaling:
+  Rather than a dedicated wire, EOI uses a timing sidechannel:
+    - After receivers signal readiness (DATA released), the sender delays
+      placing the first bit by at least 200 microseconds
+    - Receivers detect this delay and interpret it as "this is the last byte"
+    - Receivers acknowledge by pulling DATA for 60 microseconds
+    - Then the final byte is transmitted normally
+
+  This timing-based approach saves a wire but adds complexity.
+
+Command Transmission (ATN):
+  When the controller needs to broadcast commands to all devices:
+    - Controller pulls the ATN line
+    - ALL devices are forced into receiver mode regardless of current state
+    - Byte transmission uses identical mechanics to data transfer
+    - EOI signaling is NOT used during command transmission
+    - Devices typically respond within 1000 microseconds (ATN Response Timing)
+
+Error Conditions and Timeouts:
+  Device not present:  DATA remains unpulled after 256 microseconds
+  Receiver timeout:    No DATA pull within 1000 microseconds after byte sent
+  Sender timeout:      CLK not pulled within 512 microseconds (empty stream)
+
+================================================================================
+LAYER 3: BUS ARBITRATION - TALK/LISTEN PROTOCOL
+================================================================================
+
+Layer 3 implements bus arbitration based on IEEE-488, enabling controlled
+communication between a computer controller and peripheral devices through
+role assignment and address-based routing.
+
+Controller & Devices:
+  One computer acts as the designated controller, issuing commands to all
+  other bus participants (devices). The controller itself has no address.
+
+Primary Addressing:
+  Each device receives a unique primary address (PA) from 0-30.
+
+  Conventional address assignments:
+    4-5:   Printers
+    6-7:   Plotters
+    8-11:  Disk drives and hard disks
+    12-30: Third-party devices
+
+Command Codes (sent under ATN):
+
+  Command     Hex Code        Effect
+  ---------   -------------   ----------------------------------------
+  LISTEN      $20 + PA        Device at PA becomes a receiver
+  UNLISTEN    $3F             All devices stop receiving
+  TALK        $40 + PA        Device at PA becomes a sender
+  UNTALK      $5F             All devices stop sending
+  SECOND      $60 + SA        Select secondary address (channel)
+  CLOSE       $E0 + SA        Dissociate channel from filename
+  OPEN        $F0 + SA        Associate channel with filename
+
+  PA = Primary Address (0-30)
+  SA = Secondary Address (0-15)
+
+Talker/Listener Rules:
+  - Only ONE talker can transmit at a time
+  - Multiple listeners can receive simultaneously
+  - The controller orchestrates all role changes by broadcasting commands
+  - All commands are heard by ALL devices on the bus
+
+Secondary Addressing (Channels):
+  Secondary addresses (0-31) enable "channels" within devices. Commands
+  specify which secondary address to use after TALK or LISTEN, though this
+  remains optional.
+
+  For disk drives, bit 4 of the secondary address is ignored, making
+  channels 16-31 equivalent to 0-15.
+
+Named Channels (OPEN/CLOSE):
+  Commodore extended IEEE-488 by allowing secondary addresses 0-15 to be
+  associated with filenames:
+
+  OPEN sequence:   LISTEN -> OPEN command -> filename bytes -> UNLISTEN
+  CLOSE sequence:  LISTEN -> CLOSE command -> UNLISTEN
+
+Practical Command Sequence Examples:
+
+  Reading from device 8, channel 2:
+    $48  (TALK device 8:    $40 + 8)
+    $62  (SECOND channel 2: $60 + 2)
+    [controller reads bytes from device until EOI]
+    $5F  (UNTALK)
+
+  Writing to device 4, channel 7:
+    $24  (LISTEN device 4:  $20 + 4)
+    $67  (SECOND channel 7: $60 + 7)
+    [controller sends bytes with final byte using EOI]
+    $3F  (UNLISTEN)
+
+  Device-to-device transfer (disk 8 to printer 4):
+    $24  (LISTEN device 4:  $20 + 4)
+    $48  (TALK device 8:    $40 + 8)
+    $62  (SECOND channel 2: $60 + 2)
+    [device 8 autonomously transmits to device 4]
+    $5F  (UNTALK)
+    $3F  (UNLISTEN)
+
+KERNAL API Routines:
+
+  Low-level IEEE/Serial Bus Calls:
+    $FFB1  LISTEN    - Send LISTEN command with device number in A
+    $FFAE  UNLISTEN  - Send UNLISTEN command
+    $FFB4  TALK      - Send TALK command with device number in A
+    $FFAB  UNTALK    - Send UNTALK command
+    $FF93  SECOND    - Send secondary address after LISTEN (A = $60+SA)
+    $FF96  TKSA      - Send secondary address after TALK (A = $60+SA)
+    $FFA5  ACPTR     - Read byte from serial bus (returned in A)
+    $FFA8  CIOUT     - Write byte to serial bus (A = byte to send)
+
+  High-level Channel I/O:
+    OPEN    - Open a logical file
+    CLOSE   - Close a logical file
+    CHKIN   - Set input channel
+    CHKOUT  - Set output channel
+    CHRIN   - Read character from input channel
+    CHROUT  - Write character to output channel
+
+  The high-level API supports up to 10 simultaneous logical files.
+
+================================================================================
+LAYER 4: COMMODORE DOS
+================================================================================
+
+The Commodore DOS layer operates above the TALK/LISTEN protocol, defining
+how disk drives interpret channels and data.
+
+Channel Architecture:
+  The system uses 32 channels (0-31), though DOS only supports channels 0-15.
+  Channels 0-14 handle file data, while channel 15 serves as the command/status
+  metachannel.
+
+  Channel 0:   Default read mode (LOAD)
+  Channel 1:   Default write mode (SAVE)
+  Channels 2-14: Flexible read/write access
+  Channel 15:  Command/status channel
+
+Command Channel (15):
+  Commands are transmitted as ASCII byte streams with optional binary arguments.
+  Two submission methods:
+    1. Stream data to channel 15, terminated by EOI or UNLISTEN
+    2. Named channel open with command as the filename parameter
+
+File Types:
+  Sequential files support three types:
+    SEQ - Sequential data storage
+    PRG - Executable programs
+    USR - User-defined data
+
+  Access modes:
+    R - Read
+    M - Recovery mode
+    W - Write
+    A - Append
+
+Relative Files (REL):
+  Enable random access using fixed record sizes (1-254 bytes).
+  The POSITION command sets record pointers using binary-encoded arguments.
+
+Directory Listing:
+  The dollar-sign syntax "$" retrieves directory contents, supporting
+  wildcards and filtering by file type or timestamp when available.
+
+  Examples:
+    "$"        - Full directory listing
+    "$0:*"     - All files on drive 0
+    "$0:*.PRG" - Only PRG files
+
+Status Reporting:
+  Status returns as a CR-delimited ASCII string:
+    code,string,a,b[,c]
+
+  Error code categories:
+    0-1: Success / informational
+    2:   Physical/hardware errors
+    3:   Parsing errors
+    5:   Relative file issues
+    6:   File errors (not found, exists, etc.)
+    7:   Generic errors
+
+  Common status codes:
+    00 - OK
+    01 - Files scratched (number in track/sector fields)
+    20 - Read error (block header not found)
+    21 - Read error (sync mark not found)
+    22 - Read error (data block not present)
+    23 - Read error (checksum error)
+    25 - Write error (verify failed)
+    26 - Write protect on
+    30 - Syntax error (general)
+    33 - Syntax error (invalid filename)
+    60 - Write file open
+    61 - File not open
+    62 - File not found
+    63 - File exists
+    72 - Disk full
+    73 - DOS version (returned on power-up/reset)
+    74 - Drive not ready
+
+Block Access API:
+  The block system uses 256-byte logical blocks identified by track/sector.
+  The "#" channel syntax allocates a buffer for direct block access.
+
+  Commands:
+    U1 (UA)  - Read a block into buffer
+    U2 (UB)  - Write a block from buffer
+    B-A      - Allocate a block in the BAM (Block Availability Map)
+    B-F      - Free a block in the BAM
+
+  Example: Reading track 18, sector 0 via channel 2:
+    OPEN 2,8,2,"#"       ; Allocate buffer on channel 2
+    PRINT#15,"U1:2,0,18,0" ; Read track 18, sector 0 into buffer
+    ; ... read data from channel 2 ...
+    CLOSE 2
+
+Memory and Execution Commands:
+  M-R  - Memory Read (read bytes from drive RAM)
+  M-W  - Memory Write (write bytes to drive RAM)
+  M-E  - Memory Execute (execute code in drive RAM)
+
+  User command vectors (U3-U8) provide additional entry points.
+
+Burst API:
+  Provides low-level disk access via U0 subcommands, supporting physical
+  sector operations and file transfers using alternate serial protocols.
+  Available on 1571 and 1581 drives with the C128.
+
+================================================================================
+COMMON IEC BUS PROGRAMMING PATTERNS (C64 BASIC & ASSEMBLY)
+================================================================================
+
+BASIC Examples:
+
+  Loading a program:
+    LOAD "FILENAME",8,1
+
+  Saving a program:
+    SAVE "FILENAME",8
+
+  Reading the error channel:
+    OPEN 15,8,15
+    INPUT#15,A,B$,C,D
+    PRINT A;B$;C;D
+    CLOSE 15
+
+  Sending a disk command:
+    OPEN 15,8,15,"S:FILENAME"  ; Scratch (delete) a file
+    CLOSE 15
+
+  Sequential file read:
+    OPEN 2,8,2,"DATAFILE,S,R"
+    10 GET#2,A$
+    20 IF ST=0 THEN PRINT A$;:GOTO 10
+    CLOSE 2
+
+  Sequential file write:
+    OPEN 2,8,2,"DATAFILE,S,W"
+    PRINT#2,"HELLO WORLD"
+    CLOSE 2
+
+Assembly Language Patterns (6502/KickAssembler):
+
+  Reading the error channel:
+    ; OPEN 15,8,15
+    LDA #15          ; Logical file number
+    LDX #8           ; Device number
+    LDY #15          ; Secondary address (command channel)
+    JSR $FFBA        ; SETLFS
+    LDA #0           ; No filename
+    JSR $FFBD        ; SETNAM
+    JSR $FFC0        ; OPEN
+
+    ; Read status
+    LDX #15          ; Logical file number
+    JSR $FFC6        ; CHKIN - set as input
+    JSR $FFCF        ; CHRIN - read character (returned in A)
+    JSR $FFCC        ; CLRCHN - restore default channels
+
+    ; CLOSE 15
+    LDA #15
+    JSR $FFC3        ; CLOSE
+
+  Loading a file:
+    LDA #namelen     ; Length of filename
+    LDX #<name       ; Low byte of filename address
+    LDY #>name       ; High byte of filename address
+    JSR $FFBD        ; SETNAM
+
+    LDA #1           ; Logical file number
+    LDX #8           ; Device number
+    LDY #1           ; Secondary address (1 = load to address in file)
+    JSR $FFBA        ; SETLFS
+
+    LDA #0           ; 0 = LOAD (not verify)
+    JSR $FFD5        ; LOAD
+
+  Sending a byte to device:
+    LDA #device      ; Device number
+    JSR $FFB1        ; LISTEN
+    LDA #$6F         ; Secondary address 15 ($60 + $0F)
+    JSR $FF93        ; SECOND
+    LDA #data_byte   ; Byte to send
+    JSR $FFA8        ; CIOUT
+    JSR $FFAE        ; UNLISTEN
+
+  Related KERNAL Vectors:
+    $FFBA  SETLFS   - Set logical file parameters
+    $FFBD  SETNAM   - Set filename
+    $FFC0  OPEN     - Open logical file
+    $FFC3  CLOSE    - Close logical file
+    $FFC6  CHKIN    - Set input channel
+    $FFC9  CHKOUT   - Set output channel
+    $FFCC  CLRCHN   - Restore default I/O channels
+    $FFCF  CHRIN    - Read character from input channel
+    $FFD2  CHROUT   - Write character to output channel
+    $FFD5  LOAD     - Load file from device
+    $FFD8  SAVE     - Save file to device
+
+================================================================================
+NOTES ON FAST LOADERS AND PROTOCOL VARIANTS
+================================================================================
+
+The slow speed of the standard IEC serial bus on the C64 (under 1 KB/sec)
+led to numerous fast loader implementations:
+
+  JiffyDOS (1985):
+    Software modification for both C64 and drive. Replaces the serial bus
+    routines in both the computer's KERNAL and the drive's DOS ROM. Achieves
+    significantly higher throughput by using a different byte transfer protocol.
+
+  Fast Serial (C128, 1986):
+    Hardware enhancement using the CIA chip's serial port register for
+    hardware-assisted byte transfer. Requires compatible drives (1571, 1581).
+    Available only on the C128.
+
+  Software Fast Loaders:
+    Many commercial and public domain fast loaders exist that replace the
+    serial bus timing with custom protocols, often achieving 5-10x speed
+    improvements. These typically work by uploading custom code to the drive's
+    RAM and using modified transfer protocols.
+
+The fundamental limitation of the IEC bus is that it requires the CPU to
+bit-bang each bit of every byte, and on the C64, the VIC-II chip regularly
+steals CPU cycles for DMA, making precise timing difficult.
+
+================================================================================
+END OF REFERENCE
+================================================================================

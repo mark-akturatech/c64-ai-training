@@ -1,0 +1,668 @@
+CIA 6526 Complex Interface Adapter - Comprehensive Reference
+=============================================================
+
+Sources:
+  - c64-wiki.com/wiki/CIA
+  - ist.uwaterloo.ca/~schepers/MJK/cia.html
+  - Original MOS 6526 datasheet (features and pinout)
+
+This document combines information from all sources into a single
+comprehensive reference for the MOS 6526 CIA chip as used in the
+Commodore 64.
+
+=============================================================
+1. DESCRIPTION
+=============================================================
+
+The 6526 Complex Interface Adapter (CIA) is a 65XX bus compatible
+peripheral interface device with extremely flexible timing and I/O
+capabilities. It is manufactured by MOS Technology / Commodore
+Semiconductor Group.
+
+Two CIA chips are used in the Commodore 64:
+  - CIA 1 at $DC00-$DCFF (56320-56575) - triggers IRQ
+  - CIA 2 at $DD00-$DDFF (56576-56831) - triggers NMI
+
+The CIA is also used in the C128, SX64, and 1570/71/81 disk drives.
+
+=============================================================
+2. FEATURES
+=============================================================
+
+  - 16 individually programmable I/O lines (two 8-bit ports)
+  - 8 or 16-bit handshaking on read or write
+  - 2 independent, linkable 16-bit interval timers
+  - 24-hour (AM/PM) time-of-day clock with programmable alarm
+  - 8-bit shift register for serial I/O
+  - 2 TTL load capability
+  - CMOS compatible I/O lines
+  - 1 or 2 MHz operation available (6526 = 1 MHz, 6526A = 2 MHz)
+
+=============================================================
+3. PIN CONFIGURATION (40-Pin DIP)
+=============================================================
+
+              +-----+--+-----+
+     Vss   1 |            40 | CNT
+     PA0   2 |            39 | SP
+     PA1   3 |            38 | RS3
+     PA2   4 |            37 | RS2
+     PA3   5 |            36 | RS1
+     PA4   6 |            35 | RS0
+     PA5   7 |            34 | RW
+     PA6   8 |     6526   33 | D7
+     PA7   9 |            32 | D6
+     PB0  10 |            31 | D5
+     PB1  11 |            30 | D4
+     PB2  12 |            29 | D3
+     PB3  13 |            28 | D2
+     PB4  14 |            27 | D1
+     PB5  15 |            26 | D0
+     PB6  16 |            25 | PHI2
+     PB7  17 |            24 | FLAG
+    /PC   18 |            23 | /CS
+     TOD  19 |            22 | /RES
+     Vcc  20 |            21 | /IRQ
+              +------+-------+
+
+Pin Descriptions:
+  Vss (1)      - Ground
+  PA0-PA7      - Port A I/O lines (pins 2-9)
+  PB0-PB7      - Port B I/O lines (pins 10-17)
+  /PC (18)     - Port Control output, active low pulse on read/write
+                 of Port B. Indicates data is available.
+  TOD (19)     - Time-of-Day clock input. Receives mains frequency
+                 (50 Hz PAL / 60 Hz NTSC)
+  Vcc (20)     - +5V supply
+  /IRQ (21)    - Interrupt Request output (active low, open drain).
+                 Goes LOW when an interrupt condition matches a set
+                 bit in the Interrupt Control Register.
+  /RES (22)    - Reset input (active low)
+  /CS (23)     - Chip Select (active low)
+  FLAG (24)    - Negative edge-triggered interrupt input
+  PHI2 (25)    - System clock input (Phase 2)
+  D0-D7        - Bidirectional data bus (pins 26-33)
+  R/W (34)     - Read/Write control from CPU
+  RS0-RS3      - Register Select address lines (pins 35-38)
+  SP (39)      - Serial Port data line (bidirectional)
+  CNT (40)     - Counter/clock line for timers and shift register
+
+Ordering Information:
+  Frequency: No suffix = 1 MHz, A = 2 MHz
+  Package:   C = Ceramic, P = Plastic
+
+=============================================================
+4. REGISTER MAP
+=============================================================
+
+Offset  CIA 1    CIA 2    Name           Description
+------  -----    -----    ----           -----------
+$00     $DC00    $DD00    PRA            Data Port A
+$01     $DC01    $DD01    PRB            Data Port B
+$02     $DC02    $DD02    DDRA           Data Direction Register A
+$03     $DC03    $DD03    DDRB           Data Direction Register B
+$04     $DC04    $DD04    TALO           Timer A Low Byte
+$05     $DC05    $DD05    TAHI           Timer A High Byte
+$06     $DC06    $DD06    TBLO           Timer B Low Byte
+$07     $DC07    $DD07    TBHI           Timer B High Byte
+$08     $DC08    $DD08    TOD10THS       TOD Tenths of Seconds
+$09     $DC09    $DD09    TODSEC        TOD Seconds
+$0A     $DC0A    $DD0A    TODMIN        TOD Minutes
+$0B     $DC0B    $DD0B    TODHR         TOD Hours
+$0C     $DC0C    $DD0C    SDR           Serial Data Register
+$0D     $DC0D    $DD0D    ICR           Interrupt Control Register
+$0E     $DC0E    $DD0E    CRA           Control Register A
+$0F     $DC0F    $DD0F    CRB           Control Register B
+
+Note: The register map repeats every 16 bytes throughout the
+$DC00-$DCFF and $DD00-$DDFF ranges (i.e., $DC10 mirrors $DC00, etc.)
+
+=============================================================
+5. REGISTER DETAILS
+=============================================================
+
+-------------------------------------------------------------
+5.1  Port A Data Register (PRA) - Offset $00
+-------------------------------------------------------------
+
+Read/Write. Each bit corresponds to a pin on Port A.
+Direction is controlled by DDRA (offset $02):
+  0 = input, 1 = output
+
+CIA 1 ($DC00) - Port A Connections:
+  Bit 0  - Keyboard column 0 / Joystick 2 Up
+  Bit 1  - Keyboard column 1 / Joystick 2 Down
+  Bit 2  - Keyboard column 2 / Joystick 2 Left
+  Bit 3  - Keyboard column 3 / Joystick 2 Right
+  Bit 4  - Keyboard column 4 / Joystick 2 Fire
+  Bit 5  - Keyboard column 5 / Paddle fire button
+  Bit 6  - Keyboard column 6 / Paddle selection
+  Bit 7  - Keyboard column 7 / Disable NMI (directly if active)
+
+CIA 2 ($DD00) - Port A Connections:
+  Bit 0  - VIC-II Bank Select Bit 0 (active low)
+  Bit 1  - VIC-II Bank Select Bit 1 (active low)
+  Bit 2  - RS-232 TXD (output)
+  Bit 3  - Serial Bus ATN OUT
+  Bit 4  - Serial Bus CLOCK OUT
+  Bit 5  - Serial Bus DATA OUT
+  Bit 6  - Serial Bus CLOCK IN (input)
+  Bit 7  - Serial Bus DATA IN (input)
+
+VIC-II Bank Selection (CIA 2, bits 0-1 of Port A):
+  %11 (3) = Bank 0: $0000-$3FFF (default)
+  %10 (2) = Bank 1: $4000-$7FFF
+  %01 (1) = Bank 2: $8000-$BFFF
+  %00 (0) = Bank 3: $C000-$FFFF
+
+  Note: The bits are active low, so the value is inverted.
+
+-------------------------------------------------------------
+5.2  Port B Data Register (PRB) - Offset $01
+-------------------------------------------------------------
+
+Read/Write. Each bit corresponds to a pin on Port B.
+Direction is controlled by DDRB (offset $03):
+  0 = input, 1 = output
+
+CIA 1 ($DC01) - Port B Connections:
+  Bit 0  - Keyboard row 0 / Joystick 1 Up
+  Bit 1  - Keyboard row 1 / Joystick 1 Down
+  Bit 2  - Keyboard row 2 / Joystick 1 Left
+  Bit 3  - Keyboard row 3 / Joystick 1 Right
+  Bit 4  - Keyboard row 4 / Joystick 1 Fire
+  Bit 5  - Keyboard row 5
+  Bit 6  - Keyboard row 6 / Timer A toggle/pulse output
+  Bit 7  - Keyboard row 7 / Timer B toggle/pulse output
+
+CIA 2 ($DD01) - Port B Connections:
+  Bit 0  - User Port PB0 / RS-232 RXD (input)
+  Bit 1  - User Port PB1 / RS-232 RTS (output)
+  Bit 2  - User Port PB2 / RS-232 DTR (output)
+  Bit 3  - User Port PB3 / RS-232 RI (input)
+  Bit 4  - User Port PB4 / RS-232 DCD (input)
+  Bit 5  - User Port PB5
+  Bit 6  - User Port PB6 / Timer A toggle/pulse output
+  Bit 7  - User Port PB7 / Timer B toggle/pulse output
+
+-------------------------------------------------------------
+5.3  Data Direction Registers (DDRA/DDRB) - Offsets $02/$03
+-------------------------------------------------------------
+
+Read/Write. Controls the direction of each I/O pin:
+  0 = pin is INPUT
+  1 = pin is OUTPUT
+
+CIA 1 defaults:  DDRA=$FF (all output), DDRB=$00 (all input)
+CIA 2 defaults:  DDRA=$3F (bits 0-5 output, 6-7 input),
+                 DDRB=$00 (all input)
+
+-------------------------------------------------------------
+5.4  Timer A (TALO/TAHI) - Offsets $04/$05
+-------------------------------------------------------------
+
+Timer A is a 16-bit down-counter (low byte at $04, high byte at $05).
+
+Reading: Returns the current counter value.
+Writing: Loads the timer latch. The latch value is transferred
+         to the counter on timer underflow (in continuous mode),
+         on forced load (bit 4 of CRA), or when the timer is
+         started while stopped.
+
+Timer A can count:
+  - System clock pulses (PHI2, ~1 MHz on C64)
+  - Positive edges on CNT pin
+  (Selected by bit 5 of CRA)
+
+On underflow, Timer A can:
+  - Trigger an interrupt (if enabled in ICR)
+  - Toggle or pulse bit 6 of Port B (if enabled in CRA)
+  - Clock Timer B (if Timer B is set to count Timer A underflows)
+
+-------------------------------------------------------------
+5.5  Timer B (TBLO/TBHI) - Offsets $06/$07
+-------------------------------------------------------------
+
+Timer B is a 16-bit down-counter (low byte at $06, high byte at $07).
+
+Operates identically to Timer A with additional count sources.
+
+Timer B can count:
+  - System clock pulses (PHI2)
+  - Positive edges on CNT pin
+  - Timer A underflow pulses
+  - Timer A underflows coincident with CNT positive edge
+  (Selected by bits 5-6 of CRB)
+
+On underflow, Timer B can:
+  - Trigger an interrupt (if enabled in ICR)
+  - Toggle or pulse bit 7 of Port B (if enabled in CRB)
+
+Timer A and Timer B can be linked (cascaded) to form a 32-bit
+timer by setting Timer B to count Timer A underflows.
+
+-------------------------------------------------------------
+5.6  Time-of-Day Clock (TOD) - Offsets $08-$0B
+-------------------------------------------------------------
+
+The TOD is a 24-hour clock with 1/10 second resolution.
+It is clocked by the TOD pin, which receives 50 Hz (PAL) or
+60 Hz (NTSC) mains frequency. The CRA bit 7 selects between
+50/60 Hz input.
+
+All TOD registers are stored in BCD (Binary Coded Decimal) format.
+
+Offset $08 - TOD 10THS (Tenths of Seconds):
+  Bits 0-3: Tenths of seconds (0-9)
+  Bits 4-7: Not used
+
+Offset $09 - TOD SEC (Seconds):
+  Bits 0-3: Seconds ones digit (0-9)
+  Bits 4-6: Seconds tens digit (0-5)
+  Bit 7:    Not used
+
+Offset $0A - TOD MIN (Minutes):
+  Bits 0-3: Minutes ones digit (0-9)
+  Bits 4-6: Minutes tens digit (0-5)
+  Bit 7:    Not used
+
+Offset $0B - TOD HR (Hours):
+  Bits 0-3: Hours ones digit (0-9)
+  Bit 4:    Hours tens digit (0-1)
+  Bits 5-6: Not used
+  Bit 7:    AM/PM flag (0 = AM, 1 = PM)
+
+TOD Latching Behaviour:
+  - Reading the Hours register ($0B) latches the TOD outputs.
+    Subsequent reads of $0A, $09, $08 return the latched values.
+    Reading $08 (10ths) releases the latch.
+    This prevents reading inconsistent time during a rollover.
+  - Writing the Hours register ($0B) stops the TOD clock.
+    The clock is restarted when $08 (10ths) is written.
+    This ensures consistent time setting.
+
+TOD Alarm:
+  - Setting bit 7 of CRB (ALARM) causes writes to TOD registers
+    to set the ALARM time instead of the clock time.
+  - When the TOD clock matches the alarm time, an interrupt is
+    triggered (if enabled in ICR bit 2).
+
+-------------------------------------------------------------
+5.7  Serial Data Register (SDR) - Offset $0C
+-------------------------------------------------------------
+
+The 8-bit shift register provides a bidirectional serial port.
+
+Output Mode (CRA bit 6 = 1):
+  - Data written to SDR is shifted out bit-by-bit on the SP pin.
+  - Timer A underflows provide the shift clock (one bit per
+    underflow). The actual clock appears on the CNT pin at half
+    the Timer A underflow rate.
+  - An interrupt is triggered when all 8 bits have been shifted out.
+  - Writing new data before completion starts a new byte immediately
+    after the current byte finishes.
+
+Input Mode (CRA bit 6 = 0):
+  - External clock is supplied on the CNT pin.
+  - Data is shifted in on the SP pin on each positive CNT edge.
+  - An interrupt is triggered when 8 bits have been received.
+  - The received data can then be read from SDR.
+
+-------------------------------------------------------------
+5.8  Interrupt Control Register (ICR) - Offset $0D
+-------------------------------------------------------------
+
+This register has different behaviour for reads and writes.
+
+READING ICR (Interrupt Status):
+  Bit 0: TA    - Timer A underflow occurred
+  Bit 1: TB    - Timer B underflow occurred
+  Bit 2: ALRM  - TOD alarm match occurred
+  Bit 3: SP    - Shift register full/empty (8 bits transferred)
+  Bit 4: FLG   - Negative edge detected on FLAG pin
+  Bits 5-6:    - Always 0
+  Bit 7: IR    - An interrupt has occurred (logical OR of bits 0-4
+                 ANDed with their enable masks)
+
+  Reading the ICR clears ALL interrupt flags and the IRQ line.
+
+WRITING ICR (Interrupt Mask):
+  Bit 0: TA    - Timer A underflow enable
+  Bit 1: TB    - Timer B underflow enable
+  Bit 2: ALRM  - TOD alarm enable
+  Bit 3: SP    - Shift register enable
+  Bit 4: FLG   - FLAG pin enable
+  Bits 5-6:    - Not used
+  Bit 7: SC    - Set/Clear control bit
+                 1 = SET:   bits written as 1 enable the
+                            corresponding interrupt source
+                 0 = CLEAR: bits written as 1 disable the
+                            corresponding interrupt source
+
+  Example: To enable Timer A interrupt:
+    LDA #$81      ; Set/Clear=1, bit 0 (TA)=1
+    STA $DC0D     ; Enable Timer A IRQ on CIA 1
+
+  Example: To disable Timer A interrupt:
+    LDA #$01      ; Set/Clear=0, bit 0 (TA)=1
+    STA $DC0D     ; Disable Timer A IRQ on CIA 1
+
+  CIA 1 ICR controls IRQ (directly to CPU /IRQ line).
+  CIA 2 ICR controls NMI (directly to CPU /NMI line).
+
+-------------------------------------------------------------
+5.9  Control Register A (CRA) - Offset $0E
+-------------------------------------------------------------
+
+Read/Write. Controls Timer A and related functions.
+
+  Bit 0: START   - 1 = Start Timer A
+                   0 = Stop Timer A
+
+  Bit 1: PBON    - 1 = Timer A output on PB6
+                   0 = PB6 is normal I/O
+
+  Bit 2: OUTMODE - 1 = Toggle PB6 on each underflow
+                   0 = Pulse PB6 for one cycle on underflow
+
+  Bit 3: RUNMODE - 1 = One-Shot mode (timer stops after underflow)
+                   0 = Continuous mode (timer reloads and continues)
+
+  Bit 4: LOAD    - 1 = Force load latch value into timer counter
+                   (This is a strobe bit; it always reads 0)
+
+  Bit 5: INMODE  - 1 = Timer A counts positive CNT edges
+                   0 = Timer A counts PHI2 clock pulses
+
+  Bit 6: SPMODE  - 1 = Serial port = output (shift register driven
+                        by Timer A)
+                   0 = Serial port = input
+
+  Bit 7: TODIN   - 1 = 50 Hz TOD clock input
+                   0 = 60 Hz TOD clock input
+
+-------------------------------------------------------------
+5.10 Control Register B (CRB) - Offset $0F
+-------------------------------------------------------------
+
+Read/Write. Controls Timer B and related functions.
+
+  Bit 0: START   - 1 = Start Timer B
+                   0 = Stop Timer B
+
+  Bit 1: PBON    - 1 = Timer B output on PB7
+                   0 = PB7 is normal I/O
+
+  Bit 2: OUTMODE - 1 = Toggle PB7 on each underflow
+                   0 = Pulse PB7 for one cycle on underflow
+
+  Bit 3: RUNMODE - 1 = One-Shot mode (timer stops after underflow)
+                   0 = Continuous mode (timer reloads and continues)
+
+  Bit 4: LOAD    - 1 = Force load latch value into timer counter
+                   (This is a strobe bit; it always reads 0)
+
+  Bits 5-6: INMODE - Timer B input mode selection:
+    %00 = Timer B counts PHI2 clock pulses
+    %01 = Timer B counts positive CNT edges
+    %10 = Timer B counts Timer A underflow pulses
+    %11 = Timer B counts Timer A underflows coincident with
+           positive CNT edge
+
+  Bit 7: ALARM   - 1 = Writing to TOD registers sets ALARM time
+                   0 = Writing to TOD registers sets TOD clock time
+
+=============================================================
+6. CIA 1 - DETAILED CONNECTIONS ($DC00-$DCFF)
+=============================================================
+
+CIA 1 is responsible for:
+  - Keyboard scanning (matrix of 8 columns x 8 rows)
+  - Joystick port 1 and 2 input
+  - Paddle (analog) controllers
+  - Datasette control
+  - IRQ generation
+
+Keyboard Matrix:
+  Port A ($DC00) drives columns (active low, output)
+  Port B ($DC01) reads rows (active low, input)
+
+  To scan: Write a 0 to the desired column bit in Port A,
+  then read Port B. A 0 bit indicates the key at that
+  row/column intersection is pressed.
+
+  To scan all keys, each column is selected one at a time
+  (bits 0-7 of Port A cleared individually) and Port B is read.
+
+Joystick Reading:
+  Joystick 2 is directly readable at $DC00 (Port A):
+    Bit 0 = Up, Bit 1 = Down, Bit 2 = Left,
+    Bit 3 = Right, Bit 4 = Fire (active low)
+
+  Joystick 1 is directly readable at $DC01 (Port B):
+    Bit 0 = Up, Bit 1 = Down, Bit 2 = Left,
+    Bit 3 = Right, Bit 4 = Fire (active low)
+
+  Note: Joystick bits are active low (0 = active/pressed).
+
+CIA 1 FLAG pin:
+  Connected to the Cassette Read line. A negative edge on the
+  FLAG pin can generate an IRQ (if enabled).
+
+=============================================================
+7. CIA 2 - DETAILED CONNECTIONS ($DD00-$DDFF)
+=============================================================
+
+CIA 2 is responsible for:
+  - VIC-II memory bank selection
+  - Serial (IEC) bus communication
+  - RS-232 communication (accent RS-232)
+  - User Port I/O
+  - NMI generation
+
+VIC-II Bank Selection:
+  CIA 2 Port A bits 0-1 ($DD00) select which 16K bank the VIC-II
+  sees for screen memory, character data, and sprites:
+
+    Bits 1-0    Bank    VIC-II Address Range
+    --------    ----    --------------------
+      %11        0      $0000-$3FFF (default)
+      %10        1      $4000-$7FFF
+      %01        2      $8000-$BFFF
+      %00        3      $C000-$FFFF
+
+  Note: The bank bits are active low (inverted).
+
+Serial (IEC) Bus:
+  Port A handles the serial bus for disk drives and printers:
+    Bit 3: ATN OUT
+    Bit 4: CLOCK OUT
+    Bit 5: DATA OUT
+    Bit 6: CLOCK IN (input)
+    Bit 7: DATA IN (input)
+
+RS-232 Communication:
+  Port A bit 2: TXD (transmit data, output)
+  Port B bit 0: RXD (receive data, input)
+  Port B bit 1: RTS (request to send, output)
+  Port B bit 2: DTR (data terminal ready, output)
+  Port B bit 3: RI  (ring indicator, input)
+  Port B bit 4: DCD (data carrier detect, input)
+
+CIA 2 FLAG pin:
+  Connected to the Serial Bus SRQ (Service Request) line.
+  A negative edge generates an NMI (if enabled).
+
+=============================================================
+8. INTERRUPT HANDLING
+=============================================================
+
+CIA 1 -> IRQ (directly connected to CPU /IRQ line)
+CIA 2 -> NMI (directly connected to CPU /NMI line)
+
+Five interrupt sources per CIA:
+  1. Timer A underflow
+  2. Timer B underflow
+  3. TOD alarm match
+  4. Shift register (8 bits transferred)
+  5. FLAG pin (negative edge)
+
+Interrupt Acknowledgement:
+  Reading the ICR register ($DC0D or $DD0D) clears all pending
+  interrupt flags and de-asserts the IRQ/NMI line.
+
+  IMPORTANT: Because NMI is edge-triggered on the CPU, the NMI
+  handler must read $DD0D to clear the CIA 2 interrupt flag.
+  Otherwise, subsequent NMIs cannot be triggered.
+
+Typical IRQ Setup for Timer A (CIA 1):
+  SEI              ; Disable interrupts
+  LDA #<handler    ; Set IRQ vector low byte
+  STA $0314
+  LDA #>handler    ; Set IRQ vector high byte
+  STA $0315
+  LDA #$7F        ; Disable all CIA 1 interrupts
+  STA $DC0D
+  LDA $DC0D       ; Acknowledge any pending interrupts
+  LDA #<count     ; Set timer value low byte
+  STA $DC04
+  LDA #>count     ; Set timer value high byte
+  STA $DC05
+  LDA #$81        ; Enable Timer A interrupt
+  STA $DC0D
+  LDA #$11        ; Start Timer A, continuous mode, PHI2 clock
+  STA $DC0E
+  CLI              ; Enable interrupts
+
+=============================================================
+9. TIMER PROGRAMMING NOTES
+=============================================================
+
+Timer Resolution:
+  At PHI2 clock rate of approximately 985,248 Hz (PAL) or
+  1,022,727 Hz (NTSC), the minimum timer period is about 1
+  microsecond, and the maximum single timer period is about
+  65.5 milliseconds (65536 cycles).
+
+  Cascading Timer A and Timer B provides a 32-bit timer with
+  a maximum period of approximately 71.8 minutes (PAL).
+
+One-Shot vs Continuous:
+  - Continuous mode: Timer reloads from latch and continues
+    counting on underflow. Used for periodic interrupts.
+  - One-Shot mode: Timer stops after single underflow. Useful
+    for precise delay generation.
+
+Timer Latch vs Counter:
+  - Writing to timer registers always writes to the LATCH,
+    not directly to the counter.
+  - The latch is transferred to the counter when:
+    (a) Timer underflows in continuous mode
+    (b) Force load bit (CRA/CRB bit 4) is set
+    (c) Timer transitions from stopped to running (START bit
+        goes from 0 to 1)
+
+Output to Port B:
+  Timer underflow output on PB6 (Timer A) or PB7 (Timer B) can
+  be either:
+  - Pulse mode: PB6/PB7 goes high for one PHI2 cycle on underflow
+  - Toggle mode: PB6/PB7 inverts state on each underflow
+  This is useful for generating waveforms or timing signals.
+
+=============================================================
+10. TIME-OF-DAY CLOCK NOTES
+=============================================================
+
+The TOD clock operates independently of the CPU and timers.
+It receives its clock from the TOD pin (mains frequency).
+
+Setting the TOD clock:
+  1. Ensure CRB bit 7 = 0 (writing sets clock, not alarm)
+  2. Write hours first ($DC0B/$DD0B) - this stops the clock
+  3. Write minutes ($DC0A/$DD0A)
+  4. Write seconds ($DC09/$DD09)
+  5. Write tenths ($DC08/$DD08) - this starts the clock
+
+Setting the alarm:
+  1. Set CRB bit 7 = 1 (writing sets alarm)
+  2. Write alarm time to $0B, $0A, $09, $08
+  3. Set CRB bit 7 = 0 (return to normal TOD writes)
+
+Reading the TOD clock:
+  1. Read hours ($0B) - this latches all TOD registers
+  2. Read minutes ($0A) - returns latched value
+  3. Read seconds ($09) - returns latched value
+  4. Read tenths ($08) - releases latch
+
+BCD Format Examples:
+  12:30:00.5 PM is stored as:
+    TOD HR    = $92  (bit 7=1 for PM, $12 in BCD)
+    TOD MIN   = $30  (BCD)
+    TOD SEC   = $00  (BCD)
+    TOD 10THS = $05  (BCD)
+
+=============================================================
+11. SERIAL SHIFT REGISTER NOTES
+=============================================================
+
+The 8-bit shift register provides a synchronous serial port.
+
+Output Mode (CRA bit 6 = 1):
+  - Write data byte to SDR ($0C)
+  - Timer A provides the shift clock
+  - Data is shifted out MSB first on SP pin
+  - CNT pin outputs the shift clock at half the Timer A rate
+  - Interrupt generated when byte is complete
+  - Maximum baud rate = PHI2/4 (approximately 250 kbit/s)
+
+Input Mode (CRA bit 6 = 0):
+  - External device provides clock on CNT pin
+  - Data is shifted in on SP pin
+  - Interrupt generated after 8 bits received
+  - Read received byte from SDR ($0C)
+
+=============================================================
+12. CIA FAILURE SYMPTOMS
+=============================================================
+
+CIA 1 failures may manifest as:
+  - No cursor visible at startup
+  - Keyboard completely unresponsive
+  - Partial keyboard or joystick malfunction
+  - Random characters appearing on screen
+  - Control port 1 or 2 not working
+
+CIA 2 failures may manifest as:
+  - Serial bus / disk drive inaccessible
+  - "FILE NOT FOUND" errors on disk operations
+  - User port not functioning
+  - Character display anomalies (bank selection fault)
+  - RS-232 communication failure
+
+=============================================================
+13. QUICK REFERENCE - C64 KERNAL CIA USAGE
+=============================================================
+
+The C64 KERNAL uses the CIAs as follows:
+
+CIA 1 Timer A:
+  Used by the KERNAL for the system IRQ (default ~60 Hz).
+  Default timer value: $4025 (16421) for PAL,
+                       $4295 (17045) for NTSC.
+  This generates the cursor blink, keyboard scan, and
+  other periodic system tasks.
+
+CIA 1 Timer B:
+  Available for user programs. Used by BASIC for the
+  TI/TI$ (jiffy clock) when combined with Timer A.
+
+CIA 1 TOD:
+  Used by BASIC for the TI/TI$ real-time clock variables.
+
+CIA 2 Timers/TOD:
+  Used by the KERNAL for RS-232 bit timing and available
+  for user programs.
+
+=============================================================
+END OF DOCUMENT
+=============================================================

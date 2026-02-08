@@ -1,0 +1,316 @@
+VIC-II Memory Banking and Address Configuration Guide
+=====================================================
+
+This guide covers VIC-II bank switching, the $D018 memory control register,
+and how to configure screen, character, and bitmap memory locations on the
+Commodore 64.
+
+Sources:
+  - c64-wiki.com/wiki/VIC_bank
+  - oldskoolcoder.co.uk/the-vic-ii-addressing-system/
+
+
+================================================================================
+PART 1: VIC-II BANK SELECTION
+================================================================================
+
+Overview
+--------
+
+The VIC-II chip has only 14 addressing lines and can therefore only address
+16 KB of memory at a time. The full 64 KB address space is divided into four
+16 KB banks. Two bits in Port A of CIA-2 ($DD00) direct the VIC-II to one
+of these four banks.
+
+There is an inverse connection between the bit patterns and the bank memory
+addresses, due to inverters in the memory management circuit.
+
+
+Bank Selection Table
+--------------------
+
+  Bank | Bit Pattern at $DD00 | Address Range        | ROM Charset Available
+  -----|----------------------|----------------------|----------------------
+    0  | xxxxxx11             | $0000-$3FFF (0-16383)     | Yes, at $1000-$1FFF (4096-8191)
+    1  | xxxxxx10             | $4000-$7FFF (16384-32767) | No
+    2  | xxxxxx01             | $8000-$BFFF (32768-49151) | Yes, at $9000-$9FFF (36864-40959)
+    3  | xxxxxx00             | $C000-$FFFF (49152-65535) | No
+
+
+Control Registers for Bank Selection
+-------------------------------------
+
+  $DD02 / 56578  -  CIA-2 Data Direction Register for Port A
+  $DD00 / 56576  -  CIA-2 Data Port A (bank selection in bits 0-1)
+
+The two least significant bits of $DD02 are set as outputs by default for
+VIC bank selection.
+
+CRITICAL: The $DD00 register also controls serial bus transfer and other CIA
+functions. Never write to it directly with a simple STA. Always use a
+read-modify-write approach to preserve the other bits:
+
+  Assembly (6502):
+
+    lda $DD00
+    and #%11111100       ; Clear bits 0-1
+    ora #%000000xx       ; Set desired bank value (see table above)
+    sta $DD00
+
+  BASIC:
+
+    POKE 56578, PEEK(56578) OR 3          : REM ensure bits set as outputs
+    POKE 56576, (PEEK(56576) AND 252) OR x : REM x = bank bit pattern
+
+Directly loading a value into $DD00 clears other CIA functions and can cause
+a black screen.
+
+
+ROM Character Set Shadows
+--------------------------
+
+Banks 0 and 2 contain ROM character set shadows. The VIC-II chip maps the
+standard ROM character set into a 4 KB region of these banks:
+
+  - Bank 0: ROM charset visible at $1000-$1FFF
+  - Bank 2: ROM charset visible at $9000-$9FFF
+
+This means in banks 0 and 2, the standard character set is directly available
+to the VIC-II without needing to copy it into RAM. However, this comes at a
+cost: those 4 KB regions cannot be used for sprite data, custom character
+sets, or screen memory.
+
+Capacity comparison:
+
+  Banks 0 and 2 (with ROM charset shadow):
+    - 192 sprite shapes, OR
+    - 12 text screens, OR
+    - 6 custom character sets
+
+  Banks 1 and 3 (full 16 KB available):
+    - 256 sprite shapes, OR
+    - 16 text screens, OR
+    - 8 character sets
+
+Additionally, in banks 0 and 2, the lower half of a high-resolution bitmap
+screen is partially obscured by the ROM character image region.
+
+
+BASIC Example: Switching to Bank 2
+-----------------------------------
+
+  10 POKE 56578, PEEK(56578) OR 3
+  20 POKE 56576, (PEEK(56576) AND 252) OR 1
+  30 POKE 53272, 4
+  40 POKE 648, 128
+
+  Line 10: Ensures CIA-2 direction bits are set as outputs.
+  Line 20: Selects VIC bank 2 ($8000-$BFFF).
+  Line 30: Configures $D018 so the charset points to the ROM shadow at
+           $9000-$9FFF.
+  Line 40: Tells KERNAL the new text screen page (128 = $8000/256),
+           so KERNAL I/O routines write to the correct screen location.
+
+After execution, the screen shows garbled characters (random RAM contents)
+but the READY prompt and cursor work normally. POKE 1024,42 will NOT place
+an asterisk at the top-left because 1024 is the old screen address.
+POKE 32768,42 correctly targets the new screen location.
+
+
+================================================================================
+PART 2: $D018 - VIC-II MEMORY CONTROL REGISTER (VMCSB)
+================================================================================
+
+Overview
+--------
+
+Register $D018 (decimal 53272), also known as VMCSB (Video Matrix/Character
+Set Base), controls the placement of three memory regions within the
+currently selected 16 KB VIC bank:
+
+  1. Video Matrix (Screen RAM) base address
+  2. Character Dot-Data base address
+  3. Bitmap mode base address
+
+All offsets are relative to the start of the selected VIC bank.
+
+
+Bit Layout
+----------
+
+  Bit 7  Bit 6  Bit 5  Bit 4  Bit 3  Bit 2  Bit 1  Bit 0
+  [  V  ] [  V  ] [  V  ] [  V  ] [  C  ] [  C  ] [  C  ] [  x  ]
+
+  Bits 7-4 (VVVV): Video Matrix (Screen Memory) base address offset
+  Bits 3-1 (CCC):  Character Dot-Data base address offset
+  Bit 3:           Also selects bitmap mode base address (in bitmap mode)
+  Bit 0:           Unused
+
+  Default value: $15 / #21 / %00010101
+    - Screen at offset $0400 (bits 7-4 = %0001)
+    - Charset at offset $1000 (bits 3-1 = %010) = ROM charset in bank 0
+
+
+Screen Memory Offsets (Bits 7-4)
+---------------------------------
+
+There are 16 possible screen memory positions within a bank. Each position
+is 1024 bytes ($0400) apart. The offset is added to the bank base address.
+
+  $D018 Bits 7-4  | Offset from Bank Base
+  -----------------|------------------------------
+  %0000xxxx        | $0000  (0)
+  %0001xxxx        | $0400  (1024)
+  %0010xxxx        | $0800  (2048)
+  %0011xxxx        | $0C00  (3072)
+  %0100xxxx        | $1000  (4096)
+  %0101xxxx        | $1400  (5120)
+  %0110xxxx        | $1800  (6144)
+  %0111xxxx        | $1C00  (7168)
+  %1000xxxx        | $2000  (8192)
+  %1001xxxx        | $2400  (9216)
+  %1010xxxx        | $2800  (10240)
+  %1011xxxx        | $2C00  (11264)
+  %1100xxxx        | $3000  (12288)
+  %1101xxxx        | $3400  (13312)
+  %1110xxxx        | $3800  (14336)
+  %1111xxxx        | $3C00  (15360)
+
+Example: In Bank 0, screen offset %0001 places screen RAM at
+$0000 + $0400 = $0400 (1024) -- this is the default.
+
+Example: In Bank 1, screen offset %0001 places screen RAM at
+$4000 + $0400 = $4400 (17408).
+
+To modify only the screen memory bits:
+
+    lda $D018
+    and #%00001111       ; Preserve character/bitmap bits
+    ora #%xxxx0000       ; Set desired screen offset value
+    sta $D018
+
+
+Character Memory Offsets (Bits 3-1)
+-------------------------------------
+
+There are 8 possible character set positions within a bank. Each position
+is 2048 bytes ($0800) apart. The offset is added to the bank base address.
+
+  $D018 Bits 3-1  | Offset from Bank Base
+  -----------------|------------------------------
+  %xxxx000x        | $0000  (0)
+  %xxxx001x        | $0800  (2048)
+  %xxxx010x        | $1000  (4096)
+  %xxxx011x        | $1800  (6144)
+  %xxxx100x        | $2000  (8192)
+  %xxxx101x        | $2800  (10240)
+  %xxxx110x        | $3000  (12288)
+  %xxxx111x        | $3800  (14336)
+
+Example: In Bank 0, character offset %010 points to $0000 + $1000 = $1000.
+In banks 0 and 2, this corresponds to the ROM character set shadow.
+
+Example: In Bank 1, character offset %111 points to $4000 + $3800 = $7800
+(30720).
+
+To modify only the character memory bits:
+
+    lda $D018
+    and #%11110001       ; Preserve screen and unused bits
+    ora #%0000xxx0       ; Set desired character offset value
+    sta $D018
+
+
+Bitmap Mode Base Address (Bit 3)
+---------------------------------
+
+In bitmap mode, bit 3 of $D018 selects between two possible bitmap memory
+locations within the bank:
+
+  Bit 3 = 0  ->  Bitmap at bank base + $0000
+  Bit 3 = 1  ->  Bitmap at bank base + $2000
+
+Since a bitmap requires 8000 bytes, it occupies nearly half the 16 KB bank.
+
+
+================================================================================
+PART 3: PRACTICAL REFERENCE AND EXAMPLES
+================================================================================
+
+Common Configurations
+----------------------
+
+Default C64 setup (Bank 0):
+  $DD00 bits 0-1 = %11  ->  Bank 0: $0000-$3FFF
+  $D018 = $15 (%00010101)
+    Screen RAM at $0400  (offset %0001)
+    Charset at $1000     (offset %010, ROM charset shadow)
+
+Custom setup example - Bank 1 with custom charset:
+  $DD00 bits 0-1 = %10  ->  Bank 1: $4000-$7FFF
+  $D018 = $18 (%00011000)
+    Screen RAM at $4400  (bank base $4000 + offset $0400, bits 7-4 = %0001)
+    Charset at $6000     (bank base $4000 + offset $2000, bits 3-1 = %100)
+
+Custom setup example - Bank 3 with bitmap:
+  $DD00 bits 0-1 = %00  ->  Bank 3: $C000-$FFFF
+  $D018 = $18 (%00011000)
+    Screen/color data at $C400  (bank base $C000 + offset $0400)
+    Bitmap at $E000             (bank base $C000 + offset $2000, bit 3 = 1)
+
+
+Full Bank Switch in Assembly (6502)
+-------------------------------------
+
+; Switch to VIC Bank 2 ($8000-$BFFF)
+; Place screen at $8400, charset at $A000
+
+    ; Select bank 2
+    lda $DD00
+    and #%11111100
+    ora #%00000001       ; Bank 2 = %01
+    sta $DD00
+
+    ; Configure screen at offset $0400, charset at offset $2000
+    ; Screen: %0001 in bits 7-4 = $0400 offset
+    ; Charset: %100 in bits 3-1 = $2000 offset
+    lda #%00011000       ; $18
+    sta $D018
+
+
+Address Calculation Quick Reference
+-------------------------------------
+
+To calculate absolute addresses from $D018 settings:
+
+  Screen address = Bank base + (bits 7-4) * $0400
+  Charset address = Bank base + (bits 3-1) * $0800
+  Bitmap address = Bank base + (bit 3) * $2000
+
+Bank base addresses:
+  Bank 0 = $0000
+  Bank 1 = $4000
+  Bank 2 = $8000
+  Bank 3 = $C000
+
+
+Important Notes
+----------------
+
+1. When changing banks, you must also update the KERNAL screen page pointer
+   at address 648/$0288 so that BASIC and KERNAL I/O routines write to the
+   correct screen location. Set it to: screen_address / 256.
+
+2. In banks 0 and 2, the ROM character set is mapped into a 4 KB window.
+   Any data (sprites, custom charset, screen) placed at those addresses
+   will be invisible to the VIC-II -- it sees the ROM charset instead.
+
+3. The color RAM at $D800-$DBE7 is independent of bank selection and is
+   always at the same address regardless of which VIC bank is selected.
+
+4. Sprite data pointers are stored in the last 8 bytes of screen memory
+   (screen base + $03F8 to $03FF). When you move screen memory, the sprite
+   pointers move with it.
+
+5. Always use read-modify-write when changing $DD00 to avoid disrupting
+   the serial bus and other CIA-2 functions.

@@ -1,0 +1,1070 @@
+SID 6581/8580 Sound Interface Device - Programming Guide
+=========================================================
+
+Sources:
+  - C64-Wiki: https://www.c64-wiki.com/wiki/SID
+  - ChipMusic.org SID Assembly Guide: https://chipmusic.org/forums/topic/8189/basic-guide-to-programming-the-sid-with-assembly-language/
+  - Commodore 64 Programmer's Reference Guide, Chapter 4 (Sound and Music):
+    https://www.devili.iki.fi/Computers/Commodore/C64/Programmers_Reference/Chapter_4/
+  - STA C64 Memory Map: https://sta.c64.org/cbm64mem.html
+
+================================================================================
+1. OVERVIEW
+================================================================================
+
+The SID (Sound Interface Device) is a sound synthesis chip designed by Bob Yannes
+at MOS Technology. It was used in the Commodore 64, C128, and CBM-II computers.
+The SID combines analog and digital circuitry to produce a distinctive sound that
+remains iconic in the chiptune and demoscene communities.
+
+Capabilities:
+  - 3 independent tone generators (voices) with 16-bit frequency control (0-4 kHz)
+  - 4 waveforms per voice: sawtooth, triangle, rectangle/pulse, and noise
+  - Variable pulse width modulation on rectangular waveform (12-bit, 0-100%)
+  - 3 independent ADSR envelope generators (Attack, Decay, Sustain, Release)
+  - 3 amplitude modulators with up to 48 dB dynamic range
+  - Oscillator synchronization between voice pairs
+  - Ring modulation between voice pairs
+  - Programmable multi-mode filter: low-pass, band-pass, high-pass (combinable)
+  - Adjustable filter resonance (4-bit)
+  - Master volume control (4-bit, 16 steps)
+  - 2 analog-to-digital converters (8-bit) for paddle/potentiometer input
+  - External audio input for mixing and filtering
+
+================================================================================
+2. CHIP VARIANTS: 6581 vs 8580
+================================================================================
+
++------------------+---------------------------+---------------------------+
+| Feature          | MOS 6581                  | MOS 8580 (R5)             |
++------------------+---------------------------+---------------------------+
+| Production       | 1982-1987                 | 1987-1993                 |
+| Process          | NMOS                      | HMOS-II                   |
+| Supply Voltage   | +12V (Vdd)                | +9V (Vdd)                 |
+| Filter Caps      | 470 pF (CAP1A/B, CAP2A/B)| 22 nF (CAP1A/B, CAP2A/B) |
+| Filter Sound     | Darker, "grittier"        | Brighter, cleaner         |
+| DC Offset        | Present in audio output   | Minimal DC offset         |
+| Digi Playback    | 4-bit via volume register | "Fixed" - requires HW mod |
+|                  | (unintended "bug")        | (resistor on EXT IN pin)  |
+| Audio Output     | 6V DC bias, 3Vp-p max    | Lower DC bias             |
++------------------+---------------------------+---------------------------+
+
+Sub-revisions of the 6581:
+  - 6581 R1/R2: Original production (1982-1983)
+  - 6581 R3: Most common revision (1983-1985)
+  - 6581 R4AR: Late revision (1985-1987)
+
+The 8580 "fixed" a design characteristic in the 6581 where changing the master
+volume register caused an audible click proportional to the volume change. This
+"bug" was exploited by programmers to play 4-bit digitized samples by rapidly
+writing sample values to the volume register. On the 8580, this technique
+produces barely audible output unless a ~330k ohm resistor is connected between
+the EXT IN pin and ground.
+
+================================================================================
+3. COMPLETE REGISTER MAP ($D400-$D41C / 54272-54300)
+================================================================================
+
+Base address: $D400 (54272 decimal)
+Mirror range: $D400-$D7FF (SID registers repeat every 32 bytes on the C64)
+
+All voice registers follow the same layout with offsets:
+  Voice 1: $D400-$D406 (offset +$00)
+  Voice 2: $D407-$D40D (offset +$07)
+  Voice 3: $D40E-$D414 (offset +$0E)
+
+Note: All SID registers are WRITE-ONLY except $D419-$D41C.
+
+--------------------------------------------------------------------------------
+3.1 VOICE 1 REGISTERS ($D400-$D406)
+--------------------------------------------------------------------------------
+
+$D400 / 54272 - VOICE 1: FREQUENCY LOW BYTE (Write-only)
+  Bits 7-0: Low 8 bits of the 16-bit frequency value
+  Combined with $D401 to form the oscillator frequency.
+
+$D401 / 54273 - VOICE 1: FREQUENCY HIGH BYTE (Write-only)
+  Bits 7-0: High 8 bits of the 16-bit frequency value
+  Frequency = (Fout * 16777216) / Clock
+    PAL  Clock = 985248 Hz  -> Fout = Fn * 0.058725 Hz
+    NTSC Clock = 1022727 Hz -> Fout = Fn * 0.060959 Hz
+  Where Fn is the 16-bit register value (0-65535).
+
+$D402 / 54274 - VOICE 1: PULSE WIDTH LOW BYTE (Write-only)
+  Bits 7-0: Low 8 bits of the 12-bit pulse width value
+
+$D403 / 54275 - VOICE 1: PULSE WIDTH HIGH BYTE (Write-only)
+  Bits 3-0: High 4 bits of the 12-bit pulse width value
+  Bits 7-4: Unused
+  Pulse Width % = (PWn / 40.95)
+  PWn = 2048 ($800) produces a 50% duty cycle (square wave).
+  PWn = 0 or 4095 produces silence (fully on or fully off).
+
+$D404 / 54276 - VOICE 1: CONTROL REGISTER (Write-only)
+  Bit 7: NOISE     - Select noise waveform
+  Bit 6: PULSE     - Select pulse/rectangle waveform
+  Bit 5: SAWTOOTH  - Select sawtooth waveform
+  Bit 4: TRIANGLE  - Select triangle waveform
+  Bit 3: TEST      - Reset oscillator and hold at zero; lock pulse at high
+  Bit 2: RING MOD  - Ring modulate Voice 1 with Voice 3 oscillator
+                      (replaces triangle output with ring modulated output;
+                       triangle bit must also be set)
+  Bit 1: SYNC      - Synchronize Voice 1 oscillator with Voice 3 oscillator
+                      (Voice 3 resets Voice 1's oscillator accumulator on
+                       each cycle of Voice 3)
+  Bit 0: GATE      - 1 = Start Attack/Decay/Sustain cycle
+                      0 = Start Release cycle
+
+  NOTE: Setting multiple waveform bits simultaneously produces combined
+  waveforms (logical AND of the selected waveforms). On the 6581 this
+  produces audible but attenuated results. On the 8580 combined waveforms
+  are quieter and sometimes silent. The noise waveform combined with any
+  other waveform can lock up the noise LFSR.
+
+$D405 / 54277 - VOICE 1: ATTACK / DECAY (Write-only)
+  Bits 7-4: ATTACK rate (0-15)
+  Bits 3-0: DECAY rate (0-15)
+  Register value = (Attack * 16) + Decay
+
+$D406 / 54278 - VOICE 1: SUSTAIN / RELEASE (Write-only)
+  Bits 7-4: SUSTAIN level (0-15, where 15 = peak volume)
+  Bits 3-0: RELEASE rate (0-15)
+  Register value = (Sustain * 16) + Release
+
+--------------------------------------------------------------------------------
+3.2 VOICE 2 REGISTERS ($D407-$D40D)
+--------------------------------------------------------------------------------
+
+$D407 / 54279 - VOICE 2: FREQUENCY LOW BYTE (Write-only)
+$D408 / 54280 - VOICE 2: FREQUENCY HIGH BYTE (Write-only)
+$D409 / 54281 - VOICE 2: PULSE WIDTH LOW BYTE (Write-only)
+$D40A / 54282 - VOICE 2: PULSE WIDTH HIGH BYTE (Write-only)
+$D40B / 54283 - VOICE 2: CONTROL REGISTER (Write-only)
+  Bit 2: RING MOD  - Ring modulate Voice 2 with Voice 1 oscillator
+  Bit 1: SYNC      - Synchronize Voice 2 with Voice 1 oscillator
+  (All other bits identical to Voice 1)
+$D40C / 54284 - VOICE 2: ATTACK / DECAY (Write-only)
+$D40D / 54285 - VOICE 2: SUSTAIN / RELEASE (Write-only)
+
+--------------------------------------------------------------------------------
+3.3 VOICE 3 REGISTERS ($D40E-$D414)
+--------------------------------------------------------------------------------
+
+$D40E / 54286 - VOICE 3: FREQUENCY LOW BYTE (Write-only)
+$D40F / 54287 - VOICE 3: FREQUENCY HIGH BYTE (Write-only)
+$D410 / 54288 - VOICE 3: PULSE WIDTH LOW BYTE (Write-only)
+$D411 / 54289 - VOICE 3: PULSE WIDTH HIGH BYTE (Write-only)
+$D412 / 54290 - VOICE 3: CONTROL REGISTER (Write-only)
+  Bit 2: RING MOD  - Ring modulate Voice 3 with Voice 2 oscillator
+  Bit 1: SYNC      - Synchronize Voice 3 with Voice 2 oscillator
+  (All other bits identical to Voice 1)
+$D413 / 54291 - VOICE 3: ATTACK / DECAY (Write-only)
+$D414 / 54292 - VOICE 3: SUSTAIN / RELEASE (Write-only)
+
+--------------------------------------------------------------------------------
+3.4 FILTER REGISTERS ($D415-$D418)
+--------------------------------------------------------------------------------
+
+$D415 / 54293 - FILTER CUTOFF FREQUENCY LOW (Write-only)
+  Bits 2-0: Low 3 bits of the 11-bit cutoff frequency
+  Bits 7-3: Unused
+
+$D416 / 54294 - FILTER CUTOFF FREQUENCY HIGH (Write-only)
+  Bits 7-0: High 8 bits of the 11-bit cutoff frequency
+  Cutoff value = (HighByte * 8) + (LowByte AND 7)
+  Range: 0-2047
+  The actual frequency response varies between 6581 and 8580 revisions.
+
+  Approximate cutoff frequency mapping:
+    6581: ~200 Hz to ~12 kHz (non-linear, temperature dependent)
+    8580: ~30 Hz to ~12 kHz (more linear response)
+
+$D417 / 54295 - FILTER RESONANCE AND VOICE ROUTING (Write-only)
+  Bits 7-4: RESONANCE (0-15)
+             Controls the peak/emphasis at the cutoff frequency.
+             Higher values = more pronounced resonance peak.
+             At maximum, filter can self-oscillate on the 6581.
+  Bit 3:    FILT EX  - Route external audio input through filter
+  Bit 2:    FILT 3   - Route Voice 3 through filter
+  Bit 1:    FILT 2   - Route Voice 2 through filter
+  Bit 0:    FILT 1   - Route Voice 1 through filter
+
+$D418 / 54296 - FILTER MODE AND MASTER VOLUME (Write-only)
+  Bit 7:    MUTE 3   - Disconnect Voice 3 output (1 = muted)
+                        Voice 3 oscillator still runs and can be read
+                        at $D41B for modulation purposes.
+  Bit 6:    HP       - High-pass filter enable (1 = on)
+  Bit 5:    BP       - Band-pass filter enable (1 = on)
+  Bit 4:    LP       - Low-pass filter enable (1 = on)
+  Bits 3-0: VOLUME   - Master volume (0-15)
+
+  Filter modes can be combined:
+    LP only:       Low-pass filter
+    BP only:       Band-pass filter
+    HP only:       High-pass filter
+    LP + HP:       Notch/band-reject filter (attenuates at cutoff)
+    LP + BP:       Low-pass with wider rolloff
+    HP + BP:       High-pass with wider rolloff
+    LP + BP + HP:  All-pass (phase shifting)
+
+--------------------------------------------------------------------------------
+3.5 READ-ONLY REGISTERS ($D419-$D41C)
+--------------------------------------------------------------------------------
+
+$D419 / 54297 - PADDLE X (Read-only)
+  Bits 7-0: Current analog value from Paddle X input (updated every 512 cycles)
+
+$D41A / 54298 - PADDLE Y (Read-only)
+  Bits 7-0: Current analog value from Paddle Y input (updated every 512 cycles)
+
+$D41B / 54299 - VOICE 3 OSCILLATOR OUTPUT (Read-only)
+  Bits 7-0: Upper 8 bits of Voice 3 oscillator waveform output
+  Returns the current instantaneous value of Voice 3's waveform generator.
+  This value reflects the selected waveform shape:
+    Sawtooth:  Ramps 0 to 255 repeatedly
+    Triangle:  Ramps 0 to 255 then 255 to 0
+    Pulse:     Alternates between 0 and 255
+    Noise:     Random values
+  Useful for software-based modulation effects (LFO, vibrato, tremolo).
+
+$D41C / 54300 - VOICE 3 ENVELOPE OUTPUT (Read-only)
+  Bits 7-0: Current value of Voice 3's ADSR envelope generator (0-255)
+  Independent of oscillator output.
+  Useful for envelope-following and modulation effects.
+
+================================================================================
+4. ADSR ENVELOPE GENERATOR
+================================================================================
+
+Each voice has an independent ADSR envelope generator that shapes the amplitude
+of the voice output over time. The envelope cycle is:
+
+  1. ATTACK:  When GATE bit is set to 1, amplitude rises from 0 to peak (255)
+              at the Attack rate.
+  2. DECAY:   After reaching peak, amplitude falls toward the Sustain level
+              at the Decay rate.
+  3. SUSTAIN: Amplitude holds at the Sustain level as long as GATE = 1.
+              Sustain is a LEVEL (0-15), not a rate. 15 = full volume.
+  4. RELEASE: When GATE bit is set to 0, amplitude falls from current level
+              to 0 at the Release rate.
+
+Setting GATE to 1 again before Release completes restarts the Attack phase
+from the current amplitude level.
+
+--------------------------------------------------------------------------------
+4.1 ADSR TIMING TABLE
+--------------------------------------------------------------------------------
+
+Value | Attack Time | Decay Time  | Release Time
+------+-------------+-------------+--------------
+  0   |     2 ms    |     6 ms    |     6 ms
+  1   |     8 ms    |    24 ms    |    24 ms
+  2   |    16 ms    |    48 ms    |    48 ms
+  3   |    24 ms    |    72 ms    |    72 ms
+  4   |    38 ms    |   114 ms    |   114 ms
+  5   |    56 ms    |   168 ms    |   168 ms
+  6   |    68 ms    |   204 ms    |   204 ms
+  7   |    80 ms    |   240 ms    |   240 ms
+  8   |   100 ms    |   300 ms    |   300 ms
+  9   |   250 ms    |   750 ms    |   750 ms
+ 10   |   500 ms    |   1.5 s     |    1.5 s
+ 11   |   800 ms    |   2.4 s     |    2.4 s
+ 12   |     1 s     |     3 s     |      3 s
+ 13   |     3 s     |     9 s     |      9 s
+ 14   |     5 s     |    15 s     |     15 s
+ 15   |     8 s     |    24 s     |     24 s
+
+Notes:
+  - Attack time is measured from 0 to peak amplitude (255).
+  - Decay and Release times are measured from peak (255) to 0.
+  - Actual times may vary slightly due to clock rate differences (PAL vs NTSC).
+  - The envelope counter uses non-linear rate counting internally, which
+    produces the characteristic exponential decay/release curves of the SID.
+
+--------------------------------------------------------------------------------
+4.2 ADSR BUG
+--------------------------------------------------------------------------------
+
+The SID has a well-known ADSR bug caused by the internal rate counter mechanism.
+When the GATE bit is set and the envelope is in the Release phase, the Attack
+phase may exhibit a brief delay before the amplitude begins to rise. This
+occurs because the internal LFSR-based rate counter must complete its current
+cycle before responding to the new GATE state.
+
+Workaround: Many music players set GATE=0 followed immediately by GATE=1 in
+successive frames, or use a "hard restart" technique where they pre-set the
+envelope to a known state before triggering a new note.
+
+================================================================================
+5. WAVEFORMS
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1 TRIANGLE
+--------------------------------------------------------------------------------
+  - Produces a triangular wave that ramps linearly up then down
+  - Contains only ODD harmonics
+  - Harmonic amplitudes proportional to 1/(n^2) where n is the harmonic number
+  - Produces a soft, flute-like tone
+  - Fundamental frequency with harmonics at 3x, 5x, 7x, etc. (diminishing)
+  - Can be ring-modulated when combined with the RING MOD bit
+
+--------------------------------------------------------------------------------
+5.2 SAWTOOTH
+--------------------------------------------------------------------------------
+  - Produces a ramp wave that rises linearly then drops sharply
+  - Contains ALL harmonics (odd and even)
+  - Harmonic amplitudes proportional to 1/n where n is the harmonic number
+  - Produces a bright, buzzy, "brassy" tone
+  - Richest harmonic content of the periodic waveforms
+  - Excellent for brass, string, and pad sounds
+
+--------------------------------------------------------------------------------
+5.3 PULSE / RECTANGLE
+--------------------------------------------------------------------------------
+  - Produces a rectangular wave with variable duty cycle (pulse width)
+  - Contains only ODD harmonics when at 50% duty cycle (square wave)
+  - At other duty cycles, contains both odd and even harmonics
+  - Harmonic content varies with pulse width:
+      50% (square): Hollow, clarinet-like tone; only odd harmonics
+      25% or 75%:   Thinner, more nasal sound
+      Near 0%/100%: Very thin, almost silent
+  - Pulse Width Modulation (PWM): Dynamically sweeping the pulse width
+    register produces a rich, animated, "chorus-like" effect
+  - PWn value of 2048 ($0800) = 50% = square wave
+
+--------------------------------------------------------------------------------
+5.4 NOISE
+--------------------------------------------------------------------------------
+  - Produces pseudo-random noise via a 23-bit LFSR (Linear Feedback Shift Reg.)
+  - The frequency register controls the shift rate of the LFSR
+  - Higher frequency = faster shift rate = brighter noise
+  - Lower frequency = slower shift rate = more rumbling noise
+  - Used for percussion, explosions, wind, and other sound effects
+  - WARNING: Selecting noise simultaneously with another waveform can lock
+    the noise LFSR, producing silence. Reset by writing 0 then the desired
+    waveform to the control register.
+
+--------------------------------------------------------------------------------
+5.5 COMBINED WAVEFORMS
+--------------------------------------------------------------------------------
+  - Setting multiple waveform bits produces a logical AND of the waveforms
+  - On the 6581: Combined waveforms produce unique timbres, commonly used for
+    metallic or bell-like sounds. Triangle + Sawtooth is a popular combination.
+  - On the 8580: Combined waveforms are much quieter and may produce silence
+    depending on the combination
+  - Common combinations:
+      Triangle + Sawtooth ($30): Soft, slightly metallic tone (6581)
+      Triangle + Pulse ($50):    Mixed character
+      Sawtooth + Pulse ($60):    Bright, edgy tone
+  - Avoid combining Noise with other waveforms (locks LFSR)
+
+================================================================================
+6. FREQUENCY REFERENCE
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1 FREQUENCY CALCULATION
+--------------------------------------------------------------------------------
+
+  Fout = (Fn * Fclk) / 16777216
+
+  Where:
+    Fn   = 16-bit frequency register value (0-65535)
+    Fclk = System clock frequency
+           PAL:  985248 Hz
+           NTSC: 1022727 Hz
+    Fout = Output frequency in Hz
+
+  Solving for Fn:
+    Fn = (Fout * 16777216) / Fclk
+
+  PAL:  Fn = Fout / 0.058725  = Fout * 17.028
+  NTSC: Fn = Fout / 0.060959  = Fout * 16.404
+
+  Minimum frequency (Fn=1):
+    PAL:  0.0587 Hz
+    NTSC: 0.0610 Hz
+
+  Maximum frequency (Fn=65535):
+    PAL:  3848.4 Hz  (approximately, with audible harmonics extending higher)
+    NTSC: 3995.2 Hz
+
+--------------------------------------------------------------------------------
+6.2 NOTE FREQUENCY TABLE (PAL)
+--------------------------------------------------------------------------------
+
+Octave 0-7, 16-bit SID frequency register values (PAL clock = 985248 Hz):
+
+Note    Oct 0   Oct 1   Oct 2   Oct 3   Oct 4   Oct 5   Oct 6   Oct 7
+------  ------  ------  ------  ------  ------  ------  ------  ------
+C       0x0112  0x0224  0x0448  0x0890  0x1120  0x2240  0x4480  0x8900
+C#/Db   0x0123  0x0245  0x048B  0x0915  0x122A  0x2454  0x48A8  0x9151
+D       0x0134  0x0268  0x04D0  0x09A1  0x1341  0x2682  0x4D04  0x9A08
+D#/Eb   0x0146  0x028D  0x0519  0x0A33  0x1466  0x28CC  0x5198  0xA330
+E       0x015A  0x02B3  0x0567  0x0ACE  0x159C  0x2B39  0x5672  0xACE4
+F       0x016E  0x02DC  0x05B8  0x0B70  0x16E0  0x2DC0  0x5B80  0xB700
+F#/Gb   0x0184  0x0308  0x060F  0x0C1E  0x183C  0x3078  0x60F0  0xC1E0
+G       0x019B  0x0335  0x066A  0x0CD4  0x19A8  0x3350  0x66A1  0xCD42
+G#/Ab   0x01B3  0x0366  0x06CB  0x0D97  0x1B2E  0x365C  0x6CB8  0xD970
+A       0x01CD  0x0399  0x0732  0x0E64  0x1CC8  0x3990  0x7320  0xE640
+A#/Bb   0x01E8  0x03CF  0x079F  0x0F3E  0x1E7C  0x3CF8  0x79F0  0xF3E0
+B       0x0204  0x0409  0x0811  0x1023  0x2046  0x408C  0x8119  0xFF32
+
+Note: These values are approximate. For precise tuning, calculate using the
+formula: Fn = round((NoteHz * 16777216) / 985248)
+
+Standard tuning reference: A4 = 440 Hz -> Fn = $1CC8 (7368)
+
+--------------------------------------------------------------------------------
+6.3 NOTE FREQUENCY TABLE (NTSC)
+--------------------------------------------------------------------------------
+
+Note    Oct 0   Oct 1   Oct 2   Oct 3   Oct 4   Oct 5   Oct 6   Oct 7
+------  ------  ------  ------  ------  ------  ------  ------  ------
+C       0x010C  0x0217  0x042F  0x085F  0x10BD  0x217A  0x42F4  0x85E8
+C#/Db   0x011C  0x0238  0x0471  0x08E2  0x11C5  0x238A  0x4714  0x8E28
+D       0x012D  0x025B  0x04B6  0x096C  0x12D9  0x25B2  0x4B64  0x96C8
+D#/Eb   0x013F  0x027E  0x04FD  0x09FB  0x13F6  0x27EC  0x4FD8  0x9FB0
+E       0x0152  0x02A4  0x0549  0x0A92  0x1524  0x2A48  0x5490  0xA920
+F       0x0166  0x02CC  0x0598  0x0B30  0x1660  0x2CC0  0x5981  0xB301
+F#/Gb   0x017B  0x02F6  0x05EC  0x0BD8  0x17B0  0x2F5F  0x5EBF  0xBD7E
+G       0x0191  0x0322  0x0644  0x0C88  0x1910  0x3221  0x6442  0xC884
+G#/Ab   0x01A8  0x0350  0x06A1  0x0D41  0x1A83  0x3506  0x6A0D  0xD41A
+A       0x01C1  0x0381  0x0702  0x0E04  0x1C08  0x3810  0x7021  0xE042
+A#/Bb   0x01DA  0x03B4  0x0768  0x0ED1  0x1DA2  0x3B44  0x7688  0xED10
+B       0x01F5  0x03EA  0x07D4  0x0FA8  0x1F50  0x3EA1  0x7D41  0xFA83
+
+================================================================================
+7. FILTER
+================================================================================
+
+The SID contains one multi-mode resonant filter shared among all three voices
+and the external audio input. Each voice can be individually routed through
+the filter via bits 0-2 of register $D417. Voices not routed through the
+filter bypass it and go directly to the mixer.
+
+--------------------------------------------------------------------------------
+7.1 FILTER MODES
+--------------------------------------------------------------------------------
+
+LOW-PASS FILTER (Bit 4 of $D418):
+  Passes frequencies BELOW the cutoff frequency and attenuates frequencies
+  above it. The rolloff is 12 dB/octave. Useful for creating warm, muffled
+  tones and simulating the natural frequency response of acoustic instruments.
+
+BAND-PASS FILTER (Bit 5 of $D418):
+  Passes a narrow band of frequencies AROUND the cutoff frequency and
+  attenuates all others. Produces a nasal, "wah-wah" quality. Sweeping the
+  cutoff frequency produces classic filter sweep effects.
+
+HIGH-PASS FILTER (Bit 6 of $D418):
+  Passes frequencies ABOVE the cutoff frequency and attenuates frequencies
+  below it. Produces thin, "tinny" sounds. Lower tones are reduced in volume.
+
+COMBINED MODES:
+  Multiple filter mode bits can be set simultaneously:
+
+  LP + HP (Notch/Band-Reject):
+    Attenuates frequencies near the cutoff while passing those above and below.
+    Creates a "phasing" quality.
+
+  LP + BP:
+    Wider low-pass rolloff with a resonance emphasis.
+
+  HP + BP:
+    Wider high-pass rolloff with a resonance emphasis.
+
+  LP + BP + HP:
+    Approximates an all-pass filter (phase shifting effect).
+
+--------------------------------------------------------------------------------
+7.2 FILTER CUTOFF FREQUENCY
+--------------------------------------------------------------------------------
+
+The cutoff frequency is an 11-bit value (0-2047) stored across two registers:
+  $D415 bits 2-0: Low 3 bits
+  $D416 bits 7-0: High 8 bits
+
+  CutoffValue = (HighByte << 3) | (LowByte & 0x07)
+
+The mapping from register value to actual frequency differs between chip
+revisions:
+
+  6581: Highly non-linear, temperature dependent
+        ~200 Hz (low values) to ~12 kHz (high values)
+        The lowest ~256 register values produce almost no change
+        Strong temperature dependence causes detuning
+
+  8580: More linear response
+        ~30 Hz (low values) to ~12 kHz (high values)
+        Less temperature sensitivity
+
+--------------------------------------------------------------------------------
+7.3 RESONANCE
+--------------------------------------------------------------------------------
+
+Bits 7-4 of register $D417 control the resonance amount (0-15).
+
+Resonance emphasizes frequencies at the cutoff point, creating a peak in the
+frequency response curve. Higher resonance values produce a more pronounced
+peak:
+  0:  No resonance - flat response through filter
+  8:  Moderate resonance - noticeable emphasis
+  15: Maximum resonance - strong peak, self-oscillation possible on 6581
+
+On the 6581, high resonance settings can cause the filter to self-oscillate,
+producing a sine-like tone at the cutoff frequency even without any voice
+input. This can be used as a crude fourth oscillator.
+
+On the 8580, self-oscillation is harder to achieve due to different filter
+characteristics.
+
+================================================================================
+8. SYNCHRONIZATION
+================================================================================
+
+Oscillator synchronization forces one voice's oscillator to reset its phase
+accumulator whenever the synchronizing voice's oscillator completes a cycle.
+This creates complex harmonic structures.
+
+Voice pairing (hard-wired):
+  Voice 1 syncs with Voice 3 (bit 1 of $D404)
+  Voice 2 syncs with Voice 1 (bit 1 of $D40B)
+  Voice 3 syncs with Voice 2 (bit 1 of $D412)
+
+The synchronized voice produces a waveform whose fundamental frequency matches
+the synchronizing voice, but whose harmonic content is determined by the ratio
+of the two frequencies.
+
+Example - Mosquito Sound Effect:
+  Set Voice 1 to a high-frequency triangle waveform
+  Set Voice 3 to a slightly different high frequency
+  Enable SYNC bit on Voice 1 (bit 1 of $D404)
+  The result is a complex, buzzing harmonic tone
+
+Sweeping the frequency of the synced voice while keeping the sync source
+fixed produces dramatic timbral changes.
+
+================================================================================
+9. RING MODULATION
+================================================================================
+
+Ring modulation replaces the triangle waveform output of one voice with the
+product of that voice's triangle waveform and the oscillator of the modulating
+voice. This produces sum and difference frequencies, creating non-harmonic,
+bell-like, or metallic timbres.
+
+Voice pairing (same as sync):
+  Voice 1 ring-modulated by Voice 3 (bit 2 of $D404)
+  Voice 2 ring-modulated by Voice 1 (bit 2 of $D40B)
+  Voice 3 ring-modulated by Voice 2 (bit 2 of $D412)
+
+Requirements:
+  - The TRIANGLE waveform bit must be set on the ring-modulated voice
+  - The modulating voice's oscillator must be running (frequency > 0)
+  - The modulating voice does not need to be gated or audible
+
+The output frequencies are: F1+F2 and F1-F2 (and their harmonics), where
+F1 is the voice's own frequency and F2 is the modulating voice's frequency.
+
+When F1 and F2 are harmonically related (e.g., octaves), the result sounds
+tonal. When they are not harmonically related, the result sounds metallic
+or bell-like.
+
+Example - Bell/Chime Sound:
+  Set Voice 1 frequency high ($0082 high byte ~ 130)
+  Set Voice 3 frequency to a non-harmonic ratio ($001E high byte ~ 30)
+  Enable RING MOD on Voice 1 (bit 2 of $D404)
+  Set Triangle waveform on Voice 1 (bit 4 of $D404)
+  Use short attack, medium decay for percussive bell envelope
+
+================================================================================
+10. VOICE 3 AS MODULATION SOURCE
+================================================================================
+
+Voice 3's oscillator and envelope outputs can be read through registers
+$D41B and $D41C respectively. Combined with the ability to mute Voice 3's
+audio output (bit 7 of $D418), Voice 3 can serve as a dedicated modulation
+source (LFO) without producing audible sound.
+
+--------------------------------------------------------------------------------
+10.1 VIBRATO (Frequency Modulation)
+--------------------------------------------------------------------------------
+
+Vibrato (rapid frequency variation) is achieved by reading the oscillator 3
+output ($D41B) and adding it to another voice's frequency register.
+
+Implementation:
+  1. Set Voice 3 to a low frequency (the vibrato rate, typically 4-7 Hz)
+  2. Select triangle waveform on Voice 3 (smooth modulation)
+  3. Mute Voice 3 audio (bit 7 of $D418 = 1)
+  4. In the playback loop, read $D41B
+  5. Add (scaled) value to the target voice's frequency registers
+  6. The target voice's pitch will oscillate smoothly
+
+The depth of vibrato depends on how much of the modulation value is added.
+Dividing the read value reduces the vibrato depth.
+
+--------------------------------------------------------------------------------
+10.2 TREMOLO (Amplitude Modulation)
+--------------------------------------------------------------------------------
+
+Similar to vibrato but modulating volume instead of frequency:
+  1. Configure Voice 3 as above (low frequency, triangle, muted)
+  2. Read $D41B and use the value to modify the master volume or
+     the target voice's sustain level
+
+--------------------------------------------------------------------------------
+10.3 FILTER SWEEPS
+--------------------------------------------------------------------------------
+
+Voice 3 can also modulate the filter cutoff frequency:
+  1. Configure Voice 3 as a low-frequency oscillator
+  2. Read $D41B and add/write to the filter cutoff registers ($D415/$D416)
+  3. Produces automatic filter sweeps (wah-wah effects)
+
+Different waveforms on Voice 3 produce different modulation shapes:
+  Triangle:  Smooth up-and-down sweep
+  Sawtooth:  Ramp up, then sudden drop
+  Pulse:     Abrupt alternation between two values
+  Noise:     Random sample-and-hold style modulation
+
+================================================================================
+11. PROGRAMMING TECHNIQUES
+================================================================================
+
+--------------------------------------------------------------------------------
+11.1 INITIALIZATION
+--------------------------------------------------------------------------------
+
+Before producing sound, clear all SID registers:
+
+  ; Clear all SID registers
+  lda #$00
+  ldx #$18          ; 24 registers (+ a few extra doesn't hurt)
+  clear:
+  sta $d400,x
+  dex
+  bpl clear
+
+  ; Set master volume
+  lda #$0f          ; Maximum volume, no filter modes
+  sta $d418
+
+--------------------------------------------------------------------------------
+11.2 PLAYING A SIMPLE NOTE
+--------------------------------------------------------------------------------
+
+  ; Configure Voice 1
+  lda #$20          ; Attack=2, Decay=0
+  sta $d405
+  lda #$f8          ; Sustain=15, Release=8
+  sta $d406
+
+  ; Set frequency (A4 = 440 Hz, PAL value $1CC8)
+  lda #$c8
+  sta $d400         ; Freq lo
+  lda #$1c
+  sta $d401         ; Freq hi
+
+  ; Gate on with sawtooth waveform
+  lda #$21          ; Sawtooth ($20) + Gate ($01)
+  sta $d404
+
+  ; ... wait for desired duration ...
+
+  ; Gate off (start release)
+  lda #$20          ; Sawtooth, gate off
+  sta $d404
+
+--------------------------------------------------------------------------------
+11.3 PULSE WIDTH MODULATION (PWM)
+--------------------------------------------------------------------------------
+
+PWM creates an animated, chorus-like sound by sweeping the pulse width:
+
+  ; Set initial pulse width to 50% (square wave)
+  lda #$00
+  sta $d402         ; PW lo
+  lda #$08
+  sta $d403         ; PW hi ($0800 = 2048 = 50%)
+
+  ; Select pulse waveform + gate
+  lda #$41          ; Pulse ($40) + Gate ($01)
+  sta $d404
+
+  ; In the main loop, increment pulse width each frame:
+  pwm_loop:
+    ; Wait for rasterline (or use timer interrupt)
+    inc $d402       ; Increment pulse width low byte
+    bne no_carry
+    inc $d403       ; Carry to high byte
+    lda $d403
+    and #$0f        ; Keep within 12-bit range
+    sta $d403
+  no_carry:
+    jmp pwm_loop
+
+For smoother PWM, use a 16-bit counter and add a delta value each frame.
+
+--------------------------------------------------------------------------------
+11.4 MUSIC ENGINE STRUCTURE (Assembly)
+--------------------------------------------------------------------------------
+
+A basic SID music engine follows this structure (KickAssembler syntax):
+
+  .pc = $0810 "Music Player"
+
+  // Music data: table of 16-bit frequency values
+  freq_table:
+    .word $1cd6      // Note 1
+    .word $2145      // Note 2
+    .word $0000      // End marker / loop
+
+  init:
+    // Clear SID
+    lda #$00
+    ldx #$18
+  !loop:
+    sta $d400,x
+    dex
+    bpl !loop-
+
+    // Set volume, disable filter
+    lda #$0f
+    sta $d418
+
+    // Set ADSR
+    lda #$00         // A=0, D=0 (instant attack/decay)
+    sta $d405
+    lda #$f9         // S=15, R=9
+    sta $d406
+
+    rts
+
+  play:
+    // Called once per frame (via raster interrupt)
+    // Read next note from table
+    ldx note_index
+    lda freq_table,x
+    sta $d400         // Freq lo
+    lda freq_table+1,x
+    sta $d401         // Freq hi
+
+    // Check for end marker
+    ora freq_table,x
+    beq loop_song
+
+    // Gate on + sawtooth
+    lda #$21
+    sta $d404
+
+    // Advance to next note (after duration counter expires)
+    // ... timing logic here ...
+    rts
+
+  loop_song:
+    ldx #$00
+    stx note_index
+    rts
+
+  note_index:
+    .byte 0
+
+--------------------------------------------------------------------------------
+11.5 RASTER-SYNCHRONIZED PLAYBACK
+--------------------------------------------------------------------------------
+
+For consistent timing, tie the music player to the raster interrupt:
+
+  // Setup raster IRQ
+  sei
+  lda #<irq_handler
+  sta $0314
+  lda #>irq_handler
+  sta $0315
+  lda #$00
+  sta $d012         // Rasterline 0
+  lda $d011
+  and #$7f
+  sta $d011         // Clear bit 8 of rasterline
+  lda #$01
+  sta $d01a         // Enable raster IRQ
+  cli
+  rts
+
+  irq_handler:
+    // Acknowledge IRQ
+    lda #$01
+    sta $d019
+
+    // Call music player
+    jsr play
+
+    // Return from IRQ
+    jmp $ea31        // Jump to standard KERNAL IRQ handler
+
+Typical playback rate: once per frame (50 Hz PAL / 60 Hz NTSC).
+For faster note resolution, trigger on specific rasterlines or use CIA timers.
+
+--------------------------------------------------------------------------------
+11.6 SOUND EFFECT EXAMPLES
+--------------------------------------------------------------------------------
+
+LASER/ZAP:
+  lda #$0f          // A=0, D=15
+  sta $d405
+  lda #$00          // S=0, R=0
+  sta $d406
+  lda #$82          // Start frequency high
+  sta $d401
+  lda #$81          // Sawtooth + gate
+  sta $d404         // (Use $81 = noise+gate for noise laser)
+  ; Sweep frequency down each frame:
+  dec $d401
+
+EXPLOSION:
+  lda #$00          // A=0, D=0
+  sta $d405
+  lda #$f9          // S=15, R=9
+  sta $d406
+  lda #$10          // Low frequency for rumble
+  sta $d401
+  lda #$81          // Noise + gate
+  sta $d404
+  ; Optionally sweep filter cutoff down for extra effect
+
+DRUM KICK:
+  ; Short noise burst followed by low-frequency tone
+  lda #$00
+  sta $d405
+  lda #$09          // S=0, R=9
+  sta $d406
+  lda #$20
+  sta $d401         // Medium-high frequency
+  lda #$81          // Noise + gate
+  sta $d404
+  ; After 1-2 frames, switch to triangle at low frequency
+  lda #$05
+  sta $d401
+  lda #$11          // Triangle + gate
+  sta $d404
+
+HAND CLAP (Filtered Noise):
+  ; Initialize SID and set filter
+  lda #$0f          // Max volume
+  sta $d418
+  lda #$40          // Filter cutoff high byte
+  sta $d416
+  lda #$00
+  sta $d415
+  lda #$41          // Resonance=4, filter voice 1
+  sta $d417
+  lda #$10          // Enable low-pass filter
+  ora #$0f          // Plus max volume
+  sta $d418
+  ; Set up noise burst with short envelope
+  lda #$09          // A=0, D=9
+  sta $d405
+  lda #$00          // S=0, R=0
+  sta $d406
+  lda #$20
+  sta $d401
+  lda #$81          // Noise + gate
+  sta $d404
+
+================================================================================
+12. SAMPLE PLAYBACK (DIGI)
+================================================================================
+
+The 6581 has an unintended feature where writing to the volume register ($D418)
+produces an audible click proportional to the volume change. This can be
+exploited for 4-bit digitized audio playback:
+
+  ; Play 4-bit sample (nybble-packed, 2 samples per byte)
+  ; Called at sample rate (typically 4-8 kHz via CIA timer)
+  play_sample:
+    ldy sample_index
+    lda (sample_ptr),y   ; Load packed sample byte
+
+    ; Extract high nybble (first sample)
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10             ; Keep low-pass filter on (optional)
+    sta $d418            ; Write to volume register
+
+    ; ... wait half sample period ...
+
+    lda (sample_ptr),y   ; Reload
+    and #$0f             ; Extract low nybble (second sample)
+    ora #$10             ; Keep filter bits
+    sta $d418
+
+    iny
+    sty sample_index
+    rts
+
+This technique:
+  - Produces 4-bit quality audio (16 amplitude levels)
+  - Requires significant CPU time (tight timing loop or CIA timer IRQ)
+  - Conflicts with normal SID music (volume register shared)
+  - Works well on the 6581; barely audible on the 8580 without hardware mod
+  - Typical sample rates: 4 kHz (low quality) to 8 kHz (phone quality)
+
+For the 8580, a ~330k ohm resistor between the EXT IN pin and ground restores
+digi playback capability.
+
+Advanced techniques (Mahoney's 8-bit digi):
+  Exploit combined waveform behavior and pulse width tricks to achieve up to
+  8-bit effective resolution on the 6581.
+
+================================================================================
+13. TYPICAL INSTRUMENT PATCHES
+================================================================================
+
+These are starting-point ADSR and waveform settings for common sounds:
+
+Instrument    | Wave  | Attack | Decay | Sustain | Release | Notes
+--------------+-------+--------+-------+---------+---------+------------------
+Piano         | Pulse |   0    |   9   |    0    |    0    | PWM at ~$0400
+Organ         | Pulse |   0    |   0   |   15    |    0    | PW = $0800 (50%)
+Violin/String | Saw   |   5    |   8   |    5    |    9    | Slow attack
+Flute         | Tri   |   3    |   5   |    8    |    6    | Soft tone
+Brass         | Saw   |   2    |   6   |   10    |    4    | Bright attack
+Xylophone     | Tri   |   0    |   9   |    0    |    9    | Percussive
+Bass          | Saw   |   0    |   9   |    0    |    0    | Short, punchy
+Synth Lead    | Pulse |   0    |   0   |   15    |    3    | PWM for movement
+Snare Drum    | Noise |   0    |   5   |    0    |    5    | Filtered
+Hi-Hat Closed | Noise |   0    |   0   |    0    |    0    | Very short
+Hi-Hat Open   | Noise |   0    |   9   |    0    |    9    | Longer decay
+Kick Drum     | Tri   |   0    |   4   |    0    |    0    | Pitch sweep down
+
+================================================================================
+14. PINOUT REFERENCE
+================================================================================
+
+MOS 6581/8580 - 28-pin DIP package:
+
+Pin  Name       Description
+---  ---------  -----------------------------------------------
+ 1   CAP1A      Filter capacitor 1A (6581: 470pF, 8580: 22nF)
+ 2   CAP1B      Filter capacitor 1B
+ 3   CAP2A      Filter capacitor 2A
+ 4   CAP2B      Filter capacitor 2B
+ 5   /RES       Reset (active low)
+ 6   PHI2       System clock input
+ 7   R/W        Read/Write control
+ 8   /CS        Chip Select (active low)
+ 9   A0         Address bus bit 0
+10   A1         Address bus bit 1
+11   A2         Address bus bit 2
+12   A3         Address bus bit 3
+13   A4         Address bus bit 4
+14   GND        Ground
+15   D0         Data bus bit 0
+16   D1         Data bus bit 1
+17   D2         Data bus bit 2
+18   D3         Data bus bit 3
+19   D4         Data bus bit 4
+20   D5         Data bus bit 5
+21   D6         Data bus bit 6
+22   D7         Data bus bit 7
+23   POT Y      Paddle Y analog input
+24   POT X      Paddle X analog input
+25   Vcc        +5V supply
+26   EXT IN     External audio input
+27   AUDIO OUT  Audio output (6VDC bias, 3Vp-p max on 6581)
+28   Vdd        +12V (6581) or +9V (8580)
+
+================================================================================
+15. KNOWN QUIRKS AND BUGS
+================================================================================
+
+1. ADSR BUG: See section 4.2. The internal rate counter can cause a delay
+   when retriggering a note. Music players use "hard restart" techniques
+   to mitigate this.
+
+2. NOISE LFSR LOCKUP: Selecting noise simultaneously with another waveform
+   (or switching from a combined waveform to noise) can freeze the noise
+   shift register, producing silence. Fix: write $08 (test bit) to the
+   control register, then write the desired waveform.
+
+3. WRITE-ONLY REGISTERS: Reading from write-only registers ($D400-$D418)
+   returns the last value written to ANY SID register (bus value), not the
+   register's actual contents. This is a common source of bugs.
+
+4. FILTER DISTORTION (6581): The 6581's filter has significant non-linearities
+   and can clip/distort at high resonance or when multiple voices are routed
+   through it at high volume. This is part of its characteristic sound.
+
+5. DC OFFSET (6581): The 6581 has a noticeable DC offset on its audio output
+   that varies with waveform selection and filter settings. This contributes
+   to the "click" when changing volume (used for digi playback).
+
+6. COMBINED WAVEFORM DIFFERENCES: The 6581 and 8580 produce different results
+   for combined waveforms due to die-level differences. Code relying on
+   specific combined waveform behavior may sound different on different chips.
+
+7. TEST BIT: Setting the TEST bit (bit 3 of control register) resets and
+   holds the oscillator accumulator at zero. When TEST is cleared, the
+   oscillator resumes from zero, which can be used for phase-accurate
+   oscillator reset.
+
+8. VOLUME REGISTER CLICK (6581): Any write to $D418 produces an audible
+   click proportional to the volume change. Even writing the same value
+   produces a tiny click. This is exploited for sample playback but can
+   cause unwanted noise in normal music.
+
+================================================================================
+16. SID REGISTER QUICK REFERENCE CARD
+================================================================================
+
+Addr   Dec    Register Name             Bits        R/W
+-----  -----  ------------------------  ----------  ---
+$D400  54272  Voice 1 Freq Lo           FFFFFFFF    W
+$D401  54273  Voice 1 Freq Hi           FFFFFFFF    W
+$D402  54274  Voice 1 Pulse Width Lo    PPPPPPPP    W
+$D403  54275  Voice 1 Pulse Width Hi    ----PPPP    W
+$D404  54276  Voice 1 Control           NPSTWRSG    W
+$D405  54277  Voice 1 Attack/Decay      AAAADDDD    W
+$D406  54278  Voice 1 Sustain/Release   SSSSRRRR    W
+$D407  54279  Voice 2 Freq Lo           FFFFFFFF    W
+$D408  54280  Voice 2 Freq Hi           FFFFFFFF    W
+$D409  54281  Voice 2 Pulse Width Lo    PPPPPPPP    W
+$D40A  54282  Voice 2 Pulse Width Hi    ----PPPP    W
+$D40B  54283  Voice 2 Control           NPSTWRSG    W
+$D40C  54284  Voice 2 Attack/Decay      AAAADDDD    W
+$D40D  54285  Voice 2 Sustain/Release   SSSSRRRR    W
+$D40E  54286  Voice 3 Freq Lo           FFFFFFFF    W
+$D40F  54287  Voice 3 Freq Hi           FFFFFFFF    W
+$D410  54288  Voice 3 Pulse Width Lo    PPPPPPPP    W
+$D411  54289  Voice 3 Pulse Width Hi    ----PPPP    W
+$D412  54290  Voice 3 Control           NPSTWRSG    W
+$D413  54291  Voice 3 Attack/Decay      AAAADDDD    W
+$D414  54292  Voice 3 Sustain/Release   SSSSRRRR    W
+$D415  54293  Filter Cutoff Lo          -----FFF    W
+$D416  54294  Filter Cutoff Hi          FFFFFFFF    W
+$D417  54295  Filter Resonance/Route    RRRREFFF    W
+$D418  54296  Filter Mode/Volume        MHBL VVVV   W
+$D419  54297  Paddle X                  XXXXXXXX    R
+$D41A  54298  Paddle Y                  YYYYYYYY    R
+$D41B  54299  Voice 3 Oscillator        OOOOOOOO    R
+$D41C  54300  Voice 3 Envelope          EEEEEEEE    R
+
+Control Register Bits:
+  N = Noise    P = Pulse    S = Sawtooth  T = Triangle
+  W = Test     R = Ring Mod  S = Sync      G = Gate
+
+Filter Mode Bits ($D418):
+  M = Mute Voice 3   H = High-pass   B = Band-pass   L = Low-pass
+  V = Volume (4 bits)
+
+Filter Routing Bits ($D417):
+  R = Resonance (4 bits)  E = External input  F = Filter voice flags (3/2/1)
+
+================================================================================
+END OF DOCUMENT
+================================================================================

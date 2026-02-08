@@ -1,0 +1,484 @@
+Commodore 64 Complete Memory Map - Source: sta.c64.org
+======================================================
+
+Zero Page ($0000-$00FF)
+-----------------------
+
+$0000   Processor Port DDR      Data direction for processor port bits
+$0001   Processor Port          Memory area configuration and datasette control
+$0002-$0004  Unused             Default execution addresses for FP conversion routines
+$0005-$0006  Unused             Default execution addresses for integer conversion
+$0007   Byte Buffer             Search byte, input digit, operand low byte
+$0008   Byte Buffer             Search byte, tokenization byte, operand high byte
+$0009   Column Counter          Current column during SPC() and TAB()
+$000A   LOAD/VERIFY             Switch for load vs. verify operations
+$000B   Token/Array             Current token or array dimension count
+$000C   Array Switch            DIM operation indicator
+$000D   Expression Type         Numerical ($00) or string ($FF)
+$000E   Numerical Type          Floating point (0) or integer (1)
+$000F   Quotation Mode          Mode indicator during tokenization/listing
+$0010   Variable Fetch          Integer variable acceptance flag
+$0011   Input Method            INPUT/GET/READ mode selector
+$0012   Sign Register           Sign for trigonometric functions
+$0013   I/O Device              Current device number (default: keyboard/screen)
+$0014-$0015  Line Number        Line number for program control flow
+$0016   String Stack Ptr        Pointer to next expression (default: $19)
+$0017-$0018  String Stack Prev  Previous expression pointer
+$0019-$0021  String Stack       Temporary expression processing area (9 bytes)
+$0022-$0025  Temp Area          General-purpose temporary storage (4 bytes)
+$0026-$0029  Aux Arithmetic     Division/multiplication register (4 bytes)
+$002A   Unused
+$002B-$002C  BASIC Start        Pointer to program beginning (default: $0801)
+$002D-$002E  Variable Area      Start of variables (end of program + 1)
+$002F-$0030  Array Start        Beginning of array variables
+$0031-$0032  Array End          End of array variables
+$0033-$0034  String Start       Beginning of string variables
+$0035-$0036  String Alloc       Allocated memory for current string
+$0037-$0038  BASIC End          End of program area (default: $A000)
+$0039-$003A  Current Line       Active line number during execution
+$003B-$003C  CONT Line          Line number for CONT command
+$003D-$003E  CONT Pointer       Next instruction for CONT
+$003F-$0040  DATA Line          Current DATA statement line number
+$0041-$0042  DATA Pointer       Next DATA item location
+$0043-$0044  Input Result       Pointer to input data
+$0045-$0046  Variable Name      Current variable name and type bits
+$0047-$0048  Variable Value     Pointer to variable/function value
+$0049-$004A  Variable Ptr/WAIT  Varies by operation context
+$004B-$004C  Temp Instruction   Saved instruction pointer
+$004D   Comparison Op           Bit flags for comparison operators
+$004E-$004F  FN Pointer         Current FN function pointer
+$0050-$0051  String Var Ptr     Current string variable during allocation
+$0052   Unused
+$0053   GC Step Size            Garbage collection step size ($03 or $07)
+$0054-$0056  JMP Instruction    Jump to current BASIC function
+$0057-$005B  Register #3        Arithmetic register (5 bytes)
+$005C-$0060  Register #4        Arithmetic register (5 bytes)
+$0061-$0065  FAC                Floating-point accumulator (5 bytes)
+$0066   FAC Sign                Sign bit for FAC
+$0067   Polynomial Deg          Polynomial degree counter
+$0068   Temp Area               General temporary storage
+$0069-$006D  ARG                Second arithmetic register (5 bytes)
+$006E   ARG Sign                Sign bit for ARG
+$006F-$0070  String Compare     Pointer to first string in comparison
+$0071-$0072  Array/Poly Ptr     Array pointer or polynomial table pointer
+$0073-$008A  CHRGET             Machine code for reading BASIC bytes (24 bytes)
+$0079   CHRGOT                  Entry point to read current byte
+$007A-$007B  CHRGET Ptr         Pointer to current BASIC byte
+$008B-$008F  RND State          Previous RND() result
+$0090   ST Variable             Device status: serial bus and datasette
+$0091   Stop Key                Stop key indicator ($7F pressed, $FF not)
+$0092   Timing Const            Datasette timing constant
+$0093   LOAD/VERIFY             Datasette load/verify switch
+$0094   Serial Cache            Serial bus output cache status
+$0095   Serial Prev             Previous byte sent to serial bus
+$0096   Tape EOL                Datasette end-of-tape indicator
+$0097   Register Save           Saved register value during I/O
+$0098   Files Open              Number of open files (0-10)
+$0099   Input Device            Current input device (default: $00)
+$009A   Output Device           Current output device (default: $03)
+$009B   Parity Bit              Datasette parity indicator
+$009C   Byte Ready              Datasette byte ready flag
+$009D   Error Display           System message display control
+$009E   Output Buffer           RS232/datasette output byte or error counter
+$009F   Aux Counter             Datasette auxiliary counter
+$00A0-$00A2  TI Variable        Time counter incremented every 1/60 second
+$00A3   EOI Switch              EOI delay or datasette bit counter
+$00A4   Byte Buffer             Serial bus or datasette input buffer
+$00A5   Bit Counter             Serial bus/datasette bit counter
+$00A6   Buffer Offset           Current byte offset in datasette buffer
+$00A7   RS232 Bit Buffer        Bit buffer during RS232 input
+$00A8   RS232 Bit Cnt           Bit counter during RS232 input
+$00A9   Stop Bit Switch         RS232 stop bit indicator
+$00AA   RS232 Byte Buf          Byte buffer during RS232 input
+$00AB   RS232 Parity            RS232 parity or datasette checksum
+$00AC-$00AD  SAVE Start         Start address or pointer for save/load
+$00AE-$00AF  Load Address       Address read from file or end pointer
+$00B0-$00B1  Unused
+$00B2-$00B3  Datasette Buf      Pointer to datasette buffer (default: $033C)
+$00B4   RS232 Bit Ctrl          Bit counter and stop bit for RS232 output
+$00B5   RS232 Bit Buf           Bit buffer during RS232 output
+$00B6   RS232 Byte Buf          Byte buffer during RS232 output
+$00B7   Filename Length          Parameter length for file operations
+$00B8   Logical Number          Current file logical number
+$00B9   Secondary Addr          Secondary address of current file
+$00BA   Device Number           Device number of current file
+$00BB-$00BC  Filename Ptr       Pointer to filename or disk command
+$00BD   RS232 Parity            RS232 parity or datasette buffer
+$00BE   Block Counter           Datasette block counter
+$00BF   Unused
+$00C0   Motor Switch            Datasette motor control switch
+$00C1-$00C2  Save Start         Start address for save operations
+$00C3-$00C4  Secondary Start    Start address for secondary address 0
+$00C5   Prev Key Matrix         Previous key pressed (matrix code)
+$00C6   Keyboard Buf Len        Keyboard buffer length (0-10 entries)
+$00C7   Reverse Mode            Reverse mode switch ($00 normal, $12 reverse)
+$00C8   Line Length             Screen line length minus 1
+$00C9   Cursor Row              Cursor row during screen input (0-24)
+$00CA   Cursor Column           Cursor column during screen input (0-39)
+$00CB   Current Key Matrix      Currently pressed key (matrix code)
+$00CC   Cursor Visibility       Cursor on/off flag
+$00CD   Cursor Delay            Cursor phase change delay counter
+$00CE   Char Under Cursor       Screen code of character under cursor
+$00CF   Cursor Phase            Cursor visibility phase (0 or 1)
+$00D0   EOL Switch              End-of-line indicator
+$00D1-$00D2  Screen Line Ptr    Pointer to current screen line
+$00D3   Current Column          Cursor column (0-39)
+$00D4   Quote Mode              Quotation mode during input
+$00D5   Screen Line Len         Screen line length minus 1
+$00D6   Current Row             Cursor row (0-24)
+$00D7   Input Character         PETSCII code or buffer during I/O
+$00D8   Insertions Count        Number of character insertions
+$00D9-$00F1  Screen Line Table  High bytes of screen line pointers (25 bytes)
+$00F2   Scroll Temp             Temporary area during screen scrolling
+$00F3-$00F4  Color Line Ptr     Pointer to current Color RAM line
+$00F5-$00F6  Keyboard Table Ptr Pointer to keyboard conversion table
+$00F7-$00F8  RS232 In Buf Ptr   RS232 input buffer pointer
+$00F9-$00FA  RS232 Out Buf Ptr  RS232 output buffer pointer
+$00FB-$00FE  Unused             (4 bytes)
+$00FF-$010A  FP to String       Float-to-string conversion buffer (12 bytes)
+
+
+Processor Stack ($0100-$01FF)
+-----------------------------
+
+$0100-$013D  Error Bytes        Pointers to error bytes from datasette (62 bytes)
+$0100-$01FF  Stack Area         System processor stack and FOR/GOSUB storage
+
+
+System Area ($0200-$02FF)
+-------------------------
+
+$0200-$0258  Input Buffer       Screen data input buffer (89 bytes)
+$0259-$0262  Logical Numbers    File logical numbers table (10 bytes)
+$0263-$026C  Device Numbers     File device numbers table (10 bytes)
+$026D-$0276  Secondary Addrs    File secondary addresses table (10 bytes)
+$0277-$0280  Keyboard Buffer    Keyboard input buffer (10 bytes)
+$0281-$0282  BASIC Start Test   BASIC start after memory test (default: $0800)
+$0283-$0284  BASIC End Test     BASIC end after memory test (default: $A000)
+$0285   Serial Timeout          Serial bus timeout counter
+$0286   Current Color           Cursor color (0-15)
+$0287   Cursor Char Color       Color under cursor (0-15)
+$0288   Screen Mem High         High byte of screen memory pointer (default: $04)
+$0289   Keyboard Buf Max        Maximum keyboard buffer size (1-15 or 0)
+$028A   Keyboard Repeat         Key repeat mode control
+$028B   Repeat Delay            Delay between repeated key presses
+$028C   Repeat Start Delay      Initial delay before first repeat
+$028D   Shift Key Status        Current shift key state indicators
+$028E   Prev Shift Status       Previous shift key state
+$028F-$0290  Shift Routine Addr Shift routine execution address (default: $EB48)
+$0291   Commodore-Shift         Commodore-Shift enable flag
+$0292   Scroll Direction        Direction of screen scroll
+$0293   RS232 Control           RS232 baud rate and byte configuration
+$0294   RS232 Command           RS232 synchronization and parity control
+$0295-$0296  RS232 Out Timer    RS232 output timer default value
+$0297   RS232 Status            RS232 device status for input/output
+$0298   RS232 Byte Size         RS232 data bits per byte
+$0299-$029A  RS232 In Timer     RS232 input timer default value
+$029B   RS232 In Offset         RS232 input buffer byte offset
+$029C   RS232 In Ptr            RS232 input buffer current pointer
+$029D   RS232 Out Offset        RS232 output buffer byte offset
+$029E   RS232 Out Ptr           RS232 output buffer current pointer
+$029F-$02A0  ISR Backup         Original interrupt routine pointer backup
+$02A1   CIA2 Interrupt Backup   CIA#2 interrupt control register backup
+$02A2   CIA1 Timer A Backup     CIA#1 timer A control register backup
+$02A3   CIA1 Interrupt Backup   CIA#1 interrupt control register backup
+$02A4   CIA1 Timer B Backup     CIA#1 timer B control register backup
+$02A5   Scroll Line Count       Current line number being scrolled
+$02A6   PAL/NTSC Switch         System video standard (0=NTSC, 1=PAL)
+$02A7-$02FF  Unused             (89 bytes)
+
+
+Interrupt Vectors and BASIC Vectors ($0300-$03FF)
+-------------------------------------------------
+
+$0300-$0301  Warm Start         Warm reset execution address (default: $E38B)
+$0302-$0303  BASIC Idle         BASIC loop entry point (default: $A483)
+$0304-$0305  Tokenizer          Line tokenization routine (default: $A57C)
+$0306-$0307  Token Decoder      Token decoding routine (default: $A71A)
+$0308-$0309  Executor           Instruction execution routine (default: $A7E4)
+$030A-$030B  Expression Reader  Expression reading routine (default: $AE86)
+$030C   SYS Register A          Default/return value for register A
+$030D   SYS Register X          Default/return value for register X
+$030E   SYS Register Y          Default/return value for register Y
+$030F   SYS Status Reg          Default/return processor status register
+$0310-$0312  USR Function       Jump to USR() function
+$0313   Unused
+$0314-$0315  IRQ Handler        Interrupt routine address (default: $EA31)
+$0316-$0317  BRK Handler        BRK instruction handler (default: $FE66)
+$0318-$0319  NMI Handler        Non-maskable interrupt handler (default: $FE47)
+$031A-$031B  OPEN               File open routine (default: $F34A)
+$031C-$031D  CLOSE              File close routine (default: $F291)
+$031E-$031F  CHKIN              Input file definition routine (default: $F20E)
+$0320-$0321  CHKOUT             Output file definition routine (default: $F250)
+$0322-$0323  CLRCHN             I/O initialization routine (default: $F333)
+$0324-$0325  CHRIN              Data input routine (default: $F157)
+$0326-$0327  CHROUT             Data output routine (default: $F1CA)
+$0328-$0329  STOP               Stop key check routine (default: $F6ED)
+$032A-$032B  GETIN              General input routine (default: $F13E)
+$032C-$032D  CLALL              Clear all files routine (default: $F32F)
+$032E-$032F  Unused             (default: $FE66)
+$0330-$0331  LOAD               File load routine (default: $F4A5)
+$0332-$0333  SAVE               File save routine (default: $F5ED)
+$0334-$033B  Unused             (8 bytes)
+$033C-$03FB  Datasette Buffer   Datasette I/O buffer (192 bytes)
+$03FC-$03FF  Unused             (4 bytes)
+
+
+Default Screen Memory ($0400-$07FF)
+------------------------------------
+
+$0400-$07E7  Screen RAM         Screen display memory (1000 bytes)
+$07E8-$07F7  Unused             (16 bytes)
+$07F8-$07FF  Sprite Pointers    Default sprite data pointers (8 bytes)
+
+
+BASIC Program Area ($0800-$9FFF)
+---------------------------------
+
+$0800   Link Area               Must contain 0 to allow RUN
+$0801-$9FFF  BASIC Program      Program storage area (38,911 bytes)
+$8000-$9FFF  Cartridge ROM      Optional external ROM (8192 bytes)
+
+Cartridge Structure:
+  $8000-$8001  Cold reset entry point
+  $8002-$8003  Non-maskable interrupt handler
+  $8004-$8008  Signature string "CBM80"
+
+
+BASIC ROM ($A000-$BFFF)
+------------------------
+
+$A000-$BFFF  BASIC ROM/RAM      BASIC interpreter or RAM (8192 bytes)
+
+Visibility controlled by processor port $0001 bits #0-#2.
+
+
+Upper RAM ($C000-$CFFF)
+------------------------
+
+$C000-$CFFF  Upper RAM          General-purpose RAM (4096 bytes)
+
+
+I/O Area ($D000-$DFFF)
+========================
+
+
+VIC-II: Video Display Controller ($D000-$D3FF)
+-----------------------------------------------
+
+Sprite Registers:
+
+$D000-$D00F  Sprite Coords      Sprites 0-7 X/Y positions (X bits 0-7 only)
+$D010   Sprite X MSB            X-coordinate bit #8 for sprites 0-7
+
+Screen Control:
+
+$D011   Screen Ctrl 1           Vertical scroll, height, bitmap mode, raster bit 8
+$D012   Raster Line             Current/interrupt raster line (bits 0-7)
+$D013   Light Pen X             Light pen X-coordinate (bits 1-8, read-only)
+$D014   Light Pen Y             Light pen Y-coordinate (read-only)
+$D015   Sprite Enable           Enable register for sprites 0-7
+$D016   Screen Ctrl 2           Horizontal scroll, width, multicolor mode
+$D017   Sprite Height           Double-height stretch register for sprites 0-7
+$D018   Memory Setup            Character/bitmap and screen memory pointers
+
+Interrupts:
+
+$D019   IRQ Status              Raster, sprite collision, light pen status
+$D01A   IRQ Control             Enable raster, collision, and light pen interrupts
+
+Sprite Features:
+
+$D01B   Sprite Priority         Behind/in-front-of background register
+$D01C   Sprite Multicolor       Multicolor mode register for sprites 0-7
+$D01D   Sprite Width            Double-width stretch register for sprites 0-7
+$D01E   Sprite-Sprite Collision Sprite collision detection register
+$D01F   Sprite-BG Collision     Sprite-background collision register
+
+Color Registers:
+
+$D020   Border Color            Border color (bits 0-3 only)
+$D021   Background Color        Primary background color (bits 0-3 only)
+$D022   BG Color 1              Extended background color #1 (bits 0-3 only)
+$D023   BG Color 2              Extended background color #2 (bits 0-3 only)
+$D024   BG Color 3              Extended background color #3 (bits 0-3 only)
+$D025   Sprite Color 1          Multicolor sprite color #1 (bits 0-3 only)
+$D026   Sprite Color 2          Multicolor sprite color #2 (bits 0-3 only)
+$D027-$D02E  Sprite Colors      Individual colors for sprites 0-7 (bits 0-3 only)
+
+Mirror Area:
+
+$D02F-$D3FF  VIC-II Images      Register images (repeated every $40 bytes)
+
+
+SID: Sound Interface Device ($D400-$D7FF)
+------------------------------------------
+
+Voice 1 ($D400-$D406):
+
+$D400-$D401  Voice 1 Freq       Frequency register (write-only)
+$D402-$D403  Voice 1 Pulse      Pulse width (write-only)
+$D404   Voice 1 Control         Waveform and modulation control (write-only)
+$D405   Voice 1 A/D             Attack and Decay length (write-only)
+$D406   Voice 1 S/R             Sustain volume and Release length (write-only)
+
+Voice 2 ($D407-$D40D):
+
+$D407-$D408  Voice 2 Freq       Frequency register (write-only)
+$D409-$D40A  Voice 2 Pulse      Pulse width (write-only)
+$D40B   Voice 2 Control         Waveform and modulation control (write-only)
+$D40C   Voice 2 A/D             Attack and Decay length (write-only)
+$D40D   Voice 2 S/R             Sustain volume and Release length (write-only)
+
+Voice 3 ($D40E-$D414):
+
+$D40E-$D40F  Voice 3 Freq       Frequency register (write-only)
+$D410-$D411  Voice 3 Pulse      Pulse width (write-only)
+$D412   Voice 3 Control         Waveform and modulation control (write-only)
+$D413   Voice 3 A/D             Attack and Decay length (write-only)
+$D414   Voice 3 S/R             Sustain volume and Release length (write-only)
+
+Filter ($D415-$D418):
+
+$D415   Filter Cutoff L         Filter frequency bits 0-2 (write-only)
+$D416   Filter Cutoff H         Filter frequency bits 3-10 (write-only)
+$D417   Filter Control          Voice routing and resonance (write-only)
+$D418   Volume/Filter           Master volume and filter modes (write-only)
+
+Paddle and Voice 3 Readback ($D419-$D41C):
+
+$D419   Paddle X                Paddle X-axis value (read-only, updates every 512 cycles)
+$D41A   Paddle Y                Paddle Y-axis value (read-only, updates every 512 cycles)
+$D41B   Voice 3 Wave            Voice 3 waveform output (read-only)
+$D41C   Voice 3 ADSR            Voice 3 ADSR output (read-only)
+
+Mirror Area:
+
+$D41D-$D7FF  SID Images         Register images (repeated every $20 bytes)
+
+
+Color RAM ($D800-$DBFF)
+------------------------
+
+$D800-$DBE7  Color Memory       Screen color data (1000 bytes, bits 0-3 only)
+$DBE8-$DBFF  Unused             (24 bytes)
+
+
+CIA #1: Complex Interface Adapter ($DC00-$DCFF)
+-------------------------------------------------
+
+Port Control:
+
+$DC00   Port A                  Keyboard matrix and joystick #2
+$DC01   Port B                  Keyboard matrix rows and joystick #1
+$DC02   Port A DDR              Data direction register for Port A
+$DC03   Port B DDR              Data direction register for Port B
+
+Timers:
+
+$DC04-$DC05  Timer A            16-bit timer counter (read/write)
+$DC06-$DC07  Timer B            16-bit timer counter (read/write)
+
+Time of Day:
+
+$DC08   TOD Tenths              Tenth-seconds counter in BCD (0-9)
+$DC09   TOD Seconds             Seconds counter in BCD (0-59)
+$DC0A   TOD Minutes             Minutes counter in BCD (0-59)
+$DC0B   TOD Hours               Hours counter in BCD with AM/PM bit
+
+Serial Shift:
+
+$DC0C   Serial Shift            Read/write bits on CNT pin edges
+
+Interrupt Control:
+
+$DC0D   Interrupt Status        Timer, TOD, serial, and FLAG interrupt status
+
+Timer Control:
+
+$DC0E   Timer A Control         Start, output mode, and count source
+$DC0F   Timer B Control         Start, output mode, and count source
+
+Mirror Area:
+
+$DC10-$DCFF  CIA#1 Images       Register images (repeated every $10 bytes)
+
+
+CIA #2: Complex Interface Adapter ($DD00-$DDFF)
+-------------------------------------------------
+
+Port Control:
+
+$DD00   Port A                  VIC bank selection and serial bus control
+$DD01   Port B                  RS232 and user port control
+$DD02   Port A DDR              Data direction register for Port A
+$DD03   Port B DDR              Data direction register for Port B
+
+Timers:
+
+$DD04-$DD05  Timer A            16-bit timer counter (read/write)
+$DD06-$DD07  Timer B            16-bit timer counter (read/write)
+
+Time of Day:
+
+$DD08   TOD Tenths              Tenth-seconds counter in BCD (0-9)
+$DD09   TOD Seconds             Seconds counter in BCD (0-59)
+$DD0A   TOD Minutes             Minutes counter in BCD (0-59)
+$DD0B   TOD Hours               Hours counter in BCD with AM/PM bit
+
+Serial Shift:
+
+$DD0C   Serial Shift            Read/write bits on CNT pin edges
+
+Interrupt Control:
+
+$DD0D   Interrupt Status        Timer, TOD, serial, and FLAG non-maskable interrupt status
+
+Timer Control:
+
+$DD0E   Timer A Control         Start, output mode, and count source
+$DD0F   Timer B Control         Start, output mode, and count source
+
+Mirror Area:
+
+$DD10-$DDFF  CIA#2 Images       Register images (repeated every $10 bytes)
+
+
+Expansion I/O Areas ($DE00-$DFFF)
+----------------------------------
+
+$DE00-$DEFF  I/O Area 1         Optional external device registers (256 bytes)
+$DF00-$DFFF  I/O Area 2         Optional external device registers (256 bytes)
+
+
+KERNAL ROM ($E000-$FFFF)
+--------------------------
+
+$E000-$FFFF  KERNAL ROM/RAM     Operating system kernel (8192 bytes)
+
+Visibility controlled by processor port $0001 bits #0-#2.
+
+
+Hardware Vectors ($FFFA-$FFFF)
+-------------------------------
+
+$FFFA-$FFFB  NMI Vector         Non-maskable interrupt handler (default: $FE43)
+$FFFC-$FFFD  Reset Vector       Cold reset entry point (default: $FCE2)
+$FFFE-$FFFF  IRQ Vector         Interrupt request handler (default: $FF48)
+
+
+Key Notes
+=========
+
+Bank Switching:
+  The processor port at $0001 controls visibility of BASIC ROM ($A000-$BFFF),
+  KERNAL ROM ($E000-$FFFF), Character ROM ($D000-$D7FF as text), and I/O area
+  ($D000-$DFFF).
+
+VIC Bank Selection:
+  CIA#2 port A bits 0-1 select which 16KB bank the VIC-II chip accesses,
+  allowing video memory location flexibility.
+
+Default Configuration:
+  The standard setup places BASIC programs at $0801, screen memory at $0400,
+  and color RAM at $D800, with BASIC and KERNAL ROMs visible and I/O active.

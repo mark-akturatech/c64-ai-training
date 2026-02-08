@@ -1,0 +1,785 @@
+6502 Multiplication and Division Algorithms - Source: llx.com
+Original URL: https://llx.com/Neil/a2/mult.html
+Author: Neil Parker
+
+============================================================
+Multiplying and Dividing on the 6502
+============================================================
+
+
+Introduction
+----------------------------------------
+
+
+One of the more common questions asked by new 6502 programmers
+seems to be, "Hey...there's no multiply instruction!  How do I multiply
+on the 6502?"  This article presents some answers to this question,
+and as a bonus, answers to the companion question, "How do I divide on
+the 6502?"
+
+
+Of course the methods shown below are not the only ways to multiply
+and divide, nor even the fastest.  They are, however, probably the
+easiest ways to understand.
+
+
+Most of the routines below are for unsigned integers, since these are
+the easiest kinds of numbers to work with.  Extending them to signed
+integers is discussed briefly near the end.  (The next logical step, numbers
+with fractional parts, would require a whole new article.)
+
+
+The Easiest Way to Multiply
+----------------------------------------
+
+
+The easiest way to multiply on the 6502 is not to do it at all.
+
+
+Actually, that statement isn't nearly as useless as it seems.
+Sometimes the nature of the problem is such that with a little
+rewriting, the multiplication can be eliminated entirely.  This happens
+often in loops, if the loop index has to be multiplied by something.
+As an example, consider the following BASIC-like code fragment:
+
+
+FOR I = 5 TO 100 STEP 5
+  J = I*23
+  Do something with J
+NEXT I
+
+
+This can be rewritten like this:
+
+
+J = 115: REM 115 = 5*23
+FOR I = 5 TO 100 STEP 5
+  Do something with J
+  J = J+115
+NEXT I
+
+
+This kind of rewriting is called strength reduction.
+Optimizing compilers will usually notice when this is possible, and
+automatically rewrite the code to take advantage of it.
+
+
+The problem with this, of course, is that many multiplications
+can't be eliminated by rewriting.  For these cases, the rule
+is, "Don't work any harder than you have to."  If all you need is to
+multiply
+by a constant, the code for that will usually be much more efficient
+than a general routine to multiply any two arbitrary numbers.
+
+
+Multiplying by a Constant
+----------------------------------------
+
+
+Skipping over the trivial cases of multiplying by zero or one, the
+easiest constant to multiply by is two, because all you need are the
+ASL and ROL instructions.  For a single-byte
+result:
+
+
+ASL NUM
+
+
+Or for a two-byte result:
+
+
+ASL NUM
+        ROL NUM+1
+
+
+Extending this to wider numbers should be obvious.
+
+
+Multiplying by 4, 8, 16, or higher powers of two is simply a matter
+of multiplying by two enough times to get the result.  For example, to
+multiply a one-bye number by four:
+
+
+ASL NUM
+        ASL NUM
+
+
+Or for two-byte numbers:
+
+
+ASL NUM
+        ROL NUM+1
+        ASL NUM
+        ROL NUM+1
+
+
+Multiplying by a constant other than a power of two is more
+difficult, but it can be done by adding up the results of several
+power-of-two multiplications.  This will generally require the use of
+temporary memory locations to hold intermediate results.
+
+
+For example, consider multiplication by 3.  To do this, we note that
+for any number x, 3x = 2x + x - that is, we
+can multiply by three by multiplying by two, and adding the original
+number to the result.  Of course this means the original number has to
+be kept around somewhere so it will be available for the addition.  For
+two-byte numbers:
+
+
+LDA NUM       ;Start with RESULT = 2*NUM
+        ASL A
+        STA RESULT
+        LDA NUM+1
+        ROL A
+        STA RESULT+1
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 3*NUM
+
+
+Or we can multiply by 10 using the fact that 10x = 8x +
+2x (or, factoring out a 2, 10x = 2(4x + x)):
+
+
+LDA NUM       ;Start with RESULT = NUM
+        STA RESULT
+        LDA NUM+1
+        STA RESULT+1
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 2*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 4*NUM
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 5*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 10*NUM
+
+
+So how do we figure out what powers of two we need to add to get the
+answer?  Easy:  Just write the binary equivalent of the constant, and
+look for the 1 bits.  The position of each 1 bit shows which powers of
+two need to be added to get the answer.  For example,
+
+
+3 (decimal) = 11 (binary)
+              |+--  1
+              +--- +2
+                   --
+                    3, i.e. 1x + 2x = 3x
+
+10 (decimal) = 1010 (binary)
+               | +--  2
+               +---- +8
+                     --
+                     10, i.e. 2x + 8x = 10x
+
+25 (decimal) = 11001 (binary)
+               ||  +--   1
+               |+-----   8
+               +------ +16
+                       ---
+                        25, i.e. x + 8x + 16x = 25x.
+
+
+But what if you need to multiply two numbers, and you don't know what
+either one is in advance?  In this case, you need a general
+multiply-anything-by-anything routine.
+
+
+Multplying Arbitrary Numbers
+----------------------------------------
+
+
+A reasonable way to multiply arbitrary numbers is to do it the way
+you learned in school, with pencil and paper.  Consider an example:
+
+
+654
+ x 321
+ -----
+654
+ 1308
+1962
+------
+209934
+
+
+If the steps are written out as an algorithm, it goes something like
+this:
+
+
+  * Set the answer to 0.
+
+  * Repeat as many times as there are digits in the bottom number:
+
+
+  * Remove the rightmost digit of the bottom number.
+
+  * Multiply the top number by the digit just removed.
+
+  * Add the result to the answer, shifted one more place to the left
+      each time.
+
+
+ The secret of binary multiplication is that it works exactly like
+decimal multiplication, as long as you use the addition and
+multiplication tables for binary digits:
+
+
++| 0  1      x| 0 1
+--+-----     --+----
+ 0| 0  1      0| 0 0
+ 1| 1 10      1| 0 1
+
+
+The algorithm in the binary case is slightly simpler than the decimal
+algorithm:
+
+
+  * Set the answer to 0.
+
+  * Repeat as many times as there are bits in the bottom number:
+
+
+  * Remove the rightmost bit of the bottom number.
+
+  * If the bit removed was 1, add the top number to the answer,
+      shifted one more place to the left each time.
+
+
+Here's an example:
+
+
+110
+x 101
+-----
+  110
+110
+-----
+11110
+
+
+This is quite easy to turn into machine language - the only tricky
+thing in the code below is that instead of shifting the added number to
+the left, it shifts the answer one place to the right each time,
+catching the lost bit in a memory location.  Here it is for one-byte
+numbers:
+
+
+LDA #0       ;Initialize RESULT to 0
+        LDX #8       ;There are 8 bits in NUM2
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        CLC          ;If 1, add NUM1
+        ADC NUM1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        DEX
+        BNE L1
+        STA RESULT+1
+
+
+Note that though we were multiplying one-byte numbers, the result
+requires two bytes.  The general rule for multiplication is that the
+number of bytes in the result will be equal to the number of bytes in
+the first number, plus the number of bytes in the second number.
+
+
+The method is easily extendable to wider numbers.  Here's a routine
+for multiplying two-byte numbers, giving a four-byte result:
+
+
+LDA #0       ;Initialize RESULT to 0
+        STA RESULT+2
+        LDX #16      ;There are 16 bits in NUM2
+L1      LSR NUM2+1   ;Get low bit of NUM2
+        ROR NUM2
+        BCC L2       ;0 or 1?
+        TAY          ;If 1, add NUM1 (hi byte of RESULT is in A)
+        CLC
+        LDA NUM1
+        ADC RESULT+2
+        STA RESULT+2
+        TYA
+        ADC NUM1+1
+L2      ROR A        ;"Stairstep" shift
+        ROR RESULT+2
+        ROR RESULT+1
+        ROR RESULT
+        DEX
+        BNE L1
+        STA RESULT+3
+
+
+At this point it seems to be common for people to ask for additional
+routines to multiply even wider numbers.  Rather than bloat this article
+with even more routines for numbers of various sizes, I encourage readers
+to look back over the algorithm just described and the examples that
+implement it - once these are understood, writing additional routines is
+straightforward.
+
+
+Division
+----------------------------------------
+
+
+Passing over the trivial case of dividing by 1, the easiest number to
+divide by is 2:
+
+
+LSR NUM
+
+
+Or, for two-byte numbers:
+
+
+LSR NUMHI
+        ROR NUMLO
+
+
+This replaces the original number with the result, and leaves the
+remainder in the carry flag.
+
+
+As with multiplication, dividing by higher powers of two is simply a
+matter of repeating the above.  The remainder can be found by saving
+the bits shifted off into the carry flag - the first bit shifted out is
+the lowest bit of the remainder, the second bit shifted is the
+next-to-lowest bit of the remainder, and so on.
+
+
+Unfortunately, dividing by constants that are not powers of two is
+harder than multiplying by them - hard enough that it's often easiest
+just to go for the general divide-anything-by-anything routine,
+especially if you need the remainder.
+
+
+Dividing Arbitrary Numbers
+----------------------------------------
+
+
+As with multiplication, a reasonable division algorithm can be found
+by looking at the way you would write out a long division with pencil
+and paper.  Consider the following example, written in the manner
+traditionally taught in U.S. schools:
+
+
+184
+_______
+67 ) 12345
+     -67
+     ---
+      564
+     -536
+     ----
+       285
+      -268
+      ----
+        17
+
+
+Here we divided a dividend, 12345, by a divisor, 67,
+and got quotient of 184, with a remainder of 17.  Note the
+procedure...at each step, we find the largest multiple of the divisor
+that is less than the leftmost remaining digits of the dividend, and
+subtract.  Then we bring down the next digit of the dividend, and repeat
+until no more digits are left.
+
+
+Binary division works exactly the same way, as long as you use the
+rules for binary digits instead of decimal digits.  For example:
+
+
+10101
+    _________
+101 ) 1101101
+     -101
+     ----
+        11
+        -0
+        --
+        111
+       -101
+       ----
+         100
+          -0
+         ---
+         1001
+         -101
+         ----
+          100
+
+
+Note how much easier this is than the decimal version, mostly because
+there are only two possible numbers to subtract:  0 or the divisor.
+
+
+Again, writing code to do this isn't very hard.  We will shift the
+bits of the the dividend, one at a time, into a work area, and then try
+subtracting the divisor from the work area.  If the subtraction
+succeeded, we replace the work area with the result of the subtraction
+and record a 1 bit in the quotient.  If the subtraction failed, we discard
+its result and record a 0 bit in the quotient.  The process is repeated
+until all bits of the dividend are used up.
+
+
+Here's an example that divides the two-byte number NUM1 by the
+two-byte number NUM2, leaving the quotient in NUM1 and the remainder in
+REM:
+
+
+LDA #0      ;Initialize REM to 0
+        STA REM
+        STA REM+1
+        LDX #16     ;There are 16 bits in NUM1
+L1      ASL NUM1    ;Shift hi bit of NUM1 into REM
+        ROL NUM1+1  ;(vacating the lo bit, which will be used for the quotient)
+        ROL REM
+        ROL REM+1
+        LDA REM
+        SEC         ;Trial subtraction
+        SBC NUM2
+        TAY
+        LDA REM+1
+        SBC NUM2+1
+        BCC L2      ;Did subtraction succeed?
+        STA REM+1   ;If yes, save it
+        STY REM
+        INC NUM1    ;and record a 1 in the quotient
+L2      DEX
+        BNE L1
+
+
+Beware!  Since multiplying two one-byte numbers gives you a two-byte
+result, the knee-jerk expectation is that dividing a two-byte number by
+a one-byte number should give you a one-byte quotient.  This turns out not
+to be true!  When dividing two numbers, the quotient must be as wide as
+the dividend (consider dividing by 1, in which case the quotient is
+the dividend), and the remainder must be as wide as the divisor (because it
+can be as large as divisor-1).
+
+
+Again, I'm not going to bloat this article by showing division
+routines for different sizes of numbers.  Once the method is
+understood, writing additional routines is straightforward.
+
+
+I feel the NEED for SPEED!
+----------------------------------------
+
+
+The routines shown above are reasonably compact, but not the speediest.
+With a little bit of trickery, we can squeeze a few cycles out of some of
+the above routines...for example, here's the one-byte multiplication again,
+using the carry flag instead of the Y register for the loop counter, which
+takes the DEY instruction out of the loop:
+
+
+LDA #$80     ;Preload sentinel bit into RESULT
+        STA RESULT
+        ASL A        ;Initialize RESULT hi byte to 0
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        CLC          ;If 1, add NUM1
+        ADC NUM1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        BCC L1       ;When sentinel falls off into carry, we're done
+        STA RESULT+1
+
+
+Assuming RESULT is in page 0, this saves 14 cycles.  As an
+added bonus, the Y register is no longer trashed.
+
+
+A little more trickery can get the CLC out of the loop,
+saving 2 cycles per 1-bit in NUM2:
+
+
+LDA #$80     ;Preload sentinel bit into RESULT
+        STA RESULT
+        ASL A        ;Initialize RESULT hi byte to 0
+	DEC NUM1
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        ADC NUM1     ;If 1, add (NUM1-1)+1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        BCC L1       ;When sentinel falls off into carry, we're done
+        STA RESULT+1
+
+
+Since the initial DEC NUM1 costs 5 cycles (if
+NUM1 is in page 0), this is a win if NUM2 has
+at least three 1-bits.
+
+
+But even the fastest of those routines, under the best possible
+circumstances (all variables in page 0, no page crossings, and NUM2 = 0),
+takes 151 cycles.  If you need to do much better than that, different
+techniques must be used.  The best way to get fast multiplication or
+division on the 6502 is table lookup - i.e., the programmer precomputes the
+answers to the multiplication or division problems and stores them in
+a table, and when the program needs to multiply or divide, it looks up the
+answer in the table.
+
+
+Of course this means there's a tradeoff between speed and code size.
+Table lookup works best when the numbers to be multiplied or divided
+fall in a limited range, otherwise the tables quickly grow to
+unmanageable sizes - for example, a multiplication table for
+multiplying two arbitrary one-byte numbers requires more memory than the
+6502 can directly access.
+
+
+Fortunately, with a little bit of algebra, the multiplcation table can
+be made much smaller, at the cost of a little extra execution time.
+Consider these two ways of writing the binomial equation:
+
+
+(a + b)^2 = a^2 + 2*a*b + b^2,
+(a - b)^2 = a^2 - 2*a*b + b^2.
+
+
+If the bottom equation is subtracted from the top, we get
+
+
+(a + b)^2 - (a - b)^2 = 4*a*b,
+
+
+Or, rearranging,
+
+
+a*b = ((a + b)^2 - (a - b)^2)/4
+    = (a + b)^2/4 - (a - b)^2/4.
+
+
+Thus we can do a multiplication with an addition, two subtractions,
+a couple of right shifts, and a couple of lookups in a table of squares.
+And if we're clever about the coding, we can make most of that work
+trivial - Here are the tricks to make it work:
+
+
+  * Instead of storing a table of x^2, the table will
+    store x^2/4.  This means each table entry needs only two
+    bytes intstead of three.  The two low-order bits of each entry are
+    lost, but that's OK, since (a+b)^2 and
+    (a-b)^2 are guaranteed to lose exactly the same
+    bits, so the subtraction cancels the lost bits.
+
+  * We'll actually store the table twice, once to look up
+    (a+b)^2/4, and once to look up (a-b)^2/4.
+    The total memory cost is 2048 bytes (2K).
+
+  * The (a-b)^2/4 table is offset by one.  This is so we
+    can store b in the accumulator, and negate it with
+    EOR #$FF without having to add 1.
+
+  * The tables are page-aligned.  This greatly streamlines the
+    indexing.
+
+
+A brief setup routine is needed to set up four pointers in page 0:
+
+
+LDA #SSQLO/256
+        STA PSLO+1
+        LDA #SSQHI/256
+        STA PSHI+1
+        LDA #DSQLO/256
+        STA PDLO+1
+        LDA #DSQHI/256
+        STA PDHI+1
+
+
+With that done, we can multiply two bytes by putting one in the
+accumulator and the other in the Y register, and calling this
+routine:
+
+
+STA PSLO     ;Index into sum table by A
+        STA PSHI
+        EOR #$FF
+        STA PDLO     ;Index into diff table by -A-1
+        STA PDHI
+        LDA (PSLO),Y ;Get (a+y)^2/4 (lo byte)
+        SEC
+        SBC (PDLO),Y ;Subtract (-a+y)^2/4 (lo byte)
+        TAX          ;Save it
+        LDA (PSHI),Y ;Get (a+y)^2/4 (hi byte)
+        SBC (PDHI),Y ;Subtract (-a+y)^2/4 (hi byte)
+
+
+This leaves the product in the accumulator (high byte) and the X
+register (low byte).  Worst-case time (all indexing crosses a page
+boundary): 38 cycles.
+
+
+The tables necessary to make this work are too long to show here, so
+I've provided them in a separate text file.
+Remember, the tables have to be page-aligned, or the above code won't
+work.
+
+
+(The above routine is based on some code I found on a
+Commodore-64-related web page, which, unfortunately, I haven't been able
+locate again.  The method doesn't seem to have been widely known among
+Apple II programmers.)
+
+
+But what about negative numbers?
+----------------------------------------
+
+
+Up to this point, all the code presented in this article has been
+designed to work with unsigned (positive) numbers.  The simple
+multiply-by-constant routines will also work with negative numbers,
+but none of the others will.  Generally, if you see a LSR
+or ROR instruction in one of the above routines, it will
+give wrong results for negative numbers.
+
+
+The problem is that the 6502's LSR and ROR
+instructions are not sign-preserving.  They could be replaced by calls
+to subroutines that perform the shift in a sign-preserving manner,
+but that's probably not the best way to solve the problem.
+
+
+The usual way to multiply signed numbers on the 6502 is to compute the
+sign of the result first, then make both numbers positive, multiply
+them, and apply the proper sign to the result.
+
+
+Computing the sign of the result is very easy:  If the two original
+numbers have the same sign, the result is positive, and if they have
+different signs, the result is negative.  Assuming the usual
+two's-complement representation of negative numbers, the sign of the
+result can be found by EORing the high bytes of the two
+numbers, which leaves the sign of the result in the high bit of the
+accumulator and in the N flag.
+
+
+To make a number positive, first examine its high bit.  If the high
+bit is 0, no action is necessary, otherwise the number will have to
+negated.  The best way to do this depends on where the number is stored
+- if it's in the accumulator, the quickest way is this:
+
+
+EOR #$FF
+        CLC
+        ADC #1
+
+
+If the number to be negated is in a memory location, the quickest way
+to negate it is to subtract it from 0.  For example, to negate a
+two-byte number:
+
+
+LDA #0
+        SEC
+        SBC NUM
+        STA NUM
+        LDA #0
+        SBC NUM+1
+        STA NUM+1
+
+
+Putting it all together, here's a routine that multiplies two signed
+one-byte numbers, using the one-byte multiply routine from above:
+
+
+LDA NUM1     ;Compute sign of result
+        EOR NUM2
+        PHP          ;Save it on the stack
+        LDA NUM1     ;Is NUM1 negative?
+        BPL T1
+        EOR #$FF     ;If so, make it positive
+        CLC
+        ADC #1
+        STA NUM1
+T1      LDA NUM2     ;Is NUM2 negative?
+        BPL T2
+        EOR #$FF     ;If so, make it positive
+        CLC
+        ADC #1
+        STA NUM2
+T2      JSR MUL1BYTE ;Do the unsigned multiplication
+        PLP          ;Get sign of result
+        BPL T3
+        LDA #0       ;If negative, negate result
+        SEC
+        SBC RESULT
+        STA RESULT
+        LDA #0
+        SBC RESULT+1
+        STA RESULT+1
+T3      ...
+
+
+Doing signed division is a bit trickier.  The trick is to preserve the
+following relation:
+
+
+dividend = divisor * quotient + remainder
+
+
+In the unsigned case there's only one way to arrange this:  The quotient
+is always less than or equal to the true mathematical quotient (which may
+have a fractional part), and the remainder is always positive.
+
+
+In the signed case, the ability to have signed remainders makes the issue
+murkier.  There are two conventions in common use:
+
+
+  * Floored division:  If the true mathematical quotient has a
+    fractional part, the same choices are made as in the unsigned case:
+    the quotient is always less than (more negative) or equal to the
+    mathematical quotient, and the remainder is always positive.
+
+  * Toward-zero division:  If the true mathematical quotient
+    has a fractional part, the fractional part is truncated (i.e. the
+    quotient is rounded toward zero), and the remainder has the sign of the
+    dividend.
+
+
+Signed division is implemented with a wrapper around an unsigned
+routine, as with signed multiplication, but the wrapper varies depending
+on which convention you choose.  In either case, first compute the sign
+of the quotient the same way you would compute the sign of the result of
+a multiplication, and then make both numbers positive, and call the
+unsigned division routine.  What happens next depends on which
+convention you choose.
+
+
+  * Floored division:  If the quotient should be negative,
+    negate it.  Leave the remainder unchanged.
+
+  * Toward-zero division:  If the quotient should be negative,
+    negate it, and then add one to it.  If the quotient should be negative
+    and the original dividend was negative, negate the
+    remainder.
+
+
+The code is analogous to the signed multiplication example above.
+
+
+Original:  August 31, 2005
+
+Modified: June 2, 2016
+
+Modified: July 4, 2019:  Added note on division; expanded the NEED for SPEED
+section
+
+Modified: October 13, 2020:  Fixed typo in signed multiply routine (thanks
+to David Plass for noticing it)
