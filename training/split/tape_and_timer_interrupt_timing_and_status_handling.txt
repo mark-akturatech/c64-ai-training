@@ -1,0 +1,56 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Interrupt-time handling for tape/serial I/O timing and status. Covers decrementing the EOI flag, parity-count adjustments (LSR/ ROR on $D7/$BF), setting the timing maximum byte (LDX #$DA; JSR $F8E2), restoring registers/exit (JMP $FEBC), reading cassette block synchronization number ($96) and EOI checks, shifting and computing tape timing constants (LSR/SEC/SBC/ADC/ASL/TAX; JSR $F8E2), incrementing $9C, enabling/disabling Timer A interrupt via VIA ICR ($DC0D), saving parity/receiver-bit-count flags into $BD/$B6/$A8, and branching to the next stage that stores characters.
+
+.,F9FA 85 9B    STA $9B         
+.,F9FC A5 B4    LDA $B4         
+.,F9FE F0 D2    BEQ $F9D2       
+.,FA00 C6 A3    DEC $A3         decrement EOI flag byte
+.,FA02 30 C5    BMI $F9C9       
+.,FA04 46 D7    LSR $D7         
+.,FA06 66 BF    ROR $BF         parity count
+.,FA08 A2 DA    LDX #$DA        set timimg max byte
+.,FA0A 20 E2 F8 JSR $F8E2       set timing
+.,FA0D 4C BC FE JMP $FEBC       restore registers and exit interrupt
+.,FA10 A5 96    LDA $96         get cassette block synchronization number
+.,FA12 F0 04    BEQ $FA18       
+.,FA14 A5 B4    LDA $B4         
+.,FA16 F0 07    BEQ $FA1F       
+.,FA18 A5 A3    LDA $A3         get EOI flag byte
+.,FA1A 30 03    BMI $FA1F       
+.,FA1C 4C 97 F9 JMP $F997       
+.,FA1F 46 B1    LSR $B1         shift tape timing constant max byte
+.,FA21 A9 93    LDA #$93        
+.,FA23 38       SEC             
+.,FA24 E5 B1    SBC $B1         subtract tape timing constant max byte
+.,FA26 65 B0    ADC $B0         add tape timing constant min byte
+.,FA28 0A       ASL             
+.,FA29 AA       TAX             copy timimg high byte
+.,FA2A 20 E2 F8 JSR $F8E2       set timing
+.,FA2D E6 9C    INC $9C         
+.,FA2F A5 B4    LDA $B4         
+.,FA31 D0 11    BNE $FA44       
+.,FA33 A5 96    LDA $96         get cassette block synchronization number
+.,FA35 F0 26    BEQ $FA5D       
+.,FA37 85 A8    STA $A8         save receiver bit count in
+.,FA39 A9 00    LDA #$00        clear A
+.,FA3B 85 96    STA $96         clear cassette block synchronization number
+.,FA3D A9 81    LDA #$81        enable timer A interrupt
+.,FA3F 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FA42 85 B4    STA $B4         
+.,FA44 A5 96    LDA $96         get cassette block synchronization number
+.,FA46 85 B5    STA $B5         
+.,FA48 F0 09    BEQ $FA53       
+.,FA4A A9 00    LDA #$00        
+.,FA4C 85 B4    STA $B4         
+.,FA4E A9 01    LDA #$01        disable timer A interrupt
+.,FA50 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FA53 A5 BF    LDA $BF         parity count
+.,FA55 85 BD    STA $BD         save RS232 parity byte
+.,FA57 A5 A8    LDA $A8         get receiver bit count in
+.,FA59 05 A9    ORA $A9         OR with start bit check flag
+.,FA5B 85 B6    STA $B6         
+.,FA5D 4C BC FE JMP $FEBC       restore registers and exit interrupt
+
+
+---
+Additional information can be found by searching:
+- "store_tape_character_and_buffer_handling" which expands on main routine that stores decoded tape characters, handles copies/counts, and writes/verifies buffer data

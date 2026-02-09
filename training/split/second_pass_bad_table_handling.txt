@@ -1,0 +1,33 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Logic for handling the bad-location table and preparing second-pass retries: iterate and check PTR1 (number of bad entries) against max, store bad SAL/SAH into BAD table for later re-reads, update PTR1 pointer, and branch to next actions. This section also checks, during second pass, whether the current location matches the next BAD entry and advances PTR2 when a match is found.
+
+                                ; CHECK BAD TABLE FOR RE-TRY (SECOND PASS)
+.,FB08 A6 9F    LDX $9F         RD58   LDX PTR2        ;HAVE WE DONE ALL IN THE TABLE?...
+.,FB0A E4 9E    CPX $9E         CPX    PTR1
+.,FB0C F0 35    BEQ $FB43       BEQ    RD90            ;...YES
+.,FB0E A5 AC    LDA $AC         LDA    SAL             ;SEE IF THIS IS NEXT IN THE TABLE...
+.,FB10 DD 00 01 CMP $0100,X     CMP    BAD,X
+.,FB13 D0 2E    BNE $FB43       BNE    RD90            ;...NO
+.,FB15 A5 AD    LDA $AD         LDA    SAH
+.,FB17 DD 01 01 CMP $0101,X     CMP    BAD+1,X
+.,FB1A D0 27    BNE $FB43       BNE    RD90            ;...NO
+.,FB1C E6 9F    INC $9F         INC    PTR2            ;WE FOUND NEXT ONE, SO ADVANCE POINTER
+.,FB1E E6 9F    INC $9F         INC    PTR2
+.,FB20 A5 93    LDA $93         LDA    VERCK           ;DOING A LOAD OR VERIFY?...
+.,FB22 F0 0B    BEQ $FB2F       BEQ    RD52            ;...LOADING
+.,FB24 A5 BD    LDA $BD         LDA    OCHAR           ;...VERIFYING, SO CHECK
+.,FB26 A0 00    LDY #$00        LDY    #0
+.,FB28 D1 AC    CMP ($AC),Y     CMP    (SAL)Y
+.,FB2A F0 17    BEQ $FB43       BEQ    RD90            ;...OKAY
+.,FB2C C8       INY             INY                    ;MAKE .Y= 1
+.,FB2D 84 B6    STY $B6         STY    PRP             ;FLAG IT AS AN ERROR
+.,FB2F A5 B6    LDA $B6         RD52   LDA PRP         ;A SECOND PASS ERROR?...
+.,FB31 F0 07    BEQ $FB3A       BEQ    RD59            ;...NO
+                                ;SECOND PASS ERR
+.,FB33 A9 10    LDA #$10        RD55   LDA #SPERR
+.,FB35 20 1C FE JSR $FE1C       JSR    UDST
+.,FB38 D0 09    BNE $FB43       BNE    RD90            ;JMP
+
+---
+Additional information can be found by searching:
+- "pass_checks_and_verify_store_prep" which expands on Bad locations are populated here after verify failures or other PRP indications
+- "store_or_verify_and_address_increment" which expands on When verifying/loading during second pass, matching BAD entries will trigger re-store/verification flow

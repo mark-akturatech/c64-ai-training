@@ -1,0 +1,36 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Typical SID usage sequence: set overall volume (Volume register), set 16-bit frequency (two bytes), set ADSR via Attack/Decay and Sustain/Release registers, select waveform & gate via Control register to start note; keep waveform bit set when gating off to allow Release; note that most SID registers are write-only.
+
+
+                          Often the first step is to select an overall volume level using the
+                          Volume Register.  Then, the desired frequency or pitch of the note is
+                          chosen by writing to each of the two bytes which make up the 16-bit
+                          Frequency Register.
+
+                          An ADSR envelope setting must be chosen by writing values to the
+                          Attack/ Decay and Sustain/Release Register.  These determine the rate
+                          of the rise and fall of the volume of the note from zero volume to
+                          peak volume and back again.  These rates have a great influence on the
+                          character of the sound.
+
+                          Finally, the waveform must be selected, and the note started (or the
+                          oscillator gated, as we say).  This is done by writing certain bits to
+                          the Control Register.  The waveform control lets you select one of
+                          four different waveforms, each of which has varying harmonic content
+                          that affects the tone quality of the sound.  By writing a 1 to the
+                          gate bit, you start the Attack/ Delay/Sustain cycle.  After rising to a
+                          peak and declining to the Sustain volume, the volume will continue at
+                          the same level until you write a 0 to the gate bit.  Then, the Release
+                          cycle will start.  Make sure that you keep the same waveform bit set
+                          to 1 while you write the 0 to the gate bit, so that the Release cycle
+                          starts.  Otherwise, the sound will stop entirely, as it also will if
+                          the Volume Register or the Frequency Register is set to 0.
+
+                          It should be noted that except for the last four SID chip registers,
+                          these addresses are write-only.  That means that their values cannot
+                          be determined by PEEKing these locations.
+
+
+---
+Additional information can be found by searching:
+- "d418_sigvol_volume_and_filter_select" which expands on Overall volume and filter select ($D418)
+- "voice1_frequency_and_control" which expands on Voice 1 frequency and VCREG1 details

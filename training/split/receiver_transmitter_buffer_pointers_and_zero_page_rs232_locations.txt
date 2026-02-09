@@ -1,0 +1,29 @@
+# COMMODORE 64 - Documentation of the KERNAL-managed receiver/transmitter buffer base pointers and zero-page temporaries used by the RS-232 system interface. Covers: the two-byte base pointers $00F7 (REBUF) and $00F9 (ROBUF), how OPEN sets them and CLOSE deallocates them (by zeroing the high-order bytes $00F8/$00FA), warning about manual allocation and top-of-memory pointer correctness. Also lists zero-page locations $00A7-$00B6 used locally by the RS-232 routines: INBIT, BITCI, RINONE, RIDATA, RIPRTY, BITTS, NXTBIT, RODATA and notes that these are internal temporaries for the system routines and not directly usable by BASIC/KERNAL-level programmers.
+
+                                                   INPUT/OUTPUT GUIDE   357
+~
+
+
+  ZERO-PAGE MEMORY LOCATIONS AND USAGE FOR
+  RS-232 SYSTEM INTERFACE
+
+    $00A7-INBIT-Receiver input bit temp storage.
+    $00A8-BITCI-Receiver bit count in.
+    $00A9-RINONE-Receiver flag Start bit check.
+    $00AA-RIDATA-Receiver byte buffer/assembly location.
+    $00AB-RIPRTY-Receiver parity bit storage.
+    $00B4-BITTS-Transmitter bit count out.
+    $00B5-NXTBIT-Transmitter next bit to be sent.
+    $00B6-RODATA-Transmitter byte buffer/disassembly location.
+
+
+    All the above zero-page locations are used locally and are only given
+  as a guide to understand the associated routines. These cannot be used
+  directly by the BASIC or KERNAL level programmer to do RS-232 type
+  things. The system RS-232 routines must be used.
+
+---
+Additional information can be found by searching:
+- "rs232_simple_bidi_basic_echo_program" which expands on Programs that make use of the OPEN/CLOSE behavior described here
+- "rs232_true_ascii_send_receive_basic" which expands on Example BASIC program that depends on proper buffer allocation
+- "nonzero_page_rs232_memory_locations_and_fifo_status" which expands on Nonzero-page RS-232 storage complements the zero-page temporaries described here

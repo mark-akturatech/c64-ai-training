@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Shift FAC1 right A times (byte-wise): copy shift count into Y, isolate FAC1 sign bit, shift mantissa1 right while OR'ing the sign into its top bit, store mantissa1, then call the variable-shift routine to perform Y right-shifts on the full mantissa and clear overflow when done.
+
+                                *** shift FAC1 A times right
+.,BCBB A8       TAY             copy shift count
+.,BCBC A5 66    LDA $66         get FAC1 sign (b7)
+.,BCBE 29 80    AND #$80        mask sign bit only (x000 0000)
+.,BCC0 46 62    LSR $62         shift FAC1 mantissa 1
+.,BCC2 05 62    ORA $62         OR sign in b7 FAC1 mantissa 1
+.,BCC4 85 62    STA $62         save FAC1 mantissa 1
+.,BCC6 20 B0 B9 JSR $B9B0       shift FAC1 Y times right
+.,BCC9 84 68    STY $68         clear FAC1 overflow byte
+.,BCCB 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "convert_fac1_floating_to_fixed" which expands on invokes this routine to align fixed integer conversion
+- "int_fac1_truncate_fractional" which expands on INT() uses shifting as part of truncation process

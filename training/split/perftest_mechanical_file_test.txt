@@ -1,0 +1,23 @@
+# ********* - Mechanical/file-level drive test: prints 'drive pass' and starts 'mechanical test'; sets tt, opens a sequential file for writing on the drive (OPEN 2,8,2,"0:test file,s,w"), calls the I/O status routine for open (GOSUB 1840), invokes the write-data routine (ch=2; GOSUB 1930), closes via status messages (GOSUB 1840), reopens for reading (OPEN ... "s,r"), calls the read-data routine (GOSUB 1990), then issues a scratch file command (PRINT#1,"s0:test file") and reports the scratch with GOSUB 1840.
+
+ 1350 :
+ 1360 :
+ 1370 print "{down}drive pass"
+ 1380 print "       mechanical test{down}"
+ 1390 tt=21
+ 1400 open 2,8,2,"0:test file,s,w"
+ 1410 cc$="open write file":gosub 1840
+ 1420 ch=2:cc$="write data":gosub 1930
+ 1430 cc$="close "+cc$:gosub 1840
+ 1440 open 2,8,2,"0:test file,s,r"
+ 1450 cc$="open read file":gosub 1840
+ 1460 ch=2:gosub 1990
+ 1470 print#1,"s0:test file"
+ 1480 cc$="scratch file{down}":tt=1:gosub 1840
+
+---
+Additional information can be found by searching:
+- "perftest_io_response_handler" which expands on used to display and evaluate device responses during file open/close
+- "perftest_write_data_routine" which expands on actual loop that writes numbered data lines to the file (GOSUB 1930)
+- "perftest_read_data_routine" which expands on actual loop that reads back and checks data (GOSUB 1990)
+- "perftest_track_write_read_test" which expands on the later track-level performance test that follows file tests

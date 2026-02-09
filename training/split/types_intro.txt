@@ -1,0 +1,29 @@
+# NMOS 6510 - Classification of unintended opcode types: combinations of two operations with same addressing mode (e.g., SLO = ASL + ORA, RLA = ROL + AND, SRE = LSR + EOR, RRA = ROR + ADC, SAX = STA + STX, LAX = LDA + LDX, DCP = DEC + CMP, ISC = INC + SBC), combinations of immediate and implied commands (ANE, LAX #imm, ANC, ALR, ARR, SBX), and special STA/STX/STY combos (SHA/SHX/SHY) and TAS/LAS behavior.
+
+SRE {addr} LSR {addr} + EOR {addr}
+RRA {addr} ROR {addr} + ADC {addr}
+SAX {addr} STA {addr} + STX {addr}
+
+store A & X into {addr}
+
+LAX {addr} LDA {addr} + LDX {addr}
+DCP {addr} DEC {addr} + CMP {addr}
+ISC {addr} INC {addr} + SBC {addr}
+
+Combinations of an immediate and an implied command
+Opcode
+
+Function
+
+ANE #{imm} TXA + AND #{imm}
+LAX #{imm} LDA #{imm} + TAX
+ANC #{imm} AND #{imm} + (ASL)
+ANC #{imm} AND #{imm} + (ROL)
+ALR #{imm} AND #{imm} + LSR
+ARR #{imm} AND #{imm} + ROR
+SBX #{imm} CMP #{imm} + DEX
+
+
+---
+Additional information can be found by searching:
+- "unintended_opcodes_overview" which expands on summary table of opcodes by type

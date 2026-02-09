@@ -1,0 +1,32 @@
+# MACHINE - How to place the HELLO data into memory using .M 034A 034F and replacing bytes (48 45 4C 4C 4F 0D), running the program (SYS 828) to print HELLO, and sample BASIC loop to call the machine-language routine multiple times.
+
+We may now put the characters for HELLO into memory.  These are data, not
+instructions, so we must not try to assemble them.  Instead, we change memory
+in the usual way, by displaying and then typing over.  We give the command .M
+034A 034F, and type over the display to show
+
+  .:034A  48 45 4C 4C 4F 0D xx xx
+
+                                                                         :34:
+
+By a lucky coincidence, this data fits exactly behind our program.
+
+Everything should be ready now.  Disassemble the program at $033C and check
+it.  You may note that the data at $034A doesn't disassemble too well, but
+that's to be expected; these bytes are not instructions and cannot be
+decoded.
+
+When all looks well, return to BASIC (with .X) and try SYS 828.  The computer
+should say HELLO.
+
+Once again, set up a BASIC loop program:
+
+  100 FOR J=1 TO 3
+  110 SYS 828
+  120 NEXT J
+
+
+---
+Additional information can be found by searching:
+- "loop_implementation_inx_cpx_bne_full_code" which expands on the loop expects the character data at $034A-$034F
+- "save_cassette_disk_pointer_issues" which expands on issues with saving programs stored in cassette buffer area

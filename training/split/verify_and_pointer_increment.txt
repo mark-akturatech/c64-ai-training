@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Performs buffer-compare/verify and pointer advancement. Uses $9F/$9E indexes to compare new data against existing buffer contents for verify operations, increments counters ($9F) for saved bytes, inspects the load/verify flag ($93) to decide whether to store the RS232 parity byte ($BD) into the buffer (STA ($AC),Y) or to skip. Calls the routine to increment the read/write pointer (JSR $FCDB) and branches to the common exit ($FEBC) when appropriate.
+
+.,FB08 A6 9F    LDX $9F         
+.,FB0A E4 9E    CPX $9E         
+.,FB0C F0 35    BEQ $FB43       
+.,FB0E A5 AC    LDA $AC         
+.,FB10 DD 00 01 CMP $0100,X     
+.,FB13 D0 2E    BNE $FB43       
+.,FB15 A5 AD    LDA $AD         
+.,FB17 DD 01 01 CMP $0101,X     
+.,FB1A D0 27    BNE $FB43       
+.,FB1C E6 9F    INC $9F         
+.,FB1E E6 9F    INC $9F         
+.,FB20 A5 93    LDA $93         get load/verify flag
+.,FB22 F0 0B    BEQ $FB2F       if load ??
+.,FB24 A5 BD    LDA $BD         get RS232 parity byte
+.,FB26 A0 00    LDY #$00        
+.,FB28 D1 AC    CMP ($AC),Y     
+.,FB2A F0 17    BEQ $FB43       
+.,FB2C C8       INY             
+.,FB2D 84 B6    STY $B6         
+.,FB2F A5 B6    LDA $B6         
+.,FB31 F0 07    BEQ $FB3A       
+.,FB33 A9 10    LDA #$10        
+.,FB35 20 1C FE JSR $FE1C       OR into serial status byte
+.,FB38 D0 09    BNE $FB43       
+.,FB3A A5 93    LDA $93         get load/verify flag
+.,FB3C D0 05    BNE $FB43       if verify go ??
+.,FB3E A8       TAY             
+.,FB3F A5 BD    LDA $BD         get RS232 parity byte
+.,FB41 91 AC    STA ($AC),Y     
+.,FB43 20 DB FC JSR $FCDB       increment read/write pointer
+.,FB46 D0 43    BNE $FB8B       restore registers and exit interrupt, branch always
+
+---
+Additional information can be found by searching:
+- "buffer_copy_and_load_store" which expands on This continues after copying fetched bytes into buffer memory and handles verify vs. load actions and pointer updates
+- "interrupt_restore_and_checksum_validation" which expands on Common exit and register-restore target after pointer increment or error handling

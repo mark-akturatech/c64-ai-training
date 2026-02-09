@@ -1,0 +1,100 @@
+# MACHINE - Project: build a simple addition program using the numeric-input subroutine. Machine code placed at $0352: calls subroutine to get digits, stores first digit at $03C0, prints '+', uses TAX to save A in X, prints '=', retrieves back, CLC then ADC $03C0, ORA #$30 to convert to ASCII, JSR $FFD2 to print result, print CR ($0D), and RTS. Notes on using STA $03C0, TAX/TXA, and ASCII conversion.
+
+
+                                                                         :66:
+
+The Project
+-----------
+
+Here is our mission:  using the above subroutine, we wish to build a simple
+addition program.  Here's how we want it to work.  The user will touch a
+numeric key, say "3".  Immediately, "3+" will appear on the screen.  Now the
+user will touch another key, say "4", and the program will complete the
+addition so that the screen shows "3+4=7'.  We will assume that the total is
+in the range 0 to 9 so that we don't have to worry about printing a two-digit
+answer--don't try 5+5 or you'll get a wrong answer.
+
+Here we go.  We must start our coding at address $0352 so as not to disturb
+our subroutine.  We'll need to give SYS 850 to make this one go.
+
+  .A 0352  JSR $033C
+
+We call our prewritten subroutine, which waits for a numeric key, echoes it
+to the screen, and converts the value to binary in the A register.
+
+Our next action is to print the plus sign.  We know how to do this, once we
+look up the ASCII code for this character.  Appendix D tells us that it's
+$2B, so we'll need to LDA $#2B and JSR $FFD2.  But wait a minute!  Our binary
+value is in the A register, and we don't want to lose it.  Let's store the
+value somewhere:
+
+  .A 0355  STA $03C0
+  .A 0358  LDA #$2B
+  .A 035A  JSR $FFD2
+  .A 035D  JSR $033C
+
+We picked $03C0, since nobody seems to be using it, and put the binary number
+safely away there.  Now we print the plus sign, and go back to ask for
+another digit.
+
+When the subroutine returns, it has a new binary value in the A register; the
+digit has been neatly printed on the screen behind the plus sign.  Now we
+need to print the equal sign.  But again, wait!  We must put our binary away
+first.
+
+We could place the value into memory--perhaps $03C1 would do--but there's
+another way.  We don't seem to be using X or Y for anything at the moment, so
+let's slip the value across into one or the other.  We have four "transfer"
+commands that will move information between A and either index register:
+
+                                                                         :67:
+
+  TAX--Transfer A to X      TAY--Transfer A to Y
+  TXA--Transfer X to A      TYA--Transfer Y to A
+
+Like the load series of commands, these instructions make a copy of the
+information.  Thus, after TAX, whatever information was in A is now also in
+X.  Again like the load commands, the Z and N status flags are affected by
+the information transferred.  It doesn't matter whether we use X or Y:  Let's
+pick X:
+
+  .A 0360  TAX
+  .A 0361  LDA #$3D
+  .A 0363  JSR $FFD2
+
+We have put our second value into X and printed the equal sign ($3D).  Now we
+can bring the value back and do our addition.  The next two instructions can
+come in any order:
+
+  .A 0366  TXA
+  .A 0367  CLC
+  .A 0368  ADC $03C0
+
+We have our total in the A register.  It's almost ready to print, except for
+one thing:  it's in binary.  We want it in ASCII.
+
+Assuming the total is in the range 0 to 9, we can convert it directly to a
+single ASCII digit with an ORA operation.  (If it's greater than nine, you're
+cheating and the answer won't make sense.)
+
+  .A 036B  ORA #$30
+  .A 036D  JSR $FFD2
+
+Are you basically a neat person?  Then you'll want to print a RETURN to start
+a new line:
+
+  .A 0370  LDA #$0D
+  .A 0372  JSR $FFD2
+  .A 0375  RTS
+
+Check it with a disassembly.  If you disassemble starting with the
+subroutine, you'll need more than one screen full of instructions to see it
+all.  No problem.  When the cursor flashes at the bottom of the screen, press
+the letter D and RETURN and you'll see a continuation of the listing.
+
+Back to BASIC.  This time we do not give SYS 828--that's the subroutine and
+
+---
+Additional information can be found by searching:
+- "subroutines_intro_and_example" which expands on uses the numeric-input subroutine defined earlier
+- "immediate_mode" which expands on use of immediate ASCII constants like #$2B and #$3D

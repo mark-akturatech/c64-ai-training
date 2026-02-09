@@ -1,0 +1,11 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Prepares and sends the parity bit after all data bits of a byte have been transmitted. Toggles the parity flip stored in $9B (LDA $9B; EOR #$01) and places the result into the tape write byte register ($BD) to be transmitted on the next bit cycles, then exits (JMP $FEBC).
+
+                                set parity as next bit and exit interrupt
+.,FC4E A5 9B    LDA $9B         get parity bit
+.,FC50 49 01    EOR #$01        toggle it
+.,FC52 85 BD    STA $BD         save as tape write byte
+.,FC54 4C BC FE JMP $FEBC       restore registers and exit interrupt
+
+---
+Additional information can be found by searching:
+- "tape_write_shift_count_and_new_byte_setup" which expands on this is the next step when a byte's data bits are exhausted (parity bit follows)

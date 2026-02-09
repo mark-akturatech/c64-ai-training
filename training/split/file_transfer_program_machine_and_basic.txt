@@ -1,0 +1,122 @@
+# MACHINE - File transfer example: BASIC front-end prompts for devices and opens logical files; machine code (example at $0A00 on C64) switches input (LDX #1; JSR $FFC6), JSR $FFE4 to get char, then saves ST onto stack (LDX $90; PHP) and pushes A (PHA); JSR $FFCC; LDX #$02; JSR $FFC9 to set output; PLA to restore char; JSR $FFD2 to send; JSR $FFCC to disconnect; PLP to retrieve ST flags and branch accordingly (BEQ back to input loop). Important: don't switch input and output simultaneously; manage ST checks carefully. Warns to adjust start-of-variables pointer ($002D/$002E) to avoid overwriting machine code.
+
+
+
+A File Transfer Program
+-----------------------
+
+Let's write a program to transfer a sequential file from any common device to
+any other.  BASIC will sort out which files to handle; once the files are
+opened, machine language will take from and deliver to the appropriate
+logical devices as desired.
+
+It's not a good idea to switch input and output at the same time--in other
+words, to call both $FFC6 and $FFC9 without canceling either via $FFCC.  The
+kernal doesn't mind, but it confuses the peripheral devices, which expect to
+have exclusive occupancy of the data bus to the computer..  So we'll follow
+the pattern:  switching on, sending or receiving, switching off, and then
+going to the other device.
+
+                                                                        :139:
+
+One more thing.  ST tells us the status of the last device handled.
+Consider:  if we input a character, then output a character, and then check
+the value of ST, we have a problem.  ST will not tell us about the input,
+since the last device handled was output; thus, we won't know if we are at
+the end of the file or not.  In machine language, as in BASIC, we must code
+carefully to solve this problem.
+
+Here comes BASIC:
+
+  100 PRINT "FILE TRANSFER"
+  110 INPUT "INPUT FROM (DISK,TAPE)";A$
+  120 IF LEFT$(A$,1)="T" THEN OPEN 1:GOTO 160
+  130 IF LEFT$(A$,1)<>"D" GOTO 110
+  140 INPUT "DISK FILE NAME";N$
+  150 OPEN 1,8,3,N$
+  160 INPUT "TO (DISK,TAPE,SCREEN)";B$
+  170 IF LEFT$(B$,1)="S" THEN OPEN 2,3:GOTO240
+  180 IF LEFT$(B$,1)="D" GOTO 210
+  190 IF LEFT$(B$,1)<>"T" GOTO 160
+  200 IF LEFT$(A$,1)="T" GOTO 160
+  210 INPUT "OUTPUT FILE NAME";F$
+  220 IF LEFT$(B$,1)="D" THEN OPEN 2,8,4,"0:"+N$+",S,W"
+  230 IF LEFT$(B$,1)="T" THEN OPEN 2,1,1,N$
+  240 SYS xxxx
+  250 CLOSE 2:CLOSE 1
+
+We'll work this out for the Commodore 64 computer; you can adjust it for
+PET/CBM or VIC-20.  The above BASIC program should not take up more than 511
+bytes; on a standard Commodore 64, that means that we'll have clear space for
+our machine language program starting at $0A00 (decimal 2560).  We'll move
+the start-of-variables along, of course, so that our machine language program
+won't be disturbed by them.
+
+When we first type line 240, we won't know what SYS address to use.  After
+the program is typed in (with SYS xxxx at line 240), we can easily confirm
+that the machine language can start at $0A00 by checking the start-of-
+variables pointer.  We go back and change 240 to SYS 2560; now we're ready to
+put in the machine language code:
+
+  .A 0A00  LDX #$01
+  .A 0A02  JSR $FFC6
+  .A 0A05  JSR $FFE4
+
+                                                                        :140:
+
+By this time, we have a character in the A register from the input source.
+We also have a value in ST, telling us if this is the last character.  Let's
+examine the ST problem:  we must check its value now, since ST will be
+changed after we do the output.  But we don't want to take any action based
+on ST yet; we must first send the character we have received.  Let's check
+ST, and put the results of the check onto the stack:
+
+  .A 0A08  LDX $90
+  .A 0A0A  PHP
+
+If ST is zero, the Z flag will be set; we'll preserve this flag along with
+the others until we call it back from the stack.  If you are adapting this
+program for the PET/CBM, don't forget that ST is at address $96 for your
+machine.
+
+The next thing we want to do is to disconnect the input by calling $FFCC; but
+this will destroy the A register.  How can we preserve this value?  By
+transferring to another register, or by pushing A to the stack.  Let's do
+that.  There will now be two things on the stack.
+
+  .A 0A0B  PHA
+
+We are now free to disconnect from the input channel and connect to the
+output.  Here we go:
+
+  .A 0A0C  JSR $FFCC
+  .A 0A0F  LDX #$02
+  .A 0A11  JSR $FFC9
+  .A 0A14  PLA
+
+The A register gets back the last thing saved to the stack, and that, of
+course, is our input character.  We're ready to send it to the output device:
+
+  .A 0A15  JSR $FFD2
+  .A 0A18  JSR $FFCC
+
+Now we may pick up on the condition of ST that we stacked away earlier.  Here
+come up the flags that we stored:
+
+  .A 0A1B  PLP
+
+If the Z flag is set, we want to go back and get another character.  If not,
+we are finished and can return to BASIC, allowing BASIC to close the files
+for us:
+
+  .A 0A1C  BEQ $0A00
+  .A 0A1E  RTS
+
+Important:  Before running this program, be sure to move the start-of-
+variables pointer ($002D/$002E) so that it points at address $0A1F;
+otherwise, the BASIC variables will destroy this program.
+
+
+---
+Additional information can be found by searching:
+- "switching_input_chkin_and_clrchn" which expands on Using CHKIN/CHKOUT/CLRCHN in coordinated file transfers

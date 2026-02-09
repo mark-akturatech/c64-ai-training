@@ -1,0 +1,30 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Timer B (TBLO/TBHI) at offsets $06/$07: a 16-bit down-counter operating similarly to Timer A but with additional count sources. Timer B input mode (CRB bits 5-6) selects PHI2, CNT edges, Timer A underflow pulses, or Timer A underflows coincident with CNT positive edge. On underflow Timer B can trigger an interrupt and toggle/pulse PB7. Timer A and B can be cascaded to form a 32-bit timer (Timer B counts Timer A underflows).
+
+-------------------------------------------------------------
+5.5  Timer B (TBLO/TBHI) - Offsets $06/$07
+-------------------------------------------------------------
+
+Timer B is a 16-bit down-counter (low byte at $06, high byte at $07).
+
+Operates identically to Timer A with additional count sources.
+
+Timer B can count:
+  - System clock pulses (PHI2)
+  - Positive edges on CNT pin
+  - Timer A underflow pulses
+  - Timer A underflows coincident with CNT positive edge
+  (Selected by bits 5-6 of CRB)
+
+On underflow, Timer B can:
+  - Trigger an interrupt (if enabled in ICR)
+  - Toggle or pulse bit 7 of Port B (if enabled in CRB)
+
+Timer A and Timer B can be linked (cascaded) to form a 32-bit
+timer by setting Timer B to count Timer A underflows.
+
+
+---
+Additional information can be found by searching:
+- "control_register_b" which expands on CRB bits select Timer B input mode, start, and PB7 output
+- "timer_a_16bit" which expands on Timer A underflows can clock Timer B (cascading)
+- "interrupt_control_register_icr" which expands on Timer underflow can trigger an interrupt flagged in ICR

@@ -1,0 +1,64 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - FAH - Find Any Header: reads tape blocks (JSR RBLK) and scans the cassette buffer for header block types. Recognizes EOT ($05) as end-of-tape (failure), BLF ($01) and PLF ($03) as successful load headers, and BDFH ($04) as Basic data-file header (continues searching). On success returns file-type in X; carry clear on success, carry set on failure. If MSGFLG set, prints a "FOUND" message and outputs the complete file name from the tape buffer via BSOUT. Preserves/restores the verify flag around RBLK and checks for STOP key (A=0 on stop). Also invokes FPATCH if STKEY indicates a key-down on the last row.
+
+                                .LIB   TAPEFILE
+                                ;FAH -- FIND ANY HEADER
+                                ;
+                                ;READS TAPE DEVICE UNTIL ONE OF FOLLOWING
+                                ;BLOCK TYPES FOUND: BDFH--BASIC DATA
+                                ;FILE HEADER, BLF--BASIC LOAD FILE
+                                ;FOR SUCCESS CARRY IS CLEAR ON RETURN.
+                                ;FOR FAILURE CARRY IS SET ON RETURN.
+                                ;IN ADDITION ACCUMULATOR IS 0 IF STOP
+                                ;KEY WAS PRESSED.
+                                ;
+.,F72C A5 93    LDA $93         FAH    LDA VERCK       ;SAVE OLD VERIFY
+.,F72E 48       PHA             PHA
+.,F72F 20 41 F8 JSR $F841       JSR    RBLK            ;READ TAPE BLOCK
+.,F732 68       PLA             PLA
+.,F733 85 93    STA $93         STA    VERCK           ;RESTORE VERIFY FLAG
+.,F735 B0 32    BCS $F769       BCS    FAH40           ;READ TERMINATED
+                                ;
+.,F737 A0 00    LDY #$00        LDY    #0
+.,F739 B1 B2    LDA ($B2),Y     LDA    (TAPE1)Y        ;GET HEADER TYPE
+                                ;
+.,F73B C9 05    CMP #$05        CMP    #EOT            ;CHECK END OF TAPE?
+.,F73D F0 2A    BEQ $F769       BEQ    FAH40           ;YES...FAILURE
+                                ;
+.,F73F C9 01    CMP #$01        CMP    #BLF            ;BASIC LOAD FILE?
+.,F741 F0 08    BEQ $F74B       BEQ    FAH50           ;YES...SUCCESS
+                                ;
+.,F743 C9 03    CMP #$03        CMP    #PLF            ;FIXED LOAD FILE?
+.,F745 F0 04    BEQ $F74B       BEQ    FAH50           ;YES...SUCCESS
+                                ;
+.,F747 C9 04    CMP #$04        CMP    #BDFH           ;BASIC DATA FILE?
+.,F749 D0 E1    BNE $F72C       BNE    FAH             ;NO...KEEP TRYING
+                                ;
+.,F74B AA       TAX             FAH50  TAX             ;RETURN FILE TYPE IN .X
+.,F74C 24 9D    BIT $9D         BIT    MSGFLG          ;PRINTING MESSAGES?
+.,F74E 10 17    BPL $F767       BPL    FAH45           ;NO...
+                                ;
+.,F750 A0 63    LDY #$63        LDY    #MS17-MS1       ;PRINT "FOUND"
+.,F752 20 2F F1 JSR $F12F       JSR    MSG
+                                ;
+                                ;OUTPUT COMPLETE FILE NAME
+                                ;
+.,F755 A0 05    LDY #$05        LDY    #5
+.,F757 B1 B2    LDA ($B2),Y     FAH55  LDA (TAPE1)Y
+.,F759 20 D2 FF JSR $FFD2       JSR    BSOUT
+.,F75C C8       INY             INY
+.,F75D C0 15    CPY #$15        CPY    #21
+.,F75F D0 F6    BNE $F757       BNE    FAH55
+                                ;
+.,F761 A5 A1    LDA $A1         FAH56  LDA STKEY       ;KEY  DOWN ON LAST ROW...
+.,F763 20 E0 E4 JSR $E4E0              JSR FPATCH      ;GOTO PATCH...
+.,F766 EA       NOP                    NOP
+                                ;
+.,F767 18       CLC             FAH45  CLC             ;SUCCESS FLAG
+.,F768 88       DEY             DEY                    ;MAKE NONZERO FOR OKAY RETURN
+                                ;
+.,F769 60       RTS             FAH40  RTS
+
+---
+Additional information can be found by searching:
+- "find_any_header_and_compare_faf" which expands on wrapper that calls FAH and compares the filename
+- "tape_header_write_tapeh" which expands on writes headers to tape (uses similar tape-buffer structures)

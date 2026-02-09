@@ -1,0 +1,30 @@
+# MACHINE - Detailed step-by-step execution trace for the running of the example program: CPU reads opcode at $033C ($AD), recognizes two-byte operand requirement, fetches $033D and $033E ($80,$03) to form effective address $0380, PC advanced, executes LDA reading $0380 into A, and continues with next instruction at $033F—illustrates the multi-fetch nature of instructions with multi-byte operands.
+
+
+Detail:  Program Execution
+--------------------------
+
+When we say .G 033C to start up our program, the microprocessor goes through
+the following steps:
+
+  1.  It asks for the contents of $03cc; it receives $AD, which it recognizes
+      as the op code "load A."  It realizes that it will need a two-byte
+      address to go with this instruction.
+
+  2.  It asks for the contents of $033D, and then $033E.  As it receives the
+      values of $80 and $03 it gathers them into an "instruction address."
+
+  3.  The microprocessor now has the whole instruction.  The PC has moved
+      along to $033F.  The 650x now executes the instruction.  It sends
+      address $0380 to the address bus; when it gets to the contents (perhaps
+      $11), it delivers this to the A register.  The A register now contains
+      $11.
+
+  4.  The 650x is ready to take on the next instruction; the address $033F
+      goes from the PC out to the address bus; and the program continues.
+
+
+---
+Additional information can be found by searching:
+- "instruction_execution_fetch_cycle" which expands on general fetch-execute cycle explained earlier
+- "preparing_and_running_program" which expands on practical context: the example program that was run

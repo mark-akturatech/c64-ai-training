@@ -1,0 +1,72 @@
+# byRiclianll - BASIC program 'WRITE' routine and program termination (lines 810–1090). Updates read/write pointers (RW), 1541 RAM address (RAM), uses POKE to set the 1541 RAM-page, loops over tracks/sectors, calls subroutines (GOSUB 1300/1190), prints progress messages, issues SYS to run machine code, manages job variable (JOB), advances pointers (RW,RAM), closes device (CLOSE 15), prints error summaries and completion messages, POKE to restore I/O flag, CLR, and END.
+
+810  REM  WRITE 
+
+820  IFT(T)=1G0T0S70 
+
+830  RW=RW+(NS+1) 
+
+840  RAM=R AM+ ( 256* ( NS+ 1 ) ) 
+
+850  P0KE252, (RAM/256) 
+
+860  G0T0990 
+
+870  FORS=OTONS 
+
+880   I FPEEK ( RW ) =0G0T0950 
+
+890  G0SUB1300 
+
+900  PRINT"  tHOMEXIDOWN  73  <:RVS3  WRITINGCROF 
+F>   TRACK   "T*"   -  SECTOR  "S* 
+
+
+163 
+
+
+910  SYS4922S 
+
+920  J0B=144 
+
+930  G0SUB1190 
+
+940  IFE<>1THENW=W+1 
+
+950  RW=RW+1 
+
+960  RAM=RAM+256 
+
+970  P0KE252, (RAM/256) 
+
+980  NEXTS 
+
+990  NEXTT 
+
+1000  CLOSE 15 
+
+1010  IFERWO35G0T0210 
+
+1020  PRINT"  <:  HOME  >£  DOWN  2>READ  ERRORS  :  "R 
+
+II  il 
+
+1 030  PR  I  NT  "  <:D0WN>  WR I TE  ERRORS :  "  W  " 
+
+II 
+
+1040  PRINT"  " 
+1050  PR I NT "DONE! " 
+1060  PRINT" 
+
+1070  P0KE56, 160 
+
+1080  CLR 
+
+1090  END 
+
+---
+Additional information can be found by searching:
+- "job_queue_and_channel_io" which expands on job-queue command send/receive used by the write loop (PRINT#15 / GET#15)
+- "format_two_digit_str_and_c000_marker" which expands on STR$ subroutine (formats track/sector strings) called from the write loop
+- "machine_code_data_and_track_skip_table" which expands on machine-code at $C000 executed via SYS from the write loop

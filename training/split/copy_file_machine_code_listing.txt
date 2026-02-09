@@ -1,0 +1,92 @@
+# byRiclianll - Complete machine-language listing used by the COPY BASIC program to emulate LOAD and SAVE. Includes the LOAD routine (open channel via JSR $FFC6, read via JSR $FFE4 and JSR $FFB7, store bytes into buffer at $FB, loop and close with JSR $FFCC) and the SAVE routine (open via JSR $FFC9, write loop using CHROUT JSR $FFD2 reading from (*FD),Y, compare and increment counters in $FB/$FC/$FE, close with JSR $FFCC, RTS). All labels, branches, and loop logic for both transfer directions are present.
+
+190  ; 
+
+200  ;  LOAD 
+
+210  ; 
+
+220  LDX  #*02 
+
+230  JSR  *FFC6  ;  □PEN2,8,2 
+
+240  ; 
+
+250  LOAD  LDY  #*00 
+
+260  READ  JSR  *FFE4         ;  IN 
+
+270  ST A    ($FB) , Y 
+
+280  JSR  *FFB7  ;  READST 
+
+290  AND  #64 
+
+300  BNE  READY 
+
+310  INY 
+
+320  BNE  READ 
+
+330  INC  $FC 
+
+340  JMP  LOAD 
+
+350  ; 
+
+360  READY  STY  $FB 
+
+370  JSR  $FFCC  ;  CL0SE2 
+
+380  RTS 
+
+390  ; 
+
+400   ;  SAVE 
+410  ; 
+
+420  LDX  #$02 
+
+430  JSR  *FFC9  ;  0PEN2,8,2 
+
+440  ; 
+
+450  SAVE  LDY  #*00 
+
+
+171 
+
+
+460  WRITE  LDA  (*FD),Y 
+
+470  JSR  *FFD2  5  OUT 
+
+480  CPY  *FB 
+
+490  BEQ  BREAK 
+
+500  CONT  I NY 
+
+510  BNE  WRITE 
+
+520  INC  *FE 
+
+530  JMP  SAVE 
+
+540  ; 
+
+550  BREAK  LDA  *FE 
+560  CMP  *FC 
+570  BNE  CONT 
+580  ; 
+
+590  STY  *FD 
+
+600  JSR  *FFCC  ;  CL0SE2 
+
+610  RTS 
+
+---
+Additional information can be found by searching:
+- "copy_file_source_annotation_and_conclusion" which expands on brief annotation and concluding remarks about this routine
+- "getting_out_of_trouble_unscratching_file" which expands on subsequent chapter starts (context in the manual following this listing)

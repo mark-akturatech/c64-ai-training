@@ -1,0 +1,29 @@
+# Kick Assembler - Explains exporting assembled symbols to a .sym file using –symbolfile option (java –jar KickAss.jar source1.asm –symbolfile) producing source1.sym with namespace and label declarations (e.g. .namespace source1 { .label clearColor = $2000 }). Shows importing the .sym file to refer to labels from another file via .import source "source1.sym" and using jsr source1.clearColor.
+
+14.2. Basic Upstart Program
+To make the assembled machine code run on a C64 or in an emulator, it's useful to include a little basic program
+that starts your code (for example: 10 sys 4096). The BasicUpstart macro is standard macro that helps you to create
+programs like that. The following program shows how it’s used:
+*= $0801 "Basic Upstart"
+BasicUpstart(start)
+// 10 sys$0810
+
+start:
+
+*= $0810 "Program"
+inc $d020
+inc $d021
+jmp start
+
+TIP: Insert at basic upstart program in the start of your programs and use the –execute option to start Vice. This
+will automatically load and execute your program in Vice after successful assembling.
+There is a second variation of the basic upstart macro that also takes care of setting up memory blocks:
+BasicUpstart2(start)
+start: inc $d020
+inc $d021
+jmp start
+
+// 10 sys$0810
+
+If you want to see the script code for the macros, you can look in the autoinclude.asm file in the KickAss.jar file.
+

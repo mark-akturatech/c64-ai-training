@@ -1,0 +1,91 @@
+# NMOS 6510 - Read-Modify-Write (R-M-W) dummy-write behaviour: R-M-W instructions read the address, perform an unmodified write-back (dummy write of the original value) then write the modified value. Provides per-cycle timing for absolute R-M-W instructions (ASL/DEC/INC/ISC/LSR/ROL/ROR/RRA/SLO/SRE/DCP/RLA etc) and notes that the unmodified original is written back before the modified data.
+
+
+- 88 -
+
+Example: write two values to I/O one cycle apart
+
+The music routine from Fred Gray performs a read and write on IO with:
+LDA #$40
+STA $D404
+INC $D404
+Which will toggle the gate bit of the control register of the SID chip.
+The same idea can be used to create “grey dots” spaced 8 pixels apart:
+INC $D020
+Example: ghostbyte under ROM
+
+When reading a byte from ROM, the CPU reads from the ROM, but when writing to a byte in the
+ROM, the write falls through to the RAM beneath it. So with an RMW instruction you can actually
+write 2 values to a byte in RAM, 1 cycle apart, where none of the two written values are the value
+that was already present. Usually not a useful thing to do, but together with the VIC we could
+exploit this:
+Put the VIC in bank 2 or 3 and enable the KERNAL/BASIC ROM. Then an INC (for example) can
+write to the ghostbyte twice, 1 cycle apart - and the first write doesn't necessarily have to write what
+was already there!
+Unfortunately what you can write at the first dummy cycle is limited to what is in the ROM at the
+chosen ghostbyte address (4 possibilities). What you can write at the 2nd write cycle also depends
+on that value as well as which RMW-instruction you use (so we have 6 possibilities per ghostbyte
+address for the second write-cycle).
+Let's look at which possibilities of pixels we have:
+ROM
+
+First Cycle
+
+Second Cycle
+INC
+
+DEC
+
+ASL
+
+ROL
+
+LSR
+
+ROR
+
+$B9FF = $A0 %10100000
+
+%10100001
+
+%10011111
+
+%01000000
+
+%0100000C
+
+%01010000
+
+%C1010000
+
+$BFFF = $E0 %11100000
+
+%11100001
+
+%11011111
+
+%11000000
+
+%1100000C
+
+%01110000
+
+%C1110000
+
+$F9FF = $D2 %11010010
+
+%11010011
+
+%11010001
+
+%10100100
+
+%1010010C
+
+%01101001
+
+
+---
+Additional information can be found by searching:
+- "ghostbyte_under_rom" which expands on using R-M-W dummy writes to affect ROM/underlying RAM (ghostbyte)
+- "start_reu_transfer_with_rmw" which expands on starting REU transfer via R-M-W dummy write

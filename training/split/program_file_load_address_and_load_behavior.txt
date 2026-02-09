@@ -1,0 +1,50 @@
+# byRiclianll - Explains the load address in bytes 2-3 of a PRG file's first sector. Example: BASIC programs saved from a C64 have $01/$08 indicating load at $0801 (decimal 2049). Discusses the effect of the optional relocation flag in LOAD commands (LOAD "name",8,1 vs LOAD "name",8) and how the presence/absence determines whether the load address is respected or the file is loaded at the default BASIC start.
+
+file.  Technically,  this  is  known  as  a  "forward  pointer."  It  points  ahead  to  the  next  sec- 
+tor in  the  file.  All  Commodore  files  use  this  type  of  pointer. 
+
+The  second  pair  of  bytes  is  the  "load  address"  of  the  file  in  lo-byte/hi-byte  form.  They 
+indicate  where  the  program  is  to  be  loaded  into  memory.  A  BASIC  program  that  was 
+saved  from  a  C64  will  have  a  $01  and  a  $08  in  these  two  locations.  This  indicates  that 
+the  program  is  to  be  loaded  into  memory  starting  at  memory  location  $0801  (remember 
+it  is  in  lo-byte/hi-byte  form).  In  decimal  notation  this  is  memory  location  2049  —  the  start 
+of  BASIC  on  a  C64. 
+
+
+48 
+
+
+Have  you  ever  wondered  about  the  significance  of  the  in  the  command  LOAD 
+"name",8,l?  It  determines  whether  or  not  a  program  is  "relocated"  when  it  is  loaded 
+into  memory.  If  you  do  not  specify  the  the  C64  will  ignore  the  load  address  at 
+the  start  of  the  file  and  load  the  program  starting  at  memory  location  $0801  (2049).  When 
+the  is  present,  the  C64  (or  VIC-20)  will  pay  attention  to  the  load  address  and  load 
+the  program  into  memory  starting  at  the  location  specified  by  bytes  $02  and  $03. 
+
+The  remaining  sectors,  except  the  last  one,  look  like  this: 
+
+
+TRACK 
+
+SECTOR 
+
+THE  NEXT  254  BYTES 
+
+LINK 
+
+LINK 
+
+OF  YOUR  PROGRAM 
+
+Byte  Purpose 
+
+
+0  Track  of  the  next  block  in  this  file 
+
+1  Sector  of  the  next  block  in  this  file 
+
+2-255      The  next  254  bytes  of  the  program 
+
+---
+Additional information can be found by searching:
+- "program_file_storage_introduction_4_5" which expands on first sector layout

@@ -1,0 +1,51 @@
+# MACHINE - Details of the V (overflow / signed arithmetic overflow) flag: affected only by addition/subtraction and meaningful only for signed numbers. Typical uses (including BIT instruction which copies bit 6 into V), branch instructions BVS/BVC, direct clear via CLV, possibility of hardware setting on some chips. Includes a brief diversion explaining 'overflow' for signed vs unsigned and which flag (V vs C) indicates it.
+
+V Flag
+------
+
+As with the other flags, the V (overflow) flag is probably misnamed.  It
+should have been called the SAO (signed arithmetic overflow) flag, since it
+is affected only by addition and subtraction commands, and is meaningful only
+if the numbers concerned are considered to be signed.
+
+The V flag is used only occasionally in typical 650x coding.  Many machine
+language programs don't use signed numbers at all.  The most typical use of
+the V flag is in conjunction with a rather specialized command, BIT (bit
+test).  For this instruction, the V flag signals the condition of bit 6 of
+the memory location being tested.  In this case, V and N work in a similar
+way:  N reflects the high bit, bit 7, and V represents the "next bit down,"
+bit 6.  The BIT command is used primarily for testing input/output ports on
+IA (interface adapter) chips.
+
+If the V flag is set "on," the BVS (branch overflow set) instruction will
+branch to the specified address; otherwise it will be ignored and the next
+instruction in sequence will be executed.  If the V flag is reset "off," the
+BVC (branch overflow clear) instruction will branch.
+
+The V flag may be directly reset by means of the CLV (clear overflow)
+instruction.  Oddly, there is no equivalent instruction to set the flag.
+
+One special feature of the V flag:  on some 650x chips, the V flag can be set
+by hardware.  There is a pin on the chip that can be used so that an external
+logic signal will trigger the V flag.
+
+
+A Brief Diversion:  Overflow
+----------------------------
+
+The term overflow means "the result is too big to fit."  For example, if I
+add 200 to 200, the result is 400...but this won't fit in a single byte.  If
+we have only a single byte to store the result, we say that the addition has
+encountered overflow, and we can't produce a meaningful answer.
+
+If we are using unsigned numbers, the C flag tells us about overflow.  If we
+are using signed numbers, V tells the story.  We'll take this up again in the
+next chapter.
+
+                                                                         :45:
+
+
+---
+Additional information can be found by searching:
+- "n_flag_and_signed_numbers_introduction" which expands on Signed numbers explanation that makes V meaningful
+- "flag_summary_and_status_register_overview" which expands on Summary of flags and branching instructions

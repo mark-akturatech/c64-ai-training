@@ -1,0 +1,40 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Example wrapper to multiply two signed one-byte numbers using an unsigned multiply routine. Steps: compute sign via LDA NUM1; EOR NUM2; PHP to save sign; normalize operands to positive if negative (BPL check then EOR #$FF; CLC; ADC #1; STA back); call JSR MUL1BYTE (unsigned); PLP to restore sign; if negative then negate 2-byte RESULT via subtraction-from-zero sequence. Shows how to adapt unsigned multiply for signed operands.
+
+Putting it all together, here's a routine that multiplies two signed
+one-byte numbers, using the one-byte multiply routine from above:
+
+
+LDA NUM1     ;Compute sign of result
+        EOR NUM2
+        PHP          ;Save it on the stack
+        LDA NUM1     ;Is NUM1 negative?
+        BPL T1
+        EOR #$FF     ;If so, make it positive
+        CLC
+        ADC #1
+        STA NUM1
+T1      LDA NUM2     ;Is NUM2 negative?
+        BPL T2
+        EOR #$FF     ;If so, make it positive
+        CLC
+        ADC #1
+        STA NUM2
+T2      JSR MUL1BYTE ;Do the unsigned multiplication
+        PLP          ;Get sign of result
+        BPL T3
+        LDA #0       ;If negative, negate result
+        SEC
+        SBC RESULT
+        STA RESULT
+        LDA #0
+        SBC RESULT+1
+        STA RESULT+1
+T3      ...
+
+
+
+---
+Additional information can be found by searching:
+- "one_byte_multiplication_routine" which expands on the unsigned multiply routine called (MUL1BYTE)
+- "negation_methods" which expands on negation used for inputs and output
+- "signed_division_conventions_wrapper" which expands on analogous wrapper approach exists for division

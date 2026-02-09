@@ -1,0 +1,27 @@
+# Analyzing C64 tape loaders - Illustrates a sample waveform from the C2N READ pin during CBM file reading and explains that the C64 detects pulse lengths on falling (negative) edges. Shows how a short/medium/short sequence appears and explains why SAVE and LOAD signals are inverted relative to each other (flag, transistor inverter note).
+
+**Sample of pulses coming from C2N READ pin during a CBM file reading:**
+
+<code>
+..      ____        ______      ____
+  |    |    |      |      |    |    |
+  |    |    |      |      |    |    |
+  |____|    |______|      |____|    |..
+</code>
+
+**Since pulse length detection triggers on descending (negative) edges, this sample produces the following sequence of pulses:**
+
+<code>
+   <-352 us-><-  512 us  -><-352 us->
+  |         |             |         |
+  |         |             |         |
+     short       medium      short
+
+Fig 1.1
+</code>
+
+NOTE about the Hardware: a thing to point out is that during a SAVE operation, on the WRITE line of the Datasette port, "pulse length" is intended as the time distance between two consecutive low-high transitions. During a LOAD operation, pulse length is the time distance between two consecutive high-low transitions, since the 6526 READ line triggers on negative edges. In other words, the signal from C2N to C64 is the negative version of the one from C64 to C2N. That's why tape duplication hardware consists in an inverter (with a BJT and 2 resistors used in a so called "common emitter" scheme): the signal from the C2N performing LOAD, intended for being sent to C64, needs being inverted before being sent to the C2N doing the SAVE operation.
+
+---
+Additional information can be found by searching:
+- "data_encoding_pulses" which expands on Pulse types and their durations

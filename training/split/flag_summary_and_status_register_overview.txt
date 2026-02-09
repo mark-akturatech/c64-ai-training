@@ -1,0 +1,81 @@
+# MACHINE - Concise flag summary table (Z, C, N, V) with their meanings, activity level, and corresponding branch instructions. Complete overview of the processor Status Register (SR): bit positions (7..0 = N V - B D I Z C), meanings of each bit including unused bit 5, B (break), D (decimal mode) with SED/CLD cautions, I (interrupt disable) with SEI/CLI, and examples for interpreting SR hex values. Warning about manually editing SR in monitor.
+
+Flag Summary
+------------
+
+A brief table may help review the four testable flags.
+
+
+Flag    Brief                          Activity    Branch taken if:
+Name    Meaning                        Level       Set    Not Set
+------------------------------------------------------------------
+ Z      Zero, equal                    Busy        BEQ    BNE
+ C      Carry, greater/equal           Quiet       BCS    BCC
+ N      Negative, high-bit             Busy        BMI    BPL
+ V      Signed arithmetic overflow     Quiet       BVS    BVC
+
+
+The Status Register
+-------------------
+
+The preceding flags--and three others--may be viewed within the status
+register (SR).  You may recall that the machine language monitor gives an SR
+display.  If you know how to read it, you can see the condition of all flags.
+
+Each flag is a bit within the status register.  Again, it's useful to be able
+to easily translate the hexadecimal display, so as to view the individual
+flags.  Here's a chart of the flags within the status register:
+
+  7 6 5 4 3 2 1 0
+  N V - B D I Z C
+
+Taking the bits one at a time, starting at the high bit:
+
+  N--the N flag, as above.
+
+  V--the V flag, as above.
+
+  Bit 5--unused.  You'll often find that this bit is "on."
+
+  B--"Break" indicator.  When an interrupt occurs, this signals whether or
+  not the interrupt was caused by a BRK instruction.
+
+  D--Decimal mode indicator.  This changes the manner in which the add and
+  subtract instructions operate.  In Commodore machines, this flag will
+  always be off.  Don't turn it on unless you know exactly what you're doing.
+  This flag may be turned on with the SED (set decimal) instruction, and
+  turned off with the CLD (clear decimal) instruction.
+
+  I--Interrupt disable.  More exactly, this bit disables the IRQ (interrupt
+  request) pin activity.  More on this control bit much later.  This flag may
+  be turned on with the SEI (set interrupt disable) instruction, and turned
+  off with the CLI (clear interrupt disable) instruction.
+
+  Z--the Z flag, as above.
+
+  C--the C flag, as above.
+
+                                                                         :46:
+
+  Flags B, D, and I are not testable flags in that there are no branch
+  instructions that test them directly.  D, the decimal mode flag, and I, the
+  interrupt lockout flag, may be considered "control" flags.  Instead of
+  reporting conditions found as the program runs, they control how the
+  program operates.
+
+When we see a value displayed in the SR, or status register, we may examine
+it to determine the condition of the flags, especially the testable flags Z,
+C, N, and V.  For example, if wee see an SR value of $B1, we translate to
+binary %10110001 an know that the N flag is on, the V flag is off, the Z flag
+is off, and the C flag is on.
+
+You may change these flags by typing over the displayed value in the machine
+language monitor.  Be careful you don't accidentally set the D or I flags.
+
+
+
+---
+Additional information can be found by searching:
+- "flags_introduction_and_z_flag" which expands on Z flag details referenced in SR
+- "c_flag_description" which expands on C flag referenced in SR
+- "v_flag_and_overflow" which expands on V flag and CLV instruction

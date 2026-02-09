@@ -1,0 +1,36 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Combined VERIFY and LOAD handling: set the verify flag for VERIFY, set load flag for LOAD and store it at $0A, call shared parameter parser, obtain start/end addresses and call the KERNAL load routine ($FFD5). After the KERNAL call handle I/O status: for verify set VERIFY-specific error handling and check tape read error bit; for LOAD print 'OK' when applicable and then RTS. (Covers verify flag setup, calls to $E1D4, $FFD5/$FFB7 reads of I/O status, masking read error and printing the 'OK' string.)
+
+                                *** perform VERIFY
+.,E165 A9 01    LDA #$01        flag verify
+.:E167 2C       .BYTE $2C       makes next line BIT $00A9
+
+                                *** perform LOAD
+.,E168 A9 00    LDA #$00        flag load
+.,E16A 85 0A    STA $0A         set load/verify flag
+.,E16C 20 D4 E1 JSR $E1D4       get parameters for LOAD/SAVE
+.,E16F A5 0A    LDA $0A         get load/verify flag
+.,E171 A6 2B    LDX $2B         get start of memory low byte
+.,E173 A4 2C    LDY $2C         get start of memory high byte
+.,E175 20 D5 FF JSR $FFD5       load RAM from a device
+.,E178 B0 57    BCS $E1D1       if error go handle BASIC I/O error
+.,E17A A5 0A    LDA $0A         get load/verify flag
+.,E17C F0 17    BEQ $E195       branch if load
+.,E17E A2 1C    LDX #$1C        error $1C, verify error
+.,E180 20 B7 FF JSR $FFB7       read I/O status word
+.,E183 29 10    AND #$10        mask for tape read error
+.,E185 D0 17    BNE $E19E       branch if no read error
+.,E187 A5 7A    LDA $7A         get the BASIC execute pointer low byte
+                                is this correct ?? won't this mean the "OK" prompt
+                                when doing a load from within a program ?
+.,E189 C9 02    CMP #$02        
+.,E18B F0 07    BEQ $E194       if ?? skip "OK" prompt
+.,E18D A9 64    LDA #$64        set "OK" pointer low byte
+.,E18F A0 A3    LDY #$A3        set "OK" pointer high byte
+.,E191 4C 1E AB JMP $AB1E       print null terminated string
+.,E194 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_params_for_load_save" which expands on uses the LOAD/SAVE parameter parsing routine to obtain device, filename and addresses
+- "ready_return_and_warm_start" which expands on LOAD may flow into READY/return or error handling paths that rebuild BASIC state

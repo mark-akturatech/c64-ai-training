@@ -1,0 +1,56 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - ADSR envelope operation per voice: Attack (rise to peak), Decay (fall to Sustain level), Sustain (level while GATE=1), Release (fall to 0 when GATE=0). Notes on retrigger behavior. Includes timing table mapping ADSR nibble values (0-15) to approximate Attack/Decay/Release times and comments on PAL/NTSC variations and internal non-linear counters.
+
+================================================================================
+4. ADSR ENVELOPE GENERATOR
+================================================================================
+
+Each voice has an independent ADSR envelope generator that shapes the amplitude
+of the voice output over time. The envelope cycle is:
+
+  1. ATTACK:  When GATE bit is set to 1, amplitude rises from 0 to peak (255)
+              at the Attack rate.
+  2. DECAY:   After reaching peak, amplitude falls toward the Sustain level
+              at the Decay rate.
+  3. SUSTAIN: Amplitude holds at the Sustain level as long as GATE = 1.
+              Sustain is a LEVEL (0-15), not a rate. 15 = full volume.
+  4. RELEASE: When GATE bit is set to 0, amplitude falls from current level
+              to 0 at the Release rate.
+
+Setting GATE to 1 again before Release completes restarts the Attack phase
+from the current amplitude level.
+
+--------------------------------------------------------------------------------
+4.1 ADSR TIMING TABLE
+--------------------------------------------------------------------------------
+
+Value | Attack Time | Decay Time  | Release Time
+------+-------------+-------------+--------------
+  0   |     2 ms    |     6 ms    |     6 ms
+  1   |     8 ms    |    24 ms    |    24 ms
+  2   |    16 ms    |    48 ms    |    48 ms
+  3   |    24 ms    |    72 ms    |    72 ms
+  4   |    38 ms    |   114 ms    |   114 ms
+  5   |    56 ms    |   168 ms    |   168 ms
+  6   |    68 ms    |   204 ms    |   204 ms
+  7   |    80 ms    |   240 ms    |   240 ms
+  8   |   100 ms    |   300 ms    |   300 ms
+  9   |   250 ms    |   750 ms    |   750 ms
+ 10   |   500 ms    |   1.5 s     |    1.5 s
+ 11   |   800 ms    |   2.4 s     |    2.4 s
+ 12   |     1 s     |     3 s     |      3 s
+ 13   |     3 s     |     9 s     |      9 s
+ 14   |     5 s     |    15 s     |     15 s
+ 15   |     8 s     |    24 s     |     24 s
+
+Notes:
+  - Attack time is measured from 0 to peak amplitude (255).
+  - Decay and Release times are measured from peak (255) to 0.
+  - Actual times may vary slightly due to clock rate differences (PAL vs NTSC).
+  - The envelope counter uses non-linear rate counting internally, which
+    produces the characteristic exponential decay/release curves of the SID.
+
+
+---
+Additional information can be found by searching:
+- "adsr_bug" which expands on known ADSR bug and workarounds
+- "voice1_registers" which expands on ADSR register encodings $D405/$D406

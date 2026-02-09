@@ -1,0 +1,32 @@
+# NMOS 6510 - Assembly listing demonstrating use of the undocumented LAX immediate opcode (AB). Shows LDA #$00 followed by LAX #$FF (AB FF), a subsequent DCP instruction that accesses memory $FF97,X, and an RTS. Comments record the observed effect: A and X become (($00 | CONST) & $FF) = $EE (magic-constant behaviour) and the accumulator value ($EE).
+
+A9 00
+
+LDA #$00
+
+b58b
+
+AB FF
+
+LAX #$FF
+
+b58d
+
+DF 97 FF
+
+DCP $FF97,X ; decrement mem (=$85), compare with
+
+; A = X = (($00 | CONST) & $ff) = $EE
+; akku (=$EE)
+
+b590
+
+60
+
+RTS
+
+
+---
+Additional information can be found by searching:
+- "lax_wizball_emulator_recommendation" which expands on empirical test results and emulator guidance for the LAX magic constant
+- "lax_safe_usage_examples_and_magic_constant_detection" which expands on safe example usages and method to read the magic constant

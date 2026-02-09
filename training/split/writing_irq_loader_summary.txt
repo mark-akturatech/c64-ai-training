@@ -1,0 +1,24 @@
+# Analyzing C64 tape loaders - Step-by-step summary for writing an IRQ-based loader: disable interrupts (SEI), clear/disable CIA interrupt mask ($DC0D), clear interrupt latch (read $DC0D), set timer latch ($DC04/$DC05 for CIA#1 Timer A), enable FLAG-line interrupt, set IRQ vector ($FFFE/$FFFF) to ISR, enable interrupts (CLI), then align on pilot byte and read header to determine RAM store location.
+
+
+
+
+==== Writing an IRQ-based loader ====
+
+First, here's a summary of what we need to do when writing an IRQ-based loader:
+
+We first need to disable the system of interrupts, by setting the interrupt disable status bit (this is done by a SEI instruction).
+
+Then we have to disable all interrupts individually (by WRITING to $DC0D, which is an Interrupt Control Register when written to) and clear any latched interrupt request (by READING the clear-on-read register $DC0D, which is an Interrupt Latch Register when read from- e.g. bit 1 reads 1 when CIA #1 Timer B countdown expires).
+
+Now we have to set the start value of the timer we'll be using to measure the length of the pulses coming from the tape (CIA #1 Timer A was chosen in the discussed loader). That's done by WRITING the start value in $DC04/$DC05 (which is the CIA #1 16-bit Timer A latch value). The timer will count down to zero starting from the value we just chose (one-shot mode). We'll restart the countdown every time we received a pulse, to measure the pulse that will come after the one we just measured.
+
+Then we have to enable the FLAG line interrupt (the interrupt that triggers when a pulse is read from the datasette). The interrupt won't trigger until we enable the system of interrupts. Before doing that, we have to declare where our Interrupt Service Routine is (by making the vector at $FFFE/$FFFF point to our ISR).
+
+After enabling interrupts (CLI instruction), we are ready to measure the pulses coming from the datasette, align our read routine with the bit stream (using the pilot byte information), syncronize (ie. know where exactly the turbo frame starts), and finally read the header which tells us where to store the following data bytes in the RAM.
+
+
+---
+Additional information can be found by searching:
+- "figuring_out_threshold_value" which expands on How to extract threshold/timer values from code
+- "irq_isr" which expands on ISR implementation that classifies pulses using the timer

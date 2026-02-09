@@ -1,0 +1,21 @@
+# Analyzing C64 tape loaders - Reads header bytes into $07..$0A: one unused byte, two bytes load address (LSB, MSB), two bytes end address+1 (LSB, MSB). Performs sanity checks for expected header length and modifies branch at $036D to proceed to data-reading state. Uses INC/LDA/STA instructions to record addresses and check header validity.
+
+; ********************************************
+; * Read Header bytes                        *
+; ********************************************
+03A0  85 07          STA $07        ; Load header at $07..$0A:
+03A2  EE A1 03       INC $03A1      ;  2 bytes: Load address
+03A5  AD A1 03       LDA $03A1      ;  2 bytes: End address+1
+03A8  C9 0B          CMP #$0B
+03AA  D0 CD          BNE $0379
+03AC  A9 45          LDA #$45
+03AE  8D 6D 03       STA $036D      ; Change the branch at $036C, to jump to $03B3
+03B1  D0 C6          BNE $0379      ; (6)
+; ********************************************
+; * Read Header bytes.END                    *
+; ********************************************
+
+
+---
+Additional information can be found by searching:
+- "read_data_bytes" which expands on Header provides load and end addresses used by the data reader

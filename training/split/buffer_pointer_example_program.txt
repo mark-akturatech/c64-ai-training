@@ -1,0 +1,50 @@
+# byRiclianll - Buffer-pointer example program (BASIC): opens command channel, reads track 18 sector 0 (BAM) into buffer via U1; issues PRINT#15,"B-P";2;144 to set pointer at 144; then loops 16 times GET#2 to read disk name bytes 144-159, converts nulls, adjusts ASCII >127, forces printable range, builds disk-name string (DN$), and prints DISK NAME. Demonstrates how to read only selected bytes from a buffer.
+
+The  following  program  displays  a  disk  name  by  reading  only  bytes  144  to  159  from  track 
+18,  sector  0. 
+
+lOO  REM  BUFFER-POINTER 
+
+no  OPEN  15,8,  15 
+
+120  PRINT#15, "lO" 
+
+1 30   I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+
+140   IF  EN*<>"00"GOTO  320 
+
+150  OPEN  2,8,2, "#" 
+
+160  PRINT#15, "Ui";2;o; i8;o 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+180   IF  EN*<>"00"GOTO  300 
+190  PRINT#15, "B-P";2; 144 
+200  FOR   1=1   TO  16 
+210  GET#2,B* 
+
+220   IF  B*=""THEN  B*=CHR*(0) 
+
+230  A=ASC(B*) 
+
+240   IF  A>127  THEN  A=A-128 
+
+250   IF  A<32  OR  A>95  THEN  A=63 
+
+260   IF  A=34  THEN  A=63 
+
+270  DN*=DN*+CHR*<A) 
+
+280  NEXT  I 
+
+290  PRINT" tDOWN> DISK  NAME:    " ; DN* 
+300  CLOSE  2 
+
+310  INPUT#15,EN*,EM*,ET*,ES* 
+
+320  CLOSE  15 
+330  END 
+
+---
+Additional information can be found by searching:
+- "buffer_pointer_b-p_syntax" which expands on B-P syntax used in the program

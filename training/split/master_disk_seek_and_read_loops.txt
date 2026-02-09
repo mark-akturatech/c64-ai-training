@@ -1,0 +1,74 @@
+# byRiclianll - The SEEK and READ phase for the master disk (BASIC lines ~330–630). Contains FOR T = SRW TO ERW track loop, calculation of NS (number of sectors per track chunk), conditional skips for empty tracks, calls to GOSUB 1190 for seek routines, error handling, adjustments to RW and RAM pointers, the READ loop (FOR S = 0 TO NS) with GOSUB 1300 to perform sector reads, status printing, SYS calls for 1541 operations, setting flags (C=1 and POKE RW,1) and incrementing buffer addresses, followed by NEXT S/NEXT T and CLOSE15. Ends with the branch that decides whether to proceed to cloning.
+
+330  REM  SEEK 
+
+340  FORT=SRWTOERW 
+
+350  NS=20+2*  ( T  >  1 7 )  +  ( T  .>24 )  +  ( T  >30 ) 
+
+360  IFT(T)=0G0T0410 
+
+370  J0B=176 
+
+380  G0SUB1190 
+
+390  IFE=ieOT0470 
+
+400  T(T)=0 
+
+410  RW=RW-«-(NS+l ) 
+
+420  RAM=RAM+(256*(NS+1 ) ) 
+
+
+162 
+
+
+430  P0KE252, (RAM/ 256) 
+
+440  R=R+(NS+1) 
+
+450  B0T0620 
+
+460  REM  READ 
+
+470  F0RS=0T0NS 
+
+480  G0SUB1300 
+
+490  PRINT"  {:H0ME>-CDCWN   7J  tRVSJREADING<:ROF 
+
+F>   TRACK   "T*"   -  SECTOR  "S* 
+
+500  J0B=128 
+
+510  G0SUB1190 
+
+520  IFE=1G0T0550 
+
+530  R=R+1 
+
+540   I FE<  >4 ANDE<  >5G0T05a0 
+
+550  SYS49165 
+
+560  C=l 
+
+570  POKERW, 1 
+
+580  RW=RW+1 
+
+590  RAM=RAM+256 
+
+600  PaKE252, (RAM/256) 
+
+610  NEXTS 
+
+620  NEXTT 
+
+630  CL0SE15 
+
+---
+Additional information can be found by searching:
+- "backup_overview_and_initialization" which expands on Built on the earlier initialization (drive open, buffer pointers, T() table)
+- "clone_disk_insertion_and_write_seek_setup" which expands on After closing the master, the program prompts for the clone disk and begins the write/seek setup

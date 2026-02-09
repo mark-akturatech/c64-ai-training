@@ -1,0 +1,30 @@
+# MACHINE - Machine-specific POKEs to disable/enable interrupts: C64 POKE 56333,127 to disable and 56333,129 to re-enable; VIC-20 POKE 37166,127 / 37166,192; PET POKE 59411,60 / 59411,61. Warning: POKEs may disable keyboard and other services—do not run as direct commands unless you can restore state (e.g., from ML).
+
+the interrupt source.  Something makes an interrupt happen--it might be a
+timer, it might be an external signal, or it might even be a screen event.
+Whatever it is, we can get to the source of the interrupt and disconnect it.
+
+Almost all interrupt signals are delivered through an IA (interface adapter)
+chip; and these chips invariably allow the path of the interrupt signals to
+be blocked temporarily.  We'll discuss the IA chips later; for the moment,
+the normal interrupt signals can be blocked with the following actions:
+
+  Commodore 64:  Store $7F into address $DC0C (POKE 56333,127) to disable;
+  store $81 into the same address (POKE 56333,129) to re-enable.
+
+                                                                        :119:
+
+  VIC-20:  Store $7F into address $912E (POKE 37166,127) to disable; store
+  $C0 into the same address (POKE 37166,192) to re-enable.
+
+  PET/CBM:  Store $3C into address $E813 (POKE 59411,60) to disable; store
+  $3D into the same address (POKE 59411,61) to re-enable.
+
+It goes without saying that the above POKEs should not normally be given as
+direct commands; the first POKE in each case will disable the keyboard (among
+other things), and you won't be able to type the restoring POKE.
+
+
+---
+Additional information can be found by searching:
+- "using_irq_vector_and_masking_interrupts" which expands on machine-specific register writes to gate interrupts

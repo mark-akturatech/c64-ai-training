@@ -1,0 +1,25 @@
+# Kick Assembler - How to construct new command arguments with CmdArgument(type, value). Example creating an immediate CmdArgument. Definition of helper function _16bitnextArgument(arg) that, for a given argument, returns the corresponding next argument for 16-bit operations (preserving type; for immediates returns high byte using >, otherwise increments value by 1).
+
+You can construct new command arguments with the CmdArgument function. If you want to construct a new
+immediate argument with the value 100, you do it like this:
+.var myArgument = CmdArgument(AT_IMMEDIATE, 100)
+lda myArgument
+// Gives lda #100
+
+Now let’s use the above functionalities to define a 16 bit instruction set. We start by defining a function that
+given the first argument will return the next in a 16 bit instruction.
+.function _16bitnextArgument(arg) {
+.if (arg.getType()==AT_IMMEDIATE)
+.return CmdArgument(arg.getType(),>arg.getValue())
+.return CmdArgument(arg.getType(),arg.getValue()+1)
+}
+
+We always return an argument of the same type as the original. If it's an immediate argument we set the value to
+be the high byte of the original value, otherwise we just increment it by 1. This will supply the correct argument for
+the ABSOLUTE, ABSOLUTEX, ABSOLUTEY and IMMEDIATE addressing modes. With this we can easily
+
+---
+Additional information can be found by searching:
+- "argument_type_constants" which expands on Uses AT_IMMEDIATE and other argument types when constructing CmdArgument
+- "defining_inc16_pseudocommand" which expands on Used by inc16 to access the high/next byte
+- "mov16_and_add16_pseudocommands" which expands on Used by mov16 and add16 to operate on high/low byte pairs

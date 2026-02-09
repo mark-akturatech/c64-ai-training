@@ -1,0 +1,50 @@
+# COMMODORE 64 - READ <variables>: reads values from DATA statements into variables. Types must match or ?SYNTAX ERROR (reported at DATA line). READs traverse DATA list in order; exceeding DATA elements yields ?OUT OF DATA. If fewer variables specified than DATA elements, next READ resumes at following element. Example usages and relationship to RESTORE.
+
+  READ
+
+  TYPE: Statement
+  FORMAT: READ <variable>[,<variable>]...
+
+    Action: The READ statement is used to fill variable names from con-
+  stants in DATA statements. The data actually read must agree with the
+  variable types specified or the BASIC error message ?SYNTAX ERROR will
+  result.(*) Variables in the DATA input-list must be separated by commas.
+    A single READ statement can access one or more DATA statements,
+  which will be accessed in order (see DATA), or several READ statements
+  can access the same DATA statement. If more READ statements are executed
+  than the number of elements in DATA statements(s) in the program, the
+
+  76   BASIC LANGUAGE VOCABULARY
+~
+
+
+  BASIC error message ?OUT OF DATA is printed. If the number of variables
+  specified is fewer than the number of elements in the DATA statement(s),
+  subsequent READ statements will continue reading at the next data
+  element. (See RESTORE.)
+
+  +-----------------------------------------------------------------------+
+  | *NOTE: The ?SYNTAX ERROR will appear with the line number from the    |
+  | DATA statement, NOT the READ statement.                               |
+  +-----------------------------------------------------------------------+
+
+  EXAMPLES of READ Statement:
+
+    110 READ A,B,C$
+    120 DATA 1,2,HELLO
+
+    100 FOR X=1 TO 10: READ A(X):NEXT
+
+    200 DATA 3.08, 5.19, 3.12, 3.98, 4.24
+    210 DATA 5.08, 5.55, 4.00, 3.16, 3.37
+
+    (Fills array items (line 1) in order of constants shown (line 5))
+
+    1 READ CITY$,STATE$,ZIP
+    5 DATA DENVER,COLORADO, 80211
+
+
+---
+Additional information can be found by searching:
+- "data_statement" which expands on DATA statements providing constants for READ
+- "restore_statement" which expands on RESET READ pointer back to start of DATA

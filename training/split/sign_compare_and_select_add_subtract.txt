@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - After exponents are equal (alignment complete), test sign relationship (BIT on sign compare). If signs indicate addition, branch to add-mantissa path; otherwise set Y index to point to the larger operand's mantissa (choose correct Y/X mapping) and set carry for subtraction to prepare for the mantissa-subtract sequence.
+
+                                exponents are equal now do mantissa subtract
+.,B8A3 24 6F    BIT $6F         test sign compare (FAC1 EOR FAC2)
+.,B8A5 10 57    BPL $B8FE       if = add FAC2 mantissa to FAC1 mantissa and return
+.,B8A7 A0 61    LDY #$61        set the Y index to FAC1 exponent address
+.,B8A9 E0 69    CPX #$69        compare X to FAC2 exponent address
+.,B8AB F0 02    BEQ $B8AF       if = continue, Y = FAC1, X = FAC2
+.,B8AD A0 69    LDY #$69        else set the Y index to FAC2 exponent address
+                                subtract the smaller from the bigger (take the sign of
+                                the bigger)
+.,B8AF 38       SEC             set carry for subtract
+
+---
+Additional information can be found by searching:
+- "exponent_diff_and_shift_smaller_mantissa" which expands on alignment completed before this decision
+- "mantissa_add_path" which expands on branch target if signs indicate addition
+- "mantissa_subtract_sequence" which expands on path taken when subtraction is required

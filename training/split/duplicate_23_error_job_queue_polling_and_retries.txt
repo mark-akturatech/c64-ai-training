@@ -1,0 +1,38 @@
+# byRiclianll - Job-queue and drive-polling helper used by the duplicate routine. Covers: REM JOB QUEUE routine that constructs and sends job packets to the 1541 (M-W with job parameters), TRY counter and retry loop, issuing M-R to read job result, handling empty responses, converting response to numeric (ASC), retry limit and failure handling (jump to failure message), conditional return on success, and cleanup (CLOSE 15 and END on fatal failure). This routine is used to submit low-level commands and poll the drive for completion/error status.
+
+640  REM  JOB  QUEUE 
+650  TRY=0 
+
+660  PRINT#15, "M-W"CHR«(8)CHR*(0)CHR«(4)C 
+
+HR* (T) CHR* (S) CHR* (T) CHR* (S) 
+
+670  PRINT#15, "M-W"CHR*(1)CHR*(0)CHR*(1)C 
+
+HR*(JOB) 
+
+680  TRY=TRY+1 
+
+690  PRINT#15, "M-R"CHR*(1)CHR*<0) 
+
+700  GET#15,E* 
+
+710  IFE*=""THENE«=CHR*(0) 
+
+720  E=ASC(E*) 
+
+730  IFTRY=500G0T0760 
+
+740  IFEM27G0T0680 
+
+750  RETURN 
+
+760  PR I NT " t DOWN>  FA I LED " 
+770  CLOSE 15 
+780  END 
+
+
+---
+Additional information can be found by searching:
+- "duplicate_23_error_master_read_and_clone_write_sequence" which expands on called or relied on by the main read/write sequence to manage drive jobs and check completion
+- "duplicate_23_error_machine_language_data_payload" which expands on the job submissions target the machine-code routine/data that performs sector-level operations

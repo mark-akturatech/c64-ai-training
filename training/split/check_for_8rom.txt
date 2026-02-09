@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CHECK FOR 8-ROM: Checks for an autostart ROM identifier at $8004-$8008 by comparing 5 bytes against the data at $FD10. Sets Z=1 if identical. Uses indexed LDA/CMP loops across five bytes.
+
+                                *** CHECK FOR 8-ROM
+                                Checks for the ROM autostart parameters at $8004-$8008. It
+                                compares data with $fd10, and if equal, set Z=1.
+.,FD02 A2 05    LDX #$05        5 bytes to check
+.,FD04 BD 0F FD LDA $FD0F,X     Identifier at $fd10
+.,FD07 DD 03 80 CMP $8003,X     Compare with $8004
+.,FD0A D0 03    BNE $FD0F       NOT equal!
+.,FD0C CA       DEX
+.,FD0D D0 F5    BNE $FD04       until Z=1
+.,FD0F 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "8rom_identifier" which expands on identifier bytes compared by this routine
+- "power_reset_entry_point" which expands on called at reset to detect autostart cartridges

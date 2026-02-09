@@ -1,0 +1,70 @@
+# - C64 I/O Map (Mapping The Commodore 64) - D011 Bit 6: Extended background color mode expands background color choices by character code ranges. Explanation of which character code ranges use which background color registers ($D021-$D024) and a small BASIC experiment demonstrating behavior and POKE sequences to enable/disable this mode (POKE 53265,PEEK(53265) OR 64 to enable, AND 191 to disable).
+
+
+                          Bit 6.  This bit of this register enables extended background color
+                          mode.  This mode lets you select the background color of each text
+                          character, as well as its foreground color.  It is able to increase
+                          the number of background colors displayed, by reducing the number of
+                          characters that can be shown on the screen.
+
+                          Normally, 256 character shapes can be displayed on the screen.  You
+                          can use them either by using the PRINT statement or by POKEing a
+                          display code from 0 to 255 into screen memory.  If the POKEing method
+                          is used, you must also POKE a color code from 0 to 15 into color
+                          memory (for example, if you POKE 1024,1, and POKE 55296,1, a white A
+                          appears in the top-left corner of the screen).
+
+                          The background color of the screen is determined by Background Color
+                          Register 0, and you can change this color by POKEing a new value to
+                          that register, which is located at 53281 ($D021).  For example, POKE
+                          53281,0 creates a black background.
+
+                          When extended background color mode is activated, however, only the
+                          first 64 shapes found in the table of the screen display codes can be
+                          displayed on the screen.  This group includes the letters of the
+                          alphabet, numerals, and punctuation marks.  If you try to print on the
+                          screen a character having a higher display code, the shape displayed
+                          will be from the first group of 64, but that character's background
+                          will no longer be determined by the register at 53281 ($D021).
+                          Instead, it will be determined by one of the other background color
+                          registers.
+
+                          When in extended background color mode, characters having display
+                          codes 64- 127 will take their background color from register 1, and
+                          location 53282 ($D022).  These characters include various SHIFTed
+                          characters.  Those with codes 128-191 will have their background
+                          colors determined by register 2, at 53283 ($D023).  These include the
+                          reversed numbers, letters, and punctuation marks.  Finally, characters
+                          with codes 192-255 will use register 4, at 53284 ($D024).  These are
+                          the reversed graphics characters.
+
+                          Let's try an experiment to see just how this works.  First, we will
+                          put the codes for four different letters in screen memory:
+
+                              FOR I=0 TO 3:POKE 1230+(I*8),I*64+I:POKE 55502+(I*8),1:NEXT
+
+                          Four white letters should appear on the screen, an A, a shifted A, a
+                          reversed A, and a reversed, shifted A, all on a blue background.
+                          Next, we will put colors in the other background color registers:
+
+                              POKE 53282,0:POKE53283,2:POKE53284,5
+
+                          This sets the registers to black, red, and green, respectively.
+                          Finally, we will activate extended color mode by setting Bit 6 of the
+                          VIC-II register at location 53265 to a 1.  The BASIC statement that
+                          turns this mode on is:
+
+                              POKE 53265,PEEK(53265) OR 64
+
+                          Notice that two things happened.  First, all of the letters took on
+                          the same shape, that of the letter A.  Second, each took on the
+                          background color of a different color register.  To get things back to
+                          normal, turn off extended color mode with this statement:
+
+                              POKE 53265,PEEK(53265) AND 191
+
+
+---
+Additional information can be found by searching:
+- "bgcolor_registers" which expands on Background Color Registers $D021-$D024
+- "extended_background_color_utilities" which expands on Subroutines and programs to use extended background for windows

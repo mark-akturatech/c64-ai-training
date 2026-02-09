@@ -1,0 +1,15 @@
+# A Minimal C64 Datasette Program Loader - Loader disables interrupts (SEI) and turns off the VIC-II screen to prevent cycle stealing: reads $D011 and clears the raster-compare bit ($10) to disable screen updates, stores back to $D011, then waits for new screen by polling $D012 to be zero before proceeding.
+
+Disable interrupts and screen to prevent VIC-II cycle stealing:
+
+    sei
+    lda $d011
+    and #$ff-$10    ;disable screen
+    sta $d011
+    m2: lda $d012
+        bne m2      ;wait for new screen
+
+
+---
+Additional information can be found by searching:
+- "restore_screen_and_turn_off_motor" which expands on restores the screen at the end of loading

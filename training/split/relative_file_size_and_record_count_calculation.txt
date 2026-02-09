@@ -1,0 +1,43 @@
+# byRiclianll - Calculates space usage for the example 'MAG FILE': the directory indicates a total of 436 blocks (low/high byte); divide by 120 to determine side-sector count (436/120 = 3.633... → 4 side sectors). Subtract side sectors from total blocks (436 - 4 = 432 data blocks). Multiply by 254 (usable bytes per data block) to get total bytes (432 * 254 = 109,728). Divide by record length (150) to get number of records currently in file (109,728 / 150 = 731.52 → 731 records).
+
+
+78:    OO  OO  OO  OO  00  OO  B4  Ol   
+
+**  **  File  length  Go/hi-byte) 
+
+
+58 
+
+
+Our  sample  relative  file  consumes  a  total  of  436  blocks  on  the  diskette  (180  +  1  *  256). 
+(There  is  still  room  for  expansion.)  We  can  determine  the  number  of  side  sectors  by 
+simple  divison.  A  side  sector  stores  track  and  sector  pointers  for  120  data  blocks  of  our 
+sequential  file.  To  determine  the  number  of  side  sectors,  simply  divide  the  total  number 
+of  blocks  that  appear  in  the  directory  entry  by  120  and  round  up  to  the  next  higher 
+integer: 
+
+436  /  120  =  3.6  4 
+
+Four  side  sectors  are  needed  to  keep  track  of  this  much  data.  To  figure  out  how  many 
+records  currently  exist  requires  a  little  more  arithmetic.  First  we  have  to  subtract  the 
+number  of  side  sectors  from  the  total  number  of  blocks. 
+
+436  -  4  =  432 
+
+Now  we  can  determine  the  total  number  of  data  bytes  currently  in  use  by  our  sequen- 
+tial file. 
+
+432  *  254  =  109728 
+
+Why  254  as  a  multiplier?  Remember  that  the  first  two  bytes  of  any  data  block  are  for- 
+ward track  and  sector  pointers  (256  -  2  =  254).  We  fmish  our  set  of  calculations  by 
+dividing  this  total  by  the  fixed  record  length. 
+
+109728  /  150  =  731.52 
+
+A  total  of  731  records  exist  at  the  current  time  in  "MAG  FILE." 
+
+---
+Additional information can be found by searching:
+- "side_sector_block_format" which expands on each side sector holds pointers for 120 data blocks
+- "directory_entry_analysis_mag_file" which expands on source directory values (file length, record length, side sector start)

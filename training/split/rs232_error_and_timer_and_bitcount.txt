@@ -1,0 +1,41 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - RS232 error handling, timer disabling and bit count computation: 'NO DSR/CTS' handler sets RSSTAT image flags, DISABLE TIMER (manipulate CIA#2 ICR and ENABL $02A1 to mask interrupts and clear NMI), COMPUTE BIT COUNT (derive number of bits/stop bits from M51CTR $0293 and start X with default 9). These utilities support RS232 send/receive routines and handshake.
+
+                                *** NO DSR / CTS ERROR
+                                (A) is loaded with the error flag - $40 for no DSR, and
+                                $10 for no CTS. This is then ORed with 6551 status image
+                                and stored in RSSTAT.
+.,EF2E A9 40    LDA #$40        entrypoint for 'NO DSR'
+.:EF30 2C       .BYTE $2C       mask next LDA-command
+.,EF31 A9 10    LDA #$10        entrypoint for 'NO CTS'
+.,EF33 0D 97 02 ORA $0297       RSSTAT, 6551 status register image
+.,EF36 8D 97 02 STA $0297
+
+                                *** DISABLE TIMER
+                                This routine set the interrupt mask on CIA#2 timer B. It
+                                also clears the NMI flag.
+.,EF39 A9 01    LDA #$01        ; CIA#2 interrupt control register
+.,EF3B 8D 0D DD STA $DD0D       ; ENABL, RS232 enables
+.,EF3E 4D A1 02 EOR $02A1
+.,EF41 09 80    ORA #$80        ; ENABL
+.,EF43 8D A1 02 STA $02A1       ; CIA#2 interrupt control register
+.,EF46 8D 0D DD STA $DD0D
+.,EF49 60       RTS
+
+                                *** COMPUTE BIT COUNT
+                                This routine computes the number of bits in the word to be
+                                sent. The word length information is held in bits 5 & 6 of
+                                M51CTR. Bit 7 of this register indicates the number of
+                                stop bits. On exit, the number of bits is held in (X).
+.,EF4A A2 09    LDX #$09
+.,EF4C A9 20    LDA #$20
+.,EF4E 2C 93 02 BIT $0293       M51CTR, 6551 control register image
+.,EF51 F0 01    BEQ $EF54
+.,EF53 CA       DEX
+.,EF54 50 02    BVC $EF58
+.,EF56 CA       DEX
+.,EF57 CA       DEX
+.,EF58 60       RTS
+
+---
+Additional information can be found by searching:
+- "rs232_send_receive_helpers" which expands on called when RS232 TX setup finds missing DSR/CTS

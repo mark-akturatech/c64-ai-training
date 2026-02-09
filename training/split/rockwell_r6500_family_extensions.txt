@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Rockwell R6500 family (R6500/11/12/15) additions: bit-manipulation instructions (BBR/BBS/RMB/SMB) similar to WDC; additional interrupts, registers, and I/O control registers accessed via reserved addresses (not impacting base instruction set). Lists Rockwell-specific BBR/BBS/RMB/SMB opcode tables (same format as W65C02), with notes on operand types and cycle counts.
+
+                      0 -> Mn                             N Z C I D V
+                                                          - - - - - -
+                      bit reset      assembler       opc bytes cycles
+                      0 [-------0]   RMB0 zpg         07   2      5
+                      1 [------0-]   RMB1 zpg         17   2      5
+                      2 [-----0--]   RMB2 zpg         27   2      5
+                      3 [----0---]   RMB3 zpg         37   2      5
+                      4 [---0----]   RMB4 zpg         47   2      5
+                      5 [--0-----]   RMB5 zpg         57   2      5
+                      6 [-0------]   RMB6 zpg         67   2      5
+                      7 [0-------]   RMB7 zpg         77   2      5
+                                                              6502 Instruction Set
+                 SMB  Set Memory Bit ***
+                      Similar to RMB, but sets the respective bit.
+                      This is an entire family of eight instructions
+                      in total, setting one of bits #0to #7, each.
+                      Individual mnemonics designate the bit to be
+                      set, as in SMBn, where n = 0..7.
+                      The operand is always a zeropage address.
+                      1 -> Mn                             N Z C I D V
+                                                          - - - - - -
+                      bit set        assembler       opc bytes cycles
+                      0 [-------1]   SMB0 zpg         87   2      5
+                      1 [------1-]   SMB1 zpg         97   2      5
+                      2 [-----1--]   SMB2 zpg         A7   2      5
+                      3 [----1---]   SMB3 zpg         B7   2      5
+                      4 [---1----]   SMB4 zpg         C7   2      5
+                      5 [--1-----]   SMB5 zpg         D7   2      5
+                      6 [-1------]   SMB6 zpg         E7   2      5
+                      7 [1-------]   SMB7 zpg         F7   2      5
+                 STP  Stop Mode
+                      Stops and sets the signal on pin PHI2 to high.
+                      A reset signal will "wake up" the processor quickly.
+                      stop the clock (sleep)              N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      implied        STP              DB   1      3
+                 STZ  Store Zero in Memory
+                      0 -> M                              N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       STZ oper         64   2      3
+                      zeropage,X     STZ oper,X       74   2      4
+                      absolute       STZ oper         9C   3      4
+                      absolute,X     STZ oper,X       9E   3      4*
+                 TRB  Test and Reset Memory Bit***
+                      This instruction first ANDs the contents of the given
+                      memory location with the contents of the accumulator (A)
+                      and sets the Z flag accordingly to the result, much
+                      like the BIT instruction. Then, the contents of the
+                      memory location is ANDed with the compliment of the
+                      mask in A, and then written back, thus clearing the
+                      bit(s) set in A.
+                      In other words, TRB clears the bits set in A in the
+                      specified location and sets Z, if any of these bits
+                      were set, otherwise resetting Z.
+                                                                   6502 Instruction Set
+                      A AND M -> Z, ¬A AND M -> M         N Z C I D V
+                                                          - + - - - -
+                      addressing     assembler       opc bytes cycles
+
+---
+Additional information can be found by searching:
+- "w65c02_additional_instructions_bit_manipulation" which expands on these instructions are the same on Rockwell and WDC processors

@@ -1,0 +1,54 @@
+# NMOS 6510 - Example: 8-bit 1-of-8 counter using SRE to shift a mask in memory and EOR it with A to set pixels. Full assembly snippet showing initialization (LDA #$80; STA pix), loading pointer (LDA (zp),y), SRE pix to shift mask and EOR with A, branch on carry to handle underflow (advance_column), ROR pix to reset counter, ORA #$80 to set first pixel, storing back to (zp),y, and advancing the 16-bit counter (ADC/INC sequence). Comments explain each step and how SRE both shifts memory and affects A via EOR.
+
+- 11 -
+
+Example: 8bit 1-of-8 counter
+
+SRE shifts the content of a memory location to the right and EORs the content with A, while SLO
+shifts to the left and does an OR instead of EOR.
+So this is nice to combine the previous described 8 bit counter with for e.g. setting pixels:
+LDA #$80
+STA pix
+...
+LDA (zp),y
+SRE pix
+
+;shift mask one to the right
+;and eor mask with A
+
+BCS advance_column
+
+;did the counter under-run?
+;so advance column
+
+STA (zp),y
+...
+advance_column:
+ROR pix
+
+;reset counter
+
+ORA #$80
+
+;set first pixel
+
+STA (zp),y
+LDA zp
+
+;advance column
+
+;CLC
+
+;is still clear
+
+ADC #$08
+STA zp
+BCC +
+INC zp+1
++
+
+
+---
+Additional information can be found by searching:
+- "sre_opcode_and_addressing_modes" which expands on Detailed SRE opcode behaviors and addressing modes used by the example
+- "sre_parity_example_and_lsr_addressing_simulation" which expands on Other example uses of SRE, including parity computation and LSR-addressing simulation

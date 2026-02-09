@@ -1,0 +1,34 @@
+# MACHINE - Interrupt mechanics: IRQ/NMI/BRK. When interrupt occurs, CPU finishes current instruction, pushes PC (two bytes, high-first) and status register (one byte) to stack (3 bytes total), then loads ISR address from vectors: IRQ/BRK from $FFFE/$FFFF, NMI from $FFFA/$FFFB. RTI restores status and PC from stack. BRK sets B flag in status to distinguish it from IRQ.
+
+
+Interrupts and RTI
+------------------
+
+There are three types of interrupt:  IRQ, NMI, and the BRK instruction.  IRQ
+(interrupt request) and NMI (non-maskable interrupt) are pins on the 650x.  A
+suitable signal is applied to the appropriate pin will cause the processor to
+stop what it's doing and run an interrupt routine.  The BRK instruction might
+be thought of as a fake interrupt--it behaves in a similar manner to IRQ.
+
+When an interrupt signal occurs, the processor completes the instruction it
+is currently working on.  Then it takes the PC (the program counter, which
+contains the address of the next instruction) and pushes it onto the stack,
+high byte first.  Finally, it pushes the status register to the stack.
+That's a total of three bytes that go to the stack.
+
+The processor then takes its execution address from one of the following
+locations:
+
+  IRQ or BRK - from $FFFE and $FFFF
+
+  NMI        - from $FFFA and $FFFB
+
+Whatever value is found in these pointers becomes the interrupt execution
+address:  the processor starts to run at that address.  Eventually, the
+processor encounters an RTI instruction.  The status register and the PC
+address are taken from the stack, and the interrupted program resumes where
+it left off.
+
+---
+Additional information can be found by searching:
+- "using_irq_vector_and_masking_interrupts" which expands on IRQ vectors and how to change them safely

@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - IRQ dispatch entry: saves A,X,Y to stack and stack pointer (TSX), reads stacked status to detect BRK. If BRK set jumps to BRK vector ($0316), else jumps to IRQ vector ($0314). Used to dispatch iBRK/iIRQ.
+
+                                *** IRQ vector
+.,FF48 48       PHA             save A
+.,FF49 8A       TXA             copy X
+.,FF4A 48       PHA             save X
+.,FF4B 98       TYA             copy Y
+.,FF4C 48       PHA             save Y
+.,FF4D BA       TSX             copy stack pointer
+.,FF4E BD 04 01 LDA $0104,X     get stacked status register
+.,FF51 29 10    AND #$10        mask BRK flag
+.,FF53 F0 03    BEQ $FF58       branch if not BRK
+.,FF55 6C 16 03 JMP ($0316)     else do BRK vector (iBRK)
+.,FF58 6C 14 03 JMP ($0314)     do IRQ vector (iIRQ)
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on uses vectors at $0314/$0316 for IRQ/BRK

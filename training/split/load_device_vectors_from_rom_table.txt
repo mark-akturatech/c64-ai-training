@@ -1,0 +1,14 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Copies two-word device vectors from the ROM table ($FD93,X and $FD94,X) into runtime locations $0314/$0315 (LDA $FD93,X -> STA $0314; LDA $FD94,X -> STA $0315; RTS). Used to load device driver vectors into zero page/IO table.
+
+.,FCB8 20 93 FC JSR $FC93
+.,FCBB F0 97    BEQ $FC54
+.,FCBD BD 93 FD LDA $FD93,X
+.,FCC0 8D 14 03 STA $0314
+.,FCC3 BD 94 FD LDA $FD94,X
+.,FCC6 8D 15 03 STA $0315
+.,FCC9 60       RTS
+
+---
+Additional information can be found by searching:
+- "transfer_loop_and_interrupt_masking" which expands on vectors are reloaded during transfer setup/teardown
+- "set_status_bit_0x20" which expands on status bits modified around vector loads

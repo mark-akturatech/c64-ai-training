@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OP155 entry and decision logic for cassette device open: loads SA, masks command nibble and branches to the tape-write path if non-zero; otherwise begins cassette read open: prompts user (CSTE1), handles STOP-key, shows "searching" (LUKING), checks FNLEN to decide between searching for any file or a named file, calls FAF to search for a named file, handles found/stop/file-not-found conditions (branches to OP171/OP180/ERROR4).
+
+.,F38E B0 03    BCS $F393       BCS    OP155           ;YES
+                                ;
+.,F390 4C 13 F7 JMP $F713       JMP    ERROR9          ;NO...DEALLOCATED
+                                ;
+.,F393 A5 B9    LDA $B9         OP155  LDA SA
+.,F395 29 0F    AND #$0F        AND    #$F             ;MASK OFF COMMAND
+.,F397 D0 1F    BNE $F3B8       BNE    OP200           ;NON ZERO IS TAPE WRITE
+                                ;
+                                ;OPEN CASSETE TAPE FILE TO READ
+                                ;
+.,F399 20 17 F8 JSR $F817       JSR    CSTE1           ;TELL "PRESS PLAY"
+.,F39C B0 36    BCS $F3D4       BCS    OP180           ;STOP KEY PRESSED
+                                ;
+.,F39E 20 AF F5 JSR $F5AF       JSR    LUKING          ;TELL USER "SEARCHING"
+                                ;
+.,F3A1 A5 B7    LDA $B7         LDA    FNLEN
+.,F3A3 F0 0A    BEQ $F3AF       BEQ    OP170           ;LOOKING FOR ANY FILE
+                                ;
+.,F3A5 20 EA F7 JSR $F7EA       JSR    FAF             ;LOOKING FOR NAMED FILE
+.,F3A8 90 18    BCC $F3C2       BCC    OP171           ;FOUND IT!!!
+.,F3AA F0 28    BEQ $F3D4       BEQ    OP180           ;STOP KEY PRESSED
+                                ;
+.,F3AC 4C 04 F7 JMP $F704       OP160  JMP ERROR4      ;FILE NOT FOUND
+                                ;
+
+---
+Additional information can be found by searching:
+- "tape_open_write_prompt_and_header" which expands on tape-write path and header write flow
+- "tape_open_finish_and_buffer_init" which expands on finalize open and initialize tape buffer pointers

@@ -1,0 +1,22 @@
+# A 256 Byte Autostart Fast Loader for the Commodore 64 - Handling VIC-II 'badlines': the VIC-II performs DMA every 8th raster line (raster lines 50-249), stealing 40 CPU cycles and breaking timing. The loader checks $D012 (raster), compares against #50, masks with #$07, and loops to avoid starting transfers on dangerous lines.
+
+
+Badline Avoidance
+-----------------
+
+The C64's VIC-II chip performs DMA every 8th raster line (50-249), stealing
+40 CPU cycles and breaking timing synchronization. The raster check waits
+for safe line ranges:
+
+    lda $D012           ; raster position
+    cmp #50             ; outside visible area?
+    bcc wait_raster_end ; yes, safe
+    and #$07            ; check if before badline
+    cmp #$02
+    beq wait_raster     ; wait if dangerous
+
+
+---
+Additional information can be found by searching:
+- "receiving_code_c64" which expands on ensuring the receive routine runs during safe raster lines
+- "handshake_protocol" which expands on timing coordination with the drive's check loop

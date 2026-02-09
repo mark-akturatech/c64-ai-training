@@ -1,0 +1,21 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - PRINT 'SEARCHING': If MSGFLG ($9D) indicates direct mode, prints 'SEARCHING' from the KERNAL I/O message table via JSR $F12F. If filename length ($B7) > 0 prints 'FOR' and then drops through to print filename routine. Uses LDY and CHROUT calls.
+
+                                *** PRINT "SEARCHING"
+                                If MSGFLG indicates program mode then the message is not
+                                printed, otherwise the message "SEARCHING" is printed from
+                                the KERNAL I/O message table. If the length of
+                                filename >0 then the message "FOR" is printed, and the
+                                routine drops through to print the filename.
+.,F5AF A5 9D    LDA $9D         MSGFLG, direct or program mode?
+.,F5B1 10 1E    BPL $F5D1       program mode, don´t print, exit
+.,F5B3 A0 0C    LDY #$0C
+.,F5B5 20 2F F1 JSR $F12F       print "SEARCHING"
+.,F5B8 A5 B7    LDA $B7         FNLEN, length of current filename
+.,F5BA F0 15    BEQ $F5D1       no name, exit
+.,F5BC A0 17    LDY #$17
+.,F5BE 20 2F F1 JSR $F12F       print "FOR"
+
+
+---
+Additional information can be found by searching:
+- "print_filename" which expands on prints filename after 'SEARCHING'/'FOR'

@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - TSTOP routine and STOP handling: calls the generic STOP routine, then on STOP-key detection turns off cassettes (TNIF), sets the failure flag (SEC), pops the stack to reverse a prior push, clears the IRQTMP entry (deallocates saved IRQ pointer) and returns. Provides STOP3/STOP4 labels used elsewhere to handle immediate stop conditions.
+
+.,F8D0 20 E1 FF JSR $FFE1       TSTOP  JSR STOP        ;STOP KEY DOWN?
+.,F8D3 18       CLC             CLC                    ;ASSUME NO STOP
+.,F8D4 D0 0B    BNE $F8E1       BNE    STOP4           ;WE WERE RIGHT
+                                ;
+                                ;STOP KEY DOWN...
+                                ;
+.,F8D6 20 93 FC JSR $FC93       JSR    TNIF            ;TURN OFF CASSETTES
+.,F8D9 38       SEC             SEC                    ;FAILURE FLAG
+.,F8DA 68       PLA             PLA                    ;BACK ONE SQUARE...
+.,F8DB 68       PLA             PLA
+                                ;
+                                ; LDA #0 ;STOP KEY FLAG
+                                ;
+.,F8DC A9 00    LDA #$00        STOP3  LDA #0          ;DEALLOCATE IRQTMP
+.,F8DE 8D A0 02 STA $02A0       STA    IRQTMP+1        ;IF C-SET THEN STOP KEY
+.,F8E1 60       RTS             STOP4  RTS
+
+---
+Additional information can be found by searching:
+- "tape_completion_wait_loop" which expands on Called repeatedly from the wait loop to check for STOP key
+- "block_entry_read_write_setup" which expands on Branches to TWRT3 / TRD stop handling which eventually use this STOP handling

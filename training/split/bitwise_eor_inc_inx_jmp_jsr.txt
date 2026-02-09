@@ -1,0 +1,67 @@
+# 6502 Instruction Set - EOR (exclusive OR) opcode summaries across addressing modes. INC, INX, INY instruction details with opcodes and cycles. JMP absolute and JMP indirect behavior and cycle counts (including NMOS indirect bug note). JSR (Jump to Subroutine) details including stack push sequence and timing. LDA introductory line begins at the end of this chunk.
+
+          INC Increment Memory by One
+              M + 1 -> M                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              zeropage      INC oper        E6      2      5
+              zeropage,X    INC oper,X      F6      2      6
+              absolute      INC oper        EE      3      6
+              absolute,X    INC oper,X      FE      3      7
+          INX Increment Index X by One
+              X + 1 -> X                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       INX             E8      1      2
+          INY Increment Index Y by One
+              Y + 1 -> Y                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       INY             C8      1      2
+          JMP Jump to New Location
+              operand 1st byte -> PCL              N Z C I D V
+              operand 2nd byte -> PCH              - - - - - -
+              addressing    assembler       opc   bytes cycles
+              absolute      JMP oper        4C      3      3
+              indirect      JMP (oper)      6C      3      5***
+          JSR Jump to New Location Saving Return Address
+              push (PC+2),                         N Z C I D V
+              operand 1st byte -> PCL              - - - - - -
+              operand 2nd byte -> PCH
+              addressing    assembler       opc   bytes cycles
+              absolute      JSR oper        20      3      6
+          LDA Load Accumulator with Memory
+              M -> A                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+                                              6502 Instruction Set
+              immediate     LDA #oper       A9      2      2
+              zeropage      LDA oper        A5      2      3
+              zeropage,X    LDA oper,X      B5      2      4
+              absolute      LDA oper        AD      3      4
+              absolute,X    LDA oper,X      BD      3      4*
+              absolute,Y    LDA oper,Y      B9      3      4*
+              (indirect,X)  LDA (oper,X)    A1      2      6
+              (indirect),Y  LDA (oper),Y    B1      2      5*
+          LDX Load Index X with Memory
+              M -> X                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              immediate     LDX #oper       A2      2      2
+              zeropage      LDX oper        A6      2      3
+              zeropage,Y    LDX oper,Y      B6      2      4
+              absolute      LDX oper        AE      3      4
+              absolute,Y    LDX oper,Y      BE      3      4*
+          LDY Load Index Y with Memory
+              M -> Y                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              immediate     LDY #oper       A0      2      2
+              zeropage      LDY oper        A4      2      3
+              zeropage,X    LDY oper,X      B4      2      4
+              absolute      LDY oper        AC      3      4
+
+---
+Additional information can be found by searching:
+- "indirect_and_indexed_indirect_examples" which expands on JMP (indirect) special-case behavior
+- "literals_and_loads_ldx_ldy" which expands on LDA/LDX/LDY instruction group

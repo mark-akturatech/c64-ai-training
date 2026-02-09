@@ -1,0 +1,32 @@
+# ca65 Users Guide - How to delete macros: classic macros use .DELMACRO, .DEFINE-style macros use .UNDEFINE. Example shows removing a .DEFINE 'value' and classic macro 'mac', and demonstrates that .UNDEFINE requires special handling because .DEFINE replacements occur at a low scanner level; argument to .UNDEFINE cannot come from another .DEFINE.
+
+12.9 Deleting macros
+Macros can be deleted. This will not work if the macro that should be deleted is currently expanded as in the following non-working example:
+
+
+.macro  notworking
+        .delmacro       notworking
+.endmacro
+
+        notworking              ; Will not work
+The commands to delete classic and define style macros differ. Classic macros can be deleted by use of .DELMACRO, while for .DEFINE style macros, .UNDEFINE must be used. Example:
+
+
+.define value   1
+.macro  mac
+        .byte   2
+.endmacro
+
+        .byte   value           ; Emit one byte with value 1
+        mac                     ; Emit another byte with value 2
+
+.undefine value
+.delmacro mac
+
+        .byte   value           ; Error: Unknown identifier
+        mac                     ; Error: Missing ":"
+A separate command for .DEFINE style macros was necessary, because the name of such a macro is replaced by its replacement list on a very low level. To get the actual name, macro replacement has to be switched off when reading the argument to .UNDEFINE. This does also mean that the argument to .UNDEFINE is not allowed to come from another .DEFINE. All this is not necessary for classic macros, so having two different commands increases flexibility.
+
+---
+Additional information can be found by searching:
+- "c_style_macros" which expands on why .UNDEFINE differs from .DELMACRO

@@ -1,0 +1,30 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Details on how paddle fire buttons are read via CIA ports (Port B reads for Controller Port 1, Port A for Controller Port 2) at bits 2 and 3. Also explains that Port B bits 6/7 can be toggled/pulsed by Timer A/Timer B as an output alternative when configured in control registers.
+
+                          Although the SID chip is used to read the paddle settings, the fire
+                          buttons are read at CIA #1 Data Ports A and B.  The fire buttons for
+                          the paddles plugged into Controller Port 1 are read at Data Port B
+                          (56321, $DC01), while those for the paddles plugged into Controller
+                          Port 2 are read from Data Port A (56320, $DC00).  The fire buttons are
+                          read at Bit 2 and Bit 3 of each port (the same as the joystick left
+                          and joystick right switches), and as usual, the bit will read 0 if the
+                          corresponding button is pushed, and 1 if it is not.
+
+                          Although only two of the rout paddle values can be read at any one
+                          time, you can always read all four paddle buttons.  See the game
+                          paddle input description at 54297 ($D419) for the BASIC statements
+                          used to read these buttons.
+
+                          Finally, Data Port B can also be used as an output by either Timer A
+                          or B.  It is possible to set a mode in which the timers do not cause
+                          an interrupt when they run down (see the descriptions of Control
+                          Registers A and B at 56334-5 ($DC0E-F)).  Instead, they cause the
+                          output on Bit 6 or 7 of Data Port B to change.  Timer A can be set
+                          either to pulse the output of Bit 6 for one machine cycle, or to
+                          toggle that bit from 1 to 0 or 0 to 1.  Timer B can use Bit 7 of this
+                          register for the same purpose.
+
+
+---
+Additional information can be found by searching:
+- "game_paddle_inputs_and_sid_paddle_reading" which expands on Combined use of SID and CIA for paddles & fire buttons
+- "dc04_dc07_timers" which expands on Timers A/B registers and modes to toggle port bits

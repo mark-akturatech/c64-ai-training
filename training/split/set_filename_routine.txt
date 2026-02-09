@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Filename-setting helper called by parameter parsers: evaluate an expression and a string to obtain the filename pointer, retrieve the string pointer from BASIC pointers ($22/$23) and call the KERNAL filename setter ($FFBD) to copy the filename into the KERNAL buffer. (Includes JSR $AD9E to evaluate expression, JSR $B6A3 to evaluate string, and JMP $FFBD to perform the actual filename copy.)
+
+                                *** set filename
+.,E257 20 9E AD JSR $AD9E       evaluate expression
+.,E25A 20 A3 B6 JSR $B6A3       evaluate string
+.,E25D A6 22    LDX $22         get string pointer low byte
+.,E25F A4 23    LDY $23         get string pointer high byte
+.,E261 4C BD FF JMP $FFBD       set the filename and return
+
+
+---
+Additional information can be found by searching:
+- "get_params_for_load_save" which expands on invokes this to place the user-supplied filename into the KERNAL buffer
+- "get_params_for_open_close" which expands on OPEN/CLOSE parser also sets filenames using this routine

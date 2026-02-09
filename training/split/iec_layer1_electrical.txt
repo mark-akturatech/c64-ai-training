@@ -1,0 +1,38 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - IEC (Standard Serial) Layer 1: electrical and connector details. Female 6-pin DIN connectors, pinout (SRQ, GND, ATN, CLK, DATA, RESET), and open-collector (inverted) logic behaviour (5V = logical 0, 0V = logical 1) with implications for multi-device sharing.
+
+================================================================================
+PART 4: STANDARD SERIAL (IEC) BUS - LAYER 1: ELECTRICAL
+================================================================================
+
+The Standard Serial bus serializes IEEE-488's 16 parallel signal lines down
+to just 5 serial lines.
+
+Connectors & Pinout:
+  Female 6-pin DIN 45322 connectors on both computers and peripherals.
+  Daisy-chainable design allowing multiple devices per bus.
+
+Signal Lines (6 pins):
+  Pin 1: SRQ   (Service Request) - largely unused
+  Pin 2: GND   (Ground)
+  Pin 3: ATN   (Attention) - command signaling
+  Pin 4: CLK   (Clock) - sender-controlled handshake
+  Pin 5: DATA  (Data) - bit transmission and receiver handshake
+  Pin 6: RESET - bus reset capability
+
+Open Collector Logic:
+  All signal lines use inverted open-collector logic: 5V = logical 0,
+  0V = logical 1. "When all participants write 0, the line will read back 0,
+  but if any device writes 1, the bus will read back as 1." This allows
+  multiple devices to safely share signal lines.
+
+  Key implications:
+    - Any device can pull a line to logical 1 (0V)
+    - A line reads 0 only when ALL devices release it
+    - This enables collective "ready" signaling (all must release DATA)
+    - A single device can hold a line regardless of other devices
+
+
+---
+Additional information can be found by searching:
+- "byte_transfer_sequence" which expands on how CLK/DATA are used during byte transfers
+- "open_collector_consequences" which expands on open-collector details and signaling implications

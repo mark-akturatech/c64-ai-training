@@ -1,0 +1,90 @@
+# ********* - Section 7.3: Opening existing relative files (OPEN file#, device#, channel#, "name") and how to position the file pointer for reading/writing using the POSITION command (PRINT#file#, "P" CHR$(channel#+96) CHR$(rec#lo) CHR$(rec#hi) CHR$(position)). Explanation of two-byte record numbers (REC HI/REC LO), conversion formulas, and examples for constructing record numbers.
+
+Upon execution, the DOS first checks to see if the file exists.  If it
+does, then nothing happens.  The only way to erase an old relative
+file is by using the SCRATCH command (see chapter 4), but not by using
+the replace option.
+
+
+
+7.3 USING RELATIVE FILES
+
+In order to OPEN a relative file once it exists, the format is simpler.
+
+
+FORMAT FOR OPENING AN EXISTING RELATIVE FILE:
+
+    OPEN file#, device#, channel#, "name"
+
+In this case, the DOS automatically knows that it is a relative file.
+This syntax, and the one shown in the above section, both allow either
+reading or writing to the file.
+
+In order to read or write, you must, before any operation, position
+the file pointer to the correct record position.
+
+FORMAT FOR POSITION COMMAND:
+
+    PRINT#file#, "P" CHR$(channel#+96) CHR$(rec#lo) CHR$(rec#hi)
+    CHR$(position)
+
+EXAMPLES OF POSITION COMMAND:
+
+    PRINT#15, "P" CHR$(2+96) CHR$(1) CHR$(0)
+
+    PRINT#15, "P" CHR$(CH+96) CHR$(R1) CHR$(R2)
+
+    PRINT#15, "P" CHR$(4+96) CHR$(R1) CHR$(R2) CHR$(P)
+                       |          |        |        |
+	   +-----------+----------+--------+  +-----+---------+
+	   | Channel # | Record #          |  | Position      |
+	   +-----------+-------------------+  | within Record |
+					      +---------------+
+
+The 2-byte format for the record number is needed because one byte can
+only hold 256 different numbers, and we can have over 700 records in
+the file.  The rec# lo contains the least significant part of the
+address, and the rec# hi is the most significant part.  This could be
+translated to the actual record number by the formula REC# = REC HI *
+256 + REC LO.
+
+If the record number is known, the high and low bytes can be
+determined as follows:
+
+    REC# HI= INT(REC#/256)
+    REC# LO= REC# - REC# HI*256
+
+EXAMPLE:
+
+    PRINT#15, "P" CHR$(4+96) CHR$(R1) CHR$(R2) CHR$(0)
+
+    IF REC# = 540: R2 = INT(540/256) ... so R2 = 2
+                   RI = 540 - R2*256 ... so RI = 28
+
+Let's assume we have a mailing list.  The list consists of 8 pieces of
+data, according to this chart:
+
+    Field Name               Length
+
+    first name               12
+    last name                15
+    address line 1           20
+    address line 2           20
+    city                     12
+    state                     2
+    zip code                  9
+    phone number             10
+    ----------------------------
+    TOTAL                   100
+
+This is how the record length is determined.  We would probably want
+to allow an extra character in length for each field, to allow for
+separations; otherwise the INPUT# command would pick up a much longer
+piece of the file than needed, just like in sequential files.
+Therefore, we'll set up a file with a length of 108 characters per
+record. In the first record, we'll put the number 1, representing the
+largest record# used so far. Here is the program as described so far:
+
+---
+Additional information can be found by searching:
+- "mailing_list_record_layout_and_sample_setup_intro" which expands on practical application of record numbering with a sample mailing list layout

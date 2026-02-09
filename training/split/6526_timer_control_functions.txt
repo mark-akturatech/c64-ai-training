@@ -1,0 +1,45 @@
+# COMMODORE 64 - Detailed description of timer control register functions: Start/Stop (software start/stop), PB On/Off (force timer output onto PB6 for Timer A and PB7 for Timer B overriding DDRB), Toggle/Pulse (output toggles on underflow or generates a one-cycle positive pulse; toggle is set high on timer start and cleared by /RES), One-Shot/Continuous (one-shot counts to zero, interrupts, reloads latch and stops; continuous reloads and repeats), Force Load (strobe to load latch into counter immediately), and Input Mode selections (clock sources: 02 clock, external CNT pulses; Timer B can count 02 pulses, external CNT, Timer A underflow pulses, and variants with CNT held high).
+
+
+  Start/Stop
+
+    A control bit allows the timer to be started or stopped by the micro-
+  processor at any time.
+
+  PB On/Off:
+
+    A control bit allows the timer output to appear on a PORT B output line
+  (PB6 for TIMER A and PB7 for TIMER B). This function overrides the DDRB
+  control bit and forces the appropriate PB line to an output.
+
+  Toggle/Pulse
+
+    A control bit selects the output applied to PORT B. On every timer
+  underflow the output can either toggle or generate a single positive
+  pulse of one cycle duration. The Toggle output is set high whenever the
+  timer is started and is set low by /RES.
+
+  One-Shot/Continuous
+
+    A control bit selects either timer mode. In one-shot mode, the timer
+  will count down from the latched value to zero, generate an interrupt,
+  reload the latched value, then stop. In continuous mode, the timer will
+  count from the latched value to zero, generate' an interrupt, reload the
+  latched value and repeat the procedure continuously.
+
+  Force Load
+
+    A strobe bit allows the timer latch to be loaded into the timer counter
+  at any time, whether the timer is running or not.
+
+  Input Mode:
+
+    Control bits allow selection of the clock used to decrement the timer.
+  TIMER A can count 02 clock pulses or external pulses applied to the CNT
+  pin. TIMER B can count (02 pulses, external CNT pulses, TIMER A underflow
+  pulses or TIMER A underflow pulses while the CNT pin is held high.
+
+---
+Additional information can be found by searching:
+- "6526_timers_overview" which expands on General purpose and capabilities of the timers
+- "6526_timer_registers_and_load_behavior" which expands on When latch loads occur and register formats for reads/writes

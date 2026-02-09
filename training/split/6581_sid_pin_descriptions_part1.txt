@@ -1,0 +1,78 @@
+# COMMODORE 64 - SID pin descriptions: CAP1/CAP2 pins (CAP1A/CAP1B, CAP2A/CAP2B) for filter integrator capacitors (recommended values and formula FCmax = 2.6E-5/C), RES pin reset behavior, 02 (clock) behavior and its role as data-transfer gating, R/W pin for data direction, CS (/CS) chip select timing and address decode conditions, A0-A4 address inputs and addressing limitations, and GND grounding recommendations.
+
+  of the Filter over the audio range (approximately 30 Hz-12 kHz) is
+  accomplished with a value of 2200 pF for C1 and C2. Polystyrene
+  capacitors are preferred and in complex polyphonic systems, where many
+  SID chips must track each other, matched capacitors are recommended.
+    The frequency range of the Filter can be tailored to specific applica-
+  tions by the choice of capacitor values. For example, a low-cost game may
+  not require full high-frequency response. In this case, larger values
+  for C1 and C2 could be chosen to provide more control over the bass
+  frequencies of the Filter. The maximum Cutoff Frequency of the Filter is
+  given by:
+
+                             FCmax = 2.6E-5/C
+
+  Where C is the capacitor value. The range of the Filter extends 9 octaves
+  below the maximum Cutoff Frequency.
+
+  RES (Pin 5)
+
+    This TTL-level input is the reset control for SID. When brought low for
+  at least ten 02 cycles, all internal registers are reset to zero and the
+  audio output is silenced. This pin is normally connected to the reset
+  line of the microprocessor or a power-on-clear circuit.
+
+  470   APPENDIX O
+~
+
+
+  02 (Pin 6)
+
+    This TTL-Level input is the master clock for SID. All oscillator
+  frequencies and envelope rates are referenced to this clock. 02 also
+  controls data transfers between SID and the microprocessor. Data can only
+  be transferred when (02 is high. Essentially, (02 acts as a high-active
+  chip select as far as data transfers are concerned. This pin is normally
+  connected to the system clock, with a nominal operating frequency of 1.0
+  MHz.
+
+  R/W  (Pin 7)
+
+    This TTL-level input controls the direction of data transfers between
+  SID and the microprocessor. If the chip select conditions have been met,
+  a high on this line allows the microprocessor to Read data from the
+  selected SID register and a low allows the microprocessor to Write data
+  into the selected SID register. This pin is normally connected to the
+  system Read/Write line.
+
+  CS (Pin 8)
+
+    This TTL-Level input is a low active chip select which controls data
+  transfers between SID and the microprocessor. CS must be low for any
+  transfer. A Read from the selected SID register can only occur if CS is
+  low, 02 is high and R/W is high. A Write to the selected SID register can
+  only occur if CS is low, (02 is high and R/W is low. This pin is normally
+  connected to address decoding circuitry, allowing SID to reside in the
+  memory map of a system.
+
+  A0-A4 (Pins 9-13)
+
+    These TTL-Level inputs are used to select one of the 29 SID registers.
+  Although enough addresses are provided to select 1 of 32 registers, the
+  remaining three register locations are not used. A Write to any of these
+  three locations is ignored and a Read returns invalid data. These pins
+  are normally connected to the corresponding address lines of the micro-
+  processor so that SID may be addressed in the same manner as memory.
+
+  GND (Pin 14)
+
+    For best results, the ground line between SID and the power supply
+  should be separate from ground lines to other digital circuitry. This
+  will minimize digital noise at the audio output.
+                                                           APPENDIX O   471
+
+---
+Additional information can be found by searching:
+- "6581_sid_mode_volume_misc_and_io" which expands on POTX/POTY and EXT IN interactions described in later pin descriptions
+- "6581_sid_pin_descriptions_part2" which expands on continuation: data bus, POT interface, EXT IN and AUDIO OUT pin details

@@ -1,0 +1,75 @@
+# MACHINE - Stack basics: LIFO discipline located in page 1 ($0100-$01FF). Stack Pointer (SP) holds offset (push goes to $0100+SP then SP--). Leave stack as you found it. Within BASIC environment SP starts around $FA; values below ~$40 indicate trouble. Stack wraps in hardware but programmer must avoid overruns.
+
+
+
+Temporary Storage:  The Stack
+-----------------------------
+
+The stack is a convenient place to put temporary information.  It works like
+a stack of documents:  you may drop (or "push") an item onto the stack; when
+you take an item back again (or "pull"), you'll get the last one that you put
+there.  Formally, it's called a last-in, first-out (LIFO) discipline; it's
+natural and easy to understand.
+
+The important rule to keep in mind about the stack is:  "Leave these premises
+as clean as when you found them."  In other words, if you push three items
+onto the stack, be sure you pull those three items back off again.  Don't
+ever branch away and leave the stack littered.
+
+The stack is in memory at page 1.  The stack pointer (SP) is one of the items
+displayed in the register.  To look for the information on the stack, you
+must add $0100 to the value to get the next available stack position.  As an
+example, if the SP shows a value of $F8, the next item to go on the stack
+will go into address $01F8; the moment we put an item onto the stack, the
+pointer will move down so that it becomes $F7.
+
+As the stack is filled, the stack pointer goes down.  As the items are
+brought back out of the stack, the stack pointer goes up.  A low value in the
+stack pointer means a full stack:  a value below $40 signals trouble.
+
+The 650x chip itself doesn't give the stack any special treatment.  If a
+machine language program--probably because of a coding error--wanted to push
+one thousand items onto the stack, that would be OK as far as the micro-
+processor was concerned.  The stack would never leave page 1:  as the stack
+pointer went down beyond zero, it would wrap around to $FF and keep going.
+You'd never get those thousand distinct items back, of course,  Similarly, if
+a program wanted to pull a thousand items from the stack--whether or not they
+had been put there before--the processor would happily move the stack pointer
+round and round page 1, delivering bytes.  There would only be 256 different
+values delivered, of course, but the processor doesn't care.
+
+                                                                        :113:
+
+    SP
+    +----+              +------+
+    | F8 |-------.      | USED | 01FF
+    +----+       |      +------+
+                 |      | USED | 01FE
+                 |      +------+
+                 |      | USED | 01FD
+                 |      +------+
+                 |      | USED | 01FC
+                 |      +------+
+                 |      | USED | 01FB
+                 |      +------+
+                 |      | USED | 01FA
+                 |      +------+
+                 |      | USED | 01F9
+                 |      +------+
+                 `----->| FREE | 01F8
+                        +------+
+    NEXT ITEM           |      |
+    PUSHED WILL GO      :      :
+    TO ADDRESS $01F8    .      .
+
+    NEXT ITEM
+    PULLED WILL COME
+    FROM ADDRESS $01F9
+
+    Figure 7.1
+
+
+---
+Additional information can be found by searching:
+- "pha_pla_and_php_plp_usage" which expands on PHA/PLA use to push/pop A
+- "jsr_rts_stack_return_behavior" which expands on JSR/RTS push return address on stack

@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Start of the IRQ-driven tape read routine: read VIA1 timer B high/low (DC07/DC06), compute the elapsed count as ($FF - T2C_l) and ensure no rollover by comparing high bytes, save timer bytes ($DC04/$DC05) and copy timing constants into $B1/$B0 as preparation for pulse classification.
+
+                                read tape bits, IRQ routine
+                                read T2C which has been counting down from $FFFF. subtract this from $FFFF
+.,F92C AE 07 DC LDX $DC07       read VIA 1 timer B high byte
+.,F92F A0 FF    LDY #$FF        set $FF
+.,F931 98       TYA             A = $FF
+.,F932 ED 06 DC SBC $DC06       subtract VIA 1 timer B low byte
+.,F935 EC 07 DC CPX $DC07       compare it with VIA 1 timer B high byte
+.,F938 D0 F2    BNE $F92C       if timer low byte rolled over loop
+.,F93A 86 B1    STX $B1         save tape timing constant max byte
+.,F93C AA       TAX             copy $FF - T2C_l
+.,F93D 8C 06 DC STY $DC06       save VIA 1 timer B low byte
+.,F940 8C 07 DC STY $DC07       save VIA 1 timer B high byte
+
+---
+Additional information can be found by searching:
+- "restart_timer_b_and_save_icr_copies" which expands on immediately restarts timer B and saves ICR copies after reading T2C
+- "compute_shifted_timing_and_threshold_compare" which expands on uses the computed difference for threshold comparisons

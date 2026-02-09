@@ -1,0 +1,58 @@
+# MACHINE - Chapter 6 summary: options for staging ML programs (cassette buffer, top-of-memory, after EOB); C64 extra RAM $C000-$CFFF; importance of setting SOV correctly; monitor .S/.L usage; BASIC variables are integer/real/string and ML can interface (integers easiest).
+
+
+
+Things You Have Learned
+-----------------------
+
+- Small machine language programs can be conveniently written and checked out
+  in the cassette buffer.  We have been doing this during the exercises.
+  This area is not satisfactory for large programs, or programs we want to
+  save on tape.
+
+- Programs can take up semi-permanent residence near the top-of-BASIC memory;
+  the top-of-memory pointer needs to be moved down to protect it.  These
+  programs often need a separate "setup" to place them.
+
+- Programs can be placed behind the end-of-BASIC, which is marked by three
+  consecutive zero bytes in memory.  The start-of-variables pointer must be
+  increased so that variables don't write over the program.  Care must be
+  taken not to change the BASIC program after this is done.
+
+- The VIC-20 frequently has the start-of-BASIC pointer moved up to make room
+  for video information in lower memory.  As long as we're moving this
+  pointer, we might move it a little further and make room for some machine
+  code.
+
+- The Commodore 64 has an unused block of RAM at addresses $C000 to $CFFF;
+  check to see that no other programs are using this area.
+
+- The start-of-variables pointer is intimately tied in with BASIC's SAVE and
+  LOAD commands.  It is extremely important to ensure that any LOAD sequence
+  leaves this pointer in a safe place, so that variables cannot write over
+  program code and thus cause program destruction.
+
+- Machine language monitor .S (save) and .L (load) commands can be used for
+  staging programs in various parts of memory.  Again, great care should be
+  taken to ensure that the pointers are sound after the use of such
+  instructions.
+
+- A BASIC program may contain LOAD commands that will bring in any of the
+  following:  a different BASIC program, a machine language program, or data.
+  Again, careful handling is needed.
+
+- BASIC variables are of three major types:  integer, real (floating point),
+  and string.  Machine language programs are capable of reading and using any
+  of them; in particular, integer variables are quite straightforward.
+
+                                                                        :109:
+
+- If we want, we can simplify the task of searching for BASIC variables by
+  deliberately creating them in a certain sequence.
+
+
+
+---
+Additional information can be found by searching:
+- "where_to_put_machine_language_programs" which expands on recap of placement strategies
+- "example_ml_times_ten_using_basic_variables_and_sov_adjust" which expands on practical ML+BASIC example

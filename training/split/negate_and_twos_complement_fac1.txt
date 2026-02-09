@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Negate FAC1: flip the sign bit and perform a two's-complement on the FAC1 mantissa (bytes 1..4) and the rounding byte. Increments the rounding byte then, on overflow, propagates carries through the mantissa bytes. Leaves FAC1 negated and normalized (returns via RTS). This routine is used during subtraction paths that require taking the absolute value before normalization.
+
+                                *** negate FAC1
+.,B947 A5 66    LDA $66         get FAC1 sign (b7)
+.,B949 49 FF    EOR #$FF        complement it
+.,B94B 85 66    STA $66         save FAC1 sign (b7)
+                                twos complement FAC1 mantissa
+.,B94D A5 62    LDA $62         get FAC1 mantissa 1
+.,B94F 49 FF    EOR #$FF        complement it
+.,B951 85 62    STA $62         save FAC1 mantissa 1
+.,B953 A5 63    LDA $63         get FAC1 mantissa 2
+.,B955 49 FF    EOR #$FF        complement it
+.,B957 85 63    STA $63         save FAC1 mantissa 2
+.,B959 A5 64    LDA $64         get FAC1 mantissa 3
+.,B95B 49 FF    EOR #$FF        complement it
+.,B95D 85 64    STA $64         save FAC1 mantissa 3
+.,B95F A5 65    LDA $65         get FAC1 mantissa 4
+.,B961 49 FF    EOR #$FF        complement it
+.,B963 85 65    STA $65         save FAC1 mantissa 4
+.,B965 A5 70    LDA $70         get FAC1 rounding byte
+.,B967 49 FF    EOR #$FF        complement it
+.,B969 85 70    STA $70         save FAC1 rounding byte
+.,B96B E6 70    INC $70         increment FAC1 rounding byte
+.,B96D D0 0E    BNE $B97D       exit if no overflow
+                                increment FAC1 mantissa
+.,B96F E6 65    INC $65         increment FAC1 mantissa 4
+.,B971 D0 0A    BNE $B97D       finished if no rollover
+.,B973 E6 64    INC $64         increment FAC1 mantissa 3
+.,B975 D0 06    BNE $B97D       finished if no rollover
+.,B977 E6 63    INC $63         increment FAC1 mantissa 2
+.,B979 D0 02    BNE $B97D       finished if no rollover
+.,B97B E6 62    INC $62         increment FAC1 mantissa 1
+.,B97D 60       RTS             
+
+---
+Additional information can be found by searching:
+- "add_fac2_to_fac1_alignment_and_mantissa_operations" which expands on invoked from the subtract/normalise path when a negation (absolute) is required
+- "overflow_error_and_warm_start" which expands on overflow from subsequent adjustments is handled by the overflow error path

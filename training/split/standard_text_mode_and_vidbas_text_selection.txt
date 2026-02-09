@@ -1,0 +1,46 @@
+# Contents - Explains the C64 standard text mode (40x25 = 1000 characters), where the screen text bytes are stored by default at $0400, and how the VIC's VIDBAS register ($D018) upper 4 bits select the text memory base (on $0400 boundaries). Also describes that each text byte indexes the character generator (256 possible patterns) and introduces the VIDBAS lower 4 bits as selecting the character-generator/graphics memory area.
+
+STANDARD TEXT MODE 
+
+When the Commodore 64 is first turned on, it 
+powers up in its standard text mode. When in this 
+mode, the screen is arranged as 40 characters by 
+25 lines. This gives a total of 1000 characters that 
+can be displayed on the screen at any one time. The 
+character to display in each position can be found 
+in the 1000 bytes of RAM starting at $0400. If you 
+want, you can instruct the VIC chip to use a dif- 
+ferent area of memory to find the text to be 
+displayed. The upper four bits of the VIDBAS 
+register ($D018) control where the VIC chip will 
+
+
+
+24 
+
+
+
+find the text. Text memory will always be found on 
+$0400 boundaries. 
+
+Each byte in the text memory area is used as 
+an index into a character generator section of 
+memory. Since a byte can have 256 values, each 
+position on the screen can display one of 256 pat- 
+terns. When the Commodore 64 is powered up, the 
+graphics information that the text memory 
+
+
+
+references is in the character generator ROM. The 
+VIC chip can be instructed to use a different area 
+of memory as the character generator by changing 
+the lower four bits of the VIDBAS register ($D018). 
+This section of memory will be referred to as 
+graphics memory, as the information can be of any 
+type of graphics, not necessarily text. 
+
+---
+Additional information can be found by searching:
+- "character_generator_rom_memory_maps_and_banking" which expands on Full details on the built-in character generator ROM, memory maps (Fig. 7-4/7-5), and how the VIC/CPU see the generator
+- "txbas_grabas_and_address_calculation" which expands on How to change text/graphics bases (TXBAS/GRABAS) and compute absolute addresses with the selected bank

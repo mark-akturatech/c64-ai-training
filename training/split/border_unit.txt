@@ -1,0 +1,70 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Border generation: main border flip-flop (controls border color $D020 vs graphics output) and vertical border flip-flop (controls top/bottom border and graphics sequencer output). Flip-flops are controlled by comparators that compare raster X/Y with hardwired values depending on CSEL/RSEL. Horizontal comparison values: CSEL=0 left 31, right 335; CSEL=1 left 24, right 344. Vertical: RSEL=0 top 55 bottom 247; RSEL=1 top 51 bottom 251. Rules for setting/resetting flip-flops and notes on how to 'open' or manipulate border by changing CSEL/RSEL.
+
+3.9. The border unit
+--------------------
+
+The VIC uses two flip flops to generate the border around the display
+window: A main border flip flop and a vertical border flip flop.
+
+The main border flip flop controls the border display. If it is set, the
+VIC displays the color stored in register $d020, otherwise it displays the
+color that the priority multiplexer switches through from the graphics or
+sprite data sequencer. So the border overlays the text/bitmap graphics as
+well as the sprites. It has the highest display priority.
+
+The vertical border flip flop is for auxiliary control of the upper/lower
+border. If it is set, the main border flip flop cannot be reset. Apart from
+that, the vertical border flip flop controls the output of the graphics
+data sequencer. The sequencer only outputs data if the flip flop is
+not set, otherwise it displays the background color. This was probably done
+to prevent sprite-graphics collisions in the border area.
+
+There are 2�2 comparators belonging to each of the two flip flops. There
+comparators compare the X/Y position of the raster beam with one of two
+hardwired values (depending on the state of the CSEL/RSEL bits) to control
+the flip flops. The comparisons only match if the values are reached
+precisely. There is no comparison with an interval.
+
+The horizontal comparison values:
+
+       |   CSEL=0   |   CSEL=1
+ ------+------------+-----------
+ Left  |  31 ($1f)  |  24 ($18)
+ Right | 335 ($14f) | 344 ($158)
+
+And the vertical ones:
+
+        |   RSEL=0  |  RSEL=1
+ -------+-----------+----------
+ Top    |  55 ($37) |  51 ($33)
+ Bottom | 247 ($f7) | 251 ($fb)
+
+The flip flops are switched according to the following rules:
+
+1. If the X coordinate reaches the right comparison value, the main border
+   flip flop is set.
+2. If the Y coordinate reaches the bottom comparison value in cycle 63, the
+   vertical border flip flop is set.
+3. If the Y coordinate reaches the top comparison value in cycle 63 and the
+   DEN bit in register $d011 is set, the vertical border flip flop is
+   reset.
+4. If the X coordinate reaches the left comparison value and the Y
+   coordinate reaches the bottom one, the vertical border flip flop is set.
+5. If the X coordinate reaches the left comparison value and the Y
+   coordinate reaches the top one and the DEN bit in register $d011 is set,
+   the vertical border flip flop is reset.
+6. If the X coordinate reaches the left comparison value and the vertical
+   border flip flop is not set, the main flip flop is reset.
+
+So the Y coordinate is checked once or twice within each raster line: In
+cycle 63 and if the X coordinate reaches the left comparison value.
+
+By appropriate switching of the CSEL/RSEL bits you can prevent the
+comparison values from being reached and thus turn off the border partly or
+completely (see 3.14.1.).
+
+
+---
+Additional information can be found by searching:
+- "display_generation_dimensions" which expands on CSEL/RSEL effect on window size and border positions
+- "hyperscreen" which expands on technique to open the border by manipulating CSEL/RSEL

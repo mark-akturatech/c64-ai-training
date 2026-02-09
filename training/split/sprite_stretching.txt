@@ -1,0 +1,51 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Sprite stretching techniques exploiting sprite Y-expansion flip-flop and MCBASE behavior: by toggling MxYE bits at specific cycles (e.g., clear/set around cycles 15-16 and 55), individual sprite lines can be repeated multiple times (tripled or more) or misaligned, producing arbitrary vertical scaling and effects such as sprite duplication. Details of flip-flop manipulation, MC/MCBASE increments, and how repeated reads produce stretched/reused sprite lines are explained.
+
+3.14.7 Sprite stretching
+------------------------
+
+As the sprite circuitry is simpler than that for the text graphics, there
+are not as many special effects possible with sprites, but among them is a
+very interesting effect that takes advantage of the way the sprite Y
+expansion works: By modifying the MxYE bits in register $d017 it is not
+only possible to decide for every single sprite line if it should be
+doubled, but you can also have single lines repeated three or more times
+and so expand a sprite by arbitrary scaling factors.
+
+This effect can be understood as follows (see section 3.8.1.):
+
+Let's say that we are in cycle 55 of a raster line in which sprite 0 is
+turned on and whose Y coordinate matches the Y coordinate of the sprite,
+so we are in the line before the sprite is displayed. Suppose that the M0YE
+bit is set. The VIC will then turn on the DMA for sprite 0 and clear MCBASE
+and the expansion flip flop. BA goes to low state so that the VIC is able
+to access in the second clock phases of cycles 58 and 59. In cycle 58, MC
+is loaded from MCBASE and so cleared as well, and the p-access for the
+sprite is done. Afterwards, the three s-accesses are carried out and MC is
+incremented after each access so it now has the value 3.
+
+Now you wait for cycle 16 of the following line. As the expansion flip flop
+is reset, MCBASE still stays at zero. Then you first clear the M0YE bit and
+thereby set the flip flop, but immediately set the M0YE again. The flip
+flop is now inverted in cycle 55, because M0YE is set, and is thus reset
+again (if the M0YE hadn't been cleared, the flip flop would now be set).
+But this is exactly the same state in which the VIC was also in cycle 55 of
+the previous line. So the VIC "thinks" that it is still in the first raster
+line of an expanded sprite line and (as MC is still zero) and it will read
+the first sprite line twice more from memory, three times in total: The
+first sprite line has been tripled.
+
+Another interesting effect can be achieved by proceeding exactly as
+outlines above and not clearing the M0YE bit after cycle 16 but in the
+second phase of cycle 15. MCBASE will then only be incremented by 1 and the
+next sprite line is read from memory with MC=1..3, that is one byte higher
+than normal. This "misalignment" is continued in the complete display of
+the sprite. Therefore, the condition MC=63 for turning off the sprite DMA
+in cycle 16 is also not met and the sprite is effectively displayed twice
+in sequence. Not until the end of the second display, the DMA is turned off
+when MC is 63.
+
+
+
+---
+Additional information can be found by searching:
+- "sprite_memory_access_and_display" which expands on MC/MCBASE and expansion flip-flop rules that make stretching possible

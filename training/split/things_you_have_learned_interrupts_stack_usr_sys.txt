@@ -1,0 +1,56 @@
+# MACHINE - Summary bullets: stack location and LIFO behavior; importance of matching push/pop; PHA/PLA/PHP/PLP usage; JSR/RTS stack mechanics; interrupts/BRK push three items and RTI restores; USR function vs SYS command; ROM-provided interrupt sequences push A/X/Y and branch through an indirect address for user modification; IA chips functions and CHRGET subroutine as an infiltration point for BASIC expansion.
+
+
+
+Things You Have Learned
+-----------------------
+
+- The stack is located in page 1, from $01FF moving down to $0100.  It is
+  used for holding temporary information.  A program may push information to
+  the stack, and the pull it back later.  The last item that has been pushed
+  onto the stack will be the first item to be pulled back off.
+
+                                                                        :127:
+
+- Great care must be taken to ensure that your program pulls exactly the same
+  number of items back from the stack as it pushed.  In particular, be sure
+  that a branch or jump does not inadvertently omit a needed stack activity.
+  A badly handled stack is often fatal to the program run.
+
+- PHA pushes the contents of A to the stack; PLA pulls from the stack into
+  the A register.  These two commands are often used to temporarily save A.
+  PHP pushes the status register (SR); PLP pulls it back.  These two commands
+  are often used for "deferred decisions."
+
+- JSR pushes a return address (minus 1) to the stack; RTS recalls this
+  address.  We may use JSR and RTS without needing to know the role the stack
+  plays, since the two commands take care of the details for us.
+
+- Interrupts, including the BRK instruction, push three items to the stack;
+  RTI brings them back so that the interrupted program may resume.
+
+- USR is a function, as opposed to SYS, which is a command.  USR goes to a
+  preset address, takes a numeric argument, and can return a value.  In
+  practice, USR and SYS are used in quite similar ways.
+
+- Commodore ROM systems contain coding for the interrupt sequences that cause
+  the data registers--A, X, and Y--to be pushed to the stack, and a branch to
+  be taken through an indirect address that the user can modify.  Since
+  interrupt is active virtually all the time, it may be used to create
+  activities that are active even when no BASIC program is running.
+
+- The various IA chips--PIA, VIA, and CIA--perform many different functions,
+  including:  recording events in latching flags and controlling interrupts;
+  timing; and connecting input/output ports.  The detailed specification
+  sheets must be studied for these rather complex details.
+
+- A subroutine called CHRGET is used frequently by the BASIC interpreter when
+  a BASIC program is running.  We may modify or add to this subroutine in
+  order to add to or modify the BASIC language itself.
+
+
+
+---
+Additional information can be found by searching:
+- "interrupt_project_example" which expands on Example that used IRQ vector modification
+- "infiltrating_basic_wedge_intro_and_CHRGET_location" which expands on CHRGET as wedge entry point

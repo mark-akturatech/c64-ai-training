@@ -1,0 +1,31 @@
+# Multidirectional Scrolling Techniques by Cadaver - Two world-coordinate representations: (1) pixel-counting from map top-left as 16-bit values (simple but slow collisions and lacks subpixel accuracy); (2) highbyte = block coordinate, lowbyte = position within block (author's preference). With 4 chars per block = 32 pixels, lowbyte gives 3 bits of subpixel accuracy, makes background collision checking fast since map position is the highbyte. Sprite display and sprite-sprite collision need bit-rotates to remove subpixel bits, which is a minor slowdown.
+
+Therefore, for all serious multidirectional scrolling projects, I recommend
+using exclusively a world-coordinate system for all objects in the game world
+and checking background collisions the "hard way": by examining the map & block
+data (that could probably be optimized to check on the screen when possible,
+but I haven't done that...)
+
+How does one represent world coordinates? Metal Warrior 1 & 2 simply measured
+pixels from the top-left edge of the game map (as 16bit values). This worked
+great, to get the position of sprites on screen a value was subtracted based on
+the scrolling position. But honestly, the background collisions were slow and
+complicated and there was a complete lack of subpixel accuracy, making all
+accelerating movement look rough.
+
+Metal Warrior 3 and BOFH use another way to represent world coordinates: the
+highbyte of the coordinate represents position as blocks and the lowbyte of
+the coordinate represents position within the block. A block has 4 chars =
+32 pixels, so as a bonus we get 3 bits of subpixel accuracy. Now background
+collision checking becomes very fast & easy to do, because the map position is
+directly the coordinate highbyte.
+
+The downside is that the sprite displaying and sprite-sprite collision
+checks need now some bit rotates to get rid of the subpixel accuracy, so they
+become a bit slower.
+
+
+
+---
+Additional information can be found by searching:
+- "coordinate_systems_screen_vs_world_and_issues" which expands on why choose world coordinates

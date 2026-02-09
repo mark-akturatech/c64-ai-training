@@ -1,0 +1,52 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Higher-level 'input a character from channel' dispatch: check input device — keyboard (save cursor pos and jump to screen/keyboard input), screen (prepare screen parameters and jump to screen input), IEC devices vs RS-232 vs tape. For RS-232 device and serial bus, branch to appropriate routines; for tape device, call the tape-byte routine and handle EOI and error conditions. Implements device-number-based routing for channel input.
+
+                                *** input a character from channel
+.,F157 A5 99    LDA $99         get the input device number
+.,F159 D0 0B    BNE $F166       if not the keyboard continue
+                                the input device was the keyboard
+.,F15B A5 D3    LDA $D3         get the cursor column
+.,F15D 85 CA    STA $CA         set the input cursor column
+.,F15F A5 D6    LDA $D6         get the cursor row
+.,F161 85 C9    STA $C9         set the input cursor row
+.,F163 4C 32 E6 JMP $E632       input from screen or keyboard
+                                the input device was not the keyboard
+.,F166 C9 03    CMP #$03        compare device number with screen
+.,F168 D0 09    BNE $F173       if not screen continue
+                                the input device was the screen
+.,F16A 85 D0    STA $D0         input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,F16C A5 D5    LDA $D5         get current screen line length
+.,F16E 85 C8    STA $C8         save input [EOL] pointer
+.,F170 4C 32 E6 JMP $E632       input from screen or keyboard
+                                the input device was not the screen
+.,F173 B0 38    BCS $F1AD       if input device > screen go do IEC devices
+                                the input device was < screen
+.,F175 C9 02    CMP #$02        compare the device with the RS232 device
+.,F177 F0 3F    BEQ $F1B8       if RS232 device go get a byte from the RS232 device
+                                only the tape device left ..
+.,F179 86 97    STX $97         save X
+.,F17B 20 99 F1 JSR $F199       get a byte from tape
+.,F17E B0 16    BCS $F196       if error just exit
+.,F180 48       PHA             save the byte
+.,F181 20 99 F1 JSR $F199       get the next byte from tape
+.,F184 B0 0D    BCS $F193       if error just exit
+.,F186 D0 05    BNE $F18D       if end reached ??
+.,F188 A9 40    LDA #$40        set EOI
+.,F18A 20 1C FE JSR $FE1C       OR into the serial status byte
+.,F18D C6 A6    DEC $A6         decrement tape buffer index
+.,F18F A6 97    LDX $97         restore X
+.,F191 68       PLA             restore the saved byte
+.,F192 60       RTS             
+.,F193 AA       TAX             copy the error byte
+.,F194 68       PLA             dump the saved byte
+.,F195 8A       TXA             restore error byte
+.,F196 A6 97    LDX $97         restore X
+.,F198 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_character_from_input_device" which expands on lower-level input-device selection and keyboard handling
+- "tape_get_byte_routine" which expands on called when input device is tape
+- "serial_bus_input_check_and_dispatch" which expands on called when input device is the serial bus
+- "rs232_device_input_handling_loop" which expands on called when input device is the RS-232 device

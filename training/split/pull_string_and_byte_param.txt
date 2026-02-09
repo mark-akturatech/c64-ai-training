@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Common helper routine that pulls string descriptor and a byte parameter from the BASIC function call stack: scans for closing ')', preserves and restores return address bytes, pulls the byte parameter (stored into X and copied to A), pulls the string pointer low/high into $50/$51, restores return address on the stack, clears index (Y=0), copies parameter to A (TXA) and returns. Returns pointer in descriptor ($50/$51), byte parameter in A and X, Y=0.
+
+                                *** pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B761 20 F7 AE JSR $AEF7       scan for ")", else do syntax error then warm start
+.,B764 68       PLA             pull return address low byte
+.,B765 A8       TAY             save return address low byte
+.,B766 68       PLA             pull return address high byte
+.,B767 85 55    STA $55         save return address high byte
+.,B769 68       PLA             dump call to function vector low byte
+.,B76A 68       PLA             dump call to function vector high byte
+.,B76B 68       PLA             pull byte parameter
+.,B76C AA       TAX             copy byte parameter to X
+.,B76D 68       PLA             pull string pointer low byte
+.,B76E 85 50    STA $50         save it
+.,B770 68       PLA             pull string pointer high byte
+.,B771 85 51    STA $51         save it
+.,B773 A5 55    LDA $55         get return address high byte
+.,B775 48       PHA             back on stack
+.,B776 98       TYA             get return address low byte
+.,B777 48       PHA             back on stack
+.,B778 A0 00    LDY #$00        clear index
+.,B77A 8A       TXA             copy byte parameter
+.,B77B 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "left_string_function" which expands on LEFT$ entry calls this helper (JSR $B761)
+- "right_string_function" which expands on RIGHT$ entry calls this helper (JSR $B761)
+- "mid_string_function" which expands on MID$ entry calls this helper (JSR $B761)

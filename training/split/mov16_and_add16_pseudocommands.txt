@@ -1,0 +1,23 @@
+# Kick Assembler - Definitions of .pseudocommand mov16 src:tar (loads/stores both low and high bytes using _16bitnextArgument) and .pseudocommand add16 arg1 : arg2 : tar (performs 16-bit addition across low and high bytes; if tar omitted and AT_NONE used, the first argument is used as target).
+
+.pseudocommand mov16 src:tar {
+lda src
+sta tar
+lda _16bitnextArgument(src)
+sta _16bitnextArgument(tar)
+}
+.pseudocommand add16 arg1 : arg2 : tar {
+.if (tar.getType()==AT_NONE) .eval tar=arg1
+clc
+lda arg1
+adc arg2
+sta tar
+lda _16bitnextArgument(arg1)
+adc _16bitnextArgument(arg2)
+sta _16bitnextArgument(tar)
+}
+
+---
+Additional information can be found by searching:
+- "constructing_cmdargument_and_16bit_next_argument_function" which expands on Uses _16bitnextArgument to operate on high/low pairs
+- "using_16bit_pseudocommands_and_notes" which expands on Examples of how to call these 16-bit pseudo commands and notes on optional target argument

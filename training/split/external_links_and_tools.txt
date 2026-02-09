@@ -1,0 +1,67 @@
+# 6502 Instruction Set - External links and references: Virtual 6502 tools, 6502.org, visual6502.org transistor-level simulation, Western Design Center Inc. site (WDC), and credits 'mass:werk'. Also file path of original HTML source. Mentions presented by mass:werk and provides further reading suggestions for in-depth study.
+
+          data lines at the same time as the contents of the X-register, while there's
+          also the operand read for the immediate operation, with the result
+          transferred to the accumulator.
+          In the case of LXA, the immediate operand and the contents of the accumulator
+          are competing for the imput lines, while the result will be transferred to
+          both the accumulator and the X register.
+          The outcome of these competing, noisy conditions depends on the production
+          series of the chip, and maybe even on environmental conditions. This effects
+          in an OR-ing of the accumulator with the "magic constant" combined with an
+          AND-ing of the competing inputs. The final transfer to the target register(s)
+          then seems to work as may be expected.
+          (This AND-ing of competing values susggests that the 6502 is working internally
+          in active negative logic, where all data lines are first set to high and then
+          cleared for any zero bits. This also suggests that the "magic constant" stands
+          merely for a partial transfer of the contents of the accumulator.)
+                                                                   6502 Instruction Set
+          Much of this also applies to "TAS" (XAS, SHS), $9B, but here the extra cycles
+          for indexed addressing seem to contribute to the conflict being resolved
+          without this "magic constant". However, TAS is still unstable.
+          Simlarly the peculiar group involving the high-byte of the provided address + 1
+          (as in "H+1") — SHA (AHX, AXA), SHX (A11, SXA, XAS), SHY (A11, SYA, SAY) —
+          involves a conflict of an attempt to store the accumulator and another register
+          being put on the data lines at the same time, and the operations required to
+          determine the target address for for indexed addressing. Again, the competing
+          values are AND-ed and the instructions are unstable.
+          We may also observe that SHY is really the unimplemented instruction "STY abs,X"
+          and SHX is "STX abs,Y" with SHA being the combination of "LDA abs,X" and SHX.
+          We may conclude that these "illegal opcodes" or "undocumented instructions" are
+          really a text-book example of undefined behavior for undefined input patterns.
+          Generally speaking, for any instructions xxxxxx11 (c=3) both instructions at
+          xxxxxx01 (c=1) and xxxxxx10 (c=2) are started in a thread, with competing ouput
+          values on the internal data lines AND-ed. For some combinations, this results
+          in a fragile race condition, while others are showing mostly stable behavior.
+          The addressing mode is generally determined by that of the instruction at c=1.
+          (It may be interesting that is doesn't matter, if any of the two threads jams,
+          as long as the timing for the other thread resolves. So there is no "JAM"
+          instruction at c=3.)
+          Pinout
+          • 6502 (NMOS)
+                                                                        6502 Instruction Set
+                VCC       supply voltage (+5 V DC ± 5%, +7 V max.)
+                VSS       logical ground
+                Φ0…2      clock
+                A0 … A15  address bus
+                D0 … D7   data bus
+                R/W       read/write (low on write)
+                RDY       ready
+                S.O.      set overflow (future I/O interface)
+                SYNC      sync (goes high on opcode fetch phase)
+                IRQ       interrupt request (active low)
+                NMI       non maskable interrupt (active low)
+                RES       reset (active low)
+                N.C.      no connection
+           After: MCS6500 Microcomputer Family Hardware Manual. MOS Technology, Inc., 1976.
+                                                6502 Instruction Set
+          • WDC 65C02S (40 Pin PDIP)
+                VDD       positive supply voltage
+                VSS       logical ground
+                Φ1…2      clock
+                A0 … A15  address bus
+
+---
+Additional information can be found by searching:
+- "site_notes_disclaimer_and_tools" which expands on local site notes and virtual tools references
+- "pinouts_and_physical_signals" which expands on datasheets referenced for pinouts

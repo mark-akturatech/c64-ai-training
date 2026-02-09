@@ -1,0 +1,44 @@
+# byRiclianll - Describes subsequent sectors of a PRG file: for non-final blocks bytes 0-1 are forward pointer to next block and bytes 2-255 contain 254 bytes of program data. For the last block: byte 0 = $00 (indicates last sector), byte 1 = number of bytes to read (N), bytes 2..N-1 are valid program data, remaining bytes are garbage.
+
+The  last  block  in  a  program  file  is  special  because: 
+
+1.  It  is  the  last  sector. 
+
+2.  It  is  usually  only  partially  full. 
+
+To  signal  the  DOS  that  this  is  the  last  block,  the  first  byte  is  set  to  $00.  The  first  byte 
+is  normally  the  track  link.  Since  there  is  no  track  0,  the  DOS  knows  that  this  is  the 
+last  sector  in  the  file.  The  second  byte  indicates  the  position  of  the  last  byte  that  is  part 
+of  the  program  file.  Any  bytes  beyond  this  position  are  garbage. 
+
+Diagrammatically,  the  last  sector  in  a  program  file  looks  like  this: 
+
+
+NULL 
+
+LAST 
+
+THE  FINAL  BYTES 
+
+GARBAGE 
+
+SOO 
+
+BYTE 
+
+OF  YOUR  PROGRAM 
+
+Byte  Purpose 
+
+
+0  Null  byte  to  indicate  that  this  is  the  last  sector 
+
+1  Number  of  bytes  to  read  from  this  sector  (N) 
+
+2-N      The  last  (N-2)  bytes  of  the  program 
+(N  +  l)-255  Garbage 
+
+
+---
+Additional information can be found by searching:
+- "program_file_load_address_and_load_behavior" which expands on how data is laid out after the load address

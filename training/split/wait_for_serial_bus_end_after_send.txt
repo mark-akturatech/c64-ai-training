@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Sequence to wait for end-of-transaction on the serial bus after sending: disable interrupts, force serial data low, set ATN high, set clock high, poll serial data status until clock low/high transitions complete, then re-enable interrupts and return.
+
+                                *** wait for the serial bus end after send
+                                return address from patch 6
+.,EDCC 78       SEI             disable the interrupts
+.,EDCD 20 A0 EE JSR $EEA0       set the serial data out low
+.,EDD0 20 BE ED JSR $EDBE       set serial ATN high
+.,EDD3 20 85 EE JSR $EE85       set the serial clock out high
+.,EDD6 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,EDD9 30 FB    BMI $EDD6       loop if the clock is high
+.,EDDB 58       CLI             enable the interrupts
+.,EDDC 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "serial_pin_control_and_1ms_delay" which expands on calls routines to set data/clock lines high/low and to sample data status
+- "send_secondary_address_after_listen_and_talk_set_atn" which expands on used after sending secondary address bytes

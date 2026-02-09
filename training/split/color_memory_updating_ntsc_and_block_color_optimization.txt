@@ -1,0 +1,80 @@
+# Multidirectional Scrolling Techniques by Cadaver - Color-memory update considerations: color memory cannot be doublebuffered and must be updated when that portion isn't being displayed. For NTSC compatibility split color updates in two halves (upper half while lower half displays, then lower half after screen ends) and buffer the row at the split. Warns against an inefficient per-character lookup/sta approach (example assembly) that wastes cycles and kills NTSC compatibility. Explains optimization when colors are per-block (not per-char): only every Nth column changes (example shows 4x4 blocks) allowing color updates to be reduced to ~1/4th of naive accesses.
+
+2.5 Shifting the color-memory data
+
+The color memory is quite ugly to work with because it can't be doublebuffered.
+So, updating it must be done when the portion being updated isn't being
+displayed. If you don't care about NTSC compatibility, you'll have enough time
+to shift about 20-21 lines around during the time it's not being displayed. But
+having NTSC compatibility included isn't so much harder: you simply have to
+split the color screen update in two:
+
+- Already when the lower half of the screen is being displayed, you can start
+  shifting the upper half.
+
+- Having done that, see that the game screen displaying has ended (probably
+  it has, but if it's a SuperCPU equipped machine you can't be sure)
+
+- Then shift the lower half of the color memory.
+
+Care must be taken when shifting the colors from top to bottom - the row at the
+split point must be buffered into a separate memory location at first (how
+to do it can be seen in Metal Warrior 2 & 3 source code.)
+
+There's also an abominable method of updating the color memory that wastes a
+lot of time (used in Nobby The Aardwark, Darkman and Cool World at least)
+
+                ldy screen,x
+                lda charcolortable,y
+                sta colormemory,x
+                ldy screen+40,x
+                lda charcolortable,y
+                sta colormemory+40,x
+                ...
+
+It is wasting 4 cycles each byte, compared to plain shifting! I strongly
+recommend not to use this method, although it's very easy to use. In fact it's
+so slow that you can forget about NTSC compatibility when using it.
+
+If you don't have a separate char color for each char but rather for each block
+only (like SEUCK), the color screen update can be tremendously optimized.
+Now consider 1,2 and 3 as different colors and look what only really changes
+when we scroll:
+
+111122223333111122223333111122223333    111222233331111222233331111222233331
+111122223333111122223333111122223333    111222233331111222233331111222233331
+111122223333111122223333111122223333    111222233331111222233331111222233331
+111122223333111122223333111122223333    111222233331111222233331111222233331
+222233331111222233331111222233331111    222333311112222333311112222333311112
+222233331111222233331111222233331111 -> 222333311112222333311112222333311112
+222233331111222233331111222233331111    222333311112222333311112222333311112
+222233331111222233331111222233331111    222333311112222333311112222333311112
+333311112222333311112222333311112222    333111122223333111122223333111122223
+333311112222333311112222333311112222    333111122223333111122223333111122223
+333311112222333311112222333311112222    333111122223333111122223333111122223
+333311112222333311112222333311112222    333111122223333111122223333111122223
+
+Only every 4th column changes:
+   2   3   1   2   3   1   2   3   1
+   2   3   1   2   3   1   2   3   1
+   2   3   1   2   3   1   2   3   1
+   2   3   1   2   3   1   2   3   1
+   3   1   2   3   1   2   3   1   2
+   3   1   2   3   1   2   3   1   2
+   3   1   2   3   1   2   3   1   2
+   3   1   2   3   1   2   3   1   2
+   1   2   3   1   2   3   1   2   3
+   1   2   3   1   2   3   1   2   3
+   1   2   3   1   2   3   1   2   3
+   1   2   3   1   2   3   1   2   3
+
+The knowledge of this can cut color memory accesses to 1/4th portion. See
+Metal Warrior 1 source code for an example, or reverse-engineer some game
+where you see colors changing rarely - it's likely to be doing this.
+
+
+
+---
+Additional information can be found by searching:
+- "scrolling_overview_doublebuffering" which expands on why doublebuffering doesn't solve color memory update timing
+- "drawing_new_data_on_sides_block_examples" which expands on if colors are block-based, side drawing requires fewer color updates

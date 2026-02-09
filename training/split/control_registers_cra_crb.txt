@@ -1,0 +1,71 @@
+# COMMODORE 64 - 6526 control registers CRA (for TIMER A) and CRB (for TIMER B): detailed bit-by-bit definitions. CRA bits: START (bit0), PBON (bit1), OUTMODE (bit2 toggle/pulse), RUNMODE (bit3 one-shot/continuous), LOAD (bit4 force load strobe), INMODE (bit5 select CNT or T2 pulses), SPMODE (bit6 serial port output/input), TODIN (bit7 select 50/60 Hz TOD input). CRB: bits 0-4 mirror CRA0-4 (bit1 controls PB7 output for TIMER B); CRB5-6 form a two-bit INMODE selecting one of four input sources (02 pulses, CNT transitions, TIMER A underflows, TIMER A underflows gated by CNT); CRB7 is ALARM bit selecting writes to TOD registers as ALARM vs TOD clock. Includes compact bit-mapping tables showing control-bit meanings for TA and TB operation. Also notes that unused register bits are unaffected by writes and read back as zero.
+
+  CONTROL REGISTERS
+
+    There are two control registers in the 6526, CRA and CRB. CRA is
+  associated with TIMER A and CRB is associated with TIMER B. The register
+  format is as follows:
+
+  CRA:
+  Bit  Name    Function
+   0  START    1=START TIMER A, 0=STOP TIMER A. This bit is automatically
+               reset when underflow occurs during one-shot mode.
+   1  PBON     1=TIMER A output appears on PB6, 0=PB6 normal operation.
+
+   2  OUTMODE  1=TOGGLE, 0=PULSE
+   3  RUNMODE  1=ONE-SHOT, 0=CONTINUOUS
+   4  LOAD     1=FORCE LOAD (this is a STROBE input, there is no data
+               storage, bit 4 will always read back a zero and writing a
+               zero has no effect).
+   5  INMODE   1=TIMER A counts positive CNT transitions, 0=TIMER A counts
+               02 pulses.
+   6  SPMODE   1=SERIAL PORT output (CNT sources shift clock),
+               0=SERIAL PORT input (external shift clock required).
+   7  TODIN    1=50 Hz clock required on TOD pin for accurate time,
+               0=60 Hz clock required on TOD pin for accurate time.
+
+  434   APPENDIX M
+~
+
+
+  CRB:
+  Bit  Name    Function
+               (Bits CRB0-CRB4 are identical to CRA0-CRA4 for TIMER B with
+               the exception that bit 1 controls the output of TIMER B on
+               PB7).
+  5,6 INMODE   Bits CRB5 and CRB6 select one of four input modes for
+               TIMER B as:
+               CRB6   CRB5
+                0      0       TIMER B counts 02 pulses.
+                0      1       TIMER B counts positive CNT transistions.
+                1      0       TIMER B counts TIMER A underflow pulses.
+                1      1       TIMER B counts TIMER A underflow pulses
+                               while CNT is high.
+  7   ALARM     1=writing to TOD registers sets ALARM, 0=writing to TOD
+                registers sets TOD clock.
+
+  REGNAME TODIN SP MODE IN MODE   LOAD  RUN MODE OUT MODE   PB ON   START
+  +-+---+------+-------+-------+--------+-------+--------+--------+-------+
+  |E|CRA|0=60Hz|0=INPUT| 0=02  |1=FORCE |0=CONT.|0=PULSE |0=PB6OFF|0=STOP |
+  | |   |      |       |       |  LOAD  |       |        |        |       |
+  | |   |1=50Hz|1=OUTP.| 1=CNT |(STROBE)|1=O.S. |1=TOGGLE|1=PB6ON |1=START|
+  +-+---+------+-------+-------+--------+-------+--------+--------+-------+
+                       +------------------ TA ----------------------------+
+
+  REGNAME ALARM    IN MODE        LOAD  RUN MODE OUT MODE   PB ON   START
+  +-+---+------+------+--------+--------+-------+--------+--------+-------+
+  |E|CRB|0=TOD |   0  |0=02    |1=FORCE |0=CONT.|0=PULSE |0=PB7OFF|0=STOP |
+  | |   |      |   1  |1=CNT   |LOAD    |       |        |        |       |
+  | |   |1=    |   1  |0=TA    |        |       |        |        |       |
+  | |   | ALARM|   1  |1=CNT&TA|(STROBE)|1=O.S. |1=TOGGLE|1=PB7ON |1=START|
+  +-+---+------+------+--------+--------+-------+--------+--------+-------+
+               +-------------------------- TB ----------------------------+
+
+  All unused register bits are unaffected by a write and are forced to zero
+  on a read.
+
+---
+Additional information can be found by searching:
+- "time_of_day_tod_clock" which expands on CRA/CRB contain bits (TODIN, CRB7/ALARM) that affect TOD operation and ALARM selection
+- "serial_port_sdr" which expands on CRA SPMODE selects serial port direction and CNT clock source tied to TIMER A
+- "interrupt_control_icr" which expands on TIMER A and TIMER B underflows governed by CRA/CRB can generate ICR interrupts

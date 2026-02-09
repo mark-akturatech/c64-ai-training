@@ -1,0 +1,56 @@
+# MACHINE - The 6502 programming model: diagrams and descriptions of the processor registers and the processor status register. Includes 8-bit accumulator (A) and index registers (X, Y); 16-bit program counter shown as PCH/PCL labeled "PC"; stack pointer format illustrated (leading '1' then S) labeled "S"; and the processor status register P with bit order 'N V - B D I Z C' and per-flag meanings: N = Negative (1 = negative), V = Overflow (1 = true), - (unused), B = BRK command, D = Decimal Mode (1 = true), I = IRQ Disable (1 = disable), Z = Zero (1 = result zero), C = Carry (1 = true). Contains Figure A.1 labelling the diagrams.
+
+Programming Model
+-----------------
+
+                   7             0
+                  +---------------+
+                  |       A       |  ACCUMULATOR                  "A"
+                  +---------------+
+
+                   7             0
+                  +---------------+
+                  |       X       |  INDEX REGISTER               "X"
+                  +---------------+
+
+                   7             0
+                  +---------------+
+                  |       Y       |  INDEX REGISTER               "Y"
+                  +---------------+
+
+   15            8 7             0
+  +---------------+---------------+
+  |      PCH      |      PCL      |  PROGRAM COUNTER              "PC"
+  +---------------+---------------+
+
+                 8 7             0
+                +-+---------------+
+                |1|       S       |  STACK POINTER                "S"
+                +-+---------------+
+
+                   7 6 5 4 3 2 1 0
+                  +---------------+
+                  |N V   B D I Z C|  PROCESSOR STATUS REGISTER    "P"
+                  +---------------+
+                   | |   | | | | |
+                   | |   | | | | |
+                   | |   | | | | `---> CARRY         1 = TRUE
+                   | |   | | | |
+                   | |   | | | `-----> ZERO          1 = RESULT ZERO
+                   | |   | | |
+                   | |   | | `-------> IRQ DISABLE   1 = DISABLE
+                   | |   | |
+                   | |   | `---------> DECIMAL MODE  1 = TRUE
+                   | |   |
+                   | |   `-----------> BRK COMMAND
+                   | |
+                   | `---------------> OVERFLOW      1 = TRUE
+                   |
+                   `-----------------> NEGATIVE      1 = NEGATIVE
+
+  Figure A.1
+
+
+---
+Additional information can be found by searching:
+- "instruction_mnemonics_reference" which expands on Provides the instruction set whose behaviour depends on the registers and flags (A, X, Y, PC, S, P)

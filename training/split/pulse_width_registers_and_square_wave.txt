@@ -1,0 +1,31 @@
+# COMMODORE 64 - Explains pulse (rectangular) waveform width control for voice 1 via SID registers 2 (low byte Lpw) and 3 (high 4 bits Hpw), defines the 12-bit PWn value (PWn = Hpw*256 + Lpw), gives the pulse output percentage formula (PWout = (PWn/40.95) %), shows that PWn = 2048 (Hpw=8, Lpw=0) produces a square wave, and instructs adding the POKES+3,8:POKES+2,0 line to the program and altering start/stop numbers to hear changes.
+
+    It is a rectangular wave and you determine the length of the pulse
+  cycle by defining the proportion of the wave which will be high. This is
+  accomplished for voice 1 by using registers 2 and 3: Register 2 is the
+  low byte of the pulse width (Lpw = 0 through 255). Register 3 is the high
+  4 bits (Hpw = 0 through 15).
+    Together these registers specify a 12-bit number for your pulse width,
+  which you can determine by using the following formula:
+
+                        PWn = Hpw*256 + Lpw
+
+  The pulse width is determined by the following equation:
+
+                       PWout = (PWn/40.95) %
+
+    When PWn has a value of 2048, it will give you a square wave. That
+  means that register 2 (Lpw) = 0 and register 3 (Hpw) = 8.
+    Now try adding this line to your program:
+
+    15 POKES+3,8:POKES+2,0
+
+  Then change the start number in line 70 to 65 and the stop number in fine
+  90 to 64, and RUN the program. Now change the high pulse width (register
+  3 in line 15) from an 8 to a 1. Notice how dramatic the difference in
+  sound quality is?
+
+---
+Additional information can be found by searching:
+- "run_results_triangle_and_pulse" which expands on Context for why you would change pulse width in the running program
+- "white_noise_selection" which expands on Other available waveform (white noise) and how to select it

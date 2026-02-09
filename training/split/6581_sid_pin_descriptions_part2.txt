@@ -1,0 +1,82 @@
+# COMMODORE 64 - SID pin descriptions continued: D0-D7 bidirectional data bus behavior and drive capability, POTX/POTY A/D converter timing and recommended R/C values (recommended R=470kΩ, C=1000 pF), VCC and bypass recommendations, EXT IN analog input guidance (impedance ~100kΩ, recommended AC coupling and acceptable signal levels), AUDIO OUT (open-source buffer, typical levels, DC level 6V, recommended source resistor and AC coupling), and VDD (+12V) power recommendations.
+
+~
+
+
+  D0-D7 (Pins 15-22)
+
+    These bidirectional lines are used to transfer data between SID and the
+  microprocessor. They are TTL compatible in the input mode and capable of
+  driving 2 TTL loads in the output mode. The data buffers are usually in
+  the high-impedance off state. During a Write operation, the data buffers
+  remain in the off (input) state and the microprocessor supplies data to
+  SID over these lines. During a Read operation, the data buffers turn on
+  and SID supplies data to the microprocessor over these lines. The pins
+  are normally connected to the corresponding data lines of the micro-
+  processor.
+
+  POTX,POTY (Pins 24,23)
+
+    These pins are inputs to the A/D converters used to digitize the posi-
+  tion of potentiometers. The conversion process is based on the time con-
+  stant of a capacitor tied from the POT pin to ground, charged by a
+  potentiometer tied from the POT pin to +5 volts. The component values are
+  determined by:
+
+                                RC = 4.7E-4
+
+  Where R is the maximum resistance of the pot and C is the capacitor.
+    The larger the capacitor, the smaller the POT value jitter. The recom-
+  mended values for R and C are 470 komhs and 1000 pF. Note that a separate
+  pot and cap are required for each POT pin.
+
+  VCC (Pin 25)
+
+    As with the GND line, a separate +5 VDC line should be run between SID
+  Vcc and the power supply in order to minimize noise. A bypass capacitor
+  should be located close to the pin.
+
+  EXT IN (Pin 26)
+
+    This analog input allows external audio signals to be mixed with the
+  audio output of SID or processed through the Filter. Typical sources in-
+  clude voice, guitar, and organ. The input impedance of this pin is on the
+  order of 100 kohms. Any signal applied directly to the pin should ride at
+  a DC level of 6 volts and should not exceed 3 volts p-p. In order to pre-
+
+
+
+  472   APPENDIX O
+~
+
+
+  vent any interference caused by DC level differences, external signals
+  should be AC-coupled to EXT IN by an electrolytic capacitor in the 1-10
+  uF range. As the direct audio path (FILTEX=0) has unity gain, EXT IN can
+  be used to mix outputs of many SID chips by daisy-chaining. The number of
+  chips that can be chained in this manner is determined by the amount of
+  noise and distortion allowable at the final output. Note that the output
+  Volume control will affect not only the three SID voices, but also any
+  external inputs.
+
+  AUDIO OUT (Pin 27)
+
+    This open-source buffer is the final audio output of SID, comprised of
+  the three SID voices, the Filter and any external input. The output level
+  is set by the output Volume control and reaches a maximum of 2 volts p-p
+  at a DC level of 6 volts. A source resistor from AUDIO OUT to ground is
+  required for proper operation. The recommended resistance is 1 kohm for
+  a standard output impedance.
+    As the output of SID rides at a 6-volt DC level, it should be AC-
+  coupled to any audio amplifier with an electrolytic capacitor in the 1-10
+  uF range.
+
+  VDD (Pin 28)
+
+    As with Vcc, a separate +12 VDC line should be run to SID VDD and a
+  bypass capacitor should be used.
+
+---
+Additional information can be found by searching:
+- "6581_sid_pin_descriptions_part1" which expands on complements pin descriptions (CAP, RES, 02, address pins)
+- "6581_sid_characteristics_and_electrical_tables" which expands on absolute maximum ratings and electrical characteristics for these pins

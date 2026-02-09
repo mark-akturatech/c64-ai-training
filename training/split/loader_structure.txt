@@ -1,0 +1,30 @@
+# Analyzing C64 tape loaders - Compact summary of the IRQ loader structure: Threshold $027C clock cycles (TAP $50), Endianess MSbF, Pilot Byte $40, Sync/Start payload byte $5A. Header layout: 1 unused, 2-byte load address (LSB first), 2-byte end address+1 (LSB first). Data includes 1-byte XOR checksum. Also notes code mapping for bit0/bit1.
+
+
+It should now be clear that this loader has the following structure:
+
+<code>
+Threshold: $027C clock cycles (Tap value=$50)
+Endianess: MSbF
+
+Pilot Byte: $40
+Start of payload Byte (1): $5A
+
+Header:
+
+  1 byte: unused
+  2 bytes: Load address (LSBF)
+  2 bytes: End address+1 (LSBF)
+
+Data:
+
+  1 byte: XOR checksum
+
+(1) better known as "Sync Byte".
+</code>
+
+
+---
+Additional information can be found by searching:
+- "read_header_bytes" which expands on Header field meanings and addresses used
+- "read_data_bytes" which expands on How header addresses are used during data write

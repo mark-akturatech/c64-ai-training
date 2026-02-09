@@ -1,0 +1,37 @@
+# A Minimal C64 Datasette Program Loader - Leader and countdown handling: files begin with a leader of short pulses (ignored by the minimal loader) followed by a countdown sequence: $89 down to $81. get_countdown reads bytes using get_byte, compares against the expected countdown sequence, handles incomplete countdowns followed by complete ones, and returns when the full countdown has been successfully observed.
+
+Leader and Countdown
+--------------------
+
+Every file begins with a leader section containing short pulses. This allows
+the motor speed compensation in the full KERNAL loader. The minimal loader
+ignores these.
+
+Following the leader is a countdown sequence:
+  $89, $88, $87, $86, $85, $84, $83, $82, $81
+
+    get_countdown:
+    c0: jsr get_byte
+    c1: ldy #$89
+        sty tmp_cntdwn  ;start with $89
+        ldy #9
+        bne c2
+    cx: jsr get_byte
+    c2: cmp tmp_cntdwn
+        bne c4
+        dec tmp_cntdwn
+        dey
+        bne cx
+        rts
+    c4: cpy #9           ;first byte wrong?
+        beq c0           ;then read new byte
+        bne c1           ;compare against $89
+
+The implementation handles incomplete countdowns followed by complete ones.
+
+
+
+---
+Additional information can be found by searching:
+- "get_byte_routine" which expands on used to read countdown bytes
+- "get_block" which expands on data blocks are read after countdown

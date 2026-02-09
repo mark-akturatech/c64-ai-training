@@ -1,0 +1,43 @@
+# ca65 Users Guide - Guidance for porting code from other assemblers to ca65: major differences include .ORG handling and relocatable code via the linker. Recommends avoiding emulation features for new code. TASS porting tips: enable .feature labels_without_colons and .feature loose_char_term to emulate TASS label/char styles, reserve load-address bytes (.word *+2) and use .res instead of program-counter assignments (ca65 cannot move PC backwards). Translate conditional assembly to ca65 syntax (use .REPEAT for loops). Use .ORG to assemble code to an execution address different from assembly address and use cl65 --start-addr with -t none to produce .prg files (note cbm load address adjustment).
+
+17. Porting sources from other assemblers
+Sometimes it is necessary to port code written for older assemblers to ca65. In some cases, this can be done without any changes to the source code by using the emulation features of ca65 (see .FEATURE). In other cases, it is necessary to make changes to the source code.
+
+Probably the biggest difference is the handling of the .ORG directive. ca65 generates relocatable code, and placement is done by the linker. Most other assemblers generate absolute code, placement is done within the assembler and there is no external linker.
+
+In general it is not a good idea to write new code using the emulation features of the assembler, but there may be situations where even this rule is not valid.
+
+17.1 TASS
+You need to use some of the ca65 emulation features to simulate the behaviour of such simple assemblers.
+
+
+Prepare your sourcecode like this:
+        ; if you want TASS style labels without colons
+        .feature labels_without_colons
+
+        ; if you want TASS style character constants
+        ; ("a" instead of the default 'a')
+        .feature loose_char_term
+
+                .word *+2       ; the cbm load address
+
+                [yourcode here]
+notice that the two emulation features are mostly useful for porting sources originally written in/for TASS, they are not needed for the actual "simple assembler operation" and are not recommended if you are writing new code from scratch.
+Replace all program counter assignments (which are not possible in ca65 by default, and the respective emulation feature works different from what you'd expect) by another way to skip to memory locations, for example the .RES directive.
+        ; *=$2000
+        .res $2000-*    ; reserve memory up to $2000
+Please note that other than the original TASS, ca65 can never move the program counter backwards - think of it as if you are assembling to disk with TASS.
+Conditional assembly (.ifeq/.endif/.goto etc.) must be rewritten to match ca65 syntax. Most importantly notice that due to the lack of .goto, everything involving loops must be replaced by .REPEAT.
+To assemble code to a different address than it is executed at, use the .ORG directive instead of .offs-constructs.
+        .org $1800
+
+        [floppy code here]
+
+        .reloc  ; back to normal
+Then assemble like this:
+        cl65 --start-addr 0x0ffe -t none myprog.s -o myprog.prg
+Note that you need to use the actual start address minus two, since two bytes are used for the cbm load address.
+
+---
+Additional information can be found by searching:
+- "predefined_target_constants" which expands on useful for selecting the correct target when porting platform-specific code

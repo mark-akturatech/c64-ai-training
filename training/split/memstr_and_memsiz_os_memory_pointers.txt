@@ -1,0 +1,39 @@
+# ********* - Kernal pointers MEMSTR (locations 641-642, $281-$282) and MEMSIZ (643-644, $283-$284). MEMSTR: OS start of user RAM (initialized by RAMTAS to $0800). MEMSIZ: OS top-of-memory pointer determined by RAM test (RAMTAS), adjusted when RS-232 device opened/closed. References to Kernal routines RAMTAS, MEMBOT, MEMTOP (addresses $FD50, $FE34, $FE25).
+
+641-642       $281-282       MEMSTR
+Pointer: O.S. Start of Memory
+
+When the power is first turned on, or a cold start RESET is performed,
+the Kernal routine RAMTAS (64848, $FD50) sets this location to point
+to address 2048 ($800).  This indicates that this is the starting
+address of user RAM.  BASIC uses this location to set its own start of
+memory pointer at location 43 ($2B), and thereafter uses only its own
+pointer.
+
+The Kernal routine MEMBOT (65076, $FE34) may be used to read or set
+this pointer, or these locations may be directly PEEKed or POKEd from
+BASIC.
+
+643-644       $283-284       MEMSIZ
+Pointer: O.S. End of Memory
+
+When the power is first turned on, or a cold start RESET is performed,
+the Kernal routine RAMTAS (64848, $FD50) performs a nondestructive
+test of RAM from 1024 ($400) up, stopping when the test fails,
+indicating the presence of ROM.  This will normally occur at 40960
+($A000), the location of the BASIC ROM.  The top of user RAM pointer
+is then set to point to that first ROM location.
+
+After BASIC has been started, the system will alter this location only
+when an RS-232 channel (device number 2) is OPENed or CLOSEd.  As 512
+bytes of memory are required for the RS-232 transmission and reception
+buffers, this pointer, as well as the end of BASIC pointer at 55
+($37), is lowered to create room for those buffers when the device is
+opened.  CLOSing the device resets these pointers.
+
+The Kernal routine MEMTOP (65061, $FE25) may be used to read or set
+this pointer.
+
+---
+Additional information can be found by searching:
+- "rs232_pseudo_6551_registers" which expands on Opening RS-232 device can alter MEMSIZ to allocate buffers

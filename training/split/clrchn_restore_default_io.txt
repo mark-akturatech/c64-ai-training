@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CLRCHN: Restore default I/O. Vectored from CLRCHN ($ffcc). If default output device (DFLTO $9A) or input device (DFLTI $99) is on the serial bus (device >3) sends UNLISTEN/UNTALK to serial bus using JSR $EDFE/$EDEF, then sets defaults: screen as output ($9A=3) and keyboard as input ($99=0). Uses CPX/BCS/JSR/STA.
+
+                                *** CLRCHN: RESTORE TO DEFAULT I/O
+                                The KERNAL routine CLRCHN ($ffcc) is vectored here. The
+                                default output device is UNLISTENed, if it is on the
+                                serial bus, and the default output is set to the screen.
+                                The default input device is UNTALKed, if it is on the
+                                serial bus, and the default input device is set to
+                                keyboard.
+.,F333 A2 03    LDX #$03        check if device > 3 (serial bus is 4,5...)
+.,F335 E4 9A    CPX $9A         test DFLTO, default output device
+.,F337 B0 03    BCS $F33C       nope, no serial device
+.,F339 20 FE ED JSR $EDFE       send UNLISTEN to serial bus
+.,F33C E4 99    CPX $99         test DFLTI, default input device
+.,F33E B0 03    BCS $F343       nope, no serial device
+.,F340 20 EF ED JSR $EDEF       send UNTALK to serial bus
+.,F343 86 9A    STX $9A         store screen as DFLTO
+.,F345 A9 00    LDA #$00
+.,F347 85 99    STA $99         store keyboard as DFLTI
+.,F349 60       RTS
+
+---
+Additional information can be found by searching:
+- "output_kernal_error_messages" which expands on CLRCHN is called by error handling to close I/O channels

@@ -1,0 +1,33 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - UNTLK / UNLISTEN sequence. KERNAL UNTALK ($FFAB) and UNLISTEN ($FFAE) vector here. Disables interrupts (SEI), performs serial bus I/O (JSR $EE8E), modifies $DD00 to set ATN=0 (ORA #$08; STA $DD00) and set CLK=0, loads A with command byte (#$5F for UNTALK or #$3F for UNLISTEN), sends the command (JSR $ED11), clears ATN (JSR $EDBE), then performs a short delay loop (LDX #$0A; DEX loop) before setting CLK=1 (JSR $EE85) and data=1 (JMP $EE97). Handles the bus-level toggling required to terminate talk/listen sessions.
+
+
+                                *** UNTLK: SEND 'UNTALK'/'UNLISTEN'
+                                The KERNAL routine UNTALK ($ffab)and UNLISTEN ($ffae) are
+                                vectored here. ATN is set to 0, and CLK is set to 0. (A)
+                                is loaded with #$5f for 'UNTALK' and #$3f for 'UNLISTEN'.
+                                The command is sent to the serial bus via the 'send TALK/
+                                LISTEN' routine. Finally ATN is set to 1, and after s
+                                short delay, CLK and data are both set to 1.
+.,EDEF 78       SEI             disable interrupts
+.,EDF0 20 8E EE JSR $EE8E       serial bus I/O
+.,EDF3 AD 00 DD LDA $DD00       set bit4
+.,EDF6 09 08    ORA #$08        and store, set ATN 0
+.,EDF8 8D 00 DD STA $DD00       set CLK 0
+.,EDFB A9 5F    LDA #$5F        flag UNTALK
+.:EDFD 2C       .BYTE $2C       mask LDA #$3f with BIT $3fa9
+.,EDFE A9 3F    LDA #$3F        flag UNLISTEN
+.,EE00 20 11 ED JSR $ED11       send command to serial bus
+.,EE03 20 BE ED JSR $EDBE       clear ATN
+.,EE06 8A       TXA
+.,EE07 A2 0A    LDX #$0A        init delay
+.,EE09 CA       DEX             decrement counter
+.,EE0A D0 FD    BNE $EE09       till ready
+.,EE0C AA       TAX
+.,EE0D 20 85 EE JSR $EE85       set CLK 1
+.,EE10 4C 97 EE JMP $EE97       set data 1
+
+
+---
+Additional information can be found by searching:
+- "clear_atn" which expands on uses clear ATN after sending UNTALK/UNLISTEN
+- "ciout_send_serial_deferred" which expands on shares serial bus I/O primitives and handshake patterns

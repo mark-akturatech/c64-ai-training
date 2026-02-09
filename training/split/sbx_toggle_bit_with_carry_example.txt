@@ -1,0 +1,39 @@
+# NMOS 6510 - Example: use SBX and flag behaviour to toggle one bit each loop and set another bit depending on carry, useful for clock/data bit handling. Shows a loop that shifts data into carry (SEC / ROR), stores to databits, prepares a value in A, toggles a clock bit with EOR, uses TAX to disarm SBX's AND, checks carry (BCC) and conditionally runs SBX #$10 to adjust X while preserving A, then shifts databits and loops. Explains how SBX's flag effects make this tight loop possible while preserving A.
+
+- 38 -
+
+Example: toggle one bit and set another depending on carry
+
+The different behaviour regarding flags can be useful in tight loops where you need to toggle one
+bit in a value on each loop iteration, and another bit depending on the state of the carry flag.
+A good usecase for this is when dealing with a clock- and a data bit:
+; A contains the data
+sec
+ror ; shift one 1 into the bitpattern, MSB to carry
+sta databits
+lda #$3f ; startvalue, data bit must be 1 here
+loop:
+eor #$20 ; toggle clock bit
+; move value to X to disarm the AND in SBX
+tax
+
+; X = $1f/$3f (data bit set)
+
+bcc +
+; substract without carry (unset data bit)
+sbx #$10
+
+; X = $0f/$2f
+
++
+; do something with the value in X (preserve A!)
+lsr databits ; shift next bit into the carry, break
+bne loop
+
+; the loop when all bits are shifted out
+
+
+---
+Additional information can be found by searching:
+- "sbx_apply_mask_to_index_example" which expands on Also exploits SBX's non-destructive behaviour on A for bit/index handling
+- "sbc_opcode_entry" which expands on Related flag behaviours when performing subtract operations

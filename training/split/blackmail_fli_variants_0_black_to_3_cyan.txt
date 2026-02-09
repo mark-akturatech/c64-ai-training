@@ -1,0 +1,65 @@
+# NMOS 6510 - Detailed code sequences for opcode variants 0..3 used to set the colour fetched into colour-ram for the first 3 columns and to write the background colour to $D021. Covers: 0 (black) — LDY #<bg>, STY $D021, two NOPs; 1 (white) — LDA (zp,X), STA $D021; 2 (red) — LDX #<bg>, STX $D021, two NOPs; 3 (cyan) — LAX (zp,X), SAX $D021. Includes cycle counts and the comments showing how the fetched value is derived (e.g. ((background colour << 1) + $59) - ((line & 7) | $b8)). These sequences are the 10-cycle tail that follows the common prologue and intentionally use $A* row load opcodes to control the open-bus colour fetch.
+
+0: black as colour ram colour
+(2) a0 xx
+
+ldy # <background colour>
+
+(4) 8c 21 d0
+
+sty $d021
+
+(2) ea
+
+nop
+
+(2) ea
+
+nop
+
+1: white as colour ram colour
+(6) a1 xx
+
+lda (zp,x)
+
+; ((background colour << 1) + $59)
+; - ((line & 7) | $b8)
+
+(4) 8d 21 d0
+
+sta $d021
+
+2: red as colour ram colour
+(2) a2 xx
+
+ldx # <background colour>
+
+(4) 8e 21 d0
+
+stx $d021
+
+(2) ea
+
+nop
+
+(2) ea
+
+nop
+
+3: cyan as colour ram colour
+(6) a3 xx
+
+lax (zp,x)
+
+; ((background colour << 1) + $59)
+; - ((line & 7) | $b8)
+
+(4) 8f 21 d0
+
+sax $d021
+
+
+---
+Additional information can be found by searching:
+- "blackmail_fli_overview_and_common_prologue" which expands on Overview and common prologue that precede these 10-cycle opcode variants
+- "blackmail_fli_variants_4_violet_to_7_yellow" which expands on Next set of opcode variants (4-7) continuing the per-nibble organisation

@@ -1,0 +1,106 @@
+# ca65 Users Guide - Descriptions of CPU modes and instruction sets supported or emulated by ca65: 6502 mode, 6502X (undocumented opcodes with mnemonics list), C64DTV mode differences and supported undocumented instructions, 65SC02, 65C02, W65C02, 65CE02, 4510 (C65 differences), 45GS02 (MEGA65), HuC6280, M740, and 65816 mode (aliases and MVN/MVP forms).
+
+6502X mode
+6502X mode is an extension to the normal 6502 mode. In this mode, several mnemonics for undocumented instructions of the NMOS 6502 CPUs are accepted.
+
+Note: Since these instructions are undocumented, there are no official mnemonics for them.
+
+
+ALR: A:=(A and #{imm})/2;
+ANC: A:= A and #{imm}; Generates opcode $0B.
+ANE: A:= (A or CONST) and X and #{imm};
+ARR: A:=(A and #{imm})/2;
+AXS: X:=A and X-#{imm};
+DCP: {addr}:={addr}-1; A-{addr};
+ISC: {addr}:={addr}+1; A:=A-{addr};
+JAM:
+LAS: A,X,S:={addr} and S;
+LAX: A,X:={addr};
+NOP: #{imm}; zp; zp,x; abs; abs,x
+RLA: {addr}:={addr}rol; A:=A and {addr};
+RRA: {addr}:={addr}ror; A:=A adc {addr};
+SAX: {addr}:=A and X;
+SHA: {addr}:=A and X and {addr hi +1};
+SHX: {addr}:=X and {addr hi +1};
+SHY: {addr}:=Y and {addr hi +1};
+SLO: {addr}:={addr}*2; A:=A or {addr};
+SRE: {addr}:={addr}/2; A:=A xor {addr};
+TAS: {addr}:=A and X and {addr hi +1}; SP:=A and X;
+DTV mode
+The C64DTV CPU is based on the 6510, but adds some instructions, and does not support all undocumented instructions.
+
+
+bra {rel} Generates opcode $12.
+sac #{imm} Generates opcode $32.
+sir #{imm} Generates opcode $42.
+Supported undocumented instructions:
+
+
+ALR: A:=(A and #{imm})/2;
+ANC: A:=A and #{imm}; Generates opcode $0B.
+ARR: A:=(A and #{imm})/2;
+AXS: X:=A and X-#{imm};
+LAS: A,X,S:={addr} and S;
+LAX: A,X:={addr};
+NOP: #{imm}; zp; zp,x; abs; abs,x
+RLA: {addr}:={addr}rol; A:=A and {addr};
+RRA: {addr}:={addr}ror; A:=A adc {addr};
+SHX: {addr}:=X and {addr hi +1};
+SHY: {addr}:=y and {addr hi +1};
+65SC02 mode
+65SC02 mode supports all regular 6502 instructions, plus the original CMOS instructions.
+
+65C02 mode (CMOS with Rockwell extensions)
+65C02 mode supports all original CMOS instructions, plus the Rockwell (bit manipulation instructions) extensions.
+
+W65C02 mode (CMOS with WDC extensions)
+W65C02 mode supports the Rockwell extensions, plus wai and stp.
+
+65CE02 mode
+All 65CE02 instructions are accepted, plus the Rockwell extensions.
+
+4510 mode
+The 4510 is a microcontroller that is the core of the Commodore C65 aka C64DX. It contains among other functions a slightly modified 65CE02/4502 CPU, to allow address mapping for 20 bits of address space (1 megabyte addressable area).
+
+As compared to the description of the CPU in the C65 System Specification (updated version) uses these changes:
+
+LDA (d,SP),Y may also be written as LDA (d,S),Y (matching the 65816 notation).
+All branch instruction allow now 16 bit offsets. To use a 16 bit branch you have to prefix these with an "L" (e.g. "LBNE" instead of "BNE"). This might change at a later implementation of the assembler.
+For more information about the Commodore C65/C64DX and the 4510 CPU, see http://www.zimmers.net/anonftp/pub/cbm/c65/ and Wikipedia.
+
+45GS02 mode
+The 45GS02 is a microcontroller that is the core of the MEGA65. It is an extension of the 4510 CPU and adds 32-bit addressing and a 32-bit pseudo register Q that is comprised of the four registers A, X, Y, and Z.
+
+HUC6280 mode (CMOS with Hudson extensions)
+The HUC6280 is a superset of 65C02, used in the PC Engine.
+
+M740 mode
+The M740 is a microcontroller by Mitsubishi, which was marketed for embedded devices in the mid 80s. It is a superset of 6502, and a subset of 65SC02, plus some new instructions.
+
+For more information about the M740 Controllers, see Wikipedia.
+
+65816 mode
+In 65816 mode, several aliases are accepted, in addition to the official mnemonics:
+
+
+CPA is an alias for CMP
+DEA is an alias for DEC A
+INA is an alias for INC A
+SWA is an alias for XBA
+TAD is an alias for TCD
+TAS is an alias for TCS
+TDA is an alias for TDC
+TSA is an alias for TSC
+The MVN and MVP instructions accept two different argument forms. Either two bank bytes may be given with a # prefix, or two far addresses whose high byte will be used.
+
+
+                mvn     #^src, #^dst       ; bank of src to bank of dst
+                mvn     src, dst           ; bank of src to bank of dst
+                mvp     #$12, #$78         ; bank $12 to $78
+                mvp     $123456, $789ABC   ; bank $12 to $78
+also see long_jsr_jmp_rts .SMART .A8 .A16 .I8 .I16
+
+---
+Additional information can be found by searching:
+- "detailed_command_line_options" which expands on --cpu option and supported CPU types
+- "smart_mode_and_65816_specifics" which expands on smart mode and 65816 operand-size handling

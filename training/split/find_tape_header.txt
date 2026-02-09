@@ -1,0 +1,44 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Find the tape header in the tape buffer: saves the load/verify flag, initiates tape read (JSR $F841), scans the tape buffer (via ($B2),Y) searching for valid headers (program relocatable $01, program non-relocatable $03, data $04, or logical end $05), loops until a suitable header or end-of-tape/error. If a program header is found and kernel messages are enabled, prints 'FOUND ' and the tape filename (reads 21 bytes from tape buffer), then waits ~8.5 seconds for any key from the STOP key column before returning with the header populated.
+
+
+                                *** find the tape header, exit with header in buffer
+.,F72C A5 93    LDA $93         get load/verify flag
+.,F72E 48       PHA             save load/verify flag
+.,F72F 20 41 F8 JSR $F841       initiate tape read
+.,F732 68       PLA             restore load/verify flag
+.,F733 85 93    STA $93         save load/verify flag
+.,F735 B0 32    BCS $F769       exit if error
+.,F737 A0 00    LDY #$00        clear the index
+.,F739 B1 B2    LDA ($B2),Y     read first byte from tape buffer
+.,F73B C9 05    CMP #$05        compare with logical end of the tape
+.,F73D F0 2A    BEQ $F769       if end of the tape exit
+.,F73F C9 01    CMP #$01        compare with header for a relocatable program file
+.,F741 F0 08    BEQ $F74B       if program file header go ??
+.,F743 C9 03    CMP #$03        compare with header for a non relocatable program file
+.,F745 F0 04    BEQ $F74B       if program file header go  ??
+.,F747 C9 04    CMP #$04        compare with data file header
+.,F749 D0 E1    BNE $F72C       if data file loop to find the tape header
+                                was a program file header
+.,F74B AA       TAX             copy header type
+.,F74C 24 9D    BIT $9D         get message mode flag
+.,F74E 10 17    BPL $F767       exit if control messages off
+.,F750 A0 63    LDY #$63        
+                                index to "FOUND "
+.,F752 20 2F F1 JSR $F12F       display kernel I/O message
+.,F755 A0 05    LDY #$05        index to the tape filename
+.,F757 B1 B2    LDA ($B2),Y     get byte from tape buffer
+.,F759 20 D2 FF JSR $FFD2       output character to channel
+.,F75C C8       INY             increment the index
+.,F75D C0 15    CPY #$15        compare it with end+1
+.,F75F D0 F6    BNE $F757       loop if more to do
+.,F761 A5 A1    LDA $A1         get the jiffy clock mid byte
+.,F763 20 E0 E4 JSR $E4E0       wait ~8.5 seconds for any key from the STOP key column
+.,F766 EA       NOP             waste cycles
+.,F767 18       CLC             flag no error
+.,F768 88       DEY             decrement the index
+.,F769 60       RTS             
+
+---
+Additional information can be found by searching:
+- "write_tape_header" which expands on the counterpart routine used when saving/writing headers to tape
+- "tape_save_entry_and_device_checks" which expands on invokes this logic during LOAD/VERIFY and SAVE flows

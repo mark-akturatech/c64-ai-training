@@ -1,0 +1,81 @@
+# NMOS 6510 - Undocumented LAX opcode summary and overview: addressing-mode opcode bytes ($A3,$B3,$AF,$BF etc.), sizes and cycle counts (including +1 cycle for some indexed modes), operation description (loads both A and X from memory), short example LAX $8400,Y with encoded bytes, equivalent instruction sequence (LDA then TAX), and list of test program names.
+
+o
+
+LAX zp, y
+
+2
+
+4
+
+o
+
+o
+
+$A3
+
+LAX (zp, x)
+
+2
+
+6
+
+o
+
+o
+
+$B3
+
+LAX (zp), y
+
+2
+
+5 (+1)
+
+o
+
+o
+
+$AF
+
+LAX abs
+
+3
+
+4
+
+o
+
+o
+
+$BF
+
+LAX abs, y
+
+3
+
+4 (+1)
+
+o
+
+o
+
+Operation: Load both the accumulator and the X register with the contents of a memory location.
+
+Example:
+LAX $8400,Y
+
+;BF 00 84
+
+Equivalent Instructions:
+LDA $8400,Y
+TAX
+Test code: Lorenz-2.15/laxa.prg, Lorenz-2.15/laxay.prg,
+Lorenz-2.15/laxix.prg, Lorenz-2.15/laxiy.prg,
+Lorenz-2.15/laxz.prg, Lorenz-2.15/laxzy.prg
+
+
+---
+Additional information can be found by searching:
+- "lax_example_simulate_lda_zp_y" which expands on Demonstrates using LAX zp,y to save a byte by trashing X
+- "lax_load_a_x_same_value" which expands on Shows technique of loading A and X together for later reuse

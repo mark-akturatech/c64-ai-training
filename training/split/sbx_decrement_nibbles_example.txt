@@ -1,0 +1,99 @@
+# NMOS 6510 - Example: decrement two packed 4-bit nibbles in one byte. Provides a conventional sequence using BIT/ADC/SBC to detect and handle low-nibble underflow, with cycle comments. Then presents an alternative using SBX: set X as mask ($0F), use SBX #$00 to check whether low nibble underflows (affects X), branch accordingly, and then perform SBC-based adjustments to decrement both nibbles with manual wrap-around. Explains how SBX can substitute longer sequences and how carry is affected.
+
+
+- 36 -
+
+Example: decrement nibbles
+
+Imagine you have a byte that is divided into two nibbles (just what you often use in 4×4 effects),
+now you want to decrement each nibble, but when the low nibble underflows, this will decrement
+the high nibble as well, here the SBX command can help to find out about that special case:
+LDA #$0f
+
+;2 set up mask beforehand,
+;
+
+can be reused for each turn
+
+STA $02
+
+;2
+
+LDA $0400,y
+
+;4
+
+BIT $02
+
+;2 apply mask without destroying A
+
+BNE +
+
+;2
+
+CLC
+
+;2
+
+ADC #$10
+
+;2
+
+SEC
+
+;2 we need to set carry
+
+SBC #$11
+
+;2
+
++
+
+;= 20
+… can be substituted by …
+LDA $0400,y
+
+;4 load value
+
+LDX #$0f
+
+;2 set up mask
+
+SBX #$00
+
+;2 check if low nibble underflows
+;
+
+BNE +
+
+-> X = A & $0f
+
+;2 all fine, decrement both nibbles
+;
+
+the cheap way, carry is set!
+
+SBC #$f0
+
+;2 do wrap around by hand
+
+SEC
+
+;2
+
+SBC #$11
+
+;2 decrement both nibbles,
+
++
+;
+
+carry is set already by sbx
+
+;=16
+
+
+---
+Additional information can be found by searching:
+- "sbx_txa_disarm_trick" which expands on Shows the TXA trick to prepare A/X before using SBX
+- "sbx_apply_mask_to_index_example" which expands on Another SBX trick that uses masking of A/X to set up indices

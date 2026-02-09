@@ -1,0 +1,59 @@
+# MACHINE - Overview of BASIC RAM layout: cassette buffer below BASIC area; Start-of-BASIC (SOB) pointer locations vary by machine ($0401 PET, $0801 C64, etc.); End-of-BASIC signaled by three zero bytes; SOV (start-of-variables) usually just after end-of-BASIC indicated by pointer; SOA (start-of-arrays), EOA, BOS (bottom-of-strings), TOM (top-of-memory) pointers described and their pointer locations by machine.
+
+                                                                         :92:
+
+Siting the Program
+------------------
+
+Up to this point, we have been placing all programs in the cassette buffer.
+This is a good place for short test programs, but we need to examine
+alternatives that are often more attractive.
+
+
+BASIC Memory Layout
+-------------------
+
+BASIC RAM is organized according to the diagram below.  The following
+locations are of particular interest:
+
+  1.  Below the BASIC area, we have the cassette buffer area.  This is
+      available to us, providing we are not engaged in input/output activity.
+
+  2.  Start-of-BASIC (SOB) is usually a fixed address within the machine.  In
+      PET/CBM, it's at $0401 (decimal 1025).  In Commodore 64, it's at $0801
+      (decimal 2049).  In the PLUS/4 series, it's at $1001 (decimal 4097).
+      In the VIC-20, it may be at one of several places:  $0401, $1001, or
+      $1201.  A pointer marks this location.  The pointer is located at
+      $28/$29 (decimal 40 and 41) in PET/CBM, and at $2B/$2C (decimal 43 and
+      44), in VIC-20, Commodore 64, and PLUS/4.
+
+  3.  End-of-BASIC is always signaled by three zero bytes somewhere after the
+      SOB.  If you command NEW in BASIC, you'll find the three bytes right at
+      the start of BASIC; there is no program, so start and end are there.
+      There is no pointer that indicates end-of-BASIC, just the three zeros;
+      but the next location (SOV) will often be directly behind the end-of-
+      BASIC.
+
+      The BASIC program that you type in will occupy memory space from start-
+      of-BASIC to end-of-BASIC.  If you add lines to a program, end-of-BASIC
+      will move up as extra memory is taken up by your programs.  If you
+      delete lines, end-of-BASIC will move down.
+
+
+                       __________________BASIC RAM_______________________
+                      /                                                  \
+  -+--------+-------+-+---------+---+-----------+-------+------+---------+--
+   |Cassette|       | |  BASIC  |0  |   BASIC   | BASIC |      | DYNAMIC |
+   |        |       |0|         | 0 |           |       | FREE |         |
+   | Buffer |       | | PROGRAM |  0| VARIABLES | ARRAYS|      | STRINGS |
+  -+--------+-------+-+---------+---+-----------+-------+------+---------+--
+                       ^             ^           ^       ^      ^         ^
+                       |             |           |       |      |         |
+                      SOB           SOV         SOA     EOA    BOS       TOM
+
+  Figure 6.1
+
+
+---
+Additional information can be found by searching:
+- "sov_pointer_dangers_and_effects" which expands on important role of SOV in protection and potential problems

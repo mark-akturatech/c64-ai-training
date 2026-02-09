@@ -1,0 +1,69 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Selection-like sorting: repeatedly find the lowest Y from a temp array (destroying values by setting to 255) and append to sorted list. Execution O(N^2) but allows easy insertion of sprite rejection logic at append time. Pseudocode shows using temp_y, lowest_found_y initialization and copying sprite values or indexes into sorted arrays.
+
+2.1.2 Finding the next lowest Y-coordinate
+
+This doesn't involve swapping and does have a clear point where sprite
+rejection can be inserted. It also lends itself well to completely unrolling
+the inner compare loop for speed purposes. However, the execution time still
+grows proportional to N^2.
+
+Here a "temporary" Y-coord array might need to be used, because values from
+that table are actually being "destroyed". If all sprite coords are calculated
+again for each next frame it doesn't matter. Anyway, I'm showing it with the
+temp array involved. (it can be on the zeropage for speed)
+
+;Initialize temp array
+
+for (sprite = 0; sprite < maximum_sprites; sprite++)
+{
+  temp_y[sprite] = spry[sprite];
+}
+
+;Do the sorting
+
+sorted_sprites = 0;       ;Counter of sprites that passed the sorting
+
+while (true)          ;Indefinite loop
+{
+  lowest_found_y = 255;      ;Maximum Y-coord value found so far
+  lowest_spritenumber = 255; ;This is an illegal value used to
+                             ;terminate the loop when no more
+                     ;sprites are found
+
+  for (sprite = 0; sprite < maximum_sprites; sprite++)
+  {
+    if (temp_y[sprite] < lowest_found_y)
+    {
+      lowest_found_y = temp_y[sprite];
+      lowest_spritenumber = sprite;
+    }
+  }
+
+  if (lowest_spritenumber > maximum_sprites) break; ;Sorting finished,
+                            ;break out of the loop
+  temp_y[lowest_spritenumber] = 255; ;Now make this sprite unavailable for the
+                                    ;next round of sorting
+
+  if (sprite_not_rejected)          ;Here we can do sprite rejection if wanted
+  {
+    ;Next we can either copy the sprite variables to the sorted table,
+    ;or just use an index
+
+    ;Copying to sorted table
+    sortspry[sorted_sprites] = spry[lowest_spritenumber];
+    sortsprx[sorted_sprites] = sprx[lowest_spritenumber];
+    sortsprf[sorted_sprites] = sprf[lowest_spritenumber];
+    sortsprc[sorted_sprites] = sprc[lowest_spritenumber];
+    sorted_sprites++;
+
+    ;Using an index
+    sortorder[sorted_sprites] = lowest_spritenumber;
+    sorted_sprites++;
+  }
+}
+
+
+---
+Additional information can be found by searching:
+- "bubblesort_for_sprites" which expands on another simple O(N^2) method
+- "y_div_8_bucket_sort_incorrect" which expands on bucket methods offer faster O(N) alternatives

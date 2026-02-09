@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - WRITE entry: cassette write/format bit output routine. Describes OCHAR bit-shift into carry, selects short/long write pulse, sets timer one-shot period into 6526 timer registers (D1T2L/D1T2H), clears/arms timer interrupt (D1ICR/D1CRB), and toggles the 6510 port write bit (R6510). Returns with RTS.
+
+                                .LIB   WRITE
+                                ; CASSETTE INFO - FSBLK IS BLOCK COUNTER FOR RECORD
+                                ;       FSBLK = 2 -FIRST HEADER
+                                ;             = 1 -FIRST DATA
+                                ;             = 0 -SECOND DATA
+                                ;
+                                ; WRITE - TOGGLE WRITE BIT ACCORDING TO LSB IN OCHAR
+                                ;
+.,FBA6 A5 BD    LDA $BD         WRITE  LDA OCHAR       ;SHIFT BIT TO WRITE INTO CARRY
+.,FBA8 4A       LSR             LSR    A
+.,FBA9 A9 60    LDA #$60        LDA    #96             ;...C CLR WRITE SHORT
+.,FBAB 90 02    BCC $FBAF       BCC    WRT1
+.,FBAD A9 B0    LDA #$B0        WRTW   LDA #176        ;...C SET WRITE LONG
+.,FBAF A2 00    LDX #$00        WRT1   LDX #0          ;SET AND STORE TIME
+.,FBB1 8D 06 DC STA $DC06       WRTX   STA D1T2L
+.,FBB4 8E 07 DC STX $DC07       STX    D1T2H
+.,FBB7 AD 0D DC LDA $DC0D       LDA    D1ICR           ;CLEAR IRQ
+.,FBBA A9 19    LDA #$19        LDA    #$19            ;ENABLE TIMER (ONE-SHOT)
+.,FBBC 8D 0F DC STA $DC0F       STA    D1CRB
+.,FBBF A5 01    LDA $01         LDA    R6510           ;TOGGLE WRITE BIT
+.,FBC1 49 08    EOR #$08        EOR    #$08
+.,FBC3 85 01    STA $01         STA    R6510
+.,FBC5 29 08    AND #$08        AND    #$08            ;LEAVE ONLY WRITE BIT
+.,FBC7 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "write_end_of_block_and_bit_processing" which expands on continues bit-level processing and end-of-block handling
+- "bsiv_change_irq_vectors" which expands on uses IRQ vector changes for write-zero/data timing

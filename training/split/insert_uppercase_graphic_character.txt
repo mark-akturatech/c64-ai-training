@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles insertion of printable characters: converts to uppercase/graphic set, respects reverse flag (inserts reversed characters), decrements insert-count if in insert mode, gets current colour and prints the character with that colour, advances the cursor and restores registers; clears the quote flag unless further inserts remain.
+
+                                *** insert uppercase/graphic character
+.,E691 09 40    ORA #$40        change to uppercase/graphic
+.,E693 A6 C7    LDX $C7         get the reverse flag
+.,E695 F0 02    BEQ $E699       branch if not reverse
+                                else ..
+                                insert reversed character
+.,E697 09 80    ORA #$80        reverse character
+.,E699 A6 D8    LDX $D8         get the insert count
+.,E69B F0 02    BEQ $E69F       branch if none
+.,E69D C6 D8    DEC $D8         else decrement the insert count
+.,E69F AE 86 02 LDX $0286       get the current colour code
+.,E6A2 20 13 EA JSR $EA13       print character A and colour X
+.,E6A5 20 B6 E6 JSR $E6B6       advance the cursor
+                                restore the registers, set the quote flag and exit
+.,E6A8 68       PLA             pull Y
+.,E6A9 A8       TAY             restore Y
+.,E6AA A5 D8    LDA $D8         get the insert count
+.,E6AC F0 02    BEQ $E6B0       skip quote flag clear if inserts to do
+.,E6AE 46 D4    LSR $D4         clear cursor quote flag, $xx = quote, $00 = no quote
+.,E6B0 68       PLA             pull X
+.,E6B1 AA       TAX             restore X
+.,E6B2 68       PLA             restore A
+.,E6B3 18       CLC             
+.,E6B4 58       CLI             enable the interrupts
+.,E6B5 60       RTS             
+
+---
+Additional information can be found by searching:
+- "toggle_open_quote_flag" which expands on quote mode influences inserted characters
+- "advance_cursor_autoscroll_and_newline_handling" which expands on calls the cursor-advance routine after printing

@@ -1,0 +1,20 @@
+# Kick Assembler - Section 5.6: Performance tips — Function Mode vs Asm Mode, executing heavy calculations in function mode (inside define or functions) to save memory/time, restrictions of function mode (only script directives allowed), and guidance for unrolling and define usage.
+
+24
+
+Branching and Looping
+
+5.6. Optimization Considerations when using Loops
+Here is a tip if you want to optimize your assembling. Kick assembler has two modes of executing directives.
+‘Function Mode’ is used when the directive is placed inside a function or define directive, otherwise ‘Asm Mode’ is
+used. ‘Function Mode’ is executed fast but is restricted to script commands only (.var, .const, .for, etc.), while ‘Asm
+Mode’ remembers intermediate results so the assembler won't have to make the same calculations in succeeding
+passes.
+If you make heavy calculations and get slow performance or lack of memory, then place your for loops inside
+a define directive or inside a function. No time or memory will be wasted to record intermediate results, and the
+define directive or the directive that called the function, will remember the result in the succeeding passes.
+Read more about the define directive in the section ‘Working with mutable values’.
+
+---
+Additional information can be found by searching:
+- "working_with_mutable_values" which expands on how .define locks values and runs inner code in function mode

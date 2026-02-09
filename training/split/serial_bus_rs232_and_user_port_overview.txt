@@ -1,0 +1,84 @@
+# ********* - Detailed description of the Serial Bus, RS-232 and User Port usage via CIA #2 Data Ports. Serial Bus uses bits in Port A for data and clock in/out and ATN (Bits 5,7 data; Bits 4,6 clock; Bit 3 ATN). RS-232 uses Port A Bit 2 for data output and many Port B bits for RS-232 control/status (DSR, CTS, DCD, RI, DTR, RTS, SIN). The User Port exposes Port B lines and Port A Bit 2 for general TTL-level I/O and includes CNT and SP lines for serial ports and timer functions. Notes that CIA #2 timers are used mostly for RS-232 timing.
+
+Location Range: 56576-56577 ($DD00-$DD01)
+CIA #2 Data Ports A and B
+
+These registers are where the communication with the Serial Bus,
+RS-232 device, and User Port take place.  The Serial Bus is like the
+IEEE bus which is used by the PET, in that it allows more than one
+device to be connected to the port at a time, in a daisychain
+arrangement.  Since each byte of data is sent one bit at a time,
+however, the Serial Bus is at least eight times slower than the IEEE.
+It is presently used to control the 1541 Disk Drive and 1525 printer,
+and other devices (such as printer interface for Centronics- type
+parallel pritners and stringy floppy wafer tape storage units) can be
+placed on this bus.
+
+Data Port A is used for communication with the Serial Bus.  Bits 5 and
+7 are used for Serial Bus Data Output and Input, respectively, and
+Bits 4 and 6 are used for the Serial Bus Clock Pulse Output and Input.
+Bit 3 of Data Port A is used to send the ATN signal on the Serial Bus.
+
+The 64 has built-in software to handle RS-232 communications through a
+modem or other device plugged in the RS-232/User Port.  The RS-232
+device uses Bit 2 of Data Port A for data output (it is the only line
+from Port A that is connected to the RS-232/User Port jack).  It also
+makes heavy use of Port B, using Bit 7 for the Data Set Ready (DSR)
+signal, Bit 6 for the Clear to Send (CTS), Bit 4 for the Carrier
+Detect (DCD), Bit 3 for the Ring Indicator (RI), Bit 2 for Data
+Terminal Ready (DTR), Bit 1 for Request to Send (RTS), and Bit 0 for
+data input.  See locations 659-660 ($293-$294) for more details on the
+RS-232 device.
+
+All of the data lines which the RS-232 device uses are also available
+to the user as part of the User Port.  All of the Port B data lines,
+and Bit 2 of Port A, are brought out to the User Port connector on the
+back of the 64.  These data bits are utilized in the normal way:  The
+port connections are made to TTL-level input or output devices, and
+the direction of data is determined by the Data Direction Registers.
+
+In addition, the User Port has pins connected to the two CIA Serial
+Ports (whose eight-bit shift registers are well-suited for
+serial-to-parallel and parallel-to-serial conversion),and the two CNT
+lines which aid in the operation of the Serial Ports.  The CNT lines
+can also be used in conjunction with the CIA Timers, and allow them to
+be used as frequency counters, event counters, interval timers, etc.
+The advanced features of the CIA chip make almost any type of
+interfacing application possible, and in the near future we will
+probably see many interesting applications for the User Port on the
+64.  A pin description of tthe User Port connector is provided below:
+
+User         RS-232
+Port  CIA    DB-25
+Pin   Line   Pin     Description
+
+1                    Ground
+2                    +5 Volts (100 milliamps maximum)
+3                    RESET (grounding this pin causes a cold start)
+4     CNT1           CIA #1 Serial Port and Timer Counter
+5     SP1            CIA #1 Serial Data Port
+6     CNT2           CIA #2 Serial Port and Timer Counter
+7     SP2            CIA #2 Serial Data Port
+8     PC2            CIA #2 handshaking line
+9                    Connected to the ATN line of the Serial Bus
+10                   9 Volts AC (+ phase, 50 milliamps maximum)
+11                   9 volts AC (- phase, 50 milliamps maximum)
+12                   Ground
+A            1       Ground
+B     FLAG2          CIA #2 handshaking line
+C     PB0    3       Port B Bit 0--RS-232 Received Data (SIN)
+D     PB1    4       Port B Bit 1--RS-232 Request to Send (RTS)
+E     PB2    20      Port B Bit 2--RS-232 Data Terminal Ready (DTR)
+F     PB3    22      Port B Bit 3--RS-232 Ring Indicator (RI)
+H     PB4    8       Port B Bit 4--RS-232 Carrier Detect (DCD)
+J     PB5            Port B Bit 5
+K     PB6    5       Port B Bit 6--RS-232 Clear to Send (CTS)
+L     PB7    6       Port B Bit 7--RS-232 Data Set Ready (DSR)
+M     PA2    2       Port A Bit 2--RS-232 Transmitted Data (Sout)
+N            7       Ground
+
+
+---
+Additional information can be found by searching:
+- "ci2pra_ci2prb" which expands on bit-level mapping of serial and RS-232 signals to CIA #2 ports
+- "user_port_pinout" which expands on User Port DB-25 / connector pin mapping

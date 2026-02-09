@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Entry to the KERNAL 'store character' routine. Calls new tape-byte setup (JSR $FB97), clears the byte-received flag ($9C), sets max byte timing (LDX #$DA) and invokes timing setup (JSR $F8E2). Loads the copies count ($BE) and, if non-zero, saves temporary receiver-input-bit storage ($A7). Tests serial-status bits ($AA) and branches into short-block/copies handling or early-exit paths. Sets short-block status and jumps to the common interrupt restore/exit when appropriate.
+
+                                *** # store character
+.,FA60 20 97 FB JSR $FB97       new tape byte setup
+.,FA63 85 9C    STA $9C         clear byte received flag
+.,FA65 A2 DA    LDX #$DA        set timimg max byte
+.,FA67 20 E2 F8 JSR $F8E2       set timing
+.,FA6A A5 BE    LDA $BE         get copies count
+.,FA6C F0 02    BEQ $FA70       
+.,FA6E 85 A7    STA $A7         save receiver input bit temporary storage
+.,FA70 A9 0F    LDA #$0F        
+.,FA72 24 AA    BIT $AA         
+.,FA74 10 17    BPL $FA8D       
+.,FA76 A5 B5    LDA $B5         
+.,FA78 D0 0C    BNE $FA86       
+.,FA7A A6 BE    LDX $BE         get copies count
+.,FA7C CA       DEX             
+.,FA7D D0 0B    BNE $FA8A       if ?? restore registers and exit interrupt
+.,FA7F A9 08    LDA #$08        set short block
+.,FA81 20 1C FE JSR $FE1C       OR into serial status byte
+.,FA84 D0 04    BNE $FA8A       restore registers and exit interrupt, branch always
+.,FA86 A9 00    LDA #$00        
+.,FA88 85 AA    STA $AA         
+.,FA8A 4C BC FE JMP $FEBC       restore registers and exit interrupt
+
+---
+Additional information can be found by searching:
+- "rs232_parity_and_startbit_handling" which expands on Follows when serial-status bit indicates another path (BVS/BPL branches) — handles bit/ parity processing and decisions to store or abort
+- "interrupt_restore_and_checksum_validation" which expands on Final early-exit target (JMP $FEBC) used by this entry's short-block and zero-copy exits

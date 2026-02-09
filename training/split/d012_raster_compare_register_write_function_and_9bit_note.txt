@@ -1,0 +1,31 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Writing to $D012 sets the raster line for Raster Compare Interrupt. Important: raster compare is 9-bit; the 9th bit is Bit 7 of $D011 ($D011). Forgetting to set/read that high bit leads to 256-line errors. Describes raster interrupt behavior and warns about earlier programs that assumed default high bit values.
+
+                          Writing to this register designates the comparison value for the
+                          Raster Compare Interrupt.  When that interrupt is enabled, a maskable
+                          interrupt request will be issued every time the electron beam scan
+                          reaches the scan line whose number was written here.  This is a much
+                          more flexible technique for changing the display in midscreen than
+                          reading this register as the sample program above does.  That
+                          technique requires that the program continuously watch the Raster
+                          Register, while the interrupt method will call the program when the
+                          time is right to act.  For more information on raster interrupts, see
+                          the entry for the Interrupt Mask Register (53274, $D01A).
+
+                          It is very important to remember that this register requires nine
+                          bits, and that this location only holds eight of those bits (the ninth
+                          is Bit 7 of 53265 ($D011)).  If you forget to read or write to the
+                          ninth bit, your results could be in error by a factor of 256.
+
+                          For example, some early programs written to demonstrate the raster
+                          interrupt took for granted that the ninth bit of this register would
+                          be set to 0 on power-up.  When a later version of the Kernal changed
+                          this initial value to a 1, their interrupt routines, which were
+                          supposed to set the raster interrupt to occur at scan line number 150,
+                          ended up setting it for line number 406 instead.  Since the scan line
+                          numbers do not go up that high, no interrupt request was ever issued
+                          and the program did not work.
+
+
+---
+Additional information can be found by searching:
+- "d01a_irqmask_and_raster_interrupts" which expands on Enabling raster interrupts and using vectors

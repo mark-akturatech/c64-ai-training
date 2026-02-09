@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Beginning of detailed undocumented opcode descriptions: ALR (ASR) AND+LSR, ANC (AND + set C as ASL), ANC2 variant, ANE (XAA) unstable note and 'magic constant' behavior, ARR (AND + ROR) behavior with V and carry notes. Includes opcode bytes and immediate forms where applicable, and instability markers.
+
+                      Decrements the operand and then compares the result to the
+                      accumulator.
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       DCP oper         C7   2      5
+                      zeropage,X     DCP oper,X       D7   2      6
+                      absolute       DCP oper         CF   3      6
+                      absolute,X     DCP oper,X       DF   3      7
+                      absolute,Y     DCP oper,Y       DB   3      7
+                      (indirect,X)   DCP (oper,X)     C3   2      8
+                      (indirect),Y   DCP (oper),Y     D3   2      8
+                 ISC (ISB, INS)
+                      INC oper + SBC oper
+                      M + 1 -> M, A - M - C̅ -> A
+                                                         N Z C I D V
+                                                         + + + - - +
+                      addressing     assembler       opc bytes cycles
+                      zeropage       ISC oper         E7   2      5
+                      zeropage,X     ISC oper,X       F7   2      6
+                      absolute       ISC oper         EF   3      6
+                      absolute,X     ISC oper,X       FF   3      7
+                      absolute,Y     ISC oper,Y       FB   3      7
+                      (indirect,X)   ISC (oper,X)     E3   2      8
+                      (indirect),Y   ISC (oper),Y     F3   2      8
+                 LAS (LAR)
+                      LDA/TSX oper
+                      M AND SP -> A, X, SP
+                                                         N Z C I D V
+                                                         + + - - - -
+                                                           6502 Instruction Set
+                      addressing     assembler       opc bytes cycles
+                      absolute,Y     LAS oper,Y       BB   3      4*
+                 LAX
+                      LDA oper + LDX oper
+                      M -> A -> X
+                                                         N Z C I D V
+                                                         + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       LAX oper         A7   2      3
+                      zeropage,Y     LAX oper,Y       B7   2      4
+                      absolute       LAX oper         AF   3      4
+                      absolute,Y     LAX oper,Y       BF   3      4*
+                      (indirect,X)   LAX (oper,X)     A3   2      6
+                      (indirect),Y   LAX (oper),Y     B3   2      5*
+                 LXA (LAX immediate)
+                      Store * AND oper in A and X
+                      Highly unstable, involves a 'magic' constant, see ANE
+                      (A OR CONST) AND oper -> A -> X
+                                                         N Z C I D V
+                                                         + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      immediate      LXA #oper        AB   2      2   ††
+                 RLA
+                      ROL oper + AND oper
+                      M = C <- [76543210] <- C, A AND M -> A
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       RLA oper         27   2      5
+
+---
+Additional information can be found by searching:
+- "illegal_opcodes_in_detail_part2" which expands on continued illegal opcode descriptions (DCP, ISC, etc.)

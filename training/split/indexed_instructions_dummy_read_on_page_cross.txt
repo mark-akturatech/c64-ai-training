@@ -1,0 +1,103 @@
+# NMOS 6510 - Indexed addressing: description of dummy read behaviour for absolute indexed instructions when indexing causes a page crossing. Lists many instructions (ADC/AND/CMP/EOR/LDA/ORA/SBC/STA/LDX/LDY/TAS/SHX/SHY etc) and supplies a per-cycle diagram showing the dummy read from <AAH,AAL+IL> before the high byte is corrected. Notes to add a cycle on page-cross or write.
+
+
+R/W
+
+(*) Add one cycle for indexing across page boundaries or write. A dummy read happens to the target
+address before the high byte was corrected.
+- 83 -
+
+Example: acknowledge both CIA interrupts
+
+This will do a dummy read at $DC0D and a normal read at $DD0D, this way you can acknowledge
+both CIA interrupts in one instruction:
+LDX #$F0
+LDA $DC1D, X
+… and is one cycle faster, and one byte shorter, than doing
+LDA $DC0D
+LDA $DD0D
+
+Example: 5 cycle wide rastersplits
+
+If you want to have raster splits that are exactly 5 cycles wide, you can use:
+LDX #$FF
+LDY #$05
+LDA #$00
+STY $D021
+STA $CF22, X
+Example: Sprites far right in the border
+
+To feed data to the sprite pattern pipe for a sprite that is displayed “far right” so it did not yet have
+its DMA cycles before you can use a
+STA VIC_REG, X
+at the correct position in the rasterline, s.t. the 4th cycle occurs at the first sprite DMA-cycle and the
+5th (the W-cycle) at the 2nd sprite DMA-cycle. This way the sprite pattern byte is filled with:
+1. byte read in 4th cycle from the (uncorrected!) VIC-address
+2. ghostbyte
+3. byte stored in 5th cycle
+Testcode:
+•
+
+VICII/sb_sprite_fetch/sbsprf24.prg
+
+- 84 -
+
+Zeropage Indirect Y Indexed
+ADC (zp), y
+STA (zp), y
+
+AND (zp), y
+LAX (zp), y
+
+Cycle
+
+CMP (zp), y
+
+EOR (zp), y
+
+LDA (zp), y
+
+Address-Bus
+
+ORA (zp), y
+
+SBC (zp), y
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Direct Offset
+
+R
+
+3
+
+DO
+
+Absolute Address Low
+
+R
+
+4
+
+DO + 1
+
+Absolute Address High
+
+
+---
+Additional information can be found by searching:
+- "zeropage_indirect_y_indexed_rmw_unintended" which expands on related zero-page (indirect),y behaviour

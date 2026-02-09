@@ -1,0 +1,83 @@
+# Contents - Indirect addressing variants available on 6510: (Indirect),Y and (Indexed Indirect,X). Indirect addressing uses a pointer stored in zero page as two consecutive bytes (low then high). (Indirect),Y: assembler reads 16-bit address from zero page, then adds Y to form final address. (Indexed Indirect,X): adds X to zero-page pointer offset, then reads address from the resulting zero-page location. The 6510 lacks true general indirect memory addressing for most data ops; these two forms are the provided options.
+
+Indirect Addressing with indexes 
+
+So far, all of the addressing modes have as- 
+sumed that you knew where the data you were in- 
+terested in was ahead of time. Since this is not 
+always the case, there needs to be a way for the com- 
+puter to determine an address during program 
+execution. 
+
+Indirect addressing means that you are not tell- 
+ing the microprocessor where the data that you want 
+to use is, but rather you are telling the 
+microprocessor where it can find the address of the 
+data that you want. The indirect address will always 
+be stored in zero page memory in two consecutive 
+memory locations. The lower order byte of the ad- 
+dress is stored in the first memory location, and the 
+high order byte of the address is stored in the next 
+location. This gives a 16 bit address, so that the data 
+can be anywhere in the microprocessor's normal ad- 
+dress space. 
+
+When you give an indirect addressing com- 
+mand, the operand will be the address in zero page 
+that contains the first byte of the address of the pair 
+of memory locations where the appropriate address 
+is stored. It is important to reserve enough space 
+in zero page RAM to hold all of the indirect ad- 
+dresses that you may be generating. 
+
+At this point, indirect addressing should seem 
+pretty easy to use, but there is a catch. The 6510 
+does not have true indirect addressing abilities for 
+data movement or arithmetic instructions. Instead 
+there are two subclasses of indirect addressing 
+available. These are: 
+
+• Indexed Indirect X 
+
+• Indirect Indexed Y 
+
+We will look at the second one first because it 
+is the most often used. As is implied by the name 
+indirect indexed Y, this command is a combination 
+of indirect addressing and indexed addressing. As 
+
+
+
+15 
+
+
+
+was mentioned earlier, the command will have the 
+address of where the address may be found. After 
+the microprocessor generates an address from the 
+two zero page memory locations, the contents of the 
+Y register is added to the address to form the final 
+address. The data at this final address can then be 
+accessed. If the value of the Y register is 0, the com- 
+mand will act like a true indirect addressing com- 
+mand. You must be sure that the Y register is set 
+to the desired value before executing this command, 
+or you will never be sure of where the data is com- 
+ing from (or going to) . 
+
+In indexed indirect X addressing, the value of 
+the X register is added to the zero page address of 
+where the indirect address can be found. This new 
+zero page address is then used to generate the final 
+address of where the data can be located. If the X 
+register is set to zero, this command will act like 
+a normal indirect addressing command. The nor- 
+mal use for this command is to use the X register 
+as an index into a table of addresses located in zero 
+page RAM. 
+
+
+---
+Additional information can be found by searching:
+- "zero_page_addressing" which expands on indirection pointer must live in zero page
+- "absolute_indexed_addressing" which expands on how final address is formed by adding index

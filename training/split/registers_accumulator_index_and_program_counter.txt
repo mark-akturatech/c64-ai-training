@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Detailed register descriptions: PC (16-bit), AC/A (accumulator 8-bit), X and Y index registers (8-bit), SR status register [NV-BDIZC], SP stack pointer (8-bit). Notes on common monitor display formats and register naming. Explanation of the accumulator as ALU primary register and how X and Y are used as index registers for effective addresses. Introduces the concept of effective address, loops, and table lookups.
+
+                                   After (6501 specifics omitted):
+                    MCS6502 Microcomputer Family Hardware Manual; Jannuary 1976.
+                             MOS Technology, Inc., Norristown/PA, 1976.
+          Registers
+            PC .... program counter              (16 bit)
+            AC .... accumulator                   (8 bit)
+                                                                 6502 Instruction Set
+             X .... X register                    (8 bit)
+             Y .... Y register                    (8 bit)
+             SR .... status register [NV-BDIZC]   (8 bit)
+             SP .... stack pointer                (8 bit)
+          Note: The status register (SR) is also known as the P register,
+          the accumulator (AC) as just A, the stack pointer (SP) as S, and
+          X and Y registers as XR and YR, respectively.
+          Contemporary machine language monitors (here, Commodore PET) show
+          them typically like,
+              B*
+                   PC IRQ SR AC XR YR SP
+              .;  0401 E62E 32 04 5E 00 F8
+              .
+          ("IRQ" is not a register, but the interrupt request vector, see below.)
+            The accumulator is the main rgister of the 6502. Its content
+            is typically used by the arithmetic logic unit (ALU) for the
+            first operand and results are deposited in the accumulator
+            again. Thus its name, as results accumulate in this register.
+            Most arithmetic and logical operations interact with this
+            register.
+            The X and Y registers are auxiliary registers. Like the
+            accumulator, they can be loaded directly with values, both
+            immediatedly (as literal constants) or from memory.
+            Additionally, they can be incremented and decremented, and
+            their contents may be transferred to and from the acuumulator.
+            Their main purpose is the use as index registers, where their
+            contents is added to a base memory location, before any values
+            are either stored to or retrieved from the resulting address,
+            which is known as the effective address. This is commonly used
+            for loops and table lookups at a given index, hence the name.
+            (See address modes, below.)
+            The program counter keeps track of the memory location holding
+            the current instruction code. Its contents is automatically
+            stepped up as the program is executed and is modified by
+            branch and jump operations. As it must be able to address the
+            full 16-bit address range of 64K bytes, it's the only 16-bit
+            register of the 6502.
+            The stack pointer points to the current top of stack (or
+            rather, to its bottom, as the stack grows top-down.) The
+            processor stack is located on memory page #1 ($0100–$01FF), a
+            256 bytes last-in-first-out (LIFO) stack, which enables
+            subroutines and also serves as a quick intermediate storage.
+            As a 8-bit register, the stack pointer holds just the low-byte
+            of this address (the offset from $0100.)
+            Be aware that this will just wrap around, in case that the
+            stack underflows.
+                                                          6502 Instruction Set
+            The status register holds the status of the processor,
+            consisting of flags reflecting results of previous operations,
+            configuration flags, like disabeling (blocking) interrupts or
+            setting up binary encoded decimal mode (BCD), and the carry
+            flag, which enables multi-byte arithmetics.
+          Status Register Flags (bit 7 to bit 0)
+
+---
+Additional information can be found by searching:
+- "processor_stack_and_bytes_words" which expands on stack location and byte/word formats
+- "address_modes_details" which expands on how X/Y influence addressing modes

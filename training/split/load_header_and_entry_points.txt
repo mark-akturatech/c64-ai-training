@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Library header and entry points for the LOAD routine. Contains comment block describing LOAD/NLOAD/LOADSP behavior (cassette and IEEE devices, verify flag, monitor alt-start behavior, return registers) and the initial entry code: LOADSP (stores .X/.Y alt start into MEMUSS/MEMUSS+1) and LOAD (JMP via ILOAD monitor vector).
+
+                                .LIB   LOAD
+                                ;**********************************
+                                ;* LOAD RAM FUNCTION              *
+                                ;*                                *
+                                ;* LOADS FROM CASSETTE 1 OR 2, OR *
+                                ;* SERIAL BUS DEVICES >=4 TO 31   *
+                                ;* AS DETERMINED BY CONTENTS OF   *
+                                ;* VARIABLE FA. VERIFY FLAG IN .A *
+                                ;*                                *
+                                ;* ALT LOAD IF SA=0, NORMAL SA=1  *
+                                ;* .X , .Y LOAD ADDRESS IF SA=0   *
+                                ;* .A=0 PERFORMS LOAD,<> IS VERIFY*
+                                ;*                                *
+                                ;* HIGH LOAD RETURN IN X,Y.       *
+                                ;*                                *
+                                ;**********************************
+.,F49E 86 C3    STX $C3         LOADSP STX MEMUSS      ;.X HAS LOW ALT START
+.,F4A0 84 C4    STY $C4         STY    MEMUSS+1
+.,F4A2 6C 30 03 JMP ($0330)     LOAD   JMP (ILOAD)     ;MONITOR LOAD ENTRY
+
+---
+Additional information can be found by searching:
+- "nload_device_checks" which expands on Handles device selection and further entry checks for LOAD/NLOAD
+- "ieee_load_sequence" which expands on Sequence after device is determined for IEEE device loads

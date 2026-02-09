@@ -1,0 +1,35 @@
+# Kick Assembler - Explains label scopes when a scope is declared after a label. Labels inside the scope can be accessed as fields of the label (e.g., clearScreen.fillbyte). Example subroutine 'clearScreen:' with inner label 'fillbyte' and use: lda #' ' ; sta clearScreen.fillbyte+1 ; jsr clearScreen ; rts. Demonstrates nesting and access.
+
+}
+
+Now you don't have to remember to add one to the address before storing the fill byte.
+Label scopes also works with the label directive, so its also possible to write programs like this:
+.label mylabel1= $1000 {
+.label mylabel2 = $1234
+}
+.print “mylable2=”+mylabel1.mylabel2
+
+9.7. Accessing Local Labels of Macros and Pseudocommands
+Label scopes are also created when placing a label before a macro or pseudocommand execution as demonstrated in the following program:
+
+start:
+c1:
+c2:
+
+*=$1000
+inc c1.color
+dec c2.color
+:setColor()
+:setColor()
+jmp start
+
+.macro setColor() {
+.label color = *+1
+lda #0
+sta $d020
+}
+
+
+---
+Additional information can be found by searching:
+- "label_scope_label_directive_example" which expands on alternate label directive example for fillbyte

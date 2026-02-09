@@ -1,0 +1,52 @@
+# ********* - Kernal ROM entries for BASIC math/evaluation routines: POLY1 (57411 $E043) and POLY2 (57433 $E059) for function series evaluation; RMULC (57485 $E08D) and RADDC (57490 $E092) multiplicative and additive constants for RND stored as five-byte floating point numbers; RND routine (57495 $E097) explaining how RND(X) behaves depending on argument sign (positive uses linear congruential-like multiply/add; negative scrambles argument to seed; zero seeds using Timer A and TOD registers but with issues on C64 because OS doesn't start TOD and BCD constraints).
+
+Function Series Evaluation Subroutine 1
+
+This routine is used to evaluate more comples expressions, and calls
+the following routine to do the intermediate evaluation.
+
+57433         $E059          POLY2
+Function Series Evaluation Subroutine 2
+
+This is the main series evaluation routine, which evaluates
+expressions by using a table of the various values that must be
+operated on in sequence to obtain the proper result.
+
+57485         $E08D          RMULC
+Multiplicative Constant for RND
+
+A five-byte floating point number which is multiplied by the seed
+value as part of the process of obtaining the next value for RND>
+
+57490         $E092          RADDC
+Additive Constant for RND
+
+The five-byte floating point number stored here is added to the seed
+as part of the process of obtaining the value for RND.
+
+57495         $E097          RND
+Perform RND
+
+This routine comes up with a random number in one of three ways,
+depending on the argument X of RND(X).  If the argument is positive,
+the next RND value is obtained by multiplying the seed value in
+location 139 ($8B) by one of the constants above, adding the other
+constant, and scrambling the resulting bytes.  This produces the next
+number in a sequence.  So many numbers can be produced in this way
+before the sequence begins to repear that it can be considered random.
+
+If the argument is negative, the argument itself is scrambled, and
+made the new seed.  This allows creation of a sequence that can be
+duplicated.
+
+If the argument is 0, four bytes of the Floating Point Accumulator are
+loaded from the low and high byte of Timer A, and the tenths of second
+and second Time of Day Clock registers, all on CIA #1.  This provides
+a somewhat random value determined by the setting of those timers at
+the moment that the command is executed, which becomes the new seed
+value.  The RND(1) command should then be used to generate further
+random numbers.
+
+---
+Additional information can be found by searching:
+- "time_of_day_clock_tod_description_and_usage" which expands on TOD registers and RND(0) seed source and limitations

@@ -1,0 +1,14 @@
+# Kick Assembler - Example of patching a file by loading it into a Base segment, placing a Patch segment on top, and writing the result: .file [name="Out.prg", segments="Base,Patch", allowOverlap] .segment Base [prgFiles="basefile.prg"] .segment Patch [] *=$8021 "Insert jump" jmp $8044
+
+*=$1000
+lda #1
+sta $d020
+rts
+
+// Start of memoryblock 2 (unnamed)
+
+*=$4000 "block3"
+
+---
+Additional information can be found by searching:
+- "overlapping_memory_block" which expands on allowOverlap for patches

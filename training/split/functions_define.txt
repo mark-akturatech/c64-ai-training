@@ -1,0 +1,41 @@
+# Kick Assembler - Chapter 7 and Section 7.1: Defining script .function functions (syntax, .return), examples (area, oddEven, clearList), behavior when no .return is reached (null), and function overloading based on argument count.
+
+
+Chapter 7
+Functions and Macros
+This chapter shows how to group directives together in units for later execution. In other words, how to define
+and use functions, macros and finally pseudo commands which are a special kind of macros.
+
+7.1. Functions
+You can define you own functions which you can use like any of the build in library functions. Here is an
+example of a function:
+.function area(width,height) {
+.return width*height
+}
+.var x = area(3,2)
+lda #10+area(4,8)
+
+Functions consist of non-byte generating directives like .eval, .for, .var, and .if. When the assembler evaluates
+the .return directive it returns the value given by the proceeding expression. If no expression is given, or if no .return
+directive is reached, a null value is returned. Here are some more examples of functions:
+// Returns a string telling if a number is odd or even
+.function oddEven(number) {
+.if ([number&1] == 0 ) .return “even”
+else .return “odd”
+}
+// Inserts null in all elements of a list
+.function clearList(list) {
+// Return if the list is null
+.if (list==null) .return
+.for(var i=0; i<list.size(); i++) {
+list.set(i,null)
+}
+}
+// Empty function – always returns null
+.function emptyFunction() {
+}
+
+
+---
+Additional information can be found by searching:
+- "macros" which expands on difference between .function (script functions) and .macro (assembler macros)

@@ -1,0 +1,106 @@
+# ********* - Detailed sample BASIC program showing use of raster-scan interrupt to split screen into mixed modes (hi-res bitmap, text, multicolor bitmap). Includes DATA table layout used by the interrupt routine (scanlines, background color, control regs), explanation of how DATA entries map to VIC registers during interrupts, and example of modifying table values to change screen layout.
+
+specified by the high nybble of the attack/decay register.  Once it
+has reached the peak volume, it falls to the intermediate level during
+the period indicated by the low nybble of the attack/decay register
+(this is the decay phase).  The volume of this intermediate or sustain
+level is selected by placing a value in the high nybble of the
+sustain/release register.  This volume level is held until a 0 is
+written to the gate bit of the control register (while leaving the
+waveform bit set).  When that happens, the release phase begins, and
+the volume of the sound begins to taper off during the period
+indicated by the low nybble of the sustain/release register.
+
+You may notice the volume of the sound does not quite get to 0 at the
+end of the release cycle, and you may need to turn off the sound to
+get rid of the residual noise.  You can do this either by setting the
+waveform bit back to 0, changing the frequency to 0, or setting the
+volume to 0.
+
+54277         $D405          ATDCY1
+Voice 1 Attack/Decay Register
+
+Bits 0-3:  Select decay cycle duration (0-15)
+Bits 4-7:  Select attack cycle duration (0-15)
+
+Bits 4-7 control the duration of the attack cycle.  This is the period
+of time over which the volume will rise from 0 to its peak amplitude.
+There are 16 durations which may be selected.  The way in which the
+number placed here corresponds to the elapsed time of this cycle is as
+follows:
+
+0 = 2 milliseconds           8 = 100 milliseconds
+1 = 8 milliseconds           9 = 250 milliseconds
+2 = 16 milliseconds         10 = 500 milliseconds
+3 = 24 milliseconds         11 = 800 milliseconds
+4 = 38 milliseconds         12 = 1 second
+5 = 56 milliseconds         13 = 3 seconds
+6 = 68 milliseconds         14 = 5 seconds
+7 = 80 milliseconds         15 = 8 seconds
+
+Bits 0-3 control the length of the decay phase, in which the volume of
+the note declines from the peak reached in the attack phase to the
+sustain level.  The number selected corresponds to the length of this
+phase as shown below:
+
+0 = 6 milliseconds           8 = 300 milliseconds
+1 = 24 milliseconds          9 = 750 milliseconds
+2 = 48 milliseconds         10 = 1.5 seconds
+3 = 72 milliseconds         11 = 2.4 seconds
+4 = 114 milliseconds        12 = 3 seconds
+5 = 168 milliseconds        13 = 9 seconds
+6 = 204 milliseconds        14 = 15 seconds
+7 = 240 milliseconds        15 = 24 seconds
+
+Since the two functions share one register, you must multiply the
+attack value by 16 and add it to the decay value in order to come up
+with the number to be placed in the register:
+
+REGISTER VALUE=(ATTACK*16)+DECAY
+
+54278         $D406          SUREL1
+Voice 1 Sustain/Release Control Register
+
+Bits 0-3:  Select release cycle duration (0-15)
+Bits 4-7:  Select sustain volume level (0-15)
+
+Bits 4-7 select the volume level at which the note is sustained.
+Following the decay cycle, the volume of the output of voice 1 will
+remain at the selected sustain level as long as the gate bit of the
+Control Register is set to 1.  The sustain values range from 0, which
+chooses no volume, to 15, which sets the output of voice 1 equal to
+the peak volume achieved during the attack cycle.
+
+Bits 0-3 determine the length of the release cycle.  This phase, in
+which the volume fades from the sustain level to near zero volume,
+begins when the gate bit of the Control Register is set to 0 (while
+leaving the waveform setting that was previously chosen).  The
+duration of this decline in volume corresponds to the number (0-15)
+selected in the same way as for the decay value:
+
+0 = 6 milliseconds           8 = 300 milliseconds
+1 = 24 milliseconds          9 = 750 milliseconds
+2 = 48 milliseconds         10 = 1.5 seconds
+3 = 72 milliseconds         11 = 2.4 seconds
+4 = 114 milliseconds        12 = 3 seconds
+5 = 168 milliseconds        13 = 9 seconds
+6 = 204 milliseconds        14 = 15 seconds
+7 = 240 milliseconds        15 = 24 seconds
+
+Location Range: 54279-54292 ($D407-$D414)
+Voice 2 and Voice 3 Controls
+
+The various control registers for these two voices correspond almost
+exactly to those of voice 1.  The one exception is that the sync and
+ring-modulation bits of voice 2 operate on Oscillators 1 and 2, while
+the same bits of the Control Register for voice 3 uses Oscillators 2
+and 3.
+
+54279         $D407          FRELO2
+Voice 2 Frequency Control (low byte)
+
+54280         $D408          FREHI2
+
+---
+Additional information can be found by searching:
+- "irq_mask_register_and_raster_interrupts_$D01A" which expands on Installation and usage of raster interrupts

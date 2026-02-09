@@ -1,0 +1,20 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Laser/Zap example: ADSR settings A=0 D=15, S/R low, start with high frequency ($D401), select sawtooth or noise+gate ($D404 = $81 for noise laser), sweep frequency down each frame by decrementing $D401.
+
+
+LASER/ZAP:
+  lda #$0f          // A=0, D=15
+  sta $d405
+  lda #$00          // S=0, R=0
+  sta $d406
+  lda #$82          // Start frequency high
+  sta $d401
+  lda #$81          // Sawtooth + gate
+  sta $d404         // (Use $81 = noise+gate for noise laser)
+  ; Sweep frequency down each frame:
+  dec $d401
+
+
+---
+Additional information can be found by searching:
+- "waveforms_noise" which expands on noise-based laser variant
+- "adsr_overview" which expands on percussive ADSR settings used

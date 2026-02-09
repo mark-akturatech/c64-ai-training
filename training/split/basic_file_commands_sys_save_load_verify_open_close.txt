@@ -1,0 +1,117 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - BASIC command handlers and file operations: SYS (execute machine language from BASIC — calls evaluator at $AD8A, pushes user registers into $030C-$030F), SAVET (perform SAVE using TXTTAB/VARTAB and JSR $FFD8), VERFYT (LOAD/VERIFY shared flow, VRECK flag at $0A, calls KERNAL LOAD $FFD5 and READST $FFB7; updates TXTPTR/VARTAB and branches to CLR), OPENT/CLOSET (wrappers that call KERNAL OPEN/CLOSE $FFC0/$FFC3 and handle I/O errors). References TXTTAB/VARTAB ($2B-$2E), TXTPTR ($7A/$7B).
+
+                                *** SYS: PERFORM SYS
+                                This routine enables machine language routines to be
+                                executed from BASIC. The routine evaluates the address and
+                                confirms that it is a numeric number. The return address
+                                is set up, and the user routine is executed.
+.,E12A 20 8A AD JSR $AD8A       evaluate text & confirm numeric
+.,E12D 20 F7 B7 JSR $B7F7       convert fac#1 to integer in LINNUM
+.,E130 A9 E1    LDA #$E1        set return address on stack to $ea46
+.,E132 48       PHA
+.,E133 A9 46    LDA #$46
+.,E135 48       PHA
+.,E136 AD 0F 03 LDA $030F       SPREG, user flag register
+.,E139 48       PHA
+.,E13A AD 0C 03 LDA $030C       SAREG, user (A) register
+.,E13D AE 0D 03 LDX $030D       SXREG, user (X) register
+.,E140 AC 0E 03 LDY $030E       SYREG, user (Y) register
+.,E143 28       PLP
+.,E144 6C 14 00 JMP ($0014)     execute user routine, exit with rts
+.,E147 08       PHP
+.,E148 8D 0C 03 STA $030C       store in SAREG, user (A) register
+.,E14B 8E 0D 03 STX $030D       store in SXREG, user (X) register
+.,E14E 8C 0E 03 STY $030E       store in SYREG, user (Y) register
+.,E151 68       PLA
+.,E152 8D 0F 03 STA $030F       store in SPREG, user flag register
+.,E155 60       RTS             back
+
+                                *** SAVET: PERFORM SAVE
+                                This routine is sets parameters for save, and calls the
+                                save routine. The start and end addresses are obtained
+                                from TXTTAB and VARTAB. Finally, a test is made if any
+                                errors occurred.
+.,E156 20 D4 E1 JSR $E1D4       get SAVE parameters from text
+.,E159 A6 2D    LDX $2D         VARTAB, start of variables
+.,E15B A4 2E    LDY $2E
+.,E15D A9 2B    LDA #$2B        <TXTTAB, start of BASIC text
+.,E15F 20 D8 FF JSR $FFD8       execute SAVE
+.,E162 B0 95    BCS $E0F9       if carry is set, handle I/O errors
+.,E164 60       RTS
+
+                                *** VERFYT: PERFORM LOAD/SAVE
+                                This routine is essentially the same for both LOAD and
+                                VERIFY. The entry point determins which is performed, by
+                                setting VERCK accordingly. The LOAD/VERIFY parameters,
+                                filename, device etc. are obtained from text before the
+                                KERNAL routine LOAD is called. A test is made for I/O
+                                errors. At this point, the two functions are distinguished.
+                                VERIFY reads the the status word and prints the message OK
+                                or ?VERIFY error depending on the result of the test. LOAD
+                                reads the I/O status word for a possible ?LOAD error, then
+                                updates the pointers to text and variables, exiting via
+                                CLR.
+.,E165 A9 01    LDA #$01        flag verify
+.:E167 2C       .BYTE $2C       mask
+.,E168 A9 00    LDA #$00
+.,E16A 85 0A    STA $0A         store in VRECK, LOAD/VERIFY flag
+.,E16C 20 D4 E1 JSR $E1D4       get LOAD/VERIFY parameters from text
+.,E16F A5 0A    LDA $0A         get VRECK
+.,E171 A6 2B    LDX $2B         TXTTAB, start of BASIC
+.,E173 A4 2C    LDY $2C
+.,E175 20 D5 FF JSR $FFD5       execute LOAD, KERNAL routine
+.,E178 B0 57    BCS $E1D1       if carry set, handle error
+.,E17A A5 0A    LDA $0A         test VRECK for LOAD or VERIFY
+.,E17C F0 17    BEQ $E195       do LOAD
+.,E17E A2 1C    LDX #$1C        set error $1c, VERIFY error
+.,E180 20 B7 FF JSR $FFB7       do READST, get status I/O word
+.,E183 29 10    AND #$10        %00010000, test for mismatch
+.,E185 D0 17    BNE $E19E       data mismatch, do error
+.,E187 A5 7A    LDA $7A         <TXTPTR
+.,E189 C9 02    CMP #$02
+.,E18B F0 07    BEQ $E194
+.,E18D A9 64    LDA #$64        set address to text OK
+.,E18F A0 A3    LDY #$A3        at $a364
+.,E191 4C 1E AB JMP $AB1E       output string in (A/Y)
+.,E194 60       RTS
+.,E195 20 B7 FF JSR $FFB7       do READST, get status I/O for LOAD
+.,E198 29 BF    AND #$BF        %10111111, test all but EOI
+.,E19A F0 05    BEQ $E1A1       nope, no errors
+.,E19C A2 1D    LDX #$1D        set error $1d, LOAD error
+.,E19E 4C 37 A4 JMP $A437       do error
+.,E1A1 A5 7B    LDA $7B         >TXTPTR
+.,E1A3 C9 02    CMP #$02
+.,E1A5 D0 0E    BNE $E1B5
+.,E1A7 86 2D    STX $2D         set VARTAB, start of variables
+.,E1A9 84 2E    STY $2E
+.,E1AB A9 76    LDA #$76        set address to text READY
+.,E1AD A0 A3    LDY #$A3        at $a376
+.,E1AF 20 1E AB JSR $AB1E       output string in (A/Y)
+.,E1B2 4C 2A A5 JMP $A52A       do CLR and restart BASIC
+.,E1B5 20 8E A6 JSR $A68E       reset TXTPTR
+.,E1B8 20 33 A5 JSR $A533       rechain BASIC lines
+.,E1BB 4C 77 A6 JMP $A677       do RESTORE and reset OLDTXT
+
+                                *** OPENT: PERFORM OPEN
+                                This routine extracts parameters from text and performs
+                                the OPEN routine in KERNAL. A test is made for I/O errors.
+.,E1BE 20 19 E2 JSR $E219       get parameters from text
+.,E1C1 20 C0 FF JSR $FFC0       execute OPEN
+.,E1C4 B0 0B    BCS $E1D1       if carry set, handle error
+.,E1C6 60       RTS
+
+                                *** CLOSET: PERFORM CLOSE
+                                The parameters for CLOSE are obtained from text, and the
+                                logical filenumber placed in (A), The KERNAL routine CLOSE
+                                is performed, and a test is made for I/O errors.
+.,E1C7 20 19 E2 JSR $E219       get parameters from text
+.,E1CA A5 49    LDA $49         logical file number
+.,E1CC 20 C3 FF JSR $FFC3       perform CLOSE
+.,E1CF 90 C3    BCC $E194       if carry set, handle error, else return
+.,E1D1 4C F9 E0 JMP $E0F9       jump to error routine
+
+
+---
+Additional information can be found by searching:
+- "basic_io_error_and_simple_io" which expands on I/O error handling (BIOERR) used by these routines
+- "parameter_parsing_and_open_close_helpers" which expands on SLPARA/OCPARA parameter extraction for OPEN/CLOSE/SAVE/LOAD

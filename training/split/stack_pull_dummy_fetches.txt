@@ -1,0 +1,54 @@
+# NMOS 6510 - Pull operations (PLA, PLP) cycle behaviour: opcode fetch, dummy fetch PC+1, dummy fetch from stack, actual pull from stack and final read of pulled value with sequence of cycles and notes on dummy fetches.
+
+
++1 (*2) PC + 2 + offset (Old hi) Byte at PC + 2 + offset (Old hi)
+
+R
+
+(*1) Add one cycle if branch is taken, dummy read from PC + 2 (This would usually be the next
+instruction)
+(*2) Add one cycle if branch is taken across page boundaries (that means PC + 2 and PC + 2 +
+offset are on different pages), dummy read from PC + 2 + offset (before the high byte was corrected
+to point to the new/correct page)
+- 87 -
+
+Dummy writes
+
+Read-Modify-Write
+Read-Modify-Write instructions will write back the unmodified value before writing the modified
+value.
+Absolute (R-M-W)
+ASL abs
+SRE abs
+
+DCP abs
+
+Cycle
+
+DEC abs
+
+INC abs
+
+ISC abs
+
+LSR abs
+
+RLA abs
+
+Address-Bus
+
+ROL abs
+
+ROR abs
+
+RRA abs
+
+Data-Bus
+
+SLO abs
+
+Read/Write
+
+---
+Additional information can be found by searching:
+- "stack_rts_dummy_fetches" which expands on RTS uses similar dummy stack fetches

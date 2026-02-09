@@ -1,0 +1,58 @@
+# COMMODORE 64 - Explains how character bits are read in multi-color mode: bits are paired horizontally and mapped to four colors. Shows example with letter 'A' and how AA/BB/CC areas map to Background #1, Background #2, and character color respectively. Provides lookup: bit pair 00 -> Background #0 ($D021 53281), 01 -> Background #1 ($D022 53282), 10 -> Background #2 ($D023 53283), 11 -> color from lower 3 bits of color RAM.
+
+  sets the normal, HIGH-RESOLUTION mode.
+    Once multi-color mode is set in a space, the bits in the character
+  determine which colors are displayed for the dots. For example, here is
+  a picture of the letter A, and its bit pattern:
+
+                          IMAGE    BIT PATTERN
+
+                            **       00011000
+                           ****      00111100
+                          **  **     01100110
+                          ******     01111110
+                          **  **     01100110
+                          **  **     01100110
+                          **  **     01100110
+                                     00000000
+
+    In normal or high-resolution mode, the screen color is displayed
+  everywhere there is a 0 bit, and the character color is displayed where
+  the bit is a 1. Multi-color mode uses the bits in pairs, like so:
+
+                          IMAGE    BIT PATTERN
+
+                           AABB      00011000
+                           CCCC      00111100
+                         AABBAABB    01100110
+                         AACCCCBB    01111110
+                         AABBAABB    01100110
+                         AABBAABB    01100110
+                         AABBAABB    01100110
+                                     00000000
+
+    In the image area above, the spaces marked AA are drawn in the
+  background #1 color, the spaces marked BB use the background #2 color,
+  and the spaces marked CC use the character color. The bit pairs determine
+  this, according to the following chart:
+
+
+
+  116   PROGRAMMING GRAPHICS
+~
+
+
+  +----------+--------------------------------------+---------------------+
+  | BIT PAIR |          COLOR REGISTER              |       LOCATION      |
+  +----------+--------------------------------------+---------------------+
+  |    00    |  Background #0 color (screen color)  |   53281 ($D021)     |
+  |    01    |  Background #l color                 |   53282 ($D022)     |
+  |    10    |  Background #2 color                 |   53283 ($D023)     |
+  |    11    |  Color specified by the              |   color RAM         |
+  |          |  lower 3 bits in color memory        |                     |
+  +----------+--------------------------------------+---------------------+
+
+---
+Additional information can be found by searching:
+- "multi_color_character_mode_intro_and_enable_disable" which expands on how to enable/disable mode
+- "multicolor_bitmap_color_sources" which expands on similar bit-pair rules apply to multicolor bitmaps

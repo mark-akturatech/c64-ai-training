@@ -1,0 +1,31 @@
+# ********* - VERCK ($0A) and COUNT ($0B) usage: VERCK is a flag set by BASIC (0 for LOAD, 1 for VERIFY) passed to the Kernal LOAD routine; COUNT is used as an index into the BASIC input buffer at $200 during tokenization and also stores the number of array subscripts when building or referencing arrays. Explains how COUNT ends up equal to the tokenized line length after conversion.
+
+10            $A             VERCK
+Flag: LOAD or VERIFY
+
+BASIC uses one Kernal routine to perform either the LOAD or VERIFY
+function, depending on whether the Accumulator (.A) is set to 0 or 1
+upon entry to the routine.  BASIC sets the value of VERCK to 0 for a
+LOAD, or 1 for a VERIFY.  Its contents are passed to the Kernal LOAD
+routine, which in turn stores it in location 147 ($93).
+
+11            $B             COUNT
+Index into the Text Input Buffer/Number of Array Subscripts
+
+The routines that convert the text in the input buffer at 512 ($200)
+into lines of executable program tokes, and the routines that link
+these program lines together, use this location as an index into the
+input buffer area.  When the job of converting text to tokens is
+finished, the value in this location is equal to the length of the
+tokenized line.
+
+The routines which build an array or locate an element in an array use
+this location to calculate the number of DIMensions called for and the
+amount of storage required for a newly created array, or the number of
+subscripts specified when referencing an array element.
+
+
+---
+Additional information can be found by searching:
+- "input_scanning_chars_charac_endchr_trmpos" which expands on input scanning variables used by tokenization
+- "array_and_tokenization_flags_dimflg_valtyp_intflg_garbfl" which expands on related flags used when locating/creating variables and classifying data

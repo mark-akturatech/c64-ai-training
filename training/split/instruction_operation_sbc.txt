@@ -1,0 +1,18 @@
+# 6502 Microprocessor - SBC pseudocode: temp = AC - src - (IF_CARRY() ? 0 : 1). Sets Sign/Zero/Overflow. Decimal mode adjustments implemented (BCD rules), sets Carry based on temp < 0x100, AC = low byte.
+
+/* SBC */
+    unsigned int temp = AC - src - (IF_CARRY() ? 0 : 1);
+    SET_SIGN(temp);
+    SET_ZERO(temp & 0xff);	/* Sign and Zero are invalid in decimal mode */
+    SET_OVERFLOW(((AC ^ temp) & 0x80) && ((AC ^ src) & 0x80));
+    if (IF_DECIMAL()) {
+	if ( ((AC & 0xf) - (IF_CARRY() ? 0 : 1)) < (src & 0xf)) /* EP */ temp -= 6;
+	if (temp > 0x99) temp -= 0x60;
+    }
+    SET_CARRY(temp < 0x100);
+    AC = (temp & 0xff);
+
+---
+Additional information can be found by searching:
+- "instruction_tables_sbc" which expands on SBC opcode table and decimal-mode behavior
+- "status_register" which expands on C and D flags used in SBC behavior

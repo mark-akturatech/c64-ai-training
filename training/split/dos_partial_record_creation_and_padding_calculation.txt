@@ -1,0 +1,21 @@
+# byRiclianll - Explains the surprising presence of an $FF at byte 178 ($B2) instead of an expected null ($00): DOS pre-creates a partial record to simplify later expansion. Shows the math used by DOS to determine how much null padding remains: first compute bytes already in existence as 255 - byte_count (255 - 177 = 78), then compute nulls to add as Total_Record_Length - Bytes_in_Existence (example: 150 - 78 = 72). Concludes with the practical effect of this pre-creation.
+
+We  would  expect  to  find  all  nulls  ($00).  Byte  178  ($B2),  however,  shows  an  $FF,  i.e., 
+the  start  of  a  new  record.  The  DOS  is  one  step  ahead  of  the  game  when  expansion  time 
+rolls  around.  A  partial  record  has  already  been  created  in  this  instance.  The  DOS  need 
+only  calculate  the  difference  between  255  and  the  byte  count  to  determine  the  number 
+of  nulls  that  must  follow  to  complete  the  record: 
+
+255  -  177  =  78  bytes  already  in  existence 
+It  then  takes  the  record  size  to  figure  out  the  padding  needed: 
+
+Total  Record  Length  -  Bytes  in  Existence  =  Nulls  to  Go 
+150  -  78  =  72 
+
+Slick! 
+
+
+---
+Additional information can be found by searching:
+- "relative_record_overflow_and_empty_record_description" which expands on context about the record boundaries and byte counts used in the calculation
+- "sector_padding_hex_dump_example" which expands on the actual sector data illustrating the $FF and subsequent padding

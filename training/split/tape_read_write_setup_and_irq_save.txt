@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Common tape read/write setup and IRQ handling: disables interrupts (LDY #$7F / STY $DC0D), saves and programs VIA control registers (CRA/CRB), starts timers (timer B single-shot and timer A), saves a shadow copy of VIA CRB, calls RS232/serial idle check (JSR $F0A4), blanks the screen (clear bits of $D011), saves the current IRQ vector ($0314/$0315 to $029F/$02A0), sets the kernel tape IRQ vector (JSR $FCBD), sets the copy count ($BE=2) for load+verify and calls new tape byte setup (JSR $FB97).
+
+                                *** tape read/write
+.,F875 A0 7F    LDY #$7F        disable all interrupts
+.,F877 8C 0D DC STY $DC0D       save VIA 1 ICR, disable all interrupts
+.,F87A 8D 0D DC STA $DC0D       save VIA 1 ICR, enable interrupts according to A
+                                check RS232 bus idle
+.,F87D AD 0E DC LDA $DC0E       read VIA 1 CRA
+.,F880 09 19    ORA #$19        load timer B, timer B single shot, start timer B
+.,F882 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,F885 29 91    AND #$91        mask x00x 000x, TOD clock, load timer A, start timer A
+.,F887 8D A2 02 STA $02A2       save VIA 1 CRB shadow copy
+.,F88A 20 A4 F0 JSR $F0A4       
+.,F88D AD 11 D0 LDA $D011       read the vertical fine scroll and control register
+.,F890 29 EF    AND #$EF        mask xxx0 xxxx, blank the screen
+.,F892 8D 11 D0 STA $D011       save the vertical fine scroll and control register
+.,F895 AD 14 03 LDA $0314       get IRQ vector low byte
+.,F898 8D 9F 02 STA $029F       save IRQ vector low byte
+.,F89B AD 15 03 LDA $0315       get IRQ vector high byte
+.,F89E 8D A0 02 STA $02A0       save IRQ vector high byte
+.,F8A1 20 BD FC JSR $FCBD       set the tape vector
+.,F8A4 A9 02    LDA #$02        set copies count. the first copy is the load copy, the
+                                second copy is the verify copy
+.,F8A6 85 BE    STA $BE         save copies count
+.,F8A8 20 97 FB JSR $FB97       new tape byte setup
+
+---
+Additional information can be found by searching:
+- "initiate_tape_read" which expands on branches here to continue read startup
+- "initiate_tape_write" which expands on branches here for write startup
+- "tape_motor_and_spinup_delay" which expands on motor start and delay follow this setup to stabilise tape speed

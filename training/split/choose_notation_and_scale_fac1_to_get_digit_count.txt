@@ -1,0 +1,35 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Decide fixed vs scientific representation and scale FAC1 accordingly: initialize the digit/exponent count, compare FAC1 exponent with thresholds (check if FAC1 < 1 or >= 1), use pointer lookups (e.g. 1,000,000,000 and the scientific limits) and JSR comparisons, then repeatedly multiply or divide FAC1 by 10 (adjusting the number exponent count) until the value is in the desired range for digit extraction.
+
+                                FAC1 is some non zero value
+.,BDF8 A9 00    LDA #$00        clear (number exponent count)
+.,BDFA E0 80    CPX #$80        compare FAC1 exponent with $80 (<1.00000)
+.,BDFC F0 02    BEQ $BE00       branch if 0.5 <= FAC1 < 1.0
+.,BDFE B0 09    BCS $BE09       branch if FAC1=>1
+.,BE00 A9 BD    LDA #$BD        set 1000000000 pointer low byte
+.,BE02 A0 BD    LDY #$BD        set 1000000000 pointer high byte
+.,BE04 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,BE07 A9 F7    LDA #$F7        set number exponent count
+.,BE09 85 5D    STA $5D         save number exponent count
+.,BE0B A9 B8    LDA #$B8        set 999999999.25 pointer low byte (max before sci note)
+.,BE0D A0 BD    LDY #$BD        set 999999999.25 pointer high byte
+.,BE0F 20 5B BC JSR $BC5B       compare FAC1 with (AY)
+.,BE12 F0 1E    BEQ $BE32       exit if FAC1 = (AY)
+.,BE14 10 12    BPL $BE28       go do /10 if FAC1 > (AY)
+                                FAC1 < (AY)
+.,BE16 A9 B3    LDA #$B3        set 99999999.90625 pointer low byte
+.,BE18 A0 BD    LDY #$BD        set 99999999.90625 pointer high byte
+.,BE1A 20 5B BC JSR $BC5B       compare FAC1 with (AY)
+.,BE1D F0 02    BEQ $BE21       branch if FAC1 = (AY) (allow decimal places)
+.,BE1F 10 0E    BPL $BE2F       branch if FAC1 > (AY) (no decimal places)
+                                FAC1 <= (AY)
+.,BE21 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,BE24 C6 5D    DEC $5D         decrement number exponent count
+.,BE26 D0 EE    BNE $BE16       go test again, branch always
+.,BE28 20 FE BA JSR $BAFE       divide FAC1 by 10
+.,BE2B E6 5D    INC $5D         increment number exponent count
+.,BE2D D0 DC    BNE $BE0B       go test again, branch always
+
+---
+Additional information can be found by searching:
+- "scientific_mode_limits_constants" which expands on constants used to determine when to scale and when to use scientific notation
+- "round_convert_and_prepare_digits" which expands on after scaling, rounding and conversion to fixed-point is performed

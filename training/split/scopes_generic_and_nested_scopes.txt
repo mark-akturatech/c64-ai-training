@@ -1,0 +1,63 @@
+# ca65 Users Guide - Scope types: global scope, cheap locals scope, generic nested scopes (.SCOPE/.ENDSCOPE), lookup rules for nested scopes (local first, then upward), example scenarios showing subtle behavior when a symbol is redefined in inner scopes and how address-size decisions may cause range errors; address-size override operators (a:, z:, f:) and example to avoid range error.
+
+7. Scopes
+ca65 implements several sorts of scopes for symbols.
+
+7.1 Global scope
+All (non cheap local) symbols that are declared outside of any nested scopes are in global scope.
+
+7.2 Cheap locals
+A special scope is the scope for cheap local symbols. It lasts from one non local symbol to the next one, without any provisions made by the programmer. All other scopes differ in usage but use the same concept internally.
+
+7.3 Generic nested scopes
+A nested scoped for generic use is started with .SCOPE and closed with .ENDSCOPE. The scope can have a name, in which case it is accessible from the outside by using explicit scopes. If the scope does not have a name, all symbols created within the scope are local to the scope, and aren't accessible from the outside.
+
+A nested scope can access symbols from the local or from enclosing scopes by name without using explicit scope names. In some cases there may be ambiguities, for example if there is a reference to a local symbol that is not yet defined, but a symbol with the same name exists in outer scopes:
+
+
+        .scope  outer
+                foo     = 2
+                .scope  inner
+                        lda     #foo
+                        foo     = 3
+                .endscope
+        .endscope
+In the example above, the lda instruction will load the value 3 into the accumulator, because foo is redefined in the scope. However:
+
+
+        .scope  outer
+                foo     = $1234
+                .scope  inner
+                        lda     foo,x
+                        foo     = $12
+                .endscope
+        .endscope
+Here, lda will still load from $12,x, but since it is unknown to the assembler that foo is a zeropage symbol when translating the instruction, absolute mode is used instead. In fact, the assembler will not use absolute mode by default, but it will search through the enclosing scopes for a symbol with the given name. If one is found, the address size of this symbol is used. This may lead to errors:
+
+
+        .scope  outer
+                foo     = $12
+                .scope  inner
+                        lda     foo,x
+                        foo     = $1234
+                .endscope
+        .endscope
+In this case, when the assembler sees the symbol foo in the lda instruction, it will search for an already defined symbol foo. It will find foo in scope outer, and a close look reveals that it is a zeropage symbol. So the assembler will use zeropage addressing mode. If foo is redefined later in scope inner, the assembler tries to change the address in the lda instruction already translated, but since the new value needs absolute addressing mode, this fails, and an error message "Range error" is output.
+
+Of course the most simple solution for the problem is to move the definition of foo in scope inner upwards, so it precedes its use. There may be rare cases when this cannot be done. In these cases, you can use one of the address size override operators:
+
+
+        .scope  outer
+                foo     = $12
+                .scope  inner
+                        lda     a:foo,x
+                        foo     = $1234
+                .endscope
+        .endscope
+This will cause the lda instruction to be translated using absolute addressing mode, which means changing the symbol reference later does not cause any errors.
+
+
+---
+Additional information can be found by searching:
+- "scopes_procedures_and_enclosing" which expands on procedures (.PROC) as named scopes
+- "address_size_overrides" which expands on forcing addressing mode with prefixes

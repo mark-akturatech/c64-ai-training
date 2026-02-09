@@ -1,0 +1,73 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - DMA Delay: create a Bad Line Condition in cycles 15-53 while sequencer is idle (e.g., modify $D011 so YSCROLL matches RASTER) to cause BA to go low immediately and VIC to start reading c-accesses. Because AEC follows φ2 and remains high for three cycles after BA goes low, the first three cycles return $FF for D0-D7 and lower nibble from the last CPU opcode as color data (due to analog switch U16 mapping CPU D0-D3 to VIC D8-D11). These initial invalid reads cause VC to be misaligned by a number of g-accesses, resulting in horizontal scrolling of screen contents without moving memory. DMA Delay can also be produced by toggling DEN in a specific way. This is a core technique for soft horizontal scrolling and other advanced effects.
+
+3.14.6. DMA delay
+-----------------
+
+The most sophisticated Bad Line manipulation is to create a Bad Line
+Condition within cycles 15-53 of a raster line in the display window in
+which the graphics data sequencer is in idle state, e.g. by modifying
+register $d011 so that YSCROLL is equal to the lower three bits of RASTER.
+
+The VIC will then set BA to low immediately in the next cycle, switch to
+display state and start reading from the video matrix (the processor is now
+stopped because BA is low and it wants to read the next opcode). However,
+AEC still follows �2 for three cycles before also staying at low state.
+This behavior (AEC not until three cycles after BA) is hardwired in the VIC
+and cannot be avoided.
+
+Nevertheless, the VIC accesses the video matrix, or at least it tries,
+because as long as AEC is still high in the second clock phase, the address
+and data bus drivers D0-D7 of the VIC are in tri-state and the VIC reads
+the value $ff from D0-D7 instead of the data from the video matrix in the
+first three cycles. The data lines D8-D13 of the VIC however don't have
+tri-state drivers and are always set to input. But the VIC doesn't get
+valid Color RAM data from there either, because as AEC is high, the 6510 is
+still considered the bus master and unless it doesn't by chance want to
+read the next opcode from the Color RAM, the chip select input of the Color
+RAM is not active. Instead, a 4 bit analog (!) switch, U16, connects the
+data bits D0-D3 of the processor with the data bits D8-D13. This connection
+is always in place when AEC is high and should allow the processor to
+access the Color RAM if desired. To make a long story short: In the first
+three cycles after BA went low, the VIC reads $ff as character pointers and
+as color information the lower 4 bits of the opcode after the access to
+$d011. Not until then, regular video matrix data is read.
+
+These data are stored just as usual at the start of the internal video
+matrix/color line and VC is incremented after each following g-access (with
+the generation of the Bad Line, the sequencer has also been put into
+display state). The c- and g-accesses are continued until cycle 54. But as
+the accesses started in the middle of a line, less than 40 accesses took
+place so VC has been incremented by a total of less than 40 in this raster
+line and no longer is a multiple of 40 as it normally always is at the end
+of a raster line. Because of the working of VC (see section 3.7.2.), this
+"misalignment" is continued for all following lines. So the whole screen
+seems to be scrolled to the right by as much characters as the number of
+cycles the $d011 access was done after cycle 14. As the c-accesses within
+the line start later than in a normal Bad Line, this procedure is called
+"DMA Delay".
+
+With this, it is possible to scroll the complete screen sideways by large
+distances (this also works with bitmap graphics as with text screens as the
+VC is also used for accessing the bitmap data) without having to move the
+graphics memory with the processor. If you now combine DMA Delay with FLD
+and Linecrunch, you can scroll complete graphics screens without using much
+computing time by almost arbitrarily large distances in all directions.
+
+Experimenting with the DMA Delay (and with Bad Line effects in general) is
+also the best method to discover the internal functions of the VIC,
+especially of RC and VC, and to determine in which cycles certain things
+are done inside the VIC.
+
+It should also be mentioned that DMA Delay can not only be achieved by
+manipulating YSCROLL but also with the DEN bit of register $d011. To do
+this, you have to set YSCROLL to zero so that raster line $30 becomes a bad
+line and switch DEN from reset to set in the middle of the line. This is
+because Bad Line can only occur if the DEN bit has been set for at least
+one cycle in line $30, and if YSCROLL is zero a Bad Line Condition will
+occur in line $30 as soon as DEN is set.
+
+
+---
+Additional information can be found by searching:
+- "x_coordinates" which expands on horizontal displacement measured in cycles/pixel units
+- "fli" which expands on combined with FLD/Linecrunch to achieve arbitrary 2D scrolling

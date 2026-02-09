@@ -1,0 +1,47 @@
+# MACHINE - Description of the STOP system subroutine at $FFE1 to check the RUN/STOP key: use frequently to make RUN/STOP effective for machine code programs, behavior on return (Z set if pressed), differences on PET/CBM (may return to BASIC and not to caller), registers affected and status behavior. Includes boxed documentation with registers and action details.
+
+STOP
+----
+
+Machine language programs will ignore the RUN/STOP key...unless the program
+checks this key itself.  It may do so with a call to STOP, address $FFE1.
+This checks the RUN/STOP key at that moment.  To make the key operational,
+$FFE1 must be called frequently.
+
+                                                                         :52:
+
+A call to FFE1 should be followed by a BEQ to a program exit so that the
+program will terminate when RUN/STOP is pressed.
+
+The RUN/STOP key is often brought into play while programs are being tested,
+so that unexpected "hang-ups" can still allow the program to be terminated.
+Coding to test the RUN/STOP key is often removed once testing is complete, on
+the assumption that no one will want to top a perfect program.  Incidentally,
+if you plan to write nothing but 100 percent perfect programs, you will not
+need to use this subroutines.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   STOP                                                        |
+| Address:      $FFE1                                                       |
+| Action:       Check the RUN/STOP key.  If RUN/STOP is being pressed at    |
+|               that instant, the Z flag will be set when the subroutine    |
+|               returns.                                                    |
+|                                                                           |
+| In PET/CBM, the system will exit to BASIC and say READY if the RUN/STOP   |
+| key is being pressed.  In this case, it will not return to the calling    |
+| machine language program.                                                 |
+|                                                                           |
+| Registers:  A will be affected.  X will be affected only if the RUN/STOP  |
+| key is being pressed.                                                     |
+|                                                                           |
+| Status:  Z signals whether RUN/STOP is being pressed.                     |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+
+
+---
+Additional information can be found by searching:
+- "getin_subroutine_keyboard_input" which expands on Related input subroutine GETIN
+- "numeric_key_waiting_subroutine_project" which expands on Programming project uses STOP to allow aborting

@@ -1,0 +1,20 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Sets up a temporary pointer in EAL ($AE/$AF) to the colour RAM address that corresponds to the temporary screen address in EAL. Calls synchronise_colour_pointer and then prepares SAL/EAL to point to $D800-series colour RAM by ORing the high byte with $D8.
+
+                                *** SYNCHRONISE COLOUR TRANSFER
+                                This routine sets up a temporary pointer in EAL to the
+                                colour RAM address that corresponds to the temporary
+                                screen address held in EAL.
+.,E9E0 20 24 EA JSR $EA24       synchronise colour pointer
+.,E9E3 A5 AC    LDA $AC         SAL, pointer for screen scroll
+.,E9E5 85 AE    STA $AE         EAL
+.,E9E7 A5 AD    LDA $AD
+.,E9E9 29 03    AND #$03
+.,E9EB 09 D8    ORA #$D8        setup colour ram to $d800
+.,E9ED 85 AF    STA $AF
+.,E9EF 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "synchronise_colour_pointer" which expands on used to derive the colour RAM pointer from the current screen address
+- "move_a_screen_line" which expands on called before moving characters so colour transfer is aligned

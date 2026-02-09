@@ -1,0 +1,69 @@
+# - C64 I/O Map (Mapping The Commodore 64) - $D011 (53265) SCROY — Vertical fine scrolling and control register: bits 0-2 = fine vertical scroll (0-7 scanlines), bit3 = 24/25-row select, bit4 = screen blanking enable, bit5 = bitmap enable, bit6 = extended background color, bit7 = high bit of raster compare. This chunk concentrates on bits 0-2 (vertical fine scroll), how they smooth scrolling (1-7 lines), and includes BASIC demo to demonstrate fine scrolling.
+
+
+$D011        SCROY        Vertical Fine Scrolling and Control Register
+
+                     0-2  Fine scroll display vertically by X scan lines (0-7)
+                     3    Select a 24-row or 25-row text display (1=25 rows, 0=24 rows)
+                     4    Blank the entire screen to the same color as the background
+                            (0=blank)
+                     5    Enable bitmap graphics mode (1=enable)
+                     6    Enable extended color text mode (1=enable)
+                     7    High bit (Bit 8) of raster compare register at 53266 ($D012)
+
+                          This is one of the two important multifunction control registers on
+                          the VIC-II chip.  Its default value is 155, which sets the high bit of
+                          the raster compare to 1, selects a 25-row display, disables the
+                          blanking feature, and uses a vertical scrolling offset of three scan
+                          lines.
+
+                          Bits 0-2.  These bits control vertical fine scrolling of the screen
+                          display.  This feature allows you to move the entire text display
+                          smoothly up and down, enabling the display area to act as a window,
+                          scrolling over a larger text or character graphics display.
+
+                          Since each row of text is eight scan lines high, if you simply move
+                          each line of text up one row, the characters travel an appreciable
+                          distance each time they move, which gives the motion a jerky quality.
+                          This is called coarse scrolling, and you can see an example of it when
+                          LISTing a program that is too long to fit on the screen all at one
+                          time.
+
+                          By placing a number from 1 to 7 into these three bits, you can move
+                          the whole screen display down by from 1 to 7 dot spaces.  Stepping
+                          through the values 1 to 7 allows you to smoothly make the transition
+                          from having a character appear in one row on the screen to having it
+                          appear in the next row.  To demonstrate this, type in the following
+                          sample program, LIST it, and RUN.
+
+                              10 FOR I= 1 TO 50:FOR J=0 TO 7
+                              20 POKE 53265, (PEEK(53265)AND248) OR J:NEXTJ,I
+                              30 FOR I= 1 TO 50:FOR J=7 TO 0 STEP-1
+                              40 POKE 53265, (PEEK(53265)AND248) OR J:NEXTJ,I
+
+                          As you can see, after the display has moved seven dot positions up or
+                          down, it starts over at its original position.  In order to continue
+                          the scroll, you must do a coarse scroll every time the value of the
+                          scroll bits goes from 7 to 0, or from 0 to 7.  This is accomplished by
+                          moving the display data for each line by 40 bytes in either direction,
+                          overwriting the data for the last line, and introducing a line of data
+                          at the opposite end of screen memory to replace it.  Obviously, only a
+                          machine language program can move all of these lines quickly enough to
+                          maintain the effect of smooth motion.  The following BASIC program,
+                          however, will give you an idea of what vertical fine scrolling is like:
+
+                              10 POKE 53281,0:PRINTCHR$(5);CHR$(147)
+                              20 FORI=1 TO 27:
+                              30 PRINTTAB(15)CHR$(145)"            ":POKE 53265,PEEK(53265)AND248
+                              40 WAIT53265,128:PRINTTAB(15)"I'M FALLING"
+                              50 FOR J=1 TO 7
+                              60 POKE53265,(PEEK(53265)AND248)+J
+                              70 FORK=1TO50
+                              80 NEXT K,J,I:RUN
+
+
+---
+Additional information can be found by searching:
+- "d011_bit3_shortened_display" which expands on Bit 3: 24/25 rows
+- "d011_bit4_screen_blanking" which expands on Bit 4: screen blanking & performance
+- "d012_raster_compare_register" which expands on Bit 7 participates in raster compare 9-bit value

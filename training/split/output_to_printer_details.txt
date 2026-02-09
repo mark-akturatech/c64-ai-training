@@ -1,0 +1,88 @@
+# COMMODORE 64 - Output to printer: formatting concerns, SPC works but TAB doesn't, OPEN statement selects character set for printer (upper/graphics or upper/lower). Provides control character codes for printer (CHR$ codes like 10 LF, 13 RETURN, 14 begin double-width, 15 end double-width, 18 begin reverse, 146 end reverse, 17/145 switch sets, 16 tab positions, 27 move to dot position, 8 begin dot graphics, 26 repeat graphics). Recommends consulting printer manual for details.
+
+
+
+  DATA STORAGE ON FLOPPY DISKETTES
+
+    Diskettes allow 3 different forms of data storage. Sequential files are
+  similar to those on tape, but several can can be used at the same time.
+  Relative files let you organize the data into records, and then read and
+  replace individual records within the file. Random files let you work
+  with data anywhere on the disk. They are organized into 256 byte sections
+  called blocks.
+    The PRINT# statement's limitations are discussed in the section on
+  cassette tape. The same limitations to format apply on the disk. RETURNs
+  or commas are needed to separate your data. The CHR$(0) is still read by
+  the GET# statement as an empty string.
+    Relative and random files both make use of separate data and command
+  "channels." Data written to the disk goes through the data channel, where
+  it is stored in a temporary buffer in the disk's RAM. When the record or
+  block is complete, a command is sent through the command channel that
+  tells the drive where to put the data, and the entire buffer is written.
+    Applications that require large amounts of data to be processed are
+  best stored in relative disk files. These will use the least amount of
+  time and provide the best flexibility for the programmer. Your disk drive
+  manual gives a complete programming guide to use of disk files.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  342   INPUT/OUTPUT GUIDE
+~
+
+
+  THE GAME PORTS
+
+    The Commodore 64 has two 9-pin Game Ports which allow the use of
+  joysticks, paddies, or a light pen. Each port will accept either one joy-
+  stick or one paddle pair. A light pen can be plugged into Port A (only)
+  for special graphic control, etc. This section gives you examples of how
+  to use the joysticks and paddies from both BASIC and machine language.
+    The digital joystick is connected to CIA #1 (MOS 6526 Complex Interface
+  Adapter). This input/output device also handles the paddle fire buttons
+  and keyboard scanning. The 6526 CIA chip has 16 registers which are in
+  memory locations 56320 through 56335 inclusive ($DC00 to $DC0F). Port A
+  data appears at location 56320 (DC00) and Port B data is found at
+  location 56321 ($DC01).
+    A digital joystick has five distinct switches, four of the switches are
+  used for direction and one of the switches is used for the fire button.
+  The joystick switches are arranged as shown:
+
+
+                                    (Top)
+                FIRE
+             (Switch 4)
+                                     UP
+                                 (Switch 0)
+                                      |
+                                      |
+                                      |
+                         LEFT         |         RIGHT
+                               -------+-------
+                      (Switch 2)      |       (Switch 3)
+                                      |
+                                      |
+                                      |
+                                    DOWN
+                                 (Switch 1)
+
+
+    These switches correspond to the lower 5 bits of the data in location
+  56320 or 56321. Normally the bit is set to a one if a direction is NOT
+  chosen or the fire button is NOT pressed. When the fire button is
+
+
+
+---
+Additional information can be found by searching:
+- "open_statement_parameters_table" which expands on OPEN parameters for printer device numbers and modes

@@ -1,0 +1,29 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SAVE: SAVE RAM (vector from $ffd8). On entry X/Y hold end addr+1 (EAL $AE/$AF), (A) holds pointer to start address in zeropage ($00/$01) which is transferred to STAL ($C1/$C2). Saves MEMUSS ($C3/$C4) via ISAVE vector ($0332 -> $F5ED). Ensures device number FA ($BA) is legal (not keyboard/screen).
+
+                                *** SAVE: SAVE RAM
+                                The KERNAL routine SAVE ($ffd8) jumps to this routine. On
+                                entry, (X/Y) must hold the end address+1 of the area of
+                                memory to be saved. (A) holds the pointer to the start
+                                address of the block, held in zeropage. The current device
+                                number is checked to ensure that it is neither keyboard
+                                (0) or screen (3). Both of these result in ?ILLEGAL DEVICE
+                                NUMBER.
+.,F5DD 86 AE    STX $AE         EAL , end address of block +1
+.,F5DF 84 AF    STY $AF
+.,F5E1 AA       TAX             move start pointer to (X)
+.,F5E2 B5 00    LDA $00,X
+.,F5E4 85 C1    STA $C1         STAL, start address of block
+.,F5E6 B5 01    LDA $01,X
+.,F5E8 85 C2    STA $C2
+.,F5EA 6C 32 03 JMP ($0332)     vector ISAVE, points to $f5ed
+.,F5ED A5 BA    LDA $BA         FA, current device number
+.,F5EF D0 03    BNE $F5F4       ok
+.,F5F1 4C 13 F7 JMP $F713       I/O error #9, illegal device number
+.,F5F4 C9 03    CMP #$03        screen?
+.,F5F6 F0 F9    BEQ $F5F1       yep, output error
+.,F5F8 90 5F    BCC $F659       less than 3, ie. tape, output error
+
+
+---
+Additional information can be found by searching:
+- "save_to_serial_bus" which expands on actual save-to-serial implementation follows vector

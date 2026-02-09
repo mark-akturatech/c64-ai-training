@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - CMPSTE: subroutine to compare the start (SAL/SAH) and end (EAL/EAH) addresses used by tape read/save routines. Performs SBC across low/high bytes to set flags for BCC/BNE decisions by callers. Preserves carry (SEC) at entry and returns with RTS.
+
+                                ;COMPARE START AND END LOAD/SAVE
+                                ;ADDRESSES.  SUBROUTINE CALLED BY
+                                ;TAPE READ, SAVE, TAPE WRITE
+                                ;
+.,FCD1 38       SEC             CMPSTE SEC
+.,FCD2 A5 AC    LDA $AC         LDA    SAL
+.,FCD4 E5 AE    SBC $AE         SBC    EAL
+.,FCD6 A5 AD    LDA $AD         LDA    SAH
+.,FCD8 E5 AF    SBC $AF         SBC    EAH
+.,FCDA 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "byte_finish_parity_and_header_character_output" which expands on called (CMPSTE) to compare start:end when writing header/data ranges

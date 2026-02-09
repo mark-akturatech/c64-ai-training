@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - LOG CIA KEY READING: Reads CIA keyboard register ($DC01), waits for stable value, stores result in $91 (STKEY) if <STOP> or <RVS> keys are detected. Uses CIO port $DC00/$DC01 and writes to CIA data registers ($DC00) to latch key status. Uses TAX/LDX/STA loops and small delay polls.
+
+                                *** LOG CIA KEY READING
+                                This routine tests the keyboard for either <STOP> or <RVS>
+                                pressed. If so, the keypress is stored in STKEY.
+.,F6BC AD 01 DC LDA $DC01       keyboard read register
+.,F6BF CD 01 DC CMP $DC01
+.,F6C2 D0 F8    BNE $F6BC       wait for value to settle
+.,F6C4 AA       TAX
+.,F6C5 30 13    BMI $F6DA
+.,F6C7 A2 BD    LDX #$BD
+.,F6C9 8E 00 DC STX $DC00       keyboard write register
+.,F6CC AE 01 DC LDX $DC01       keyboard read register
+.,F6CF EC 01 DC CPX $DC01
+.,F6D2 D0 F8    BNE $F6CC       wait for value to settle
+.,F6D4 8D 00 DC STA $DC00
+.,F6D7 E8       INX
+.,F6D8 D0 02    BNE $F6DC
+.,F6DA 85 91    STA $91         STKEY, flag STOP/RVS
+.,F6DC 60       RTS
+
+---
+Additional information can be found by searching:
+- "stop_check_stop_key" which expands on STKEY ($91) read here is used by STOP routine

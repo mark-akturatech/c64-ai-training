@@ -1,0 +1,122 @@
+# ********* - CIA #2 Data Direction Registers (56578-56579 $DD02-$DD03) Bit mappings (0=input,1=output). Timer registers TI2ALO/TI2AHI/TI2BLO/TI2BHI at 56580-56583 $DD04-$DD07 mirror CIA#1 timer functionality; CIA#2 TOD registers at 56584-56587 $DD08-$DD0B (BCD format) behave like CIA#1 but OS doesn't use them. CI2SDR (56588 $DD0C) serial data port exists but OS does not use it. CI2ICR (56589 $DD0D) Interrupt Control Register mirrors CIA#1 functionality; FLAG line on CIA#2 is accessible via User Port and can cause interrupts for handshaking.
+
+56578         $DD02          C2DDRA
+Data Direction Register A
+
+Bit 0:  Select Bit 0 of data Port A for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of data Port A for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of data Port A for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of data Port A for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of data Port A for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of data Port A for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of data Port A for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of data Port A for input or output (0=input, 1=output)
+
+56579         $DD03          C2DDRB
+Data Direction Register B
+
+Bit 0:  Select Bit 0 of data Port B for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of data Port B for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of data Port B for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of data Port B for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of data Port B for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of data Port B for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of data Port B for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of data Port B for input or output (0=input, 1=output)
+
+Location Range: 56580-56583 ($DD04-$DD07)
+Timer A and B Low and High Bytes
+
+These four timer registers are used to control Timers A and B.  For
+details on the operation of these timers, see the entry for Location
+Range 56324-56327 ($DC04-$DC07).
+
+The 64 Operating System uses the CIA #2 Timers A and B mostly for
+timing RS-232 send and receive operations.  Serial Bus timing uses CIA
+#1 Timer B.
+
+56580         $DD04          TI2ALO
+Timer A (low byte)
+
+56581         $DD05          TI2AHI
+Timer A (high byte)
+
+56582         $DD06          TI2BLO
+Timer B (low byte)
+
+56583         $DD07          TI2BHI
+Timer B (high byte)
+
+Location Range: 56584-56587 ($DD08-$DD0B)
+Time of Day Clock
+
+In addition to the two general purpose timers, the 6526 CIA chip has a
+special purpose Time of Day Clock, which keeps time in a format that
+humans can understand a little more easily than microseconds.  For
+more information about this clock, see the entry for Location Range
+56328-56331 ($DC08-$DC0B).  The 64's Operating system does not make
+use of these registers.
+
+56584         $DD08          TO2TEN
+Time of Day Clock Tenths of Seconds
+
+Bits 0-3:  Time of Day tenths of second digit (BCD)
+Bits 4-7:  Unused
+
+56585         $DD09          TO2SEC
+Time of Day Clock Seconds
+
+Bits 0-3:  Second digit of Time of Day seconds (BCD)
+Bits 4-6:  First digit of Time of Day seconds (BCD)
+Bit 7:  Unused
+
+56586         $DD0A          TO2MIN
+Time of Day Clock Minutes
+
+Bits 0-3:  Second digit of Time of Day minutes (BCD)
+Bits 4-6:  First digit of Time of Day minutes (BCD)
+Bit 7:  Unused
+
+56587         $DD0B          TO2HRS
+Time of Day Clock Hours
+
+Bits 0-3:  Second digit of Time of Day hours (BCD)
+Bit 4:  First digit of Time of Day hours (BCD)
+Bits 5-6:  Unused
+Bit 7:  AM/PM flag (1=PM, 0=AM)
+
+56588         $DD0C          CI2SDR
+Serial Data Port
+
+The CIA chip has an on-chip serial port, which allows you to send or
+receive a byte of data one bit at a time, with the most significant
+bit (Bit 7) being transferred first.  For more information about its
+use, see the entry for location 56332 ($DC0C).  The 64's Operating
+System does not use this facility.
+
+56589         $DD0D          CI2ICR
+Interrupt Control Register
+
+Bit 0:  Read / did Timer A count down to 0?  (1=yes)
+        Write/ enable or disable Timer A interrupt (1=enable, 0=disable)
+Bit 1:  Read / did Timer B count down to 0?  (1=yes)
+        Write/ enable or disable Timer B interrupt (1=enable, 0=disable)
+Bit 2:  Read / did Time of Day Clock reach the alarm time?  (1=yes)
+        Write/ enable or disable TOD clock alarm interrupt (1=enable,
+        0=disable)
+Bit 3:  Read / did the serial shift register finish a byte?  (1=yes)
+        Write/ enable or disable serial shift register interrupt (1=enable,
+        0=disable)
+Bit 4:  Read / was a signal sent on the FLAG line?  (1=yes)
+        Write/ enable or disable FLAG line interrupt (1=enable, 0=disable)
+Bit 5:  Not used
+Bit 6:  Not used
+Bit 7:  Read / did any CIA #2 source cause an interrupt?  (1=yes)
+        Write/ set or clear bits of this register (1=bits written with 1 will
+        be set, 0=bits written with 1 will be cleared)
+
+
+---
+Additional information can be found by searching:
+- "ci2pra_ci2prb_and_data_direction_defaults" which expands on default DDR setups and RS-232 opening effects
+- "ciaicr_interrupt_control" which expands on interrupt control semantics similar to CIA #1

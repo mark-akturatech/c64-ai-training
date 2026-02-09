@@ -1,0 +1,39 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Control logic for assembling device packets and handling their side-effects: rotates/adjusts bitfields ($B6,$BD,$BF,$B1), conditionally calls FBxx routines, toggles $AA/$AB, and branches to central FEBC exit. Manages packet assembly steps and flow control for serial/device transfers.
+
+.,FBC8 38       SEC
+.,FBC9 66 B6    ROR $B6
+.,FBCB 30 3C    BMI $FC09
+.,FBCD A5 A8    LDA $A8
+.,FBCF D0 12    BNE $FBE3
+.,FBD1 A9 10    LDA #$10
+.,FBD3 A2 01    LDX #$01
+.,FBD5 20 B1 FB JSR $FBB1
+.,FBD8 D0 2F    BNE $FC09
+.,FBDA E6 A8    INC $A8
+.,FBDC A5 B6    LDA $B6
+.,FBDE 10 29    BPL $FC09
+.,FBE0 4C 57 FC JMP $FC57
+.,FBE3 A5 A9    LDA $A9
+.,FBE5 D0 09    BNE $FBF0
+.,FBE7 20 AD FB JSR $FBAD
+.,FBEA D0 1D    BNE $FC09
+.,FBEC E6 A9    INC $A9
+.,FBEE D0 19    BNE $FC09
+.,FBF0 20 A6 FB JSR $FBA6
+.,FBF3 D0 14    BNE $FC09
+.,FBF5 A5 A4    LDA $A4
+.,FBF7 49 01    EOR #$01
+.,FBF9 85 A4    STA $A4
+.,FBFB F0 0F    BEQ $FC0C
+.,FBFD A5 BD    LDA $BD
+.,FBFF 49 01    EOR #$01
+.,FC01 85 BD    STA $BD
+.,FC03 29 01    AND #$01
+.,FC05 45 9B    EOR $9B
+.,FC07 85 9B    STA $9B
+.,FC09 4C BC FE JMP $FEBC
+
+---
+Additional information can be found by searching:
+- "setup_dc_pointers_and_status_flag" which expands on reads/writes flags and pointer bytes set up earlier
+- "transfer_loop_and_interrupt_masking" which expands on integrates with the transfer loop and interrupt handling

@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Scan for autostart ROM at $8000: tests five characters (LDX #$05) comparing bytes at $FD0F,X with $8003,X. Returns Z=1 if match. Following this is the autostart signature bytes 'CBM80' at $FD10-$FD14.
+
+                                *** scan for autostart ROM at $8000, returns Zb=1 if ROM found
+.,FD02 A2 05    LDX #$05        five characters to test
+.,FD04 BD 0F FD LDA $FD0F,X     get test character
+.,FD07 DD 03 80 CMP $8003,X     compare wiith byte in ROM space
+.,FD0A D0 03    BNE $FD0F       exit if no match
+.,FD0C CA       DEX             decrement index
+.,FD0D D0 F5    BNE $FD04       loop if not all done
+.,FD0F 60       RTS             
+                                *** autostart ROM signature
+.:FD10 C3 C2 CD 38 30           'CBM80�
+
+---
+Additional information can be found by searching:
+- "reset_hardware_startup" which expands on called early during reset to detect autostart ROM

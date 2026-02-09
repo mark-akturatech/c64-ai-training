@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Compute the number of bits to be transmitted based on the pseudo 6551 control register ($0293). Defaults to 9 bits (8 data + 1 stop) and decrements for 7- or 5-bit character formats. Returns with X set to the computed bit count.
+
+                                *** compute bit count
+.,EF4A A2 09    LDX #$09        set bit count to 9, 8 data + 1 stop bit
+.,EF4C A9 20    LDA #$20        mask for 8/7 data bits
+.,EF4E 2C 93 02 BIT $0293       test pseudo 6551 control register
+.,EF51 F0 01    BEQ $EF54       branch if 8 bits
+.,EF53 CA       DEX             else decrement count for 7 data bits
+.,EF54 50 02    BVC $EF58       branch if 7 bits
+.,EF56 CA       DEX             else decrement count ..
+.,EF57 CA       DEX             .. for 5 data bits
+.,EF58 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_transmit_parity_and_stop_bits" which expands on uses the computed bit count when adjusting parity/stop-bit behavior
+- "rs232_setup_next_tx_byte" which expands on value stored to $B4 and used for per-bit transmission

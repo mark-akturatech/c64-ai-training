@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Clock/data line control primitives and helpers: CLKHI (set clock high), CLKLO (set clock low), DATAHI, DATALO (affect PIA D2PRA bits), DEBPIA (debounce PIA reads), and W1MS (1ms loop delay). These are used throughout the serial bus send/receive routines to implement timing and debouncing requirements.
+
+.,EE6A CD 00 DD CMP $DD00       CMP    D2PRA           ;DEBOUNCE
+.,EE6D D0 F8    BNE $EE67       BNE    ACP03A
+.,EE6F 0A       ASL             ASL    A
+.,EE70 30 F5    BMI $EE67       BMI    ACP03A
+.,EE72 C6 A5    DEC $A5         DEC    COUNT
+.,EE74 D0 E4    BNE $EE5A       BNE    ACP03           ;MORE BITS.....
+                                ;...EXIT...
+.,EE76 20 A0 EE JSR $EEA0              JSR DATALO      ;DATA LOW
+.,EE79 24 90    BIT $90                BIT STATUS      ;CHECK FOR EOI
+.,EE7B 50 03    BVC $EE80              BVC ACP04       ;NONE...
+                                ;
+.,EE7D 20 06 EE JSR $EE06              JSR DLADLH      ;DELAY THEN SET DATA HIGH
+                                ;
+.,EE80 A5 A4    LDA $A4         ACP04  LDA BSOUR1
+.,EE82 58       CLI                    CLI             ;IRQ IS OK
+.,EE83 18       CLC                    CLC             ;GOOD EXIT
+.,EE84 60       RTS                    RTS
+                                ;
+                                CLKHI                  ;SET CLOCK LINE HIGH (INVERTED)
+.,EE85 AD 00 DD LDA $DD00              LDA D2PRA
+.,EE88 29 EF    AND #$EF               AND #$FF-$10
+.,EE8A 8D 00 DD STA $DD00              STA D2PRA
+.,EE8D 60       RTS                    RTS
+                                ;
+                                CLKLO                  ;SET CLOCK LINE LOW  (INVERTED)
+.,EE8E AD 00 DD LDA $DD00              LDA D2PRA
+.,EE91 09 10    ORA #$10               ORA #$10
+.,EE93 8D 00 DD STA $DD00              STA D2PRA
+.,EE96 60       RTS                    RTS
+                                ;
+                                ;
+                                DATAHI                 ;SET DATA LINE HIGH (INVERTED)
+.,EE97 AD 00 DD LDA $DD00              LDA D2PRA
+.,EE9A 29 DF    AND #$DF               AND #$FF-$20
+.,EE9C 8D 00 DD STA $DD00              STA D2PRA
+.,EE9F 60       RTS                    RTS
+                                ;
+                                DATALO                 ;SET DATA LINE LOW  (INVERTED)
+.,EEA0 AD 00 DD LDA $DD00              LDA D2PRA
+.,EEA3 09 20    ORA #$20               ORA #$20
+.,EEA5 8D 00 DD STA $DD00              STA D2PRA
+.,EEA8 60       RTS                    RTS
+                                                       ;
+.,EEA9 AD 00 DD LDA $DD00       DEBPIA LDA D2PRA       ;DEBOUNCE THE PIA
+.,EEAC CD 00 DD CMP $DD00              CMP D2PRA
+.,EEAF D0 F8    BNE $EEA9              BNE DEBPIA
+.,EEB1 0A       ASL                    ASL A           ;SHIFT THE DATA BIT INTO THE CARRY...
+.,EEB2 60       RTS                    RTS             ;...AND THE CLOCK INTO NEG FLAG
+                                ;
+                                W1MS                   ;DELAY 1MS USING LOOP
+.,EEB3 8A       TXA                    TXA             ;SAVE .X
+.,EEB4 A2 B8    LDX #$B8               LDX #200-16     ;1000US-(1000/500*8=#40US HOLDS)
+.,EEB6 CA       DEX             W1MS1  DEX             ;5US LOOP
+.,EEB7 D0 FD    BNE $EEB6              BNE W1MS1
+.,EEB9 AA       TAX                    TAX             ;RESTORE .X
+.,EEBA 60       RTS                    RTS
+                                .END
+                                .LIB   RS232TRANS
+                                ; RSTRAB - ENTRY FOR NMI CONTINUE ROUTINE
+                                ; RSTBGN - ENTRY FOR START TRANSMITTER
+
+---
+Additional information can be found by searching:
+- "acptr_and_eoi_timeout" which expands on ACPTR uses these primitives to sample bits and detect timeouts

@@ -1,0 +1,44 @@
+# MACHINE - 6520 Control Registers (CRA and CRB) summary and bit layout (Figure I.2). Control registers manage interrupt lines CA1/CA2/CB1/CB2 and peripheral control lines, select access to Data Direction Registers (DDRA, DDRB) and Output Registers (ORA, ORB), and include interrupt status bits (/IRQA, /IRQB) in bits 6/7 used by the CPU to determine source of interrupts. Describes typical use and frequent access during operation.
+
+Control Registers (CRA and CRB)
+-------------------------------
+
+Figure I.2 illustrates the bit designation and functions in the Control
+Registers.  The Control Registers allow the microprocessor to control the
+operation of the interrupt lines (CA1, CA2, CB1, CB2), and peripheral control
+lines (CA2, CB2).  A single bit in each register controls the addressing of
+the Data Direction Registers (DDRA, DDRB) and the Output Registers (ORA, ORB)
+discussed below.  In addition, two bits (bit 6 and 7) are provided in each
+control register to indicate the status of the interrupt input lines (CA1,
+CA2, CB1, CB2).  These interrupt status bits (/IRQA, /IRQB) are normally
+interrogated by the microprocessor during the interrupt service program to
+determine the source of an active interrupt.  These are the interrupt lines
+which drive the interrupt input (/IRQ, /NMI) of the microprocessor.  The
+other bits in CRA and CRB are as described in the discussion of the interface
+to the peripheral device
+
+
+               7      6      5      4      3      2      1      0
+            +------+------+------+------+------+------+------+------+
+        CRA | IRQ  | IRQ  |    CA2 CONTROL     | DDRA | CA1 CONTROL |
+            |  A1  |  A2  |                    |ACCESS|             |
+            +------+------+------+------+------+------+------+------+
+
+            +------+------+------+------+------+------+------+------+
+        CRB | IRQ  | IRQ  |    CA2 CONTROL     | DDRB | CB1 CONTROL |
+            |  B1  |  B2  |                    |ACCESS|             |
+            +------+------+------+------+------+------+------+------+
+
+        Figure I.2
+
+
+The various bits in the control registers will be accessed many times during
+a program to allow the processor to enable or disable interrupts, change
+operating modes, etc. as required by the peripheral device being controlled.
+
+
+
+---
+Additional information can be found by searching:
+- "6520_ddr" which expands on Data Direction Registers referenced by CRA/CRB
+- "control_of_irqa" which expands on how CRA bits affect /IRQA

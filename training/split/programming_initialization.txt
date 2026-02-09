@@ -1,0 +1,25 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Initialization example: clear SID registers ($D400..), set master volume ($D418) to desired value. Example code clearing 24 registers and setting volume to maximum.
+
+--------------------------------------------------------------------------------
+11.1 INITIALIZATION
+--------------------------------------------------------------------------------
+
+Before producing sound, clear all SID registers:
+
+  ; Clear all SID registers
+  lda #$00
+  ldx #$18          ; 24 registers (+ a few extra doesn't hurt)
+  clear:
+  sta $d400,x
+  dex
+  bpl clear
+
+  ; Set master volume
+  lda #$0f          ; Maximum volume, no filter modes
+  sta $d418
+
+
+---
+Additional information can be found by searching:
+- "complete_register_map_intro" which expands on SID base address $D400 and mirror behavior
+- "known_quirks" which expands on write-only behavior and safe clearing

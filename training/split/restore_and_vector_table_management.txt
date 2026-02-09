@@ -1,0 +1,43 @@
+# ********* - RESTOR and VECTOR Kernal routines and the ROM table of default RAM vectors: RESTOR restores the 16 RAM vectors for I/O to their default ROM values; VECTOR reads or writes the 16 RAM vectors using the address in X/Y and the Carry flag to select store/load operations; includes note about executing SEI/CLI around VECTOR. Also documents the ROM table of default vectors at $FD30.
+
+64789         $FD15          RESTOR
+Restore RAM Vectors for Default I/O Routines
+
+This documented Kernal routine can be entered through the jump table
+at 65418 ($FF8A).
+
+It sets the values for the 16 RAM vectors to the interrupt and
+important Kernal I/O routines in the table that starts at 788 ($314)
+to the standard values held in the ROM table at 64816 ($FD30).
+
+64794         $FD1A          VECTOR
+Set the RAM Vector Table from the Table Pointed to by .X and .Y
+
+This documented Kernal routine can be entered through the jump table
+at 65421 ($FF8D).
+
+It is used to read or change the values for the 16 RAM vectors to the
+interrupt and important Kernal I/O routines in the table that starts
+at 788 ($314).  If the Carry flag is set when the routine is called,
+the current value of the 16 vectors will be stored at a table whose
+address is pointed to by the values in the .X and .Y registers.  If
+the Carry flag is cleared, the RAM vectors will be loaded from the
+table whose address is pointed to by the .X and .Y registers.  Since
+this routine can change the vectors for the IRQ and NMI interrupts,
+you might expect that the Interrupt disable flag would be set at its
+beginning.  Such is not the case, however, and therefore it would be
+wise to execute an SEI before calling it and a CLI afterwards (as the
+power-on RESET routine does) just to be safe.
+
+64816         $FD30
+Table of RAM Vectors to the Default I/O Routines
+
+This table contains the 16 RAM I/O vectors that are moved to 788-819
+($314-$333).
+
+
+---
+Additional information can be found by searching:
+- "ramtas_ram_test_and_memory_pointers" which expands on RAM initialization that complements vector setup
+- "ioinit_initialize_cia_and_sid" which expands on I/O initialization affected by vector values
+- "power_on_reset_routine" which expands on RESET calls RESTOR/VECTOR as part of initialization

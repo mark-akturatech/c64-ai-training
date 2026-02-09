@@ -1,0 +1,36 @@
+# MACHINE - Using the stack for control flow: pushing two bytes as a fake return address then executing RTS acts as JMP to that address (e.g., LDA #$24 PHA; LDA #$68 PHA; RTS -> JMP $2469). Use with table-driven dispatch: LDA TABLE1,X PHA; LDA TABLE2,X PHA; RTS allows indirect jumps dependant on X.
+
+
+
+Mixing and Matching
+-------------------
+
+The processor uses the stack mechanically.  If we know how to manipulate the
+stack, we can use it for surprising things.  For example, an RTS can be given
+even though there was no subroutine call; all we have to do is prepare the
+stack with the proper address.  Try to figure out what the following code
+will do:
+
+  LDA #$24
+  PHA
+  LDA #$68
+  PHA
+  RTS
+
+This coding is identical to JMP $2469.  We have placed a "false return
+address" onto the stack, and RTS has removed it and used it.  This may not
+seem very useful, since we could easily have coded the JMP $2469 directly.
+But look at the following code:
+
+  LDA TABLE1,X
+  PHA
+  LDA TABLE2,X
+  PHA
+  RTS
+
+The principle of coding is the same, but now we can "fan out" to any of
+several different addresses, depending on the value contained in X.
+
+---
+Additional information can be found by searching:
+- "jsr_rts_stack_return_behavior" which expands on stack contents expected by RTS

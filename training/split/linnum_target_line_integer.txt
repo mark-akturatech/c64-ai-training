@@ -1,0 +1,29 @@
+# ********* - LINNUM ($14-$15): two-byte low/high integer used to store the target line number for GOTO, LIST, ON, and GOSUB, or the line number to add/replace. LIST saves the highest line to list (or $FFFF to indicate to end). Describes how GOTO determines search start (comparison uses most significant byte only—i.e., INT(TARGET/256) compared to INT(CURRENT/256)). Notes that PEEK, POKE, WAIT, and SYS use this location as a pointer address parameter.
+
+20-21         $14-$15        LINNUM
+Integer Line Number Value
+
+The target line number for GOTO, LIST, ON, and GOSUB is stored here in
+low- byte, high-byte integer format, as is the number of a BASIC line
+that is to be added or replaced.
+
+LIST saves the highest line number to list (or 65535 ($FFFF) if
+program is to be listed to the end) at this location.
+
+GOTO tests the target line number to see if it is greater than the
+line number currently being executed.  If it is greater, GOTO starts
+its search for the target line at the current line number.  If it is
+not greater, GOTO must search for the target line from the first line
+of the program.  It is interesting to note that the test is of the
+most significant byte only.  Therefore, INT(TARGETLINE/256) must be
+greater than INT(CURRENTLINE/256) in order for the search to start
+with the current line, instead of at the beginning of the program.
+
+PEEK, POKE, WAIT, and SYS use this location as a pointer to the
+address which is the subject of the command.
+
+
+---
+Additional information can be found by searching:
+- "channl_current_io_channel" which expands on previous I/O-related flags and behavior
+- "temporary_string_stack_temppt_lastpt_tempst" which expands on next zero-page area used for temporary string handling

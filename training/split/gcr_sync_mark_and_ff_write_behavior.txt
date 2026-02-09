@@ -1,0 +1,19 @@
+# byRiclianll - Defines what constitutes a sync mark (10 or more consecutive '1' bits) and why normal data cannot accidentally form one. Describes special-case behavior when writing $FF: in normal mode $FF is converted to GCR, but in sync mode the 1541 writes five consecutive $FF bytes (40 '1' bits) to guarantee a detectable sync mark.
+
+
+This  brings  us  full  circle  to  what  actually  differentiates  a  sync  mark  from  a  normal  data 
+byte.  Simply  put,  a  sync  mark  is  10  or  more  on  bits  (Is)  recorded  in  succession.  Only 
+one  normal  data  byte,  an  $FF  (%11111111),  can  even  begin  to  fill  the  shoes  of  a  sync 
+mark.  During  normal  write  mode,  however,  an  $FF  would  take  the  following  GCR  form, 
+1010110101.  Enter  sync  mode.  When  the  1541  writes  an  $FF  in  sync  mode  no  binary 
+to  GCR  conversion  is  done.  A  single  $FF  is  only  eight  consecutive  on  bits  and  falls  short 
+of  the  ten  consecutive  on  bits  needed  to  create  a  sync  character.  To  remedy  this.  Com- 
+modore writes  five  consecutive  8-bit  $FFs  to  disk.  This  records  40  on  bits  (Is)  in  succes- 
+sion, the  overkill  is  intentional  on  the  DOS's  part.  Commodore  is  trying  to  guarantee 
+that  the  1541  will  never  have  any  trouble  finding  a  sync  mark  during  subsequent 
+reads/writes  to  a  diskette. 
+
+---
+Additional information can be found by searching:
+- "gcr_design_constraints_no_sync_confusion_and_max_zero_runs" which expands on Explains the purpose of the mapping constraints relative to sync detection
+- "gcr_packing_four_bytes_into_five_gcr_bytes_example" which expands on Shows how bytes are converted/packed during normal (non-sync) writing

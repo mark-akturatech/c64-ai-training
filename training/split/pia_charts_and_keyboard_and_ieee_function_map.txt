@@ -1,0 +1,75 @@
+# MACHINE - PIA (6520) charts showing register roles at addresses like $E810-$E813 (PIA1 keyboard interface) and $E820-$E823 (PIA2 IEEE-488). Depicts functions per bit such as tape sense, keyboard row select, retrace latch, cassette motor control, and interrupt controls. These diagrams show which PIA pins map to system functions.
+
+
+[as printed in the book, it's pretty difficult to see exactly which bits the
+ fields take, so this may be off by a bit or two. :( -wf ]
+
+
+                                                                  6520
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      | Diag  |       |  Tape Switch  |                               |
+$E810 |Sense/ |EOI In |     Sense     |      Keyboard Row Select      | 59408
+      |Uncrash|       |  #1      #2   |                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      |Tape #1|       |    (Screen Blank--    | DDRA  | Tape #1 Input |
+$E811 |  In   |       |     Original ROM)     |Access |   L Control   | 59409
+      | Latch |       |        EOI Out        |       |               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      |                                                               |
+$E812 |                Keyboard Input for Selected Row                | 59410
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      |Retrace|       |   Cassette #1 Motor   | DDRB  |    Retrace    |
+$E813 | Latch |       |        Output         |Access |   Interrupt   | 59411
+      |       |       |                       |       |    Control    |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+ Figure C.1
+ PIA 1 Chart
+
+
+
+
+                                                                  6520
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      |                                                               |
+$E820 |                        IEEE-488 Input                         | 59424
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      | /ATN  |       |                       | DDRA  |   /ATN Int    |
+$E821 |  Int  |       |       /NDAC Out       |Access |    Control    | 59425
+      |       |       |                       |       |               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      |                                                               |
+$E822 |                        IEEE-488 Output                        | 59426
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+      | /SRQ  |       |   Cassette #1 Motor   | DDRB  |   /SRQ Int    |
+$E823 |  Int  |       |        Output         |Access |    Control    | 59427
+      |       |       |                       |       |               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+ Figure C.2
+ PIA 2 Chart
+
+                                                                        :173:
+
+                                                                  6522
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$E840 | /DAV  | /NRFD |Retrace|Tape #2| Tape  | /ATN  | NRFD  | /NDAC | 59456
+      |  In   |  In   |  In   | Motor |Output |  Out  |  Out  |  In   |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$E841 |                       Unused (See E84F)                       | 59457
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$E842 |             Data Direction Register B (for E840)              | 59458
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$E843 |             Data Direction Register A (for E84F)              | 59459
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$E844 |                                                               | 59460
+
+---
+Additional information can be found by searching:
+- "via_chart_and_timers" which expands on VIA (6522) chart follows with timers and port direction registers

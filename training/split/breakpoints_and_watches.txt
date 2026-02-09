@@ -1,0 +1,57 @@
+# Kick Assembler - Section 3.12: Debugger-oriented directives .break and .watch that add debug info for emulators/debuggers (VICE, C64Debugger); examples of placing breakpoints, conditional arguments for breakpoints, macro breakpoint behavior, watch definitions (single address, ranges, optional argument), and argument semantics.
+
+3.12. Breakpoints and watches
+Breakpoints and watches changes nothing in the code. They add debug information to emulators/debuggers.
+Currently this means adding info to the vice symbol file or the DebugDump file (C64Debugger).
+You can set breakpoints in your code with the .break directive:
+// Example 1
+ldy #10
+loop:
+.break
+// This will put a breakpoint on 'inc $d020'
+inc $d020
+dey
+.break "if y<5" // This will add a string as argument for the breakpoint
+bne loop
+
+// Example 2
+lda #10
+.break
+// Will place a breakpoint at the first nop in the macro
+MyMacro()
+.macro MyMacro() {
+nop
+nop
+nop
+}
+
+The .break directive puts a breakpoint on the current memory position. As seen in the second breakpoint, you
+can add an argument to a breakpoint. The syntax of this is dependant on the consumer. The above case (.break "if
+y<5") is written for VICE's conditional expressions. VICE will then break if the y register is below 5.
+
+12
+
+Basic Assembler Functionality
+
+Watches are defined like this
+
+.watch $d018
+// Watches $d018
+.watch xpos+1
+// Watches the address xpos+1
+.watch $d000,$d00f
+// Watches the range $d000-$d00f
+.watch xpos,xpos+10,"store"
+// Watches a range with the additional parameter
+"store"
+.watch count,,"hex8"
+// you can leave the second argument empty
+
+First argument is the address. If second argument is given its the range between the two. Third argument is
+an optional text string with additional information. Consult your emulater/debugger manual for possible content
+of third argument.
+
+
+---
+Additional information can be found by searching:
+- "prg_files_and_d64_disks_overview" which expands on debug output targets and formats (Appendix/Chapter 11 references)

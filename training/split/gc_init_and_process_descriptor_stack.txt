@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initializes garbage collection state and iterates the descriptor stack: sets bottom-of-string-space ($33/$34) from $37/$38, clears index and working pointer ($4E/$4F), initializes highest-uncollected-string pointer ($5F/$60) from end-of-arrays ($31/$32), sets descriptor stack pointer ($22/$23) to $19, and loops calling the descriptor salvageability check (JSR $B5C7) until the descriptor stack is exhausted.
+
+                                *** garbage collection routine
+.,B526 A6 37    LDX $37         get end of memory low byte
+.,B528 A5 38    LDA $38         get end of memory high byte
+                                re-run routine from last ending
+.,B52A 86 33    STX $33         set bottom of string space low byte
+.,B52C 85 34    STA $34         set bottom of string space high byte
+.,B52E A0 00    LDY #$00        clear index
+.,B530 84 4F    STY $4F         clear working pointer high byte
+.,B532 84 4E    STY $4E         clear working pointer low byte
+.,B534 A5 31    LDA $31         get end of arrays low byte
+.,B536 A6 32    LDX $32         get end of arrays high byte
+.,B538 85 5F    STA $5F         save as highest uncollected string pointer low byte
+.,B53A 86 60    STX $60         save as highest uncollected string pointer high byte
+.,B53C A9 19    LDA #$19        set descriptor stack pointer
+.,B53E A2 00    LDX #$00        clear X
+.,B540 85 22    STA $22         save descriptor stack pointer low byte
+.,B542 86 23    STX $23         save descriptor stack pointer high byte ($00)
+.,B544 C5 16    CMP $16         compare with descriptor stack pointer
+.,B546 F0 05    BEQ $B54D       branch if =
+.,B548 20 C7 B5 JSR $B5C7       check string salvageability
+.,B54B F0 F7    BEQ $B544       loop always
+
+---
+Additional information can be found by searching:
+- "collect_string_variables_setup_and_loop" which expands on continues after descriptor stack: sets up variable collection
+- "check_string_salvageability_for_variables_and_update_pointers" which expands on the JSR $B5C7 called here is the salvageability check implemented in that chunk
+- "collect_string_and_compact_memory" which expands on when a string is chosen for collection the routine in that chunk performs the move/compaction

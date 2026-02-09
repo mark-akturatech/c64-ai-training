@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine to poll the STOP key (JSR $FFE1). Clears/sets flags to indicate whether STOP was pressed, restores registers and return state if STOP occurred, and manipulates the return address on the stack so control returns to the caller that initiated the stop.
+
+                                *** scan stop key and flag abort if pressed
+.,F8D0 20 E1 FF JSR $FFE1       scan stop key
+.,F8D3 18       CLC             flag no stop
+.,F8D4 D0 0B    BNE $F8E1       exit if no stop
+.,F8D6 20 93 FC JSR $FC93       restore everything for STOP
+.,F8D9 38       SEC             flag stopped
+.,F8DA 68       PLA             dump return address low byte
+.,F8DB 68       PLA             dump return address high byte
+
+
+---
+Additional information can be found by searching:
+- "tape_write_loop_check_and_irq_reenable" which expands on called from the tape write loop to detect user abort
+- "clear_saved_irq_address_and_return" which expands on subsequent cleanup after STOP detection

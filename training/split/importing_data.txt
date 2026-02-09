@@ -1,0 +1,33 @@
+# Kick Assembler - Section 3.9: .import directive for binary, c64, and text files with optional offset and length parameters, examples (.import binary, .import c64 skipping the first two address bytes, .import text converting via active encoding), and lookup in -libdir.
+
+With the .import directive you can import data from external files into your code. You can import binary, C64,
+and text files:
+// import the bytes from the file 'music.bin'
+.import binary "Music.bin"
+// Import the bytes from the c64 file 'charset.c64'
+// (Same as binary but skips the first two address bytes)
+.import c64 "charset.c64"
+
+10
+
+Basic Assembler Functionality
+
+// Import the chars from the text file
+// (Converts the bytes as a .text directive would do)
+.import text "scroll.txt"
+
+The binary, c64 and text import takes an offset and a length as optional parameters:
+// import the bytes from the file 'music.bin', but skip the first 100 bytes
+.import binary "Music.bin", 100
+// Imports $200 bytes starting from position $402 (the two extra bytes is because
+its a c64 file)
+.import c64 "charset.c64", $400, $200
+
+As when importing sources files, the import directive also searches the folders given by the –libdir option when
+looking for a file.
+
+
+---
+Additional information can be found by searching:
+- "encoding_and_charset_options" which expands on text import conversion depends on current encoding
+- "data_directives_and_fill" which expands on imported bytes used as data in .byte/.text contexts

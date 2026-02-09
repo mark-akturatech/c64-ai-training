@@ -1,0 +1,46 @@
+# ********* - Introduction to Chapter 3: BASIC and the Kernal working storage area. Purpose of the area (vectors, OS/Kernal routines, RS-232 registers, buffers for tape I/O, BASIC input, keyboard queue, OS variables/pointers). Detailed entry for BUF (512-600 / $200-$258): the BASIC line editor input buffer used in immediate mode and by INPUT/GET, how BASIC tokenizes or executes input, why INPUT/GET are illegal in immediate mode, the buffer length (89 bytes), screen editor limit (80 chars), and the last eight bytes often available to the programmer.
+
+::::::::::::::::::::::::
+::     Chapter 3      ::
+::                    ::
+::   Pages 2 and 3    ::
+::                    ::
+::BASIC and the Kernal::
+::  Working Storage   ::
+::::::::::::::::::::::::
+
+This area is used to store important information for the Operating
+System and BASIC.  It contains vectors to certain BASIC routines as
+well as Operating System Kernal routines.  Registers for RS-232 serial
+I/O are located here.  Buffer space is allocated in this area for tape
+I/O, BASIC text input, and the keyboard queue.  In addition, there are
+a number of Operating System variables and pointers here which the
+programmer can utilize.
+
+512-600       $200-$258      BUF
+BASIC Line Editor Input Buffer
+
+When you are in the BASIC immediate mode, and type in a line of
+characters, those characters are stored here.  BASIC then scans the
+string of characters, converts the text to tokenized BASIC program
+format, and either stores it or executes the line, depending on
+whether or not it started with a line number.
+
+This same area is also used to store data which is received via the
+INPUT and GET commands.  This explains why these commands are illegal
+in immediate mode--they must use the same buffer space that is
+required by the immediate mode statement itself.
+
+It is interesting to note that this buffer is 89 bytes long.  The
+screen editor will allow a maximum of only 80 characters in a program
+line, with one extra byte required for a 0 character, marking the end
+of the line.  This presumable is a carry over from the VIC, which
+allows a line length of up to 88 characters.  The last eight bytes of
+this buffer are therefore normally not used, and can be considered
+free space for the programmer to use as he or she sees fit.
+
+
+---
+Additional information can be found by searching:
+- "microprocessor_stack_overview_and_basic_usage" which expands on previous chapter material on stack usage by BASIC and Kernal
+- "i_o_tables_lat_fat_sat_and_clall" which expands on next: tables for open files, devices, and secondary addresses

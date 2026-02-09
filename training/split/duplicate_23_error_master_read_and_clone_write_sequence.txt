@@ -1,0 +1,85 @@
+# byRiclianll - Core duplication sequence in BASIC. Covers: REM SEEK and REM READ steps (setting JOB, GOSUB 650 to perform drive operations), reading the requested sector(s) from the master disk, CLOSE 15, prompting and waiting for the user to insert the clone disk, reopening the drive for writing (OPEN 15,3,15), seeking again, nested loops that read bytes into the program buffer (FOR J=0 TO 10, FOR I=0 TO 7, READD, assembling D* buffer), preparing and issuing M-W (memory-write) commands to the drive to write the assembled GCR/sector image blocks, incrementing the buffer pointer, issuing M-R and checking drive response (GET#15,E*; defaulting empty response to CHR$(0); converting to ASC and checking ranges), closing the device, and printing the DONE message and END of the operation. This is the main master->clone data transfer path that writes the duplicated sector image to the clone.
+
+270  REM  SEEK 
+
+280  J0B=176 
+
+290  G0SUB650 
+
+300  REM  READ 
+
+310  J0B=128 
+
+320  G0SUB650 
+
+330  CLOSE 15 
+
+340  PRINT" ^DOWN> INSERT  CLONE  IN  DRIVE" 
+350  PRINT"  ^DOWNJPRESS  <:RVS>RETURNCR0FF> 
+TO  CONTINUE" 
+
+360  GETC* : I FC«= " " THEN360 
+
+370  I FC*<  >CHR* (13) G0T036b 
+
+380  PR I NT "OK" 
+
+390  0PEN15,3, 15 
+
+400  REM  SEEK 
+
+410  J0B=176 
+
+420  G0SUB650 
+
+430  F0RJ=0T010 
+
+440  F0RI=0T07 
+
+450  READD 
+
+460  D*(J)=D*(J)+CHR*(D) 
+
+470  NEXTI 
+
+480  NEXT J 
+
+490  1=0 
+
+500  F0RJ=OTO10 
+
+510  PRINT#15, "M-W"CHR*(I)CHR*(5)CHR*(8)D 
+*(J) 
+
+520  1=1+8 
+530  NEXT J 
+540  REM  EXECUTE 
+
+550  PRINT#15,  "M-W"CHR*  <2)  CHR*  (O)  CHR*  (DC 
+HR* (224) 
+
+560  PRINT#15, "M-R"CHR«(2)CHR*(0) 
+
+570  GET#15,E* 
+
+580  IFE$=""THENE*=CHR*(0) 
+
+590  E=ASC(E*) 
+
+600  IFE>127G0T0560 
+
+610  CL0SE15 
+
+
+134 
+
+
+620  PRINT"  <:D0WN> DONE  !  " 
+630  END 
+
+
+---
+Additional information can be found by searching:
+- "duplicate_23_error_intro_and_input_handling" which expands on user input and initial disk handshake that precedes this read/write sequence
+- "duplicate_23_error_job_queue_polling_and_retries" which expands on job submission and polling logic used when executing drive memory commands (M-W/M-R)
+- "duplicate_23_error_machine_language_data_payload" which expands on machine-code DATA block executed/installed by the BASIC M-W/M-R sequence

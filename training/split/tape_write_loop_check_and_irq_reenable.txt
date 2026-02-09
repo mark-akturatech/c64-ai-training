@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - End of the tape write loop: branch if more to do, re-enable tape interrupts (CLI), compare saved IRQ high byte with current IRQ high byte to detect completion, branch to clear saved IRQ address when done. Calls stop-key scanner and increments the real-time clock before looping.
+
+.,F8BB D0 F8    BNE $F8B5       loop if more to do
+.,F8BD 58       CLI             enable tape interrupts
+.,F8BE AD A0 02 LDA $02A0       get saved IRQ high byte
+.,F8C1 CD 15 03 CMP $0315       compare with the current IRQ high byte
+.,F8C4 18       CLC             flag ok
+.,F8C5 F0 15    BEQ $F8DC       if tape write done go clear saved IRQ address and exit
+.,F8C7 20 D0 F8 JSR $F8D0       scan stop key and flag abort if pressed
+                                note if STOP was pressed the return is to the
+                                routine that called this one and not here
+.,F8CA 20 BC F6 JSR $F6BC       increment real time clock
+.,F8CD 4C BE F8 JMP $F8BE       loop
+
+
+---
+Additional information can be found by searching:
+- "scan_stop_key_handler" which expands on stop-key scanning and abort handling called from the loop
+- "clear_saved_irq_address_and_return" which expands on clearing the saved IRQ address when tape write is finished

@@ -1,0 +1,42 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Uses of raster interrupts for scrolling zones, and descriptions of other IRQ sources: the light pen interrupt (how the light pen triggers an IRQ and reading its position from $D013-$D014), the sprite-foreground collision interrupt (bit for sprite touching foreground graphics), and the sprite-sprite collision interrupt (sprite touching another sprite). Also explains that the corresponding collision registers at $D01F and $D01E report which sprites are involved.
+
+                          Besides enabling the creation of mixed graphics-modes screens, the
+                          Raster Compare Interrupt is also useful for creating scrolling zones,
+                          so that some parts of the screen can be fine-scrolled while the rest
+                          remains stationary.
+
+                          Bit 1 enables the light pen interrupt.  This interrupt can occur when
+                          the light of the raster beam strikes the light-sensitive device in the
+                          pen's tip, causing it to close the fire button switch on joystick
+                          Controller Port #1.
+
+                          The light pen interrupt affords a method of signaling to a program
+                          that the pen is being held to the screen, and that its position can be
+                          read.  Some light pens provide a push-button switch which grounds one
+                          of the other lines on the joystick port.  This switch can be pressed
+                          by the user as an additional signal that the pen is properly
+                          positioned.  Its location can then be read in the light pen position
+                          registers (53267-8, $D013-4).
+
+                          Bit 2 enables the sprite-foreground collision interrupt.  This
+                          interrupt can occur if one of the sprite character's dots is touching
+                          one of the dots from the foreground display of either text character
+                          or bitmap graphics.
+
+                          Bit 3 enables the sprite-sprite collision interrupt, which can occur
+                          if one of the sprite character's dots is touching one of the dots of
+                          another sprite character.
+
+                          These two interrupts are useful for games, where such collisions often
+                          require that some action be taken immediately.  Once the interrupt
+                          signals that a collision has occurred, the interrupt routine can check
+                          the Sprite- Foreground Collision Register at 53279 ($D01F), or the
+                          Sprite-Sprite Collision Register at 53278 ($D01E), to see which sprite
+                          or sprites are involved in the collision.  See the entry for those
+                          locations for more details on collisions.
+
+
+---
+Additional information can be found by searching:
+- "irqmask_register_overview" which expands on The IRQ mask bits that enable these interrupts (bits 1–3)
+- "raster_compare_irq_and_raster_scan_basics" which expands on Raster interrupts as another VIC-II interrupt source (bit 0)

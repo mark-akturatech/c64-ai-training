@@ -1,0 +1,63 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Memory map as seen by the 6510 CPU in standard configuration: ROM (Kernal $E000-$FFFF, BASIC $A000-$BFFF, Char ROM mapping), I/O and VIC registers at $D000-$DFFF with CHAREN controlling CHR ROM vs I/O/Color RAM, Color RAM mapped at $D800-$DBFF (lower 4 data bits), VIC registers repeated every $40 bytes in $D000-$D3FF. Notes on open areas returning last read byte on some machines.
+
+2.4.1 Memory map as seen by the 6510
+------------------------------------
+
+The 6510 can address 64KB linearly with its 16 address lines. With the aid
+of a special PAL chip in the C64, many different memory configurations can
+be used via the 6510 I/O port lines and control lines on the expansion
+port (see [3]). Only the standard configuration will be discussed here as
+the other configurations don't change the position of the different areas.
+They only map in additional areas of the main memory.
+
+So this is the memory map as seen by the 6510:
+
+
+                               The area at $d000-$dfff with
+                                  CHAREN=1     CHAREN=0
+
+ $ffff +--------------+  /$e000 +----------+  +----------+
+       |  Kernal ROM  | /       |  I/O  2  |  |          |
+ $e000 +--------------+/  $df00 +----------+  |          |
+       |I/O, Char ROM |         |  I/O  1  |  |          |
+ $d000 +--------------+\  $de00 +----------+  |          |
+       |     RAM      | \       |  CIA  2  |  |          |
+ $c000 +--------------+  \$dd00 +----------+  |          |
+       |  Basic ROM   |         |  CIA  1  |  |          |
+ $a000 +--------------+   $dc00 +----------+  | Char ROM |
+       |              |         |Color RAM |  |          |
+       .     RAM      .         |          |  |          |
+       .              .   $d800 +----------+  |          |
+       |              |         |   SID    |  |          |
+ $0002 +--------------+         |registers |  |          |
+       | I/O port DR  |   $d400 +----------+  |          |
+ $0001 +--------------+         |   VIC    |  |          |
+       | I/O port DDR |         |registers |  |          |
+ $0000 +--------------+   $d000 +----------+  +----------+
+
+
+Basically, the 64KB main memory can be accessed in a linear fashion, but
+they are overlaid by ROM and register areas at several positions. A write
+access to a ROM area will store the byte in the RAM lying "under" the ROM.
+The 6510 I/O port is mapped to addresses $0000 (for the data direction
+register) and $0001 (for the data register).
+
+In the area at $d000-$dfff you can switch between the I/O chip registers
+and the Color RAM, or the character generator ROM, with the signal CHAREN
+(which is bit 2 of the 6510 I/O port). The Color RAM is mapped at
+$d800-$dbff and connected to the lower 4 data bits. The upper 4 bits are
+open and have "random" values on reading. The two areas named "I/O 1" and
+"I/O 2" are reserved for expansion cards and also open under normal
+circumstances. Hence, a read access will fetch "random" values here too (it
+will be explained in chapter 4 that these values are not really random.
+Reading from open addresses fetches the last byte read by the VIC on many
+C64s).
+
+The 47 registers of the VIC are mapped in at $d000. Due to the incomplete
+address decoding, they are repeated every 64 bytes in the area $d000-$d3ff.
+
+
+---
+Additional information can be found by searching:
+- "vic_registers_table" which expands on VIC register addresses at $D000-$D02E
+- "addresses_0_1_and_de00_area" which expands on behavior of open $DE00 area and its interaction with VIC reads

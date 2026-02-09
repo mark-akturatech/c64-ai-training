@@ -1,0 +1,45 @@
+# VIC-II Memory Banking and Address Configuration Guide - ROM character set shadow behaviour in banks 0 and 2:
+- Bank 0: ROM charset is visible to the VIC-II at $1000-$1FFF (within bank 0)
+- Bank 2: ROM charset is visible at $9000-$9FFF (within bank 2)
+
+Because the ROM charset window occupies 4 KB in those banks, that region cannot be used for sprite data, custom character sets, or screen memory. Capacity comparisons:
+- Banks 0 & 2 (with ROM shadow): 192 sprite shapes OR 12 text screens OR 6 custom charsets
+- Banks 1 & 3 (full 16 KB): 256 sprite shapes OR 16 text screens OR 8 charsets
+
+Also: in banks 0 and 2 the lower half of a hi-res bitmap may be obscured by the ROM charset region.
+
+ROM Character Set Shadows
+--------------------------
+
+Banks 0 and 2 contain ROM character set shadows. The VIC-II chip maps the
+standard ROM character set into a 4 KB region of these banks:
+
+  - Bank 0: ROM charset visible at $1000-$1FFF
+  - Bank 2: ROM charset visible at $9000-$9FFF
+
+This means in banks 0 and 2, the standard character set is directly available
+to the VIC-II without needing to copy it into RAM. However, this comes at a
+cost: those 4 KB regions cannot be used for sprite data, custom character
+sets, or screen memory.
+
+Capacity comparison:
+
+  Banks 0 and 2 (with ROM charset shadow):
+    - 192 sprite shapes, OR
+    - 12 text screens, OR
+    - 6 custom character sets
+
+  Banks 1 and 3 (full 16 KB available):
+    - 256 sprite shapes, OR
+    - 16 text screens, OR
+    - 8 character sets
+
+Additionally, in banks 0 and 2, the lower half of a high-resolution bitmap
+screen is partially obscured by the ROM character image region.
+
+
+
+---
+Additional information can be found by searching:
+- "bank_selection_table" which expands on which banks contain ROM charset shadows
+- "character_memory_offsets" which expands on how $D018 charset offsets map into bank addresses

@@ -1,0 +1,19 @@
+# byRiclianll - Filename input and validation, and attempt to open the file. Prompts the user for the filename, checks filename length constraints, and (on valid input) issues an OPEN2,8,2 with the DOS 'O:' open-for-read ("O:<filename>,P,R"). Waits for the drive response (INPUT#15,EN*,EM*,ET*,ES*) and branches on error codes to appropriate handlers.
+
+
+330  INPUT"  <:down>filename";f* 
+
+340  I FLEN ( F* )<  >0 ANDLEN  <  F* )< 1 7G0T0360 
+
+350  G0T0920 
+
+360  0PEN2,8,2, "O: "+F*+",P,R" 
+370   I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+380  IFEN*="00"GOT0400 
+390  G0T0940 
+
+
+---
+Additional information can be found by searching:
+- "program_header_and_dos_initialization" which expands on uses the earlier DOS/channel initialization and inquiry
+- "read_directory_start_block" which expands on next step: read the file's start track/sector after open

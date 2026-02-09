@@ -1,0 +1,51 @@
+# byRiclianll - Block-Write (B-W) explanation and BASIC demo: describes that B-W records bytes 1–255 correctly but writes the buffer-pointer's final position into byte 0 (overwriting the forward-track pointer), preserving data but destroying the forward link. Includes a complete BLOCK-WRITE sample program (OPEN 15, PRINT#15 sequences, PRINT#2 to send buffer data, B-P, B-W invocation, CLOSE/END).
+
+
+99 
+
+
+Block-Write  (B-W) 
+
+
+Recall  that  we  also  neglected  to  mention  the  block-write  command  (B-W)  which  we  replaced 
+with  the  U2  command.  When  you  write  a  block  with  the  block-write  command  (B-W) 
+a  different  kind  of  dilemma  occurs.  Bytes  1  through  255  of  the  buffer  are  recorded  on 
+diskette  correctly  but  the  last  position  of  the  buffer-pointer  is  written  to  the  0th  byte 
+of  the  sector  (the  location  of  the  forward  track  pointer).  If  it's  any  consolation,  the  data 
+is  still  intact.  Too  bad  the  link  has  been  destroyed.  Run  the  following  block-write  pro- 
+gram on  a  test  diskette. 
+
+100  REM  BLOCK-WRITE  (B-W) 
+
+no  OPEN   15,8,  15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GOTO  260 
+
+150  OPEN  2,8,2, "#" 
+
+160  PRINT#15, "Ui";2;o; l;o 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+180   IF  EN*<>"00"GOTO  240 
+190  FOR   1=0  TO  255 
+200  PR I NT#2 , CHR* ( I) ; 
+210  NEXT  I 
+
+220  PRINT#15, "B-P";2;6 
+
+230  PRINT#15, "B-W";2;o; i;o 
+
+240  CLOSE  2 
+
+250  INPUT#15,EN*,EM*,ET*,ES* 
+260  CLOSE  15 
+270  END 
+
+---
+Additional information can be found by searching:
+- "block_read_and_block_write_interaction_and_recommendation" which expands on explains the root cause of the B-R EOI behavior previously described
+- "effect_of_block_write_on_subsequent_block_read" which expands on shows the practical result when you read the rewritten sector with B-R vs Ul

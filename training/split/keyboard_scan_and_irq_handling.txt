@@ -1,0 +1,67 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - SCNKEY and keyboard IRQ return: SCNKEY scans the 8x8 keyboard matrix by toggling COLM, debounces (comparing ROWS repeatedly), translates via KEYTAB, handles special keys (shift/stop), updates shift flags (SHFLAG/LSTSHF), handles key repeat logic and queueing, and ends with RTI. Includes RSP232 protection calls and indirect KEYLOG use. Touches SHFLOG for Commodore shift combos.
+
+.,EA2E 85 F4    STA $F4         STA    USER+1
+.,EA30 60       RTS             RTS
+.,EA31 20 EA FF JSR $FFEA       KEY    JSR $FFEA       ;UPDATE JIFFY CLOCK
+.,EA34 A5 CC    LDA $CC                LDA BLNSW       ;BLINKING CRSR ?
+.,EA36 D0 29    BNE $EA61              BNE KEY4        ;NO
+.,EA38 C6 CD    DEC $CD                DEC BLNCT       ;TIME TO BLINK ?
+.,EA3A D0 25    BNE $EA61              BNE KEY4        ;NO
+.,EA3C A9 14    LDA #$14               LDA #20         ;RESET BLINK COUNTER
+.,EA3E 85 CD    STA $CD         REPDO  STA BLNCT
+.,EA40 A4 D3    LDY $D3                LDY PNTR        ;CURSOR POSITION
+.,EA42 46 CF    LSR $CF                LSR BLNON       ;CARRY SET IF ORIGINAL CHAR
+.,EA44 AE 87 02 LDX $0287              LDX GDCOL       ;GET CHAR ORIGINAL COLOR
+.,EA47 B1 D1    LDA ($D1),Y            LDA (PNT)Y      ;GET CHARACTER
+.,EA49 B0 11    BCS $EA5C              BCS KEY5        ;BRANCH IF NOT NEEDED
+                                ;
+.,EA4B E6 CF    INC $CF                INC BLNON       ;SET TO 1
+.,EA4D 85 CE    STA $CE                STA GDBLN       ;SAVE ORIGINAL CHAR
+.,EA4F 20 24 EA JSR $EA24              JSR SCOLOR
+.,EA52 B1 F3    LDA ($F3),Y            LDA (USER)Y     ;GET ORIGINAL COLOR
+.,EA54 8D 87 02 STA $0287              STA GDCOL       ;SAVE IT
+.,EA57 AE 86 02 LDX $0286              LDX COLOR       ;BLINK IN THIS COLOR
+.,EA5A A5 CE    LDA $CE                LDA GDBLN       ;WITH ORIGINAL CHARACTER
+                                ;
+.,EA5C 49 80    EOR #$80        KEY5   EOR #$80        ;BLINK IT
+.,EA5E 20 1C EA JSR $EA1C              JSR DSPP2       ;DISPLAY IT
+                                ;
+.,EA61 A5 01    LDA $01         KEY4   LDA R6510       ;GET CASSETTE SWITCHES
+.,EA63 29 10    AND #$10               AND #$10        ;IS SWITCH DOWN ?
+.,EA65 F0 0A    BEQ $EA71              BEQ KEY3        ;BRANCH IF SO
+                                ;
+.,EA67 A0 00    LDY #$00        LDY    #0
+.,EA69 84 C0    STY $C0                STY CAS1        ;CASSETTE OFF SWITCH
+                                ;
+.,EA6B A5 01    LDA $01                LDA R6510
+.,EA6D 09 20    ORA #$20               ORA #$20
+.,EA6F D0 08    BNE $EA79              BNE KL24        ;BRANCH IF MOTOR IS OFF
+                                ;
+.,EA71 A5 C0    LDA $C0         KEY3   LDA CAS1
+.,EA73 D0 06    BNE $EA7B              BNE KL2
+                                ;
+.,EA75 A5 01    LDA $01                LDA R6510
+.,EA77 29 1F    AND #$1F               AND #%011111    ;TURN MOTOR ON
+                                ;
+                                KL24
+.,EA79 85 01    STA $01                STA R6510
+                                ;
+.,EA7B 20 87 EA JSR $EA87       KL2    JSR SCNKEY      ;SCAN KEYBOARD
+                                ;
+.,EA7E AD 0D DC LDA $DC0D       KPREND LDA D1ICR       ;CLEAR INTERUPT FLAGS
+.,EA81 68       PLA                    PLA             ;RESTORE REGISTERS
+.,EA82 A8       TAY                    TAY
+.,EA83 68       PLA                    PLA
+.,EA84 AA       TAX                    TAX
+.,EA85 68       PLA                    PLA
+.,EA86 40       RTI                    RTI             ;EXIT FROM IRQ ROUTINES
+                                ; ****** GENERAL KEYBOARD SCAN ******
+                                ;
+.,EA87 A9 00    LDA #$00        SCNKEY LDA #$00
+.,EA89 8D 8D 02 STA $028D              STA SHFLAG
+.,EA8C A0 40    LDY #$40               LDY #64         ;LAST KEY INDEX
+
+---
+Additional information can be found by searching:
+- "key_tables_mode1_2_3" which expands on KEYTAB translation tables referenced during SCNKEY
+- "shift_logic_and_keycod" which expands on shift handling done by SHFLOG which uses KEYCOD tables

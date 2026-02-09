@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Parse the next character(s) of a numeric exponent in ASCII: read the exponent count byte, handle multi-digit accumulation (shifts and adds), test and handle a negative-exponent flag, convert an ASCII digit character to binary (subtract $30) and save the exponent count byte. Branches back to the input routine to fetch the next character.
+
+                                evaluate next character of exponential part of number
+.,BD91 A5 5E    LDA $5E         get exponent count byte
+.,BD93 C9 0A    CMP #$0A        compare with 10 decimal
+.,BD95 90 09    BCC $BDA0       branch if less
+.,BD97 A9 64    LDA #$64        make all -ve exponents = -100 decimal (causes underflow)
+.,BD99 24 60    BIT $60         test exponent -ve flag
+.,BD9B 30 11    BMI $BDAE       branch if -ve
+.,BD9D 4C 7E B9 JMP $B97E       else do overflow error then warm start
+.,BDA0 0A       ASL             *2
+.,BDA1 0A       ASL             *4
+.,BDA2 18       CLC             clear carry for add
+.,BDA3 65 5E    ADC $5E         *5
+.,BDA5 0A       ASL             *10
+.,BDA6 18       CLC             clear carry for add
+.,BDA7 A0 00    LDY #$00        set index
+.,BDA9 71 7A    ADC ($7A),Y     add character (will be $30 too much!)
+.,BDAB 38       SEC             set carry for subtract
+.,BDAC E9 30    SBC #$30        convert character to binary
+.,BDAE 85 5E    STA $5E         save exponent count byte
+.,BDB0 4C 30 BD JMP $BD30       go get next character
+
+
+---
+Additional information can be found by searching:
+- "scientific_mode_limits_constants" which expands on limits used later to choose scientific notation
+- "convert_fac1_to_ascii_sign_and_zero_handling" which expands on main FAC1 -> ASCII routine that consumes the exponent value

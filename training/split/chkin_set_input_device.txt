@@ -1,0 +1,47 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CHKIN ($FFC6): set logical input device for a given logical file (X). Finds file entry, validates it's open and an input file, handles keyboard/screen/RS232 or serial-bus devices. For serial-bus devices sends TALK and secondary address (SA). Checks ST (STATUS) for device presence and stores default input device (DFLTN $99). Returns appropriate I/O errors if checks fail.
+
+                                *** CHKIN: SET INPUT DEVICE
+                                The KERNAL routine CHKIN ($ffc6) is vectored to this
+                                routine. On entry, (X) must hold the logical file number.
+                                A test is made to see if the file is open, or ?FILE NOT
+                                OPEN. If the file is not an input file then ?NOT INPUT
+                                FILE. If the device is on the serial bus then it is
+                                commanded to TALK  and secondary address is sent. ST is
+                                then checked, and if non-zero, ?DEVICE NOT PRESENT.
+                                Finally, the device number is stored in DLFTN.
+.,F20E 20 0F F3 JSR $F30F       find file number
+.,F211 F0 03    BEQ $F216       ok, skip next command
+.,F213 4C 01 F7 JMP $F701       I/O error #3, file not open
+.,F216 20 1F F3 JSR $F31F       set file variables
+.,F219 A5 BA    LDA $BA         FA, current device number
+.,F21B F0 16    BEQ $F233       keyboard
+.,F21D C9 03    CMP #$03        screen
+.,F21F F0 12    BEQ $F233       yes
+.,F221 B0 14    BCS $F237       larger than 3, serial bus device
+.,F223 C9 02    CMP #$02        RS232
+.,F225 D0 03    BNE $F22A       nope
+.,F227 4C 4D F0 JMP $F04D       input from RS232
+.,F22A A6 B9    LDX $B9         SA, current secondary address
+.,F22C E0 60    CPX #$60
+.,F22E F0 03    BEQ $F233
+.,F230 4C 0A F7 JMP $F70A       I/O error #6, not output file
+.,F233 85 99    STA $99         DFLTN, default input device
+.,F235 18       CLC
+.,F236 60       RTS
+.,F237 AA       TAX
+.,F238 20 09 ED JSR $ED09       send TALK to serial device
+.,F23B A5 B9    LDA $B9         SA
+.,F23D 10 06    BPL $F245       send SA
+.,F23F 20 CC ED JSR $EDCC       wait for clock
+.,F242 4C 48 F2 JMP $F248
+.,F245 20 C7 ED JSR $EDC7       send talk secondary address
+.,F248 8A       TXA
+.,F249 24 90    BIT $90         STATUS, I/O status word
+.,F24B 10 E6    BPL $F233       store DFLTN, and exit
+.,F24D 4C 07 F7 JMP $F707       I/O error #5, device not present
+
+
+---
+Additional information can be found by searching:
+- "find_file_lat_search" which expands on finds logical file index used here
+- "clrchn_restore_default_io" which expands on reverts default devices (UNTALK/UNLISTEN)

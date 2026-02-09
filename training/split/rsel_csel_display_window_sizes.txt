@@ -1,0 +1,27 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Registers and bit fields that select alternate display window heights and widths: RSEL (bit in $D011) selects 24 vs 25 text lines (192 vs 200 pixels) and gives the corresponding first/last raster lines (RSEL=0: lines 55..246; RSEL=1: lines 51..250). CSEL (bit in $D016) selects 38 vs 40 columns (304 vs 320 pixels) and gives first/last X coordinates (CSEL=0: X 31..334; CSEL=1: X 24..343). Notes on border intrusion when RSEL/CSEL are 0 (upper/lower border extended by 4 pixels; left by 7, right by 9) and that the underlying character matrix remains 40x25.
+
+The height and width of the display window can each be set to two different
+values with the bits RSEL and CSEL in the registers $d011 and $d016:
+
+ RSEL|  Display window height   | First line  | Last line
+ ----+--------------------------+-------------+----------
+   0 | 24 text lines/192 pixels |   55 ($37)  | 246 ($f6)
+   1 | 25 text lines/200 pixels |   51 ($33)  | 250 ($fa)
+
+ CSEL|   Display window width   | First X coo. | Last X coo.
+ ----+--------------------------+--------------+------------
+   0 | 38 characters/304 pixels |   31 ($1f)   |  334 ($14e)
+   1 | 40 characters/320 pixels |   24 ($18)   |  343 ($157)
+
+If RSEL=0 the upper and lower border are each extended by 4 pixels into the
+display window, if CSEL=0 the left border is extended by 7 pixels and the
+right one by 9 pixels. The position of the display window and its
+resolution do not change, RSEL/CSEL only switch the starting and ending
+position of the border display. The size of the video matrix also stays
+constantly at 40�25 characters.
+
+
+---
+Additional information can be found by searching:
+- "display_window_and_border" which expands on visual effect of border and display column that RSEL/CSEL alter
+- "soft_scrolling_and_vic_timing" which expands on recommended X/YSCROLL settings to keep graphics aligned with chosen RSEL/CSEL and detailed VIC timing

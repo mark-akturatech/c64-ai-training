@@ -1,0 +1,30 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Explanation of the DATA table order and how entries map to interrupts and affected VIC registers. Describes that DATA values are stored in reverse order for some registers, how the scan-line DATA entries determine when each interrupt occurs, and examples of how changing specific DATA values (e.g., 170 to 210, changing values in control/data lines) affects the sizes of areas and graphics modes.
+
+
+                          The only tricky part in determining which data byte affects which
+                          interrupt comes in line 49264, which holds the data that determines
+                          the scan line at which each interrupt will occur.  Each DATA statement
+                          entry reflects the scan line at which the next interrupt will occur.
+                          The first item in line 49264 is 49.  Even though this is the entry for
+                          the third interrupt, the next to be generates is the first interrupt,
+                          which occurs at the top of the screen.  Likewise, the last data item
+                          of 129 is used during the first interrupt to start the next interrupt
+                          at scan line 129.
+
+                          Try experimenting with these values to see what results you come up
+                          with.  For example, if you change the number 170 to 210, you will
+                          increase the text area by five lines (40 scan lines).
+
+                          By changing the values in the data tables, you can alter the effect of
+                          each interrupt.  Change the 20 in line 49276 to 22, and you will get
+                          lowercase text in the middle of the screen.  Change the first 8 in
+                          line 49273 to 24, and you'll get multicolor text in the center window.
+                          Each of these table items may be used exactly like you would use the
+                          corresponding register, in order to change background color, to obtain
+                          text or bitmap graphics, regular or multicolor modes, screen blanking
+                          or extended background color mode.
+
+---
+Additional information can be found by searching:
+- "sample_program_registers_and_data_locations" which expands on Which registers the DATA table values are POKEd into
+- "raster_interrupt_example_basic_and_data_listing" which expands on Try changing these DATA values in the provided example

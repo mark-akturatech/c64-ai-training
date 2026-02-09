@@ -1,0 +1,24 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - DEN (Display Enable) bit ($D011 bit 4) controls text/bitmap graphics on/off and affects Bad Lines and vertical border flip-flop reset input. DEN must have been set at least one cycle in raster line $30 for Bad Line Conditions to occur. Clearing DEN prevents Bad Lines and makes screen display border color only; it also disables vertical border flip-flop reset.
+
+3.10. Display Enable
+--------------------
+
+The DEN bit (Display Enable, register $d011, bit 4) serves for switching on
+and off the text/bitmap graphics. It is normally set. The bit affects two
+functions of the VIC: The Bad Lines and the vertical border unit.
+
+ - A Bad Line Condition can only occur if the DEN bit has been set for at
+   least one cycle somewhere in raster line $30 (see section 3.5.).
+ - If the DEN bit is cleared, the reset input of the vertical border flip
+   flop is deactivated (see section 3.9.). Then the upper/lower border is
+   not turned off.
+
+So clearing the DEN bit will normally prevent Bad Lines (and thus c- and
+g-accesses) from occuring and make the whole screen display the border
+color.
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on DEN's role in allowing Bad Line Conditions (must be set at least once in raster line $30)
+- "hyperscreen" which expands on using DEN to influence border/Bad Line behavior for effects

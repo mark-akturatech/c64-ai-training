@@ -1,0 +1,30 @@
+# Analyzing C64 tape loaders - Initialization and main Load Loop for receiving file data. Covers: clearing checksum storage (LDY #$00; STY $90 and $02); the Load Loop which JSR $03E7 to read a new byte; STA ($F9),Y to store data using the load-address pointer; computing an XOR checksum (EOR $02; STA $02); incrementing the 16-bit destination pointer (INC $F9/conditional INC $FA); comparing the 16-bit destination pointer to the End Address ($2D/$2E) and branching back to continue until finished.
+
+0389  A0  00      LDY #$00   ; Inits locations used to store
+038B  84  90      STY $90    ; the Checksum info
+038D  84  02      STY $02
+
+--Load Loop------------------------
+038F  20  E7  03  JSR $03E7    ; Reads a new byte
+
+0392  91  F9      STA ($F9),Y  ; Stores it into RAM using the
+                               ; Load address locations as
+                               ; destination pointer
+
+0394  45  02      EOR $02      ; computes the XOR Checksum
+0396  85  02      STA $02      ; of Data
+
+0398  E6  F9      INC $F9      ; Increases dest. pointer
+039A  D0  02      BNE $039E
+039C  E6  FA      INC $FA
+
+039E  A5  F9      LDA $F9      ; Checks if dest. pointer (16
+03A0  C5  2D      CMP $2D      ; bits) equals End Address
+03A2  A5  FA      LDA $FA
+03A4  E5  2E      SBC $2E
+03A6  90  E7      BCC $038F    ; not yet finished? Restart!
+
+---
+Additional information can be found by searching:
+- "post_load_cleanup_and_irq_restore" which expands on When the load loop finishes the code reads the closing checksum and performs cleanup/IRQ restore
+- "read_byte_subroutine" which expands on Each byte read inside this loop is obtained by calling the Read Byte subroutine at $03E7

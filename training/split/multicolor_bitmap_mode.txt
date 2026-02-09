@@ -1,0 +1,57 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=0, BMM=1, MCM=1 multicolor bitmap mode. Pixels are 2 bits formed by adjacent bits (reduces horizontal resolution to 160x200). c-data encodes colors for '11', '01', '10' combinations. g-access addressing like standard bitmap but g-data interpreted as 4 pixels (2bpp): '00'=bg0 ($D021), '01'=color from c-data bits 4-7, '10'=color from c-data bits 0-3, '11'=color from c-data bits 8-11. '01' treated as background in priority/collision logic.
+
+3.7.3.4. Multicolor bitmap mode (ECM/BMM/MCM=0/1/1)
+---------------------------------------------------
+
+Similar to the multicolor text mode, this mode also forms (twice as wide)
+pixels by combining two adjacent bits. So the resolution is reduced to
+160�200 pixels.
+
+The bit combination "01" is also treated as "background" for the sprite
+priority and collision detection, as in multicolor text mode.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |     Color of      |     Color of      |     Color of      |
+ |    "11 pixels"    |    "01" pixels    |    "10" pixels    |
+ +-------------------+-------------------+-------------------+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0| RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         4 pixels (2 bits/pixel)       |
+ |                                       |
+ | "00": Background color 0 ($d021)      |
+ | "01": Color from bits 4-7 of c-data   |
+ | "10": Color from bits 0-3 of c-data   |
+ | "11": Color from bits 8-11 of c-data  |
+ +---------------------------------------+
+
+---
+Additional information can be found by searching:
+- "sprite_priority_and_collision" which expands on background/foreground determination in MCM=1 (2bpp)

@@ -1,0 +1,76 @@
+# NMOS 6510 - Documentation for the undocumented ARR instruction (opcode $6B). Covers type (combination: AND then ROR), mnemonic (ARR #imm), functional definition (A = (A & #imm) >> 1 with ROR semantics), notes that ARR contains ADC-like mechanisms in decimal mode, and detailed decimal-mode behavior: N is copied from initial C, Z set from ROR result, V set if bit 6 changed between AND and ROR, and BCD fixups for low and high nibbles (low nibble may overflow while high nibble fixup sets/clears C). Includes full ARR pseudocode (AND, ROR, N/Z/V calculation, low/high nibble BCD corrections and carry update) and CPU/decimalmode ARR test program filenames.
+
+ARR
+Type: Combination of an immediate and an implied command (Sub-instructions: AND, ROR)
+Opc.
+$6B
+
+Mnemonic
+ARR #imm
+
+Function
+
+Size
+
+A = (A & #{imm}) / 2
+
+2
+
+Cycles N V - B D I Z
+
+C
+
+2
+
+o
+
+o o
+
+i
+
+o
+
+note to ARR: part of this command are some ADC mechanisms.
+Operation: In Decimal mode the ARR instruction first performs the AND and ROR, just like in
+Binary mode. The N flag will be copied from the initial C flag, and the Z flag will be set according
+to the ROR result, as expected. The V flag will be set if the bit 6 of the accumulator changed its
+state between the AND and the ROR, cleared otherwise.
+If the low nibble of the AND result, incremented by its lowmost bit, is greater than 5, the low nibble
+in the ROR result will be incremented by 6. The low nibble may overflow as a consequence of this
+BCD fixup, but the high nibble won't be adjusted. The high nibble will be BCD fixed in a similar
+way. If the high nibble of the AND result, incremented by its lowmost bit, is greater than 5, the high
+nibble in the ROR result will be incremented by 6, and the Carry flag will be set. Otherwise the C
+flag will be cleared.
+pseudocode
+/* A = value in Akku, imm = immediate argument, C = carry */
+tmp = A & imm;
+
+/* perform the AND */
+
+/* perform ROR */
+tmp2 = tmp | (C << 8);
+tmp2 >>= 1;
+N = C; /* original carry state is preserved in N */
+Z = (tmp2 == 0 ? 1 : 0); /* Z is set when the ROR produced a zero result */
+/* V is set when bit 6 of the result was changed by the ROR */
+V = ((tmp2 ^ tmp) & 0x40) >> 6;
+/* fixup for low nibble */
+if (((tmp & 0xf) + (tmp & 0x1)) > 0x5) {
+tmp2 = (tmp2 & 0xf0) | ((tmp2 + 0x6) & 0xf);
+}
+/* fixup for high nibble, set carry */
+if (((tmp & 0xf0) + (tmp & 0x10)) > 0x50) {
+tmp2 = (tmp2 & 0x0f) | ((tmp2 + 0x60) & 0xf0);
+C = 1;
+} else {
+C = 0;
+}
+A = tmp2;
+
+Test code: CPU/decimalmode/arr00.prg CPU/decimalmode/arr01.prg
+CPU/decimalmode/arr02.prg CPU/decimalmode/arr10.prg
+CPU/decimalmode/arr11.prg CPU/decimalmode/arr12.prg
+
+---
+Additional information can be found by searching:
+- "sbc_instruction_decimal_mode_overview" which expands on related decimal-mode fixup behavior for subtraction (SBC) and general BCD rules

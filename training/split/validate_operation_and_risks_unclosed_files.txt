@@ -1,0 +1,62 @@
+# byRiclianll - Detailed behavior of VALIDATE: It frees all blocks in the BAM, traces each file listed in directory to re-allocate blocks, then writes the new BAM. If it encounters an unclosed file, the file-type byte is set to 0 (scratched) and its blocks are not traced (they become free). Explains why SCRATCHing an unclosed file is dangerous (it may deallocate sectors that belong to other files leading to a poisoned disk). VALIDATE aborts if unreadable sectors encountered; new BAM is not written until process completes, so DOS falls back to old BAM if aborted. Recommends recovery procedures covered in Chapter 8.
+
+
+What  does  a  validate  do?  The  DOS  keeps  a  map  that  indicates  which  sectors  on  a  diskette 
+are  currently  in  use.  This  map  is  stored  on  track  18,  sector  0.  It  is  referred  to  as  the 
+Block  Availability  Map  or  just  the  BAM  for  short.  When  the  validate  command  is  issued, 
+all  blocks  are  freed  in  the  BAM  on  the  diskette  simulating  a  newly  formatted  blank 
+diskette.  The  drive  then  picks  up  the  first  file  in  the  directory  and  chains  through  the 
+
+
+26 
+
+
+entire  file.  As  sectors  are  picked  up  along  the  way,  they  are  allocated  in  the  BAM  as 
+currently  in  use.  If  the  file  is  traced  successfully,  all  blocks  associated  with  it  are  put 
+back  into  the  BAM  as  in  use.  The  next  file  is  then  picked  up  out  of  the  directory  and 
+the  process  continues.  When  all  files  have  been  traced,  the  new  BAM  is  written  to  the 
+diskette  and  the  internal  count  now  matches  the  directory  contents. 
+
+So  far  so  good.  Now  let's  see  what  happens  to  an  unclosed  file.  When  the  DOS  encounters 
+an  unclosed  file  in  the  directory  during  a  validate  command,  all  it  does  is  change  the 
+file  type  byte  in  the  directory  entry  to  a  0  (scratched  file).  No  attempt  is  made  to  trace 
+the  file.  When  the  validate  operation  is  complete,  the  unclosed  file  will  no  longer  appear 
+in  a  directory  listing  and  any  blocks  associated  with  it  will  be  free.  This  is  what  you 
+want  to  happen.  Now  let's  see  what  happens  if  you  attempt  to  SCRATCH  an  unclosed 
+file. 
+
+When  you  scratch  a  file,  two  things  happen:  the  file-type  byte  in  the  directory  for  this 
+file  is  set  to  0  (scratched  file)  and  the  DOS  traces  through  the  chain  of  sectors  that  make 
+up  the  file  and  marks  each  sector  it  encounters  as  available  for  use  (free)  in  the  BAM. 
+This  is  just  what  you  want  to  have  happen  for  a  normal  file,  but  it  can  poison  the  diskette 
+when  you  try  it  on  an  unclosed  file.  Here's  why.  The  last  sector  of  an  unclosed  file  was 
+never  written  out  to  the  diskette.  As  a  result,  the  second  to  the  last  sector  points  to 
+a  sector  that  is  not  really  part  of  the  file.  The  DOS  doesn't  realize  this  and  continues 
+to  follow  the  "chain."  If  you  are  lucky,  the  "unwritten  sector"  will  be  a  empty  sector 
+(never  used  since  the  disk  was  formatted).  If  this  happens,  the  DOS  will  stop  because 
+pointers  point  to  a  non-existent  track  and  sector  (75,1).  If  you  are  unlucky,  the  "unwrit- 
+ten sector"  will  be  part  of  a  file  that  you  scratched  last  week  and  the  pointer  will  just 
+happen  to  point  into  the  middle  of  that  very  important  file  you  just  saved  yesterday. 
+When  this  happens,  the  DOS  will  merrily  deallocate  the  remaining  sectors  in  your  file. 
+The  next  write  operation  to  the  diskette  will  see  this  nice  big  open  space  and  the  new 
+information  will  be  saved  right  on  top  of  your  active  file.  Now  the  situation  has  gone 
+from  bad  to  worse  and  is  in  fact  pathological  —  hence  a  poisoned  disk.  The  only  solution 
+is  to  inspect  each  file  first  to  ensure  that  it  is  not  tainted  and  then  copy  it  onto  another 
+diskette. 
+
+The  validate  routine  is  aborted  if  an  error  (an  unreadable  sector)  is  encountered.  When 
+it  aborts,  nothing  radical  occurs.  The  new  BAM  is  not  written  to  the  disk  until  the  vahda- 
+tion  process  has  been  completed.  Don't  worry  about  the  blank  BAM  getting  you  in  trou- 
+ble; the  DOS  will  read  the  old  one  back  in  before  it  allows  you  to  write  to  the  disk. 
+However,  the  diskette  still  remains  corrupted  with  no  quick  remedy  in  sight.  Chapter 
+8  on  recovery  deals  with  this  and  other  disasters. 
+
+
+27 
+
+
+
+---
+Additional information can be found by searching:
+- "scratch_command_wildcards_unclosed_files_and_consequences" which expands on contrast VALIDATE vs SCRATCH on unclosed files
+- "getting_out_of_trouble_recovery_methods" which expands on recovery procedures for aborted validates and corrupted disks

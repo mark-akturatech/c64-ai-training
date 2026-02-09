@@ -1,0 +1,69 @@
+# byRiclianll - Procedure for attempting to recover from a hard error (section 8.3): preliminary diagnostics (validate diskette, FIND A FILE to get starting track/sector, DISPLAY A CHAIN to identify the last successful sector), then editing the sector just before the error with EDIT TRACK & SECTOR to sever the forward link (write 00,FF at offset 00) so you can manipulate the intact front end of the file. Special instructions for PRG files (restore internal BASIC links with a machine-language monitor or via EDIT TRACK & SECTOR by finding the last 00 byte in the block and setting following bytes and forward pointer accordingly) and for SEQ files (read recovered data into C64 RAM and rewrite to another disk). Warning and troubleshooting guidance (e.g., check whether errors occur on other diskettes—drive misalignment).
+
+8.3  Recovering  a  IHard  Error 
+
+A  hard  error  does  not  necessarily  mean  that  an  entire  file  is  unrecoverable.  In  all  honesty, 
+though,  the  technique  that  we  are  about  to  describe  is  a  shot  in  the  dark.  Before  you 
+attempt  the  steps  outlined  below  ask  yourself  the  following  question.  Are  you  experien- 
+cing errors  on  other  diskettes  in  your  library?  If  you  answered  yes  to  this  question, 
+the  cause  of  these  errors  may  be  in  the  disk  drive  itself.  Your  1541  may  be  out  of  align- 
+ment and  a  trip  to  your  nearest  Commodore  dealer  is  in  order.  If  the  problem  occurs 
+on  only  one  diskette  read  on. 
+
+NOTE:  This  section  does  not  apply  to  relative  files.  Refer  to  section  8.4  instead. 
+
+WARNING:  The  technique  we  are  about  to  describe  here  is  not  for  the  faint-hearted. 
+Consult  with  your  physician  before  attempting  this  exercise. 
+
+
+175 
+
+
+STEP  1.  Load  and  run  the  VALIDATE  A  DISKETTE  program  contained  in  Appen- 
+dix C.  This  program  emulates  the  VALIDATE  command  from  BASIC.  It  will 
+chain  through  each  active  file  entry  in  the  directory  and  highlight  a  bad  file 
+without  aborting. 
+
+STEP  2.  Load  and  run  FIND  A  FILE.  This  program  will  return  the  track  and  sector 
+locations  of  where  the  file  resides  in  the  directory  as  well  as  where  it  starts 
+on  the  diskette.  The  directory  track  and  sector  is  extraneous  information  for 
+our  present  purpose.  Note  only  the  starting  track  and  sector. 
+
+STEP  3.  Load  and  run  DISPLAY  A  CHAIN.  This  program  requires  you  to  input  a 
+track  and  sector.  Input  the  starting  track  and  sector  obtained  in  step  2.  The 
+program  will  chain  through  all  forward  track  and  sectors  on  the  diskette  from 
+this  entry  point  until  an  error  is  encountered.  (If  the  error  is  a  soft  error,  STOP! 
+Do  not  pass  GO.  Go  directly  to  section  8.2.)  Ignore  the  sector  where  the  error 
+was  encountered.  The  file  is  virtually  lost  from  that  point  on.  (Recall  that  the 
+link  has  been  destroyed.)  Make  note  of  the  last  successful  track  and  sector 
+displayed. 
+
+STEP  4.  Load  and  run  EDIT  TRACK  &  SECTOR.  You  will  want  to  input  the  track 
+and  sector  obtained  in  step  3.  The  starting  byte  is  always  00.  Change  the  first 
+two  bytes  to  00  and  FF,  respectively.  Rewrite  the  sector  when  prompted  to 
+do  so.  You  have  in  effect  severed  the  forward  track  and  sector  hnk  described 
+in  Chapter  4.  This  allows  you  to  manipulate  the  front  end  of  the  file.  It  is  the 
+only  portion  of  the  file  that  is  clearly  intact. 
+
+If  it  is  a  BASIC  PRG  file,  the  internal  BASIC  links  have  been  destroyed.  You  can  restore 
+the  links  on  the  C64  with  a  machine  language  monitor  or  on  the  diskette  with  the  EDIT 
+TRACK  &  SECTOR  program.  If  you  do  not  restore  the  BASIC  links,  the  C64  will  crash 
+as  soon  as  you  attempt  to  edit  the  last  line  of  the  program.  Using  EDIT  TRACK  & 
+SECTOR,  call  up  the  sector  that  was  just  rewritten.  You  will  have  to  inspect  both  half- 
+pages  of  the  block.  Look  for  the  last  00  byte  in  the  page.  Change  the  two  bytes  that 
+immediately  follow  it  to  a  00  00  also.  Note  the  position  of  the  last  00  byte  edited  in  hex- 
+adecimal. If  you  are  in  the  second-half  of  the  block,  revmte  the  sector  and  then  recall 
+the  first-half.  Change  the  forward  sector  pointer  to  the  hexadecimal  position  of  the  last 
+00  byte  you  changed.  Revmte  the  sector  a  final  time.  You  will  now  be  able  to  load,  list, 
+and  edit  the  program.  Hopefully,  you  will  remember  to  save  it  to  a  different  diskette 
+this  time. 
+
+If  it  was  a  SEQ  file,  the  recovered  data  is  intact.  You  will  have  to  read  it  into  C64  RAM 
+and  rewrite  it  to  another  file.  If  you  do  not  know  how  to  manipulate  a  sequential  file 
+contact  someone  who  does. 
+
+
+---
+Additional information can be found by searching:
+- "soft_vs_hard_errors_definition" which expands on Distinguishes hard vs soft errors and when to use this hard-error procedure
+- "recovering_relative_file" which expands on Recovering relative (REL) files uses a different method (see section 8.4)

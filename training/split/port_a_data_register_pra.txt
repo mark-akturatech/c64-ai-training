@@ -1,0 +1,49 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Port A Data Register (PRA) at offset $00 (CIA1 $DC00, CIA2 $DD00). Read/Write; bits correspond to PA0-PA7. Direction controlled by DDRA ($02). CIA1 bit assignments: keyboard columns 0-7, joystick 2 directions/fire, paddle signals, and bit 7 can directly disable NMI. CIA2 bit assignments: VIC-II bank select bits 0-1 (active low), RS-232 TXD, serial bus ATN/CLOCK/DATA IN/OUT. VIC-II bank selection: bits 1-0 (active low) choose which 16K bank the VIC-II sees (Bank 0 $0000-$3FFF ... Bank 3 $C000-$FFFF).
+
+=============================================================
+5. REGISTER DETAILS
+=============================================================
+
+-------------------------------------------------------------
+5.1  Port A Data Register (PRA) - Offset $00
+-------------------------------------------------------------
+
+Read/Write. Each bit corresponds to a pin on Port A.
+Direction is controlled by DDRA (offset $02):
+  0 = input, 1 = output
+
+CIA 1 ($DC00) - Port A Connections:
+  Bit 0  - Keyboard column 0 / Joystick 2 Up
+  Bit 1  - Keyboard column 1 / Joystick 2 Down
+  Bit 2  - Keyboard column 2 / Joystick 2 Left
+  Bit 3  - Keyboard column 3 / Joystick 2 Right
+  Bit 4  - Keyboard column 4 / Joystick 2 Fire
+  Bit 5  - Keyboard column 5 / Paddle fire button
+  Bit 6  - Keyboard column 6 / Paddle selection
+  Bit 7  - Keyboard column 7 / Disable NMI (directly if active)
+
+CIA 2 ($DD00) - Port A Connections:
+  Bit 0  - VIC-II Bank Select Bit 0 (active low)
+  Bit 1  - VIC-II Bank Select Bit 1 (active low)
+  Bit 2  - RS-232 TXD (output)
+  Bit 3  - Serial Bus ATN OUT
+  Bit 4  - Serial Bus CLOCK OUT
+  Bit 5  - Serial Bus DATA OUT
+  Bit 6  - Serial Bus CLOCK IN (input)
+  Bit 7  - Serial Bus DATA IN (input)
+
+VIC-II Bank Selection (CIA 2, bits 0-1 of Port A):
+  %11 (3) = Bank 0: $0000-$3FFF (default)
+  %10 (2) = Bank 1: $4000-$7FFF
+  %01 (1) = Bank 2: $8000-$BFFF
+  %00 (0) = Bank 3: $C000-$FFFF
+
+  Note: The bits are active low, so the value is inverted.
+
+-------------------------------------------------------------
+
+---
+Additional information can be found by searching:
+- "ddra_ddrb" which expands on DDRA controls PRA pin directions
+- "cia2_detailed_connections" which expands on VIC-II bank selection uses CIA2 Port A bits 0-1
+- "cia1_detailed_connections" which expands on Keyboard and joystick connections on CIA1 Port A

@@ -1,0 +1,31 @@
+# COMMODORE 64 - KERNAL routine MEMTOP: purpose (set or read top of RAM), call address ($FF99), communication registers (X, Y), behavior when carry set (loads pointer to top of RAM into X/Y) and when carry clear (stores X/Y into top-of-memory pointer). Lists stack requirement (2) and includes example showing how to deallocate the RS-232 buffer by reading, adjusting, and writing the top-of-memory pointer.
+
+  B-17. Function Name: MEMTOP
+
+    Purpose: Set the top of RAM
+    Call address: $FF99 (hex) 65433 (decimal)
+    Communication registers: X, Y
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: X, Y
+
+    Description: This routine is used to set the top of RAM. When this
+  routine is called with the carry bit of the accumulator set, the pointer
+  to the top of RAM will be loaded into the X and Y registers. When this
+  routine is called with the accumulator carry bit clear, the contents of
+  the X and Y registers are loaded in the top of memory pointer, changing
+  the top of memory.
+
+  EXAMPLE:
+    ;DEALLOCATE THE RS-232 BUFFER
+    SEC
+    JSR MEMTOP   ;READ TOP OF MEMORY
+    DEX
+    CLC
+    JSR MEMTOP   ;SET NEW TOP OF MEMORY
+
+---
+Additional information can be found by searching:
+- "membot_kernal_routine" which expands on complementary routine for bottom-of-RAM management
+- "load_kernal_routine" which expands on memory top effects on loaded data and buffers

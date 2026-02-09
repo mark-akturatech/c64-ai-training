@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Top-level checks and returns for T2 and FLAG NMIs: T2 NMI path verifies T2 bit and calls T2NMI then jumps to NMIRTI. FLAG NMI path detects flag edge and calls FLNMI to start half-bit timing. After either branch, ENABL is restored to D2ICR, stack registers are pulled (PLA/TAY/PLA/TAX/PLA) and RTI performed to resume execution.
+
+                                ;
+                                ; T2 NMI CHECK - RECIEVE A BIT
+                                ;
+.,FEA3 8A       TXA             NNMI30 TXA
+.,FEA4 29 02    AND #$02               AND #$02        ;MASK TO T2
+.,FEA6 F0 06    BEQ $FEAE              BEQ NNMI40      ;NO...
+                                ;
+.,FEA8 20 D6 FE JSR $FED6              JSR T2NMI       ;HANDLE INTERRUPT
+.,FEAB 4C B6 FE JMP $FEB6              JMP NMIRTI
+                                ; FLAG NMI HANDLER - RECIEVE A START BIT
+                                ;
+.,FEAE 8A       TXA             NNMI40 TXA             ;CHECK FOR EDGE
+.,FEAF 29 10    AND #$10               AND #$10        ;ON FLAG...
+.,FEB1 F0 03    BEQ $FEB6              BEQ NMIRTI      ;NO...
+                                ;
+.,FEB3 20 07 FF JSR $FF07              JSR FLNMI       ;START BIT ROUTINE
+.,FEB6 AD A1 02 LDA $02A1       NMIRTI LDA ENABL       ;RESTORE NMI'S
+.,FEB9 8D 0D DD STA $DD0D              STA D2ICR
+.,FEBC 68       PLA             PREND  PLA             ;BECAUSE OF MISSING SCREEN EDITOR
+.,FEBD A8       TAY                    TAY
+.,FEBE 68       PLA                    PLA
+.,FEBF AA       TAX                    TAX
+.,FEC0 68       PLA                    PLA
+.,FEC1 40       RTI                    RTI
+
+---
+Additional information can be found by searching:
+- "nested_nmi_dispatch_and_rstrab" which expands on alternative entry points for nested NMI checks
+- "t2nmi_subroutine_sample_and_timer_update" which expands on detailed T2NMI implementation invoked here
+- "flnmi_half_bit_setup_and_return" which expands on detailed FLNMI implementation invoked here

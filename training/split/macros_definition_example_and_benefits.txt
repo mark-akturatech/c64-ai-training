@@ -1,0 +1,63 @@
+# Contents - Introduces macro-instructions: what a macro is and how it represents a sequence of assembly commands. Provides a sample macro (DBINC) that increments a two-byte value, shows the macro definition and a use-case (DBINC SCORE,$20), and shows the expanded instructions. Discusses why macros save typing, improve readability, and how building a macro library speeds development.
+
+All good assemblers also have the ability to use 
+macro-instructions (macros). A macro is a shorthand 
+notation that represents a series of assembly 
+language commands. For example, a macro that in- 
+crements a two byte value by a one byte value could 
+be coded as follows: 
+
+.MAC DBINC ;REGISTER NAME, DATA 
+LDA ?1 ;LOAD THE LOWER BYTE 
+
+CLC ; CLEAR THE CARRY BIT 
+
+ADC #?2 ;ADD WITH CARRY THE DATA 
+
+STA ? 1 ; STORE THE LOWER BYTE 
+
+LDA71 + 1 ;LOAD THE UPPER BYTE 
+ADC #$00 ;ADD THE CARRY BIT 
+STA ?1 + 1 ;STORE THE UPPER BYTE 
+,MND ;END OF MACRO 
+
+This macro is used to increment any two con- 
+secutive bytes, such as a score. If the score needed 
+to be incremented by $20, you would type: 
+
+DBINC SCORE,$20 
+
+which would be expanded by the assembler to read: 
+
+LDA SCORE 
+
+CLC 
+
+ADC #$20 
+
+STA SCORE 
+
+LDA SCORE + 1 
+
+ADC #$00 
+
+STA SCORE +1 
+
+This is certainly easier than typing the same 
+
+
+
+series of instructions every time that you need to 
+increment a two byte value. A program that uses 
+macros will be easier to read as you work on it than 
+one written using individual instructions. Once you 
+have written and debugged a macro, it becomes a 
+tool that can be quickly used whenever necessary. 
+By building up a library of macros, you will be able 
+to program quite difficult functions in a minimal 
+amount of time. 
+
+---
+Additional information can be found by searching:
+- "symbolic_names_and_program_readability" which expands on previous: symbolic names and program readability
+- "macros_vs_subroutines_memory_tradeoff" which expands on next: when to use subroutines instead of macros (memory tradeoffs)

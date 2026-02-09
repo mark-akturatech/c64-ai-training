@@ -1,0 +1,71 @@
+# NMOS 6510 - Notes and observations about the opcode matrix: layout conventions, exceptions (JSR abs decoding to stack behavior, JMP (ind) mapping), peculiarities like 9C/9E non-working STY abs,x / STX abs,y, NOP #imm decoding oddity, and the general rule that block D contains unintended combined operations.
+
+•
+
+Instructions in the same column have (mostly) the same addressing mode, with the
+following exceptions:
+◦
+◦
+◦
+◦
+◦
+◦
+
+JSR abs (expected implied) (but 00,20,40,60 are all „stack“)
+JMP (ind) (expected abs)
+STX zp,y and LDX zp,y (can‘t be zp,x)
+SHX abs,y and LDX abs,y (can‘t be abs,x)
+SAX zp,y and LAX zp,y (can‘t be zp,x)
+SHA abs,y and LAX abs,y (can‘t be abs,x)
+
+Other conclusions:
+•
+
+all JAMs are empty „stack“ or „relative“ instructions
+
+•
+
+In blocks A, B and C all unused instructions turn into NOPs (except for the JAMs) with the
+expected addressing modes. The only exceptions from this are opcodes 9C and 9E, which
+appear to be „non working“ STY abs,x and STX abs,y respectively.
+
+•
+
+NOP #imm in block B is “STA #imm” (which makes no sense)
+
+•
+
+All instructions in block D are unintended instructions. These “combine” (not necessarily all
+of) the sub-operations of instructions from the ALU operation at the same position in the
+same column and RMW operation at the same position in the same row, all of them having
+the same addressing mode as the corresponding ALU operation in the same column, with the
+four exceptions listed above.
+
+•
+
+LAX #imm combines LDA #imm with TAX, which makes some sense at least (but still
+does not explain the weird unstable behaviour and/or the “magic constant”)
+
+•
+
+ANE #imm combines “STA #imm” with TXA, which makes no sense at all on a first look,
+but might contribute to the ANDing of the Akkumulator, X-Register and immediate value.
+
+-2-
+
+Unintended Opcodes
+Overview
+Opc. imp imm zp zpx zpy izx izy abs abx aby
+SLO
+
+$07 $17
+
+$03 $13
+
+$0F $1F $1B
+
+
+---
+Additional information can be found by searching:
+- "opcode_matrix" which expands on full matrix context
+- "types_intro" which expands on how unintended opcodes combine operations

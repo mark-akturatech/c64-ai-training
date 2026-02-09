@@ -1,0 +1,45 @@
+# ca65 Users Guide - Symbol/label naming rules: identifier characters, reserved single-letter tokens (e.g., 'A'), use of symbols for readability. Numeric constants (using '=' or ':=' for label marking), numeric variables with .SET (mutable within macros and control structures) and examples (including .SPRINTF usage for generating unique labels).
+
+6. Symbols and labels
+A symbol or label is an identifier that starts with a letter and is followed by letters and digits. Depending on some features enabled (see at_in_identifiers, dollar_in_identifiers and leading_dot_in_identifiers) other characters may be present. Use of identifiers consisting of a single character will not work in all cases, because some of these identifiers are reserved keywords (for example "A" is not a valid identifier for a label, because it is the keyword for the accumulator).
+
+The assembler allows you to use symbols instead of naked values to make the source more readable. There are a lot of different ways to define and use symbols and labels, giving a lot of flexibility.
+
+6.1 Numeric constants
+Numeric constants are defined using the equal sign or the label assignment operator. After doing
+
+
+        two = 2
+may use the symbol "two" in every place where a number is expected, and it is evaluated to the value 2 in this context. The label assignment operator is almost identical, but causes the symbol to be marked as a label, so it may be handled differently in a debugger:
+
+
+        io := $d000
+The right side can of course be an expression:
+
+
+        four = two * two
+
+6.2 Numeric variables
+Within macros and other control structures ( .REPEAT, ...) it is sometimes useful to have some sort of variable. This can be achieved by the .SET operator. It creates a symbol that may get assigned a different value later:
+
+
+        four .set 4
+        lda     #four           ; Loads 4 into A
+        four .set 3
+        lda     #four           ; Loads 3 into A
+Since the value of the symbol can change later, it must be possible to evaluate it when used (no delayed evaluation as with normal symbols). So the expression used as the value must be constant.
+
+Following is an example for a macro that generates a different label each time it is used. It uses the .SPRINTF function and a numeric variable named lcount.
+
+
+        lcount  .set 0          ; Initialize the counter
+
+        .macro  genlab
+                .ident (.sprintf ("L%04X", lcount)):
+                lcount .set lcount + 1
+        .endmacro
+
+---
+Additional information can be found by searching:
+- "macros_overview" which expands on macros using .SET and .SPRINTF
+- "symbols_and_debuginfo" which expands on .DEBUGINFO behavior for symbols

@@ -1,0 +1,20 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Compares the ASCII code in accumulator (A) against the 16-entry Commodore ASCII colour code table. If a match is found, stores the table offset (colour value) into COLOR at $0286. Iterates over 16 table entries.
+
+                                *** SET COLOUR CODE
+                                This routine is called by the output to screen routine.
+                                The Commodore ASCII code in (A) is compared with the ASCII
+                                colour code table. If a match is found, then the table
+                                offset (and hence the colour value) is stored in COLOR.
+.,E8CB A2 0F    LDX #$0F        16 values to be tested
+.,E8CD DD DA E8 CMP $E8DA,X     compare with colour code table
+.,E8D0 F0 04    BEQ $E8D6       found, jump
+.,E8D2 CA       DEX             next colour in table
+.,E8D3 10 F8    BPL $E8CD       till all 16 are tested
+.,E8D5 60       RTS             if not found, return
+.,E8D6 8E 86 02 STX $0286       if found, store code in COLOR
+.,E8D9 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "colour_code_table" which expands on table of 16 Commodore ASCII codes used for comparison

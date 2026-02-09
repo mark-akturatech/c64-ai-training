@@ -1,0 +1,12 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Prepare the RS-232 transmit machinery: read the RS-232 interrupt-enable byte ($02A1), shift it to carry and branch if interrupts are already enabled (no further action). Otherwise load A with the Timer A start mask (LDA #$10) to start the Timer A-based bit-bang transmit timing (next instructions beyond this chunk perform the start).
+
+                                *** setup for RS232 transmit
+.,F028 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F02B 4A       LSR             shift the enable bit to Cb
+.,F02C B0 1E    BCS $F04C       if interrupts are enabled just exit
+.,F02E A9 10    LDA #$10        start timer A
+
+---
+Additional information can be found by searching:
+- "rs232_disable_timerA_set_via2_icr" which expands on counterpart that disables or programs VIA2 ICR when interrupts are cleared
+- "rs232_send_byte_to_tx_buffer" which expands on called before queuing a byte to ensure the transmitter is running

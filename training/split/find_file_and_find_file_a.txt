@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - File lookup routines. 'Find a file' clears accumulator and the serial status byte ($90), and prepares to find the logical file. 'Find file A' (entry point) uses the open-file count ($98) as an index (LDX/DEX), returns immediately if no files, and scans the logical file table ($0259,X) comparing entries to find a match. Loops until match or exhausts entries, then returns with A set appropriately.
+
+                                *** find a file
+.,F30F A9 00    LDA #$00        clear A
+.,F311 85 90    STA $90         clear the serial status byte
+.,F313 8A       TXA             copy the logical file number to A
+
+                                *** find file A
+.,F314 A6 98    LDX $98         get the open file count
+.,F316 CA       DEX             decrememnt the count to give the index
+.,F317 30 15    BMI $F32E       if no files just exit
+.,F319 DD 59 02 CMP $0259,X     compare the logical file number with the table logical
+                                file number
+.,F31C D0 F8    BNE $F316       if no match go try again
+.,F31E 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "set_file_details_from_table" which expands on used immediately after a successful find to load file/device details
+- "open_channel_for_input" which expands on called by input open to validate/open the logical file
+- "open_channel_for_output_and_serial_bus_handling" which expands on called by output open to validate/open the logical file

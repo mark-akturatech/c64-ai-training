@@ -1,0 +1,43 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Tie music playback to VIC-II raster interrupt for consistent timing: sample code to set IRQ vector at $0314/$0315, configure rasterline ($D012/$D011), enable raster IRQ ($D01A), IRQ handler acknowledges ($D019) and calls play routine, then jp to KERNAL IRQ handler. Typical rates: 50Hz PAL / 60Hz NTSC; alternative timers suggested for higher resolution.
+
+--------------------------------------------------------------------------------
+11.5 RASTER-SYNCHRONIZED PLAYBACK
+--------------------------------------------------------------------------------
+
+For consistent timing, tie the music player to the raster interrupt:
+
+  // Setup raster IRQ
+  sei
+  lda #<irq_handler
+  sta $0314
+  lda #>irq_handler
+  sta $0315
+  lda #$00
+  sta $d012         // Rasterline 0
+  lda $d011
+  and #$7f
+  sta $d011         // Clear bit 8 of rasterline
+  lda #$01
+  sta $d01a         // Enable raster IRQ
+  cli
+  rts
+
+  irq_handler:
+    // Acknowledge IRQ
+    lda #$01
+    sta $d019
+
+    // Call music player
+    jsr play
+
+    // Return from IRQ
+    jmp $ea31        // Jump to standard KERNAL IRQ handler
+
+Typical playback rate: once per frame (50 Hz PAL / 60 Hz NTSC).
+For faster note resolution, trigger on specific rasterlines or use CIA timers.
+
+
+---
+Additional information can be found by searching:
+- "music_engine_structure" which expands on play routine called from IRQ
+- "pwm_technique" which expands on synchronizing PWM updates to raster

@@ -1,0 +1,79 @@
+# NMOS 6510 - Practical SAX examples: 1) "store values with mask" — using LDX to set up a mask and SAX $80,y to store A & X from memory; 2) "update Sprite Pointers" — a compact sequence demonstrating setting eight sprite pointers using SAX and STA (loads of A and X values, SAX to store masked pointer bytes, and subsequent STA), with comments showing resulting stored byte values.
+
+
+Example: store values with mask
+
+This opcode is ideal to set up a permanent mask and store values combined with that mask:
+LDX #$aa
+
+;set up mask
+
+LDA $1000,y
+
+;load A
+
+SAX $80,y
+
+;store A & $aa
+
+Example: update Sprite Pointers
+
+Often you need to set up all 8 sprite pointers in as few cycles as possible, this could be done like
+this:
+LDA #$01
+
+;A=%00000001
+
+LDX #$fe
+
+;X=%11111110
+
+SAX screen + $3f8
+
+;$00
+
+STA screen + $3f9
+
+;$01
+
+LDA #$03
+
+;A=%00000011
+
+SAX screen + $3fa
+
+;$02
+
+STA screen + $3fb
+
+;$03
+
+LDA #$05
+
+;A=%00000101
+
+SAX screen + $3fc
+
+;$04
+
+STA screen + $3fd
+
+;$05
+
+LDA #$07
+
+;A=%00000111
+
+SAX screen + $3fe
+
+;$06
+
+STA screen + $3ff
+
+;$07
+
+
+---
+Additional information can be found by searching:
+- "sax_overview_and_operation" which expands on explains SAX semantics and effects used by these examples
+- "sax_alternative_sprite_method" which expands on alternative approach that swaps roles of A and X

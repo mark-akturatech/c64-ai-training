@@ -1,0 +1,69 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Error handler and STOP-check routines. NSTOP/STOP routines check STKEY flag, close channels and flush keyboard queue, set Z flag for STOP key. ERROR handler prints CBM I/O error messages when MSGFLG is set and returns error number in A with Carry set. Defines standard KERNAL error codes ERROR1..ERROR9 (LDA #$01..#09) and uses CLRCH to restore I/O channels and BSOUT for printing error digits. Uses STATUS and MSGFLG variables.
+
+                                .LIB   ERRORHANDLER
+                                ;***************************************
+                                ;* STOP -- CHECK STOP KEY FLAG AND     *
+                                ;* RETURN Z FLAG SET IF FLAG TRUE.     *
+                                ;* ALSO CLOSES ACTIVE CHANNELS AND     *
+                                ;* FLUSHES KEYBOARD QUEUE.             *
+                                ;* ALSO RETURNS KEY DOWNS FROM LAST    *
+                                ;* KEYBOARD ROW IN .A.                 *
+                                ;***************************************
+.,F6ED A5 91    LDA $91         NSTOP  LDA STKEY       ;VALUE OF LAST ROW
+.,F6EF C9 7F    CMP #$7F        CMP    #$7F            ;CHECK STOP KEY POSITION
+.,F6F1 D0 07    BNE $F6FA       BNE    STOP2           ;NOT DOWN
+.,F6F3 08       PHP             PHP
+.,F6F4 20 CC FF JSR $FFCC       JSR    CLRCH           ;CLEAR CHANNELS
+.,F6F7 85 C6    STA $C6         STA    NDX             ;FLUSH QUEUE
+.,F6F9 28       PLP             PLP
+.,F6FA 60       RTS             STOP2  RTS
+                                ;************************************
+                                ;*                                  *
+                                ;* ERROR HANDLER                    *
+                                ;*                                  *
+                                ;* PRINTS KERNAL ERROR MESSAGE IF   *
+                                ;* BIT 6 OF MSGFLG SET.  RETURNS    *
+                                ;* WITH ERROR # IN .A AND CARRY.    *
+                                ;*                                  *
+                                ;************************************
+                                ;
+.,F6FB A9 01    LDA #$01        ERROR1 LDA #1          ;TOO MANY FILES
+.:F6FD 2C       .BYTE $2C       .BYT   $2C
+.,F6FE A9 02    LDA #$02        ERROR2 LDA #2          ;FILE OPEN
+.:F700 2C       .BYTE $2C       .BYT   $2C
+.,F701 A9 03    LDA #$03        ERROR3 LDA #3          ;FILE NOT OPEN
+.:F703 2C       .BYTE $2C       .BYT   $2C
+.,F704 A9 04    LDA #$04        ERROR4 LDA #4          ;FILE NOT FOUND
+.:F706 2C       .BYTE $2C       .BYT   $2C
+.,F707 A9 05    LDA #$05        ERROR5 LDA #5          ;DEVICE NOT PRESENT
+.:F709 2C       .BYTE $2C       .BYT   $2C
+.,F70A A9 06    LDA #$06        ERROR6 LDA #6          ;NOT INPUT FILE
+.:F70C 2C       .BYTE $2C       .BYT   $2C
+.,F70D A9 07    LDA #$07        ERROR7 LDA #7          ;NOT OUTPUT FILE
+.:F70F 2C       .BYTE $2C       .BYT   $2C
+.,F710 A9 08    LDA #$08        ERROR8 LDA #8          ;MISSING FILE NAME
+.:F712 2C       .BYTE $2C       .BYT   $2C
+.,F713 A9 09    LDA #$09        ERROR9 LDA #9          ;BAD DEVICE #
+                                ;
+.,F715 48       PHA             PHA                    ;ERROR NUMBER ON STACK
+.,F716 20 CC FF JSR $FFCC       JSR    CLRCH           ;RESTORE I/O CHANNELS
+                                ;
+.,F719 A0 00    LDY #$00        LDY    #MS1-MS1
+.,F71B 24 9D    BIT $9D         BIT    MSGFLG          ;ARE WE PRINTING ERROR?
+.,F71D 50 0A    BVC $F729       BVC    EREXIT          ;NO...
+                                ;
+.,F71F 20 2F F1 JSR $F12F       JSR    MSG             ;PRINT "CBM I/O ERROR #"
+.,F722 68       PLA             PLA
+.,F723 48       PHA             PHA
+.,F724 09 30    ORA #$30        ORA    #$30            ;MAKE ERROR # ASCII
+.,F726 20 D2 FF JSR $FFD2       JSR    BSOUT           ;PRINT IT
+                                ;
+.,F729 68       PLA             EREXIT PLA
+.,F72A 38       SEC             SEC
+.,F72B 60       RTS             RTS
+                                .END
+
+---
+Additional information can be found by searching:
+- "load_library" which expands on uses error codes (ERROR4: FILE NOT FOUND, ERROR9: BAD DEVICE #)
+- "save_library" which expands on invokes STOP and error prints on save failure

@@ -1,0 +1,16 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - TKSA: SEND TALK SECONDARY ADDRESS. KERNAL TKSA ($FF96) vector: A holds the secondary address which is stored in the serial buffer BSOUR ($95) and sent to the bus via JSR $ED36 (handshake/send). The routine then falls through to the routines that wait for the clock and clear ATN as needed.
+
+                                *** TKSA: SEND TALK SA
+                                The KERNAL routine TKSA ($ff96) is vectored here. On
+                                entry, (A) holds the secondary address. This is placed in
+                                the serial buffer and sent out to the serial bus "under
+                                attention". The routine drops through to the next routine
+                                to wait for CLK and clear ATN.
+.,EDC7 85 95    STA $95         BSOUR, the serial bus buffer
+.,EDC9 20 36 ED JSR $ED36       handshake and send byte to the bus
+
+
+---
+Additional information can be found by searching:
+- "wait_for_clock" which expands on subsequent routine to synchronize and wait for CLK
+- "clear_atn" which expands on clear ATN once talk/listen command completed

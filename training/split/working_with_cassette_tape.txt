@@ -1,0 +1,117 @@
+# COMMODORE 64 - Cassette tape storage: characteristics and programming considerations. Advises reading an entire cassette file into RAM for editing if possible, otherwise use disk for large files. Discusses PRINT# formatting pitfalls (commas create variable-width spacing on tape) and suggests using explicit separators (commas or CHR$(13)) between data items on tape to ensure INPUT# works correctly. Shows examples of correct and incorrect tape data layout.
+
+  machine code, is to use the following machine language routine... (SYS to
+  it from BASIC then PEEK the memory locations used by the subroutine).
+
+
+                      ; four paddle read routine (can also be used for two)
+                      ;
+                      ; author - bill hindorff
+                      ;
+porta=$dc00
+ciddra=$dc02
+sid=$d400
+
+*=$c100
+
+buffer  *=*+1
+pdlx    *=*+2
+pdly    *=*+2
+btna    *=*+1
+btnb    *=*+1
+
+* = $c000
+
+pdlrd   ldx #1        ; for four paddles or two analog joysticks
+pdlrd0                ; entry point for one pair (condition x 1st)
+        sei
+        lda ciddra    ; get current value of ddr
+        sta buffer    ; save it away
+        lda #$c0
+        sta ciddra    ; set port a for input
+        lda #$80
+pdlrd1
+        sta porta     ; address a pair of paddles
+        ldy #$80      ; wait a while
+pdlrd2
+        nop
+        dey
+        bpl pdlrd2
+        lda sid+25    ; get x value
+        sta pdlx,x
+        lda sid+26
+        sta pdly,x    ; get y value
+        lda porta     ; time to read paddle fire buttons
+        ora #80       ; make it the same as other pair
+        sta btna      ; bit 2 is pdl x, bit 3 is pdl y
+        lda #$40
+        dex           ; all pairs done?
+        bpl pdlrd1    ; no
+        lda buffer
+        sta ciddra    ; restore previous value of ddr
+        lda porta+1   ; for 2nd pair -
+        sta btnb      ; bit 2 is pdl x, bit 3 is pdl y
+        cli
+        rts
+.end
+
+
+
+
+    The paddles can be read by using the following BASIC program:
+
+start tok64 page347.prg
+  10 c=12*4096:rem set paddle routine start
+  11 rem poke in the paddle reading routine
+  15 fori=0to63:reada:pokec+i,a:next
+  20 sysc:rem call the paddle routine
+  30 p1=peek(c+257):rem set paddle one value
+  40 p2=peek(c+258):rem set paddle two value
+  50 p3=peek(c+259):rem set paddle three value
+  60 p4=peek(c+260):rem set paddle four value
+  61 rem read fire button status
+  62 s1=peek(c+261):s2=peek(c+262)
+  70 printp1,p2,p3,p4:rem print paddle values
+  72 rem print fire button status
+  75 print:print"fire a ";s1,"fire b ";s2
+  80 forw=1to50:next:rem wait a while
+  90 print"{clear}":print:goto20:rem clear screen and do again
+  95 rem data for machine code routine
+  100 data162,1,120,173,2,220,141,0,193,169,192,141,2,220,169
+  110 data128,141,0,220,160,128,234,136,16,252,173,25,212,157
+  120 data1,193,173,26,212,157,3,193,173,0,220,9,128,141,5,193
+  130 data169,64,202,16,222,173,0,193,141,2,220,173,1,220,141
+  140 data6,193,88,96
+stop tok64
+
+                                                   INPUT/OUTPUT GUIDE   347
+~
+
+
+  LIGHT PEN
+
+    The light pen input latches the current screen position into a pair of
+  registers (LPX, LPY) on a low-going edge. The X position register 19
+  ($13) will contain the 8 MSB of the X position at the time of transition.
+  Since the X position is defined by a 512-state counter (9 bits),
+  resolution to 2 horizontal dots is provided. Similarly, the Y position is
+  latched in its register 20 ($14), but here 8 bits provide single raster
+  resolution within the visible display. The light pen latch may be
+  triggered only once per frame, and subsequent triggers within the same
+  frame will have no effect. Therefore, you must take several samples
+  before turning the pen to the screen (3 or more samples average),
+  depending upon the characteristics of your light pen.
+
+
+
+  RS-232 INTERFACE DESCRIPTION
+
+  GENERAL OUTLINE
+
+    The Commodore 64 has a built-in RS-232 interface for connection to any
+  RS-232 modem, printer, or other device. To connect a device to the
+  Commodore 64, all you need is a cable and a little bit of programming.
+
+---
+Additional information can be found by searching:
+- "save_kernal_routine" which expands on KERNAL SAVE used to write memory sections to cassette

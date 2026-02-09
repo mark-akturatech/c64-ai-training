@@ -1,0 +1,19 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - INIT: BASIC cold-start routine vectored at the BASIC ROM entry. Performs the full initialization sequence: calls initialization helper $E453, runs BASIC initialization at $E3BF, outputs the power-up message via $E422, resets the stack pointer to #$FB (TXS), then branches to the warm-start path to output READY and restart BASIC. Key operations: JSR $E453, JSR $E3BF, JSR $E422, LDX #$FB / TXS, BNE to warm-start continuation.
+
+                                *** INIT: BASIC COLD START
+                                This is the BASIC cold start routine that is vectored at
+                                the very start of the BASIC ROM. BASIC vectors and
+                                variables are set up, and power-up message is output, and
+                                BASIC is restarted.
+.,E394 20 53 E4 JSR $E453
+.,E397 20 BF E3 JSR $E3BF       Initialize BASIC
+.,E39A 20 22 E4 JSR $E422       output power-up message
+.,E39D A2 FB    LDX #$FB        reset stack
+.,E39F 9A       TXS
+.,E3A0 D0 E4    BNE $E386       output READY, and restart BASIC
+
+
+---
+Additional information can be found by searching:
+- "bassft_basic_warm_start" which expands on warm-start entry and READY prompt handling
+- "initms_output_powerup_message" which expands on power-up message output called during cold start

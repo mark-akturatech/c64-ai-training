@@ -1,0 +1,44 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Linecrunch technique: aborting a Bad Line mid-way (by negating Bad Line Condition before cycle 14) to effectively reduce a full text line to its last raster line. Effects: RC not reset, VCBASE loaded from VC at cycle 58 (increasing VCBASE by 40), enabling vertical crunching and fast vertical scrolling without moving memory. Repeating this can make RC stay at 7, increment VCBASE by 40 each line and cause display of normally invisible matrix tail; uses wrapping at 1024 addresses.
+
+3.14.4. Linecrunch
+------------------
+
+By manipulating YSCROLL, you have even more possibilities to control the
+Bad Lines. You may also abort a Bad Line before its correct completion by
+negating the Bad Line Condition within an already begun Bad Line before
+cycle 14. This his several consequences:
+
+ - The graphics data is in display state, so graphics are displayed.
+ - The RC is not reset. If you abort the very first line of a frame this
+   way, the RC is still at 7 from the last line of the previous frame.
+ - In cycle 58 of the line the RC is still 7, so the sequencer goes to idle
+   state and VCBASE is loaded from VC. But as the sequencer has been in
+   display state within the line, VC has been incremented after every
+   g-access, so VCBASE has now been effectively increased by 40. The RC
+   doesn't overflow, it stays at 7.
+
+With this procedure you have reduced the display of a text line to its last
+raster line, because as VCBASE has been incremented by 40, the VIC
+continues with the next line. This effect if therefore called "Linecrunch":
+You can "crunch" single text lines with it.
+
+If you now do this in every raster line, the RC will always stay at 7 and
+there will be no c-accesses, but VCBASE is incremented by 40 in every line.
+This eventually makes VCBASE cross the 1000 byte limit of the video matrix
+and the VIC displays the last, normally invisible, 24 bytes of the matrix
+(where also the sprite data pointers are stored). VCBASE wraps around to
+zero when reaching 1024.
+
+By crunching whole text lines to one raster line each you have the
+possibility to quickly scroll the screen contents up by large distances
+without moving bytes in the graphics memory, in a similar way as you can
+scroll it down with FLD. The only disturbing side effect is that the
+crunched lines pile up at the upper screen border, looking awkward. But
+here you can use one of the invalid graphics modes to blank out these
+lines.
+
+
+---
+Additional information can be found by searching:
+- "vc_and_rc" which expands on VC/VCBASE changes caused by aborting Bad Lines
+- "fld" which expands on FLD and Linecrunch both manipulate Bad Lines for vertical display control

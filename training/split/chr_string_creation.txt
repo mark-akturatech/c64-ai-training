@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Implementation of CHR$(): evaluates a byte expression (result in X), saves the character, makes a one-byte string (calls make string space routine), stores the character into the new string, and then jumps to the routine that checks space on the descriptor stack and pushes the new string's descriptor (address + length). Covers JSR $B7A1 (byte eval), string allocation (JSR $B47D), storing into the string, and JMP $B4CA to push descriptor.
+
+
+                                *** perform CHR$()
+.,B6EC 20 A1 B7 JSR $B7A1       evaluate byte expression, result in X
+.,B6EF 8A       TXA             copy to A
+.,B6F0 48       PHA             save character
+.,B6F1 A9 01    LDA #$01        string is single byte
+.,B6F3 20 7D B4 JSR $B47D       make string space A bytes long
+.,B6F6 68       PLA             get character back
+.,B6F7 A0 00    LDY #$00        clear index
+.,B6F9 91 62    STA ($62),Y     save byte in string - byte IS string!
+.,B6FB 68       PLA             dump return address (skip type check)
+.,B6FC 68       PLA             dump return address (skip type check)
+.,B6FD 4C CA B4 JMP $B4CA       check space on descriptor stack then put string address
+                                and length on descriptor stack and update stack pointers
+
+
+---
+Additional information can be found by searching:
+- "descriptor_stack_check_and_cleanup" which expands on ensures descriptor stack has room for pushed descriptor
+- "byte_parameter_parsing_and_evaluation" which expands on uses the byte-expression evaluator (JSR $B7A1)

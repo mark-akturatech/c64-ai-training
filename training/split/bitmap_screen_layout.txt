@@ -1,0 +1,13 @@
+# An Introduction to Programming C-64 Demos - C-64 bitmap layout explanation: bitmap bytes are arranged like charset character cells (vertical-chunk order) rather than a single linear pixel row; first byte is top-left cell, next byte is below it until the 8th, then next cell to the right, making plotting and indexing non-linear.
+
+The Screen Layout
+The layout of the actual bitmap is a bit weird, especially if you're used to other architectures, which have nice, linear bitmaps 8. A C-64 bitmap isn't linearly adressable, ie. you can't just count the pixels from left to right and index into it in an easy way.
+
+The data in a C-64 bitmap are indexed very much like a normal charset. The first byte (in the above example $2000) is the top, leftmost byte. $2001 is the byte below that one, $2002 below that one, and so on, until $2008, which is the one to the right of $2000. So, basically, it's as if you'd read one character from a charset, and put that character in the top left corner of the screen, and then you read the next character and put next to that one, and so on, until you reach character 40, which is below character 0.
+
+It's not really hard to understand, but it does make it a bit difficult to implement efficient bitmap effects, like plotters. Think about it!
+
+
+---
+Additional information can be found by searching:
+- "bitmap_graphics_koala_example" which expands on practical example using Koala layout

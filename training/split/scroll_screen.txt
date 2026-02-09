@@ -1,0 +1,82 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Scrolls the screen down by one physical line. If the top lines are linked, repeats scrolling. Saves/ restores SAL/EAL on the stack, decrements TBLX and LXSP, sets start-of-line for each line, moves lines up, clears bottom line, updates the screen line link table (LDTB1/LDTB arrays), and checks CIA#1 keyboard column for <CTRL> to possibly interrupt. Calls set_start_of_line, move_a_screen_line and clear_screen_line.
+
+                                *** SCROLL SCREEN
+                                This routine scrolls the screen down by one line. If the
+                                top two lines are linked together, then the scroll down
+                                is repeated. The screen line link pointers are updated,
+                                each screen line is cleared and the line below is moved
+                                up. The keyboard is directly read from CIA#1, and the
+                                routine tests if <CTRL> is pressed.
+.,E8EA A5 AC    LDA $AC         temp store SAL on stack
+.,E8EC 48       PHA
+.,E8ED A5 AD    LDA $AD
+.,E8EF 48       PHA
+.,E8F0 A5 AE    LDA $AE         temp store EAL on stack
+.,E8F2 48       PHA
+.,E8F3 A5 AF    LDA $AF
+.,E8F5 48       PHA
+.,E8F6 A2 FF    LDX #$FF
+.,E8F8 C6 D6    DEC $D6         decrement TBLX
+.,E8FA C6 C9    DEC $C9         decrement LXSP
+.,E8FC CE A5 02 DEC $02A5       temp store for line index
+.,E8FF E8       INX
+.,E900 20 F0 E9 JSR $E9F0       set start of line (X)
+.,E903 E0 18    CPX #$18
+.,E905 B0 0C    BCS $E913
+.,E907 BD F1 EC LDA $ECF1,X     read low-byte screen addresses
+.,E90A 85 AC    STA $AC
+.,E90C B5 DA    LDA $DA,X
+.,E90E 20 C8 E9 JSR $E9C8       move a screen line
+.,E911 30 EC    BMI $E8FF
+.,E913 20 FF E9 JSR $E9FF       clear a screen line
+.,E916 A2 00    LDX #$00
+.,E918 B5 D9    LDA $D9,X       calculate new screen line link table
+.,E91A 29 7F    AND #$7F        clear bit7
+.,E91C B4 DA    LDY $DA,X
+.,E91E 10 02    BPL $E922
+.,E920 09 80    ORA #$80        set bit7
+.,E922 95 D9    STA $D9,X       store new value in table
+.,E924 E8       INX             next line
+.,E925 E0 18    CPX #$18        till all 25 are done
+.,E927 D0 EF    BNE $E918
+.,E929 A5 F1    LDA $F1         bottom line link
+.,E92B 09 80    ORA #$80        unlink it
+.,E92D 85 F1    STA $F1         and store back
+.,E92F A5 D9    LDA $D9         test top line link
+.,E931 10 C3    BPL $E8F6       line is linked, scroll again
+.,E933 E6 D6    INC $D6         increment TBLX
+.,E935 EE A5 02 INC $02A5
+
+.,E938 A9 7F    LDA #$7F
+.,E93A 8D 00 DC STA $DC00
+.,E93D AD 01 DC LDA $DC01       read keyboard decode column
+.,E940 C9 FB    CMP #$FB        <CTRL> pressed
+.,E942 08       PHP
+.,E943 A9 7F    LDA #$7F
+.,E945 8D 00 DC STA $DC00
+.,E948 28       PLP
+.,E949 D0 0B    BNE $E956       nope, exit
+.,E94B A0 00    LDY #$00
+.,E94D EA       NOP
+.,E94E CA       DEX
+.,E94F D0 FC    BNE $E94D
+.,E951 88       DEY
+.,E952 D0 F9    BNE $E94D
+.,E954 84 C6    STY $C6         clear NDX
+.,E956 A6 D6    LDX $D6         read TBLX
+.,E958 68       PLA             retrieve EAL
+.,E959 85 AF    STA $AF
+.,E95B 68       PLA
+.,E95C 85 AE    STA $AE
+.,E95E 68       PLA             retrieve SAL
+.,E95F 85 AD    STA $AD
+.,E961 68       PLA
+.,E962 85 AC    STA $AC
+.,E964 60       RTS             exit
+
+
+---
+Additional information can be found by searching:
+- "set_start_of_line" which expands on used to compute start address for each line during scroll
+- "move_a_screen_line" which expands on moves characters and colour bytes up one line during scroll
+- "clear_screen_line" which expands on clears new bottom line after moving lines

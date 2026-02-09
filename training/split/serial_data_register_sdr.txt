@@ -1,0 +1,29 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Serial Data Register (SDR) at offset $0C: an 8-bit bidirectional shift register used for synchronous serial I/O. Output mode (CRA bit 6 = 1): data written to SDR is shifted out MSB-first on SP, with Timer A underflows providing the shift clock (CNT outputs the shift clock at half Timer A rate); interrupt on byte complete. Input mode (CRA bit 6 = 0): external clock on CNT shifts data in on SP on positive CNT edges; interrupt on 8 bits received; read received byte from SDR.
+
+-------------------------------------------------------------
+5.7  Serial Data Register (SDR) - Offset $0C
+-------------------------------------------------------------
+
+The 8-bit shift register provides a bidirectional serial port.
+
+Output Mode (CRA bit 6 = 1):
+  - Data written to SDR is shifted out bit-by-bit on the SP pin.
+  - Timer A underflows provide the shift clock (one bit per
+    underflow). The actual clock appears on the CNT pin at half
+    the Timer A underflow rate.
+  - An interrupt is triggered when all 8 bits have been shifted out.
+  - Writing new data before completion starts a new byte immediately
+    after the current byte finishes.
+
+Input Mode (CRA bit 6 = 0):
+  - External clock is supplied on the CNT pin.
+  - Data is shifted in on the SP pin on each positive CNT edge.
+  - An interrupt is triggered when 8 bits have been received.
+  - The received data can then be read from SDR.
+
+
+---
+Additional information can be found by searching:
+- "control_register_a" which expands on CRA bit 6 selects serial port input/output mode and Timer A as shift clock
+- "serial_shift_register_notes" which expands on practical notes on using the SDR, baud limits, SP/CNT behavior
+- "interrupt_control_register_icr" which expands on SDR transfer completion flags and interrupts (ICR SP bit)

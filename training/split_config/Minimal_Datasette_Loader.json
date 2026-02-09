@@ -1,0 +1,329 @@
+{
+  "source_file": "Minimal_Datasette_Loader.txt",
+  "context": "A Minimal C64 Datasette Program Loader",
+  "splits": [
+    {
+      "start": 1,
+      "end": 4,
+      "ignore": true,
+      "reason": "Title, author and source links (non-technical metadata)"
+    },
+    {
+      "start": 5,
+      "end": 18,
+      "name": "overview_summary",
+      "description": "Purpose and context of the minimal datasette loader: compact cassette tape loader for the C64, decodes Datasette format without error correction, fits under 200 bytes, intended for use in space-constrained custom KERNALs to retain cassette compatibility.",
+      "references": [
+        {
+          "chunk": "pulse_encoding_intro",
+          "topic": "format complexity and tradeoffs"
+        },
+        {
+          "chunk": "complete_loader_wait_for_play",
+          "topic": "how loader integrates in a complete implementation"
+        }
+      ]
+    },
+    {
+      "start": 19,
+      "end": 27,
+      "name": "pulse_encoding_intro",
+      "description": "Introduction to the Commodore Datasette recording format: optimized for data safety, compensates for speed variations (wow/flutter) and dropouts; format encodes information in pulse durations rather than raw samples.",
+      "references": [
+        {
+          "chunk": "pulse_types_and_timer_usage",
+          "topic": "the three pulse types and how they are measured"
+        }
+      ]
+    },
+    {
+      "start": 28,
+      "end": 38,
+      "name": "pulse_types_and_timer_usage",
+      "description": "Pulse types and measurement principle: three pulse durations (Short 352µs, Medium 512µs, Long 672µs). Measurement performed using CIA timers which count down PAL clock cycles; Timer A underflows counted by Timer B for extended range.",
+      "references": [
+        {
+          "chunk": "cia_timer_divide_by_8_setup",
+          "topic": "timer configuration example that divides clock by 8"
+        },
+        {
+          "chunk": "get_pulse_routine",
+          "topic": "reading pulse durations using the timers"
+        }
+      ]
+    },
+    {
+      "start": 39,
+      "end": 51,
+      "name": "cia_timer_divide_by_8_setup",
+      "description": "6502 assembly to configure CIA timers for pulse measurement: writes to $DD04/$DD05 to set Timer B start, $DD0E to start Timer A, and $DD06/$DD07 to always start Timer B from $FFFF. Registers used: $dd04, $dd05, $dd0e, $dd06, $dd07.",
+      "references": [
+        {
+          "chunk": "pulse_length_values",
+          "topic": "pulse lengths expressed in timer units"
+        },
+        {
+          "chunk": "get_pulse_routine",
+          "topic": "routine that reads the configured timers"
+        }
+      ]
+    },
+    {
+      "start": 52,
+      "end": 57,
+      "name": "pulse_length_values",
+      "description": "Pulse lengths in the loader's measurement units (units of 8 PAL clock cycles): length_short = $30, length_medium = $42, length_long = $56.",
+      "references": [
+        {
+          "chunk": "pulse_thresholds",
+          "topic": "thresholds derived from these length values"
+        }
+      ]
+    },
+    {
+      "start": 58,
+      "end": 63,
+      "name": "pulse_thresholds",
+      "description": "Thresholds for discriminating pulse types are midpoints between defined lengths: threshold_short_medium = (length_short + length_medium) / 2 and threshold_medium_long = (length_medium + length_long) / 2. These are used to classify measured pulse durations.",
+      "references": [
+        {
+          "chunk": "get_pulse_routine",
+          "topic": "compares measured timer value against thresholds"
+        }
+      ]
+    },
+    {
+      "start": 64,
+      "end": 85,
+      "name": "get_pulse_routine",
+      "description": "Subroutine get_pulse: waits for pulse start/end via bit testing $DC0D (the tape input port), reads low byte of Timer B ($DD06), restarts Timer B via $DD0F, returns negative length in A and sets the C flag if the pulse was short. Uses LDA/STA/LDX and BIT/BEQ/BNE for timing synchronization.",
+      "references": [
+        {
+          "chunk": "pulse_thresholds",
+          "topic": "compares timer reading to threshold_short_medium"
+        },
+        {
+          "chunk": "get_byte_routine",
+          "topic": "consumes get_pulse to assemble bits/bytes"
+        }
+      ]
+    },
+    {
+      "start": 86,
+      "end": 110,
+      "name": "bit_and_byte_encoding",
+      "description": "How bits and bytes are encoded using pulses: each data bit uses two pulses (Short/Medium = 0, Medium/Short = 1); first pulse alone determines the bit. Byte marker is Long/Medium, end-of-data marker is Long/Short. Complete byte format: marker (L/M), bits 0..7 (S/M pairs), parity (M/S). Parity uses inverted odd parity.",
+      "references": [
+        {
+          "chunk": "get_byte_routine",
+          "topic": "detection of byte markers and reading bits"
+        }
+      ]
+    },
+    {
+      "start": 111,
+      "end": 130,
+      "name": "get_byte_routine",
+      "description": "Subroutine get_byte: waits for a byte marker by calling get_pulse and checking for a 'long' marker (using threshold_medium_long). Detects end-of-data if marker's second pulse is short. Then reads 8 data bits by calling get_pulse twice per bit (first pulse ignored for data), assembling bits with ROR and using a canary bit technique to detect completion. Uses instructions: JSR, CMP, BCS, BCS, LDA, PHA, PLA, ROR, BCS, RTS.",
+      "references": [
+        {
+          "chunk": "get_pulse_routine",
+          "topic": "relies on get_pulse for pulse classification"
+        },
+        {
+          "chunk": "canary_bit_technique",
+          "topic": "explains canary bit method used here"
+        },
+        {
+          "chunk": "data_block_reading",
+          "topic": "get_byte is used to read bytes into memory"
+        }
+      ]
+    },
+    {
+      "start": 131,
+      "end": 136,
+      "name": "canary_bit_technique",
+      "description": "Canary bit technique used by get_byte: initialize accumulator with a 0 canary bit in position 7 (via LDA #%01111111), then shift incoming bits right with ROR. After 8 data bits the canary bit is shifted into the carry flag, signaling completion without an explicit counter.",
+      "references": [
+        {
+          "chunk": "get_byte_routine",
+          "topic": "mechanics of stopping after 8 bits"
+        }
+      ]
+    },
+    {
+      "start": 137,
+      "end": 166,
+      "name": "leader_and_countdown",
+      "description": "Leader and countdown handling: files begin with a leader of short pulses (ignored by the minimal loader) followed by a countdown sequence: $89 down to $81. get_countdown reads bytes using get_byte, compares against the expected countdown sequence, handles incomplete countdowns followed by complete ones, and returns when the full countdown has been successfully observed.",
+      "references": [
+        {
+          "chunk": "get_byte_routine",
+          "topic": "used to read countdown bytes"
+        },
+        {
+          "chunk": "get_block",
+          "topic": "data blocks are read after countdown"
+        }
+      ]
+    },
+    {
+      "start": 167,
+      "end": 184,
+      "name": "data_block_reading",
+      "description": "get_block routine: reads a specified number of bytes into memory via an indirect pointer (STA (ptr),Y), decrementing a count and incrementing Y. Returns early with the carry flag set if an end-of-data marker is detected (via get_byte returning carry). Uses JSR get_byte and STA (ptr),Y to store data.",
+      "references": [
+        {
+          "chunk": "get_byte_routine",
+          "topic": "detects end-of-data markers used to stop block reading"
+        },
+        {
+          "chunk": "header_format",
+          "topic": "the header is read as a 192-byte data block"
+        }
+      ]
+    },
+    {
+      "start": 185,
+      "end": 203,
+      "name": "header_format",
+      "description": "File header format (192 bytes, recorded and encoded like any file with leader and countdown). Header layout: Offset 0 file type (1 byte, $01 or $03 for PRG), Offset 1..2 start address (low/high), Offset 3..4 end address (low/high), Offset 5..20 filename (16 bytes), Offset 21..191 unused. Header types: $01 relocatable BASIC, $03 non-relocatable (ML).",
+      "references": [
+        {
+          "chunk": "get_countdown",
+          "topic": "header is preceded by leader and countdown"
+        },
+        {
+          "chunk": "read_192_byte_header",
+          "topic": "how the loader reads this 192-byte header"
+        },
+        {
+          "chunk": "load_program_data_loop",
+          "topic": "uses start address from header to place program"
+        }
+      ]
+    },
+    {
+      "start": 204,
+      "end": 212,
+      "name": "complete_loader_wait_for_play",
+      "description": "Start of the complete loader implementation: wait for PLAY button before starting (polling bit $01 with BIT instruction while LDA #$10 prepares tape control). This is the initial entry point before disabling interrupts and preparing the screen/motor.",
+      "references": [
+        {
+          "chunk": "disable_interrupts_and_screen",
+          "topic": "immediately follows waiting for PLAY"
+        },
+        {
+          "chunk": "enable_datasette_motor",
+          "topic": "turn motor on after preparations"
+        }
+      ]
+    },
+    {
+      "start": 213,
+      "end": 221,
+      "name": "disable_interrupts_and_screen",
+      "description": "Loader disables interrupts (SEI) and turns off the VIC-II screen to prevent cycle stealing: reads $D011 and clears the raster-compare bit ($10) to disable screen updates, stores back to $D011, then waits for new screen by polling $D012 to be zero before proceeding.",
+      "references": [
+        {
+          "chunk": "restore_screen_and_turn_off_motor",
+          "topic": "restores the screen at the end of loading"
+        }
+      ]
+    },
+    {
+      "start": 222,
+      "end": 227,
+      "name": "enable_datasette_motor",
+      "description": "Turn on the datasette motor by manipulating CIA port $01: clear bit $20 (AND #$FF-$20) in $01 and store back to $01 to enable motor. This uses the system port at location $01.",
+      "references": [
+        {
+          "chunk": "read_192_byte_header",
+          "topic": "motor must be on to read header data"
+        },
+        {
+          "chunk": "restore_screen_and_turn_off_motor",
+          "topic": "turn motor off after loading"
+        }
+      ]
+    },
+    {
+      "start": 228,
+      "end": 237,
+      "name": "read_192_byte_header",
+      "description": "Code to read the 192-byte header: set ptr (two bytes) to the buffer address (LDX/LDY then STX/STY to ptr/ptr+1), call get_countdown to synchronize, set A to 192 and call get_block to read the header into memory.",
+      "references": [
+        {
+          "chunk": "header_format",
+          "topic": "what is stored in the 192-byte header"
+        },
+        {
+          "chunk": "get_countdown",
+          "topic": "synchronizes to the file start before reading the header"
+        }
+      ]
+    },
+    {
+      "start": 238,
+      "end": 244,
+      "name": "extract_start_address",
+      "description": "Extract start address from the header buffer: load buffer+1 (low) into X and buffer+2 (high) into Y, then store X/Y into ptr/ptr+1 to set the destination pointer for loading the program data.",
+      "references": [
+        {
+          "chunk": "read_192_byte_header",
+          "topic": "start address comes from the header just read"
+        },
+        {
+          "chunk": "load_program_data_loop",
+          "topic": "uses ptr set here to write incoming bytes"
+        }
+      ]
+    },
+    {
+      "start": 245,
+      "end": 251,
+      "name": "load_program_data_loop",
+      "description": "Main program load loop: call get_block with A=#0 to read until an end-of-data marker sets carry. After each block read, increment the high byte of ptr (ptr+1) to advance destination pointer; loop uses BCC to continue until high byte overflows, or get_block returns with carry to end.",
+      "references": [
+        {
+          "chunk": "extract_start_address",
+          "topic": "ptr initialized from header for where to store program data"
+        },
+        {
+          "chunk": "data_block_reading",
+          "topic": "get_block performs the actual byte writes"
+        }
+      ]
+    },
+    {
+      "start": 252,
+      "end": 259,
+      "name": "restore_screen_and_turn_off_motor",
+      "description": "Finalization: restore VIC-II screen by reading $D011, ORing in $10 and storing back to $D011; turn datasette motor off by ORing $01 with #$20 and storing it back to $01. Restores system state after loading completes.",
+      "references": [
+        {
+          "chunk": "disable_interrupts_and_screen",
+          "topic": "restores the screen state changed earlier"
+        },
+        {
+          "chunk": "enable_datasette_motor",
+          "topic": "turns motor off to undo earlier change"
+        }
+      ]
+    },
+    {
+      "start": 260,
+      "end": 262,
+      "name": "source_code_reference",
+      "description": "Link to the complete source code repository for the minimal datasette loader: provides full assembly listing and project files. URL: https://github.com/mist64/datasette_load",
+      "references": [
+        {
+          "chunk": "overview_summary",
+          "topic": "additional resources and full source"
+        }
+      ]
+    }
+  ],
+  "source_md5": "22f266083b0e41fdb6eaf5c5d210d728"
+}

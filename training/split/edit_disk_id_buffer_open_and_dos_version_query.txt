@@ -1,0 +1,29 @@
+# byRiclianll - Opens logical file/channel 2 to device 8 (OPEN2,8,2,"#") to let the 1541 assign a buffer. Issues a block-read (U1) via the command channel (PRINT#15,"U1",2,0,18,0) and reads the result (INPUT#15,EN*,EM*,ET*,ES*). Then uses PRINT#15,"B-P";2;2 and GET#2,B* to read the buffer pointer byte and determines the drive's DOS version by ASC(B*). If DOS is not the expected value (65 = CBM DOS v2.6), it prints a failed message and branches to the close/fail handler.
+
+250  0PEN2,8,2, "#" 
+
+260  PRINT#15, "Ul";2;0; 18;0 
+
+270  INPUT#15,EN*,EM*,ET*,ES* 
+
+280  PRINT#15, "B-P";2;2 
+
+290  GET#2,B* 
+
+300  IFB*=""THENB*=CHR*(0) 
+
+310  DOS=ASC(B*) 
+
+320  IFD0S=65G0T0360 
+
+330  PRINT" €DOWN> 73, CBM  DOS  V2.6  1541,00, 
+00" 
+
+340  PRINT" CDOWNJ  CRVS>FAILED<ROFF> " 
+350  G0T0690 
+
+
+---
+Additional information can be found by searching:
+- "edit_disk_id_initialization_and_drive_check" which expands on required prior drive status check before opening buffers
+- "edit_disk_id_read_and_edit_disk_id_bytes" which expands on reads the disk ID bytes from the buffer after the DOS check passes

@@ -1,0 +1,56 @@
+# Contents - Collision detection: VIC detects collisions between nontransparent portions of sprites and between sprite and background. Sprite-to-sprite collisions set bits in SSCOL ($D01E); reading SSCOL clears it, so store value before analyzing. SSCOL shows which sprites were involved but not pair-wise which hit which. Sprite-to-background collisions use SBCOL ($D01F); in multicolor modes bit pair 01 is treated as transparent for collision detection. Data cleared after read.
+
+
+Each sprite can be individually selected to either 
+have a higher priority than the background or a 
+lower priority. If the sprite's bit in the I 
+($D01B) register is clear, the sprite will appear tc 
+pass in front of the background. When the bit for 
+the sprite is set in the BPRIOR register, the sprite 
+will appear to move behind the background image 
+and in front of the background color. Because sprites 
+can have transparent as one of their colors, any 
+sprite that passes behind a higher priority sprite 
+with transparent in it will show through in the 
+transparent areas. 
+
+COLLISION DETECTION 
+
+The VIC chip can detect collisions between 
+sprites and also between a sprite and the 
+background. The VIC chip will defect collisions be- 
+tween the nontransparent portions of sprites. 
+
+When a collision between two sprites occurs, 
+their bits are set in the SSCOL ($D01E) register. 
+The data in the SSCOL register will stay valid un- 
+til the byte is read. After the register is read, the 
+data will be cleared, so it is important to store the 
+data somewhere before analyzing it. The VIC chip 
+will detect a collision even if the sprites are off the 
+screen. One thing that should be noted is that the 
+SSCOL register will only tell you which sprites are 
+
+
+
+32 
+
+
+
+involved in collisions, not which sprite hit which 
+sprite. If you are multiplexing sprites, the data in 
+the SSCOL register may be useless. 
+
+Sprite to background collisions are handled in 
+almost the same way. The SBCOL ($D01F) register 
+will detect a collision between the nontransparent 
+portion of a sprite and the background. In a 
+multicolor screen mode, the bit pair 01 is considered 
+
+transparent for collision detection. Like the SSCOL 
+register, the data is cleared after reading it. 
+
+
+---
+Additional information can be found by searching:
+- "video_interrupts_virq_and_virqm" which expands on sprite/scanline collisions can set VIRQ bits for interrupts

@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Extract FAC1 sign: returns A=$FF for negative, A=$01 for positive, A=$00 (and exits) for zero. Checks exponent for zero, loads FAC1 sign byte, rotates sign bit into carry and sets the appropriate A result byte.
+
+                                *** get FAC1 sign
+                                return A = $FF, Cb = 1/-ve A = $01, Cb = 0/+ve, A = $00, Cb = ?/0
+.,BC2B A5 61    LDA $61         get FAC1 exponent
+.,BC2D F0 09    BEQ $BC38       exit if zero (allready correct SGN(0)=0)
+
+                                *** return A = $FF, Cb = 1/-ve A = $01, Cb = 0/+ve
+                                no = 0 check
+.,BC2F A5 66    LDA $66         else get FAC1 sign (b7)
+
+                                *** return A = $FF, Cb = 1/-ve A = $01, Cb = 0/+ve
+                                no = 0 check, sign in A
+.,BC31 2A       ROL             move sign bit to carry
+.,BC32 A9 FF    LDA #$FF        set byte for -ve result
+.,BC34 B0 02    BCS $BC38       return if sign was set (-ve)
+.,BC36 A9 01    LDA #$01        else set byte for +ve result
+.,BC38 60       RTS             
+
+---
+Additional information can be found by searching:
+- "perform_sgn" which expands on caller wrapper that invokes this sign-extraction routine
+- "compare_fac1_with_pointer_AY" which expands on uses sign extraction when comparing FAC1 with memory (AY)

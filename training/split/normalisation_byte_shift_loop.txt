@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Normalize FAC1 by shifting mantissa bytes left into position: move mantissa2->1, 3->2, 4->3, rounding->4; clear rounding byte; increment exponent offset by $08 each iteration and loop until offset reaches $20 (max). If exponent reaches zero as part of normalization, clear exponent/sign and return (RTS).
+
+.,B8E3 A6 64    LDX $64         get FAC1 mantissa 3
+.,B8E5 86 63    STX $63         save FAC1 mantissa 2
+.,B8E7 A6 65    LDX $65         get FAC1 mantissa 4
+.,B8E9 86 64    STX $64         save FAC1 mantissa 3
+.,B8EB A6 70    LDX $70         get FAC1 rounding byte
+.,B8ED 86 65    STX $65         save FAC1 mantissa 4
+.,B8EF 84 70    STY $70         clear FAC1 rounding byte
+.,B8F1 69 08    ADC #$08        add x to exponent offset
+.,B8F3 C9 20    CMP #$20        compare with $20, max offset, all bits would be = 0
+.,B8F5 D0 E4    BNE $B8DB       loop if not max
+
+                                *** clear FAC1 exponent and sign
+.,B8F7 A9 00    LDA #$00        clear A
+.,B8F9 85 61    STA $61         set FAC1 exponent
+
+                                *** save FAC1 sign
+.,B8FB 85 66    STA $66         save FAC1 sign (b7)
+.,B8FD 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "abs_and_normalise_fac1" which expands on initial setup for this loop
+- "mantissa_add_path" which expands on addition path will also jump into normalization/testing code

@@ -1,0 +1,72 @@
+# ca65 Users Guide - Label types and scoping: standard labels (name:), local labels via .PROC, cheap local labels (start with .LOCALCHAR like '@', visible only between two non-cheap labels) with example, unnamed labels (':' and forward/back references :++/:-), using .DEFINE to create token-substitution constants (string constants caveat), and .DEBUGINFO interaction (which symbol types are written to object file).
+
+6.3 Standard labels
+A label is defined by writing the name of the label at the start of the line (before any instruction mnemonic, macro or pseudo directive), followed by a colon. This will declare a symbol with the given name and the value of the current program counter.
+
+6.4 Local labels and symbols
+Using the .PROC directive, it is possible to create regions of code where the names of labels and symbols are local to this region. They are not known outside of this region and cannot be accessed from there. Such regions may be nested like PROCEDUREs in Pascal.
+
+See the description of the .PROC directive for more information.
+
+
+6.5 Cheap local labels
+Cheap local labels are defined like standard labels, but the name of the label must begin with a special symbol (usually '@', but this can be changed by the .LOCALCHAR directive).
+
+Cheap local labels are visible only between two non cheap labels. As soon as a standard symbol is encountered (this may also be a local symbol if inside a region defined with the .PROC directive), the cheap local symbol goes out of scope.
+
+You may use cheap local labels as an easy way to reuse common label names like "Loop". Here is an example:
+
+
+        Clear:  lda    #$00             ; Global label
+                ldy    #$20
+        @Loop:  sta    Mem,y            ; Local label
+                dey
+                bne    @Loop            ; Ok
+                rts
+        Sub:    ...                     ; New global label
+                bne    @Loop            ; ERROR: Unknown identifier!
+6.6 Unnamed labels
+If you really want to write messy code, there are also unnamed labels. To define an unnamed label, use sole :.
+
+To reference an unnamed label, use : with several - or + characters. The - characters will create a back reference (n'th label backwards), the + will create a forward reference (n'th label in forward direction). As an alternative, angle brackets < and > may be used instead of - and + with the same meaning.
+
+Example:
+
+
+        cpy #0
+        beq :++
+    :
+        sta $2007
+        dey
+        bne :-
+    :
+        rts
+Unnamed labels may make even short sections of code hard to understand, because you have to count labels to find branch targets. It's better to prefer the "cheap" local labels. Nevertheless, unnamed labels are convenient in some situations, so it's up to your discretion.
+
+Note: Scopes organize named symbols, not unnamed ones, so scopes don't have an effect on unnamed labels.
+
+6.7 Using macros to define labels and constants
+While there are drawbacks with this approach, it may be handy in a few rare situations. Using .DEFINE, it is possible to define symbols or constants that may be used elsewhere. One of the advantages is that you can use it to define string constants (this is not possible with the other symbol types).
+
+Please note: .DEFINE style macros do token replacements on a low level, so the names do not adhere to scoping, diagnostics may be misleading, there are no symbols to look up in the map file, and there is no debug info. Especially the first problem in the list can lead to very nasty programming errors. Because of these problems, the general advice is, NOT do use .DEFINE if you don't have to.
+
+Example:
+
+
+        .DEFINE two     2
+        .DEFINE version "SOS V2.3"
+
+        four = two * two        ; Ok
+        .byte   version         ; Ok
+
+        .PROC                   ; Start local scope
+        two = 3                 ; Will give "2 = 3" - invalid!
+        .ENDPROC
+6.8 Symbols and .DEBUGINFO
+If .DEBUGINFO is enabled (or -g is given on the command line), global, local and cheap local labels are written to the object file and will be available in the symbol file via the linker. Unnamed labels are not written to the object file, because they don't have a name which would allow to access them.
+
+
+---
+Additional information can be found by searching:
+- "scopes_and_namespace" which expands on how scopes affect named symbols
+- "macros_overview" which expands on using .DEFINE and macro-related caveats

@@ -1,0 +1,39 @@
+# Analyzing C64 tape loaders - NMI-based load-loop entry routine at $03E7: enables interrupts (CLI) to allow FLAG-line IRQs to be serviced, patches code ($02D3) to skip Part 2 of setup on subsequent blocks, shows screen by setting $D011, then enters a CPU loop (polling $02) where execution halts until either FLAG interrupts occur (handled by IRQ ISR) or loop_break is set; on completion it jumps to $0407 to finish.
+
+; (6) This branch is always executed, and it's a trick to avoid using a JMP, which
+;     is not relocatable (since it requires the hard memory address where to jump to,
+;     instead of an offset from Program Counter, as the branch instructions do).
+
+
+; ***************************************************************
+; * NMI-ISR                                                     *
+; * Description: keeps the CPU in a loop during which the FLAG  *
+; *              line interrupts are serviced.                  *
+; *              Executes code $0407 as soon as the load loop   *
+; *              is over.                                       *
+; ***************************************************************
+03E7  58             CLI            ; Enable interrupts since we are ready to service
+                                    ; our FLAG line interrupt requests.
+
+03E8  A9 58          LDA #$58       ; Change the NOP at $02D3 into a CLI
+03EA  8D D3 02       STA $02D3      ; to skip Part 2 of setup on next block load.
+
+03ED  A9 0B          LDA #$0B       ; Show screen
+03EF  8D 11 D0       STA $D011
+
+03F2  A5 02          LDA $02        ; Load Loop. The CPU loops here, waiting
+03F4  F0 FC          BEQ $03F2      ; FLAG line interrupts to serve or a
+                                    ; loop_break instruction (= performed when
+                                    ; any bit in $02 memory register is set).
+
+03F6  C6 02          DEC $02
+03F8  4C 07 04       JMP $0407
+03FB  20
+; ***************************************************************
+; * NMI-ISR.END                                                 *
+; ***************************************************************
+
+---
+Additional information can be found by searching:
+- "irq_isr" which expands on The IRQ ISR (FLAG-line) services individual pulses while NMI keeps CPU in wait loop
+- "irq_loader_setup_part2_disassembly" which expands on This NMI routine was pointed to by the NMI vector during setup

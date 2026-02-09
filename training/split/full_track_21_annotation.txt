@@ -1,0 +1,16 @@
+# byRiclianll - Annotation for Full Track 21 Error source: explains intent to trace FORMT ($FAC7), why writes of sync marks and use of WRTNUM ($FDC3) create the desired error condition, and necessity to re-enable read mode via JSR $FEOO to avoid continuous erasure. Mentions final JMP to error handler $F969 with LDA #$01.
+
+Full  Track  21  Error  Source  Annotation 
+
+This  routine  borrows  from  FORMT  ($FAC7).  Prior  to  formatting  a  track,  the  FDC  erases 
+it  with  sync  marks  ($FDA3).  Experimentation  has  shown  that  an  RTS  from  this  ROM 
+entry  point  would  create  a  track  of  all  20  errors.  Thus  we  are  forced  to  trace  the  FORMT 
+routine  a  little  farther.  The  subroutine  WRTNUM  ($FDC3)  writes  either  sync  or  non- 
+sync  bytes.  By  entering  six  bytes  into  this  routine  we  can  establish  the  number  of  bytes 
+it  writes.  A  JSR  to  $FEOO  is  necessary  to  re-enable  read  mode.  Otherwise  the  write 
+head  is  left  on  and  it  will  erase  everything  in  its  path.  Note  that  we  LDA  #$01,  the 
+FDC  error  code  for  OK,  and  JMP  to  the  error  handler  at  $F969  to  exit. 
+
+---
+Additional information can be found by searching:
+- "full_track_21_source" which expands on implementation details and ROM entry points used

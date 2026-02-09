@@ -1,0 +1,51 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Bubble-sort approach for sprite Y-sorting: O(N^2) worst-case. Requires carrying an index array so sprite properties remain associated with the Y values. Pseudocode shows initializing sortspry and sortorder, then nested loops to swap when out of order. Downsides: slow for larger N and no clear point for rejecting >8 sprites on a row without moving memory blocks.
+
+2.1.1 The bubblesort
+
+This involves swapping the Y-coordinates until the order is right. It's fast
+when there's only a small amount of sprites but when the amount grows, the time
+taken grows proportional to the power of two (N^2) of the number of sprites N.
+
+Of course, it's not enough to swap the Y-coordinates. We must know what sprite
+they're associated with, or they're worthless. Therefore we must have an index
+array (indexes to the unsorted array) - an index entry travels with the
+Y-coordinate during sorting.
+
+So we'd do like this
+
+;Initialize arrays for sorting
+
+for (sprite=0; sprite < maximum_sprites; sprite++)
+{
+  sortspry[sprite] = spry[sprite];
+  sortorder[sprite] = sprite;
+}
+
+;Do the actual sorting
+
+for (outer = 0; outer < maximum_sprites-1; outer++)
+{
+  for (inner = outer+1; inner < maximum_sprites; inner++)
+  {
+    if (sortspry[inner] < sortspry[outer])
+    {
+      swap(sortspry[inner], sortspry[outer]);
+      swap(sortorder[inner], sortorder[outer]);
+    }
+  }
+}
+
+Another downside of this algorithm is that there is no clear point where to
+insert more-than-8-sprites-on-a-row rejection; removing a sprite from the
+sorted array would involve actually moving memory blocks around (slow).
+
+It could also be implemented so that there was no sorted Y coords table at this
+point; instead accesses to the unsorted table would happen via the index table
+at all times. This would remove the swapping of the Y-coords but make the
+Y-coord compares slower.
+
+
+---
+Additional information can be found by searching:
+- "find_next_lowest_y_sort" which expands on another O(N^2) approach with a clear rejection point
+- "continuous_insertion_sort_ocean_algorithm" which expands on faster practical alternative used in commercial games

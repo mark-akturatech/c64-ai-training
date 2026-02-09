@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Attempts to move the cursor to the previous line: if already at top row it clears column and restores registers (popping saved return address), otherwise decrements row, recalculates screen pointers for the new row and stores the cursor column.
+
+                                *** back onto the previous line if possible
+.,E701 A6 D6    LDX $D6         get the cursor row
+.,E703 D0 06    BNE $E70B       branch if not top row
+.,E705 86 D3    STX $D3         clear cursor column
+.,E707 68       PLA             dump return address low byte
+.,E708 68       PLA             dump return address high byte
+.,E709 D0 9D    BNE $E6A8       restore registers, set quote flag and exit, branch always
+.,E70B CA       DEX             decrement the cursor row
+.,E70C 86 D6    STX $D6         save the cursor row
+.,E70E 20 6C E5 JSR $E56C       set the screen pointers for cursor row, column
+.,E711 A4 D5    LDY $D5         get current screen line length
+.,E713 84 D3    STY $D3         save the cursor column
+.,E715 60       RTS             
+
+---
+Additional information can be found by searching:
+- "advance_cursor_autoscroll_and_newline_handling" which expands on used when characters push cursor backward across lines
+- "home_cursor_and_compute_line_pointers" which expands on related pointer computations for cursor positioning

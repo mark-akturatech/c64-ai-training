@@ -1,0 +1,42 @@
+# byRiclianll - Switching to the clone disk and beginning the write phase (BASIC lines ~640–800). Tests C and branches if no data was read, prints the prompt to insert the clone disk and calls the user‑prompt subroutine, reopens the drive (OPEN15,8,15), reinitializes RW and RAM and POKE 252,34, then begins the SEEK loop for writing: FOR T = SRW TO ERW, NS calculation, sets JOB=176 and calls GOSUB 1190 (seek), error checks, updates RAM and W (write pointer), and finally GOTO 990 to jump into the write/sector‑write routine (not included in this chunk).
+
+
+640  IFC=0G0Tai010 
+
+650  PRINT"  <:CLR3  1541  BACKUP" 
+
+660  PRINT"  CDOWNi- INSERT   CLONE    IN  DRIVE" 
+
+670  GOSUBlllO 
+
+680  0PEN15,S, 15 
+
+690  RW=S44S 
+
+700  RAM=8704 
+
+710  P0KE252,34 
+
+720  REM  SEEK 
+
+730  FORT=SRWTOERW 
+
+740  NS=20+2* ( T  > 1 7 )  +  ( T  >24 )  +  ( T  >30 ) 
+
+750  J0B=176 
+
+760  G0SUB1190 
+
+770  IFE=1G0T0S20 
+
+780  RAM=R AM+ ( 256* ( NS+ 1 ) ) 
+
+790  W=W+(NS+1) 
+
+800  G0T0990 
+
+
+---
+Additional information can be found by searching:
+- "backup_overview_and_initialization" which expands on Uses the buffer and table initialization performed at program start
+- "master_disk_seek_and_read_loops" which expands on Executes after the master READ phase; mirrors SEEK logic but proceeds to write sectors to the clone disk

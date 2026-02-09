@@ -1,0 +1,41 @@
+# ********* - SID Voice 1 ADSR registers ($D405-$D406) explanation of attack/decay and sustain/release nibble encodings and timing tables; Voice 2/3 registers mirror Voice 1 ($D407-$D414); Filter controls ($D415-$D418) cutoff (11-bit), resonance and routing bits; Volume/Filter Select ($D418) for output volume and filter selection; paddle inputs and random/ENV3 registers ($D419-$D41C); then Color RAM region introduction ($D800) followed by start of CIA #1 ($DC00) registers overview for keyboard, joysticks, timers, and data ports.
+
+
+Location Range: 56322-56323 ($DC02-$DC03)
+CIA #1 Data Direction Registers A and B
+
+These Data Direction Registers control the direction of data flow over
+Data Ports A and B.  Each bit controls the direction of the data on
+the corresponding bit of the port.  If teh bit of the Direction
+Register is set to a 1, the corresponding Data Port bit will be used
+for data output.  If the bit is set to a 0, the corresponding Data
+Port bit will be used for data input.  For example, Bit 7 of Data
+Direction Register A controls Bit 7 of Data Port A, and if that
+direction bit is set to 0, Bit 7 of Data Port A will be used for data
+input.  If the direction bit is set to 1, however, data Bit 7 on Port
+A will be used for data output.
+
+The default setting for Data Direction Register A is 255 (all
+outputs), and for Data Direction Register B it is 0 (all inputs).
+This corresponds to the setting used when reading the keyboard (the
+keyboard column number is written to Data Port A, and the row number
+is then read in Data Port B).
+
+56322         $DC02          CIDDRA
+Data Direction Register A
+
+Bit 0:  Select Bit 0 of Data Port A for input or output (0=input, 1=output)
+Bit 1:  Select Bit 1 of Data Port A for input or output (0=input, 1=output)
+Bit 2:  Select Bit 2 of Data Port A for input or output (0=input, 1=output)
+Bit 3:  Select Bit 3 of Data Port A for input or output (0=input, 1=output)
+Bit 4:  Select Bit 4 of Data Port A for input or output (0=input, 1=output)
+Bit 5:  Select Bit 5 of Data Port A for input or output (0=input, 1=output)
+Bit 6:  Select Bit 6 of Data Port A for input or output (0=input, 1=output)
+Bit 7:  Select Bit 7 of Data Port A for input or output (0=input, 1=output)
+
+
+---
+Additional information can be found by searching:
+- "sid_voice1_frequency_pulse_and_control_$D400-$D404" which expands on Voice controls and ADSR interaction
+- "color_ram_and_color_mapping" which expands on Color RAM follows SID block in memory map
+- "cia_1_registers_and_keyboard_matrix" which expands on CIA #1 at $DC00 handles keyboard/joystick I/O

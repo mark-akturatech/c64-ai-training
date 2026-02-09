@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - BSIV subroutine and table-driven IRQ vector changer. Uses X as selector (.X = 8 for write zeros, 10 for write data, 12 restore keyscan, 14 read data). Loads two bytes from a table (BSIT-8 + X) and stores them into the IRQ vector at $0314/$0315 (CINV/CINV+1), then RTS.
+
+                                ; BSIV - SUBROUTINE TO CHANGE IRQ VECTORS
+                                ;  ENTRYS - .X = 8 WRITE ZEROS TO TAPE
+                                ;           .X = 10 WRITE DATA TO TAPE
+                                ;           .X = 12 RESTORE TO KEYSCAN
+                                ;           .X = 14 READ DATA FROM TAPE
+                                ;
+.,FCBD BD 93 FD LDA $FD93,X     BSIV   LDA BSIT-8,X    ;MOVE IRQ VECTORS, TABLE TO INDIRECT
+.,FCC0 8D 14 03 STA $0314       STA    CINV
+.,FCC3 BD 94 FD LDA $FD94,X     LDA    BSIT+1-8,X
+.,FCC6 8D 15 03 STA $0315       STA    CINV+1
+.,FCC9 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "block_completion_sync_and_write_zero_sequence" which expands on called to change IRQ handlers for zero/data write sequences
+- "interrupt_restore_and_vic_keyboard_restore_tnif_tniq" which expands on restoration routines depend on proper IRQ vector management

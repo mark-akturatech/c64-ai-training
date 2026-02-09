@@ -1,0 +1,59 @@
+# Contents - Purpose of interrupts in C64: timing and program control (real-time clock, keyboard buffer), sprite collision signaling, and raster line notifications. Concept of asynchronous interrupt vs polling and example use-case (collision causing explosion via interrupt jump vector).
+
+Chapter 6 
+Working with Interrupts 
+
+
+
+In the Commodore 64 interrupts serve as a major 
+source of timing and program control. The inter- 
+rupts are normally used to maintain the real time 
+clocks and the type ahead keyboard buffer. Inter- 
+rupts can also be used to signal sprite collisions and 
+inform the program when a specific scan line has 
+been reached. 
+
+To best understand what an interrupt is, con- 
+sider a normal program. The microprocessor reads 
+its instructions one at a time and executes them in 
+order. Whatever it is told to do first, is done first. 
+If there is a certain condition that makes it necessary 
+to perform a certain operation immediately, this con- 
+dition must be repeatedly checked throughout the 
+program to ensure it is taken care of promptly. For 
+example, a collision between a bullet and a player 
+sprite should immediately initiate an explosion se- 
+quence. In a normal program, you have to monitor 
+the collision status register constantly and take ap- 
+propriate action. 
+
+The alternative is to let the hardware check for 
+the collision. When a collision occurs, the VIC II 
+chip can send an interrupt request to the 
+
+
+
+microprocessor. If interrupts are enabled, the pro- 
+cessor will execute an indirect jump through loca- 
+tion $FFFE when it finishes executing its current 
+instruction. Location $FFFE usually points to a 
+point in ROM that has an indirect jump instruction 
+for a point in RAM. In the Commodore 64, the 
+RAM location that ultimately will direct the jump 
+is $0314. If the address of your routine to initiate 
+the explosion sequence is placed in locations $0314 
+and $0315, this sequence will only be called on 
+when a collision is detected. 
+
+Using an interrupt for this purpose relieves the 
+main program of scanning the collision register con- 
+stantly. Because of this, less of a burden is placed 
+on the microprocessor during the main program. 
+
+Interrupts should be used for the part of your 
+program that needs the highest priority in terms of 
+
+---
+Additional information can be found by searching:
+- "6510_architecture_and_registers" which expands on vector locations and status bits (IRQ/NMI)
+- "working_with_interrupts_and_raster" which expands on detailed raster interrupt usage

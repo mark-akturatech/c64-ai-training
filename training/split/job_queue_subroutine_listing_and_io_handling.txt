@@ -1,0 +1,40 @@
+# byRiclianll - BASIC 'JOB QUEUE' subroutine used by the examples: TRY counter and I/O command sequence for the 1541 (PRINT#15 'M-W' and 'M-R' sequences, GET#15 for responses, ASCII handling and retry logic). Includes error handling paths (close, prints on failure) and returns. Covers lines marked REM JOB QUEUE through the subroutine END and related I/O control logic.
+
+430  REM  JOB  QUEUE 
+
+440  TRY=0 
+
+450  PRINT#15,  '•M-W"CHR*<8)CHR*<0)CHR*(2)C 
+HR*(T)CHR*(S) 
+
+460  PRINT*»15,  "M-W"CHR*<1)CHR*<0)CHR*(1)C 
+
+HR*(JOB) 
+
+470  TRY=TRY+1 
+
+480  PRINT#15, "M-R"CHR*(1)CHR*(0) 
+
+490  GET#15,E* 
+
+500  I  FE*=  ■'  "  THENE*=CHR*  ( O ) 
+
+510  E=ASC(E*) 
+
+520  IFTRY=500G0T0540 
+
+530  IFE>127G0T0470 
+
+540  RETURN 
+
+550  CLOSE 15 
+
+560  PRINT"  <:down>  <:rvs>failed<:roff> " 
+
+570  END 
+
+
+---
+Additional information can be found by searching:
+- "full_track27_error_annotation_and_single_sector_22_error_listing" which expands on Used by the single-sector 22 error BASIC program to send/receive commands to the drive
+- "single_sector_22_error_source_and_duplicate_error_intro" which expands on Applies to the duplicate-22-error procedure which reuses the same I/O/job-queue logic

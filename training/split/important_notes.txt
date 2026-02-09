@@ -1,0 +1,33 @@
+# VIC-II Memory Banking and Address Configuration Guide - Important practical notes and caveats:
+1) When changing banks, update the KERNAL screen page pointer at address 648/$0288 so BASIC/KERNAL I/O write to the correct screen location. Set it to (screen_address / 256).
+2) In banks 0 and 2 the ROM charset is mapped into a 4 KB window; any data placed at those addresses (sprites, custom charset, screen) will be invisible to the VIC-II.
+3) Color RAM at $D800-$DBE7 is independent of VIC bank selection and remains at the same addresses.
+4) Sprite data pointers are stored in the last 8 bytes of screen memory (screen base + $03F8 to $03FF). Moving screen memory moves sprite pointers with it.
+5) Always use read-modify-write when changing $DD00 to avoid disrupting the serial bus and other CIA-2 functions.
+
+Important Notes
+----------------
+
+1. When changing banks, you must also update the KERNAL screen page pointer
+   at address 648/$0288 so that BASIC and KERNAL I/O routines write to the
+   correct screen location. Set it to: screen_address / 256.
+
+2. In banks 0 and 2, the ROM character set is mapped into a 4 KB window.
+   Any data (sprites, custom charset, screen) placed at those addresses
+   will be invisible to the VIC-II -- it sees the ROM charset instead.
+
+3. The color RAM at $D800-$DBE7 is independent of bank selection and is
+   always at the same address regardless of which VIC bank is selected.
+
+4. Sprite data pointers are stored in the last 8 bytes of screen memory
+   (screen base + $03F8 to $03FF). When you move screen memory, the sprite
+   pointers move with it.
+
+5. Always use read-modify-write when changing $DD00 to avoid disrupting
+   the serial bus and other CIA-2 functions.
+
+---
+Additional information can be found by searching:
+- "address_calculation_quick_reference" which expands on compute screen_address for KERNAL page pointer
+- "bank_selection_registers_and_rw" which expands on RMW requirement for $DD00
+- "rom_charset_shadows" which expands on visibility issues when ROM charset is mapped

@@ -1,0 +1,24 @@
+# byRiclianll - Annotated explanation of the 'Single Sector 23 Error' routine: notes that the routine borrows from WRIGHT ($F56E) and that the entry point used bypasses the write-protect test and checksum computation. Describes that the driver reads the sector into $0400-$04FF, sets the indirect buffer pointer, increments the checksum at $003A, converts buffer 1 into 325 GCR bytes (first 69 stored in overflow $01BB-$01FF, remaining 256 at $0400-$04FF), syncs to the target sector, counts off the 8-byte header gap, flips to write mode, writes five $FF sync bytes then overflow+regular buffers (overwriting sync marks), restores indirect pointer to $05, and jumps to the error handler with $01 in hand. Also mentions side effects and relation to single-sector 20 vs two-sector 21 behavior and required order to replicate certain protections.
+
+
+Single  Sector  23  Error  Source  Annotation 
+
+This  routine  borrows  from  WRIGHT  ($F56E).  Our  entry  point  is  12  bytes  into  the  routine. 
+This  bypasses  the  write  protect  test  and  the  computation  of  the  checksum.  The  driver 
+routine  reads  the  sector  into  $0400-$04FF.  Lines  200-210  of  the  source  listing  set  the 
+indirect  buffer  pointer  to  this  workspace.  The  checksum  is  next  incremented  at  $003A. 
+Buffer  number  1  is  converted  to  GCR  form.  Recall  that  260  data  bytes  are  converted 
+into  325  8-bit  GCR  bytes.  More  than  one  buffer  is  used  to  store  the  GCR  image.  The 
+first  69  GCR  bytes  are  stored  in  an  overflow  buffer  at  $01BB-$01FF.  The  remaining 
+256  bytes  are  found  at  $0400-$04FF.  We  sync  up  to  the  appropriate  sector  in  line  300, 
+count  off  the  eight  byte  header  gap,  and  flip  to  write  mode.  Five  $FFs  are  then  written 
+to  disk  (the  sync  mark)  followed  first  by  the  overflow  buffer  and  then  the  regular  buf- 
+fer. We  restore  the  indirect  buffer  pointer  at  $0031  to  a  $05  and  jump  to  the  error  handler 
+with  a  $01  in  hand. 
+
+
+---
+Additional information can be found by searching:
+- "single_sector_23_error_source_listing" which expands on detailed mapping between annotated behavior and specific assembly operations
+- "single_sector_23_error_machine_code_data" which expands on binary encoding of the assembly routine that performs the described operations
+- "single_sector_23_error_basic_program" which expands on BASIC driver that loads and executes the routine and supplies track/sector parameters

@@ -1,0 +1,60 @@
+# ********* - Sections 7.5–7.6: Summary of relative-file program behavior (function keys, error-channel handling, printing options) and guidance for modifying the sample program — adding fields via extra POSITION commands, changing record length via CHR$(n), and remarks about access limits and record indexing for large files (up to 720 records, special considerations for >256 or >512 records).
+
+WRITE TO A RELATIVE FILE
+
+LINE 60: Use the PRINT# statement after the POSITION command to move
+to character position 1, as specified in LINE 30 -- CHR$(1).
+
+READ FROM A RELATIVE FILE
+
+LINE 130: Specify the character position using the POSITION command.
+Then follow it with LINE 160, the INPUT# statement.
+
+7.5 SUMMARY
+
+In this program, you press the f1 key and a RELative file is created
+on disk.  You can type RUN and press the f3 key to READ the previous
+RELative file.  If an error condition exists (flashing red light on
+the disk drive) you can hit the RUN/STOP key, type RUN and press the
+f5 key.  This reads the ERROR CHANNEL from the drive, shows the error
+number and message, as well as the track and sector of the error.  It
+then resets the drive for use.  Later on the program asks if the file
+should be printed.  To Print the file, press the f7 key when prompted,
+or press C to continue.
+
+REMEMBER:
+
+1) Before a file can be written to, or read from, a POSITION command
+must be executed.
+
+2) You must always use PRINT#1 with the POSITION command. This puts
+your data under command channel control.
+
+3) The FIRST character string code in the POSITION command must
+correspond to the THIRD number (channel #) in the OPEN statement.
+Except OPEN 1, 8, 15 (see lines 8 and 30 of above program).
+
+4) For convenience, use the FOR ... NEXT loop variable in the SECOND
+character string, CHR$(I), of the POSITION command where I equals the
+record number (see lines 20 and 30 of above program).
+
+7.6 MODIFYING THE PROGRAM
+
+1) You can add more POSITION commands to make more fields within each
+record. Remember to include the character position number as the last
+CHR$, when adding fields.
+
+2) To change the length of each record, change the value of CHR$(50)
+in LINE 8.
+
+3) The number of records in the file is determined by the POSITION
+command. The current example can process 5 records; the FOR ... NEXT
+loop variable is 1 to 5. The program can process 720 records, but in
+order to use more than 512 records, the number 2 must be in the THIRD
+CHR$() of the POSITION command.  For more than 256, use the number 1.
+For up to 256 records, simply use the FOR ... NEXT loop variable.
+EXAMPLE: FOR I=1 TO 256 may access 256 records.
+
+---
+Additional information can be found by searching:
+- "mailing_list_sample_program_and_usage" which expands on practical modification examples (changing CHR$ length and adding fields)

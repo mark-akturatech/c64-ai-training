@@ -1,0 +1,61 @@
+# NMOS 6510 - Example: load A and X with the same value using LAX $1000,y. Describes use-cases where you manipulate A but need the original value later; shows code sequences: using LAX then EOR/STA and SAX to store A & X, and an alternate sequence using TXA to fetch the preserved value back into A for further manipulation and storing. Includes comments and step-by-step notes.
+
+
+; LAX zp,y
+
+Example: load A and X with same value
+
+Loading A and X with the same value is ideal if you manipulate the original value, but later on
+need the value again. Instead of loading it again you can either transfer it again from the other
+register, or combine A and X again with another illegal opcode.
+LAX $1000,y
+
+;load A and X with value from $1000,y
+
+EOR #$80
+
+;manipulate A
+
+STA ($fd),y
+
+;store A
+
+LDA #$f8
+
+;load mask
+
+SAX jump+1
+
+;store A & X
+
+Also one could do:
+LAX $1000,y
+
+;load A and X with value from $1000,y
+
+EOR #$80
+
+;manipulate A
+
+STA ($fd),y
+
+;store A
+
+TXA
+
+;fetch value again
+
+EOR #$40
+
+;manipulate
+
+STA ($fb),y
+
+;store
+
+
+---
+Additional information can be found by searching:
+- "lax_opcodes_and_overview" which expands on Opcode reference and operation for LAX
+- "lax_example_simulate_lda_zp_y" which expands on Related LAX usage example (simulating LDA zp,y)
+- "dcp_description" which expands on Next undocumented opcode described in the document

@@ -1,0 +1,47 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - KERNAL I/O messages table and printing helper: TABLE OF KERNAL I/O MESSAGES (I/O error, searching for, press play on tape, loading/saving/verifying/found/ok etc.) at $F0BD onward. PRINT MESSAGE IF DIRECT ($F12B) prints a message from the table only in direct mode (tests MSGFLG $9D) and uses CHROUT ($FFD2) for character output until terminator with high-bit set.
+
+                                *** TABLE OF KERNAL I/O MESSAGES 1
+                                This is a table of messages used by the KERNAL in
+                                conjunction with its I/O routines. Bit 7 is set in the
+                                last character in each message as a terminator.
+.:F0BD 0D 49 2F 4F 20 45 52 52  I/O error
+.:F0C5 4F 52 20 A3
+.:F0C9 0D 53 45 41 52 43 48 49  searching for
+.:F0D1 4E 47 A0 46 4F 52 A0
+.:F0D8 0D 50 52 45 53 53 20 50  press play on tape
+.:F0E0 4C 41 59 20 4F 4E 20 54
+.:F0E8 41 50 C5
+.:F0EB 50 52 45 53 53 20 52 45  press record and play on tape
+.:F0F3 43 4F 52 44 20 26 20 50
+.:F0FB 4C 41 59 20 4F 4E 20 54
+.:F103 41 50 C5
+.:F106 0D 4C 4F 41 44 49 4E C7  loading
+.:F10E 0D 53 41 56 49 4E 47 A0  saving
+.:F116 0D 56 45 52 49 46 59 49  verifying
+.:F11E 4E C7
+.:F120 0D 46 4F 55 4E 44 A0     found
+.:F127 0D 4F 4B 8D              ok
+
+                                *** PRINT MESSAGE IF DIRECT
+                                This is a routine to output a message from the I/O
+                                messages table at $f0bd. On entry, (Y) holds the offset to
+                                control which message is printed. The routine tests if we
+                                are in program mode or direct mode. If in program mode,
+                                the routine exits. Else, the routine prints character
+                                after character until it reaches a character with bit7
+                                set.
+.,F12B 24 9D    BIT $9D         MSGFLG, test if direct or program mode
+.,F12D 10 0D    BPL $F13C       program mode, don't print message
+.,F12F B9 BD F0 LDA $F0BD,Y     get output character from table
+.,F132 08       PHP             store processor registers
+.,F133 29 7F    AND #$7F        clear bit7
+.,F135 20 D2 FF JSR $FFD2       output character using CHROUT
+.,F138 C8       INY             increment pointer to next character
+.,F139 28       PLP             retrieve message
+.,F13A 10 F3    BPL $F12F       until bit7 was set
+.,F13C 18       CLC             clear carry to indicate no error
+.,F13D 60       RTS
+
+---
+Additional information can be found by searching:
+- "basic_file_commands_sys_save_load_verify_open_close" which expands on messages used by save/load/verify routines

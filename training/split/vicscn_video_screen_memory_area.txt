@@ -1,0 +1,61 @@
+# ********* - VICSCN (locations 1024-2047 / $400-$7FF): default video screen memory area (25 lines x 40 columns video matrix and sprite data pointers). Describes that the VIC-II memory bank select and VIC-II control register (53272 $D018, CIA #2 $DD00) determine the current location; explains how screen RAM stores screen codes and how PRINT/POKE to this area will display characters, with caveat about color RAM needing to be set (color RAM at 55296 $D800). Includes examples showing POKE to display characters and outlines how to initialize color RAM by changing background color before clearing the screen.
+
+1024-2047     $400-$7FF      VICSCN
+Video Screen Memory Area
+
+This is the default location of the video screen memory area, which
+contains the video matrix and the sprite data pointers.  Keep in mind,
+however, that the video screen memory area can be relocated to start
+on any even 1K boundary.  Its location at any given moment is
+getermined by the VIC-II chip memory control register at 53272
+($D018), and the VIC-II memory bank select bits on CIA #2 Data Port A
+(56576, $DD00).
+
+1024-2023     $400-$7E7
+Video Matrix: 25 Lines by 40 Columns
+
+The video matrix is where thext screen characters are stored in RAM.
+Normally, the VIC-II chip will treat each byte of memory here as a
+screen display code and will display the text character that
+corresponds to that byte of code.  The first byte of memory here will
+be displayed in the top-left corner of the screen, and subsequent
+bytes will be displayed in the columns to the right and the rows below
+that character.
+
+It is possible to make text or graphics characters appear on the
+screen by POKEing their screen codes directly into this area of RAM.
+For example, the letter A has a screen code value of 1.  Therefore,
+POKE 1024,1 should make the letter A appear in the top-left corner of
+the screen.
+
+However, you should be aware that the most current version of the
+Operating System initializes the color RAM which is used for the
+foreground color of text characters to the same value as the
+background color every time that the screen is cleared.  The result is
+that although the POKE will put a blue A on the screen, you won't be
+able to see it because it is the same color blue as the background.
+This can be remedied by POKEing a different value into color RAM
+(which starts at 55296 ($D800)).
+
+A POKE 1024,1:POKE 1024+54272,1 will put a white A in the upper-left
+corner of the screen.  The loop
+
+FOR I=0 TO 255:POKE 1024+I,I:POKE 1024+54272+I,1:NEXT
+
+will display all of the characters in white at the top of the screen.
+Another solution to the color RAM problem is to fool the Operating
+System into initializing the color RAM for you.  If you change the
+background color to the desired foreground color before you clear the
+screen, color RAM will be set to that color.  Then, all you have to do
+is change the background color back to what it was.  This example will
+show how it's done:
+
+10 POKE 53281,2:REM BACKGROUND IS RED
+20 PRINT CHR$(147):REM CLEAR SCREEN
+30 POKE 53281,1:REM BACKGROUND IS WHITE
+40 POKE 1024,1:REM RED "A" APPEARS IN TOP LEFT CORNER
+
+---
+Additional information can be found by searching:
+- "hibase_screen_memory_top_page" which expands on HIBASE contains top page number for screen memory used by OS print routines
+- "sprite_shape_data_pointers" which expands on Last bytes of the video matrix are used as sprite data pointers

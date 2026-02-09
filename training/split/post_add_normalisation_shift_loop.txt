@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - If the ADC chain produced a carry (C=1), perform normalization for overflow: increment exponent-offset, shift rounding byte left, ROL mantissa bytes (1..4) to incorporate carry into mantissa, and loop until normalized (BPL/BMI test based on sign of A).
+
+.,B91D 69 01    ADC #$01        add 1 to exponent offset
+.,B91F 06 70    ASL $70         shift FAC1 rounding byte
+.,B921 26 65    ROL $65         shift FAC1 mantissa 4
+.,B923 26 64    ROL $64         shift FAC1 mantissa 3
+.,B925 26 63    ROL $63         shift FAC1 mantissa 2
+.,B927 26 62    ROL $62         shift FAC1 mantissa 1
+                                normalise FAC1
+.,B929 10 F2    BPL $B91D       loop if not normalised
+
+---
+Additional information can be found by searching:
+- "mantissa_add_path" which expands on called after mantissa addition to normalise result
+- "underflow_and_exponent_adjustment" which expands on continue to exponent adjustments and underflow checks after normalization

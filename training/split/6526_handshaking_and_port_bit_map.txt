@@ -1,0 +1,27 @@
+# COMMODORE 64 - Handshaking behavior for PORT B: /PC output goes low for one cycle after a read/write of PORT B (data-ready/data-accepted indication). 16-bit transfers use PORT A then PORT B for handshaking. /FLAG is a negative-edge-sensitive input (can receive another 6526's /PC or act as interrupt input); negative transitions set the /FLAG interrupt bit. Includes the per-bit register layouts for PRA, PRB, DDRA and DDRB showing PA0-PA7, PB0-PB7, and data direction bits DPAx/DPBx.
+
+
+  Handshaking
+
+    Handshaking on data transfers can be accomplished using the /PC output
+  pin and the FLAG input pin. PC will go low for one cycle following a read
+  or write of PORT B. This signal can be used to indicate "data ready" at
+  PORT B or "data accepted" from PORT B. Handshaking on 16-bit data
+  transfers (using both PORT A and PORT B) is possible by always reading or
+  writing PORT A first. /FLAG is a negative edge sensitive input which can
+  be used for receiving the /PC output from another 6526, or as a general
+  purpose interrupt input. Any negative transition of /FLAG will set the
+  /FLAG interrupt bit.
+  +-----+---------+------+------+------+------+------+------+------+------+
+  | REG |  NAME   |  D7  |  D6  |  D5  |  D4  |  D3  |  D2  |  D1  |  D0  |
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  0  |   PRA   |  PA7 |  PA6 |  PA5 |  PA4 |  PA3 |  PA2 |  PA1 |  PA0 |
+  |  1  |   PRB   |  PB7 |  PB6 |  PB5 |  PB4 |  PB3 |  PB2 |  PB1 |  PB0 |
+  |  2  |  DDRA   | DPA7 | DPA6 | DPA5 | DPA4 | DPA3 | DPA2 | DPA1 | DPA0 |
+  |  3  |  DDRB   | DPB7 | DPB6 | DPB5 | DPB4 | DPB3 | DPB2 | DPB1 | DPB0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+---
+Additional information can be found by searching:
+- "6526_io_ports_overview" which expands on General I/O port behavior and PB6/PB7 timer outputs
+- "6526_timers_overview" which expands on Use of PB6/PB7 for timer outputs which override DDRB

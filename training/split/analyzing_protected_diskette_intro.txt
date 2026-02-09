@@ -1,0 +1,66 @@
+# byRiclianll - 7.4 Analyzing a Protected Diskette: overview of protection by bad sectoring (deliberately corrupted tracks/sectors). Describes that loaders often rely on specific FDC/IP error codes as "passwords" and common loader protections (autostart, illegal opcodes, encryption). Introduces four provided utility routines to interrogate diskettes.
+
+7.4  Analyzing  a  Protected  Diskette 
+
+Bad  sectoring  is  central  to  any  disk  protection  scheme.  In  a  nutshell,  disk  protection 
+involves  the  deliberate  corruption  of  a  given  track  or  sector.  The  authenticity  of  a  diskette 
+is  often  determined  by  a  short  loader  program  that  reads  the  corrupted  track  or  sector. 
+In  essence  the  FDC  or  IP  error  code  is  a  password  allowing  access  to  the  run  time  module. 
+As  a  result  the  loader  is  extremely  protected.  If  it  can  be  cracked  the  program  is  generally 
+freed  from  its  bonds.  This  is  easier  said  than  done  though.  A  loader  is  usually  rendered 
+indecipherable  (Coda  Obscura)  through  an  autostart  feature,  the  use  of  unimplemented 
+6502  op  codes,  encryption,  or  compilation.  Frankly  speaking,  it's  much  easier  to  go  after 
+the  whole  disk.  The  following  passages  will  introduce  you  to  the  black  art  of  bit  copying. 
+
+The  appendix  contains  four  routines  written  specifically  to  assist  in  the  interrogation 
+of  a  diskette.  They  are: 
+
+1.  Interrogate  Formatting  IDs 
+
+2.  Interrogate  a  Track 
+
+3.  Shake,  Rattle,  and  Roll 
+
+4.  Interrogate  a  Diskette 
+
+These  four  programs  tend  to  complement  one  another  quite  well  in  actual  use.  Their 
+uses  and  limitations  are  discussed  below. 
+
+INTERROGATE  FORMATTING  ID'S  returns  the  embedded  disk  ID  for  each  track 
+using  a  SEEK.  Recall  that  working  the  job  queue  prevents  the  dreaded  BUMP.  A  seek 
+to  a  track  is  deemed  successful  by  the  FDC  if  at  least  one  intact  sector  can  be  found. 
+The  header  of  said  sector  is  stored  in  zero  page  from  $0016-$001A.The  ASCII  equivalents 
+of  the  ID  HI  ($0016)  and  ID  LO  ($0017)  are  read  and  printed  to  the  CRT  if  the  SEEK 
+was  good.  At  a  glance  one  can  determine  if  a  protected  diskette  has  a  blown  track  or 
+if  it  has  been  formatted  with  multiple  ID's.  This  latter  scheme  is  less  commonly  used 
+to  date.  This  program  will  not  report  the  integrity  of  each  individual  sector.  We  have 
+other  routines  for  that  task. 
+
+There  is  one  severe  drawback  to  this  program  as  it  stands.  Occasionally  the  FDC  gets 
+hung  up  on  a  track.  The  SEEK  may  continue  to  attempt  to  find  a  sync  mark  without 
+timing  out.  (You  must  power  off  the  1541  to  recover  from  this  situation.)  Experimenta- 
+tion in  interrogating  unformatted  diskettes  has  produced  the  same  effect.  We  surmise 
+that  the  track  in  question  was  passed  over  during  high-speed  duplication.  The  FDC  may 
+in  fact  be  homing  in  on  a  residual  bit  pattern  left  over  from  the  manufacturer's  certifica- 
+tion process.  The  program  has  a  built-in  fail-safe  mechanism  for  this  very  reason.  Please 
+take  note:  Lines  110-140  establish  an  active  track  array.  All  tracks  are  presumed  active 
+at  the  onset  Qine  130).  Line  240  tests  the  integrity  of  the  track  prior  to  a  seek.  If  a  track 
+is  inactive  (its  flag  equals  0)  the  track  is  bypassed  and  the  program  will  work  from  start 
+to  finish.  Should  the  need  arise  simply  patch  in  a  line  that  reads: 
+
+145  T(track  number) =0 
+
+145  T(17)=0,  for  example. 
+
+If  it's  any  comfort  at  all,  a  loader  cannot  check  the  integrity  of  said  track  either.  The 
+sole  function  of  such  a  track  is  to  discourage  prying  eyes. 
+
+
+122 
+
+
+
+---
+Additional information can be found by searching:
+- "interrogate_formatting_ids" which expands on one of the four utilities (returns embedded disk ID per track)
+- "interrogate_a_track" which expands on scans single track and verifies sectors

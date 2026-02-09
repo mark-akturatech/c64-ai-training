@@ -1,0 +1,82 @@
+# NMOS 6510 - ANE real-world examples and notes: lists programs known to use ANE (Ocean/Imagine loader, Mastertronic burner, Turrican 3) and explains which usages are stable/unstable. Emulation advice: use $EF in regular cycles and $EE in RDY cycles as compromise. Examples of safe uses: ANE #0 to clear A, ANE to compute X AND immediate when A=$FF. Test and simulation references.
+
+temperature and/or the supplied voltage.
+
+- 63 -
+
+LAX #imm (ATX, LXA, OAL, ANX)
+
+Type: Combination of an immediate and an implied command
+Opc.
+$AB
+
+Mnemonic
+LAX #imm
+
+Function
+
+Size
+
+A,X = (A | {CONST}) & #{imm}
+
+2
+
+Cycles N V - B D I Z C
+2
+
+o
+
+o
+
+Operation: This opcode ORs the A register with CONST, ANDs the result with an immediate
+value, and then stores the result in both A and X.
+Instability: CONST is chip- and/or temperature dependent (common values may be $ee, $00, $ff,
+…). Some dependency on the RDY line. Bit 0 and Bit 4 are “weaker” than the other bits, and may
+drop to 0 in the first cycle of DMA when RDY goes low.
+Do not use LAX #imm with any immediate value other than 0, or when the accumulator value
+is $ff (both take the magic constant out of the equation)! (Or, more accurately, these are safe if
+all bits that could be 0 in A are 0 in the immediate value.)
+Example:
+LAX #{IMM}
+
+;AB {IMM}
+
+Equivalent Instructions:
+ORA #{CONST}
+AND #{IMM}
+TAX
+Test code:
+• general: CPU/asap/cpu_anx.prg, Lorenz-2.15/lxab.prg
+• temperature dependency: general/ane-lax/ane-lax.prg
+• dependency on RDY line: CPU/lax/lax.prg, CPU/lax/laxborder.prg, CPU/lax/lax-none.prg
+Simulation Links:
+• read magic constant:
+http://visual6502.org/JSSim/expert.html?graphics=f&a=0&steps=13&d=a200a900abffea
+
+- 64 -
+
+The problem with LAX immediate is that its decode is a combination of LDA, LDX, and
+TAX. This causes the current contents of the accumulator to be merged in with the value
+loaded from the data bus. Normally, during an LDA or LDX instruction, it doesn't matter if
+the operand-input bus is stable during the whole half-cycle for which they're enabled.
+Nothing is reading from the registers while they are being loaded; as long as the bus has
+stabilized before the load-enable signal goes away, the registers will end up with the correct
+value. The LAX opcode, however, enables the 'output accumulator' signal as well as the
+'feed output bus to input bus' signal. My 6507 documentation doesn't show which buses
+have 'true' or 'inverted' logic levels, but a natural implementation would likely use the
+opposite signal polarity for the output bus and input bus (so the connections between them
+would be inverting buffers). Under that scenario, LAX would represent a race condition to
+see which bus got a 'low' signal first. A variety of factors could influence 'who wins' such a
+race.'
+A surprising discovery
+
+Despite the instability mentioned before, it was discovered that a very popular C-64 game – Wizball
+- actually uses the LAX #imm opcode in a way that is considered unstable (actually in the most
+unstable way possible). The location in Wizball where LAX #imm is executed is at $b58b (this is
+used after pressing fire in the “get ready” screen, and during actual gameplay):
+b589
+
+
+---
+Additional information can be found by searching:
+- "ane_opcode_and_description" which expands on ANE details and magic-constant behavior

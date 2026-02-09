@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Decimal (BCD) examples: how bytes represent decimal pairs ($14 = 14, $98 = 98). Examples showing ADC under BCD: SED/CLC/LDA/ADC sequences, and that decimal mode is unsigned; example of SBC in decimal yields expected BCD behavior. Notes that carry and zero flags operate as usual, negative flag is set but less meaningful, overflow flag meaningless in decimal. Multi-byte BCD arithmetic chaining and WDC note that 65C02 clears decimal flag on interrupts.
+
+                         (...)
+            SETFLAG     ROR FLAG          ;rotate carry into sign position
+                                          ;previous sign-bit now in bit 6
+                        BIT FLAG          ;bit 6 (prev. sign) into overflow flag (V)
+                        BVS ABORT         ;was the flag set already?
+                         (...)            ;no: adjust to condition…
+                        JMP CONTINUE      ;done, continue with task…
+            ABORT        (...)            ;flag set twice, abort the operation…
+          Notably, this is easily modified to check the state of 'FLAG' first:
+                        BCS SETFLAG       ;set a flag…
+                         (...)
+            SETFLAG     BIT FLAG          ;sign-bit into negative flag (N)
+                        BMI ABORT         ;is the flag set already?
+                        ROR FLAG          ;no: rotate carry into sign position
+                                          ;(carry is left untouched by BIT)
+                         (...)            ;adjust to condition…
+                        JMP CONTINUE      ;done
+            ABORT        (...)            ;flag already set, abort…
+          In both cases, we don't care about the AND operation and its result in the zero
+          flag (Z), but only about the bit transfer into the V or N flag, respectively.
+          A Primer of 6502 Arithmetic Operations
+                                                                  6502 Instruction Set
+          The 6502 processor features two basic arithmetic instructions, ADC, ADd with Carry,
+          and SBC, SuBtract with Carry. As the names suggest, these provide addition and
+          subtraction for single byte operands and results. However, operations are not
+          limited to a single byte range, which is where the carry flag comes in, providing
+          the means for a single-bit carry (or borrow), to combine operations over several
+          bytes.
+          In order to accomplish this, the carry is included in each of these operations:
+          for additions, it is added (much like another operand); for subtractions, which are
+          just an addition using the inverse of the operand (complement value of the operand),
+          the role of the carry is inverted, as well.
+          Therefore, it is crucial to set up the carry appropriatly: fo additions, the carry
+          has to be initially cleared (using CLC), while for subtractions, it must be initally
+          set (using SEC — more on SBC below).
+                         ;ADC: A = A + M + C
+            CLC          ;clear carry in preparation
+            LDA #2       ;load 2 into the accumulator
+            ADD #3       ;add 3 -> now 5 in accumulator
+                         ;SBC: A = A - M - C̅       ("C̅ ": "not carry")
+            SEC          ;set carry in preparation
+            LDA #15      ;load 15 into the accumulator
+            SBC #8       ;subtract 8 -> now 7 in accumulator
+          Note: Here, we used immediate mode, indicated by the prefix "#" before the operand,
+            to directly load a literal value. If there is no such "#" prefix, we generally
+            mean to use the value stored at the address, which is given by the operand. As
+            we will see in the next example.)
+          To combine this for 16-bit values (2 bytes each), we simply chain the instructions
+          for the next bytes to operate on, but this time without setting or clearing the carry.
+          Supposing the following locations for storing 16-bit values:
+                                low-byte     high-byte
+            first argument ....   $1000        $1001
+            second argument ...   $1002        $1003
+            result ............   $1004        $1005
+          we perform a 16-bit addition by:
+            CLC          ;prepare carry for addition
+            LDA $1000    ;load value at address $1000 into A (low byte of first argument)
+            ADC $1002    ;add low byte of second argument at $1002
+                                                                   6502 Instruction Set
+            STA $1004     ;store low byte of result at $1004
+
+---
+Additional information can be found by searching:
+- "a_primer_of_6502_arithmetic_operations" which expands on binary arithmetic primer and multi-byte chaining
+- "w65c02_nops_and_behavioral_changes" which expands on W65C02 clears decimal flag on interrupts

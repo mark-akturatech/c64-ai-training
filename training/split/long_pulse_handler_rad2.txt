@@ -1,0 +1,48 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RAD2 longlong pulse handler and edge cases: distinguish longlong pulses vs block/byte sync, adjust timeout (TEMP/CMP0) for long pulses, set/clear byte-sync flags (SNSW1), save DIFF, combine error flags (RER/REZ -> PRP), transfer assembled byte (MYCH -> OCHAR) and branch back to PREND. Also handles throwing away bits (DPSW) and setting timer1 interrupts when encountering sync patterns.
+
+                                ; RAD2 - LONGLONG HANDLER (COULD BE A LONG ONE)
+.,FA10 A5 96    LDA $96         RAD2   LDA SYNO        ;HAVE WE GOTTEN BLOCK SYNC...
+.,FA12 F0 04    BEQ $FA18       BEQ    RAD2Y           ;...NO
+.,FA14 A5 B4    LDA $B4         LDA    SNSW1           ;CHECK IF WE'VE HAD A REAL BYTE START...
+.,FA16 F0 07    BEQ $FA1F       BEQ    RAD2X           ;...NO
+.,FA18 A5 A3    LDA $A3         RAD2Y  LDA PCNTR       ;ARE WE AT END OF BYTE...
+.,FA1A 30 03    BMI $FA1F       BMI    RAD2X           ;YES...GO ADJUST FOR LONGLONG
+.,FA1C 4C 97 F9 JMP $F997       JMP    RADL            ;...NO SO TREAT IT AS A LONG ONE READ
+.,FA1F 46 B1    LSR $B1         RAD2X  LSR TEMP        ;ADJUST TIMEOUT FOR...
+.,FA21 A9 93    LDA #$93        LDA    #147            ;...LONGLONG PULSE VALUE
+.,FA23 38       SEC             SEC
+.,FA24 E5 B1    SBC $B1         SBC    TEMP
+.,FA26 65 B0    ADC $B0         ADC    CMP0
+.,FA28 0A       ASL             ASL    A
+.,FA29 AA       TAX             TAX                    ;AND SET TIMEOUT FOR LAST BIT
+.,FA2A 20 E2 F8 JSR $F8E2       JSR    STT1
+.,FA2D E6 9C    INC $9C         INC    DPSW            ;SET BIT THROW AWAY FLAG
+.,FA2F A5 B4    LDA $B4         LDA    SNSW1           ;IF BYTE SYNCRONIZED....
+.,FA31 D0 11    BNE $FA44       BNE    RADQ2           ;...THEN SKIP TO PASS CHAR
+.,FA33 A5 96    LDA $96         LDA    SYNO            ;THROWS OUT DATA UNTILL BLOCK SYNC...
+.,FA35 F0 26    BEQ $FA5D       BEQ    RDBK2           ;...NO BLOCK SYNC
+.,FA37 85 A8    STA $A8         STA    RER             ;FLAG DATA AS ERROR
+.,FA39 A9 00    LDA #$00        LDA    #0              ;KILL 16 SYNC FLAG
+.,FA3B 85 96    STA $96         STA    SYNO
+.,FA3D A9 81    LDA #$81        LDA    #$81            ;SET UP FOR TIMER1 INTERRUPTS
+.,FA3F 8D 0D DC STA $DC0D       STA    D1ICR
+.,FA42 85 B4    STA $B4         STA    SNSW1           ;FLAG THAT WE HAVE BYTE SYNCRONIZED
+                                ;
+.,FA44 A5 96    LDA $96         RADQ2  LDA SYNO        ;SAVE SYNO STATUS
+.,FA46 85 B5    STA $B5         STA    DIFF
+.,FA48 F0 09    BEQ $FA53       BEQ    RADK            ;NO BLOCK SYNC, NO BYTE LOOKING
+.,FA4A A9 00    LDA #$00        LDA    #0              ;TURN OFF BYTE SYNC SWITCH
+.,FA4C 85 B4    STA $B4         STA    SNSW1
+.,FA4E A9 01    LDA #$01        LDA    #$01            ;DISABLE TIMER1 INTERRUPTS
+.,FA50 8D 0D DC STA $DC0D       STA    D1ICR
+.,FA53 A5 BF    LDA $BF         RADK   LDA MYCH        ;PASS CHARACTER TO BYTE ROUTINE
+.,FA55 85 BD    STA $BD         STA    OCHAR
+.,FA57 A5 A8    LDA $A8         LDA    RER             ;COMBINE ERROR VALUES WITH ZERO COUNT...
+.,FA59 05 A9    ORA $A9         ORA    REZ
+.,FA5B 85 B6    STA $B6         STA    PRP             ;...AND SAVE IN PRP
+.,FA5D 4C BC FE JMP $FEBC       RDBK2  JMP PREND       ;GO BACK AND GET LAST BYTE
+
+---
+Additional information can be found by searching:
+- "first_half_detection_and_bit_handling" which expands on RAD2 is invoked from the bit detection logic for longlong pulses
+- "finish_byte_and_newchar_call" which expands on RAD2 saves the assembled byte and error flags then returns via PREND

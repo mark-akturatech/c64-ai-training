@@ -1,0 +1,21 @@
+# MACHINE - IP = 1 example C: behavior when a lower-priority interrupt occurs during servicing of a higher-priority interrupt. Sequence: I1 is latched and being serviced; during service I0 (lower priority) is latched; upon completion of I1 and writing AIR to clear A1, the latched I0 is transferred to AIR and /IRQ is reasserted, beginning a new interrupt sequence for I0.
+
+C.  The third case occurs when an interrupt has been received and a lower
+    priority interrupt occurs.
+
+    1.  Interrupt I1 is received and latched.
+    2.  /IRQ is pulled low and A1 is set high.
+    3.  Processor recognizes /IRQ and reads AIR to determine that I1
+        interrupt occurred.
+    4.  Processor logic servicing I1 interrupt during which I0 interrupt
+        occurs and is latched.
+    5.  Upon completion of I1 interrupt routine the processor writes AIR to
+        clear A1 to signal 6525 that interrupt service is complete.
+    6.  Latch I0 interrupt is transferred to AIR and /IRQ is pulled low to
+        begin new interrupt sequence.
+
+
+---
+Additional information can be found by searching:
+- "6525_functional_description_IP1_intro_priority_order" which expands on priority ordering I4..I0
+- "6525_active_interrupt_register_AIR" which expands on transfer of latched interrupts from ILR to AIR

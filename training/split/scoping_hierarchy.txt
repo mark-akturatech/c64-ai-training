@@ -1,0 +1,50 @@
+# Kick Assembler - Section 9.3: Detailed scoping and namespace hierarchy (System namespace/scope, Root namespace/scope, user namespaces, user scopes), symbol resolution algorithm walking up parent scopes/namespaces, examples demonstrating nested bracket scopes and how labels are resolved relative to current scope.
+
+The above will output:
+
+37
+
+Scopes and Namespaces
+
+Namespace = <RootNS>
+Namespace = MySpace
+Namespace = MySpace.MySubSpace
+
+9.3. Scoping hierarchy
+Namespaces and scopes are organized in an hierarchy. Every namespace have a parent, except for the system
+namespace which is the namespace that contains all the build in functionality of Kick Assembler. Below this is
+the root namespace. As the name implies its the root namespace of the source code.
+So the hierarchy is like this:
+1. System namespace & scope - Contains system mnemonics, constants, functions, macros and pseudocommands.
+2. Root namespace & scope - The root of the source code.
+3. User defined namespace & scopes - Created by namespace directives.
+4. User defined scopes - Created by macros, functions, for-loops, brackets {}, etc.
+5. More user defined scopes...
+Lets look at an simple example. It contains some scopes and some nonsense code :
+*=$1000
+start:
+loop: //<-- 'loop' defined in the root scope
+{
+//<-- bracket scope 1
+loop:
+{ // <-- bracket scope 2
+ldx #0
+loop: stx $d020
+inx
+bne loop
+jmp start
+}
+}
+
+The above code will form the scope hierarchy: System scope <- Root Scope <- BracketScope1 <- BracketScope2.
+When Kick Assembler resolves a symbol, it checks if it is present in the the current scope. If it can't be found it
+looks in the parent scope. If it still can't be found it looks in the parent scope of the parent and so forth. In the above
+example, the 'jmp loop' is placed in BracketScope2, so 'loop' is resolved to the loop symbol in BracketScope2. But
+'start' is not defined in BracketScope2 or BracketScope1 so it will be resolved to the label in the root scope.
+Since no namespaces are defined in the above, the namespace hierarchy is: System namespace <- Root Namespace. The entities of namespaces is resolved similar to the scope resolving mechanism explained above.
+
+
+---
+Additional information can be found by searching:
+- "scopes_and_namespaces_namespaces" which expands on namespace resolution parallels scope resolution
+- "labels_argument_labels_and_multi_labels" which expands on examples of label resolution across nested scopes

@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Implementation of the SYS statement entry: evaluate numeric expression, convert FAC_1 to integer, push a synthetic return address and saved registers/status onto the stack, pull processor status and JMP indirect to the machine-code SYS vector; on return, save returned A/X/Y and status and RTS. (Lines show JSR to expression evaluation, conversion, PHA of crafted return address bytes, saving/restoring A/X/Y and status, and JMP ($0014) to call the SYS address.)
+
+                                *** perform SYS
+.,E12A 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+.,E12D 20 F7 B7 JSR $B7F7       convert FAC_1 to integer in temporary integer
+.,E130 A9 E1    LDA #$E1        get return address high byte
+.,E132 48       PHA             push as return address
+.,E133 A9 46    LDA #$46        get return address low byte
+.,E135 48       PHA             push as return address
+.,E136 AD 0F 03 LDA $030F       get saved status register
+.,E139 48       PHA             put on stack
+.,E13A AD 0C 03 LDA $030C       get saved A
+.,E13D AE 0D 03 LDX $030D       get saved X
+.,E140 AC 0E 03 LDY $030E       get saved Y
+.,E143 28       PLP             pull processor status
+.,E144 6C 14 00 JMP ($0014)     call SYS address
+                                tail end of SYS code
+.,E147 08       PHP             save status
+.,E148 8D 0C 03 STA $030C       save returned A
+.,E14B 8E 0D 03 STX $030D       save returned X
+.,E14E 8C 0E 03 STY $030E       save returned Y
+.,E151 68       PLA             restore saved status
+.,E152 8D 0F 03 STA $030F       save status
+.,E155 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "perform_save_routine" which expands on SAVE/LOAD/VERIFY file operations called elsewhere in BASIC I/O
+- "set_filename_routine" which expands on SYS may be used in programs that also use file I/O; filename routines used by LOAD/SAVE/OPEN

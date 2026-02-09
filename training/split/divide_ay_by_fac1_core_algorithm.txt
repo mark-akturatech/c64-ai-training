@@ -1,0 +1,77 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Core algorithm to compute (AY)/FAC1 or FAC2/FAC1 depending on call: unpacks source into FAC2, checks for divide-by-zero, rounds FAC1, subtracts exponents to set quotient exponent, calls test_and_adjust_accumulators, then performs the long division on 4-byte mantissas. Implements compare/shift/subtract loops that double FAC2, compare with FAC1, optionally subtract FAC1, and accumulate quotient bits into temp mantissa bytes. At the end it shifts the accumulator left (A<<6) to create the FAC1 rounding byte and jumps to copy temp mantissa into FAC1 and normalise. The routine contains branches to the divide-by-zero and overflow handlers.
+
+                                *** convert AY and do (AY)/FAC1
+.,BB0F 20 8C BA JSR $BA8C       unpack memory (AY) into FAC2
+.,BB12 F0 76    BEQ $BB8A       if zero go do /0 error
+.,BB14 20 1B BC JSR $BC1B       round FAC1
+.,BB17 A9 00    LDA #$00        clear A
+.,BB19 38       SEC             set carry for subtract
+.,BB1A E5 61    SBC $61         subtract FAC1 exponent (2s complement)
+.,BB1C 85 61    STA $61         save FAC1 exponent
+.,BB1E 20 B7 BA JSR $BAB7       test and adjust accumulators
+.,BB21 E6 61    INC $61         increment FAC1 exponent
+.,BB23 F0 BA    BEQ $BADF       if zero do overflow error
+.,BB25 A2 FC    LDX #$FC        set index to FAC temp
+.,BB27 A9 01    LDA #$01        set byte
+.,BB29 A4 6A    LDY $6A         get FAC2 mantissa 1
+.,BB2B C4 62    CPY $62         compare FAC1 mantissa 1
+.,BB2D D0 10    BNE $BB3F       branch if <>
+.,BB2F A4 6B    LDY $6B         get FAC2 mantissa 2
+.,BB31 C4 63    CPY $63         compare FAC1 mantissa 2
+.,BB33 D0 0A    BNE $BB3F       branch if <>
+.,BB35 A4 6C    LDY $6C         get FAC2 mantissa 3
+.,BB37 C4 64    CPY $64         compare FAC1 mantissa 3
+.,BB39 D0 04    BNE $BB3F       branch if <>
+.,BB3B A4 6D    LDY $6D         get FAC2 mantissa 4
+.,BB3D C4 65    CPY $65         compare FAC1 mantissa 4
+.,BB3F 08       PHP             save FAC2-FAC1 compare status
+.,BB40 2A       ROL             shift byte
+.,BB41 90 09    BCC $BB4C       skip next if no carry
+.,BB43 E8       INX             increment index to FAC temp
+.,BB44 95 29    STA $29,X       
+.,BB46 F0 32    BEQ $BB7A       
+.,BB48 10 34    BPL $BB7E       
+.,BB4A A9 01    LDA #$01        
+.,BB4C 28       PLP             restore FAC2-FAC1 compare status
+.,BB4D B0 0E    BCS $BB5D       if FAC2 >= FAC1 then do subtract
+                                FAC2 = FAC2*2
+.,BB4F 06 6D    ASL $6D         shift FAC2 mantissa 4
+.,BB51 26 6C    ROL $6C         shift FAC2 mantissa 3
+.,BB53 26 6B    ROL $6B         shift FAC2 mantissa 2
+.,BB55 26 6A    ROL $6A         shift FAC2 mantissa 1
+.,BB57 B0 E6    BCS $BB3F       loop with no compare
+.,BB59 30 CE    BMI $BB29       loop with compare
+.,BB5B 10 E2    BPL $BB3F       loop with no compare, branch always
+.,BB5D A8       TAY             save FAC2-FAC1 compare status
+.,BB5E A5 6D    LDA $6D         get FAC2 mantissa 4
+.,BB60 E5 65    SBC $65         subtract FAC1 mantissa 4
+.,BB62 85 6D    STA $6D         save FAC2 mantissa 4
+.,BB64 A5 6C    LDA $6C         get FAC2 mantissa 3
+.,BB66 E5 64    SBC $64         subtract FAC1 mantissa 3
+.,BB68 85 6C    STA $6C         save FAC2 mantissa 3
+.,BB6A A5 6B    LDA $6B         get FAC2 mantissa 2
+.,BB6C E5 63    SBC $63         subtract FAC1 mantissa 2
+.,BB6E 85 6B    STA $6B         save FAC2 mantissa 2
+.,BB70 A5 6A    LDA $6A         get FAC2 mantissa 1
+.,BB72 E5 62    SBC $62         subtract FAC1 mantissa 1
+.,BB74 85 6A    STA $6A         save FAC2 mantissa 1
+.,BB76 98       TYA             restore FAC2-FAC1 compare status
+.,BB77 4C 4F BB JMP $BB4F       
+.,BB7A A9 40    LDA #$40        
+.,BB7C D0 CE    BNE $BB4C       branch always
+                                do A<<6, save as FAC1 rounding byte, normalise and return
+.,BB7E 0A       ASL             
+.,BB7F 0A       ASL             
+.,BB80 0A       ASL             
+.,BB81 0A       ASL             
+.,BB82 0A       ASL             
+.,BB83 0A       ASL             
+.,BB84 85 70    STA $70         save FAC1 rounding byte
+.,BB86 28       PLP             dump FAC2-FAC1 compare status
+.,BB87 4C 8F BB JMP $BB8F       copy temp to FAC1, normalise and return
+
+---
+Additional information can be found by searching:
+- "unpack_memory_into_fac2" which expands on used to load the numerator (AY) into FAC2 before division
+- "test_and_adjust_accumulators" which expands on used to align exponents and detect overflow/underflow during division preparation
+- "divide_by_zero_and_copy_temp_to_fac1" which expands on handles the divide-by-zero error and final copy/normalise of the temporary quotient

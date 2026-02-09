@@ -1,0 +1,59 @@
+# COMMODORE 64 - Introduces multi-color character mode: trades horizontal resolution for 4 color choices per dot (background #0, bg #1, bg #2, or character color). To enable multi-color character mode set bit 4 of VIC-II control register at 53270 ($D016) (POKE 53270,PEEK(53270)OR 16); to disable clear bit 4 (POKE 53270,PEEK(53270)AND239). Color memory bit 3 controls whether each character cell is multi-color (>=8) or high-resolution (<8).
+
+  MULTI-COLOR MODE GRAPHICS
+
+    Standard high-resolution graphics give you control of very small dots
+  on the screen. Each dot in character memory can have 2 possible values,
+  1 for on and 0 for off. When a dot is off, the color of the screen is
+  used in the space reserved for that dot. If the dot is on, the dot is
+  colored with the character color you have chosen for that screen posi-
+  tion. When you're using standard high-resolution graphics, all the dots
+  within each 8X8 character can either have background color or foreground
+  color. In some ways this limits the color resolution within that space.
+  For example, problems may occur when two different colored lines cross.
+    Multi-color mode gives you a solution to this problem. Each dot in
+  multi-color mode can be one of 4 colors: screen color (background color
+  register #0), the color in background register #1, the color in back-
+  ground color register #2, or character color. The only sacrifice is in
+  the horizontal resolution, because each multi-color mode dot is twice as
+  wide as a high-resolution dot. This minimal loss of resolution is more
+  than compensated for by the extra abilities of multi-color mode.
+
+  MULTI-COLOR MODE BIT
+
+    To turn on multi-color character mode, set bit 4 of the VIC-II control
+  register at 53270 ($D016) to a 1 by using the following POKE:
+
+    POKE 53270,PEEK(53270)OR 16
+
+    To turn off multi-color character mode, set bit 4 of location 53270 to
+  a 0 by the following POKE:
+
+    POKE 53270,PEEK(53270)AND 239
+
+    Multi-color mode is set on or off for each space on the screen, so that
+  multi-color graphics can be mixed with high-resolution (hi-res) graphics.
+  This is controlled by bit 3 in color memory. Color memory begins at
+  location 55296 ($D800 in HEX). If the number in color memory is less than
+  8 (0-7) the corresponding space on the video screen will be standard
+  hi-res, in the color (0-7) you've chosen. If the number located in color
+  memory is greater or equal to 8 (from 8 to 15), then that space will be
+  displayed in multi-color mode.
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   115
+~
+
+
+    By POKEing a number into color memory, you can change the color of the
+  character in that position on the screen. POKEing a number from 0 to 7
+  gives the normal character colors. POKEing a number between 8 and 15 puts
+  the space into multi-color mode. In other words, turning BIT 3 ON in
+  color memory, sets MULTI-COLOR MODE. Turning BIT 3 OFF in color memory,
+
+---
+Additional information can be found by searching:
+- "multi_color_mode_bit_pairs_and_color_registers" which expands on how bit pairs map to colors
+- "multicolor_bitmap_enable_disable" which expands on multi-color bitmapped mode uses similar registers

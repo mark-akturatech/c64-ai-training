@@ -1,0 +1,36 @@
+# COMMODORE 64 - How to enable sprites: use SPRITE ENABLE register at 53269 ($D015). Each bit corresponds to a sprite (bit 0 = sprite 0, bit 1 = sprite 1, etc.). Example: to turn on sprite N use POKE 53269,PEEK(53269)OR(2^SN). Notes: sprite must be turned ON to be visible.
+
+  TURNING SPRITES ON
+
+    The VIC-II control register at location 53269 ($D015 in HEX) is known
+  as the SPRITE ENABLE register. Each of the sprites has a bit in this
+  register which controls whether that sprite is ON or OFF. The register
+  looks like this:
+
+                     $D015  7 6 5 4 3 2 1 0
+
+    To turn on sprite 1, for example, it is necessary to turn that bit to
+  a 1. The following POKE does this:
+
+    POKE 53269.PEEK(53269)OR 2
+
+  A more general statement would be the following:
+
+    POKE 53269,PEEK(53269)OR (2^SN)
+
+  where SN is the sprite number, from 0 to 7.
+
+  +-----------------------------------------------------------------------+
+  | NOTE: A sprite must be turned ON before it can be seen.               |
+  +-----------------------------------------------------------------------+
+
+
+  134   PROGRAMMING GRAPHICS
+~
+
+
+
+---
+Additional information can be found by searching:
+- "turning_sprites_off" which expands on how to turn sprites off using same register
+- "sprite_position_registers_and_addresses" which expands on position registers used once sprite is enabled

@@ -1,0 +1,37 @@
+# - C64 I/O Map (Mapping The Commodore 64) - VIC-II bank/block 2 description (32768-49151 / Block 2): 8K of RAM where half is seen by VIC-II as character ROM and 8K BASIC ROM area. VIC-II reads RAM underneath BASIC ROM allowing use of that RAM for graphics while 6510 still reads ROM when needed; you can write to this area but BASIC cannot read it directly. Limitations for screen memory and advice against using this block for full high-resolution screens without machine-language tricks.
+
+                          Block 2.  The third block (Block 2) consists of 8K of RAM, half of
+                          which is seen by the VIC-II chip as character ROM, and the 8K BASIC
+                          interpreter ROM.  The BASIC ROM area is available for graphics.  This
+                          is possible because of the 64's special addressing.  The VIC-II chip
+                          reads only from RAM, and thus sees the RAM underneath the BASIC ROM,
+                          even if the 6510 has ROM switched in.  The 6510, on the other hand,
+                          always writes to RAM, even when dealing with memory it reads as ROM.
+                          Whatever is written to the RAM underlying the BASIC ROM is displayed
+                          normally by the VIC-II chip.  This opens up an extra 8K are for
+                          sprites and character data under the BASIC ROM.
+
+                          You should keep in mind that while you can write to this area, you
+                          cannot read it from BASIC.  This may not be a serious problem when it
+                          comes to character sets and sprite data, but it's more of a drawback
+                          if you want to use this RAM for screen memory.
+
+                          For example, the Operating System has to read the text screen to move
+                          the cursor properly, and if it reads the ROM value instead of the RAM
+                          screen data, it gets hopelessly confused, making it impossible to type
+                          in any commands.
+
+                          Likewise, you would not be able to read the high-resolution screen if
+                          it were placed here, without some machine language trickery.  With
+                          locations 36863-40959 ousted by the character ROM, only 4K of true RAM
+                          remains for use as screen memory, not enough for a complete
+                          high-resolution screen.  Therefore, this block is not recommended for
+                          use in bitmap mode if your program needs to check the screen.
+                          Otherwise, this is a good place for graphics memory, particularly if
+                          you need to emulate the screen configuration of the PET.
+
+
+---
+Additional information can be found by searching:
+- "vic_memory_block1_description" which expands on Trade-offs vs Block 1
+- "character_generator_rom_overview_and_bit_values" which expands on Relation of character ROM and using RAM-under-ROM

@@ -1,0 +1,42 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - BASIC KERNAL vectors and power-up message data: initializes vectors at $0300-$030B via copying table at $E447-$E451. Also contains the 'COMMODORE 64 BASIC V2' power-up message string table at $E45F-$E4AB and startup message pointers used by INITMS. Vectors include IERROR, IMAIN, ICRNCH, IQPLOP, IGONE, IEVAL.
+
+                                *** VECTORS
+                                This table contains jump vectors that are transferred to
+                                $0300-$030b.
+.:E447 8B E3                    IERROR VEC, print basic error message ($e38b)
+.:E449 83 A4                    IMAIN VECTOR, basic warm start ($a483)
+.:E44B 7C A5                    ICRNCH VECTOR, tokenise basic text ($a57c)
+.:E44D 1A A7                    IQPLOP VECTOR, list basic text ($a7a1)
+.:E44F E4 A7                    IGONE VEXTOR, basic character dispatch ($a7e4)
+.:E451 86 AE                    IEVAL VECTOR, evaluate basic token ($ae86)
+
+                                *** INIT VECTORS
+                                This routine transfers the vectors $0300-$030b.
+.,E453 A2 0B    LDX #$0B        6 vectors to be copied
+.,E455 BD 47 E4 LDA $E447,X
+.,E458 9D 00 03 STA $0300,X
+.,E45B CA       DEX             next byte
+.,E45C 10 F7    BPL $E455       ready
+.,E45E 60       RTS             return
+
+                                *** WORDS: POWER UP MESSAGE
+                                This is the power up message displayed on the screen when
+                                the 'Commie' is switched on or reset. The strings are
+                                separated by a zero byte.
+.:E45F 00 20 42 41 53 49 43 20  basic bytes free
+.:E467 42 59 54 45 53 20 46 52
+.:E46F 45 45 0D 00 93 0D 20 20
+.:E473 93 0D 20 20 20 20 2A 2A  (clr) **** commodore 64 basic v2 ****
+.:E47B 2A 2A 20 43 4F 4D 4D 4F  (cr) (cr) 64k ram system
+.:E483 44 4F 52 45 20 36 34 20
+.:E48B 42 41 53 49 43 20 56 32
+.:E493 20 2A 2A 2A 2A 0D 0D 20
+.:E49B 36 34 4B 20 52 41 4D 20
+.:E4A3 53 59 53 54 45 4D 20 20
+.:E4AB 00
+.:E4AC 5C
+
+
+---
+Additional information can be found by searching:
+- "basic_startup_and_init" which expands on INIT uses these vectors and prints power-up message

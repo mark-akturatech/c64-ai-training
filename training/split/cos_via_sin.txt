@@ -1,0 +1,16 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - COS routine wrapper that converts a cosine call to a sine call using the identity COS(x) = SIN(x + pi/2). Shows the code that loads the 5-byte floating-point constant pointer for pi/2 (address $E2E0) into A/Y and calls the floating-point addition routine (JSR $B867) to add pi/2 to the argument (fac#1) before calling SIN.
+
+                                *** COS: PERFORM COS
+                                This routine manipulates the input COS to be calculated
+                                with SIN. COS(X) = SIN(X+pi/2), where  X is in radians. We
+                                use it as Fac#1=SIN(fac#1+pi/2), ie pi/2 is added to fac#1
+                                and the following SIN is performed.
+.,E264 A9 E0    LDA #$E0        set address to pi/2
+.,E266 A0 E2    LDY #$E2        at $e2e0
+.,E268 20 67 B8 JSR $B867       add fltp at (A/Y) to fac#1
+
+
+---
+Additional information can be found by searching:
+- "sin_routine_sequence" which expands on calls SIN implementation after adding pi/2
+- "pi2_trig_constants_table" which expands on contains the pi/2 constant at $E2E0 used by this routine

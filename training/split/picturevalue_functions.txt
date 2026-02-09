@@ -1,0 +1,47 @@
+# Kick Assembler - Table of PictureValue functions and attributes: width, height, getPixel(x,y) returns RGB, getSinglecolorByte(x,y) converts 8 pixels to a single-color byte using a color table, getMulticolorByte(x,y) converts 4 pixels to a multicolor byte (ignores every second pixel).
+
+
+Table 12.4. FileValue Functions
+Attribute/Function
+
+Description
+
+Attribute/Function
+
+Description.
+
+writeln(text)
+
+Writes the ‘text’ to the file and insert a line shift.
+
+writeln()
+
+Insert a line shift.
+
+12.6. Exporting Labels to other Sourcefiles
+By using the –symbolfile option at the commandline it’s possible export all the assembled symbols. The line
+java –jar KickAss.jar source1.asm –symbolfile
+
+63
+
+Import and Export
+
+will generate the file source1.sym while assembling. Lets say the content of source1 is:
+.filenamespace source1
+*=$2000
+clearColor:
+lda #0
+sta $d020
+sta $d021
+rts
+
+The content of source1.sym will be:
+.namespace source1 {
+.label clearColor = $2000
+}
+
+It's now possible to refer to the labels of source1.asm from another file just by importing the .sym file:
+
+---
+Additional information can be found by searching:
+- "converting_graphics_with_loadpicture" which expands on practical conversion usage

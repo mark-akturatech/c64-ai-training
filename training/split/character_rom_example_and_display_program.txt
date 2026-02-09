@@ -1,0 +1,40 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Example of character ROM content and BASIC program to display character shapes: shows first eight byte values (60,102,110,110,96,98,60,0) broken into binary patterns to illustrate the '@' glyph. Provides a BASIC program that reads ROM bytes (temporarily switching ROM visibility) and prints the 8x8 bit patterns and numeric byte values for any character number (0-511).
+
+                          is explained in the entry for location 1), you will see the numbers
+                          60, 102, 110, 110, 96, 98, 60, 0.  Breaking these data bytes down into
+                          their bit values gives us a picture that looks like the following:
+
+                              00111100   0 +   0 +  32 +  16 +   8 +   4 +   0 +   0 =  60
+                              01100110   0 +  64 +  32 +   0 +   0 +   4 +   2 +   0 = 101
+                              01101110   0 +  64 +  32 +   0 +   8 +   4 +   2 +   0 = 110
+                              01101110   0 +  64 +  32 +   0 +   8 +   4 +   2 +   0 = 110
+                              01100000   0 +  64 +  32 +   0 +   0 +   0 +   0 +   0 =  96
+                              01100010   0 +  64 +  32 +   0 +   0 +   0 +   2 +   0 =  98
+                              00111100   0 +   0 +  32 +  16 +   8 +   4 +   0 +   0 =  60
+                              00000000   0 +   0 +   0 +   0 +   0 +   0 +   0 +   0 =   0
+
+                          If you look closely, you will recognize the shape of the commercial at
+                          sign (@) as it's displayed on your screen.  The first byte of data is
+                          60, and you can see that Bits 5, 4, 3, and 2 are set to 1.  The chart
+                          above shows that the bit values for these bits are 32, 16, 8, and 4.
+                          Adding these together, you get 32+16+8+4=60.  This should give you an
+                          idea of how the byte value corresponds to the patterns of lit dots.
+                          For an even more graphic display, type in the following program, which
+                          shows the shape of any of the 512 characters in the ROM, along with
+                          the number value of each byte of the shape.
+
+                              10 DIM B%(7),T%(7):FOR I=0 TO 7:T%(I)=2^I:NEXT
+                              20 POKE 53281,2:PRINT CHR$(147):POKE 53281,1:POKE 53280,0:POKE 646,11
+                              30 POKE 214,20:PRINT:INPUT" CHARACTER NUMBER (0-511)";C$
+                              40 C=VAL(C$):GOSUB 80:FOR I=0 TO 7
+                              50 POKE 214,6+I:PRINT:PRINT TAB(23);B%(I);CHR$(20);"   "
+                              60 FOR J=7 TO 0 STEP-1:POKE 1319+(7-J)+I*40,32-128*((B%(I)ANDT%(J))=T%(J))
+                              70 NEXT J,I:POKE 214,20:PRINT:PRINT TAB(27)"    ":GOTO 30
+                              80 POKE 56333,127:POKE 1,51:FOR I=0 TO 7
+                              90 B%(I)=PEEK(53248+C*8+I):NEXT:POKE 1,55:POKE 56333,129:RETURN
+
+
+---
+Additional information can be found by searching:
+- "character_generator_rom_overview_and_bit_values" which expands on Context for the displayed byte-to-pixel mapping and bit-value table
+- "sample_bank3_switch_program" which expands on Machine-language sample that copies character ROM to RAM

@@ -1,0 +1,45 @@
+# Analyzing C64 tape loaders - Loader core entry and bit-alignment/leader-sync/header acquisition. Covers: SEI; setting threshold via STA $DD06 (Timer B latch); initial X register setup; alignment loop calling JSR $02D4, ROL $F7/LDA $F7/CMP #$63 to find the lead-in byte; LDY #$64 and loops using JSR $03E7 to read the leader and sync train; check for post-sync check byte and reload if $00; the loop that reads and stores the 10-byte header into $002B,Y and $00F9,Y and comments describing header contents (load address, end address, exec address and flag bytes).
+
+-Loader's Core---------------------
+0351  78          SEI
+
+0352  A9  07      LDA #$07   ; Sets a Threshold value via
+0354  8D  06  DD  STA $DD06  ; Timer B countdown
+0357  A2  01      LDX #$01
+
+0359  20  D4  02  JSR $02D4  ; Tries to align bits of leader
+035C  26  F7      ROL $F7    ; with MSbF until...
+035E  A5  F7      LDA $F7
+0360  C9  63      CMP #$63   ; ... a Lead-in byte is found.
+0362  D0  F5      BNE $0359
+0364  A0  64      LDY #$64   ; Sync train start value
+
+0366  20  E7  03  JSR $03E7
+0369  C9  63      CMP #$63   ; Reads the whole leader
+036B  F0  F9      BEQ $0366
+
+036D  C4  F7      CPY $F7
+036F  D0  E8      BNE $0359
+0371  20  E7  03  JSR $03E7
+0374  C8          INY        ; Reads the whole Sync train
+0375  D0  F6      BNE $036D
+
+0377  C9  00      CMP #$00   ; After Sync there's a Check byte
+0379  F0  D6      BEQ $0351  ; if it is $00 then Reload
+
+037B  20  E7  03  JSR $03E7
+037E  99  2B  00  STA $002B,Y  ; Loads a 10 bytes header
+0381  99  F9  00  STA $00F9,Y  ; The following code (at $0392,
+0384  C8          INY          ; $039E, $03D1, $03C6) tells us
+0385  C0  0A      CPY #$0A     ; us they consist in: Load
+0387  D0  F2      BNE $037B    ; address, End address,
+                               ; Execution address and 2 flag
+                               ; bytes, which state if all
+                               ; turbo files were loaded and
+                               ; what to do once done
+
+
+---
+Additional information can be found by searching:
+- "load_loop_store_and_checksum" which expands on After header read the code initialises checksum locations and enters the Load Loop
+- "read_byte_subroutine" which expands on Uses the Read Byte subroutine at $03E7 to fetch bits/bytes during leader/sync/header reads

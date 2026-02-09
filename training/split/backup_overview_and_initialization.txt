@@ -1,0 +1,60 @@
+# byRiclianll - Title, limitations and parameters for backing up a DOS‑protected diskette, plus the start of the 1541 BACKUP BASIC listing (lines 100–320). Includes the REM header, initial POKE/CLR setup, FOR loops that dimension and initialize the T() table, a READ of SRW/ERW values, program banner/insert‑master prompt, GOSUB to the user‑prompt routine, OPEN15,8,15 to talk to the 1541, initialization of RW and RAM pointers, a short POKE to set up the buffer (POKE 252,34) and initial C=0 flag. (This chunk prepares the program and user for reading the master disk.)
+
+7.17  How  to  Backup  a  DOS  Protected  Diskette 
+
+Limitations:  Does  not  recreate  any  bad  sectors.  Requires  six  passes  to  backup  a  diskette 
+(see  the  annotation  below). 
+
+Parameters:  A  formatted  diskette. 
+
+1541  BACKUP 
+
+100  REM   1541  BACKUP 
+110  P0KE56,33 
+120  CLR 
+
+130  F0RI=1T0144 
+
+140  RE ADD 
+
+150  P0KE49151-H,D 
+
+160  NEXTI 
+
+170  DIMT(35) 
+
+180  FORI =17035 
+
+190  T(I)=1 
+
+200  NEXTI 
+
+210  READSRW,ERW 
+
+220  PRINT" €CLR> 1541  BACKUP" 
+
+230  PRINT" ^DOWN> INSERT  MASTER   IN  DRIVE" 
+
+240  GOSUBlllO 
+
+250  0PEN15,8, 15 
+
+260  RW=8448 
+
+270  F0RI=1T0126 
+
+280  P0KE8447-H,0 
+
+290  NEXTI 
+
+300  RAM=8704 
+
+310  P0KE252,34 
+
+320  C=0 
+
+
+---
+Additional information can be found by searching:
+- "master_disk_seek_and_read_loops" which expands on Follows with the SEEK and READ loops that actually read sectors from the master disk
+- "clone_disk_insertion_and_write_seek_setup" which expands on Later switches to the clone disk and begins the write/seek setup

@@ -1,0 +1,74 @@
+# byRiclianll - Describes the block-free (B-F) command, which deallocates a sector in the BAM by setting its associated bit high (1) on track 18 sector 0. Syntax: PRINT# file#, "B-F"; drive; track; sector (alternate with colon). Example: PRINT#15, "B-F";0;1;7. Includes a BASIC example that iterates tracks/sectors and issues B-F to deallocate every sector on a disk (with the usual caution to skip track 18 directory).
+
+track;  sector 
+
+ALTERNATE: 
+
+PRINT#  +ile#,    "B-E:";   channel*;  drive#; 
+
+track;  sector 
+PRINT#  +ile#,    "B-E:   channel*,  drive#, 
+
+track,  sector" 
+
+EXAMPLE: 
+
+PRINT#15, "B-E";2;0; l;0 
+
+
+where 
+
+file#  =  the  logical  file  number  of  the  command  channel 
+
+channel#  =  the  secondary  address  of  the  associated  open  statement 
+
+drive#  =  0 
+
+track  =  1  to  35 
+
+sector  =  0  to  the  range  for  a  given  track 
+
+
+The  block-execute  command  could  be  used  in  a  diagnostic  routine  but  it  is  difficult  to 
+visualize  any  other  advantage  that  this  command  has  over  a  normal  memory-execute 
+command.  The  following  program  demonstrates  one  of  the  few  block-execute  commands 
+you  will  probably  ever  see.  (lights,  camera,  action!)  Run  this  program  using  a  test  diskette. 
+
+lOO  REM  BLOCK-EXECUTE 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "lO" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GOTO  250 
+
+
+97 
+
+
+150  OPEN  2,8,2, "#3" 
+160  PRINT#15, "Ul";2;0; l;0 
+170  INPUT#15,EN*,EM*,ET*,ES* 
+180  IF  EN*<>"00"GOTO  220 
+
+190  PRINT#15,  "M-WCHR*  (O)  CHR*  (6)  CHR*  (DC 
+HR*(96) 
+
+200  PRINT#15, "U2";2;o; l;0 
+
+210  PRINT#15,  ■■M-W"CHR*(0)CHR*(6)CHR*(  DC 
+HR*(0) 
+
+220  PRINT#15,  ■'B-E";2;0;  l;o 
+230  CLOSE  2 
+
+240  INPUT#15,EN*,EM*,ETt,E9* 
+250  CLOSE  15 
+260  END 
+
+
+---
+Additional information can be found by searching:
+- "block_allocate_command" which expands on inverse operation to B-A; use to free previously allocated sectors

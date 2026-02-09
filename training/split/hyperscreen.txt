@@ -1,0 +1,60 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Hyperscreen (opening the border) technique: manipulate CSEL/RSEL so border comparators never match, allowing graphics (primarily sprites and idle-state graphics) to appear in border area. Steps to disable upper/lower border using RSEL toggling across specific raster lines and to disable left/right border using CSEL (timing critical). Notes that vertical border flip-flop interaction restricts methods for opening different border regions and differences in graphics visible depending on method.
+
+3.14.1. Hyperscreen
+-------------------
+
+As explained in section 3.9., the VIC generates the screen border by
+comparing the beam coordinates with start and stop positions selected by
+the CSEL/RSEL bits. So the border is basically not displayed within a
+certain range of coordinates, but rather turned on and off at certain
+coordinates. If you now make sure by appropriately switching CSEL/RSEL that
+the coordinate comparison never matches, the border is e.g. never turned on
+and you can see the graphics in the border area that is normally covered by
+the border. The technique is called "hyperscreen" or "opening the border".
+
+However, the graphics displayable in the border area is mainly limited to
+sprites, as the graphics data sequencer is in idle state in this area as no
+Bad Lines can occur outside of Y coordinates $30-$f7 (see section 3.5.).
+But you can also do something sensible with the graphics generated in idle
+state.
+
+To turn off the upper/lower border, you proceed as follows:
+
+1. Somewhere in the upper part of the screen, you switch to 25-line-border
+   by setting the RSEL bit.
+2. Now you wait until RASTER has reached a value in the range of 248-250.
+   The vertical border flip flop is still cleared as the comparison value
+   for RSEL=1 is raster line 251.
+3. Then you clear the RSEL bit. The comparator is switched and now sets the
+   vertical flip flop at line 247. But this line is already passed and thus
+   the VIC "forgets" to turn on the vertical border.
+4. After raster line 251 you set the RSEL bit again and repeat from step 2.
+
+If you open the upper/lower border with this method, the left/right border
+still remains active in the "opened up" area. If you switch from RSEL=0 to
+RSEL=1 in the raster line range 52-54, the border is never turned off and
+covers the whole screen (this is the same when the DEN bit is cleared, but
+Bad Lines still occur). But this is not very sensible.
+
+The left/right border can be turned of with the CSEL bit in a similar way.
+However, the timing is much more critical. Whereas for the vertical border,
+you have 4 raster lines time for the switch, for the horizontal border the
+change from CSEL=1 to CSEL=0 has to be exactly in cycle 56. Likewise the
+horizontal border can be prevented from turning off by switching from
+CSEL=0 to CSEL=1 in cycle 17.
+
+If you want to open the left/right border in the upper/lower border area,
+you must either start with it before the vertical border flip flop is set
+(i.e. outside of the upper/lower border), or also open the upper/lower
+border, because the main border flip flop can only be reset if the vertical
+flip flop is not set. If you compare both methods, you can verify that the
+vertical flip flop controls the graphics data sequencer output: With the
+first method, only the background color is visible in the opened up
+upper/lower border area, whereas the second method displays the idle state
+graphics there.
+
+
+---
+Additional information can be found by searching:
+- "border_unit" which expands on comparators and CSEL/RSEL values used to control border flip-flops
+- "idle_state_mode_details" which expands on graphics sequencer behaviour when border opened into areas that are normally idle

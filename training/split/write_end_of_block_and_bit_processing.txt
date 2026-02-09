@@ -1,0 +1,47 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - WRTL3 and WRTN group: flags end-of-block via PRP (ROR PRP + branch), WRTN handles per-byte finalization: checks for long-bit (RER) or one-bit (REZ) special cases, invokes WRTX/WRTW/WRITE as needed, increments counters (RER/REZ), toggles OCHAR for dipole complementary bit, updates parity (PRTY), and branches to the register-restore/RTI exit (PREND) when appropriate.
+
+                                ;
+.,FBC8 38       SEC             WRTL3  SEC             ;FLAG PRP FOR END OF BLOCK
+.,FBC9 66 B6    ROR $B6         ROR    PRP
+.,FBCB 30 3C    BMI $FC09       BMI    WRT3            ; JMP
+                                ;
+                                ; WRTN - CALLED AT THE END OF EACH BYTE
+                                ;   TO WRITE A LONG RER    REZ
+                                ;              HHHHHHLLLLLLHHHLLL...
+                                ;
+.,FBCD A5 A8    LDA $A8         WRTN   LDA RER         ;CHECK FOR ONE LONG
+.,FBCF D0 12    BNE $FBE3       BNE    WRTN1
+.,FBD1 A9 10    LDA #$10        LDA    #16             ;WRITE A LONG BIT
+.,FBD3 A2 01    LDX #$01        LDX    #1
+.,FBD5 20 B1 FB JSR $FBB1       JSR    WRTX
+.,FBD8 D0 2F    BNE $FC09       BNE    WRT3
+.,FBDA E6 A8    INC $A8         INC    RER
+.,FBDC A5 B6    LDA $B6         LDA    PRP             ;IF END OF BLOCK(BIT SET BY WRTL3)...
+.,FBDE 10 29    BPL $FC09       BPL    WRT3            ;...NO END CONTINUE
+.,FBE0 4C 57 FC JMP $FC57       JMP    WRNC            ;...END ...FINISH OFF
+                                ;
+.,FBE3 A5 A9    LDA $A9         WRTN1  LDA REZ         ;CHECK FOR A ONE BIT
+.,FBE5 D0 09    BNE $FBF0       BNE    WRTN2
+.,FBE7 20 AD FB JSR $FBAD       JSR    WRTW
+.,FBEA D0 1D    BNE $FC09       BNE    WRT3
+.,FBEC E6 A9    INC $A9         INC    REZ
+.,FBEE D0 19    BNE $FC09       BNE    WRT3
+                                ;
+.,FBF0 20 A6 FB JSR $FBA6       WRTN2  JSR WRITE
+.,FBF3 D0 14    BNE $FC09       BNE    WRT3            ;ON BIT LOW EXIT
+.,FBF5 A5 A4    LDA $A4         LDA    FIRT            ;CHECK FOR FIRST OF DIPOLE
+.,FBF7 49 01    EOR #$01        EOR    #1
+.,FBF9 85 A4    STA $A4         STA    FIRT
+.,FBFB F0 0F    BEQ $FC0C       BEQ    WRT2            ;DIPOLE DONE
+.,FBFD A5 BD    LDA $BD         LDA    OCHAR           ;FLIPS BIT FOR COMPLEMENTARY RIGHT
+.,FBFF 49 01    EOR #$01        EOR    #1
+.,FC01 85 BD    STA $BD         STA    OCHAR
+.,FC03 29 01    AND #$01        AND    #1              ;TOGGLE PARITY
+.,FC05 45 9B    EOR $9B         EOR    PRTY
+.,FC07 85 9B    STA $9B         STA    PRTY
+.,FC09 4C BC FE JMP $FEBC       WRT3   JMP PREND       ;RESTORE REGS AND RTI EXIT
+
+---
+Additional information can be found by searching:
+- "cassette_write_toggle_and_timer_setup" which expands on calls WRITE/WRTX/WRTW to generate pulses
+- "byte_finish_parity_and_header_character_output" which expands on continues with per-bit advancement, parity and header output

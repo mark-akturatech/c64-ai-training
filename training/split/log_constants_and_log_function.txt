@@ -1,0 +1,49 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Constants and LOG() implementation: floating constants and series coefficients for LOG(), setup and normalization of FAC1, transformations used to map x into series domain (1/root2 etc), performs necessary multiplies/divides and evaluates the series to compute LOG(x) returning the result in FAC1. Includes data tables for the LOG series and helper calls into the series evaluator.
+
+                                *** constants and series for LOG(n)
+.:B9BC 81 00 00 00 00           1
+.:B9C1 03                       series counter
+.:B9C2 7F 5E 56 CB 79            .434255942
+.:B9C7 80 13 9B 0B 64            .576584541
+.:B9CC 80 76 38 93 16            .961800759
+.:B9D1 82 38 AA 3B 20           2.88539007
+.:B9D5 80 35 04 F3 34            .707106781 = 1/SQR(2)
+.:B9DB 81 35 04 F3 34           1.41421356 = SQR(2)
+.:B9E0 80 80 00 00 00           -.5
+.:B9E5 80 31 72 17 F8            .693147181  =  LOG(2)
+
+                                *** perform LOG()
+.,B9EA 20 2B BC JSR $BC2B       test sign and zero
+.,B9ED F0 02    BEQ $B9F1       if zero do illegal quantity error then warm start
+.,B9EF 10 03    BPL $B9F4       skip error if +ve
+.,B9F1 4C 48 B2 JMP $B248       do illegal quantity error then warm start
+.,B9F4 A5 61    LDA $61         get FAC1 exponent
+.,B9F6 E9 7F    SBC #$7F        normalise it
+.,B9F8 48       PHA             save it
+.,B9F9 A9 80    LDA #$80        set exponent to zero
+.,B9FB 85 61    STA $61         save FAC1 exponent
+.,B9FD A9 D6    LDA #$D6        pointer to 1/root 2 low byte
+.,B9FF A0 B9    LDY #$B9        pointer to 1/root 2 high byte
+.,BA01 20 67 B8 JSR $B867       add (AY) to FAC1 (1/root2)
+.,BA04 A9 DB    LDA #$DB        pointer to root 2 low byte
+.,BA06 A0 B9    LDY #$B9        pointer to root 2 high byte
+.,BA08 20 0F BB JSR $BB0F       convert AY and do (AY)/FAC1 (root2/(x+(1/root2)))
+.,BA0B A9 BC    LDA #$BC        pointer to 1 low byte
+.,BA0D A0 B9    LDY #$B9        pointer to 1 high byte
+.,BA0F 20 50 B8 JSR $B850       subtract FAC1 ((root2/(x+(1/root2)))-1) from (AY)
+.,BA12 A9 C1    LDA #$C1        pointer to series for LOG(n) low byte
+.,BA14 A0 B9    LDY #$B9        pointer to series for LOG(n) high byte
+.,BA16 20 43 E0 JSR $E043       ^2 then series evaluation
+.,BA19 A9 E0    LDA #$E0        pointer to -0.5 low byte
+.,BA1B A0 B9    LDY #$B9        pointer to -0.5 high byte
+.,BA1D 20 67 B8 JSR $B867       add (AY) to FAC1
+.,BA20 68       PLA             restore FAC1 exponent
+.,BA21 20 7E BD JSR $BD7E       evaluate new ASCII digit
+.,BA24 A9 E5    LDA #$E5        pointer to LOG(2) low byte
+.,BA26 A0 B9    LDY #$B9        pointer to LOG(2) high byte
+
+
+---
+Additional information can be found by searching:
+- "multiply_divide_and_convert_routines" which expands on multiplication/division and FAC unpack/pack helpers used by LOG()
+- "constants_sqr_exp_series_and_series_evaluation" which expands on series evaluation framework reused across LOG/EXP/SIN/COS

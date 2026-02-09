@@ -1,0 +1,58 @@
+# Contents - When fine scroll reaches maximum, CPU must shift character-screen memory by one character and reset fine scroll. Advice: fast routines are necessary to avoid visual breaks; if moving the whole screen is too slow, prepare scrolled memory in an off-screen buffer and use TXBAS or GRABAS macro to point VIC to the prepared area once ready. Choose macro depending on current graphics mode.
+
+vertical scrolling. By clearing bit 3 of the YSCRL 
+register, when the vertical scroll is set to 3, half of 
+the top row and half of the bottom row will be 
+covered by the border. The VIC chip can be re- 
+turned to the normal 25 row mode by setting bit 3 
+of the YSCR L register. When the vertical scroll is 
+set to 0, the top line will be entirely covered by the 
+border. When the vertical scroll is set to 7, the bot- 
+tom line of the screen will be entirely covered by 
+the border. 
+
+Once you have reached a maximum scroll value 
+in the X or Y direction, you will have to shift each 
+character on the screen in the direction of the scroll 
+in order to continue scrolling. After moving all of 
+the characters on the screen, you can reset the fine 
+
+
+
+scrolling registers to their minimum value and con- 
+tinue to use the hardware registers to scroll the 
+screen. 
+
+There are a number of things that must be 
+taken into account when writing a scrolling program. 
+In order for the screen to appear to be in continuous 
+smooth motion, the routine that will shift each 
+character must be extremely fast. Also, if you are 
+using a number of different colors in color RAM, 
+each character in color RAM must be moved in the 
+direction of the scroll at the same time as the 
+characters in screen memory. If you do not need to 
+scroll the entire screen, your program can be much 
+shorter and will run faster. If your program does not 
+run fast enough, you will see breaks in your graphics 
+where the characters that have been scrolled are ad- 
+jacent to characters that have not yet been scrolled. 
+
+If possible, your routine should be fast enough 
+to reposition the entire screen in one screen update 
+time (1/60 of a second). You can get by with a slower 
+routine if you scroll your screen memory into a dif- 
+ferent area of memory than the one that is current- 
+ly being displayed. This must be completed before 
+the fine scrolling register reaches its limit, so when 
+the entire screen needs to be repositioned, it will 
+be ready. Instead of repositioning the entire screen 
+at that point, which would have to be done within 
+1/60 of a second, all you need to do is to use the 
+TXBAS or GRABAS macro to instruct the VIC chic 
+to get the data from the area that has already been 
+repositioned. The macro that you will use depend: 
+
+---
+Additional information can be found by searching:
+- "graphics_memory_byte_organization_table" which expands on repositioning screen memory layout for scrolling

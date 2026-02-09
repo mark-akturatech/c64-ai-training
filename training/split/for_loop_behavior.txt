@@ -1,0 +1,26 @@
+# ********* - FOR implementation details: FOR pushes information for the matching NEXT onto the stack, including the TO termination value (evaluated once when FOR executes). This means the TO expression's value is fixed for that loop iteration, preventing early termination by decreasing the TO variable (but allowing early end by increasing the FOR variable). FOR variables must be non-array floating point variables. Reusing a FOR variable while its loop is still active cancels that FOR and all intervening loops. See the interpreter's stack area (at $100) for NEXT/FOR stack layout.
+
+42818         $A742          FOR
+Perform FOR
+
+FOR is performed mostly by saving the needed information for the NEXT
+part of the command on the stack (see the entry for 256 ($100) for
+details).  This includes the TO termination value, so if the upper
+limit is a variable, the current value of the variable will be stored,
+and you cannot end the loop early by decreasing the value of the TO
+variable within the loop (although you can end it early by increasing
+the value of the FOR variable within the loop).
+
+Also, since the TO expression is evaluated only once, at the time FOR
+is performed, a statement such as FOR I=1 TO I+100 is valid.  The
+terminating value is not checked until NEXT is executed, so the loop
+statements always execute at least once.  The variable used by FOR
+must be a nonarray floating point variable.  Reusing the same FOR
+variable in a loop that is still active will cause the previous FOR
+loop and all intervening loops to be cancelled.
+
+
+---
+Additional information can be found by searching:
+- "main_loop" which expands on FOR is one of the statements executed when no line number is present
+- "runc_reset_text_pointer" which expands on execution uses the program text pointer set by RUNC

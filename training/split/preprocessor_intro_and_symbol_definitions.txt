@@ -1,0 +1,80 @@
+# Kick Assembler - Chapter 8 intro and Section 8.1–8.2: Preprocessor role (runs before main parser), defining preprocessor symbols via command line (-define) or #define/#undef, recognition rules (# at line start), and conditional inclusion with #if/#else/#endif/#elif plus nesting behavior and examples illustrating that untaken #if blocks are not seen by the main parser.
+
+
+Chapter 8
+Preprocessor
+Before the contents of the source file is handed to the main parser, it goes through the preprocessor. The preprocessor knows nothing of mnemonics or the script language. It's a simple mechanism that enables you to select
+pieces of the source to be discarded or included in what the main parser sees. This chapter explains how. (NOTE:
+The preprocessor is made like the one used in C# with the addition of #import, #importif and #importonce so you
+might find this familiar)
+
+8.1. Defining preprocessor symbols
+The preprocessor uses symbols do determine if it should discard or include portions of the source file. There
+are two methods to define a symbol. The first is from the command line. This defines a symbol called 'TEST':
+java -jar KickAss.jar -define TEST
+
+A symbol is either defined or not defined. It has no assigned value.
+The other way is using the #define directive:
+#define TEST
+
+You can recognize a preprocessor directive on the '#'. If the first non-whitespace character on a line is a '#' then
+the line is a call to the preprocessor. If you want to remove the definition of a symbol you use the #undef directive.
+#undef TEST
+
+8.2. Deciding what gets included
+Including or discarding parts of the a source file is done by using #if directives, just like in the script language.
+// Simple if block
+#if TEST
+inc $d020
+#endif
+// <- Use an endif to close this if block
+// You can also use else
+#if A
+.print "A is defined"
+#else
+.print "A is not defined"
+#endif
+
+Since the source isn't passed on to the main parser, you can write anything inside an untaken if, and it will
+still compile.
+#undef UNDEFINED_SYMBOL
+#if UNDEFINED_SYMBOL
+Here we can write anything since it will never be seen by the main parser...
+#endif
+
+#elif is the combination of an #else and an #if. It can be used like this:
+#if X
+.print "X"
+#elif Y
+.print "Y"
+
+34
+
+Preprocessor
+
+#elif Z
+.print "Z"
+#else
+.print "Not X, Y and Z"
+#endif
+
+The #if blocks can be nested:
+#if A
+#if B
+.print "A and B"
+#endif
+#else
+#if X
+.print "not A and X"
+#elif Y
+.print "not A and Y"
+#endif
+#endif
+
+The indentations doesn't change anything, its just to make the code easier to read.
+
+
+---
+Additional information can be found by searching:
+- "importing_source_code_preprocessor_usage" which expands on practical use of #import/#importif/#importonce for source inclusion
+- "preprocessor_imports_and_importonce" which expands on import semantics and #importonce usage

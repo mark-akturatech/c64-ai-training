@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - CSTE1 routine and related subroutines: displays 'PRESS PLAY...' (MSG) via CS30, watches for STOP key (TSTOP/CS40), loops to monitor cassette switches (CS10), and performs a debounce check of the cassette port bit in R6510 (CS10 / CS25). Returns with carry clear on success.
+
+                                ;STAYS IN ROUTINE D2T1LL PLAY SWITCH
+                                ;
+.,F817 20 2E F8 JSR $F82E       CSTE1  JSR CS10
+.,F81A F0 1A    BEQ $F836       BEQ    CS25
+.,F81C A0 1B    LDY #$1B        LDY    #MS7-MS1        ;"PRESS PLAY..."
+.,F81E 20 2F F1 JSR $F12F       CS30   JSR MSG
+.,F821 20 D0 F8 JSR $F8D0       CS40   JSR TSTOP       ;WATCH FOR STOP KEY
+.,F824 20 2E F8 JSR $F82E       JSR    CS10            ;WATCH CASSETTE SWITCHES
+.,F827 D0 F8    BNE $F821       BNE    CS40
+.,F829 A0 6A    LDY #$6A        LDY    #MS18-MS1       ;"OK"
+.,F82B 4C 2F F1 JMP $F12F       JMP    MSG
+                                ;SUBR RETURNS <> FOR CASSETTE SWITCH
+                                ;
+.,F82E A9 10    LDA #$10        CS10   LDA #$10        ;CHECK PORT
+.,F830 24 01    BIT $01         BIT    R6510           ;CLOSED?...
+.,F832 D0 02    BNE $F836       BNE    CS25            ;NO. . .
+.,F834 24 01    BIT $01         BIT    R6510           ;CHECK AGAIN TO DEBOUNCE
+.,F836 18       CLC             CS25   CLC             ;GOOD RETURN
+.,F837 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "increment_buffer_pointer" which expands on Preceding utility in same TAPECONTROL area
+- "record_prompt_check" which expands on Parallel routine used for 'PRESS PLAY & RECORD' prompt
+- "tape_completion_wait_loop" which expands on Later uses TSTOP to watch for STOP key during tape operations

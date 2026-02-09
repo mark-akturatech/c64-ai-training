@@ -1,0 +1,28 @@
+# ca65 Users Guide - Examples of nested structs: named nested structures create a new scope with offsets starting at 0 (e.g., Object::target is a named struct Point whose members start at 0), while anonymous nested structures add their members to the enclosing scope and continue offsets (examples showing Object::price, Object::tax and anonymous radius). Shows correct vs incorrect ways to reference nested members.
+
+
+
+      .struct Object
+              id .byte                ; Object::id = 0
+              target .struct Point    ; Object::target = 1
+                      xcoord  .word   ; Object::Point::xcoord = 0
+                      ycoord  .word   ; Object::Point::ycoord = 2
+              .endstruct
+               cost .struct           ; Object::cost = 5
+                      price  .word    ; Object::price = 5
+                      tax  .word      ; Object::tax = 7
+              .endstruct
+              .struct
+                      radius  .word   ; Object::radius = 9
+              .endstruct
+      .endstruct
+
+O:    .tag   Object
+      lda    O + Object::target + Object::Point::ycoord  ; Named struct
+      lda    O + Object::tax                             ; Anonymous
+      lda    O + Object::radius                          ; Anonymous
+
+
+---
+Additional information can be found by searching:
+- "struct_tag_keyword" which expands on accessing nested members and use of :: operator

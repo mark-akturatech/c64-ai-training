@@ -1,0 +1,36 @@
+# MACHINE - Machine code assembled at $0880 to extract the two bytes of integer variable V% via indirect Y addressing ($2D), storing the high and low bytes into temporary zero-page/work locations $033C/$033D and duplicate copies into $033E/$033F. Includes a brief suggestion to optimize via indexing and the ASL/ROL sequence to multiply the extracted value by 4 (two successive ASL/ROL pairs on $033D/$033C).
+
+Switch into the machine language monitor.  Assemble the following code:
+
+  .A 0880  LDY #$02
+  .A 0882  LDA ($2D),Y
+  .A 0884  STA $033C
+  .A 0887  STA $033E
+  .A 088A  LDY #$03
+  .A 088C  LDA ($2D),Y
+  .A 088E  STA $033D
+  .A 0891  STA $033F
+
+We have now extracted two bytes from the first variable, V%.  The high byte
+has been stored at both $033C and $033E; we'll see why in a moment.  The low
+byte of the value has gone to $033D and $033F.
+
+Project for enthusiasts:  You might be able to code the above more compactly
+by more effective use of indexing.
+
+  .A 0894  ASL $033D
+  .A 0897  ROL $033C
+  .A 089A  ASL $033D
+  .A 089D  ROL $033C
+
+We have multiplied the contents of $033D/$033C by two, and then we have
+multiplied it by two again.  These locations now contain the original value
+times four.  Note that we ASL the low byte and then ROL the high byte.
+Perhaps we should be checking for overflow; but let's trust the number to be
+in range for now.
+
+
+---
+Additional information can be found by searching:
+- "adding_x4_to_original_to_get_x5" which expands on add the original copies to produce times-five
+- "placing_ml_behind_end_of_basic_and_basic_example" which expands on the BASIC program that calls this ML routine

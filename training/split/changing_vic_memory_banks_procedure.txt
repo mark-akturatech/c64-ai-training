@@ -1,0 +1,50 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Step-by-step procedure for changing VIC-II 16K bank from BASIC: 1) Set Data Direction Register A outputs, 2) Select bank via POKE 56576 and 56578 manipulations, 3) Set VIC register for character memory (53272 / $D018), 4) Set VIC register for display memory (53272 formula), 5) Set OS pointer for display memory at 648 ($288). Warnings about RESTORE key behavior and suggestion to disable RESTORE to avoid display/OS pointer mismatch.
+
+                          Changing banks.  Once you have selected a bank of 16K to use, the
+                          procedure for making the change from BASIC is as follows:
+
+                          1.  Set the Data Direction Register if necessary.  In order to use
+                          Bits 0 and 1 of Port A to change banks, these bits must be set as
+                          outputs in Data Direction Register A.  Since this is the default
+                          condition on powering-up, this step normally will not be needed.
+
+                          2.  Select a bank.  Banks 0-3 can be chosen by entering the following
+                          lines:
+
+                              POKE 56578,PEEK(56578) OR 3: REM SET FOR OUTPUT IF NOT ALREADY
+                              POKE 56576,(PEEK(56576) AND 252) OR (3-BANK): REM BANK IS BANK #, MUST BE 0-3
+
+                          3.  Set the VIC-II register for character memory.  As explained at the
+                          entry for location 53272 ($D018), the formula for this is:
+
+                              POKE 53272,(PEEK(53272) AND 240) OR TK: REM TK IS 2 KBYTE OFFSET FROM BEGINNING OF BLOCK
+
+                          4.  Set the VIC-II register for display memory.  As explained at the
+                          entry for location 53272 ($D018), the formula for this is:
+
+                          POKE 53272,(PEEK(53272) AND 15) OR K*16: REM K IS KBYTE OFFSET FROM BEGINNING OF BLOCK
+
+                          Since steps 3 and 4 operate on the same register, you could combine
+                          these steps and just POKE 53272,(16*K+TK).
+
+                          5.  Set the Operating System pointer for display memory at 648 ($288).
+                          Even though you have just told the VIC-II chip where to display memory
+                          for the screen, the Operating System does not yet know where to write
+                          its text characters.  Let it know with this statement:
+
+                              POKE 648,AD/256: REM AD IS THE ACTUAL ADDRESS OF SCREEN MEMORY
+
+                          After you make this change, you must watch out for the STOP/RESTORE
+                          key combination.  The BRK initialization changes the screen display
+                          default to location 1024 in Bank 0, but not the Operating System
+                          pointer at 648 ($288).  As a result, what you are typing will not be
+                          displayed on the screen.  The computer will lock up until you turn the
+                          power off and back on again.  The simplest way to avoid this problem
+                          is to disable the RESTORE key entirely (see the entries for 792 ($318)
+                          and 808 ($328) for more information).
+
+
+---
+Additional information can be found by searching:
+- "cia2_porta_bits_video_bank_selection" which expands on Bits 0-1 on CIA #2 Port A used to select bank
+- "sample_bank3_switch_program" which expands on Example BASIC + machine-code program implementing the steps

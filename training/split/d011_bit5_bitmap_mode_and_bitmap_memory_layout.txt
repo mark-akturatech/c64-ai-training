@@ -1,0 +1,75 @@
+# - C64 I/O Map (Mapping The Commodore 64) - D011 Bit 5: Enable bitmap graphics (320x200). Explanation of how bitmap memory is arranged (character-like interleaving of bytes), the need for separate color memory (1KB) because Color RAM ($D800) is only 4-bit nybbles, and that bitmap display uses 8K area and color map in opposite half of VIC-II memory. The Memory Control Register ($D018 / 53272) controls bitmap and color locations.
+
+
+                          Bit 5.  Setting Bit 5 of this register to 1 enables the bitmap
+                          graphics mode.  In this mode, the screen area is broken down into
+                          64,000 separate dots of light, 320 dots across by 200 dots high.  Each
+                          dot corresponds to one bit of display memory.  If the bit is set to 1,
+                          the dot will be displayed in the foreground color.  If the bit is
+                          reset to 0, it will be displayed in the background color.  This allows
+                          the display of high-resolution graphics images for games, charts, and
+                          graphs, etc.
+
+                          Bitmapping is a common technique for implementing high-resolution
+                          graphics on a microcomputer.  There are some features of the Commodore
+                          system which are unusual, however.
+
+                          Most systems display screen memory sequentially; that is, the first
+                          byte controls the display of the first eight dots in the upper-left
+                          corner of the screen, the second byte controls the eight dots to the
+                          right of that, etc.  In the Commodore system, display memory is laid
+                          out more along the lines of how character graphics dot-data is
+                          arranged.
+
+                          The first byte controls the row of eight dots in the top-left corner
+                          of the screen, but the next byte controls the eight dots below that,
+                          and so on until the ninth byte.  The ninth byte controls the eight
+                          dots directly to the right of those controlled by the first byte of
+                          display memory.  It is exactly the same as if the screen were filled
+                          with 1000 programmable characters, with display memory taking the
+                          place of the character dot-data.
+
+                          The 64's bitmap graphics mode also resembles character graphics in
+                          that the foreground color of the dots is set by a color map (although
+                          it does not use the Color RAM for this purpose).  Four bits of each
+                          byte of this color memory control the foreground color of one of these
+                          eight-byte groups of display memory (which form an 8 by 8 grid of 64
+                          dots).  Unlike character graphics, however, the other four bits
+                          control the background color that will be seen in the eight-byte
+                          display group where a bit has a value of 0.
+
+                          Setting up a bitmap graphics screen is somewhat more complicated than
+                          just setting this register bit to 1.  You must first choose a location
+                          for the display memory area, and for the color memory area.  The
+                          display memory area will be 8192 bytes long (8000 of which are
+                          actually used for the display) and can occupy only the first or the
+                          second half of the 16K space which the VIC-II chip can address.
+
+                          Each byte of bitmap graphics color memory uses four bits for the
+                          background color as well as four bits for the foreground color.
+                          Therefore, the Color RAM nybbles at 55296 ($D800), which are wired for
+                          four bits only, cannot be used.  Another RAM location must therefore
+                          be found for color memory.
+
+                          This color memory area will take up 1K (1000 bytes of which are
+                          actually used to control the foreground and background colors of the
+                          dots), and must be in the opposite half of VIC-II memory as the
+                          display data.  Since bitmap graphics require so much memory for the
+                          display, you may want to select a different 16K bank for VIC-II memory
+                          (see the discussion of things to consider in selecting a VIC-II memory
+                          bank at location 56576 ($DD00)).
+
+                          To keep things simple, however, let's assume that you have selected to
+                          use the default bank of VIC-II memory, which is the first 16K.  You
+                          would have to select locations 8192-16383 ($2000-$3FFF) for screen
+                          memory, because the VIC-II chip sees an image of the character ROM in
+                          the first half of the 16K block (at locations 4096-8192
+                          ($1000-$1FFF)).  Color memory could be placed at the default location
+                          of text display memory, at 1024-2047 ($400-$7FF).  Placement of bitmap
+                          display and color memory is controlled by the VIC Memory Control
+                          Register at 53272 ($D018).
+
+---
+Additional information can be found by searching:
+- "vmcsb_vic_memory_control_register" which expands on Controlling bitmap & color base addresses ($D018)
+- "bitmap_addressing_and_plotting" which expands on Practical formulas for finding a bitmap byte for a given X,Y

@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Check VIA1 ICR ($DC0D) for a FLAG interrupt (mask #$10). If a FLAG interrupt is pending, push a crafted return address and jump to the common IRQ-handling entry ($FF43) to save state and execute the IRQ routine; otherwise re-enable interrupts (CLI) and return (RTS).
+
+.,F91A AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,F91D 29 10    AND #$10        mask 000x 0000, FLAG interrupt
+.,F91F F0 09    BEQ $F92A       if no FLAG interrupt just exit
+                                else first call the IRQ routine
+.,F921 A9 F9    LDA #$F9        set the return address high byte
+.,F923 48       PHA             push the return address high byte
+.,F924 A9 2A    LDA #$2A        set the return address low byte
+.,F926 48       PHA             push the return address low byte
+.,F927 4C 43 FF JMP $FF43       save the status and do the IRQ routine
+.,F92A 58       CLI             enable interrupts
+.,F92B 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "set_tape_timing_constants_prepare_via_timers" which expands on runs after timing constants and timer reads
+- "irq_routine_read_t2c_and_compute_difference" which expands on FLAG interrupt handling routes execution to the IRQ routine

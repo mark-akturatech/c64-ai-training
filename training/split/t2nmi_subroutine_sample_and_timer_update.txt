@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - T2NMI subroutine: read the input bit from D2PRB, mask/save it into INBIT; compute an updated T2 timer for mid-bit sampling by subtracting a fixed offset, adding BAUDOF (BAUDOF/BAUDOF+1 words), store new D2T2L/H, enable the timer via D2CRB, restore NMI enables to D2ICR, preset the countdown values (D2T2L/H) to $FFFF for the next interval, and then JMP to RSRCVR (the receiver/shifter) to process the sampled bit. Comments note worst-case timing and why the CBIT adjustment exists.
+
+                                ; T2NMI - SUBROUTINE TO HANDLE AN RS232
+                                ;  BIT INPUT.
+                                ;
+.,FED6 AD 01 DD LDA $DD01       T2NMI  LDA D2PRB       ;GET DATA IN
+.,FED9 29 01    AND #$01               AND #01         ;MASK OFF...
+.,FEDB 85 A7    STA $A7                STA INBIT       ;...SAVE FOR LATTER
+                                ;
+                                ; UPDATE T2 FOR MID BIT CHECK
+                                ;   (WORST CASE <213 CYCLES TO HERE)
+                                ;   (CALC 125 CYCLES+43-66 DEAD)
+                                ;
+.,FEDD AD 06 DD LDA $DD06              LDA D2T2L       ;CALC NEW TIME & CLR NMI
+.,FEE0 E9 1C    SBC #$1C               SBC #22+6
+.,FEE2 6D 99 02 ADC $0299              ADC BAUDOF
+.,FEE5 8D 06 DD STA $DD06              STA D2T2L
+.,FEE8 AD 07 DD LDA $DD07              LDA D2T2H
+.,FEEB 6D 9A 02 ADC $029A              ADC BAUDOF+1
+.,FEEE 8D 07 DD STA $DD07              STA D2T2H
+                                ;
+.,FEF1 A9 11    LDA #$11               LDA #$11        ;ENABLE TIMER
+.,FEF3 8D 0F DD STA $DD0F              STA D2CRB
+                                ;
+.,FEF6 AD A1 02 LDA $02A1              LDA ENABL       ;RESTORE NMI'S EARLY...
+.,FEF9 8D 0D DD STA $DD0D              STA D2ICR
+                                ;
+.,FEFC A9 FF    LDA #$FF               LDA #$FF        ;ENABLE COUNT FROM $FFFF
+.,FEFE 8D 06 DD STA $DD06              STA D2T2L
+.,FF01 8D 07 DD STA $DD07              STA D2T2H
+                                ;
+.,FF04 4C 59 EF JMP $EF59              JMP RSRCVR      ;GO SHIFT IN...
+
+---
+Additional information can be found by searching:
+- "baud_table_and_cbit" which expands on uses BAUDOF/BAUDOF+1 and CBIT constants for timing
+- "flnmi_half_bit_setup_and_return" which expands on FLNMI sets up the half-bit timer and then transfers control to T2NMI path
+- "nested_nmi_dispatch_and_rstrab" which expands on T2NMI is invoked when a T2 NMI is detected

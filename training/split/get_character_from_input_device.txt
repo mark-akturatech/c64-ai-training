@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Return a character from the currently selected input device: read input device number ($99); if keyboard (0) handle keyboard-specific buffer retrieval; if RS-232 device, call the RS-232 Rx routine and return its byte; otherwise return success/no-error with no byte. Preserves and restores index registers around the RS-232 call.
+
+                                *** get character from the input device
+.,F13E A5 99    LDA $99         get the input device number
+.,F140 D0 08    BNE $F14A       if not the keyboard go handle other devices
+                                the input device was the keyboard
+.,F142 A5 C6    LDA $C6         get the keyboard buffer index
+.,F144 F0 0F    BEQ $F155       if the buffer is empty go flag no byte and return
+.,F146 78       SEI             disable the interrupts
+.,F147 4C B4 E5 JMP $E5B4       get input from the keyboard buffer and return
+                                the input device was not the keyboard
+.,F14A C9 02    CMP #$02        compare the device with the RS232 device
+.,F14C D0 18    BNE $F166       if not the RS232 device go ??
+                                the input device is the RS232 device
+.,F14E 84 97    STY $97         save Y
+.,F150 20 86 F0 JSR $F086       get a byte from RS232 buffer
+.,F153 A4 97    LDY $97         restore Y
+.,F155 18       CLC             flag no error
+.,F156 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_get_byte_from_rx_buffer" which expands on used to obtain a byte when input device is RS-232
+- "display_control_io_message_if_direct_mode" which expands on may display control messages during I/O

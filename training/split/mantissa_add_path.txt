@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Add FAC2 mantissa into FAC1 mantissa: ADC rounding byte, save rounding, then perform ADC chains adding mantissa4..mantissa1 (with carries) and save results. Finally jump to a test/normalization entry point to handle carry-based normalisation.
+
+                                *** add FAC2 mantissa to FAC1 mantissa
+.,B8FE 65 56    ADC $56         add FAC2 rounding byte
+.,B900 85 70    STA $70         save FAC1 rounding byte
+.,B902 A5 65    LDA $65         get FAC1 mantissa 4
+.,B904 65 6D    ADC $6D         add FAC2 mantissa 4
+.,B906 85 65    STA $65         save FAC1 mantissa 4
+.,B908 A5 64    LDA $64         get FAC1 mantissa 3
+.,B90A 65 6C    ADC $6C         add FAC2 mantissa 3
+.,B90C 85 64    STA $64         save FAC1 mantissa 3
+.,B90E A5 63    LDA $63         get FAC1 mantissa 2
+.,B910 65 6B    ADC $6B         add FAC2 mantissa 2
+.,B912 85 63    STA $63         save FAC1 mantissa 2
+.,B914 A5 62    LDA $62         get FAC1 mantissa 1
+.,B916 65 6A    ADC $6A         add FAC2 mantissa 1
+.,B918 85 62    STA $62         save FAC1 mantissa 1
+.,B91A 4C 36 B9 JMP $B936       test and normalise FAC1 for C=0/1
+
+---
+Additional information can be found by searching:
+- "sign_compare_and_select_add_subtract" which expands on entry here when signs indicate addition
+- "post_add_normalisation_shift_loop" which expands on performs rotation/normalisation when carry indicates overflow from addition

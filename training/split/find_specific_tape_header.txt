@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Locate a specific tape header on tape: calls a header-find routine (JSR $F72C) which returns the header in the buffer. If found, compares the requested filename against the header name byte-by-byte (using indices in $9E/$9F and ($B2) header buffer). On match sets carry (OK) and returns; on mismatch loops to next header or returns with error flagged.
+
+                                *** find specific tape header
+.,F7EA 20 2C F7 JSR $F72C       find tape header, exit with header in buffer
+.,F7ED B0 1D    BCS $F80C       just exit if error
+.,F7EF A0 05    LDY #$05        index to name
+.,F7F1 84 9F    STY $9F         save as tape buffer index
+.,F7F3 A0 00    LDY #$00        clear Y
+.,F7F5 84 9E    STY $9E         save as name buffer index
+.,F7F7 C4 B7    CPY $B7         compare with file name length
+.,F7F9 F0 10    BEQ $F80B       ok exit if match
+.,F7FB B1 BB    LDA ($BB),Y     get file name byte
+.,F7FD A4 9F    LDY $9F         get index to tape buffer
+.,F7FF D1 B2    CMP ($B2),Y     compare with tape header name byte
+.,F801 D0 E7    BNE $F7EA       if no match go get next header
+.,F803 E6 9E    INC $9E         else increment name buffer index
+.,F805 E6 9F    INC $9F         increment tape buffer index
+.,F807 A4 9E    LDY $9E         get name buffer index
+.,F809 D0 EC    BNE $F7F7       loop, branch always
+.,F80B 18       CLC             flag ok
+.,F80C 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_tape_buffer_start_pointer" which expands on used indirectly by pointer-setup code that may be used prior to header searches
+- "bump_tape_pointer" which expands on advances to the next header/buffer entry if needed

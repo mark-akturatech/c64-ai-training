@@ -1,0 +1,11 @@
+# An Introduction to Programming C-64 Demos - NMIs (Non-Maskable Interrupts) and disabling RESTORE NMI: cannot mask NMIs; technique to neutralize is set an NMI vector ($0318/$0319) pointing to an RTI/empty handler and avoid ACKing (or set up CIA2 timer to generate NMI and return immediately) so NMIs don't disrupt demo.
+
+NMIs
+I won't go very deep into NMIs here, I'll mostly explain how you can get rid of the problem with the RESTORE key. You can't just turn them off, because you can't do that (that's why they're called non-maskable interrupts). What you'll have to do to disable NMIs is the trigger an NMI and then refrain from ACKing it. That way, no new NMIs can occur. The simplest way to do this is to setup a timer interrupt on CIA2 (which is the CIA that can generate NMIs), and just do an RTI in the NMI handler routine.
+
+You set up an NMI handler just like an interrupt handler, but instead of setting $0314-$0315, you set the address in $0318-$0319, which is the NMI vector. Just set it to point to a routine that returns, and does nothing more. It's as simple as that.
+
+
+---
+Additional information can be found by searching:
+- "how_to_implement_interrupts_example" which expands on IRQ vs NMI vectors ($0314/$0315 vs $0318/$0319)

@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Sets up and iterates over string variables: sets garbage-collection step size to 7 ($53), loads the start-of-variables pointer ($2D/$2E) into the working pointer ($22/$23), compares against variable/array boundaries, and repeatedly calls the variable-salvageability check (JSR $B5BD) until all variables are processed or the variable area end is reached.
+
+                                done stacked strings, now do string variables
+.,B54D A9 07    LDA #$07        set step size = $07, collecting variables
+.,B54F 85 53    STA $53         save garbage collection step size
+.,B551 A5 2D    LDA $2D         get start of variables low byte
+.,B553 A6 2E    LDX $2E         get start of variables high byte
+.,B555 85 22    STA $22         save as pointer low byte
+.,B557 86 23    STX $23         save as pointer high byte
+.,B559 E4 30    CPX $30         compare end of variables high byte,
+                                start of arrays high byte
+.,B55B D0 04    BNE $B561       branch if no high byte match
+.,B55D C5 2F    CMP $2F         else compare end of variables low byte,
+                                start of arrays low byte
+.,B55F F0 05    BEQ $B566       branch if = variable memory end
+.,B561 20 BD B5 JSR $B5BD       check variable salvageability
+.,B564 F0 F3    BEQ $B559       loop always
+
+---
+Additional information can be found by searching:
+- "gc_init_and_process_descriptor_stack" which expands on follows descriptor-stack processing
+- "check_string_salvageability_for_variables_and_update_pointers" which expands on uses the salvageability checks described there
+- "iterate_string_arrays_and_prepare_descriptors" which expands on after variables the routine continues to process arrays

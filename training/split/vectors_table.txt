@@ -1,0 +1,54 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - KERNAL vectors and jump table area: installs high-level vector entries for KERNAL services (CINT, IOINIT, RAMTAS, RESTOR, VECTOR, SETMSG, SECND, TALK, LISTN, ACPTR, CIOUT, UNTLK, UNLSN, BSOUT, OPEN/CLOSE/CHKIN/CKOUT/CLRCH/BASIN/BSOUT mapping to indirect tables), STOP/GETIN/CLALL/UDTIM etc. Also defines the NMI/RESET/IRQ vectors at $FFFA..$FFFE (NMI, RESET, IRQ) and includes a table of cassette IRQ entry points (BSIT) and patchable jump entries. This block wires ROM entrypoints to the routines implemented elsewhere in the file and provides the public KERNAL API entrypoints used by BASIC and machine code programs.
+
+                                .LIB   VECTORS
+.,FF5B 20 18 E5 JSR $E518       *=$FF8A-9
+.,FF81 4C 5B FF JMP $FF5B       JMP    CINT
+.,FF84 4C A3 FD JMP $FDA3       JMP    IOINIT
+.,FF87 4C 50 FD JMP $FD50       JMP    RAMTAS
+                                *=$FF8A                ;NEW VECTORS FOR BASIC
+.,FF8A 4C 15 FD JMP $FD15       JMP    RESTOR          ;RESTORE VECTORS TO INITIAL SYSTEM
+.,FF8D 4C 1A FD JMP $FD1A       JMP    VECTOR          ;CHANGE VECTORS FOR USER
+                                *      =$FF90
+.,FF90 4C 18 FE JMP $FE18       JMP    SETMSG          ;CONTROL O.S. MESSAGES
+.,FF93 4C B9 ED JMP $EDB9       JMP    SECND           ;SEND SA AFTER LISTEN
+.,FF96 4C C7 ED JMP $EDC7       JMP    TKSA            ;SEND SA AFTER TALK
+.,FF99 4C 25 FE JMP $FE25       JMP    MEMTOP          ;SET/READ TOP OF MEMORY
+.,FF9C 4C 34 FE JMP $FE34       JMP    MEMBOT          ;SET/READ BOTTOM OF MEMORY
+.,FF9F 4C 87 EA JMP $EA87       JMP    SCNKEY          ;SCAN KEYBOARD
+.,FFA2 4C 21 FE JMP $FE21       JMP    SETTMO          ;SET TIMEOUT IN IEEE
+.,FFA5 4C 13 EE JMP $EE13       JMP    ACPTR           ;HANDSHAKE IEEE BYTE IN
+.,FFA8 4C DD ED JMP $EDDD       JMP    CIOUT           ;HANDSHAKE IEEE BYTE OUT
+.,FFAB 4C EF ED JMP $EDEF       JMP    UNTLK           ;SEND UNTALK OUT IEEE
+.,FFAE 4C FE ED JMP $EDFE       JMP    UNLSN           ;SEND UNLISTEN OUT IEEE
+.,FFB1 4C 0C ED JMP $ED0C       JMP    LISTN           ;SEND LISTEN OUT IEEE
+.,FFB4 4C 09 ED JMP $ED09       JMP    TALK            ;SEND TALK OUT IEEE
+.,FFB7 4C 07 FE JMP $FE07       JMP    READSS          ;RETURN I/O STATUS BYTE
+.,FFBA 4C 00 FE JMP $FE00       JMP    SETLFS          ;SET LA, FA, SA
+.,FFBD 4C F9 FD JMP $FDF9       JMP    SETNAM          ;SET LENGTH AND FN ADR
+.,FFC0 6C 1A 03 JMP ($031A)     OPEN   JMP (IOPEN)     ;OPEN LOGICAL FILE
+.,FFC3 6C 1C 03 JMP ($031C)     CLOSE  JMP (ICLOSE)    ;CLOSE LOGICAL FILE
+.,FFC6 6C 1E 03 JMP ($031E)     CHKIN  JMP (ICHKIN)    ;OPEN CHANNEL IN
+.,FFC9 6C 20 03 JMP ($0320)     CKOUT  JMP (ICKOUT)    ;OPEN CHANNEL OUT
+.,FFCC 6C 22 03 JMP ($0322)     CLRCH  JMP (ICLRCH)    ;CLOSE I/O CHANNEL
+.,FFCF 6C 24 03 JMP ($0324)     BASIN  JMP (IBASIN)    ;INPUT FROM CHANNEL
+.,FFD2 6C 26 03 JMP ($0326)     BSOUT  JMP (IBSOUT)    ;OUTPUT TO CHANNEL
+.,FFD5 4C 9E F4 JMP $F49E       JMP    LOADSP          ;LOAD FROM FILE
+.,FFD8 4C DD F5 JMP $F5DD       JMP    SAVESP          ;SAVE TO FILE
+.,FFDB 4C E4 F6 JMP $F6E4       JMP    SETTIM          ;SET INTERNAL CLOCK
+.,FFDE 4C DD F6 JMP $F6DD       JMP    RDTIM           ;READ INTERNAL CLOCK
+.,FFE1 6C 28 03 JMP ($0328)     STOP   JMP (ISTOP)     ;SCAN STOP KEY
+.,FFE4 6C 2A 03 JMP ($032A)     GETIN  JMP (IGETIN)    ;GET CHAR FROM Q
+.,FFE7 6C 2C 03 JMP ($032C)     CLALL  JMP (ICLALL)    ;CLOSE ALL FILES
+.,FFEA 4C 9B F6 JMP $F69B       JMP    UDTIM           ;INCREMENT CLOCK
+.,FFED 4C 05 E5 JMP $E505       JSCROG JMP SCRORG      ;SCREEN ORG
+.,FFF0 4C 0A E5 JMP $E50A       JPLOT  JMP PLOT        ;READ/SET X,Y COORD
+.,FFF3 4C 00 E5 JMP $E500       JIOBAS JMP IOBASE      ;RETURN I/O BASE
+.:FFF6 52 52 42 59              *=$FFFA
+.:FFFA 43 FE                    .WOR   NMI             ;PROGRAM DEFINEABLE
+.:FFFC E2 FC                    .WOR   START           ;INITIALIZATION CODE
+.:FFFE 48 FF                    .WOR   PULS            ;INTERRUPT HANDLER
+
+---
+Additional information can be found by searching:
+- "init_library" which expands on VECTOR/RESTOR use these vectors to initialize KERNAL indirects
+- "load_library" which expands on LOAD/SAVE routines are exposed via these KERNAL vectors (OPEN/LOAD/SAVE)

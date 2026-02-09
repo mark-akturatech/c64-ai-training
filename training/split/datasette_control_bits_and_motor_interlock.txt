@@ -1,0 +1,41 @@
+# ********* - Covers cassette/Datasette-related functions of R6510 bits 3-5: Bit 3 is Cassette Data Output (writes tape data), Bit 4 is Cassette Switch Sense (reads whether a transport button is pressed; requires Bit 4 of D6510 at $00 to be set as input), and Bit 5 controls the Cassette Motor (0 allows motor to run when buttons pressed; 1 disables motor). Describes how the keyboard-scan interrupt routine normally controls the motor and an interlock at location 192 ($C0): how the interlock is used to prevent user control unless a transport button is pressed and how to POKE location 192 to gain control.
+
+Bits 3-5 of this register have functions connected with the Datasette
+recorder.  These are as follows:
+
+Bit 3.  This is the Cassette Data Output line.  This line is connected
+to the Cassette Data Write line on the cassette port, and is used to
+send the data which is written to tape.
+
+Bit 4.  This bit is the Cassette Switch Sense line.  This bit enables
+a program to tell whether or not one of the buttons that moves the
+recorder is pressed down.  If the switch on the recorder is down, this
+bit will have a value of 1.  Remember that Bit 4 of the data direction
+register at location 0 must contain a 0 for this bit to properly
+reflect the status of the switch.
+
+Bit 5.  Bit 5 is the Cassette Motor Control.  Setting this bit to zero
+allows the motor to turn when you press one of the buttons on the
+recorder, while setting it to one disables it from turning.
+
+Most of the time, the setting of this bit will be controlled by the
+interrupt routine that is used to read the keyboard every sixtieth of
+a second.  If none of the buttons on the recorder is pressed, that
+interrupt routine shuts the motor off and sets the interlock at
+location 192 ($C0) to zero.  When a button is pressed, if the
+interlock location is zero, Bit 5 of this register is set to zero to
+turn the motor on.
+
+When the interlock location contains a zero, the keyscan routine will
+not let you control the setting of this bit of the register (and the
+interlock is always set to zero when no buttons are pressed).  In
+order for you to gain control of the motor, you must POKE a nonzero
+value into 192 after a button on the recorder has been pressed.  You
+can then shut off the motor and turn it back on as you please, by
+manipulating this bit, so long as a button stays pressed.
+
+
+---
+Additional information can be found by searching:
+- "d6510_data_direction_register_at_0" which expands on Need to set corresponding D6510 direction bit (Bit 4) to input to read cassette switch sense correctly
+- "r6510_internal_io_port_overview" which expands on Cassette-related bits described in the R6510 port summary

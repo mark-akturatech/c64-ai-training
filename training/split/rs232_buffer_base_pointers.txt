@@ -1,0 +1,24 @@
+# COMMODORE 64 - Receiver/Transmitter buffer base location pointers used by the KERNAL RS-232 open/close. $00F7-REBUF: two-byte pointer to Receiver Buffer base. $00F9-ROBUF: two-byte pointer to Transmitter Buffer base. These pointers are set by the OPEN KERNAL routine (each pointing to a different 256-byte buffer) and de-allocated by writing zero into the high-order bytes ($00F8 and $00FA) by CLOSE. Notes on manual allocation/de-allocation by machine-language programs and caution about keeping top-of-memory pointers correct when BASIC and ML programs coexist.
+
+
+
+  RECEIVER/TRANSMITTER BUFFER BASE LOCATION POINTERS
+
+
+    $00F7-REBUF-A two-byte pointer to the Receiver Buffer base location.
+    $00F9-ROBUF-A two-byte pointer to the Transmitter Buffer base location.
+
+    The two locations above are set up by the OPEN KERNAL routine, each
+  pointing to a different 256-byte buffer. They are de-allocated by writing
+  a zero into the high order bytes ($00F8 and $00FA), which is done by the
+  CLOSE KERNAL entry. They may also be allocated/de-allocated by the
+  machine language programmer for his/her own purposes, removing/creating
+  only the buffer(s) required. When using a machine language program that
+  allocates these buffers, care must be taken to make sure that the top of
+  memory pointers stay correct, especially if BASIC programs are expected
+  to run at the same time.
+
+---
+Additional information can be found by searching:
+- "rs232_zero_page_variables" which expands on Zero-page variables are used by the routines that operate on these buffers
+- "sample_basic_program_pet_ascii" which expands on OPEN/CLOSE in the sample program sets/clears these buffer pointers

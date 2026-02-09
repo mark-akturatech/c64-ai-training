@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Read I/O status word: checks device number in $BA; if device == RS232 ($02) reads RS232 status at $0297, clears it, and returns previous status on stack. Uses PHA/PLA to preserve status. RTS.
+
+                                *** read I/O status word
+.,FE07 A5 BA    LDA $BA         get the device number
+.,FE09 C9 02    CMP #$02        compare device with RS232 device
+.,FE0B D0 0D    BNE $FE1A       if not RS232 device go ??
+                                get RS232 device status
+.,FE0D AD 97 02 LDA $0297       get the RS232 status register
+.,FE10 48       PHA             save the RS232 status value
+.,FE11 A9 00    LDA #$00        clear A
+.,FE13 8D 97 02 STA $0297       clear the RS232 status register
+.,FE16 68       PLA             restore the RS232 status value
+.,FE17 60       RTS             
+
+---
+Additional information can be found by searching:
+- "read_io_status_word_wrapper" which expands on wrapper at $FFB7

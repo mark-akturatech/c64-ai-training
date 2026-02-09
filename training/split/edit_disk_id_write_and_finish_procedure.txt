@@ -1,0 +1,48 @@
+# byRiclianll - Writes the new disk ID and finalizes the operation: repositions the buffer pointer to the disk ID (PRINT#15,"B-P";2;162), writes the two-character NDI* into the buffer (PRINT#2,NDI*;), and issues the block-write command (PRINT#15,"U2",2,0,18,0) to write track 18 sector 0. Reads the drive's response (INPUT#15,EN*,EM*,ET*,ES*) and checks EN* for success. On error it prints a failed message and branches to cleanup. On success it issues the '10' command to update the BAM, closes channels, prints DONE, and ends. Also contains the close/cleanup routine (CL0SE2, INPUT#15,... CLOSE 15).
+
+
+530  PRINT#15, "B-P";2; 162 
+
+540  PRINT#2,NDI*; 
+
+550  PRINT#15, "U2";2;0; 18;0 
+
+560  INPUT#15,EN*,EM*,ET*,ES* 
+
+570  IFEN*="00"G0T0610 
+
+580  PRINT"  <:D0WN>  "EN*",    "EM*"  ,  "ET*"  ,  "ES* 
+
+
+80 
+
+
+590  PRINT"  <:D0WN>  <:RVS>FAILED<:RaFF>  " 
+600  6010690 
+610  CL0SE2 
+
+620  INPUT#15,EN*,EM*,ET*,ES* 
+
+630  PRINT#15, "10" 
+
+640  INPUT#15,EN*,EM*,ET*,ES* 
+
+650  CLOSE 15 
+
+660  PRINT"  <:D0WN> DONE  !  " 
+
+670  END 
+
+680  REM  CLOSE 
+
+690  CL0SE2 
+
+700  INPUT#15,EN*,EM*,ET*,ES* 
+710  CL0SE15 
+720  END 
+
+
+---
+Additional information can be found by searching:
+- "edit_disk_id_read_and_edit_disk_id_bytes" which expands on takes the padded new ID produced by the edit/validation step and writes it to disk
+- "edit_disk_id_block_write_alternatives_bottom" which expands on alternate syntaxes for the U2 block-write command used here

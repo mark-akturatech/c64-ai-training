@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Get a byte from the RS-232 device: call the RS-232 get-byte routine, handle its error flag (BCS), test for null return and, if null, examine RS-232 status ($0297) for DSR/other status bits, looping or returning [EOL] as appropriate. Implements the higher-level loop around the Rx buffer retrieval for RS-232 devices.
+
+.,F1B8 20 4E F1 JSR $F14E       get byte from RS232 device
+.,F1BB B0 F7    BCS $F1B4       branch if error, this doesn't get taken as the last
+                                instruction in the get byte from RS232 device routine
+                                is CLC ??
+.,F1BD C9 00    CMP #$00        compare with null
+.,F1BF D0 F2    BNE $F1B3       exit if not null
+.,F1C1 AD 97 02 LDA $0297       get the RS232 status register
+.,F1C4 29 60    AND #$60        mask 0xx0 0000, DSR detected and ??
+.,F1C6 D0 E9    BNE $F1B1       if ?? return null
+.,F1C8 F0 EE    BEQ $F1B8       else loop, branch always
+
+
+---
+Additional information can be found by searching:
+- "rs232_get_byte_from_rx_buffer" which expands on core routine that returns bytes from the RS-232 buffer
+- "serial_bus_input_check_and_dispatch" which expands on serial-bus vs RS-232 device distinctions in input dispatch

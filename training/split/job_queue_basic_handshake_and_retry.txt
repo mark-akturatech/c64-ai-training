@@ -1,0 +1,37 @@
+# byRiclianll - BASIC 'JOB QUEUE' subroutine that implements drive communication and retry logic. Covers the REM header, initialization of TRY, PRINT#15 commands to send M-W and M-R messages (including the job identifier bytes), GET#15 response reading, conversion of the returned character to numeric E, retry/time‑out branching (go-to lines), closing channel 15, and the failure message and END. This chunk contains the full BASIC-level handshake and retry/response handling used to send commands to the drive.
+
+570  REM  JOB  QUEUE 
+580  TRY=0 
+
+590  PRINT#15. "M-W"CHR*(8)CHR*(0)CHR*(4)C 
+HR*  (T)  CHR*  (S)  CHR*  (T)  CHR*  (S) 
+
+600  PRINT#15,  "M-W"CHR*  ( 1 )  CHR*  (O)  CHR*  (DC 
+
+HR*(JOB) 
+
+610  TRY=TRY-H 
+
+620  PRINT#15, "M-R"CHR* ( 1 ) CHR* (O) 
+
+630  GET#15,E* 
+
+640   IFE*=""THENE*=CHR* (O) 
+
+650  E=ASC(E*) 
+
+660  IFTRY=500GaT0690 
+
+670  IFE>127GaTa610 
+
+680  RETURN 
+
+690  CLOSE 15 
+
+700  PRINT"  CDOWNJ  <:RVS>FAILED<R0FF>  " 
+710  END 
+
+---
+Additional information can be found by searching:
+- "track23_error_data_bytes" which expands on 6502 machine-code DATA statements that this BASIC job-queue sends/loads into the drive
+- "track23_error_source_listing_assembly" which expands on Assembly source (full-track 23 routine) corresponding to the DATA bytes

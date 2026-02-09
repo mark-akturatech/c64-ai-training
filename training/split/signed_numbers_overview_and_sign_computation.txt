@@ -1,0 +1,38 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Discussion of signed numbers: most routines presented are for unsigned values. LSR and ROR are not sign-preserving. Usual method: compute sign of the result first (if operands have same sign result positive, else negative). For two's-complement representation the sign of the result is found by EORing high bytes; the sign is then in the high bit of A/N flag. After determining sign, make operands positive, multiply, then apply sign to result.
+
+But what about negative numbers?
+----------------------------------------
+
+
+Up to this point, all the code presented in this article has been
+designed to work with unsigned (positive) numbers.  The simple
+multiply-by-constant routines will also work with negative numbers,
+but none of the others will.  Generally, if you see a LSR
+or ROR instruction in one of the above routines, it will
+give wrong results for negative numbers.
+
+
+The problem is that the 6502's LSR and ROR
+instructions are not sign-preserving.  They could be replaced by calls
+to subroutines that perform the shift in a sign-preserving manner,
+but that's probably not the best way to solve the problem.
+
+
+The usual way to multiply signed numbers on the 6502 is to compute the
+sign of the result first, then make both numbers positive, multiply
+them, and apply the proper sign to the result.
+
+
+Computing the sign of the result is very easy:  If the two original
+numbers have the same sign, the result is positive, and if they have
+different signs, the result is negative.  Assuming the usual
+two's-complement representation of negative numbers, the sign of the
+result can be found by EORing the high bytes of the two
+numbers, which leaves the sign of the result in the high bit of the
+accumulator and in the N flag.
+
+
+---
+Additional information can be found by searching:
+- "negation_methods" which expands on how to make numbers positive or negate after computation
+- "signed_multiply_wrapper" which expands on sample wrapper around unsigned multiply

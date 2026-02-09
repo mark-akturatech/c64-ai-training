@@ -1,0 +1,37 @@
+# ********* - Detailed layout of FAC1 subfields: FACEXP ($61) — exponent stored with bias of 129 (128 represents zero); FACHO ($62-$65) — four-byte normalized mantissa (MSB assumed 1), with first two bytes also used as signed integer result in high/low order; FACSGN ($66) — sign byte (0 = positive, $FF = negative).
+
+Floating Point Accumulator #1 can be further divided into the
+following locations:
+
+97            $61            FACEXP
+Floating Point Accumulator #1: Exponent
+
+This exponent represents the closest power of two to the number, with
+129 added to take care of the sign problem for negative exponents.  An
+exponent of 128 is used for the value 0; an exponent of 129 represents
+2 to the 0 power, or 1; an exponent of 130 represents 2 to the first
+power, or 2; 131 is 2 squared, or 4; 132 is 2 cubed, or 8; and so on.
+
+98-101        $62-$65        FACHO
+Floating Point Accumulator #1: Mantissa
+
+The most significant digit can be assumed to be a 1 (remember that the
+range of the mantissa is from 1 to 1.99999...) when a floating point
+number is stored to a variable.  The first bit is used for the sign of
+the number, and the other 31 bits of the four-byte mantissa hold the
+other significant digits.
+
+The first two bytes (98-99, $62-$63) of this location will hold the
+signed integer result of a floating point to integer conversion, in
+high-byte, low- byte order.
+
+102           $66            FACSGN
+Floating Point Accumulator #1: Sign
+
+A value of 0 here indicates a positive number, while a value of 255
+($FF) indicates a negative number.
+
+---
+Additional information can be found by searching:
+- "fac1_accumulator_overview" which expands on FAC1 purpose and floating-point format summary
+- "facov_rounding_overflow_byte" which expands on handling of extra low-order mantissa bytes used in rounding

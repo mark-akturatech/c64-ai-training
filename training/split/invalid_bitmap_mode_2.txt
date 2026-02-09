@@ -1,0 +1,58 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=1, BMM=1, MCM=1 invalid bitmap mode 2: also yields a black screen; g-address bits 9 and 10 forced to zero (ECM), structure similar to multicolor bitmap but repeated segments. '01' treated as background; g-data results in black where combinations map to background/foreground black.
+
+3.7.3.8. Invalid bitmap mode 2 (ECM/BMM/MCM=1/1/1)
+--------------------------------------------------
+
+The last invalid mode also creates a black screen but it can also be
+"scanned" with sprite-graphics collisions.
+
+The structure of the graphics is basically as in multicolor bitmap mode,
+but the bits 9 and 10 of the g-addresses are always zero due to the set ECM
+bit, with the same results as in the first invalid bitmap mode. As usual,
+the bit combination "01" is part of the background.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |                           unused                          |
+ +-----------------------------------------------------------+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13| VC9| VC8|  0 |  0 | VC5| VC4| VC3| VC2| VC1| VC0| RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         4 pixels (2 bits/pixel)       |
+ |                                       |
+ | "00": Black (background)              |
+ | "01": Black (background)              |
+ | "10": Black (foreground)              |
+ | "11": Black (foreground)              |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "invalid_bitmap_mode_1" which expands on both invalid bitmap modes share ECM-induced address restrictions

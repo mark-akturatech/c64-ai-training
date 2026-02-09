@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OUTFN subroutine: outputs the file name to the console. If FNLEN is zero, returns immediately. Otherwise loops through filename bytes at FNADR (indirect via $BB) and outputs each character using BSOUT, returning when done.
+
+                                ;
+.,F5C1 A4 B7    LDY $B7         OUTFN  LDY FNLEN       ;IS THERE A NAME?
+.,F5C3 F0 0C    BEQ $F5D1       BEQ    LD115           ;NO...DONE
+.,F5C5 A0 00    LDY #$00        LDY    #0
+.,F5C7 B1 BB    LDA ($BB),Y     LD110  LDA (FNADR)Y
+.,F5C9 20 D2 FF JSR $FFD2       JSR    BSOUT
+.,F5CC C8       INY             INY
+.,F5CD C4 B7    CPY $B7         CPY    FNLEN
+.,F5CF D0 F6    BNE $F5C7       BNE    LD110
+                                ;
+.,F5D1 60       RTS             LD115  RTS
+
+---
+Additional information can be found by searching:
+- "luking_message_subroutine" which expands on Used by LUKING to print the filename following 'FOR'

@@ -1,0 +1,34 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - Notes on fast loaders and protocol variants: JiffyDOS (1985) modifies both the computer KERNAL and drive DOS ROM for higher throughput by changing byte protocol; Fast Serial (C128, 1986) uses CIA hardware serial register requiring compatible drives; many software fast loaders upload custom drive code to improve speed. Explains fundamental IEC limitation: CPU must bit-bang bits and C64 VIC-II DMA steals cycles.
+
+================================================================================
+NOTES ON FAST LOADERS AND PROTOCOL VARIANTS
+================================================================================
+
+The slow speed of the standard IEC serial bus on the C64 (under 1 KB/sec)
+led to numerous fast loader implementations:
+
+  JiffyDOS (1985):
+    Software modification for both C64 and drive. Replaces the serial bus
+    routines in both the computer's KERNAL and the drive's DOS ROM. Achieves
+    significantly higher throughput by using a different byte transfer protocol.
+
+  Fast Serial (C128, 1986):
+    Hardware enhancement using the CIA chip's serial port register for
+    hardware-assisted byte transfer. Requires compatible drives (1571, 1581).
+    Available only on the C128.
+
+  Software Fast Loaders:
+    Many commercial and public domain fast loaders exist that replace the
+    serial bus timing with custom protocols, often achieving 5-10x speed
+    improvements. These typically work by uploading custom code to the drive's
+    RAM and using modified transfer protocols.
+
+The fundamental limitation of the IEC bus is that it requires the CPU to
+bit-bang each bit of every byte, and on the C64, the VIC-II chip regularly
+steals CPU cycles for DMA, making precise timing difficult.
+
+
+---
+Additional information can be found by searching:
+- "timing_evolution_on_commodore_models" which expands on why C64 timing limitations motivated fast loaders
+- "burst_api" which expands on burst and drive-assisted fast transfers on compatible drives

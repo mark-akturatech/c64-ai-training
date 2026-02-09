@@ -1,0 +1,27 @@
+# ********* - FRE: Implementation of the FRE function (routine at $B37D). Describes how FRE calls the garbage collection routine to reclaim unused string text, computes free memory between bottom of string space and top of array storage, and then falls through to a routine that converts the (assumed) 16-bit signed free-memory value into floating-point format. Explains platform differences: on PET free memory never exceeded 32767, but on the C64 larger values appear negative when treated as signed 16-bit; gives a corrective expression (FRE(0)-6556*(FRE(0)<0) in the text) to obtain correct free-memory amounts. Includes the trailing blank line.
+
+45949         $B37D          FRE
+Perform FRE
+
+The FRE function calls the garbage collection routine at 46374 ($B526)
+to get rid of unused string text, and calculates the difference
+between the bottom of string text and the top of array storage.  It
+then drops through to the follow routine, which assumes that the free
+memory value is a 16-bit signed integer, and converts it to floating
+point accordingly.
+
+Of course, while the free memory space on the PET might have always
+been 32767 or less (the maximum value of a signed integer), sich is
+definitely not the case on the 64.  Because conversion is from a
+signed integer, any memory value over 32767 will be regarded as
+negative (the high bit is treated as a sign bit).  Therefore, for
+these higher values you must add twice the bit value of the high bit
+(65536) in order to come up with the correct value.  The expression
+FRE(0)-6556*(FRE(0)<0) will always return the correct amount of free
+memory.
+
+
+---
+Additional information can be found by searching:
+- "givayf_int16_to_floating_point" which expands on FRE falls through to the routine that converts a 16-bit signed integer to floating point
+- "array_lookup_and_creation_isary" which expands on Free memory calculations relate to array storage boundaries used by ISARY

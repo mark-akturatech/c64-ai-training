@@ -1,0 +1,133 @@
+Datassette Encoding
+Source: https://www.c64-wiki.com/wiki/Datassette_Encoding
+
+Overview
+--------
+
+The Commodore Datassette uses pulse length encoding rather than frequency-shift
+keying to record data on magnetic tape. Each pulse represents one complete
+frequency cycle of HIGH and LOW levels.
+
+
+Pulse Types
+-----------
+
+Three pulse types are used:
+
+    Type      NTSC         PAL
+    Short     176 µs       182.7 µs
+    Medium    256 µs       265.7 µs
+    Long      336 µs       348.8 µs
+
+
+Bit Encoding
+------------
+
+Each data bit is encoded using a pair of pulses:
+
+    Bit "0" = short pulse + medium pulse
+    Bit "1" = medium pulse + short pulse
+
+Additional signal markers:
+
+    Byte marker     = long pulse + medium pulse
+    End-of-data     = long pulse + short pulse
+
+
+Byte Encoding
+-------------
+
+The byte marker indicates the start of a byte. The bits are recorded with the
+least significant bit (LSB) first and a parity bit (odd parity) follows.
+
+Odd parity means the total count of "1s" in data bits plus the parity bit
+equals an odd number, calculated by XORing a "1" with all eight payload bits.
+
+Each byte takes 8.96 ms to record.
+
+Complete byte structure:
+
+    L/M    S/M  S/M  S/M  S/M  S/M  S/M  S/M  S/M  M/S
+    marker bit0 bit1 bit2 bit3 bit4 bit5 bit6 bit7 parity
+
+
+Data Block Structure
+--------------------
+
+Each block contains:
+
+  - 192-byte payload (recorded twice for error detection)
+  - Synchronization leader: 10 seconds for first block,
+    2 seconds for subsequent blocks
+  - Countdown byte sequence: $89-$81 (first copy), $09-$01 (second copy)
+  - One-byte checksum: XOR of $00 and all payload bytes
+  - Inter-record gaps: Long pulse + 60 short pulses
+
+The leader consists of short pulses. During this time, the Kernal calculates
+a speed correction factor, since tape speed might vary for different motors.
+
+
+Header Block (192 bytes)
+------------------------
+
+    Byte    Length  Content
+    1       1       Header Type
+    2-3     2       Start address (low/high)
+    4-5     2       End address (low/high)
+    6-21    16      Filename (displayed)
+    22-192  171     Filename (not displayed, padded with spaces $20)
+
+Header Types:
+
+    $01 - Relocatable BASIC program
+    $02 - Data block for sequential ASCII file
+    $03 - Non-relocatable program (machine language)
+    $04 - ASCII file header
+    $05 - End-of-tape marker (EOT)
+
+Filenames shorter than 16 characters are padded with spaces (ASCII $20).
+
+
+PAL/NTSC Compatibility
+----------------------
+
+Despite the different PAL and NTSC clock frequencies (985248 Hz vs 1022727 Hz),
+there is no issue with swapping tapes between systems. The synchronization
+algorithm and variable motor speeds compensate for the approximately 3.8%
+clock difference.
+
+
+Checksum Calculation
+--------------------
+
+The checksum uses sequential XOR operations starting with $00, protecting
+against data corruption from tape dropouts:
+
+    checksum = $00 XOR byte1 XOR byte2 XOR ... XOR byte192
+
+
+Read vs Write Signal
+--------------------
+
+The read signal inverts the write signal. Pulse width measurement differs:
+rising edges for write, falling edges for read.
+
+The C64 senses triggers (zero-crossings from high to low) on the CIA #1
+FLAG line, which is connected to the cassette read line of the cassette port.
+Each trigger generates an interrupt request.
+
+
+TAP File Format
+---------------
+
+The TAP file format (designed by Per Hakan Sundell, 1997) digitally represents
+tape pulses. Each nonzero byte represents the time length of a single pulse:
+
+    TAP Data Byte = Pulse length (microseconds) * C64 PAL Frequency / 8
+    TAP Data Byte = Pulse length (microseconds) * 0.123156
+
+Standard CBM pulses in TAP values:
+
+    Short:  352 * 0.123156 = 43  ($2B)
+    Medium: 512 * 0.123156 = 63  ($3F)
+    Long:   672 * 0.123156 = 83  ($53)

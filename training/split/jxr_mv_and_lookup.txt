@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Table management routines: JXRMV/JX170 removes a logical file entry by shifting the last entry into the deleted slot (LAT/FAT/SAT arrays), JLTLK/JLTLK/JZ100/JZ101 lookup routines to match logical file numbers (LAT) and fetch LA/FA/SA (LA=logical address pointer, FA=device number, SA=secondary). Also includes flags for STATUS and error returns.
+
+.,F2BA A5 FA    LDA $FA         CLS010 LDA ROBUF+1     ;CHECK OUTPUT ALLOCATION
+.,F2BC F0 01    BEQ $F2BF              BEQ CLS020
+.,F2BE C8       INY                    INY
+.,F2BF A9 00    LDA #$00        CLS020 LDA #00         ;DEALLOCATE
+.,F2C1 85 F8    STA $F8                STA RIBUF+1
+.,F2C3 85 FA    STA $FA                STA ROBUF+1
+                                ; FLAG TOP OF MEMORY CHANGE
+.,F2C5 4C 7D F4 JMP $F47D              JMP MEMTCF      ;GO SET NEW TOP
+                                ;
+                                ;CLOSE CASSETTE FILE
+                                ;
+.,F2C8 A5 B9    LDA $B9         JX115  LDA SA          ;WAS IT A TAPE READ?
+.,F2CA 29 0F    AND #$0F        AND    #$F
+.,F2CC F0 23    BEQ $F2F1       BEQ    JX150           ;YES
+                                ;
+.,F2CE 20 D0 F7 JSR $F7D0       JSR    ZZZ             ;NO. . .IT IS WRITE
+.,F2D1 A9 00    LDA #$00        LDA    #0              ;END OF FILE CHARACTER
+.,F2D3 38       SEC             SEC                    ;NEED TO SET CARRY FOR CASOUT (ELSE RS232 OUTPUT!)
+.,F2D4 20 DD F1 JSR $F1DD       JSR    CASOUT          ;PUT IN END OF FILE
+.,F2D7 20 64 F8 JSR $F864       JSR    WBLK
+.,F2DA 90 04    BCC $F2E0       BCC    JX117           ;NO ERRORS...
+.,F2DC 68       PLA             PLA                    ;CLEAN STACK FOR ERROR
+.,F2DD A9 00    LDA #$00        LDA    #0              ;BREAK KEY ERROR
+.,F2DF 60       RTS             RTS
+                                ;
+.,F2E0 A5 B9    LDA $B9         JX117  LDA SA
+.,F2E2 C9 62    CMP #$62        CMP    #$62            ;WRITE END OF TAPE BLOCK?
+.,F2E4 D0 0B    BNE $F2F1       BNE    JX150           ;NO...
+                                ;
+.,F2E6 A9 05    LDA #$05        LDA    #EOT
+.,F2E8 20 6A F7 JSR $F76A       JSR    TAPEH           ;WRITE END OF TAPE BLOCK
+.,F2EB 4C F1 F2 JMP $F2F1       JMP    JX150
+                                ;
+                                ;CLOSE AN SERIAL FILE
+                                ;
+.,F2EE 20 42 F6 JSR $F642       JX120  JSR CLSEI
+                                ;
+                                ;ENTRY TO REMOVE A GIVE LOGICAL FILE
+                                ;FROM TABLE OF LOGICAL, PRIMARY,
+                                ;AND SECONDARY ADDRESSES
+                                ;
+.,F2F1 68       PLA             JX150  PLA             ;GET TABLE INDEX OFF STACK
+                                ;
+                                ; JXRMV - ENTRY TO USE AS AN RS-232 SUBROUTINE
+                                ;
+.,F2F2 AA       TAX             JXRMV  TAX
+.,F2F3 C6 98    DEC $98         DEC    LDTND
+.,F2F5 E4 98    CPX $98         CPX    LDTND           ;IS DELETED FILE AT END?
+.,F2F7 F0 14    BEQ $F30D       BEQ    JX170           ;YES...DONE
+                                ;
+                                ;DELETE ENTRY IN MIDDLE BY MOVING
+                                ;LAST ENTRY TO THAT POSITION.
+                                ;
+.,F2F9 A4 98    LDY $98         LDY    LDTND
+.,F2FB B9 59 02 LDA $0259,Y     LDA    LAT,Y
+.,F2FE 9D 59 02 STA $0259,X     STA    LAT,X
+.,F301 B9 63 02 LDA $0263,Y     LDA    FAT,Y
+.,F304 9D 63 02 STA $0263,X     STA    FAT,X
+.,F307 B9 6D 02 LDA $026D,Y     LDA    SAT,Y
+.,F30A 9D 6D 02 STA $026D,X     STA    SAT,X
+
+---
+Additional information can be found by searching:
+- "close_and_cassette_finalize" which expands on used when closing and removing table entries

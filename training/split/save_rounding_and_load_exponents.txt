@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Save FAC1 rounding byte into FAC2 rounding byte slot, set index to FAC2 exponent address, load FAC2 exponent into Y, test for zero exponent (early exit), then prepare for exponent subtraction (SEC/SBC) and branch to mantissa-add if exponents equal or to shift logic if FAC2 < FAC1.
+
+.,B86F A6 70    LDX $70         get FAC1 rounding byte
+.,B871 86 56    STX $56         save as FAC2 rounding byte
+.,B873 A2 69    LDX #$69        set index to FAC2 exponent address
+.,B875 A5 69    LDA $69         get FAC2 exponent
+.,B877 A8       TAY             copy exponent
+.,B878 F0 CE    BEQ $B848       exit if zero
+.,B87A 38       SEC             set carry for subtract
+.,B87B E5 61    SBC $61         subtract FAC1 exponent
+.,B87D F0 24    BEQ $B8A3       if equal go add mantissas
+.,B87F 90 12    BCC $B893       if FAC2 < FAC1 then go shift FAC2 right
+
+---
+Additional information can be found by searching:
+- "fac1_zero_early_exit_copy_fac2" which expands on previous early-exit check
+- "fac2_gt_fac1_swap_and_sign_setup" which expands on path taken when FAC2 exponent > FAC1 exponent
+- "exponent_diff_and_shift_smaller_mantissa" which expands on path taken when FAC2 exponent < FAC1 exponent (align mantissas)
+- "mantissa_add_path" which expands on branch target when exponents equal

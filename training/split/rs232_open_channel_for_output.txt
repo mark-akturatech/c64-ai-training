@@ -1,0 +1,33 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Open/configure the RS-232 channel for output (RTS/CTS/DSR handshake). Saves the output device number, checks handshake mode (3-line vs 2-line), tests VIA2 DRB ($DD01) modem inputs (DSR/CTS), waits for CTS/DSR as needed, toggles RTS in VIA2 DRB, and sets the RS-232 status when DSR is not present. Returns with carry clear to indicate success.
+
+                                *** open RS232 channel for output
+.,EFE1 85 9A    STA $9A         save the output device number
+.,EFE3 AD 94 02 LDA $0294       read the pseudo 6551 command register
+.,EFE6 4A       LSR             shift handshake bit to carry
+.,EFE7 90 29    BCC $F012       if 3 line interface go ??
+.,EFE9 A9 02    LDA #$02        mask 0000 00x0, RTS out
+.,EFEB 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,EFEE 10 1D    BPL $F00D       if DSR = 0 set DSR not present and exit
+.,EFF0 D0 20    BNE $F012       if RTS = 1 just exit
+.,EFF2 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,EFF5 29 02    AND #$02        mask 0000 00x0, timer B interrupt
+.,EFF7 D0 F9    BNE $EFF2       loop while the timer B interrupt is enebled
+.,EFF9 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,EFFC 70 FB    BVS $EFF9       loop while CTS high
+.,EFFE AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,F001 09 02    ORA #$02        mask xxxx xx1x, set RTS high
+.,F003 8D 01 DD STA $DD01       save VIA 2 DRB, RS232 port
+.,F006 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,F009 70 07    BVS $F012       exit if CTS high
+.,F00B 30 F9    BMI $F006       loop while DSR high
+                                set no DSR and exit
+.,F00D A9 40    LDA #$40        set DSR signal not present
+.,F00F 8D 97 02 STA $0297       save the RS232 status register
+.,F012 18       CLC             flag ok
+.,F013 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_set_dsr_cts_not_present" which expands on sets the DSR/CTS-not-present bits used here
+- "rs232_send_byte_to_tx_buffer" which expands on after opening, bytes are queued for transmit into the Tx buffer

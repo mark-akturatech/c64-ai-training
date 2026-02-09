@@ -1,0 +1,37 @@
+# MACHINE - Loading ML into high memory can leave SOV just above it making little room for variables (OUT OF MEMORY). Recommended order: load high-memory ML first, then BASIC so SOV points appropriately; may need to adjust TOM and NEW between loads.
+
+Caution:  we are discussing the programmed LOAD command only in the context
+of loading machine language modules.  If you want to have a program load in
+another BASIC program (chaining or loading) the above rules still apply but
+may need to be used differently.
+
+
+Other SOV Blunders
+------------------
+
+We have discussed the horrible results of loading a machine language program
+into the cassette buffer (using a direct command) after BASIC has been
+loaded.  By now, we should have learned to avoid making this mistake.  What
+about programs stored in other areas, such as high memory or after BASIC?
+
+Suppose we want to place a program into high memory, either by moving the
+top-of-memory pointer down to make room, or by using the spare RAM at $C000
+to $CFFF of the Commodore 64.  We also have a BASIC program to load.  Will
+loading in the wrong order harm SOV?
+
+The answer is yes, although the problem is not so severe.  You can see that
+after loading a program to high memory using a direct command, SOV will be
+positioned immediately above it.  But that's too high--there's no room for
+variables and we'll get an OUT OF MEMORY error for almost anything we do.
+
+Obviously, we can't leave SOV in the upper stratosphere.  We must load the
+high memory first, and then the BASIC program.  The second load will
+straighten out the SOV pointer.  If you try this, you'll find that it is
+necessary to fix up the top-of-memory pointer and command NEW between the two
+loads; you cannot even give the next LOAD command if you're apparently out of
+memory.
+
+
+---
+Additional information can be found by searching:
+- "where_to_put_machine_language_programs" which expands on order of loads and pointer adjustments

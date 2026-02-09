@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Fine-tune tape timing constants: load or clear timing-adjust flag ($92), increment/decrement the min timing byte ($B0) based on measured values, handle an embedded .BYTE patch entry, clear the timing-adjust flag, compare saved X ($D7) and branch accordingly, check start-bit detection counters ($A9) and save block synchronization number ($96). Finalize by toggling $9B with EOR and prepare to exit.
+
+.,F9D5 A5 92    LDA $92         get timing constant for tape
+.,F9D7 F0 07    BEQ $F9E0       
+.,F9D9 30 03    BMI $F9DE       
+.,F9DB C6 B0    DEC $B0         decrement tape timing constant min byte
+.:F9DD 2C       .BYTE $2C       makes next line BIT $B0E6
+.,F9DE E6 B0    INC $B0         increment tape timing constant min byte
+.,F9E0 A9 00    LDA #$00        
+.,F9E2 85 92    STA $92         clear timing constant for tape
+.,F9E4 E4 D7    CPX $D7         
+.,F9E6 D0 0F    BNE $F9F7       
+.,F9E8 8A       TXA             
+.,F9E9 D0 A0    BNE $F98B       
+.,F9EB A5 A9    LDA $A9         get start bit check flag
+.,F9ED 30 BD    BMI $F9AC       
+.,F9EF C9 10    CMP #$10        
+.,F9F1 90 B9    BCC $F9AC       
+.,F9F3 85 96    STA $96         save cassette block synchronization number
+.,F9F5 B0 B5    BCS $F9AC       
+.,F9F7 8A       TXA             
+.,F9F8 45 9B    EOR $9B         
+
+---
+Additional information can be found by searching:
+- "timer_a_check_clear_phase_and_timing_setup" which expands on continues with timing tuning and start-bit checks
+- "pulse_classification_and_store_character_calls" which expands on uses the sync/block counters that are updated here

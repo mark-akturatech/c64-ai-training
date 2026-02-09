@@ -1,0 +1,26 @@
+# MACHINE - Comments on shift/rotate: these instructions operate on A or directly on memory (LSR A vs LSR $addr). When applied to memory, flags N, Z, and C are affected according to resulting memory contents. Distinction logical vs arithmetic refers to sign treatment; bits themselves move the same way.
+
+
+For this reason, you'll often see the instructions coded with the identity of
+the A register coded in the address part of the instruction.  We would code
+LSR A so as to distinguish from LSR $1234, where the contents of memory is
+being shifted.
+
+                                                                         :65:
+
+When a rotate or shift is performed directly on a memory location, the Z, N,
+and C flags are affected according to the contents of memory.  Z will be set
+if the contents of the location ends up as zero; N if the high bit is set;
+and C performs its standard role of catching the leftover bit.
+
+Some programmers wonder about the terms logical and arithmetic, used as part
+of the definition.  The distinction is related to the way that signed numbers
+are treated.  "Logical" means that the sign of a number will be probably lost
+if the number was intended to be signed.  "Arithmetic" means that the sign
+will probably be preserved.  It's purely a terminology question:  the bits
+themselves move exactly as you would expect them to do.
+
+---
+Additional information can be found by searching:
+- "right_shift_and_ror" which expands on effect on flags when shifting memory directly
+- "left_shift_and_rol" which expands on ASL/ROL differences and memory operations

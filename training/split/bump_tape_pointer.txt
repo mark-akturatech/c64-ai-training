@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Increment the active tape buffer pointer/index ($A6) after processing a header or data byte. Uses get_tape_buffer_start_pointer (JSR $F7D0) to load a comparison index into Y, increments $A6 and compares Y with #$C0 (buffer length) to check wrapping/limit.
+
+                                *** bump tape pointer
+.,F80D 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F810 E6 A6    INC $A6         increment tape buffer index
+.,F812 A4 A6    LDY $A6         get tape buffer index
+.,F814 C0 C0    CPY #$C0        compare with buffer length
+.,F816 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_tape_buffer_start_pointer" which expands on called to obtain comparison index before bumping
+- "find_specific_tape_header" which expands on used to advance to the next header when a name comparison fails

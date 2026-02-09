@@ -1,0 +1,24 @@
+# Datassette Encoding - Complete byte format and parity: a byte begins with the byte marker (long+medium), followed by 8 bits recorded LSB first, then an odd parity bit (parity = XOR of all 8 data bits XOR 1 yields 1 for odd parity). Each recorded byte takes ~8.96 ms. Compact representation: L/M (marker), S/M bit0, S/M bit1, ..., S/M bit7, M/S parity.
+
+Byte Encoding
+-------------
+
+The byte marker indicates the start of a byte. The bits are recorded with the
+least significant bit (LSB) first and a parity bit (odd parity) follows.
+
+Odd parity means the total count of "1s" in data bits plus the parity bit
+equals an odd number, calculated by XORing a "1" with all eight payload bits.
+
+Each byte takes 8.96 ms to record.
+
+Complete byte structure:
+
+    L/M    S/M  S/M  S/M  S/M  S/M  S/M  S/M  S/M  M/S
+    marker bit0 bit1 bit2 bit3 bit4 bit5 bit6 bit7 parity
+
+
+
+---
+Additional information can be found by searching:
+- "bit_encoding" which expands on bit-level pulse pairs used to encode each bit
+- "checksum_calculation" which expands on checksum is computed over payload bytes

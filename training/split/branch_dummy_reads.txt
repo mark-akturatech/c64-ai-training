@@ -1,0 +1,64 @@
+# NMOS 6510 - Branch instruction dummy-read behaviour: opcode fetch, read of offset (PC+1), dummy read of PC+2, and additional cycles when branch is taken or crosses page boundaries. Shows per-cycle addresses and conditions for extra dummy reads.
+
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+PC + 2
+
+Absolute Address High
+
+R
+
+4
+
+AA
+
+Old Data
+
+R
+
+5 (*1) AA
+
+Old Data
+
+W
+
+6
+
+New Data
+
+W
+
+AA
+
+(*1) Unmodified original data is written back to memory
+Example: acknowledge VIC-II interrupt
+
+This is probably the most popular usage of the dummy writes. Usually you would have to do
+LDA $D019
+STA $D019
+to acknowledge the VIC-II interrupt. However, you can use any RMW instruction instead, eg
+INC $D019
+
+Example: acknowledge and disable timer interrupt
+
+
+---
+Additional information can be found by searching:
+- "indexed_instructions_dummy_read_on_page_cross" which expands on page crossing causes dummy reads in indexed modes

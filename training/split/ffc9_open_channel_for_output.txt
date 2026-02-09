@@ -1,0 +1,28 @@
+# C64 KERNAL API (Lee Davison) - $FFC9 — Open channel for output. Marks an already-open logical file as the output channel; device must be output-capable. If omitted, screen (device 3) is default output. For serial devices this will send LISTEN and any secondary address automatically. Possible error codes: 3=file not open, 5=device not present, 7=file is not an output file.
+
+$FFC9          open channel for output
+               
+               Any logical file that has already been opened by the OPEN routine, $FFC0, can be
+               defined as an output channel by this routine the device on the channel must be an
+               output device or an error will occur and the routine will abort.
+               
+               If you are sending data to anywhere other than the screen this routine must be
+               called before using the CHROUT routine, $FFD2. if you are sending data to the
+               screen and no other output channels are open then the calls to this routine and to
+               the OPEN routine, $FFC0, are not needed.
+               
+               When used with a device on the serial bus this routine will automatically send the
+               listen address specified by the OPEN routine, $FFC0, and any secondary address.
+               
+               Possible errors are:
+               
+               * 3 : file not open
+               * 5 : device not present
+               * 7 : file is not an output file
+               
+               
+
+---
+Additional information can be found by searching:
+- "ffd2_output_character_to_channel" which expands on send chars to the output channel
+- "ffba_set_logical_first_and_second_addresses" which expands on SETLFS prepares device/logical file

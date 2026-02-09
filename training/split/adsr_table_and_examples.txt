@@ -1,0 +1,79 @@
+# COMMODORE 64 - ATTACK/DECAY/RELEASE rate table: numeric values 0–15 with corresponding approximate time constants (e.g., 0: A=2ms / D=6ms ... 15: A=8s / D=24s). Shows how to compose register values by (ATTACK*16 + DECAY) and (SUSTAIN*16 + RELEASE). Provides sample settings for violin, xylophone, piano-like and experimental (synth) sounds with suggested POKE values and suggested waveform choices (triangle, square, sawtooth) and pulse-width register settings.
+
+    Registers 5 and 6 define the ADSR for voice 1. The ATTACK is the high
+  nybble of register 5. Nybble is half a byte, in other words the lower 4
+  or higher 4 on/off locations (bits) in each register. DECAY is the low
+  nybble. You can pick any number 0 through 15 for ATTACK, multiply it by
+  16 and add to any number 0 through 15 for DECAY. The values that
+  correspond to these numbers are listed below.
+    SUSTAIN level is the high nybble of register 6. It can be 0 through 15.
+  It defines the proportion of the peak volume that the SUSTAIN level will
+  be. RELEASE rate is the low nybble of register 6.
+
+
+
+
+
+                                          PROGRAMMING SOUND AND MUSIC   197
+~
+
+
+    Here are the meanings of the values for ATTACK, DECAY, and RELEASE:
+
+  +-----+------------------------+--------------------------------+
+  |VALUE|ATTACK RATE (TIME/CYCLE)| DECAY/RELEASE RATE (TIME/CYCLE)|
+  +-----+------------------------+--------------------------------+
+  |  0  |           2 ms         |               6 ms             |
+  |  1  |           8 ms         |              24 ms             |
+  |  2  |          16 ms         |              48 ms             |
+  |  3  |          24 ms         |              72 ms             |
+  |  4  |          38 ms         |             114 ms             |
+  |  5  |          56 ms         |             168 ms             |
+  |  6  |          68 ms         |             204 ms             |
+  |  7  |          80 ms         |             240 ms             |
+  |  8  |         100 ms         |             300 ms             |
+  |  9  |         250 ms         |             750 ms             |
+  | 10  |         500 ms         |             1.5 s              |
+  | 11  |         800 ms         |             2.4 s              |
+  | 12  |           1 s          |               3 s              |
+  | 13  |           3 s          |               9 s              |
+  | 14  |           5 s          |              15 s              |
+  | 15  |           8 s          |              24 s              |
+  +-----+------------------------+--------------------------------+
+
+
+    Here are a few sample settings to try in your example program. Try
+  these and a few of your own. The variety of sounds you can produce is
+  astounding! For a violin type sound, try changing line 20 to read:
+
+    20 POKES+5,88:POKES+6,89:REM A=5;D=8;S=5;R=9
+
+  Change the waveform to triangle and get a xylophone type sound by using
+  these lines:
+
+    20 POKES+5,9:POKES+6,9:REM A=0;D=9;S=O;R=9
+    70 POKES+4,17
+    90 POKES+4,16:FORT=1TO50:NEXT
+
+
+
+
+
+
+
+  198   PROGRAMMING SOUND AND MUSIC
+~
+
+
+  Change the waveform to square and try a piano type sound with these
+  lines:
+
+
+    15 POKES+3,8:POKES+2,0
+    20 POKES+5,9:POKES+6,0: REM A=0;D=9;S=0;R=0
+    70 POKES+4,65
+    90 POKES+4,64:FORT=1TO50:NEXT
+
+---
+Additional information can be found by searching:
+- "envelope_generator_and_example_program_4" which expands on register encoding and example program that sets ADSR

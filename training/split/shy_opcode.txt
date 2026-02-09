@@ -1,0 +1,61 @@
+# NMOS 6510 - SHY (A11,SYA,SAY,TEY) undocumented opcode ($9C) abs,X: store Y & {H+1}. Describes opcode details, cycles, operation and instabilities (RDY dropoff, page-cross increment then AND), example usage, and equivalent instruction sequence via stack and AND hacks. Test code references.
+
+
+; STY $FE00,X
+
+- 56 -
+
+Example: Sync with raster beam (remove cycle variance)
+
+The following snippet can be used as a replacement for the commonly used “half variance” $D012
+polling loop, to synchronise the code to a fixed position before setting up a timer that is then synced
+to the raster beam.
+This variant works at any address. It is required that $A2 holds a value <$80 before the routine is
+started. A good init value would be $01, since this will be restored by the last loop iteration.
+The code can be written in two ways, the following two snippets are the same piece of code. The
+first shows what executes when the code was started:
+loop = * + 1
+LDY #$B5
+LDX #$9C
+LDX #$00
+BPL loop
+
+; initialize Y
+; initialize X
+
+now the BPL branches to the operand of the LDY, so the loop looks as follows:
+loop:
+
+!byte $a0
+LDA $A2,X
+SHY $00A2,X
+BPL loop
+
+; LDY
+
+The SHY stores a value to zp-adress $A2. Performing the LDA $A2,X, with X=$00, ends up
+reading the value from $A2. Since SHY does not influence the flags, the branch solely depends on
+what was read with LDA $A2,X – which in turn is the value that was written by the SHY in the
+loop iteration before. Now as long as we have the &H+1 in play when executing the SHY, the
+value stored to $A2 will be $01 (since H+1=$01 and Y=$B5). When the &H+1 does not occur,
+the full value $B5 is written to $A2, which is read in the next loop iteration, effectively ending
+the whole loop ($B5 -> Accu sets the N-flag!).
+This syncing approach works just like the variants given above: when a badline pauses the CPU
+on the 4th SHX cycle, value $B5 is written to $A2, so the cycle when this happens is known, and
+consequently also the cycle position of the loop’s end.
+
+Sometimes, you want to set up a timer that loops once per frame, not per line, and on a stable
+cycle. The snippet above gives us a constant x position, but on a random y, so won't work for that.
+LDY #$01
+loop:
+LDX #243 ; (or any other badline)
+CPX $D012
+BNE *-3
+SHY $FFFF, X
+LDA $FF, X
+BEQ loop
+This always drops us out on line 243 cycle 62, and takes up to seven frames to do so.
+
+---
+Additional information can be found by searching:
+- "unstable_address_high_byte_group" which expands on SHY's role in the unstable group

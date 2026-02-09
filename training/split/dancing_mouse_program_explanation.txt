@@ -1,0 +1,51 @@
+# COMMODORE 64 - Line-by-line explanation of the Dancing Mouse program: explains SID register base S=54272 and individual POKEs that set volume, frequency, ADSR (attack/decay and sustain/release) for voices 1 and 2. Explains VIC base V=53248 and related POKEs: POKE V+21 to enable sprites and other lines used to move/animate sprites and load sprite data. Helps decode how sound and sprite data are coordinated.
+
+  LINE 5:
+
+    S=54272             Sets the variable 5 equal to 54272, which is the
+                        beginning memory location of the SOUND CHIP.
+                        From now on, instead of poking a direct memory
+                        location, we will POKE S plus a value.
+    POKES+24,15         Same as POKE 54296,15 which sets VOLUME to
+                        highest level.
+    POKES,220           Same as POKE 54272,220 which sets Low Fre-
+                        quency in Voice 1 for a note which approximates
+                        high C in Octave 6.
+    POKES+1,68          Same as POKE 54273,68 which sets High Fre-
+                        quency in Voice I for a note which approximates
+                        high C in Octave 6.
+    POKES+5,15          Same as POKE 54277,15 which sets Attack/Decay
+                        for Voice 1 and in this case consists of the
+                        maximum DECAY level with no attack, which pro-
+                        duces the "echo" effect.
+    POKES+6,215         Same as POKE 54278,215 which sets Sustain/Re-
+                        lease for Voice 1 (215 represents a combination
+                        of sustain and release values).
+  LINE 10:
+
+    POKES+7,120         Same as POKE 54279,120 which sets the Low Fre-
+                        quency for Voice 2.
+    POKES+8,100         Same as POKE 54280,100 which sets the High
+                        Frequency for Voice 2.
+    POKES+12,15         Same as POKE 54284,15 which sets Attack/Decay
+                        for Voice 2 to same level as Voice 1 above.
+    POKES+13,215        Same as POKE 54285,215 which sets Sustain/Re-
+                        lease for Voice 2 to same level as Voice 1 above.
+
+  LINE 15:
+
+    PRINT"<SHIFT+CLR/HOME>" Clears the screen when the program begins.
+
+    V=53248             Defines the variable "V" as the starting location
+                        of the VIC chip which controls sprites. From now
+                        on we will define sprite locations as V plus a
+                        value.
+
+    POKEV+21,1          Turns on (enables) sprite number 1.
+
+  168   PROGRAMMING GRAPHICS
+
+---
+Additional information can be found by searching:
+- "dancing_mouse_program_source" which expands on the actual program source and DATA blocks
+- "sprite_color_registers_locations_and_usage" which expands on POKE V+39 etc sets sprite color used in the program

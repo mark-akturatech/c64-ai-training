@@ -1,0 +1,262 @@
+A Minimal C64 Datasette Program Loader
+by Michael Steil (pagetable.com)
+Source: https://www.pagetable.com/?p=964
+Complete source: https://github.com/mist64/datasette_load
+
+Overview
+--------
+
+This article explains how to write a compact cassette tape loader for the
+Commodore 64 that decodes the Datasette format without error correction.
+The implementation fits under 200 bytes of assembly code.
+
+Though the C64 KERNAL includes tape-loading code, it is common to create
+modified versions of the KERNAL that add features, removing the original
+tape code to create some space. This minimal loader provides a way to
+retain cassette compatibility in space-constrained custom kernals.
+
+
+Pulse Encoding
+--------------
+
+The Commodore Datasette recording format is heavily optimized for data safety
+and can compensate for many typical issues of cassette tape, like incorrect
+speed, inconsistent speed (wow/flutter), and small as well as longer dropouts.
+This makes the format more complex and way less efficient than "Turbo Tape"
+or all other custom formats used by commercial games.
+
+All information is encoded in the duration of pulses. There are three types
+of pulses:
+
+  Short:  352 microseconds
+  Medium: 512 microseconds
+  Long:   672 microseconds
+
+To measure the lengths of the pulses, we can use one of the timers in the
+CIA chips: These count cycles of the C64 base clock (roughly microseconds),
+counting down from a 16 bit start value.
+
+The code configures timer A to count down from 7 to 0, with timer B counting
+underruns of timer A. This effectively divides the clock by 8:
+
+    lda #7          ;divide timer b by 8
+    ldx #0
+    sta $dd04
+    stx $dd05
+    lda #%00010001
+    sta $dd0e       ;start timer a
+    dex ; $ff
+    stx $dd06       ;always start timer b
+    stx $dd07       ;from $ffff
+
+Pulse lengths in units of 8 PAL clock cycles:
+
+    length_short  = $30
+    length_medium = $42
+    length_long   = $56
+
+Thresholds for differentiating between pulse types:
+
+    threshold_short_medium = (length_short + length_medium) / 2
+    threshold_medium_long  = (length_medium + length_long) / 2
+
+
+get_pulse Routine
+-----------------
+
+The subroutine measures a pulse by reading the low byte of Timer B and
+restarts the timer. It returns the (negative) length in the accumulator
+and sets the C flag if it was a short pulse.
+
+    get_pulse:
+        lda #$10
+    p1: bit $dc0d       ;wait for start
+        bne p1          ;of pulse
+
+        ldx #%01011001  ;value to restart timer b
+    p2: bit $dc0d       ;wait for end
+        beq p2          ;of pulse
+
+        lda $dd06       ;read timer b
+        stx $dd0f       ;restart timer b
+        cmp #$ff-threshold_short_medium
+        rts             ;c=1: short
+
+
+Bit and Byte Encoding
+---------------------
+
+Every bit is encoded using two pulses. The first pulse is either short or
+medium, and the second pulse is the other one:
+
+    Short/Medium = 0 bit
+    Medium/Short = 1 bit
+
+This is differentiated by only checking the first pulse: if it's short,
+the bit is 0; if it's medium, the bit is 1. The second pulse is ignored
+for data purposes (it serves as a consistency check in the full KERNAL
+loader).
+
+A byte marker (Long/Medium) signals byte boundaries.
+An end-of-data marker (Long/Short) signals file termination.
+
+The complete byte structure:
+
+    L/M    S/M  S/M  S/M  S/M  S/M  S/M  S/M  S/M  M/S
+    marker bit0 bit1 bit2 bit3 bit4 bit5 bit6 bit7 parity
+
+The parity bit uses odd parity (inverted).
+
+
+get_byte Routine
+----------------
+
+    get_byte:
+    ; wait for byte marker
+        jsr get_pulse
+        cmp #$ff-threshold_medium_long
+        bcs get_byte    ;not long
+        jsr get_pulse
+        bcs b2          ;short = end of data
+    ; get 8 bits
+        lda #%01111111
+    b1: pha
+        jsr get_pulse   ;ignore first
+        jsr get_pulse
+        pla
+        ror             ;shift in bit
+        bcs b1          ;until canary bit
+    b2: rts
+
+The routine uses a "canary bit" technique: it stores a 0-bit at position 7.
+As bits are shifted in from the right using ROR, the canary moves left.
+After 8 data bits, the canary bit is shifted into the carry flag, which
+signals completion without needing a separate counter.
+
+
+Leader and Countdown
+--------------------
+
+Every file begins with a leader section containing short pulses. This allows
+the motor speed compensation in the full KERNAL loader. The minimal loader
+ignores these.
+
+Following the leader is a countdown sequence:
+  $89, $88, $87, $86, $85, $84, $83, $82, $81
+
+    get_countdown:
+    c0: jsr get_byte
+    c1: ldy #$89
+        sty tmp_cntdwn  ;start with $89
+        ldy #9
+        bne c2
+    cx: jsr get_byte
+    c2: cmp tmp_cntdwn
+        bne c4
+        dec tmp_cntdwn
+        dey
+        bne cx
+        rts
+    c4: cpy #9           ;first byte wrong?
+        beq c0           ;then read new byte
+        bne c1           ;compare against $89
+
+The implementation handles incomplete countdowns followed by complete ones.
+
+
+Data Block Reading
+------------------
+
+    get_block:
+        sta count
+        ldy #0
+    g1: jsr get_byte
+        bcs g2
+        sta (ptr),y
+        iny
+        dec count
+        bne g1
+    g2: rts
+
+This reads a specified number of bytes into memory at a given address,
+returning early with carry set if an end-of-data marker is encountered.
+
+
+Header Format
+-------------
+
+A 192-byte header precedes each file. The header itself is encoded exactly
+like a 192 byte file and recorded just before the file data: with a leader
+and a countdown.
+
+    Offset  Length  Description
+    0       1       File Type ($01 or $03 for PRG)
+    1       2       Start Address (low/high)
+    3       2       End Address (low/high)
+    5       16      Filename (displayed)
+    21      171     unused
+
+Header Types:
+  $01 - Relocatable BASIC program
+  $03 - Non-relocatable program (machine language)
+
+
+Complete Loader Implementation
+------------------------------
+
+Wait for PLAY button:
+
+    lda #$10
+    m1: bit $01
+        bne m1
+
+Disable interrupts and screen to prevent VIC-II cycle stealing:
+
+    sei
+    lda $d011
+    and #$ff-$10    ;disable screen
+    sta $d011
+    m2: lda $d012
+        bne m2      ;wait for new screen
+
+Enable the datasette motor:
+
+    lda $01
+    and #$ff-$20    ;motor on
+    sta $01
+
+Read the 192-byte header:
+
+    ldx #<buffer
+    ldy #>buffer
+    stx ptr
+    sty ptr + 1
+    jsr get_countdown
+    lda #192
+    jsr get_block
+
+Extract start address from header:
+
+    ldx buffer + 1
+    ldy buffer + 2
+    stx ptr
+    sty ptr + 1
+
+Load the program data:
+
+    m3: lda #0
+        jsr get_block
+        inc ptr + 1
+        bcc m3
+
+Restore screen and turn off motor:
+
+    lda $d011
+    ora #$10
+    sta $d011       ;screen on
+    lda 1
+    ora #$20        ;motor off
+    sta 1
+
+The complete source code is available at:
+https://github.com/mist64/datasette_load

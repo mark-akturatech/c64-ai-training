@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Small utilities and IRQ entry prologue: NOPs at $FF41-$FF42 (waste cycles), PHP/PLA/AND/ PHA sequence to prepare modified processor status for IRQ entry. Saves processor status with BRK bit cleared before further IRQ processing.
+
+                                *** unused bytes
+.,FF41 EA       NOP             waste cycles
+.,FF42 EA       NOP             waste cycles
+
+                                *** save the status and do the IRQ routine
+.,FF43 08       PHP             save the processor status
+.,FF44 68       PLA             pull the processor status
+.,FF45 29 EF    AND #$EF        mask xxx0 xxxx, clear the break bit
+.,FF47 48       PHA             save the modified processor status
+
+
+---
+Additional information can be found by searching:
+- "irq_vector_dispatch" which expands on prologue used prior to IRQ dispatch

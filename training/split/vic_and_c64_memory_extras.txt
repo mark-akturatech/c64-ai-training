@@ -1,0 +1,57 @@
+# MACHINE - Commodore 64 extra RAM at $C000-$CFFF (4K) often used by utilities; option to remove BASIC from C64 to reclaim $0801-$CFFF (~50K) via POKE $01,$36/ $01,$37 (be careful). On VIC machines, moving SOB pointer is common to make video space; ensure screen-related RAM limits when planning ML and video effects.
+
+Extras for VIC and Commodore 64
+-------------------------------
+
+The Commodore 64 has a free block of RAM at locations $C000 to $CFFF (decimal
+49152 to 53247).  That's 4k of RAM not being used; you may write your
+programs there.  Before you do so, check to make sure that the memory is not
+being used by any other programs.  It's a popular place in the Commodore 64,
+and many utilities and commercial programs zero in on this available memory.
+
+If you intend to write programs entirely in machine language, with no BASIC
+content at all, you may completely remove BASIC from the Commodore 64 system
+and claim the space as available RAM.  This gives you the whole block from
+$0801 up to $CFFF for programs and data--a whopping 50K--and even more could
+be liberated if necessary.  BASIC may be made to disappear from the Commodore
+64 with the equivalent of POKE 1,54 (LDA #$36, STA $01).  It may be
+reinstated with the equivalent of POKE 1,55 (LDA #$37, STA $01).  Be very
+careful.  With BASIC gone, the computer doesn't even know how to say READY.
+
+On all Commodore machines it's possible to move up the start-of-BASIC pointer
+and use the space freed below.  To do so, it's essential to store a value of
+zero in the location immediately before the new start-of-BASIC, and to align
+all other pointers, usually by going to BASIC and commanding NEW.
+
+This works, and will make as much space available as is needed.  BASIC
+programs will relocate as they load.  But since the computer needs to be
+reconfigured before the main program is loaded, and often needs to be
+restored to its original configuration after the program is run, the method
+is not popular in most Commodore machines.  It's used fairly often in the
+VIC-20, however.
+
+The video chip in the VIC-20 can "see" RAM memory only in the memory space
+$0000 to $1FFF (decimal 0 to 8191).  Whatever variable information appears on
+the screen must be taken from this memory area.  The VIC-20 can also get
+information from $8000 to $9FFF, but there's no RAM there; we can't
+manipulate this memory area.
+
+                                                                         :97:
+
+If we want to perform special visual effects on the VIC-20, we must
+manipulate data in the area $0000 to $1FFF.  Let's look at what's available.
+$0000 to $03FF is used by the "system;" other than the cassette buffer, we
+must leave it alone.  $0400 to $0FFF contains no memory unless a 3K RAM
+expansion is added.  $1000 to $1DFF contains the BASIC program, and $1E00 to
+$1FFF is screen memory.  Details may vary, but the answer always comes out
+the same:  there's no space to do our video effects.
+
+A popular VIC-20 solution, especially where 8K or more of RAM expansion has
+been added, is to increase the start-of-BASIC pointer, thus liberating space
+in low memory.  This may now be used for visual effects and for machine
+language programming, too, if any space is left over.  In the VIC-20, this
+approach is necessary, but it's still a bit clumsy.
+
+---
+Additional information can be found by searching:
+- "where_to_put_machine_language_programs" which expands on placing ML in high memory or moving SOB

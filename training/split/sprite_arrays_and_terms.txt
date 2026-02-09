@@ -1,0 +1,42 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Defines the unsorted and sorted sprite arrays and their purposes: unsorted arrays sprx (X), spry (Y), sprc (color), sprf (frame). Sorted arrays: sortsprx, sortspry, sortsprc, sortsprf. sortorder = sorted list of indexes to unsorted table (may need zeropage).
+
+2.1 Sorting the sprites
+
+Please note: the sort algorithm of chapter 2.1.5 ("Ocean" algorithm) seems to
+be superior to all the others in this rant. I use it in MW4 and have been very
+satisfied. Please consider using it for your actual C64 projects and think of
+other algorithms being presented here only for educational purposes.
+
+I'll be mainly giving pseudocode (C-like) examples here. Yes, in some way this
+is "cheating" in a C64 programming rant but I'm sure it gives a better
+understanding of the algorithms than trying to follow an already optimized &
+cryptic ASM implementation (and you get to see a lot of that in those game
+source codes, links are at the end of this rant)
+
+So, what we start with is probably a random order of Y-coordinates in the
+"virtual sprite" Y-coordinate array (whatever the main program is coming up
+with). What we want as an end result is a nicely Y-sorted list of sprites to
+work with.
+
+Now it's also time to explain the array names used in these examples (they're
+actually the same I use in my C64 source code.)
+
+The "virtual" sprite arrays (unsorted):
+sprx - Unsorted X coordinates
+spry - Unsorted Y coordinates
+sprc - Unsorted colors
+sprf - Unsorted sprite frame numbers
+
+The sorted sprite arrays:
+sortsprx  - Sorted X coordinates
+sortspry  - Sorted Y coordinates
+sortsprc  - Sorted colors
+sortsprf  - Sorted sprite frame numbers
+sortorder - Sorted list of indexes to unsorted table (not used in every example)
+            Needs to be on the zeropage to allow certain indexing operations
+
+
+---
+Additional information can be found by searching:
+- "continuous_insertion_sort_ocean_algorithm" which expands on uses sortorder index array for fast incremental sorting
+- "bubblesort_for_sprites" which expands on alternative sorting method that also needs index tracking

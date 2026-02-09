@@ -1,0 +1,14 @@
+# An Introduction to Programming C-64 Demos - Tech-tech effects: per-line X-scroll by changing $D016 lower 3 bits allows 0..7 px shift per character row, but limited to 7 px. To get wider shifts, switch character sets mid-frame (change $D018 lower 4 bits) to charsets shifted by one pixel; with 7 charsets you can get up to 56-pixel wide tech-tech using VIC page space and charset swaps. Alternative: change VIC bank via $DD00 for more graphics.
+
+Tech-tech
+You might already have figured out that you can do a simple effect by changing the three lower bits of $d016 (the X-scroll) on every line. If you haven't tried it, you should at least be able to understand what happens: each line will have its own X-scroll value. By changing the X-scroll value in an ordered manner, you can make the graphics wave back and forth. But you don't get more than 7 pixels worth of difference between the lines, which is a pity...
+
+You've probably seen real tech-techs (they're not so common these days as they were around 1990), and they definitely have a greater difference than 7 pixels. You might think that you can do that by moving the characters in screen RAM, but you can't, because screen RAM is only read each 8th line. What you have to do is to change the charset (using the four lower bits of $d018), to a new charset, which is shifted one character to the right. You can fit 7 charsets (you need space for the screen RAM too) into one VIC page (16 kB), which means you can make a 56 pixels wide tech-tech. Not bad, huh? It can be a bit tricky to get it to work the first time, though...
+
+You can of course also change VIC bank (with $dd00), which means you can do the effect with graphics, not just with a charset logo, or just get a wider tech-tech.
+
+
+
+---
+Additional information can be found by searching:
+- "changing_charset_and_d018" which expands on using multiple charsets via $D018 for wider shifts

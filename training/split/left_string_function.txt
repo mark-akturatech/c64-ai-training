@@ -1,0 +1,39 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Implementation of LEFT$(): pulls a string descriptor and a byte parameter from the stack (JSR $B761), compares the requested length with the string length, clamps the length if necessary, saves start offset and length on the stack, allocates target string space (JSR $B47D), pops the descriptor pointer (JSR $B6AA) to get actual source pointer and length, adjusts source pointer by start offset, and copies the requested bytes into the utility/string area (JSR $B68C), then pushes the result descriptor (JMP $B4CA).
+
+                                *** perform LEFT$()
+.,B700 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B703 D1 50    CMP ($50),Y     compare byte parameter with string length
+.,B705 98       TYA             clear A
+.,B706 90 04    BCC $B70C       branch if string length > byte parameter
+.,B708 B1 50    LDA ($50),Y     else make parameter = length
+.,B70A AA       TAX             copy to byte parameter copy
+.,B70B 98       TYA             clear string start offset
+.,B70C 48       PHA             save string start offset
+.,B70D 8A       TXA             copy byte parameter (or string length if <)
+.,B70E 48       PHA             save string length
+.,B70F 20 7D B4 JSR $B47D       make string space A bytes long
+.,B712 A5 50    LDA $50         get descriptor pointer low byte
+.,B714 A4 51    LDY $51         get descriptor pointer high byte
+.,B716 20 AA B6 JSR $B6AA       pop (YA) descriptor off stack or from top of string space
+                                returns with A = length, X = pointer low byte,
+                                Y = pointer high byte
+.,B719 68       PLA             get string length back
+.,B71A A8       TAY             copy length to Y
+.,B71B 68       PLA             get string start offset back
+.,B71C 18       CLC             clear carry for add
+.,B71D 65 22    ADC $22         add start offset to string start pointer low byte
+.,B71F 85 22    STA $22         save string start pointer low byte
+.,B721 90 02    BCC $B725       branch if no overflow
+.,B723 E6 23    INC $23         else increment string start pointer high byte
+.,B725 98       TYA             copy length to A
+.,B726 20 8C B6 JSR $B68C       store string from pointer to utility pointer
+.,B729 4C CA B4 JMP $B4CA       check space on descriptor stack then put string address
+                                and length on descriptor stack and update stack pointers
+
+
+---
+Additional information can be found by searching:
+- "pull_string_and_byte_param" which expands on used to retrieve descriptor and byte parameter (JSR $B761)
+- "chr_string_creation" which expands on uses same descriptor push routine (JMP $B4CA)
+- "right_string_function" which expands on RIGHT$ branches into LEFT$ processing for remainder copying

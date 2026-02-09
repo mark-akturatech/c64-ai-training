@@ -1,0 +1,29 @@
+# Kick Assembler - Introduction to .pseudocommand: syntax for defining pseudo commands that accept mnemonic-style arguments. Example mov pseudo command definition and usage examples (immediate, label, indexed, and indirect,y forms) with comments illustrating generated mnemonics.
+
+7.3. Pseudo Commands
+Pseudo commands are a special kind of macros that take command arguments, like #20, table,y or ($30),y as
+arguments just like mnemonics do. With these you can make your own extended commands. Here is an example
+of a mov command that moves a byte from one place to another:
+.pseudocommand mov src:tar {
+lda src
+sta tar
+}
+
+You use the mov command like this:
+mov #10 : $1000
+mov source : target
+mov source,x : target,y
+mov #20 : ($30),y
+
+// Sets $1000 to 10 (lda #10, sta $1000)
+// target = source
+(lda source, sta target)
+// (lda source,x , sta target,y)
+// (lda #20, sta ($30),y )
+
+
+---
+Additional information can be found by searching:
+- "macro_label_access_and_recursion" which expands on General macro behavior and label access (relevant to pseudo commands)
+- "pseudocommand_adc_example_and_call_syntax" which expands on More examples of pseudo command syntax and calling forms (including optional colon)
+- "cmdvalue_getters_and_usage" which expands on Explains how pseudo command arguments are represented as CmdValue objects

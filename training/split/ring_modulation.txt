@@ -1,0 +1,40 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Ring modulation replaces a voice's triangle output with product of that triangle and the modulating voice oscillator, creating sum/difference frequencies (non-harmonic metallic timbres). Pairings: Voice1 mod by Voice3 (bit2 $D404), Voice2 by Voice1 (bit2 $D40B), Voice3 by Voice2 (bit2 $D412). Triangle bit must be set on modulated voice; modulator must run but needn't be gated.
+
+================================================================================
+9. RING MODULATION
+================================================================================
+
+Ring modulation replaces the triangle waveform output of one voice with the
+product of that voice's triangle waveform and the oscillator of the modulating
+voice. This produces sum and difference frequencies, creating non-harmonic,
+bell-like, or metallic timbres.
+
+Voice pairing (same as sync):
+  Voice 1 ring-modulated by Voice 3 (bit 2 of $D404)
+  Voice 2 ring-modulated by Voice 1 (bit 2 of $D40B)
+  Voice 3 ring-modulated by Voice 2 (bit 2 of $D412)
+
+Requirements:
+  - The TRIANGLE waveform bit must be set on the ring-modulated voice
+  - The modulating voice's oscillator must be running (frequency > 0)
+  - The modulating voice does not need to be gated or audible
+
+The output frequencies are: F1+F2 and F1-F2 (and their harmonics), where
+F1 is the voice's own frequency and F2 is the modulating voice's frequency.
+
+When F1 and F2 are harmonically related (e.g., octaves), the result sounds
+tonal. When they are not harmonically related, the result sounds metallic
+or bell-like.
+
+Example - Bell/Chime Sound:
+  Set Voice 1 frequency high ($0082 high byte ~ 130)
+  Set Voice 3 frequency to a non-harmonic ratio ($001E high byte ~ 30)
+  Enable RING MOD on Voice 1 (bit 2 of $D404)
+  Set Triangle waveform on Voice 1 (bit 4 of $D404)
+  Use short attack, medium decay for percussive bell envelope
+
+
+---
+Additional information can be found by searching:
+- "waveforms_triangle" which expands on triangle waveform is required for ring mod
+- "voice3_modulation_source" which expands on using voice 3 as modulator/LFO

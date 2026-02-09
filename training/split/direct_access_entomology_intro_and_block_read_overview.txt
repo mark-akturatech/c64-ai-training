@@ -1,0 +1,32 @@
+# byRiclianll - Section 5.12 introduction to 'Direct-Access Entomology' and an overview of Block-Read (B-R) anomalies: why B-R is unreliable, GET# behavior returning a byte count related to the track number, erroneous EOI (End-Or-Identify), ST being set to 64, repeated bytes if further reads attempted, and the need to reset the buffer pointer to access byte 0.
+
+
+5.12  Direct-Access  Entomology 
+
+We  will  conclude  our  discussion  of  the  disk  utihty  command  set  by  pointing  out  just 
+a  few  of  the  DOS  V2.6  direct-access  anomalies  we've  found  to  date. 
+
+
+Block-Read  (B-R) 
+
+Throughout  the  preceding  section  we  rehed  solely  upon  the  use  of  the  Ul  command  to 
+read  a  sector  and  not  the  traditional  block-read  command  (B-R).  Why?  The  block-read 
+command  (B-R)  is  unreliable,  period.  When  the  contents  of  a  buffer  are  accessed  with 
+the  GET#  command  —  surprise,  surprise!  The  number  of  bytes  returned  is  a  function 
+of  the  number  of  the  track  you  accessed.  For  example,  a  block-read  (B-R)  of  any  sector 
+
+
+98 
+
+
+on  track  15  will  return  only  15  bytes  before  sending  an  erroneous  End-Or-Identify  (EOI). 
+The  C64  status  variable  (ST)  is  set  to  64  and  any  further  attempt  to  access  the  buffer 
+merely  returns  the  same  sequence  of  bytes  over  and  over  and  over  again.  Moreover, 
+the  byte  in  position  0  can  only  be  accessed  when  the  buffer-pointer  is  reset  to  position 
+0  in  line  190.  See  for  yourself. 
+
+
+---
+Additional information can be found by searching:
+- "example_listing_header_and_block_execute_alternates" which expands on example header that precedes this discussion
+- "block_read_demo_program" which expands on contains the BASIC example program to 'See for yourself' demonstrating B-R behavior

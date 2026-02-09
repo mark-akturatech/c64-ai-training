@@ -1,0 +1,32 @@
+# byRiclianll - BASIC code that writes the edited disk name back to the buffer and issues a WRITE job to the drive, then finalizes. Covers: sending an M-W (memory-write) to transfer the 16-byte NDN* into the drive buffer; setting JOB=144 (WRITE) and calling the job-queue subroutine (GOSUB 660) to perform the WRITE; polling the drive with command '10' and reading the returned EN*,EM*,ET*,ES* status; closing the command channel; printing a DONE message; and program END/cleanup (including alternative CLOSE/END labels at lines 630/640).
+
+530  PRINT#15, "M-W"CHR*<144)CHR*(5)CHR*<1 
+6)NDN* 
+
+540  REM  WRITE 
+
+550  J0B=144 
+
+560  GOSUB  660 
+
+570  PRINT#15, "10" 
+
+580  INPUT#15,EN*,EM*,ET*,ES* 
+
+590  CLOSE  15 
+
+^>00  PR  I  NT  "  t  DOWN  >  DONE  !  " 
+
+^>10  END 
+
+^>20  REM  CLOSE 
+
+630  CLOSE  15 
+
+640  END 
+
+
+---
+Additional information can be found by searching:
+- "seek_read_and_disk_name_fetch_and_edit_input" which expands on Provides NDN* (the new 16-byte disk name) to be sent by M-W
+- "job_queue_subroutine_and_error_handler" which expands on Performs the actual SEEK/READ/WRITE job processing and polling

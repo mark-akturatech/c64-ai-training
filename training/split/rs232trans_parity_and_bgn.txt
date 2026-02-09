@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RS-232 transmitter bit handling and parity calculation: RSTRAB routine shifts RODATA, updates parity (ROPRTY), decrements BITTS, calculates parity according to M51CDR flags (no parity, odd/even, mark/space), sends stop bits, and RSTBGN entry starts a byte transfer by loading BITNUM/BITTS and pulling a byte from ROBUF into RODATA if available. Also handles errors (DSR/CTS) and sets RSSTAT error flags.
+
+                                RSPNO                  ;LINE TO SEND CANNOT BE PB0
+.,EEF2 E6 B4    INC $B4                INC BITTS       ;COUNTS AS ONE STOP BIT
+.,EEF4 D0 F0    BNE $EEE6              BNE RSWEXT      ;JUMP TO FLIP TO ONE
+                                ;
+.,EEF6 A5 BD    LDA $BD         RST030 LDA ROPRTY      ;EVEN PARITY
+.,EEF8 F0 ED    BEQ $EEE7              BEQ RSPEXT      ;CORRECT GUESS...EXIT
+.,EEFA D0 EA    BNE $EEE6              BNE RSWEXT      ;WRONG...FLIP AND EXIT
+                                ;
+.,EEFC 70 E9    BVS $EEE7       RST040 BVS RSPEXT      ;WANTED SPACE
+.,EEFE 50 E6    BVC $EEE6              BVC RSWEXT      ; WANTED MARK
+                                ; STOP BITS
+                                ;
+.,EF00 E6 B4    INC $B4         RST050 INC BITTS       ;STOP BIT COUNT TOWARDS ZERO
+.,EF02 A2 FF    LDX #$FF               LDX #$FF        ;SEND STOP BIT
+.,EF04 D0 CB    BNE $EED1              BNE RSTEXT      ;JUMP TO EXIT
+                                ;
+                                ; RSTBGN - ENTRY TO START BYTE TRANS
+                                ;
+.,EF06 AD 94 02 LDA $0294       RSTBGN LDA M51CDR      ;CHECK FOR 3/X LINE
+.,EF09 4A       LSR                    LSR A
+.,EF0A 90 07    BCC $EF13              BCC RST060      ;3 LINE...NO CHECK
+.,EF0C 2C 01 DD BIT $DD01              BIT D2PRB       ;CHECK FOR...
+.,EF0F 10 1D    BPL $EF2E              BPL DSRERR      ;...DSR ERROR
+.,EF11 50 1E    BVC $EF31              BVC CTSERR      ;...CTS ERROR
+                                ;
+                                ; SET UP TO SEND NEXT BYTE
+                                ;
+.,EF13 A9 00    LDA #$00        RST060 LDA #0
+.,EF15 85 BD    STA $BD                STA ROPRTY      ;ZERO PARITY
+.,EF17 85 B5    STA $B5                STA NXTBIT      ;SEND START BIT
+.,EF19 AE 98 02 LDX $0298              LDX BITNUM      ;GET # OF BITS
+.,EF1C 86 B4    STX $B4         RST070 STX BITTS       ;BITTS=#OF BITTS+1
+                                ;
+.,EF1E AC 9D 02 LDY $029D       RST080 LDY RODBS       ;CHECK BUFFER POINTERS
+.,EF21 CC 9E 02 CPY $029E              CPY RODBE
+.,EF24 F0 13    BEQ $EF39              BEQ RSODNE      ;ALL DONE...
+                                ;
+.,EF26 B1 F9    LDA ($F9),Y            LDA (ROBUF)Y    ;GET DATA...
+.,EF28 85 B6    STA $B6                STA RODATA      ;...INTO BYTE BUFFER
+.,EF2A EE 9D 02 INC $029D              INC RODBS       ;MOVE POINTER TO NEXT
+.,EF2D 60       RTS                    RTS
+                                ; SET ERRORS
+                                ;
+.,EF2E A9 40    LDA #$40        DSRERR LDA #$40        ;DSR GONE ERROR
+.:EF30 2C       .BYTE $2C              .BYT $2C
+.,EF31 A9 10    LDA #$10        CTSERR LDA #$10        ;CTS GONE ERROR
+.,EF33 0D 97 02 ORA $0297              ORA RSSTAT
+.,EF36 8D 97 02 STA $0297              STA RSSTAT
+                                ;
+                                ; ERRORS TURN OFF T1
+                                ;
+.,EF39 A9 01    LDA #$01        RSODNE LDA #$01        ;KILL T1 NMI
+                                ;ENTRY TO TURN OFF AN ENABLED NMI...
+.,EF3B 8D 0D DD STA $DD0D       OENABL STA D2ICR       ;TOSS BAD/OLD NMI
+.,EF3E 4D A1 02 EOR $02A1              EOR ENABL       ;FLIP ENABLE
+.,EF41 09 80    ORA #$80               ORA #$80        ;ENABLE GOOD NMI'S
+.,EF43 8D A1 02 STA $02A1              STA ENABL
+.,EF46 8D 0D DD STA $DD0D              STA D2ICR
+.,EF49 60       RTS                    RTS
+                                ; BITCNT - CAL # OF BITS TO BE SENT
+
+---
+Additional information can be found by searching:
+- "rs232trans_overview_and_variables" which expands on uses BITTS, RODATA, NXTBIT variables described there

@@ -1,0 +1,40 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - List and brief explanation of all zero-page variables used by the cassette read routines: REZ, RER, DIFF, SYNO, SNSW1, DATA, MYCH, FIRT, SVXT, TEMP, PRTY, PRP, FSBLK, SHCNL, RDFLG (modes MI/VS/NE), SAL, SHCNH, BAD table, PTR1/PTR2, VERCHK, CMP0, DPSW, PCNTR, STUPID, KIKA26 and their roles in timing capture, dipole/byte decoding, parity and pass management.
+
+                                .LIB   READ
+                                ; VARIABLES USED IN CASSETTE READ ROUTINES
+                                ;
+                                ;  REZ - COUNTS ZEROS (IF Z THEN CORRECT # OF DIPOLES)
+                                ;  RER - FLAGS ERRORS (IF Z THEN NO ERROR)
+                                ;  DIFF - USED TO PRESERVE SYNO (OUTSIDE OF BIT ROUTINES)
+                                ;  SYNO - FLAGS IF WE HAVE BLOCK SYNC (16 ZERO DIPOLES)
+                                ;  SNSW1 - FLAGS IF WE HAVE BYTE SYNC (A LONGLONG)
+                                ;  DATA - HOLDS MOST RECENT DIPOLE BIT VALUE
+                                ;  MYCH - HOLDS INPUT BYTE BEING BUILT
+                                ;  FIRT - USED TO INDICATE WHICH HALF OF DIPOLE WE'RE IN
+                                ;  SVXT - TEMP USED TO ADJUST SOFTWARE SERVO
+                                ;  TEMP - USED TO HOLD DIPOLE TIME DURING TYPE CALCULATIONS
+                                ;  PRTY - HOLDS CURRENT CALCULATED PARITY BIT
+                                ;  PRP - HAS COMBINED ERROR VALUES FROM BIT ROUTINES
+                                ;  FSBLK - INDICATE WHICH BLOCK WE'RE LOOKING AT (0 TO EXIT)
+                                ;  SHCNL - HOLDS FSBLK, USED TO DIRECT ROUTINES, BECAUSE OF EXIT CASE
+                                ;  RDFLG - HOLDS FUNCTION MODE
+                                ;     MI - WAITING FOR BLOCK SYNC
+                                ;     VS - IN DATA BLOCK READING DATA
+                                ;     NE - WAITING FOR BYTE SYNC
+                                ;  SAL - INDIRECT TO DATA STORAGE AREA
+                                ;  SHCNH - LEFT OVER FROM DEBUGGING
+                                ;  BAD - STORAGE SPACE FOR BAD READ LOCATIONS (BOTTOM OF STACK)
+                                ;  PTR1 - COUNT OF READ LOCATIONS IN ERROR (POINTER INTO BAD, MAX 61)
+                                ;  PTR2 - COUNT OF RE-READ LOCATIONS (POINTER INTO BAD, DURING RE-READ)
+                                ;  VERCHK - VERIFY OR LOAD FLAG (Z - LOADING)
+                                ;  CMP0 - SOFTWARE SERVO (+/- ADJUST TO TIME CALCS)
+                                ;  DPSW - IF NZ THEN EXPECTING LL/L COMBINATION THAT ENDS A BYTE
+                                ;  PCNTR - COUNTS DOWN FROM 8-0 FOR DATA THEN TO FF FOR PARITY
+                                ;  STUPID - HOLD INDICATOR (NZ - NO T1IRQ YET) FOR T1IRQ
+                                ;  KIKA26 - HOLDS OLD D1ICR AFTER CLEAR ON READ
+                                ;
+
+---
+Additional information can be found by searching:
+- "read_timer_capture_and_noise_reject" which expands on READ entry uses many of these variables to capture timer and start decode
+- "byte_handler_intro_and_mode_flags" which expands on RDFLG, FSBLK, PRP, PTR1/PTR2 used by the byte handler logic

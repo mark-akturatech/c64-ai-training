@@ -1,0 +1,44 @@
+# byRiclianll - Explains and provides a BASIC example that selects buffer #0 ($0300-$03FF), does a block-read of track 18 sector 0 into that buffer, then uses memory-read (M-R) and GET# to return bytes from buffer #0 to the C64 and print them. Includes the complete BASIC listing (lines 100-310) demonstrating OPENing the command channel, issuing UI (block-read), M-R with CHR$ parameters, GET#, null-byte handling, ASC conversion, printing character and numeric values, and cleanup.
+
+The  next  program  selects  buffer  #0  ($0300  -  $03FF)  as  a  workspace  and  does  a  block- 
+read  of  track  18,  sector  0.  Bytes  are  returned  to  the  C64  side  from  buffer  #0  with  memory- 
+read  and  GET#  commands,  and  printed  to  the  screen. 
+
+lOO  REM  TWD  PARAMETER  MEMORY-READ 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"OO"G0T0  300 
+
+150  OPEN  2,8,2, "#0" 
+
+160  PRiNT#i5, "ui";2;o; i8;o 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+180   IF  EN*<>"00"GOTD  280 
+190  FOR   1=0  TO  255 
+
+200  PR I NT# 15," M-R " CHR* ( I ) CHR* ( 3  > 
+210  GET#15,B* 
+
+220   IF  B*=""THEN  B*=CHR*(0> 
+230  A=ASC(B*> 
+240  PRINT   I, A, 
+
+250   IF  A>31   AND  A<96  THEN  PRINT  B», 
+260  PRINT 
+270  NEXT  I 
+280  CLOSE  2 
+
+290  INPUT#15,EN*,EM*,ET*,ES* 
+300  CLOSE  15 
+310  END 
+
+---
+Additional information can be found by searching:
+- "memory_read_overview_and_syntax" which expands on shows the M-R command syntax used in the example
+- "buffer_sharing_and_get_usage" which expands on covers the GET# retrieval detail illustrated by the program

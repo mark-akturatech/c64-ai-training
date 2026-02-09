@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Revisits illegal opcodes with several rotated table views showing undefined/illegal opcode patterns. Shows how many illegal opcodes are effectively combinations of other instructions (c=3 combining c=1 and c=2 threads), and lists specific illegal opcodes positioned in the opcode table (NOP variations, JAM, SLO, RLA, SRE, RRA, SAX, LAX, DCP, ISC, etc.). Discusses unstable and highly unstable cases (ANE, LXA) and mapping of addressing mode from c=1 entries.
+
+                                ADDRESS           MEMORY
+                               ADH   ADL   MNEMONIC OP CODE  LOW MEMORY
+                              0  1  0   E                       SP AFTER JSR BUT BEFO
+                                                                RETURN (RTS)
+                              0  1  0   F     PCL       02
+                              0  1  1   0     PCH       03      SP BEFORE JSR AND AFT
+                                                                RETURN (RTS) FROM
+                              0  1  1   1              STACK    SUBROUTINE
+               PC             0  3  0   0     JSR       20   JUMP TO SUBROUTINE
+                              0  3  0   1     ADL       05
+                              0  3  0   2     ADH       04
+                              0  3  0   3                    RETURN FROM SUBROUTINE T
+                                                             THIS LOCATION
+                              0  4  0   5      •             SUBROUTINE MAIN
+                                                             BODY
+                              0  4  0   6      •
+                              0  4  0   7      •
+                              0  4  0   8     RTS       60   RETURN FROM SUBROUTINE
+                                                             HIGH MEMORY
+                                   JSR, RTS OPERATION
+                (Reset after: MCS6502 Instruction Set Summary, MOS Technology, Inc.)
+          Curious Interrupt Behavior
+            If the instruction was a taken branch instruction with 3
+            cycles execution time (without crossing page boundaries), the
+            interrupt will trigger only after an extra CPU cycle.
+            On the NMOS6502, an NMI hardware interrupt occuring at the
+            start of a BRK intruction will hijack the BRK instruction,
+            meanining, the BRK instruction will be executed as normal, but
+            the NMI vector will be used instead of the IRQ vector.
+                                                                      6502 Instruction Set
+            The 65C02 will clear the decimal flag on any interrupts (and
+            BRK).
+          The Break Flag and the Stack
+          Interrupts and stack operations involving the status register (or P register)
+          are the only instances, the break flag appears (namely on the stack).
+          It has no representation in the CPU and can't be accessed by any instruction.
+             The break flag will be set to on (1), whenever the transfer was caused by
+             software (BRK or PHP).
+             The break flag will be set to zero (0), whenever the transfer was caused
+             by a hardware interrupt.
+             The break flag will be masked and cleared (0), whenever transferred from
+             the stack to the status register, either by PLP or during a return from
+             interrupt (RTI).
+          Therefore, it's somewhat difficult to inspect the break flag in order to
+          discern a software interrupt (BRK) from a hardware interrupt (NMI or IRQ) and
+          the mechanism is seldom used. Accessing a break mark put in the extra byte
+          following a BRK instruction is even more cumbersome and probably involves
+          indexed zeropage operations.
+          Bit 5 (unused) of the status register will be set to 1, whenever the
+          register is pushed to the stack. Bits 5 and 4 will always be ignored, when
+          transferred to the status register.
+          E.g.,
+          1)
+                   SR: N V - B D I Z C
+                       0 0 - - 0 0 1 1
+              PHP  ->  0 0 1 1 0 0 1 1   =  $33
+              PLP  <-  0 0 - - 0 0 1 1   =  $03
+            but:
+              PLA  <-  0 0 1 1 0 0 1 1   =  $33
+          2)
+
+---
+Additional information can be found by searching:
+- "illegal_opcode_mechanism_and_race_conditions" which expands on why c=3 results in combined or undefined behaviors including race conditions

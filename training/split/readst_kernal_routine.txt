@@ -1,0 +1,67 @@
+# COMMODORE 64 - KERNAL READST (call $FFB7 / 65463): Read status word of I/O devices returned in A. Bits indicate specific conditions/errors (table). Bit definitions include cassette read/write timeouts, tape verify/short/long block, checksum, EOF, end-of-tape, serial bus timeouts, device not present. Use READST after device I/O to detect device status and error conditions.
+
+  B-22. Function Name: READST
+
+    Purpose: Read status word
+    Call address: $FFB7 (hex) 65463 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: None
+    Stack requirements: 2
+    Registers affected: A
+
+    Description: This routine returns the current status of the I/O devices
+  in the accumulator. The routine is usually called after new communication
+  to an I/O device. The routine gives you information about device status,
+  or errors that have occurred during the I/O operation.
+    The bits returned in the accumulator contain the following information:
+  (see table below)
+
+  +---------+------------+---------------+------------+-------------------+
+  |  ST Bit | ST Numeric |    Cassette   |   Serial   |    Tape Verify    |
+  | Position|    Value   |      Read     |  Bus R/W   |      + Load       |
+  +---------+------------+---------------+------------+-------------------+
+  |    0    |      1     |               |  time out  |                   |
+  |         |            |               |  write     |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    1    |      2     |               |  time out  |                   |
+  |         |            |               |    read    |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    2    |      4     |  short block  |            |    short block    |
+  +---------+------------+---------------+------------+-------------------+
+  |    3    |      8     |   long block  |            |    long block     |
+  +---------+------------+---------------+------------+-------------------+
+  |    4    |     16     | unrecoverable |            |   any mismatch    |
+  |         |            |   read error  |            |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    5    |     32     |    checksum   |            |     checksum      |
+  |         |            |     error     |            |       error       |
+  +---------+------------+---------------+------------+-------------------+
+  |    6    |     64     |  end of file  |  EOI line  |                   |
+  +---------+------------+---------------+------------+-------------------+
+  |    7    |   -128     |  end of tape  | device not |    end of tape    |
+  |         |            |               |   present  |                   |
+  +---------+------------+---------------+------------+-------------------+
+
+  292   BASIC TO MACHINE LANGUAGE
+~
+
+
+  How to Use:
+
+    1) Call this routine.
+    2) Decode the information in the A register as it refers to your pro-
+       gram.
+
+  EXAMPLE:
+
+    ;CHECK FOR END OF FILE DURING READ
+    JSR READST
+    AND #64                       ;CHECK EOF BIT (EOF=END OF FILE)
+    BNE EOF                       ;BRANCH ON EOF
+
+
+---
+Additional information can be found by searching:
+- "listen_kernal_routine" which expands on LISTEN uses READST for error returns
+- "talk_kernal_routine" which expands on TALK uses READST for error returns

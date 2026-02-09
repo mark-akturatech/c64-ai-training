@@ -1,0 +1,91 @@
+# COMMODORE 64 - GET statement: keyboard buffer behavior (10 chars), polling loop examples (GET A$: IF A$ = "" THEN 10), example screen-editor behaviors (no cursor printed, capturing typed characters), use of CHR$ codes for function keys (example lines mapping CHR$(133..136) to actions), and notes about buffer overflow and GET in loops.
+
+  USING THE GET STATEMENT
+
+    Most simple programs use the INPUT statement to get data from the
+  person operating the computer. When you're dealing with more complex
+  needs, like protection from typing errors, the GET statement gives you
+  more flexibility and your program more "intelligence." This section shows
+  you how to use the GET statement to add some special screen editing
+  features to your programs.
+
+
+
+  22   BASIC PROGRAMMING RULES
+~
+
+
+    The Commodore 64 has a keyboard buffer that holds up to 10 characters.
+  This means that if the computer is busy doing some operation and it's
+  not reading the keyboard, you can still type in up to 10 characters,
+  which will be used as soon as the Commodore 64 finishes what it was
+  doing. To demonstrate this, type in this program on your Commodore 64:
+
+    NEW
+    10 TI$="000000"
+    20 IF TI$ < "000015" THEN 20
+
+  Now type RUN, hit <RETURN>  and while the program is RUNning type in the
+  word HELLO.
+    Notice that nothing happened for about IS seconds when the program
+  started. Only then did the message HELLO appear on the screen.
+    Imagine standing in line for a movie. The first person in the line is
+  the first to get a ticket and leave the line. The last person in line is
+  last for a ticket. The GET statement acts like a ticket taker. First it
+  looks to see if there are any characters "in line." In other words have
+  any keys been typed. If the answer is yes then that character gets placed
+  in the appropriate variable. If no key was pressed then an empty value is
+  assigned to a variable,
+    At this point it's important to note that if you try to put more than
+  10 characters into the buffer at one time, all those over the 10th
+  character will be lost.
+    Since the GET statement will keep going even when no character is
+  typed, it is often necessary to put the GET statement into a loop so that
+  it will have to wait until someone hits a key or until a character is
+  received through your program.
+    Below is the recommended form for the GET statement. Type NEW to erase
+  your previous program.
+
+    10 GET A$: IF A$ ="" THEN 10
+
+  Notice that there is NO SPACE between the quote marks("") on this line.
+  This indicates an empty value and sends the program back to the GET
+  statement in a continuous loop until someone hits a key on the computer.
+  Once a key is hit the program will continue with the line following line
+  10. Add this line to your program:
+
+    100 PRINT A$;: GOTO 10
+
+
+
+					       BASIC PROGRAMMING RULES   23
+~
+
+
+  Now RUN the program. Notice that no cursor appears on the screen, but
+  any character you type will be printed in the screen. This 2-line program
+  can be turned into part of a screen editor program as shown below.
+    There are many things you can do with a screen editor. You can have
+  a flashing cursor. You can keep certain keys like <CLR/HOME> from
+  accidentally erasing the whole screen. You might even want to be able to
+  use your function keys to represent whole words or phrases. And speaking
+  of function keys, the following program lines give each function key a
+  special purpose. Remember this is only the beginning of a program that
+  you can customize for your needs.
+
+    20 IF A$ = CHR$(133) THEN POKE 53280,8: GOTO 10
+    30 IF A$ = CHR$(134) THEN POKE 53281,4: GOTO 10
+    40 IF A$ = CHR$(135) THEN A$="DEAR SIR:"+CHR$(13)
+    50 IF A$ = CHR$(136) THEN A$="SINCERELY,"+CHR$(13)
+
+    The CHR$ numbers in parentheses come from the CHR$ code chart in
+  Appendix C. The chart lists a different number for each character. The
+  four function keys are set up to perform the tasks represented by the
+  instructions that follow the word THEN in each line. By changing the
+  CHR$ number inside each set of parentheses you can designate different
+  keys. Different instructions would be performed if you changed the
+  information after the THEN statement.
+
+---
+Additional information can be found by searching:
+- "chr$_function" which expands on CHR$ codes and use in GET-based editors

@@ -1,0 +1,46 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Performs arithmetic on $B0/$B1 and uses table values at $DCxx to compute block offsets ($DC04/$DC05/$DC0E/$DC0D) and stores intermediate values into $02A2/$02A4. Pushes values to stack and conditionally jumps to dispatch routine $FF43 or returns. Used to compute device/disk/tape transfer offsets.
+
+.,F8E2 86 B1    STX $B1
+.,F8E4 A5 B0    LDA $B0
+.,F8E6 0A       ASL
+.,F8E7 0A       ASL
+.,F8E8 18       CLC
+.,F8E9 65 B0    ADC $B0
+.,F8EB 18       CLC
+.,F8EC 65 B1    ADC $B1
+.,F8EE 85 B1    STA $B1
+.,F8F0 A9 00    LDA #$00
+.,F8F2 24 B0    BIT $B0
+.,F8F4 30 01    BMI $F8F7
+.,F8F6 2A       ROL
+.,F8F7 06 B1    ASL $B1
+.,F8F9 2A       ROL
+.,F8FA 06 B1    ASL $B1
+.,F8FC 2A       ROL
+.,F8FD AA       TAX
+.,F8FE AD 06 DC LDA $DC06
+.,F901 C9 16    CMP #$16
+.,F903 90 F9    BCC $F8FE
+.,F905 65 B1    ADC $B1
+.,F907 8D 04 DC STA $DC04
+.,F90A 8A       TXA
+.,F90B 6D 07 DC ADC $DC07
+.,F90E 8D 05 DC STA $DC05
+.,F911 AD A2 02 LDA $02A2
+.,F914 8D 0E DC STA $DC0E
+.,F917 8D A4 02 STA $02A4
+.,F91A AD 0D DC LDA $DC0D
+.,F91D 29 10    AND #$10
+.,F91F F0 09    BEQ $F92A
+.,F921 A9 F9    LDA #$F9
+.,F923 48       PHA
+.,F924 A9 2A    LDA #$2A
+.,F926 48       PHA
+.,F927 4C 43 FF JMP $FF43
+.,F92A 58       CLI
+.,F92B 60       RTS
+
+---
+Additional information can be found by searching:
+- "initialize_system_and_device_state_for_io" which expands on uses tables ($DCxx) set up during init
+- "store_c1_c2_into_ad_ac" which expands on other helpers that rearrange pointer bytes for I/O

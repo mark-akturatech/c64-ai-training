@@ -1,0 +1,103 @@
+# ********* - Chapter 5.2: PRINT# and INPUT# for writing/reading sequential files — formatting behavior for commas/semicolons/newlines, CR (CHR$13) handling, how numeric data is stored, inefficiency of commas, and illustrative diagrams showing file byte layouts (examples with string and numeric writes).
+
+5.2 PRINT# and INPUT#
+
+The PRINT# command works exactly like the PRINT statement, except that
+output is re-directed to the disk drive.  The reason for the special
+emphasis on the word exactly is that all the formatting capabilities
+of the PRINT statement, as applies to punctuation and data types,
+applies here too.  It just means that you have to be careful when
+putting data into your files.
+
+FORMAT FOR WRITING TO FILE WITH PRINT#:
+
+   PRINT# file#, data list
+
+The file# is the one from the OPEN statement when the file was created.
+
+
+The data list is the same as the regular PRINT statement -- a list of
+variables and/or text inside quote marks.  However, you must be
+especially careful when writing data so that it is as easy as possible
+to read the data back again.
+
+When using the PRINT# statement, if you use commas (,) to separate
+items on the fine, the items will be separated by some blank spaces,
+as if it were being formatted for the screen.  Semicolons (;) don't
+result in any extra spaces.
+
+In order to more fully understand what's happening, here is a diagram
+of a sequential file created by the statement OPEN 5, 8, 5,
+"0:TEST,S,W":
+
+      |eof|   |   |   |   |   |   |   |   |   |   |   |   |   |   |
+ -----+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---
+ char | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|...
+
+The eof stands for the end-of-file marker.  String data entering the
+file goes in byte by byte, including spaces.
+
+For instance, let's set up some variables with the statement A$=
+"HELLO"; B$ = "ALL": C$ = "BYE". Here is a picture of a file after the
+statement PRINT# 5, A$; B$; C$:
+
+      | H | E | L | L | O | A | L | L | B | Y | E | CR|eof|
+ -----+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ char | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13|
+
+CR stands for the CHR$ code of 13, the carriage return, which is
+PRINTed at the end of every PRINT or PRINT# statement unless there is
+a comma or semicolon at the end of the line.
+
+NOTE: Do not leave a space between PRINT and #, and do not try to
+abbreviate the command as ?#.  See the appendixes in the user manual
+for the correct abbreviation.
+
+FORMAT FOR INPUT# STATEMENT:
+
+   INPUT# file#, variable list
+
+When using the INPUT# to read in data, the disk drive can't tell that
+it's not supposed to be one long string.  You need something in the
+file to act as a separator. Characters to use as separators include
+the CR, a comma or a semicolon.  The CR can be added easily by just
+using one variable per line on the PRINT# statement, and the system
+puts one there automatically.  The statement PRINT# 5, A$: PRINT# 5,
+B$: PRINT# 5, C$ puts a CR after every variable being written,
+providing the proper separation for a statement like INPUT#5, A$, B$,
+C$.  Or else a line like Z$ = ",":PRINT# 5, A$ Z$ B$ Z$ C$ will do the
+job as well, and in less space.  The file after that line looks like
+this:
+
+      | H | E | L | L | O | , | A | L | L | , | B | Y | E | CR|eof|
+ -----+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ char | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
+
+Putting commas between variables results in lots of extra space on the
+disk being used.  A statement like PRINT# 5, A$, B$ makes a file that
+looks like:
+
+      | H | E | L | L | O |   |   |   | A | L | L |   | CR|eof|
+ -----+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ char | 1 | 2 | 3 | 4 | 5 | 6 |...| 11| 12| 13| 14|...| 23| 24|
+
+You can see that much of the space in the file is wasted.
+
+The moral of all this is: take care when using PRINT# so your data
+will be in order for reading back in.
+
+Numeric data written in the file takes the form of a string, as if the
+STR$ function had been performed on it before writing it out.  The
+first character will be a blank space if the number is positive, and a
+minus sign (-) if the number is negative.  Then comes the number, and
+the last character is the cursor right character.  This format
+provides enough information for the INPUT# statement to read them in
+as separate numbers if several are written with no other special
+separators.  It is somewhat wasteful of space, since there can be two
+unused characters if the numbers are positive.
+
+
+---
+Additional information can be found by searching:
+- "get_statement_and_file_examination_example" which expands on GET# to read files byte-by-byte for inspection
+- "reading_directory_program_and_description" which expands on the directory can be read as a sequential file

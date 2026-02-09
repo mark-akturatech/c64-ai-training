@@ -1,0 +1,30 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Overview of VIC sprites (MOBs): 8 independent objects 24x21 pixels, movable, individually enabled via $D015 (MxE), X/Y expansion bits ($D01D/$D017), multicolor mode ($D01C), priority ($D01B), per-sprite color registers $D027-$D02E. Sprite coordinates are set by MxX/MxY registers (9-bit X with MSBs in $D010, 8-bit Y). Collision detection and sprite bitmap storage noted.
+
+3.8. Sprites
+------------
+
+Apart from the text/bitmap graphics, the VIC can display eight independent
+24�21 pixels large, freely movable objects, the "sprites" (called "MOBs"
+(Movable Object Blocks) in [2]).
+
+The sprites can have an arbitrary position on the screen, you can switch
+them on and off one at a time with the bits of register $d015 (MxE), expand
+them by the factor 2 in X and/or Y direction with registers $d017/$d01d
+(with the resolution still being 24�21 pixels), choose between standard and
+multicolor mode with register $d01c (MxMC), set the display priority with
+respect to the text/bitmap graphics with register $d01b (MxDP) and assign a
+different color to each sprite (registers $d027-$d02e). Besides, the VIC
+has the ability to detect collisions between sprites among themselves or
+between sprites and text/bitmap graphics and to trigger an interrupt on
+such collisions (see 3.11.).
+
+The position of the top left corner of a sprite is specified with the
+coordinate registers (MxX, MxY) belonging to it. There are 8 bits for the Y
+coordinate and 9 bits for the X coordinate (the most significant bits of
+all sprites are collected in register $d010).
+
+
+---
+Additional information can be found by searching:
+- "sprite_memory_access_and_display" which expands on details of sprite memory layout, p/s-accesses and MC/MCBASE
+- "sprite_priority_and_collision" which expands on priority rules and collision register behavior ($D01E/$D01F)

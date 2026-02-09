@@ -1,0 +1,38 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - NMI RS232 OUT: Prepare for sending RS232 bits during NMI. Loads non-standard BPS low/high bytes ($0295/$0296) into CIA timer B ($DD06/$DD07), sets CIA control register B ($DD0F), updates ENABL flags ($02A1) and initializes BITNUM (bits remaining) from $0298 into BITC1 ($A8). Also contains helper FF2E/FF34 routines to scale timing values and store into BAUDOF ($0299/$029A).
+
+                                *** NMI RS232 OUT
+                                This routine sets up the baudrate for sending the bits
+                                out, and adjusts the number of bits remaining to send.
+.,FF07 AD 95 02 LDA $0295       M51AJB - non standard BPS time
+.,FF0A 8D 06 DD STA $DD06       timer B low
+.,FF0D AD 96 02 LDA $0296
+.,FF10 8D 07 DD STA $DD07       timer B high
+.,FF13 A9 11    LDA #$11
+.,FF15 8D 0F DD STA $DD0F       CIA#2 control register B
+.,FF18 A9 12    LDA #$12
+.,FF1A 4D A1 02 EOR $02A1
+.,FF1D 8D A1 02 STA $02A1       ENABL, RS232 enables
+.,FF20 A9 FF    LDA #$FF
+.,FF22 8D 06 DD STA $DD06
+.,FF25 8D 07 DD STA $DD07       timer B
+.,FF28 AE 98 02 LDX $0298       BITNUM, number of bits still to send in this byte
+.,FF2B 86 A8    STX $A8         BITC1, RS232 bitcount
+.,FF2D 60       RTS
+.,FF2E AA       TAX
+.,FF2F AD 96 02 LDA $0296
+.,FF32 2A       ROL
+.,FF33 A8       TAY
+.,FF34 8A       TXA
+.,FF35 69 C8    ADC #$C8
+.,FF37 8D 99 02 STA $0299
+.,FF3A 98       TYA
+.,FF3B 69 00    ADC #$00
+.,FF3D 8D 9A 02 STA $029A
+.,FF40 60       RTS
+.,FF41 EA       NOP
+.,FF42 EA       NOP
+
+
+---
+Additional information can be found by searching:
+- "rs232_timing_table_ntsc" which expands on timing presets used to compute BAUDOF and timer B

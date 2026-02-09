@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle the case FAC2 > FAC1: save exponent into FAC1 exponent slot, fetch FAC2 sign bit and store as FAC1 sign, take two's complement of A (preparing sign/magnitude handling), clear Y, clear FAC2 rounding byte and set index to FAC1 exponent address (effectively swapping roles so the larger-magnitude operand is treated as the minuend).
+
+                                else FAC2 > FAC1
+.,B881 84 61    STY $61         save FAC1 exponent
+.,B883 A4 6E    LDY $6E         get FAC2 sign (b7)
+.,B885 84 66    STY $66         save FAC1 sign (b7)
+.,B887 49 FF    EOR #$FF        complement A
+.,B889 69 00    ADC #$00        +1, twos complement, carry is set
+.,B88B A0 00    LDY #$00        clear Y
+.,B88D 84 56    STY $56         clear FAC2 rounding byte
+.,B88F A2 61    LDX #$61        set index to FAC1 exponent address
+.,B891 D0 04    BNE $B897       branch always
+
+---
+Additional information can be found by searching:
+- "save_rounding_and_load_exponents" which expands on branching condition that leads here
+- "exponent_diff_and_shift_smaller_mantissa" which expands on next step: compute exponent difference and shift smaller mantissa
+- "mantissa_subtract_sequence" which expands on subtraction path uses the larger-magnitude operand chosen here

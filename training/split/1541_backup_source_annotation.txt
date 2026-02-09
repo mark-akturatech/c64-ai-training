@@ -1,0 +1,23 @@
+# byRiclianll - Annotation describing the 1541 backup process: how the BASIC driver reads a sector from the master into 1541 RAM via the job queue, uses machine-language memory-read to transfer bytes into the C64, then inserts the clone and uses memory-write to transfer bytes back into 1541 RAM, and finally writes the buffer out via the job queue. Notes on relative speed (reads slower than writes) and the C64 internal clock unreliability during disk I/O; mentions where to bypass bad tracks and using earlier routines to recreate errors from the master diskette.
+
+1541  Backup  Source  Annotation 
+
+The  BASIC  driver  reads  a  sector  from  the  master  diskette  into  1541  RAM  using  the 
+job  queue.  The  contents  of  the  RAM  are  transferred  into  the  C64  with  a  machine  language 
+memory-read.  After  a  pass  is  complete,  the  clone  is  inserted  into  the  drive.  A  machine 
+language  memory-write  command  is  then  used  to  transfer  the  bytes  back  to  1541  RAM. 
+The  BASIC  drive  writes  the  buffer  out  to  the  diskette  using  the  job  queue.  The  above 
+routine  illustrates  how  to  do  memory-read  and  memory-write  commands  in  machine 
+language.  It  is  interesting  to  note  that  reading  256  bytes  from  1541  RAM  appears  to 
+take  amost  ten  times  as  long  as  writing  256  bytes  to  1541  RAM.  However,  the  C64  in- 
+ternal clock  is  not  reliable  at  all  while  performing  I/O  to  the  disk  drive.  Bypassing  a 
+bad  track  can  be  done  anywhere  between  lines  200-340  if  necessary.  Any  of  the  previous 
+11  routines  may  be  used  to  recreate  any  errors  that  you  found  on  the  master  diskette 
+after  a  backup  is  made. 
+
+
+
+---
+Additional information can be found by searching:
+- "how_to_copy_a_file_overview" which expands on Gives the higher-level copy procedure context and points to the BASIC COPY program
+- "ml_routine_epilogue_and_return" which expands on Contains the low-level machine routines invoked during the described backup flow

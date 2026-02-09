@@ -1,0 +1,43 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - 6502 code example dividing a two-byte NUM1 (dividend) by two-byte NUM2 (divisor), leaving quotient in NUM1 and remainder in REM. Key steps: initialize REM to 0, set X = #16 for 16 bits, loop: ASL NUM1 then ROL NUM1+1 to shift hi bit of NUM1 into REM, ROL REM/REM+1, trial subtraction using SEC/SBC NUM2 and NUM2+1, BCC to detect failure, STA REM+1/STY REM to keep subtraction result, INC NUM1 to set quotient bit, DEX/BNE loop. Illustrates trial-subtract method and quotient bit recording.
+
+Again, writing code to do this isn't very hard.  We will shift the
+bits of the the dividend, one at a time, into a work area, and then try
+subtracting the divisor from the work area.  If the subtraction
+succeeded, we replace the work area with the result of the subtraction
+and record a 1 bit in the quotient.  If the subtraction failed, we discard
+its result and record a 0 bit in the quotient.  The process is repeated
+until all bits of the dividend are used up.
+
+
+Here's an example that divides the two-byte number NUM1 by the
+two-byte number NUM2, leaving the quotient in NUM1 and the remainder in
+REM:
+
+
+LDA #0      ;Initialize REM to 0
+        STA REM
+        STA REM+1
+        LDX #16     ;There are 16 bits in NUM1
+L1      ASL NUM1    ;Shift hi bit of NUM1 into REM
+        ROL NUM1+1  ;(vacating the lo bit, which will be used for the quotient)
+        ROL REM
+        ROL REM+1
+        LDA REM
+        SEC         ;Trial subtraction
+        SBC NUM2
+        TAY
+        LDA REM+1
+        SBC NUM2+1
+        BCC L2      ;Did subtraction succeed?
+        STA REM+1   ;If yes, save it
+        STY REM
+        INC NUM1    ;and record a 1 in the quotient
+L2      DEX
+        BNE L1
+
+
+
+---
+Additional information can be found by searching:
+- "binary_division_example_and_concept" which expands on conceptual origin
+- "quotient_and_remainder_widths" which expands on considerations about quotient and remainder sizes

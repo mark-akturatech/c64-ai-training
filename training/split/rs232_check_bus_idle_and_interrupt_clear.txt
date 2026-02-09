@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Check RS-232 bus idle and clear serial interrupt enables: push A, poll the RS-232 interrupt-enable byte for errors, loop until error bits clear, disable FLAG interrupt by writing VIA 2 ICR ($DD0D), clear the RS-232 interrupt-enable byte ($02A1), and restore A. Ensures interrupts are disabled when bus is idle.
+
+                                *** check RS232 bus idle
+.,F0A4 48       PHA             save A
+.,F0A5 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F0A8 F0 11    BEQ $F0BB       if no interrupts enabled just exit
+.,F0AA AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F0AD 29 03    AND #$03        mask 0000 00xx, the error bits
+.,F0AF D0 F9    BNE $F0AA       if there are errors loop
+.,F0B1 A9 10    LDA #$10        disable FLAG interrupt
+.,F0B3 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,F0B6 A9 00    LDA #$00        clear A
+.,F0B8 8D A1 02 STA $02A1       clear the RS-232 interrupt enable byte
+.,F0BB 68       PLA             restore A
+.,F0BC 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_input_highlevel_handshake_and_interrupt_control" which expands on used to manage FLAG/ICR when bus idle or errors present
+- "rs232_get_byte_from_rx_buffer" which expands on status bits updated when reading Rx buffer

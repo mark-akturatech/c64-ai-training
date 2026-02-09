@@ -1,0 +1,15 @@
+# Kick Assembler - Explains passing string values to script via command-line using ':' notation (e.g., java –jar KickAss.jar mySource.asm :x=27 :sound=true :title="Beta 2"). Values are available in cmdLineVars hashtable. Example usage: .print "version =" + cmdLineVars.get("version") ; .var x = cmdLineVars.get("x").asNumber(); .var sound = cmdLineVars.get("sound").asBoolean();
+
+ldx #0
+!loop:
+.for (var i=0; i<4; i++) {
+lda colorRam+i*$100,x
+sta $d800+i*$100,x
+}
+inx
+bne !loopjmp *
+*=$0c00;
+*=$1c00; colorRam:
+*=$2000;
+
+.fill picture.getScreenRamSize(), picture.getScreenRam(i)

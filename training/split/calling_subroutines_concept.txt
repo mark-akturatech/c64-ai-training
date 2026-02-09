@@ -1,0 +1,36 @@
+# MACHINE - Explains the machine-language subroutine mechanism: JSR (jump to subroutine) and RTS (return from subroutine), how the program counter changes, nesting of subroutines, and the analogy to BASIC's GOSUB/RETURN.
+
+                                                                         :24:
+
+Calling Machine Language Subroutines
+------------------------------------
+
+In BASIC, a "package" of program statements called a subroutine may be
+brought into action with a GOSUB command.  The subroutine ends with a RETURN
+statement, which causes the program to return to the calling point, i.e., the
+statement immediately following GOSUB.
+
+The same mechanism is available in machine language.  A group of instructions
+may be invoked with a jump subroutine (JSR) command.  The 650x goes to the
+specified address and performs the instructions given there until it
+encounters a return from subroutine (RTS) command, at which time it resumes
+execution of instructions at the calling point:  the instruction immediately
+following JSR.
+
+For example, if at address $033C I code the instruction JSR $1234, the 650x
+will change its PC to $1234 and start to take instructions from that address.
+Execution will continue until the instruction RTS is encountered.  At this
+time, the microprocessor would switch back to the instruction following the
+JSR, which in this case would be address $033F (the JSR instruction is three
+bytes long).
+
+As in BASIC, subroutines may be "nested;" that is, one subroutine may call
+another, and that subroutine may call yet another.  We will deal with
+subroutine mechanisms in more detail later.  For the moment, we'll concern
+ourselves with calling prewritten subroutines.
+
+
+---
+Additional information can be found by searching:
+- "chapter2_overview_and_toc" which expands on chapter topics and context
+- "prewritten_kernal_subroutines" which expands on calls to ROM 'kernal' subroutines described next

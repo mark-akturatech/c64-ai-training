@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles sending actual block data after sync bytes are done and deals with the checksum. Calls a pointer-check routine (JSR $FCD1) to decide whether the buffer pointer has reached the end. If pointer indicates block-complete, prepares the checksum byte to be written (INC $AD to force subsequent block-complete branch, LDA $D7 STA $BD) and exits. If block not complete, fetches the next byte from the buffer (LDY #$00; LDA ($AC),Y), stores it as the next tape write byte ($BD), XORs it into the checksum ($D7), calls the pointer-increment routine (JSR $FCDB) and returns.
+
+                                the synchronization bytes have been done so now check and do the actual block data
+.,FC30 20 D1 FC JSR $FCD1       check read/write pointer, return Cb = 1 if pointer >= end
+.,FC33 90 0A    BCC $FC3F       if not all done yet go get the byte to send
+.,FC35 D0 91    BNE $FBC8       if pointer > end go flag block done and exit interrupt
+                                else the block is complete, it only remains to write the
+                                checksum byte to the tape so setup for that
+.,FC37 E6 AD    INC $AD         increment buffer pointer high byte, this means the block
+                                done branch will always be taken next time without having
+                                to worry about the low byte wrapping to zero
+.,FC39 A5 D7    LDA $D7         get checksum byte
+.,FC3B 85 BD    STA $BD         save checksum as tape write byte
+.,FC3D B0 CA    BCS $FC09       restore registers and exit interrupt, branch always
+                                the block isn't finished so get the next byte to write to tape
+.,FC3F A0 00    LDY #$00        clear index
+.,FC41 B1 AC    LDA ($AC),Y     get byte from buffer
+.,FC43 85 BD    STA $BD         save as tape write byte
+.,FC45 45 D7    EOR $D7         XOR with checksum byte
+.,FC47 85 D7    STA $D7         save new checksum byte
+.,FC49 20 DB FC JSR $FCDB       increment read/write pointer
+.,FC4C D0 BB    BNE $FC09       restore registers and exit interrupt, branch always
+
+---
+Additional information can be found by searching:
+- "tape_write_shift_count_and_new_byte_setup" which expands on continuation: when sync bytes are finished this chunk reads and processes block data
+- "tape_write_parity_send" which expands on if all data bits of a byte are done, control may transfer to parity-bit sending handled in that chunk

@@ -1,0 +1,55 @@
+# byRiclianll - Program header and initial UI/DOS handshake. Contains the REM header and H* lookup string, UI prompts asking the user to insert a diskette and press RETURN, waits for the RETURN key, opens IEC channel 15 to the 1541 (OPEN15,8,15), sends the DOS inquiry command (PRINT#15,"10"), and reads the initial DOS response (INPUT#15,EN*,EM*,ET*,ES*). Handles an immediate '00' response (no error), prints DOS/version info when present, and contains early CLOSE/END branches for failure or unsupported DOS versions.
+
+100  REM  EDIT  LOAD  ADDRESS 
+1 1 0  H*= " 0 1 23456789ABCDEF " 
+
+120  PRINT"  <:CLR>EDIT  LOAD  ADDRESS  -  1541" 
+130  PR  I  NT     DOWN  >  REMOVE   <:RVS>  WRITE  PROTEC 
+
+T  tab<:roff>" 
+
+140  PRINT"  <:D0WN>  INSERT  DISKETTE  IN  DRIVE 
+
+II 
+
+150  PRINT"  <:down>press  <:rvs>return<:roff3 
+
+TO  CONTINUE" 
+
+160  GETC*: IFC*=""THEN160 
+
+170  IFCt<>CHR*<13)G0T0160 
+
+180  PRINT"OK" 
+
+190  0PEN15,8, 15 
+
+200  PRINT#15, "10" 
+
+210  INPUT#15,EN*,EM*,ET*!,ES* 
+
+220  IFEN*="00"G0T0260 
+
+230  PRINT"  <:D0WN>"  EN*",    "EM*"  ,  "ET*"  ,  "ES* 
+240  CLOSE 15 
+250  END 
+
+260  PRINT#15, "M-R"CHR*  < 1 ) CHR*  < 1 ) 
+
+270  GET#15,D0S* 
+
+280  IFDOS*=""THENDOS*=CHR* (0) 
+
+290  DOS=ASC(DOS*) 
+
+300  IFD0S=65G0T0330 
+
+310  PRINT"  <:D0WN> 73,  CBM  DOS  V2.6  1541,00, 
+
+00" 
+
+320  G0T0910 
+
+---
+Additional information can be found by searching:
+- "filename_input_and_file_open" which expands on prompts for filename and opens the file after DOS init

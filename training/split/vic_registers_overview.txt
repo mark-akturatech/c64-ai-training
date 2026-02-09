@@ -1,0 +1,106 @@
+# COMMODORE 64 - VIC-II (MOS 6566/6567) register map: D000-D02E (sprite X/Y positions D000-D00F, D010 sprites MSB X positions and VIC control registers). D010-D01E cover raster compare, control, sprite enable ($D015), multi-color mode, screen/bitmap modes, X/Y smooth scrolling bits, sprite expand, memory control. D019 = interrupt flag bits for raster/sprite/background/light-pen collisions. D01A IRQ mask register, D01B sprite/background priority, D01C multi-color mode, D01D/D01E sprite expansion and collision registers, D020-D024 border/background colors, D025-D026 sprite multicolor registers, D027-D02E sprite color registers.
+
+  D000-D02E  53248-54271           MOS 6566 VIDEO INTERFACE CONTROLLER
+                                   (VIC)
+
+  D000       53248                 Sprite 0 X Pos
+  D001       53249                 Sprite 0 Y Pos
+  D002       53250                 Sprite 1 X Pos
+  D003       53251                 Sprite 1 Y Pos
+  D004       53252                 Sprite 2 X Pos
+  D005       53253                 Sprite 2 Y Pos
+  D006       53254                 Sprite 3 X Pos
+  D007       53255                 Sprite 3 Y Pos
+  D008       53256                 Sprite 4 X Pos
+  D009       53257                 Sprite 4 Y Pos
+  D00A       53258                 Sprite 5 X Pos
+  D00B       53259                 Sprite 5 Y Pos
+  D00C       53260                 Sprite 6 X Pos
+  D00D       53261                 Sprite 6 Y Pos
+  D00E       53262                 Sprite 7 X Pos
+  D00F       53263                 Sprite 7 Y Pos
+
+
+                                            BASIC TO MACHINE LANGUAGE   317
+~
+
+
+   HEX      DECIMAL        BITS                 DESCRIPTION
+  -------------------------------------------------------------------------
+
+  D010       53264                 Sprites 0-7 X Pos (msb of X coord.)
+  D011       53265                 VIC Control Register
+                            7      Raster Compare: (Bit 8) See 53266
+                            6      Extended Color Text Mode 1 = Enable
+                            5      Bit Map Mode. 1 = Enable
+                            4      Blank Screen to Border Color: 0 = Blank
+                            3      Select 24/25 Row Text Display: 1=25 Rows
+                            2-0    Smooth Scroll to Y Dot-Position (0-7)
+
+  D012       53266                 Read Raster/Write Raster Value for
+                                     Compare IRQ
+  D013       53267                 Light-Pen Latch X Pos
+  D014       53268                 Light-Pen Latch Y Pos
+  D015       53269                 Sprite display Enable: 1 = Enable
+  D016       53270                 VIC Control Register
+                            7-6    Unused
+                            5      ALWAYS SET THIS BIT TO 0 !
+                            4      Multi-Color Mode: 1 = Enable (Text or
+                                     Bit-Map)
+                            3      Select 38/40 Column Text Display:
+                                     1 = 40 Cols
+                            2-0    Smooth Scroll to X Pos
+
+  D017       53271                 Sprites 0-7 Expand 2x Vertical (Y)
+  D018       53272                 VIC Memory Control Register
+                            7-4    Video Matrix Base Address (inside VIC)
+                            3-1    Character Dot-Data Base Address (inside
+                                     VIC)
+                            0      Select upper/lower Character Set
+
+  D019       53273                 VIC Interrupt Flag Register (Bit = 1:
+                                     IRQ Occurred)
+                            7      Set on Any Enabled VIC IRQ Condition
+                            3      Light-Pen Triggered IRQ Flag
+                            2      Sprite to Sprite Collision IRQ Flag
+                            1      Sprite to Background Collision IRQ Flag
+                            0      Raster Compare IRQ Flag
+
+
+
+  318   BASIC TO MACHINE LANGUAGE
+~
+
+
+   HEX      DECIMAL        BITS                 DESCRIPTION
+  -------------------------------------------------------------------------
+
+  D01A       53274                 IRQ Mask Register: 1 = Interrupt Enabled
+  D01B       53275                 Sprite to Background Display Priority:
+                                     1 = Sprite
+  D01C       53276                 Sprites 0-7 Multi-Color Mode Select:
+                                     1 = M.C.M.
+  D01D       53277                 Sprites 0-7 Expand 2x Horizontal (X)
+  D01E       53278                 Sprite to Sprite Collision Detect
+  D01F       53279                 Sprite to Background Collision Detect
+  D020       53280                 Border Color
+  D021       53281                 Background Color 0
+  D022       53282                 Background Color 1
+  D023       53283                 Background Color 2
+  D024       53284                 Background Color 3
+  D025       53285                 Sprite Multi-Color Register 0
+  D026       53286                 Sprite Multi-Color Register 1
+  D027       53287                 Sprite 0 Color
+  D028       53288                 Sprite 1 Color
+  D029       53289                 Sprite 2 Color
+  D02A       53290                 Sprite 3 Color
+  D02B       53291                 Sprite 4 Color
+  D02C       53292                 Sprite 5 Color
+  D02D       53293                 Sprite 6 Color
+  D02E       53294                 Sprite 7 Color
+
+
+---
+Additional information can be found by searching:
+- "memory_map_part3_screen_video_rom_ram" which expands on VIC registers map to $D000-$D02E region in memory map
+- "light_pen_description" which expands on Light-pen latches and IRQ bits referenced in VIC registers (D013/D014 & D019)

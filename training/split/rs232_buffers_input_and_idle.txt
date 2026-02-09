@@ -1,0 +1,70 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - RS232 input helpers and serial idle handling: INPUT FROM RS232 and F086 GET FROM RS232 (reads from RIBUF using RIDBE/RIDBS pointers and sets status), SERIAL BUS IDLE (waits for RS232 bus to be idle and sets CIA ICR appropriately), and buffer index increment/clear logic. Interacts with status image $0297 and buffer pages $029B-$029E.
+
+                                *** INPUT FROM RS232
+.,F04D 85 99    STA $99
+.,F04F AD 94 02 LDA $0294
+.,F052 4A       LSR
+.,F053 90 28    BCC $F07D
+.,F055 29 08    AND #$08
+.,F057 F0 24    BEQ $F07D
+.,F059 A9 02    LDA #$02
+.,F05B 2C 01 DD BIT $DD01
+.,F05E 10 AD    BPL $F00D
+.,F060 F0 22    BEQ $F084
+.,F062 AD A1 02 LDA $02A1
+.,F065 4A       LSR
+.,F066 B0 FA    BCS $F062
+.,F068 AD 01 DD LDA $DD01
+.,F06B 29 FD    AND #$FD
+.,F06D 8D 01 DD STA $DD01
+.,F070 AD 01 DD LDA $DD01
+.,F073 29 04    AND #$04
+.,F075 F0 F9    BEQ $F070
+.,F077 A9 90    LDA #$90
+.,F079 18       CLC
+.,F07A 4C 3B EF JMP $EF3B
+.,F07D AD A1 02 LDA $02A1
+.,F080 29 12    AND #$12
+.,F082 F0 F3    BEQ $F077
+.,F084 18       CLC
+.,F085 60       RTS
+
+                                F086 GET FROM RS232
+.,F086 AD 97 02 LDA $0297
+.,F089 AC 9C 02 LDY $029C
+.,F08C CC 9B 02 CPY $029B
+.,F08F F0 0B    BEQ $F09C
+.,F091 29 F7    AND #$F7
+.,F093 8D 97 02 STA $0297
+.,F096 B1 F7    LDA ($F7),Y
+.,F098 EE 9C 02 INC $029C
+.,F09B 60       RTS
+.,F09C 09 08    ORA #$08
+.,F09E 8D 97 02 STA $0297
+.,F0A1 A9 00    LDA #$00
+.,F0A3 60       RTS
+
+                                *** SERIAL BUS IDLE
+                                This routine checks the RS232 bus for data transmission/
+                                reception. The routine waits for any activity on the bus
+                                to end before setting I.C.R. The routine is called by
+                                serial bus routines, since these devices use IRQ generated
+                                timing, and conflicts may occur if they are all used at
+                                once.
+.,F0A4 48       PHA             store (A)
+.,F0A5 AD A1 02 LDA $02A1       ENABL, RS232 enables
+.,F0A8 F0 11    BEQ $F0BB       bus not in use
+.,F0AA AD A1 02 LDA $02A1       ENABL
+.,F0AD 29 03    AND #$03        test RS232
+.,F0AF D0 F9    BNE $F0AA       yes, wait for port to clear
+.,F0B1 A9 10    LDA #$10
+.,F0B3 8D 0D DD STA $DD0D       set up CIA#2 I.C.R
+.,F0B6 A9 00    LDA #$00        clear
+.,F0B8 8D A1 02 STA $02A1       ENABL
+.,F0BB 68       PLA             retrieve (A)
+.,F0BC 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "rs232_receive_and_processing" which expands on RIBUF/RIDATA handling used when receiving bytes

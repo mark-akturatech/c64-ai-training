@@ -1,0 +1,30 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFC0 that JMPs ($031A) to the open logical file vector. OPEN sets up logical file table entries and must be preceded by SETLFS and SETNAM.
+
+                                *** open a logical file
+                                this routine is used to open a logical file. Once the logical file is set up it
+                                can be used for input/output operations. Most of the I/O KERNAL routines call on
+                                this routine to create the logical files to operate on. No arguments need to be
+                                set up to use this routine, but both the SETLFS, $FFBA, and SETNAM, $FFBD,
+                                KERNAL routines must be called before using this routine.
+.,FFC0 6C 1A 03 JMP ($031A)     do open a logical file
+
+                                *** close a specified logical file
+                                this routine is used to close a logical file after all I/O operations have been
+                                completed on that file. This routine is called after the accumulator is loaded
+                                with the logical file number to be closed, the same number used when the file was
+                                opened using the OPEN routine.
+.,FFC3 6C 1C 03 JMP ($031C)     do close a specified logical file
+
+                                *** open channel for input
+                                any logical file that has already been opened by the OPEN routine, $FFC0, can be
+                                defined as an input channel by this routine. the device on the channel must be an
+                                input device or an error will occur and the routine will abort.
+                                
+                                if you are getting data from anywhere other than the keyboard, this routine must be
+                                called before using either the CHRIN routine, $FFCF, or the GETIN routine,
+                                $FFE4. if you are getting data from the keyboard and no other input channels are
+                                open then the calls to this routine and to the OPEN routine, $FFC0, are not needed.
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on OPEN vector at $031A

@@ -1,0 +1,59 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Definition and mechanics of Bad Lines: VIC needs 40 extra cycles to fetch character pointers; Bad Lines 'stun' the CPU for 40-43 cycles. Normally every 8th display line is a Bad Line (first raster lines of text lines), position depends on YSCROLL and DEN. Formal Bad Line Condition: at negative edge of Φ0, RASTER in $30..$F7 range, lower 3 bits equal YSCROLL, and DEN was set during any cycle of raster line $30. Bad Line Conditions can be created/removed dynamically by changing YSCROLL, affecting VC/RC and display behavior.
+
+3.5. Bad Lines
+--------------
+
+As already mentioned, the VIC needs 40 additional bus cycles when fetching
+the character pointers (i.e. the character codes of one text line from the
+video matrix), because the 63-65 bus cycles available for transparent
+(unnoticed by the processor) access for the VIC during the first clock
+phases within a line are not sufficient to read both the character pointers
+and the pixel data for the characters from memory.
+
+For this reason, the VIC uses the mechanism described in section 2.4.3. to
+"stun" the processor for 40-43 cycles during the first pixel line of each
+text line to read the character pointers. The raster lines in which this
+happens are usually called "Bad Lines" ("bad" because they stop the
+processor and thus slow down the computer and lead to problems if the
+precise timing of a program is essential, e.g. for the transmission of data
+to/from a floppy drive).
+
+The character pointer access is also done in the bitmap modes, because the
+video matrix data is then used for color information.
+
+Normally, every eighth line inside the display window, starting with the
+very first line of the graphics, is a Bad Line, i.e the first raster lines
+of each text line. So the position of the Bad Lines depends on the YSCROLL.
+As you will see later, the whole graphics display and memory access scheme
+depend completely on the position of the Bad Lines.
+
+It is therefore necessary to introduce a more general definition, namely
+that of a "Bad Line Condition":
+
+ A Bad Line Condition is given at any arbitrary clock cycle, if at the
+ negative edge of �0 at the beginning of the cycle RASTER >= $30 and RASTER
+ <= $f7 and the lower three bits of RASTER are equal to YSCROLL and if the
+ DEN bit was set during an arbitrary cycle of raster line $30.
+
+This definition has to be taken literally. You can generate and take away a
+Bad Line condition multiple times within an arbitrary raster line in the
+range of $30-$f7 by modifying YSCROLL, and thus make every raster line
+within the display window completely or partially a Bad Line, or trigger or
+suppress all the other functions that are connected with a Bad Line
+Condition. If YSCROLL=0, a Bad Line Condition occurs in raster line $30 as
+soon as the DEN bit (register $d011, bit 4) is set (for more about the DEN
+bit, see section 3.10.).
+
+The following three sections describe the function units that are used for
+displaying the graphics. Section 3.6. explains the the memory interface
+that is used to read the graphics data and the timing of the accesses
+within a raster line. Section 3.7. is about the display unit that converts
+the text and bitmap graphics data into colors and generates the addresses
+for the memory access. Section 3.8. covers the sprites and their address
+generation.
+
+
+---
+Additional information can be found by searching:
+- "memory_access_timing" which expands on BA/AEC takeover sequence for Bad Line fetches
+- "vc_and_rc" which expands on VC/RC behavior and how Bad Lines affect VCBASE/RC

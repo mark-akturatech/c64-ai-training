@@ -1,0 +1,56 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=1, BMM=1, MCM=0 invalid bitmap mode 1: displays black screen but internal graphics can be scanned with sprite collision trick. Structure resembles standard bitmap but g-address bits 9 and 10 are forced to zero due to ECM, causing repeated sections in displayed bitmap (graphics repeated four times). g-data ends up black.
+
+3.7.3.7. Invalid bitmap mode 1 (ECM/BMM/MCM=1/1/0)
+--------------------------------------------------
+
+This mode also only displays a black screen, but the pixels can also be
+read out with the sprite collision trick.
+
+The structure of the graphics is basically as in standard bitmap mode, but
+the bits 9 and 10 of the g-addresses are always zero due to the set ECM bit
+and so the graphics is - roughly said - made up of four "sections" that are
+each repeated four times.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |                           unused                          |
+ +-----------------------------------------------------------+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13| VC9| VC8|  0 |  0 | VC5| VC4| VC3| VC2| VC1| VC0| RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       |
+ | "0": Black (background)               |
+ | "1": Black (foreground)               |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "invalid_bitmap_mode_2" which expands on related invalid bitmap with ECM set and multicolor

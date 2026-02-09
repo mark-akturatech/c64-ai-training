@@ -1,0 +1,27 @@
+# NMOS 6510 - Pseudocode implementing SBC's behavior (binary flag setup and BCD correction). Includes computing tmp = A - imm - (C ^ 1), setting C, N, Z, V as in binary subtraction, calculating the lower nibble tmp2, conditional BCD correction for the low nibble and combining with high nibble result, final high-nibble overflow correction, and assigning the corrected value back to A.
+
+pseudocode
+/* A = value in Akku, imm = immediate argument, C = carry */
+/* set flags like in a binary subtraction */
+tmp = A - imm - (C ^ 1);
+C = (tmp < 0x100) ? 1 : 0;
+N = (tmp & 0x80) >> 7;
+Z = ((tmp & 0xff) == 0) ? 1 : 0;
+V = (((A ^ tmp) & 0x80) && ((A ^ imm) & 0x80));
+/* Calculate the lower nibble. */
+tmp2 = (A & 0x0f) - (imm & 0x0f) - (C ^ 1);
+/* BCD correction */
+if (tmp2 & 0x10) {
+tmp2 = ((tmp2 - 6) & 0xf) | ((A & 0xf0) - (imm & 0xf0) - 0x10);
+} else {
+tmp2 = (tmp2 & 0xf) | ((A & 0xf0) - (imm & 0xf0));
+}
+if (tmp2 & 0x100) {
+tmp2 -= 0x60;
+}
+A = tmp2;
+
+
+---
+Additional information can be found by searching:
+- "sbc_instruction_decimal_mode_overview" which expands on explains the decimal-mode differences and flags that this pseudocode implements

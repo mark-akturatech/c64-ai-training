@@ -1,0 +1,44 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle several input/control codes and cursor operations. Compares the input with control codes: CURSOR UP (move up a line, wrap to previous line if needed), toggles/clears the reverse flag (RVS OFF), handles CURSOR LEFT (moves left, possibly back to previous line via a line-decrement test), and handles CLR (clear screen). Restores b7 in A and calls the set-colour routine before jumping to the special-character handler.
+
+.,E832 C9 11    CMP #$11        compare with [CURSOR UP]
+.,E834 D0 16    BNE $E84C       branch if not [CURSOR UP]
+.,E836 A6 D6    LDX $D6         get the cursor row
+.,E838 F0 37    BEQ $E871       if on the top line go restore the registers, set the
+                                quote flag and exit
+.,E83A C6 D6    DEC $D6         decrement the cursor row
+.,E83C A5 D3    LDA $D3         get the cursor column
+.,E83E 38       SEC             set carry for subtract
+.,E83F E9 28    SBC #$28        subtract one line length
+.,E841 90 04    BCC $E847       branch if stepped back to previous line
+.,E843 85 D3    STA $D3         else save the cursor column ..
+.,E845 10 2A    BPL $E871       .. and exit, branch always
+.,E847 20 6C E5 JSR $E56C       set the screen pointers for cursor row, column ..
+.,E84A D0 25    BNE $E871       .. and exit, branch always
+.,E84C C9 12    CMP #$12        compare with [RVS OFF]
+.,E84E D0 04    BNE $E854       if not [RVS OFF] continue
+.,E850 A9 00    LDA #$00        else clear A
+.,E852 85 C7    STA $C7         clear the reverse flag
+.,E854 C9 1D    CMP #$1D        compare with [CURSOR LEFT]
+.,E856 D0 12    BNE $E86A       if not [CURSOR LEFT] go ??
+.,E858 98       TYA             copy the cursor column
+.,E859 F0 09    BEQ $E864       if at start of line go back onto the previous line
+.,E85B 20 A1 E8 JSR $E8A1       test for line decrement
+.,E85E 88       DEY             decrement the cursor column
+.,E85F 84 D3    STY $D3         save the cursor column
+.,E861 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E864 20 01 E7 JSR $E701       back onto the previous line if possible
+.,E867 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E86A C9 13    CMP #$13        compare with [CLR]
+.,E86C D0 06    BNE $E874       if not [CLR] continue
+.,E86E 20 44 E5 JSR $E544       clear the screen
+.,E871 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E874 09 80    ORA #$80        restore b7, colour can only be black, cyan, magenta
+                                or yellow
+.,E876 20 CB E8 JSR $E8CB       set the colour code
+.,E879 4C 4F EC JMP $EC4F       go check for special character codes except fro switch
+
+---
+Additional information can be found by searching:
+- "insert_space_and_shift_screen_line" which expands on insert handling and insert-count test that may follow input handling
+- "newline_and_carriage_return_handling" which expands on cursor movement and newline interactions
+- "set_colour_code" which expands on called to set the colour code for the character

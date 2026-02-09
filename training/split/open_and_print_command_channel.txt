@@ -1,0 +1,76 @@
+# ********* - Section 4.1: OPEN and PRINT# usage for files and for setting up a command channel; OPEN syntax (OPEN file#, device#, channel#, text$), meaning of file#, device#, channel#, and text$; examples of opening command (channel 15) and data channels; sending commands via PRINT# or via OPEN with a text string.
+
+
+
+4. DISK COMMANDS
+
+4.1 OPEN AND PRINT #
+
+Up 'til now, you have explored the simple ways of dealing with the
+disk drive.  In order to communicate with the disk drive more fully,
+you have to touch on the OPEN and PRINT# statements in BASIC (more
+details of these commands are available in your VIC 20 or Commodore 64
+User's Guide or Programmer's Reference Guide).  You may be familiar
+with their use with data files on cassette tape, where the OPEN
+statement creates the file and the PRINT# statement fills the file
+with data. They can be used the same way with the disk, as you will
+see in the next chapter.  But they can also be used to set up a
+command channel. The command channel lets you exchange information
+between the computer and the disk drive.
+
+FORMAT FOR THE OPEN STATEMENT:
+
+   OPEN file#, device#, channel#, text$
+
+The file# can be any number from 1 to 255.  This number is used
+throughout the program to identify which file is being accessed.  But
+numbers greater than 127 should be avoided, because they cause the
+PRINT# statement to generate a linefeed after the return character.
+These numbers are really meant to be used with non-standard printers.
+
+The device# of the disk is usually 8.
+
+The channel# can be any number from 2 to 15.  These refer to a channel
+used to communicate with the disk, and channels numbered 0 and 1 are
+reserved for the operating system to use for LOADing and SAVEing.
+Channels 2 through 14 can be used for data to files, and 15 is the
+command channel.
+
+The text$ is a string that is PRINTed to the file, as if with a PRINT#
+statement. This is handy for sending a single command to the channel.
+
+EXAMPLES OF OPEN STATEMENTS:
+
+   OPEN 15, 8, 15
+   OPEN 2, 8, 2
+
+	+-------------- FILE#
+	|  +----------- DEVICE#
+	|  |  +-------- COMMAND CHANNEL#
+	|  |  |
+   OPEN A, B, C, Z$
+		 |
+		 +----- COMMAND$(text$)
+
+The PRINT# command works exactly like a PRINT statement, except that
+the data goes to a device other than the screen, in this case to the
+disk drive.  When used with a data channel, the PRINT# sends
+information into a buffer in the disk drive, which LOADs it onto the
+diskette.  When PRINT# is used with the command channel, it sends
+commands to the disk drive.
+
+FORMAT FOR SENDING DISK COMMANDS:
+
+   OPEN 15, 8, 15, command$
+
+or
+
+   PRINT# 15, command$
+
+
+
+
+---
+Additional information can be found by searching:
+- "reading_error_channel_example_and_error_fields" which expands on command channel (15) is used to read error information (INPUT# usage)
+- "disk_command_summary" which expands on summary of common PRINT# command strings

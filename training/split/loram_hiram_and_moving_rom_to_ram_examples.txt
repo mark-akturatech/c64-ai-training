@@ -1,0 +1,69 @@
+# ********* - Explains Bit 0 (LORAM) and Bit 1 (HIRAM): how setting/clearing them swaps BASIC ROM ($A000-$BFFF) and Kernal ROM ($E000-$FFFF) with RAM. Shows technique to copy ROM into RAM from BASIC (FOR I=40960 TO 49151:POKE I,PEEK(I):NEXT), explains why this works, and gives example POKEs to switch to RAM copy (POKE 1,PEEK(1) AND 254) and to restore ROM (POKE 1,PEEK(1) OR 1). Provides example modifications once BASIC is in RAM (changing READY prompt, keyword typos like FOR->FER, and altering ASC behavior via specific POKEs).
+
+Bit 0.  This bit controls the LORAM signal.  A 0 in this bit position
+switches the BASIC ROM out, and replaces it with RAM at addresses
+40960-49151 ($A000-$BFFF).  The default value of this bit is 1.
+
+Bit 1.  Bit 1 controls the HIRAM signal.  A 0 in this bit position
+switches the Kernal ROM out, and replaces it with RAM at 57344-65535
+($E000-$FFFF).  As the BASIC interpreter uses the Kernal, it is also
+switched out and replaced by RAM.  The default value of this bit is 1.
+
+The system allows a wide range of combinations of RAM and ROM to be
+utilized.  Of course, the BASIC programmer will have little need, in
+the ordinary course of events, to switch out the BASIC ROM and the
+Kernal.  To do so would just hang the system up.  But one way to make
+use of this feature is to move the contents of ROM to the
+corresponding RAM addresses.  That way, you can easily modify and
+customize the BASIC interpreter and OS Kernal routines, which are
+ordinarily fixed in ROM.  For examples, to move BASIC into RAM, just
+type:
+
+FOR I=40960 TO 49151:POKE I,PEEK(I):NEXT
+
+Though it appears that such a program would not do anything, it in
+fact copies bytes from ROM to RAM.  This is because any data which is
+written to a ROM location is stored in the RAM which resides at the
+same address.  So while you are PEEKing ROM, you are POKEing RAM.  To
+switch to your RAM copy of BASIC, type in:
+
+POKE 1,PEEK(1) AND 254.
+
+Now you are ready to make modifications.  Examples of simple
+modifications include changing the text which the interpreter prints,
+such as the READY prompt, the power-up message, or the keyword table.
+
+An example of the latter would be POKE 41122,69.  This changes the FOR
+keyword to FER, so that BASIC would respond normally to a FER-NEXT
+loop, but fail to recognize FOR as syntactically correct.
+
+On the more practical side, you could change the prompt that INPUT
+issues to a colon, rather than a question mark:
+
+POKE 43846,58
+
+You are not limited to just cosmetic changes of text.  Jim Butterfield
+has given an example in COMPUTE! magazine of changing the interpreter
+so that it assigns a null string the ASCII value 0.  In the ROM
+version, the command PRINT ASC("") will return ?ILLEGAL QUANTITY
+ERROR.  This is inconvenient when INPUTting a string, because if the
+user presses RETURN and you try to check the ASCII value of the string
+that has been entered, you will get this error.  By entering POKE
+46991,5, this is changed so that PRINT ASC("") now responds with a
+zero.
+
+For the more serious machine language programmer, it is quite feasible
+to add new commands or modify existing ones by diverting the vectors
+which are discussed in the section covering the BASIC interpreter ROM.
+For a good example of this technique, see the article "Hi-Res Graphics
+Made Simple" by Paul Schatz in COMPUTE!'s First Book of Commodore 64
+Sound and Graphics.  The program example there inserts new graphics
+commands into a RAM version of BASIC.  When you want to switch back to
+the ROM BASIC, enter POKE 1,PEEK(1) OR 1.
+
+
+---
+Additional information can be found by searching:
+- "r6510_internal_io_port_overview" which expands on Definition of LORAM/HIRAM bits that allow ROM/RAM swapping
+- "d6510_data_direction_register_at_0" which expands on Data direction considerations when accessing I/O-controlled bits
+- "replacing_roms_and_kernel_interrupts_notes" which expands on Further notes on replacing ROMs with alternate OS/applications and interrupt/vector considerations

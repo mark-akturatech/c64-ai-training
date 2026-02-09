@@ -1,0 +1,57 @@
+# Kick Assembler - Section 3.11: .print and .printnow directives for assembler console output (timing differences between passes), examples showing incomplete first-pass output, .error and .errorif directives to abort assembly with messages, and examples checking conditions like page crossing.
+
+3.11. Console Output
+With the .print directive you can output text to the user while assembling. For example:
+.print "Hello world"
+.var x=2
+.print "x="+x
+
+This will give the following output from the assembler:
+parsing
+flex pass 1
+Output pass
+Hello world
+x=2.0
+
+Notice that the output is given during the output pass. You can also print the output immediately with the .printnow command. This is useful for debugging script where errors prevent the execution of the output pass. The .printnow command will print the output in each pass, and in some passes the output might be incomplete due to lack
+of information. In the following example we print a label that isn't resolved in the first pass:
+.printnow "loop=$" + toHexString(loop)
+*=$1000
+loop: jmp loop
+
+This will give the following output:
+
+11
+
+Basic Assembler Functionality
+
+parsing
+flex pass 1
+loop=$<<Invalid String>>
+flex pass 2
+loop=$1000
+Output pass
+
+If you detect an error while assembling, you can use the .error directive to terminate the assembling and display
+an error message:
+.var width = 45
+.if (width>40) .error "width can’t be higher than 40"
+
+Another way of writing this is to use the .errorif directive that takes a boolean expression and a message text.
+An error is raised if the boolean expression is evaluated to true:
+.var width = 45
+.errorif with>40, "width can’t be higher than 40"
+
+This is more flexible since it standard .if's has to be decided in the first pass which will give an (unwanted)
+error if you for example compare not yet resolved labels. If you for instance want to check for a page boundary
+crossing you can do like this:
+beq label1
+.errorif (>*) != (>label1), "Page crossed!"
+nop
+nop
+label1:
+
+
+---
+Additional information can be found by searching:
+- "testing_asserts_and_tools" which expands on testing and assertion features (see Chapter 16 in TOC)

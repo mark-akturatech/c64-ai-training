@@ -1,0 +1,32 @@
+# COMMODORE 64 - KERNAL TALK (call $FFB4 / 65460): Command a serial-bus device to TALK. A must hold device number 0-31; routine ORs bits to form talk address and sends command on serial bus. Error returns via READST. Example: LDA #4 ; JSR TALK.
+
+  B-34. Function Name: TALK
+
+    Purpose: Command a device on the serial bus to TALK
+    Call address: $FFB4 (hex) 65460 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: See READST
+    Stack requirements: 8
+    Registers affected: A
+
+    Description: To use this routine the accumulator must first be loaded
+  with a device number between 0 and 31. When called, this routine then
+  ORs bit by bit to convert this device number to a talk address. Then this
+  data is transmitted as a command on the serial bus.
+
+  How to Use:
+
+    1) Load the accumulator with the device number.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    ;COMMAND DEVICE #4 TO TALK
+    LDA #4
+    JSR TALK
+
+---
+Additional information can be found by searching:
+- "tksa_kernal_routine" which expands on Send secondary address for TALK devices using TKSA
+- "readst_kernal_routine" which expands on Check TALK status via READST

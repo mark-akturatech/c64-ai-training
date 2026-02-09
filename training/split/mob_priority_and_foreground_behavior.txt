@@ -1,0 +1,44 @@
+# COMMODORE 64 - Explains per-MOB priority control relative to character and bitmap display data using MnDP bits in register 27 ($1B). Shows priority meanings: MnDP=0 — non-transparent MOB data displayed in front of character/bitmap (MOB in front); MnDP=1 — non-transparent MOB data displayed only instead of Background #0 or multi-color bit pair 01 (MOB behind). Includes a small priority matrix and notes that MOB data bits of '0' (or '00' in multi-color) are transparent. Describes fixed MOB-to-MOB priority (MOB 0 highest, MOB 7 lowest) and that MOB-vs-MOB priority is resolved before MOB vs. character/bitmap priority.
+
+  PRIORITY
+
+    The priority of each MOB may be individually controlled with respect to
+  the other displayed information from character or bit map modes. The
+  priority of each MOB is set by the corresponding bit (MnDP) of register
+  27 ($1B) as follows:
+
+     REG BIT  |          PRIORITY TO CHARACTER OR BIT MAP DATA
+  ------------+------------------------------------------------------------
+        0     |  Non-transparent MOB data will be displayed (MOB in front)
+        1     |  Non-transparent MOB data will be displayed only instead of
+              |  Bkgd #0 or multi-color bit pair 01 (MOB behind)
+
+
+                          MOB-DISPLAY DATA PRIORITY
+                       +--------------+--------------+
+                       |   MnDP = 1   |   MnDP = 0   |
+                       +--------------+--------------+
+                       |  MOBn        |  Foreground  |
+                       |  Foreground  |  MOBn        |
+                       |  Background  |  Background  |
+                       +--------------+--------------+
+
+
+                                                           APPENDIX N   443
+~
+
+
+  MOB data bits of "0" ("00" in multi-color mode) are transparent, always
+  permitting any other information to be displayed.
+    The MOBs have a fixed priority with respect to each other, with MOB 0
+  having the highest priority and MOB 7 the lowest. When MOB data (except
+  transparent data) of two MOBs are coincident, the data from the lower
+  number MOB will be displayed. MOB vs. MOB data is prioritized before
+  priority resolution with character or bit map data.
+
+
+
+---
+Additional information can be found by searching:
+- "mob_color_modes_and_multicolor_interpretation" which expands on Which MOB bit patterns are transparent and how multi-color pairs map to colors
+- "mob_collision_detection_and_interrupts" which expands on How displayed (non-transparent) MOB pixels relate to collision detection

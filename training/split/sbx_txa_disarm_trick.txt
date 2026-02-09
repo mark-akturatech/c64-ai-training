@@ -1,0 +1,18 @@
+# NMOS 6510 - Shows how to use SBX #$xx to subtract an immediate from X while disarming the AND effect by making A equal to X first. Explains that A is clobbered, the TXA shortcut (instead of LDA #$FF) makes A == X so SBX performs a plain subtraction, and notes the cycle/byte cost (4 cycles, 3 bytes) and that carry need not be handled in this variant.
+
+SBX #$xx
+
+;where xx is the value to decrease by
+
+This code kills the A register of course, but so does the 'standard' version above. It can be made
+even shorter by using a 'TXA' instruction instead of the 'LDA #$FF'. That works since X and A
+will be equal after the 'TXA', and ANDing a value with itself produces no change, hence the AND
+effect of SBX is 'disarmed' and the subtraction will proceed as expected:
+TXA
+SBX #$xx
+Note that in this case you do not have to worry about the carry flag at all, and all in all the whole
+procedure takes only 4 cycles (and 3 bytes in memory)
+
+---
+Additional information can be found by searching:
+- "sbx_decrement_nibbles_example" which expands on Uses SBX in a multi-nibble decrement example; demonstrates similar carry/flag considerations

@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle FAC2 < FAC1 (or swapped case): clear index and rounding byte for FAC1/FAC2 as needed, compare exponent difference with $F9 to ensure it's within range, copy exponent difference to Y, fetch rounding byte, perform an LSR on a mantissa byte, and call the shift routine (JSR) to shift the smaller mantissa right by Y to align mantissas.
+
+                                FAC2 < FAC1
+.,B893 A0 00    LDY #$00        clear Y
+.,B895 84 70    STY $70         clear FAC1 rounding byte
+.,B897 C9 F9    CMP #$F9        compare exponent diff with $F9
+.,B899 30 C7    BMI $B862       branch if range $79-$F8
+.,B89B A8       TAY             copy exponent difference to Y
+.,B89C A5 70    LDA $70         get FAC1 rounding byte
+.,B89E 56 01    LSR $01,X       shift FAC? mantissa 1
+.,B8A0 20 B0 B9 JSR $B9B0       shift FACX Y times right
+
+---
+Additional information can be found by searching:
+- "fac2_gt_fac1_swap_and_sign_setup" which expands on prepares indices/signs used here
+- "sign_compare_and_select_add_subtract" which expands on after shifting, decide add vs subtract based on signs
+- "shift_routine_reference" which expands on calls the right-shift routine (JSR) to align mantissas

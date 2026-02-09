@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Loop control and table-index checks for digit extraction: restore variable pointer, recover the working 'character' state, toggle the test sense bit, mask out the digit, copy it for the next iteration, compare the current table index against the maximum allowed for decimal numbers and for time formatting, and branch appropriately to continue or exit the digit loop.
+
+.,BEB4 A4 47    LDY $47         get current variable pointer low byte
+.,BEB6 8A       TXA             get character back
+.,BEB7 49 FF    EOR #$FF        toggle the test sense bit
+.,BEB9 29 80    AND #$80        clear the digit
+.,BEBB AA       TAX             copy it to the new digit
+.,BEBC C0 24    CPY #$24        
+                                compare the table index with the max for decimal numbers
+.,BEBE F0 04    BEQ $BEC4       if at the max exit the digit loop
+.,BEC0 C0 3C    CPY #$3C        
+                                compare the table index with the max for time
+.,BEC2 D0 A6    BNE $BE6A       loop if not at the max
+
+---
+Additional information can be found by searching:
+- "digit_extraction_loop_and_output_write" which expands on continues or exits the digit extraction loop based on these checks

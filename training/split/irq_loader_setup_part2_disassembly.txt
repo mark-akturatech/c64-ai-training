@@ -1,0 +1,42 @@
+# Analyzing C64 tape loaders - Disassembly: Loader Setup Part 2. Sets NMI vector ($FFFA/$FFFB) to point to load loop ($03E7) and configures CIA#2 Timer A latch and control ($DD05, $DD0D, $DD0E) to generate an NMI (used to enter the read loop). Demonstrates starting CIA#2 Timer A in one-shot forced-latch mode to produce an immediate NMI and rendezvous into the load loop.
+
+
+; ********************************************
+; * Loader Setup-Part 2                      *
+; * Description: Hardware setup instructions *
+; ********************************************
+
+02E5  A9 E7          LDA #$E7       ; Non-Maskable Interrupt Hardware Vector setup:
+02E7  8D FA FF       STA $FFFA      ;  make it point to our Load Loop at $03E7. (2)
+02EA  A9 03          LDA #$03
+02EC  8D FB FF       STA $FFFB
+
+; (2) There are two possible sources for an NMI interrupt.  The first is the
+;     RESTORE key, which is connected directly to the 6510 NMI line.  The
+;     second is CIA #2, the interrupt line of which is connected to the 6510
+;     NMI line.
+
+
+02EF  A9 01          LDA #$01       ; Set CIA #2 Timer A high byte
+02F1  8D 05 DD       STA $DD05
+
+02F4  A9 81          LDA #$81       ; CIA #2 Interrupt Control Register setup:
+02F6  8D 0D DD       STA $DD0D      ;  enable Timer A interrupt (bit 0)
+
+02F9  A9 99          LDA #$99       ; CIA #2 Control Register A setup:
+02FB  8D 0E DD       STA $DD0E      ;  start timer A                (bit 0)
+                                    ;  Timer A run mode is one-shot (bit 3)
+                                    ;  Force latched value to be
+                                    ;  loaded to Timer A counter    (bit 4)
+
+02FE  D0 FE          BNE $02FE      ; C64 should hang here, but CIA #2 Timer A
+                                    ; expiration causes the NMI request, which makes
+                                    ; Program Counter move to $03E7.
+
+; ********************************************
+; * Loader Setup-Part 2.END                  *
+; ********************************************
+
+---
+Additional information can be found by searching:
+- "nmi_isr" which expands on NMI handler (load loop entry) used by this setup

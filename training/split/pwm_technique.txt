@@ -1,0 +1,38 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Pulse Width Modulation (PWM) technique: initialize PW to 50% ($D402/$D403 = $0800), select pulse waveform + gate ($D404), and increment PW each frame (example loop using $D402/$D403). Suggestion: use 16-bit counter and delta for smoother PWM.
+
+--------------------------------------------------------------------------------
+11.3 PULSE WIDTH MODULATION (PWM)
+--------------------------------------------------------------------------------
+
+PWM creates an animated, chorus-like sound by sweeping the pulse width:
+
+  ; Set initial pulse width to 50% (square wave)
+  lda #$00
+  sta $d402         ; PW lo
+  lda #$08
+  sta $d403         ; PW hi ($0800 = 2048 = 50%)
+
+  ; Select pulse waveform + gate
+  lda #$41          ; Pulse ($40) + Gate ($01)
+  sta $d404
+
+  ; In the main loop, increment pulse width each frame:
+  pwm_loop:
+    ; Wait for rasterline (or use timer interrupt)
+    inc $d402       ; Increment pulse width low byte
+    bne no_carry
+    inc $d403       ; Carry to high byte
+    lda $d403
+    and #$0f        ; Keep within 12-bit range
+    sta $d403
+  no_carry:
+    jmp pwm_loop
+
+For smoother PWM, use a 16-bit counter and add a delta value each frame.
+
+--------------------------------------------------------------------------------
+
+---
+Additional information can be found by searching:
+- "waveforms_pulse_rectangle" which expands on role of pulse width in timbre
+- "raster_synchronized_playback" which expands on timing PWM updates with raster or timer

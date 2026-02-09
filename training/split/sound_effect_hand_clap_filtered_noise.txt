@@ -1,0 +1,31 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Hand clap (filtered noise) example: set master volume and filter ($D416/$D415), set resonance and route voice to filter ($D417), enable low-pass and set volume on $D418, set noise burst with short ADSR ($D405/$D406), select noise + gate ($D404 = $81).
+
+
+HAND CLAP (Filtered Noise):
+  ; Initialize SID and set filter
+  lda #$0f          // Max volume
+  sta $d418
+  lda #$40          // Filter cutoff high byte
+  sta $d416
+  lda #$00
+  sta $d415
+  lda #$41          // Resonance=4, filter voice 1
+  sta $d417
+  lda #$10          // Enable low-pass filter
+  ora #$0f          // Plus max volume
+  sta $d418
+  ; Set up noise burst with short envelope
+  lda #$09          // A=0, D=9
+  sta $d405
+  lda #$00          // S=0, R=0
+  sta $d406
+  lda #$20
+  sta $d401
+  lda #$81          // Noise + gate
+  sta $d404
+
+
+---
+Additional information can be found by searching:
+- "filter_registers_and_modes_overview" which expands on routing voice through filter and resonance settings
+- "waveforms_noise" which expands on filtered noise for percussive sounds

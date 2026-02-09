@@ -1,0 +1,107 @@
+# ********* - Kernal screen and keyboard initialization routines (58648 $E518 Initialize Screen & Keyboard, 58692 $E544 initialize screen line link table and clear screen). CHROUT/CHRIN support: LP2 (58804 $E5B4) get char from keyboard buffer, routines to wait for CR/read input line (58826 $E5CA), and CHRIN screen/keyboard handling (58930 $E632). Also routines for quote checking, add character to screen, return from CHROUT screen output, advance cursor, scrolling, insert blank lines, and moving screen lines (various addresses between 59012..59888).
+
+This routine is a patch to the routine which finds a file on cassette.
+After the file is found, the message FILETITLE FOUND appears on the
+screen.  On the original versions of the Kernal, the user would then
+have to hit the Commodore key to continue the load.  On the newer
+versions, this patch causes a slight pause after the tape file is
+round, during which time a keypress is looked for.  If a key is
+pressed, the loading process continues immediately.  If it is not, the
+load continues by itself after the end of the pause.
+
+58604         $E4EC
+Baud Rate Table for European (PAL) Standard Monitors
+
+This table of prescaler values was added to later Kernal versions to
+allow the same Kernal software to be used with either U.S. or European
+64s.  It contains the values which are required to obtain interrupts
+at the proper frequency for the standard RS-232 baud rates, and
+corresponds exactly in format to the table of values for the U.S.
+(NTSC) monitor format at 65218 ($FEC2).  Separate tables are required
+because the prescaler values are derived from dividing the system
+clock rate by the baud rate, and PAL machines operate with a slightly
+slower clock frequency.
+
+58624         $E500          IOBASE
+Store Base Address of Memory-Mapped I/O Devices in .X and .Y Registers
+
+This is one of the documented Kernal routines for which there is a
+vector in the jump table at 65523 ($FFF3).
+
+When called, this routine sets the .X register to the low byte of the
+base address of the memory-mapped I/O devices, and puts the high byte
+in the .Y register.  This allows a user to set up a zero-page pointer
+to the device, and to load and store indirectly through that pointer.
+A program which uses this method, rather than directly accessing such
+devices could be made to function without change on future Commodore
+models, even though the I/O chips may be addressed at different
+locations.  This of course assumes that the CIA or a similar chip will
+be used.  This routine is of limited value for creating software that
+is compatible with both the VIC-20 and the 64 because of the
+differences in the VIA I/O chip that the VIC uses.
+
+The current version of this routine loads the .X register with a 0,
+and the .Y register with 220 ($DC), thus pointing to CIA #1, which is
+at 56320 ($DC00).
+
+58629         $E505          SCREEN
+Store Number of Screen Rows and Columns in .Y and .X
+
+This is a documented Kernal routine which is vectored in the jump
+table at 65517 ($FFED), and is provided to allow for program
+compatibility between computers.
+
+When called, this subroutine returns the number of screen columns in
+the .X register, and the number of screen rows in .Y.  Thus, a program
+can detect the screen format of the machine on which it is running,
+and make sure that text output is formatted accordingly.
+
+The present version of this routine loads the .X register with 40
+($28) and the .Y register with 25 ($19).
+
+58634         $E50A          PLOT
+Read/Set Location of the Cursor
+
+The jump table entry for this documented Kernal is at 65520 ($FFF0).
+
+The routine allows the user to read or set the position of the cursor.
+If the carry flag is set with the SEC instruction before calling this
+subroutine, cursor column (X position) will be returned in the .X
+register, and the cursor row (Y position) will be returned in the .Y
+register.  If the carry flag is cleared with a CLC instruction before
+entering this routine, and the .Y and .X registers are loaded with the
+desired row and column positions respectively, this routine will set
+the cursor position accordingly.
+
+The current read routine loads .X and .Y from locations 214 ($D6) and
+211 ($D3) respectively.  The cursor set routine stores .X and .Y in
+these locations, and calls the routine that sets the screen pointers
+at 58732 ($E56C).
+
+The user can access this routine from BASIC by loading the .X, .Y, and
+.P register values desired to the save area starting at 780 ($30C).
+
+58648         $E518
+Initialize Screen and Keyboard
+
+This is the original CINT Kernal routine, to which additions were made
+in later versions of the Kernal.
+
+After calling the routine at 58784 ($E5A0) to set up default I/O
+values, this routine initializes the cursor blink flags, the keyboard
+decode vector, the key repeat delay and frequency counters, the
+current color code, and maximum keyboard buffer size.  It then falls
+through to the next routine.
+
+58692         $E544
+Initialize the Screen Line Link Table and Clear the Screen
+
+This routine initializes the screen line link table at 217 ($D9),
+clears the screen, and clears the Color RAM to the background color.
+It falls through to the next routine.
+
+
+---
+Additional information can be found by searching:
+- "kernal_polynomial_routines_and_rnd_constants" which expands on misc math routines unrelated but nearby in Kernal mapping
+- "kernal_chrin_chrout_and_file_routines" which expands on higher-level I/O routines calling these screen/keyboard handlers

@@ -1,0 +1,93 @@
+# COMMODORE 64 - Sprite display priority, multi-color mode, pixel-pair color mapping, and collision detection. Priority: lower numbered sprites (0 is highest) appear in front of higher-numbered sprites. Multi-color mode uses pixel pairs to select among Background, Multi-Color 1, Sprite Color, Multi-Color 2 depending on which of the two bits in the pair are set; explains how to compute DATA byte for an 8-pixel block (bit weights 128..1). Collision detection: PEEK(V+30) for S-S collisions and PEEK(V+31) for S-B (sprite/background) collisions; test with IF PEEK(V+30) AND X = X THEN action where X is bitmask 1,2,4,...,128 for sprite 0..7.
+
+  PRIORITY:
+
+    Priority means one sprite will appear to move "in front of" or "behind"
+  another sprite on the display screen. Sprites with more priority always
+  appear to move "in front of" or "on top of" sprites with less priority.
+  The rule is that lower numbered sprites have priority over higher
+  numbered sprites. Sprite 0 has priority over all other sprites. Sprite 7
+  has no priority in relation to the other sprites. Sprite 1 has priority
+  over sprites 2-7, etc. If you put two sprites in the some position, the
+  sprite with the higher priority will appear IN FRONT OF the sprite with
+  the lower priority. The sprite with lower priority will either be
+  obscured, or will "show through" (from "behind") the sprite with higher
+  priority.
+
+  USING MULTI-COLOR:
+
+    You can create multi-colored sprites although using multi-color mode
+  requires that you use PAIRS of pixels instead of individual pixels in
+  your sprite picture (in other words each colored "dot" or "block" in the
+  sprite will consist of two pixels side by side). You have 4 colors to
+  choose from: Sprite Color (chart,above), Multi-Color 1, Multi-Color 2 and
+  "Background Color" (background is achieved by using zero settings which
+  let the background color "show through"). Consider one horizontal 8-pixel
+  block in a sprite picture. The color of each PAIR of pixels is determined
+  according to whether the left, right, or both pixels are solid, like
+  this:
+
+  +-+-+
+  | | | BACKGROUND      (Making BOTH PIXELS BLANK (zero) lets the
+  +-+-+                  INNER SCREEN COLOR (background)show through.)
+
+  +-+-+
+  | |@| MULTI-COLOR 1   (Making the RIGHT PIXEL SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Multi-Color 1.)
+
+  +-+-+
+  |@| | SPRITE COLOR    (Making the LEFT PIXEL SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Sprite Color.)
+
+  +-+-+
+  |@|@| MULTI-COLOR 2   (Making BOTH PIXELS SOLID in a pair of pixels
+  +-+-+                  sets BOTH PIXELS to Multi-Color 2.)
+
+                                                 PROGRAMMING GRAPHICS   179
+~
+
+
+  Look at the horizontal 8-pixel row shown below. This block sets the first
+  two pixels to background color, the second two pixels to Multi-Color 1,
+  the third two pixels to Sprite Color and the fourth two pixels to Multi-
+  Color 2. The color of each PAIR of pixels depends on which bits in each
+  pair are solid and which are blank, according to the illustration above.
+  After you determine which colors you want in each pair of pixels, the
+  next step is to add the values of the solid pixels in the 8-pixel block,
+  and POKE that number into the proper memory location. For example, if the
+  8-pixel row shown below is the first block in a sprite which begins at
+  memory location 832, the value of the solid pixels is 16+8+2+1 27, so you
+  would POKE 832,27.
+
+
+
+
+                     |128| 64| 32| 16|  8|  4|  2|  1|   16+8+2+1 = 27
+                     +---+---+---+---+---+---+---+---+
+                     |   |   |   |@@@|@@@|   |@@@|@@@|
+                     |   |   |   |@@@|@@@|   |@@@|@@@|
+                     +---+---+---+---+---+---+---+---+
+
+                         LOOKS LIKE THIS IN SPRITE
+
+                     +-------+-------+-------+-------+
+                     |BACKGR.|MULTI- |SPRITE |MULTI- |
+                     | COLOR |COLOR 1| COLOR |COLOR 2|
+                     +-------+-------+-------+-------+
+
+
+
+  COLLISION:
+
+    You can detect whether a sprite has collided with another sprite by
+  using this line: IF PEEK(V+30)ANDX=XTHEN [insert action here]. This line
+  checks to see if a particular sprite has collided with ANY OTHER SPRITE,
+  where X equals 1 for sprite 0, 2 for sprite 1, 4 for sprite 2, 8 for
+  sprite 3, 16 for sprite 4, 32 for sprite 5, 64 for sprite 6, and 128 for
+  sprite 7. To check to see if the sprite has collided with a "BACKGROUND
+  CHARACTER" use this line: IF PEEK(V+31)ANDX=XTHEN [insert action here].
+
+
+---
+Additional information can be found by searching:
+- "spritemaking_chart" which expands on registers for multicolor mode (V+28) and multi-color registers (V+37,V+38)

@@ -1,0 +1,18 @@
+# Analyzing C64 tape loaders - Details how the Cauldron non-IRQ turbo loader autostarts by modifying the IMAIN vector at $0302-$0303 to point to the turbo loader code ($02AE). Explains that parts of the turbo loader are included in the CBM header and data blocks, and that the CBM loader can be used to overwrite vectors (e.g. $0326/$0327) so the kernel executes the turbo loader after a standard LOAD.
+
+
+
+
+==== Non-IRQ Loader ====
+
+Here we'll see how this Turbo Loader performs the operations we discussed before. Please consult the documentation about this loader (CHR Loader T1) coming with Stewart Wilson't Final TAP.
+Get a Tap version of "Cauldron" if you want to extract yourself the listings I report here.
+
+CHR Loader T1-T3 routines are partly stored in the CBM file Header. CBM file Data (loaded at $02A7-0303) stores other routines and is used to cause the autostart of this loader.
+The autostart feature is performed by using the IMAIN Vector at $0302-0303. By default, this vector points to the address of the main BASIC program loop at $A483. This is the routine that is operating when you are in the direct mode (READY.). It executes statements, or stores them as program lines.
+Cauldron Loader sets the IMAIN Vector to point to $02AE, therefore, when CBM LOAD ends, control is given to the Turbo Loader.
+
+
+---
+Additional information can be found by searching:
+- "nonirq_cbm_data_block_listing" which expands on Assembly that sets vectors and inits loader variables

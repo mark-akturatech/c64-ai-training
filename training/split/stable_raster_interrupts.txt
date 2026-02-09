@@ -1,0 +1,26 @@
+# An Introduction to Programming C-64 Demos - Problem of jitter: IRQ latency depends on the instruction being executed when IRQ occurs. Techniques to achieve stable raster interrupts: double-interrupt method (two IRQs with NOP alignment and branch to remove last cycle jitter), sync with sprite fetch (stalling via sprite data fetch timing), triggering or syncing with a Bad Line (FORCED VIC memory fetch yields stable timing). Author's preference: sync with sprite.
+
+Stable Raster Interrupts
+If you've tried out the above, especially changing the background colour on different lines, you've probably noticed that the interrupts aren't stable; if the colour change happens somewhere in the visible area of the screen, you'll see that it jitters a bit. It might even jump a whole line up and down, if you're on a Bad Line.
+
+The reason is that when an interrupt is triggered, an instruction is executing in the CPU, and that instruction will have to finish before the jump to the interrupt handler takes place. As you can understand, there's a variable delay here, eg. a NOP only takes two cycles, and some memory manipulating instruction in an indexed addressing mode might take 7 cycles.
+
+This can be pretty irritating, and it can be pretty difficult to time some routines so that they look nice. On the other hand, you can do pretty much, although your interrupts aren't stable. For now, it should be sufficient to know that there are ways to make the raster completely stable. You'll need a stable raster to do some advanced effects, like splits (raster bars that change colour in the middle of a line) and opening the side border. However, you can do stuff like opening the top and bottom border, sprite multiplexers, raster bars, scrollers, displaying FLI pictures, FLD and all kinds of stuff without having a stable raster.
+
+Anyway, there are different ways to get a stable raster, and you'll want to learn it eventually, unless you want to be doomed to code simple effects or ugly-looking chunky crap effects (which sometimes don't seem to use any timing at all) for the rest of your life. These different techniques all have their fans, so I'll go through them quickly here:
+
+
+Double interrupts. This one uses two interrupts: the first one sets up the second one and makes it happen when executing a NOP, so that the jitter is reduced to one cycle, and then a simple branch instruction at exactly the right time, to remove the last cycle of jitter. This technique seems to be very popular.
+
+Sync with sprite. This technique utilizes the way sprite data is fetched. What you do is that you turn on at least one sprite, and at the right time, you execute some memory manipulating instruction, which is stalled by the sprite fetch, which makes it end at exactly the same time, a fixed number of cycles after the sprite data fetch is complete. This might sound complicated, but it's a lot simpler than the double interrupts method, and all you need to do is to turn on a sprite and do an INC at the right time.
+
+Triggering a Bad Line. This one might have some undesirable side effects, but it's very simple. All you do is trigger a Bad Line (eg. by executing INC $d011), and voila!, you have a stable interrupt. It might produce some garbage on the screen, but it's really simple. I discovered this one while coding a FLI viewer, and this is pretty much the basis for FLI.
+
+Syncing with a Bad Line. I haven't tried this one myself, I just read about it in an IRC log I found somewhere on the web. Crossbow/Crest mentioned a method of getting a stable interrupt by using an INC at the right moment on a Bad Line. Try it out yourself.
+My personal favorite is to sync with a sprite. I find it to be a very clean and nice way of getting a stable raster, without all the hassle of using the double interrupts method. Triggering a Bad Line probably isn't very good at all, but it simple and it works, although it can have side-effects that aren't very nice. Syncing with a Bad Line is probably a very good method, as Crossbow uses it. :-)
+
+
+---
+Additional information can be found by searching:
+- "sprite_multiplexer" which expands on using sprite fetch timing for synchronization
+- "fld_flexible_line_distance" which expands on Bad Line manipulation techniques

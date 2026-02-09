@@ -1,0 +1,72 @@
+# ca65 Users Guide - .CPU: returns a constant integer whose bits identify which CPU and which instruction-set groups are supported. Lists CPU constants (CPU_6502, CPU_65SC02, CPU_65C02, CPU_65816, CPU_SWEET16, CPU_HUC6280, CPU_4510, CPU_45GS02, CPU_6502DTV, CPU_M740) and instruction-set group constants (CPU_ISET_* variants). Describes using .CPU in conditional assembly (replacement for older .IFPxx) with an example. Explains the design 'dilemma' — that .CPU/ISET bits indicate groups of instructions fully supported (so newer CPUs don't necessarily imply full compatibility with all older instruction semantics). Contains an example showing conditional assembly for different CPU instruction-group support. Mentions .CAP as a similar mechanism without this compatibility caveat.
+
+9.3 .CPU
+Reading this pseudo variable will give a constant integer value that tells which CPU is currently enabled. It can also tell which instruction set the CPU is able to translate. The value read from the pseudo variable should be further examined by using one of the following constants:
+
+
+    CPU_6502
+    CPU_65SC02
+    CPU_65C02
+    CPU_65816
+    CPU_SWEET16
+    CPU_HUC6280
+    CPU_4510
+    CPU_45GS02
+    CPU_6502DTV
+    CPU_M740
+Above constants may be used to determine the exact type of the currently enabled CPU. In addition to that, for each CPU instruction set, another constant is defined:
+
+
+    CPU_ISET_6502
+    CPU_ISET_65SC02
+    CPU_ISET_65C02
+    CPU_ISET_65816
+    CPU_ISET_SWEET16
+    CPU_ISET_HUC6280
+    CPU_ISET_4510
+    CPU_ISET_45GS02
+    CPU_ISET_6502DTV
+    CPU_ISET_M740
+.CPU may be used to replace the .IFPxx pseudo instructions or to construct even more complex expressions.
+
+Example:
+
+
+        .if     (.cpu .bitand CPU_ISET_65816)
+                phx
+                phy
+        .else
+                txa
+                pha
+                tya
+                pha
+        .endif
+  
+The dilemma:
+
+The original design of this feature was made under the assumption, that any "higher" CPU will support the entire instruction set of the "lower" CPU. For example: the WDC W65C02 supports all instructions of the 65C02, which again support all instructions of the 65SC02. Unfortunately this is not true for all CMOS CPUs - when the 65CE02 was made, some instructions were changed, and a new addressingmode was added. As a result all CPUS after (and including) 65CE02 are no more (source code) compatible with all instructions originally introduced by the 65SC02.
+
+Because of this, the .CPU function and the ISET* macros were repurposed to indicate groups of instructions only, ie only the set of instructions that was added by that particular CPU. In the value returned by .CPU only the bits will be set, that refer to the groups of instructions that are completely supported by that CPU.
+
+The advantage of this is, that the mechanism keeps working for all new CPUs added. The inevitable disadvantage is that you now have to know exactly which CPU added which instructions (look here for reference).
+
+
+        .if (.cpu .bitand CPU_ISET_65SC02)
+                ; This will be assembled for the W65C02, 65C02, 65SC02, 65816, HUC6820
+                lda     (c_sp)
+        .elseif (.cpu .bitand CPU_ISET_65CE02)
+                ; This will be assembled for the 65CE02, 4510, 45GS02
+                ldz     #$00
+                lda     (c_sp),z
+        .else
+                ldy     #$00
+                lda     (c_sp),y
+        .endif
+See also: .CAP, which is a similar mechanism, but without the problem outlined above.
+
+
+---
+Additional information can be found by searching:
+- "asize_pseudo_variable" which expands on Register-size pseudo variables (.ASIZE) — related CPU behavior
+- "isize_pseudo_variable" which expands on Index size (.ISIZE) — related register-size pseudo variable
+- "pseudo_variables_overview" which expands on General pseudo variables introduction

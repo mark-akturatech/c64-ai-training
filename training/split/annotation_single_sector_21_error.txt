@@ -1,0 +1,28 @@
+# byRiclianll - Annotated explanation of the single-sector destructive routine: describes how the routine finds the preceding sector and syncs to its data block, waits out ~325 GCR bytes, flips to write and writes 256 non-sync bytes to overwrite both sync marks of the target sector (producing a 20 error normally). Notes a side effect: destroying two consecutive sectors causes 21 errors on both (FDC times out). Provides a recommended destruction sequence (sector 0, then 20,19,18) and a short table mapping sector ranges to observed error numbers, plus the clarification that two consecutive sectors must be destroyed to produce a 21 error in this scheme.
+
+Single  Sector  21  Error  Source  Annotation 
+
+This  routine  finds  the  preceding  sector  and  syncs  up  to  its  data  block  Qines  200-210). 
+Lines  250-350  wait  out  325  GCR  bytes.  We  flip  to  write  in  lines  370-420  and  write  out 
+256  non-sync  bytes.  This  overwrites  both  sync  marks  of  the  sector  that  was  input.  This 
+routine  will  create  a  20  error  on  a  single  sector  as  it  stands.  By  serendipity,  it  has  a 
+unique  side  effect.  If  two  consecutive  sectors  are  destroyed  we  get  a  21  error  on  both 
+of  them.  The  FDC  times  out  trying  to  find  one  or  the  other  or  both.  Caution  must  be 
+used  when  spanning  a  sector  range.  To  duplicate  the  following  scheme  we  must  destroy 
+sector  0  first  followed  by  sectors  20,  19,  and  18  respectively. 
+
+
+Sector  Error  Number 
+
+0  21 
+1-17  OK 
+18  -  20  21 
+
+Repeat.  This  routine  will  not  create  a  21  error  on  a  single  sector  per  se.  Two  consecutive 
+sectors  must  be  destroyed. 
+
+
+---
+Additional information can be found by searching:
+- "basic_destroy_a_sector_program" which expands on Explains how the BASIC driver prepares and executes the destructive routine
+- "assembly_source_single_sector_21_error" which expands on Low-level implementation details referenced by the annotation (which lines perform the waits, write flip, and overwrite)

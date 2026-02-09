@@ -1,0 +1,49 @@
+# Kick Assembler - Describes memory blocks (created when using *=). Memory block properties: start address, optional name, virtual flag. If code added without *= a default block is created. Examples: inc $d020; jmp *-3 (default block), *= $1000 lda #1 ...; *= $4000 "block3" lda #2 ...; explanation that, unless a segment is selected, blocks go to 'Default' segment.
+
+.segmentdef MySegment1
+.segmentdef MySegment2 [start=$1000]
+
+l1:
+
+// Add code to segment1
+.segment MySegment1
+*=$4000
+ldx #30
+inc $d021
+dex
+bne l1
+// Add code to segment2 (Using default block starting in $1000)
+.segment MySegment2
+inc $d021
+jmp *-3
+// Switch back to segment1 and add more code.
+.segment MySegment1
+inc $d020
+jmp *-3
+
+In the above code MySegment1 is defined used the default parameters for a segment. While MySegment2 is
+defined setting the start address for the default memory block to $1000. A complete list of parameters is given
+in the end of this chapter.
+Notice that you can switch back to a segment at any time and continue adding code to its current memory block.
+
+44
+
+Segments
+
+Sometimes, it's convenient to define a memory block and switch to it with the same command. This is done by
+adding a parameters block ([...]) to the segment directive.
+// This:
+.segment MySegment [start=$1000]
+// Is a shorthand notations for this:
+.segmentdef MySegment [start=$1000]
+.segment MySegment
+
+A segment can only by be defined once so the above will give produce an error saying that 'MySegment' is
+double defined.
+
+10.4. Where did the output go?
+If you compile the previous segment examples you will find that it produces no output. So where did the code
+
+---
+Additional information can be found by searching:
+- "defining_segments_and_switching" which expands on how blocks are assigned to segments

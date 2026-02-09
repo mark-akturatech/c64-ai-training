@@ -1,0 +1,63 @@
+# ********* - CIA #2 Control Registers: CI2CRA (56590 $DD0E) and CI2CRB (56591 $DD0F) mirror CIA#1 Control Register bits (start timer, output on Port B, pulse/toggle mode, one-shot/continuous, force load, input mode selection, serial port mode, TOD frequency/select alarm vs clock). Notes on CIA#2 register-image mirroring across 256-byte range (56592-56831 $DD10-$DDFF) and advice not to use mirrored addresses. Also covers reserved I/O expansion ranges (56832-57087 $DE00-$DEFF) and cartridge uses of that space (e.g., CP/M module, Simon's BASIC).
+
+This register is used to control the five interrupt sources on the
+6526 CIA chip.  For details on its operation, see the entry for 56333
+($DC0D).  The main difference between these two chips pertaining to
+this register is that on CIA #2, the FLAG line is connected to Pin B
+of the User Port, and thus is available to the user who wishes to take
+advantage of its ability to cause interrupts for handshaking purposes.
+
+Location Range: 56590-$56591 ($DD0E-$DD0F)
+See locations 56334 and 56334 for details
+
+56590         $DD0E          CI2CRA
+Control Register A
+
+Bit 0:  Start Timer A (1=start, 0=stop)
+Bit 1:  Select Timer A output on Port B (1=Timer A output appears on
+        Bit 6 of Port B)
+Bit 2:  Port B output mode (1=toggle Bit 6, 0=pulse Bit 6 for one
+        cycle)
+Bit 3:  Timer A run mode (1=one-shot, 0=continuous)
+Bit 4:  Force latched value to be loaded to Timer A counter (1=force
+        load strobe)
+Bit 5:  Timer A input mode (1=count microprocessor cycles, 0=count
+        signals on CNT line at pin 4 of User Port)
+Bit 6:  Serial Port (56588, $DD0C) mode (1=output, 0=input)
+Bit 7:  Time of Day Clock frequency (1=50 Hz required on TOD pin,
+        0=60 Hz)
+
+56591         $DD0F          CI2CRB
+Control Register B
+
+Bit 0:  Start Timer B (1=start, 0=stop)
+Bit 1:  Select Timer B output on Port B (1=Timer B output appears on
+        Bit 7 of Port B)
+Bit 2:  Port B output mode (1=toggle Bit 7, 0=pulse Bit 7 for one
+        cycle)
+Bit 3:  Timer B run mode (1=one shot, 0=continuous)
+Bit 4:  Force latched value to be loaded to Timer B counter (1=force
+        load strobe)
+Bits 5-6:  Timer B input mode
+           00 = Timer B counts microprocessor cycles
+           01 = Count signals on CNT line at pin 4 of User Port
+           10 = Count each time that Timer A counts down to 0
+           11 = Count Timer A 0's when CNT pulses are also present
+Bit 7:  Select Time of Day write (0=writing to TOD registers sets
+           alarm, 1=writing to ROD registers sets clock)
+
+Location Range: 56592-56831 ($DD10-$DDFF)
+CIA #2 Register Images
+
+Since the CIA chip requires only enough addressing lines to handle 16
+registers, none of the higher bits are decoded when addressing the
+256-byte area that has been assigned to it.  The result is that every
+16-byte area in this 256-byte block is a mirror of every other.  For
+the sake of clarity in your programs, it is advisable not to use these
+addresses.
+
+
+---
+Additional information can be found by searching:
+- "cia2_data_direction_timers_tod_and_serial_port" which expands on timer and TOD register addresses
+- "reserved_io_expansion_and_cartridge_usage" which expands on DE00 expansion area and cartridge control

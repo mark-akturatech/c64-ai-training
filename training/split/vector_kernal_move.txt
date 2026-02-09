@@ -1,0 +1,26 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - VECTOR: KERNAL MOVE ($FD1A). Reads/writes the vectors at $0314-$0333 or $FD30 depending on carry state. Uses MEMUSS temp in $C3/$C4 and moves 0x20 bytes (31 down to 0) between the two regions via indirect indexed addressing. Handles both read and write (controlled by carry) with LDA/STA loops and DEY/DEcrement counter.
+
+                                *** VECTOR: KERNAL MOVE
+                                The KERNAL routine VECTOR ($ff8d) jumps to this routine.
+                                It reads or sets the vectors at $0314-$0333 depending on
+                                state of carry. X/Y contains the address to read/write
+                                area, normally $fd30. See $fd15.
+                                A problem is that the RAM under the ROM at $fd30 always
+                                gets a copy of the contents in the ROM then you perform
+                                the copy.
+.,FD1A 86 C3    STX $C3         MEMUSS - c3/c4 temporary used for address
+.,FD1C 84 C4    STY $C4
+.,FD1E A0 1F    LDY #$1F        Number of bytes to transfer
+.,FD20 B9 14 03 LDA $0314,Y
+.,FD23 B0 02    BCS $FD27       Read or Write the vectors
+.,FD25 B1 C3    LDA ($C3),Y
+.,FD27 91 C3    STA ($C3),Y
+.,FD29 99 14 03 STA $0314,Y
+.,FD2C 88       DEY
+.,FD2D 10 F1    BPL $FD20       Again...
+.,FD2F 60       RTS
+
+---
+Additional information can be found by searching:
+- "restor_kernal_reset" which expands on RESTOR calls VECTOR to copy kernel vectors
+- "kernal_reset_vectors" which expands on VECTOR copies to/from this table region

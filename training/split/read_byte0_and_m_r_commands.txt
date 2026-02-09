@@ -1,0 +1,17 @@
+# ********* - Commands to read the first byte of the drive buffer and set up memory read. Sends 'b-p:2,1' to position the file pointer and then 'm-r' followed by two characters (chr$(0)chr$(5)) to initiate a memory read; then uses GET#15 to read a$(0) (byte 0) from the drive. Handles blank reads by substituting nl$ and then branches to the screen or printer display routines depending on jj$.
+
+ 360 rem******************************
+ 370 rem* read byte 0 of disk buffer *
+ 390 rem******************************
+ 400 print#15,"b-p:2,1"
+ 410 print#15,"m-r"chr$(0)chr$(5)
+ 420 get#15,a$(0):if a$(0)="" then a$(0)=nl$
+ 428 if jj$="s" then 430
+ 430 if jj$="p"then 460
+ 431 rem******************************
+
+---
+Additional information can be found by searching:
+- "load_track_sector_into_disk_buffer" which expands on must be called after u1: to have buffer contents
+- "read_and_crt_display" which expands on screen-mode reader (branch target 431)
+- "printer_display_loop_reading_disk_buffer" which expands on printer-mode reader (branch target 460)

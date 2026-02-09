@@ -1,0 +1,95 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CHROUT: handling for shifted characters and control codes. Processes shifted ordinary ASCII and PET graphics and control keys in shifted state: shifted RETURN, INST (insert), cursor up, RVS OFF, cursor left, CLR, insertion routines (opening space and moving characters right), insert-mode toggling, and navigation (cursor up/down/left) including top/bottom checks and pointer adjustments. Calls routines to open space, synchronise color pointers, set colour codes and enter graphics/text mode as needed. (Code: $E7D4..$E874 and related jumps to $E8CB/$EC4F).
+
+                                SHIFTED CHARACTERS. These are dealt with in the following
+                                order: Shifted ordinary ASCII and PET graphics characters,
+                                <shift RETURN>, <INST>, <CRSR UP>, <RVS OFF>, <CRSR LEFT>,
+                                <CLR>. If either insert mode is on, or quotes are open,
+                                then the control character is not processed but reversed
+                                ASCII literal is printed.
+.,E7D4 29 7F    AND #$7F        clear bit7
+.,E7D6 C9 7F    CMP #$7F        compare to #$7f
+.,E7D8 D0 02    BNE $E7DC       not equal
+.,E7DA A9 5E    LDA #$5E        if #$7f, load #$5e
+.,E7DC C9 20    CMP #$20        ASCII <SPACE>?
+.,E7DE 90 03    BCC $E7E3
+.,E7E0 4C 91 E6 JMP $E691       set up screen print
+.,E7E3 C9 0D    CMP #$0D        <RETURN>?
+.,E7E5 D0 03    BNE $E7EA       nope
+.,E7E7 4C 91 E8 JMP $E891       do return
+.,E7EA A6 D4    LDX $D4         read QTSW
+.,E7EC D0 3F    BNE $E82D       if quotes mode, jump
+.,E7EE C9 14    CMP #$14        <INST>?
+.,E7F0 D0 37    BNE $E829       nope
+.,E7F2 A4 D5    LDY $D5         LNMX
+.,E7F4 B1 D1    LDA ($D1),Y     get screen character
+.,E7F6 C9 20    CMP #$20        space?
+.,E7F8 D0 04    BNE $E7FE       nope
+.,E7FA C4 D3    CPY $D3         PNTR equal to LNMX
+.,E7FC D0 07    BNE $E805       nope
+.,E7FE C0 4F    CPY #$4F        #$4f=79, last character
+.,E800 F0 24    BEQ $E826       end of logical line, can not insert
+.,E802 20 65 E9 JSR $E965       open space on line
+.,E805 A4 D5    LDY $D5         LNMX
+.,E807 20 24 EA JSR $EA24       synchronise colour pointer
+.,E80A 88       DEY             prepare for move
+.,E80B B1 D1    LDA ($D1),Y     read character at pos (Y)
+.,E80D C8       INY
+.,E80E 91 D1    STA ($D1),Y     and move one step to the right
+.,E810 88       DEY
+.,E811 B1 F3    LDA ($F3),Y     read character colour
+.,E813 C8       INY
+.,E814 91 F3    STA ($F3),Y     move one step to the right
+.,E816 88       DEY             decrement counter
+.,E817 C4 D3    CPY $D3         compare with PNTR
+.,E819 D0 EF    BNE $E80A       till all characters right of cursor are moved
+.,E81B A9 20    LDA #$20        <SPACE>, ASCII #$20
+.,E81D 91 D1    STA ($D1),Y     store at new character position
+.,E81F AD 86 02 LDA $0286       COLOR, current character colour
+.,E822 91 F3    STA ($F3),Y     store at new colour position
+.,E824 E6 D8    INC $D8         INSRT FLAG
+.,E826 4C A8 E6 JMP $E6A8       finish screen print
+.,E829 A6 D8    LDX $D8         INSRT FLAG
+.,E82B F0 05    BEQ $E832       insert mode is off
+.,E82D 09 40    ORA #$40
+.,E82F 4C 97 E6 JMP $E697       set up screen print
+.,E832 C9 11    CMP #$11        <CRSR UP>?
+.,E834 D0 16    BNE $E84C       nope
+.,E836 A6 D6    LDX $D6         read TBLX
+.,E838 F0 37    BEQ $E871       at topline, do nothing
+.,E83A C6 D6    DEC $D6         else decrement TBLX
+.,E83C A5 D3    LDA $D3         PNTR
+.,E83E 38       SEC             prepare for subtract
+.,E83F E9 28    SBC #$28        back 40 columns for double line
+.,E841 90 04    BCC $E847       skip
+.,E843 85 D3    STA $D3         store PNTR
+.,E845 10 2A    BPL $E871       finish screen print
+.,E847 20 6C E5 JSR $E56C       set screen pointer
+.,E84A D0 25    BNE $E871       finish screen print
+.,E84C C9 12    CMP #$12        <RVS OFF>?
+.,E84E D0 04    BNE $E854       nope
+.,E850 A9 00    LDA #$00
+.,E852 85 C7    STA $C7         RVS, disable reverse print
+.,E854 C9 1D    CMP #$1D        <CRSR LEFT>?
+.,E856 D0 12    BNE $E86A       nope
+.,E858 98       TYA             (Y) holds cursor column
+.,E859 F0 09    BEQ $E864       at first position
+.,E85B 20 A1 E8 JSR $E8A1       check line decrement
+.,E85E 88       DEY             one position left
+.,E85F 84 D3    STY $D3         store in PNTR
+.,E861 4C A8 E6 JMP $E6A8       finish screen print
+.,E864 20 01 E7 JSR $E701       back to previous line
+.,E867 4C A8 E6 JMP $E6A8       finish screen print
+.,E86A C9 13    CMP #$13        <CLR>?
+.,E86C D0 06    BNE $E874       nope
+.,E86E 20 44 E5 JSR $E544       clear screen
+.,E871 4C A8 E6 JMP $E6A8       finish screen print
+.,E874 09 80    ORA #$80
+.,E876 20 CB E8 JSR $E8CB       set colour code
+.,E879 4C 4F EC JMP $EC4F       set graphics/text mode
+
+
+---
+Additional information can be found by searching:
+- "output_to_screen_unshifted_and_control_codes" which expands on shifted branch is the counterpart to the unshifted output handling and shares helpers like set colour and graphics/text routines
+- "setup_screen_print" which expands on also used when shifted characters are displayed as reversed/insertion output
+- "advance_cursor" which expands on cursor movement and line wrap logic relied upon by shifted-character operations

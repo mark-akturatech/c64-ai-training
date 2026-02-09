@@ -1,0 +1,20 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Notes about the system default IRQ vector: on power-up the IRQ vector points to the jiffy clock/hardware timer routine (keyboard and clock). Recommendation to turn off the hardware timer interrupt by writing 127 to $DC0D (56333) if not needed, and guidance on preserving and chaining the original vector so keyboard and jiffy clock can still function while using a custom raster ISR.
+
+                          When the computer is first turned on, the interrupt vector is set to
+                          point to the normal hardware timer interrupt routine, the one that
+                          advances the jiffy clock and reads the keyboard.  Since this interrupt
+                          routine uses the same vector as the raster interrupt routine, it is
+                          best to turn off the hardware timer interrupt by putting a value of
+                          127 in location 56333 ($DC0D).
+
+                          If you want the keyboard and jiffy clock to function normally while
+                          your interrupt is enabled, you must preserve the contents of locations
+                          788 and 789 before you change them to point to your new routine.  Then
+                          you must have your interrupt routine jump to the old interrupt routine
+                          exactly once per screen refresh (every 1/60 second).
+
+
+---
+Additional information can be found by searching:
+- "installing_raster_irq_steps" which expands on Where to write the new IRQ vector (locations 788-789)
+- "raster_interrupt_example_basic_and_data_listing" which expands on Example ISR that may chain to the original interrupt routine

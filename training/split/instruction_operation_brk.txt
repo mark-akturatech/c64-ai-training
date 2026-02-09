@@ -1,0 +1,15 @@
+# 6502 Microprocessor - BRK pseudocode: increment PC, push return address (high/low) and status onto stack, set break and interrupt flags, load PC from IRQ vector ($FFFE/$FFFF).
+
+/* BRK */
+    PC++;
+    PUSH((PC >> 8) & 0xff);	/* Push return address onto the stack. */
+    PUSH(PC & 0xff);
+    SET_BREAK((1));             /* Set BFlag before pushing */
+    PUSH(SR);
+    SET_INTERRUPT((1));
+    PC = (LOAD(0xFFFE) | (LOAD(0xFFFF) << 8));
+
+
+---
+Additional information can be found by searching:
+- "instruction_tables_brk" which expands on BRK opcode and vector behavior

@@ -1,0 +1,30 @@
+# byRiclianll - BASIC job-queue routines for communicating with the 1541 (lines 1180–1280). Initializes TRY counter, sends M-W job packets with PRINT#15 including control bytes and track/sector (T,S), increments TRY, sends M-R request, reads response with GET#15 into E*, converts response to numeric (ASC), handles timeouts (TRY>500) and error codes (E>127), and returns.
+
+1180  REM  JOB  QUEUE 
+1190  TRY=0 
+
+1200  PRINT#15, "M-W"CHR*(8)CHR*(0)CHR*(2) 
+CHR*(T)CHR*(S) 
+
+1210  PRINT#15, "M-W"CHR* ( 1 ) CHR* (O) CHR* ( 1 ) 
+
+CHR*(JOB) 
+
+1220  TRY=TRY+1 
+
+1230  PRINT#15, "M-R"CHR*(1)CHR*(0) 
+
+1240  GET#15,E* 
+
+1 250  E= ASC ( E*+CHR* ( O ) ) 
+
+1260  IFTRY=500G0T01280 
+
+1270  IFE>127G0T01220 
+
+1280  RETURN 
+
+---
+Additional information can be found by searching:
+- "basic_write_loop_and_completion" which expands on Called by the write loop to queue read/write jobs to the drive
+- "disk_commands_and_mr_entry" which expands on Corresponding assembly M-R/M-W command formats and entry points used by the drive-side code

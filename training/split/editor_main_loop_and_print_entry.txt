@@ -1,0 +1,75 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Editor main loop entry points: LP2/LP1 remove character from keyboard queue, LP21..LP23 handle editor mode/auto scroll flags and run-key buffer setup. Includes PRT (print) entry that preserves registers and uses CRSW/PNTR to fetch characters, checks for special codes (space, carriage return), toggles quote-switch (QTSWC), and handles run-key buffering and function keys.
+
+.,E5CA 20 16 E7 JSR $E716       LOOP4  JSR PRT
+                                LOOP3
+.,E5CD A5 C6    LDA $C6         LDA    NDX
+.,E5CF 85 CC    STA $CC         STA    BLNSW
+.,E5D1 8D 92 02 STA $0292       STA    AUTODN          ;TURN ON AUTO SCROLL DOWN
+.,E5D4 F0 F7    BEQ $E5CD       BEQ    LOOP3
+.,E5D6 78       SEI             SEI
+.,E5D7 A5 CF    LDA $CF         LDA    BLNON
+.,E5D9 F0 0C    BEQ $E5E7       BEQ    LP21
+.,E5DB A5 CE    LDA $CE         LDA    GDBLN
+.,E5DD AE 87 02 LDX $0287       LDX    GDCOL           ;RESTORE ORIGINAL COLOR
+.,E5E0 A0 00    LDY #$00        LDY    #0
+.,E5E2 84 CF    STY $CF         STY    BLNON
+.,E5E4 20 13 EA JSR $EA13       JSR    DSPP
+.,E5E7 20 B4 E5 JSR $E5B4       LP21   JSR LP2
+.,E5EA C9 83    CMP #$83        CMP    #$83            ;RUN KEY?
+.,E5EC D0 10    BNE $E5FE              BNE LP22
+.,E5EE A2 09    LDX #$09               LDX #9
+.,E5F0 78       SEI                    SEI
+.,E5F1 86 C6    STX $C6                STX NDX
+.,E5F3 BD E6 EC LDA $ECE6,X     LP23   LDA RUNTB-1,X
+.,E5F6 9D 76 02 STA $0276,X            STA KEYD-1,X
+.,E5F9 CA       DEX                    DEX
+.,E5FA D0 F7    BNE $E5F3              BNE LP23
+.,E5FC F0 CF    BEQ $E5CD              BEQ LOOP3
+.,E5FE C9 0D    CMP #$0D        LP22   CMP #$D
+.,E600 D0 C8    BNE $E5CA       BNE    LOOP4
+.,E602 A4 D5    LDY $D5         LDY    LNMX
+.,E604 84 D0    STY $D0         STY    CRSW
+.,E606 B1 D1    LDA ($D1),Y     CLP5   LDA (PNT)Y
+.,E608 C9 20    CMP #$20        CMP    #'
+.,E60A D0 03    BNE $E60F       BNE    CLP6
+.,E60C 88       DEY             DEY
+.,E60D D0 F7    BNE $E606       BNE    CLP5
+.,E60F C8       INY             CLP6   INY
+.,E610 84 C8    STY $C8         STY    INDX
+.,E612 A0 00    LDY #$00        LDY    #0
+.,E614 8C 92 02 STY $0292              STY AUTODN      ;TURN OFF AUTO SCROLL DOWN
+.,E617 84 D3    STY $D3         STY    PNTR
+.,E619 84 D4    STY $D4         STY    QTSW
+.,E61B A5 C9    LDA $C9         LDA    LSXP
+.,E61D 30 1B    BMI $E63A       BMI    LOP5
+.,E61F A6 D6    LDX $D6                LDX TBLX
+.,E621 20 ED E6 JSR $E6ED              JSR FINDST      ;FIND 1ST PHYSICAL LINE
+.,E624 E4 C9    CPX $C9                CPX LSXP
+.,E626 D0 12    BNE $E63A       BNE    LOP5
+.,E628 A5 CA    LDA $CA         LDA    LSTP
+.,E62A 85 D3    STA $D3         STA    PNTR
+.,E62C C5 C8    CMP $C8         CMP    INDX
+.,E62E 90 0A    BCC $E63A       BCC    LOP5
+.,E630 B0 2B    BCS $E65D       BCS    CLP2
+                                ;INPUT A LINE UNTIL CARRIAGE RETURN
+                                ;
+.,E632 98       TYA             LOOP5  TYA
+.,E633 48       PHA             PHA
+.,E634 8A       TXA             TXA
+.,E635 48       PHA             PHA
+.,E636 A5 D0    LDA $D0         LDA    CRSW
+.,E638 F0 93    BEQ $E5CD       BEQ    LOOP3
+.,E63A A4 D3    LDY $D3         LOP5   LDY PNTR
+.,E63C B1 D1    LDA ($D1),Y     LDA    (PNT)Y
+                                NOTONE
+.,E63E 85 D7    STA $D7         STA    DATA
+.,E640 29 3F    AND #$3F        LOP51  AND #$3F
+.,E642 06 D7    ASL $D7         ASL    DATA
+.,E644 24 D7    BIT $D7         BIT    DATA
+.,E646 10 02    BPL $E64A       BPL    LOP54
+.,E648 09 80    ORA #$80        ORA    #$80
+.,E64A 90 04    BCC $E650       LOP54  BCC LOP52
+
+---
+Additional information can be found by searching:
+- "plot_routine" which expands on PLOT/PNTR usage for cursor and printing

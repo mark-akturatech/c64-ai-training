@@ -1,0 +1,39 @@
+# COMMODORE 64 - Sample BASIC program (tok64 page357.prg) for sending/receiving true ASCII data. Shows OPEN 5,2,3,chr$(6), creation of mapping tables (f% and t%) to translate between terminal and computer character sets (including mappings for ASCII ranges and special translations), main input loop using GET# and ST checks, printing translated characters to the screen or sending to RS-232, and control variables for display/translation behavior.
+
+
+
+  356   INPUT/OUTPUT GUIDE
+~
+
+
+start tok64 page357.prg
+  10 rem this program sends and receives true ascii data
+  100 open 5,2,3,chr$(6)
+  110 dim f%(255),t%(255)
+  200 for j=32 to 64:t%(j)=j:next
+  210 t%(13)=13:t%(20)=8:rv=18:ct=0
+  220 for j=65 to 90:k=j+32:t%=(j)=k:next
+  230 for j=91 to 95:t%(j)=j:next
+  240 for j=193 to 218:k=j-128:t%(j)=k:next
+  250 t%(146)=16:t%(133)=16
+  260 for j=0 to 255
+  270 k=t%(j)
+  280 if k<>0then f%(k)=j:f%(k+128)=j
+  290 next
+  300 print" "chr$(147)
+  310 get#5,a$
+  320 if a$=""or st<>0 then 360
+  330 print" "chr$(157);chr$(f%(asc(a$)));
+  340 if f%(asc(a$))=34 then poke212,0
+  350 goto310
+  360 printchr$(rv)" "chr$(157);chr$(146);:get a$
+  370 if a$<>""then print#5,chr$(t%(asc(a$)));
+  380 ct=ct+1
+  390 if ct=8 thenct=0:rv=164-rv
+  410 goto310
+stop tok64
+
+---
+Additional information can be found by searching:
+- "rs232_status_register_bits_and_usage" which expands on Checks ST (status) to determine when input is available and valid
+- "rs232_nonzero_page_control_and_fifos" which expands on Nonzero page control words (baud, bit count, RSSTAT) used by the system routines the program relies on

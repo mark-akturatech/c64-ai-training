@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Adjust and test FAC1/FAC2 exponents before arithmetic: loads FAC2 exponent, handles zero/underflow, adds FAC1 exponent, checks for overflow/underflow, adjusts exponent by +$80 when appropriate, saves sign compare and returns. Contains branches to overflow/underflow error handling and paths to clear FAC1 exponent on underflow.
+
+                                *** test and adjust accumulators
+.,BAB7 A5 69    LDA $69         get FAC2 exponent
+.,BAB9 F0 1F    BEQ $BADA       branch if FAC2 = $00 (handle underflow)
+.,BABB 18       CLC             clear carry for add
+.,BABC 65 61    ADC $61         add FAC1 exponent
+.,BABE 90 04    BCC $BAC4       branch if sum of exponents < $0100
+.,BAC0 30 1D    BMI $BADF       do overflow error
+.,BAC2 18       CLC             clear carry for the add
+.:BAC3 2C       .BYTE $2C       makes next line BIT $1410
+.,BAC4 10 14    BPL $BADA       if +ve go handle underflow
+.,BAC6 69 80    ADC #$80        adjust exponent
+.,BAC8 85 61    STA $61         save FAC1 exponent
+.,BACA D0 03    BNE $BACF       branch if not zero
+.,BACC 4C FB B8 JMP $B8FB       save FAC1 sign and return
+.,BACF A5 6F    LDA $6F         get sign compare (FAC1 EOR FAC2)
+.,BAD1 85 66    STA $66         save FAC1 sign (b7)
+.,BAD3 60       RTS             
+                                handle overflow and underflow
+.,BAD4 A5 66    LDA $66         get FAC1 sign (b7)
+.,BAD6 49 FF    EOR #$FF        complement it
+.,BAD8 30 05    BMI $BADF       do overflow error
+                                handle underflow
+.,BADA 68       PLA             pop return address low byte
+.,BADB 68       PLA             pop return address high byte
+.,BADC 4C F7 B8 JMP $B8F7       clear FAC1 exponent and sign and return
+.,BADF 4C 7E B9 JMP $B97E       do overflow error then warm start
+
+
+---
+Additional information can be found by searching:
+- "multiply_fac1_by_memory_shift_add_loop" which expands on called before the multiply shift/add to align/validate accumulators
+- "divide_ay_by_fac1_core_algorithm" which expands on invoked during division preparation to align exponents

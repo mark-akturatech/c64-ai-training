@@ -1,0 +1,34 @@
+# ********* - Description of the Kernal jump table area ($FF81-$FFF5 / 65409-65525). Each 3-byte entry is a JMP instruction and an address; programs should call through these stable entry points to be robust across OS/ROM revisions. The first 15 entries ($FFC0-$FFEA / 65472-65514) are consistent across Commodore machines. Some routines are also vectored through the RAM vector table at $0314-$031A (788-794) which can be changed in RAM.
+
+Location Range: 65409-65525 ($FF81-$FFF5)
+Kernal Jump Table
+
+The following jump table is provided by Commodore in an effort to
+maintain stable entry points for key I/O routines.  Each three-byte
+table entry consists of a 6510 JMP instruction and the actual address
+of the routine in the ROM.  Although the actual address of the routine
+may vary from machine to machine, or in later versions of the Kernal,
+these addresses will stay where they are.  By jumping to the entry
+point provided by this table, rather than directly into the ROM, you
+insure your programs against changes in the Operating System.  In
+addition, this jump table may help you write programs that will
+function on more than one Commodore machine.  The 15 table entries
+from 65472-65514 ($FFC0-$FFEA) are the same for all Commodore
+machines, from the earliest PET on.
+
+As an additional aid, some of these routines are also vectored through
+the table which starts at 788 ($314).  Since this table is in RAM, you
+can change those vectors to point to your own routines which support
+additional I/O devices.  Programs that use the jump table entry points
+to the I/O routines will be able to use these I/O devices without a
+problem.
+
+The following table will give the entry point, routine name, RAM
+vector if any, its current address, and a brief summary of its
+function.
+
+
+---
+Additional information can be found by searching:
+- "kernal_jump_table_entries_list" which expands on detailed list of jump table entries and meanings
+- "ram_vector_table_and_custom_vectors" which expands on RAM vectors referenced as alternative vectoring points

@@ -1,0 +1,94 @@
+# MACHINE - Review of the 650x instruction set: loads/stores (LDA/LDX/LDY/STA/STX/STY/CMP/CPX/CPY), logical/arithmetic (AND/ORA/EOR/ADC/SBC), shifts/rotates (ASL/ROL/LSR/ROR), INC/DEC/INX/DEX/INY/DEY, branches (BEQ/BNE/BCS/BCC/BMI/BPL/BVS/BVC), JMP, subroutines (JSR/RTS/RTI), status set/clear (SEC/CLC/SEI/CLI/SED/CLD/CLV), transfers (TAX/TAY/TSX/TXA/TYA/TXS), stack ops (PHA/PLA/PHP/PLP), BIT instruction (test bits and set flags), and NOP/BRK. Notes BIT semantics and calls out special behaviors.
+
+                                                                        :141:
+
+Review:  The Instruction Set
+----------------------------
+
+We started with the load, save, and compare for the three data registers:
+
+  LDA  LDX  LDY
+  STA  STX  STY
+  CMP  CPX  CPY
+
+The instructions are almost identical in action, although only the A register
+has indirect, indexed addressing modes.  We continued with the logical and
+arithmetic routines that apply only to A:
+
+  AND  ORA  EOR  ADC  SBC
+
+Arithmetic also includes the shift and rotate instructions, which may be used
+on the A register or directly upon memory:
+
+  ASL  ROL  LSR  ROR
+
+Memory may also be directly modified by the increment and decrement
+instructions, which have related instructions that operate on X and Y:
+
+  INC  DEC
+  INX  DEX
+  INY  DEY
+
+We may transfer control by means of branch instructions, which are all
+conditional:
+
+  BEQ  BCS  BMI  BVS
+  BNE  BCC  BPL  BVC
+
+The branch instructions can make only short "hops"; the jump instruction is
+unconditional:
+
+  JMP
+
+Subroutines are called with the jump-subroutine, and returned with return-
+from-subroutine; we may also return from interrupts:
+
+  JSR  RTS  RTI
+
+We may modify any of several flags with the appropriate set or clear command.
+Some of the flags control internal processor operation:  for example, the I
+(interrupt disable) flag locks out the interrupt; the D (decimal mode)
+affects the way the ADC and SBC work with numbers.
+
+                                                                        :142:
+
+  SEC       SEI  SED
+  CLC  CLV  CLI  CLD
+
+We may transfer information between the A register and X or Y; and for
+checking or setting the stack location, we may move the stack pointer to X,
+or X to the stack pointer.  The latter is a powerful command, so use it with
+care.
+
+  TAX  TAY  TSX
+  TXA  TYA  TXS
+
+We may push or pull information from the stack:
+
+  PHA  PHP
+  PLA  PLP
+
+There's a special test, used mostly for checking IA chips:
+
+  BIT
+
+The BIT test is used only for specific locations:  no indexing is allowed.
+The high bit from the location being tested is transferred straight to the N
+flag.  The next highest bit (bit 6) goes straight to the V flag.  Finally,
+the Z flag is set according to whether the location has any bits set that
+match the bits set in the A register.  Thus, we can check a location with
+BIT $.... followed by BMI to test the high bit, or BVS to test bit 6, or BNE
+to test any selected bit or group of bits.  It's a rather specialized
+instruction, but useful for testing input/output ports.
+
+Finally, the instruction that does nothing, and the BRK instruction that
+causes a "false interrupt," usually taking us to the monitor:
+
+  NOP  BRK
+
+That's the whole set.  With these instructions, you can write programs to
+
+---
+Additional information can be found by searching:
+- "programming_model_and_registers" which expands on Processor status and register model relevant to instructions
+- "instruction_timing_and_opcode_table" which expands on Timing and opcode encodings for these instructions

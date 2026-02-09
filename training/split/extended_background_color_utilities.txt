@@ -1,0 +1,48 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Practical techniques and issues when using extended background color mode: limitations (only first 64 shapes), solutions (define custom character set), text conversion subroutine (converts A$ to B$ to print in window 2 or 4) and notes on printing reversed characters.
+
+                          Extended color mode can be a very useful enhancement for your text
+                          displays.  It allows the creation of windows.  These windows, because
+                          of their different background colors, make different bodies of text
+                          stand out as visually distinct from one another.  For example, a text
+                          adventure program could have one window to display the player's
+                          current location, one to show an inventory of possessions, and one to
+                          accept commands for the next move.
+
+                          In this mode the background color of these windows can be changed
+                          instantly, just by POKEing a new value to the color register.  This
+                          technique lends itself to some dramatic effects.  A window can be
+                          flashed to draw attention to a particular message at certain times.
+                          And varying the foreground color can make either the window or the
+                          message vanish and reappear later.
+
+                          There are, however, a couple of problems involved in using these
+                          windows.  The character shape that you want to use might not have a
+                          screen code of less than 64.  In that case, the only solution is to
+                          define your own character set, with the shape you want in one of the
+                          first 64 characters.
+
+                          Another problem is that characters within a PRINT statement in your
+                          program listing are not always going to look the same on the screen.
+                          Having to figure out what letter to print to get the number 4 with a
+                          certain background color can be very inconvenient.  The easiest
+                          solution to this problem is to have a subroutine to the translation
+                          for you.  Since letters will appear normally in window 1, and window 3
+                          characters are simply window 1 characters reversed, you will only have
+                          problems with characters in windows 2 and 4.  To convert these
+                          characters, put your message in A$, and use the following subroutine:
+
+                          500 B$="":FOR I=1 TO LEN(A$):B=ASC(MID$(A$,I,1))
+                          510 B=B+32:IF B<96 THEN B=B+96
+                          520 B$=B$+CHR$(B):NEXT I:RETURN
+
+                          This subroutine converts each letter to its ASCII equivalent, adds the
+                          proper offset, and converts it back to part of the new string, B$.
+                          When the conversion is complete, B$ will hold the characters necessary
+                          to PRINT that message in window 2.  For window 4, PRINT
+                          CHR$(18);B$;CHR$(146).  This will turn reverse video on before
+                          printing the string, and turn it off afterwards.
+
+---
+Additional information can be found by searching:
+- "d011_bit6_extended_background_color_mode_and_examples_part1" which expands on How to enable and test extended background mode
+- "windows_demo_program" which expands on Example uses this to create colored windows

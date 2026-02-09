@@ -1,0 +1,23 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Directly stores a character to screen RAM and its colour to colour RAM. Saves the character in Y, initializes the blink timer (BLNCT), synchronises the colour pointer, then writes the character from (A) to ($D1),Y and colour from X to ($F3),Y.
+
+                                *** PRINT TO SCREEN
+                                The colour pointer is synchronised, and the character in
+                                (A) directly stored in the screen RAM. The character
+                                colour in (X) is stored at the equivalent point in the
+                                colour RAM.
+.,EA13 A8       TAY             put print character in (Y)
+.,EA14 A9 02    LDA #$02
+.,EA16 85 CD    STA $CD         store initial value in BLNCT, timer to toggle cursor
+.,EA18 20 24 EA JSR $EA24       synchronise colour pointer
+.,EA1B 98       TYA             print character back to (A)
+.,EA1C A4 D3    LDY $D3         PNTR, cursor column on line
+.,EA1E 91 D1    STA ($D1),Y     store character on screen
+.,EA20 8A       TXA
+.,EA21 91 F3    STA ($F3),Y     store character colour
+.,EA23 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "synchronise_colour_pointer" which expands on ensures the colour RAM pointer corresponds to the current screen line
+- "set_colour_code" which expands on used earlier to compute the colour value stored by this routine

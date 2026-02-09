@@ -1,0 +1,50 @@
+# ********* - Section 6.9: USER1 (U1/UA) and USER2 (U2/UB) commands — U1 forces read of entire block by setting pointer to 255 (reads full 256 bytes), U2 writes a block without changing the stored buffer-pointer (useful when updating blocks read with BLOCK-READ then altering via BUFFER-POINTER). Lists formats and notes that USER commands are useful for machine language usage.
+
+
+
+6.9 USER1 and USER2
+
+The USER commands are generally designed to work with machine language
+(see chapter 8 for more on this).  The USER1 and USER2 commands are
+special versions of the BLOCK-READ and BLOCK-WRITE commands, but...
+with an important difference: the way USER1 and USER2 work with the
+buffer-pointer.
+
+The BLOCK-READ command reads up to 256 characters, but stops reading
+when the buffer-pointer stored with the block says that block is
+finished.  The USER1 command performs the BLOCK-READ operation, but
+first forces the pointer to 255 in order to read the entire block of
+data from the disk.
+
+FORMAT FOR USER1 COMMAND
+
+   PRINT#file#, "U1:" channel; drive; track; block
+
+or
+
+   PRINT#file#, "UA:" channel; drive; track; block
+
+There is no difference between the U1 and UA designations for this
+command.
+
+The BLOCK-WRITE command writes the contents of the buffer to the block
+on the disk along with the value of the buffer-pointer.  The USER2
+command writes the buffer without disturbing the buffer-pointer value
+already stored on that block of the diskette.  This is useful when a
+block is to be read in with BLOCK-READ, updated through the BUFFER-
+POINTER and PRINT# statements, and then written back to the diskette
+with USER2.
+
+FORMAT FOR USER2 COMMAND:
+
+   PRINT#file#, "U2:" channel; drive; track; block
+
+or
+
+   PRINT#file#, "UB:" channel; drive; track; block
+
+For a more complex sample program, see Appendix C.
+
+---
+Additional information can be found by searching:
+- "memory_execute_and_user_command_table" which expands on other USER commands and jump table entries for disk-resident routines

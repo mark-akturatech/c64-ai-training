@@ -1,0 +1,34 @@
+# C64 KERNAL API (Lee Davison) - $FFBA — Set logical file number, device address and secondary (command) address for KERNAL I/O routines. Logical file number indexes the file table used by OPEN. Device addresses 0..30 map to built-in devices (0=keyboard,1=cassette #1,2=RS-232,3=CRT display,4=printer,8=disk drive). Devices >=4 are on the serial bus. If no secondary address is needed set Y=$FF.
+
+$FFBA          set logical, first and second addresses
+               
+               This routine will set the logical file number, device address, and secondary
+               address, command number, for other KERNAL routines.
+               
+               the logical file number is used by the system as a key to the file table created
+               by the OPEN file routine. Device addresses can range from 0 to 30. The following
+               codes are used by the computer to stand for the following CBM devices:
+               
+               | ADDRESS | DEVICE                    |
+               |---------|---------------------------|
+               |  0      | Keyboard                  |
+               |  1      | Cassette #1               |
+               |  2      | RS-232C device            |
+               |  3      | CRT display               |
+               |  4      | Serial bus printer        |
+               |  8      | CBM Serial bus disk drive |
+               
+               Device numbers of four or greater automatically refer to devices on the serial
+               bus.
+               
+               A command to the device is sent as a secondary address on the serial bus after
+               the device number is sent during the serial attention handshaking sequence. If
+               no secondary address is to be sent Y should be set to $FF.
+               
+               
+
+---
+Additional information can be found by searching:
+- "ffbd_set_the_filename" which expands on filename used by OPEN/SAVE/LOAD
+- "ffc0_open_a_logical_file" which expands on OPEN uses SETLFS settings
+- "ffb1_command_listen" which expands on LISTEN/TALK use device addresses

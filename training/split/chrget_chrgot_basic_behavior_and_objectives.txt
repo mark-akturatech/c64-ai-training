@@ -1,0 +1,26 @@
+# MACHINE - Explains CHRGET/CHRGOT behavior: CHRGET increments the program pointer (CHRGOT+1) and conditionally increments higher byte; CHRGOT then loads a character from the BASIC program buffer. Lists objectives when examining characters: skip spaces, set Z flag and exit on zero or colon ($3A), and set/clear C flag to indicate whether the character is numeric ($30-$39).
+
+         INC CHRGOT+2
+  CHRGOT LDA $xxxx
+
+This subroutine is self-modifying, that is, it changes part of itself as it
+runs.  That's not always a good programming technique, but it works well
+here.
+
+The first part of the subroutine adds one to the address used by instruction
+CHRGOT.  This is a standard way of coding an address increment:  add one to
+the low byte of the address; if that makes it zero, the low byte must have
+gone from $FF to $00, in which case , add one to the high byte.
+
+The address loaded by CHRGOT is within your BASIC program, or within the
+input buffer if you have just typed a direct command.  Before we follow the
+next piece of code, let's look at our objectives:
+
+  1.  If we find a space, go back and get the next character.
+
+  2.  If we find a zero (BASIC end of line) or a colon (hex $3A, BASIC end-
+      of-statement), we wish to set the Z flag and exit.
+
+---
+Additional information can be found by searching:
+- "infiltrating_basic_wedge_intro_and_CHRGET_location" which expands on Where CHRGET lives and what it does

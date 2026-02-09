@@ -1,0 +1,102 @@
+# byRiclianll - Assembly source for 23M.PAL (Full-Track 23 error). This listing is the assembly equivalent of the machine-code DATA block used by the BASIC driver. It includes initial setup (LDA #$04, STA *31), optional checksum increment (LDA *3A / TAX / INX / TXA / STA *3A), GCR conversion (JSR *F7AF), header location (JSR *F510), waiting out the header gap, enabling WRITE mode (writes to *1C03 and *1C0C), WRITESYNC looping, streaming bytes from the overflow buffer ($0100,Y) and sector buffer ($0400,Y) to *1C01 while checking for the V flag (BVC/CLV loops), re-enabling READ (JSR *FE00), and final DOS return (JMP *F975). Also shows use of LDY #$BB for overflow buffer indexing.
+
+440 
+
+LDA 
+
+tt*FF 
+
+450 
+
+LDX 
+
+tt*05 
+
+460 
+
+STA 
+
+*1C01 
+
+470 
+
+CLV 
+
+480 
+
+WRITESYNC  BVC 
+
+490 
+
+CLV 
+
+500 
+
+DEX 
+
+510 
+
+BNE 
+
+WRITESYNC 
+
+520 
+
+530 
+
+LDY 
+
+#$BB 
+
+540 
+
+OVERFLOW  LDA 
+
+ENABLE  WRITE 
+
+
+RFLOW  BUFFER 
+
+550  WAITl   BVC  WAITl 
+
+560  CLV 
+
+570  STA  *1C01 
+
+580   I NY 
+
+590  BNE  OVERFLOW 
+
+600  BUFFER  LDA  *0400,Y  ;  WRITE  OUT  BUF 
+FER 
+
+610  WAIT2  BVC  WAIT2 
+
+620  CLV 
+
+630  STA  *1C01 
+
+640   I NY 
+
+650  BNE  BUFFER 
+
+660  WAIT3  BVC  WAIT3 
+
+670  ; 
+
+680  JSR  *FE00  ;    ENABLE  READ 
+
+690  ; 
+
+700  LDA  tt«05 
+710  STA  *31 
+720  LDA  #*01 
+730  STA  *02 
+740  JMP  *F975 
+
+
+
+---
+Additional information can be found by searching:
+- "full_track_23_error_basic_job_queue_and_data" which expands on The DATA bytes in the BASIC listing correspond to this readable assembly
+- "duplicate_single_sector_23_annotation" which expands on Related note on checksum behavior for the single-sector duplicate variant

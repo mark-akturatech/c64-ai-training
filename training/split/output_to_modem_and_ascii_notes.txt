@@ -1,0 +1,112 @@
+# COMMODORE 64 - Output to modem: OPEN parameters set baud and format via two characters at end of OPEN. Discusses control/command register usage and ASCII translation between Commodore character set and ASCII when communicating with other computers. Examples of OPEN for modems provided. Advises on careful character counting for automated terminal interactions.
+
+
+
+                                                   INPUT/OUTPUT GUIDE   343
+~
+
+
+  pressed, the bit (bit 4 in this case) changes to a 0. To read the
+  joystick from BASIC, the following subroutine should be used:
+
+
+start tok64 page344.prg
+  10 fork=0to10:rem set up direction string
+  20 readdr$(k):next
+  30 data"","n","s","","w","nw"
+  40 data"sw","","e","ne","se"
+  50 print"going...";
+  60 gosub100:rem read the joystick
+  65 ifdr$(jv)=""then80:rem check if a direction was chosen
+  70 printdr$(jv);" ";:rem output which direction
+  80 iffr=16then60:rem check if fire button was pushed
+  90 print"-----f-----i-----r-----e-----!!!":goto60
+  100 jv=peek(56320):rem get joystick value
+  110 fr=jvand16:rem form fire button status
+  120 jv=15-(jvand15):rem form direction value
+  130 return
+stop tok64
+
+  +-----------------------------------------------------------------------+
+  | NOTE: For the second joystick, set JV = PEEK (56321).                 |
+  +-----------------------------------------------------------------------+
+
+    The values for JV correspond to these directions:
+
+                       +-------------+---------------+
+                       | JV EQUAL TO |   DIRECTION   |
+                       +-------------+---------------+
+                       |      0      |          NONE |
+                       |      1      |            UP |
+                       |      2      |          DOWN |
+                       |      3      |             - |
+                       |      4      |          LEFT |
+                       |      5      |     UP & LEFT |
+                       |      6      |   DOWN & LEFT |
+                       |      7      |             - |
+                       |      8      |         RIGHT |
+                       |      9      |    UP & RIGHT |
+                       |     10      |  DOWN & RIGHT |
+                       +-------------+---------------+
+
+  344   INPUT/OUTPUT GUIDE
+~
+
+
+    A small machine code routine which accomplishes the same task is as
+  follows:
+
+
+                      ; joystick - button read routine
+                      ;
+                      ; author - bill hindorff
+                      ;
+dx = $c110
+dy = $c111
+
+* = $c200
+
+djrr    lda $dc00     ; get input from port a only
+djrrb   ldy #0        ; this routine reads and decodes the
+        ldx #0        ; joystick/firebutton input data in
+        lsr a         ; the accumulator. this least significant
+        bcs djr0      ; 5 bits contain the switch closure
+        dey           ; information. if a switch is closed then it
+djr0    lsr a         ; produces a zero bit. if a switch is open then
+        bcs djr1      ; it produces a one bit. The joystick dir-
+        iny           ; ections are right, left, forward, backward
+djr1    lsr a         ; bit3=right, bit2=left, bit1=backward,
+        bcs djr2      ; bit0=forward and bit4=fire button.
+        dex           ; at rts time dx and dy contain 2's compliment
+djr2    lsr a         ; direction numbers i.e. $ff=-1, $00=0, $01=1.
+        bcs djr3      ; dx=1 (move right), dx=-1 (move left),
+        inx           ; dx=0 (no x change). dy=-1 (move up screen),
+djr3    lsr a         ; dy=0 (move down screen), dy=0 (no y change).
+        stx dx        ; the forward joystick position corresponds
+        sty dy        ; to move up the screen and the backward
+        rts           ; position to move down screen.
+                      ;
+                      ; at rts time the carry flag contains the fire
+                      ; button state. if c=1 then button not pressed.
+                      ; if c=0 then pressed.
+.end
+
+
+
+
+
+
+                                                   INPUT/OUTPUT GUIDE   345
+~
+
+
+  PADDLES
+
+    A paddle is connected to both CIA #1 and the SID chip (MOS 6581 Sound
+  Interface Device) through a game port. The paddle value is read via the
+  SID registers 54297 ($D419) and 54298 ($D41A). PADDLES ARE NOT RELIABLE
+  WHEN READ FROM BASIC ALONE!!!! The best way to use paddles, from BASIC or
+
+---
+Additional information can be found by searching:
+- "rs232_interface_description" which expands on RS-232 modem connection and settings

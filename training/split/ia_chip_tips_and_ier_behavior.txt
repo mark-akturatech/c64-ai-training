@@ -1,0 +1,31 @@
+# MACHINE - Practical tips: many IA addresses behave differently on read vs write. Turning off interrupt flags can require unintuitive stores. The IER (interrupt enable register) often uses the high bit to toggle enable/disable actions; examples given: Commodore 64 store $7F to $DC0C (or $DC0D) to disable interrupts, store $81 to re-enable; VIC-20 and PET equivalents are provided earlier. Warns that disabling interrupts via POKE may disable keyboard and should not be done carelessly.
+
+
+Tips on IA Chips
+----------------
+
+Many addresses within an IA chip have a different meaning, depending on
+whether they are being written to (stored) or read (loaded).  Watch for this
+when you are reading the chip specifications.
+
+Often, the action required to turn an interrupt flag off is odd.  It looks
+like the kind of thing you should do to turn the flag on.  Keep in mind that
+a flag may be turned on only by the external activity to which it is linked.
+So, although it may seem odd to turn the flag in bit zero off by storing a
+value of 1 (which would seem to want to turn bit zero on), don't worry.
+You'll get used to it.
+
+The IER (interrupt enable register) is often a source of problems.  In many
+cases, the high bit of a value we are storing has a special meaning:  if it's
+set, the other bits will cause the appropriate interrupt connections to turn
+on; if it's clear, the other bits will cause the appropriate interrupt
+connections to be turned off.  You may recall that we shut off the Commodore
+64 interrupt by storing $7F into address $DC0D.  This may seem odd:  we're
+storing a binary value of $01111111, which might seem to be turning bits on.
+In fact, the high bit of zero signals that all the remaining bits are "turn
+off" signals; so the value causes all interrupts to be blocked.
+
+
+---
+Additional information can be found by searching:
+- "interrupts_intro_and_irq_vectors" which expands on Addresses and POKE examples for disabling interrupts

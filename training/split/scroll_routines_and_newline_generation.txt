@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - SCROL, SCRLIN and NEWLIN: core routines to scroll screen lines up or down. Saves/ restores SAL/SAH/EAL/EAH (source/destination addresses), iterates through lines, performs CLRLN when necessary, and updates LDTB1 pointer flags. Also includes new line generation BMT1/BMT2 logic to insert new blank lines or clear the last line when near bottom.
+
+                                ;
+                                SCR41
+.,E913 20 FF E9 JSR $E9FF              JSR CLRLN
+                                ;
+.,E916 A2 00    LDX #$00        LDX    #0              ;SCROLL HI BYTE POINTERS
+.,E918 B5 D9    LDA $D9,X       SCRL5  LDA LDTB1,X
+.,E91A 29 7F    AND #$7F        AND    #$7F
+.,E91C B4 DA    LDY $DA,X       LDY    LDTB1+1,X
+.,E91E 10 02    BPL $E922       BPL    SCRL3
+.,E920 09 80    ORA #$80        ORA    #$80
+.,E922 95 D9    STA $D9,X       SCRL3  STA LDTB1,X
+.,E924 E8       INX             INX
+.,E925 E0 18    CPX #$18        CPX    #NLINES-1
+.,E927 D0 EF    BNE $E918       BNE    SCRL5
+                                ;
+.,E929 A5 F1    LDA $F1         LDA    LDTB1+NLINES-1
+.,E92B 09 80    ORA #$80        ORA    #$80
+.,E92D 85 F1    STA $F1         STA    LDTB1+NLINES-1
+.,E92F A5 D9    LDA $D9         LDA    LDTB1           ;DOUBLE LINE?
+.,E931 10 C3    BPL $E8F6       BPL    SCRO0           ;YES...SCROLL AGAIN
+                                ;
+.,E933 E6 D6    INC $D6                INC TBLX
+.,E935 EE A5 02 INC $02A5              INC LINTMP
+.,E938 A9 7F    LDA #$7F               LDA #$7F        ;CHECK FOR CONTROL KEY
+.,E93A 8D 00 DC STA $DC00              STA COLM        ;DROP LINE 2 ON PORT B
+.,E93D AD 01 DC LDA $DC01              LDA ROWS
+.,E940 C9 FB    CMP #$FB               CMP #$FB        ;SLOW SCROLL KEY?(CONTROL)
+.,E942 08       PHP                    PHP             ;SAVE STATUS. RESTORE PORT B
+.,E943 A9 7F    LDA #$7F               LDA #$7F        ;FOR STOP KEY CHECK
+.,E945 8D 00 DC STA $DC00              STA COLM
+.,E948 28       PLP                    PLP
+.,E949 D0 0B    BNE $E956       BNE    MLP42
+                                ;
+.,E94B A0 00    LDY #$00        LDY    #0
+.,E94D EA       NOP             MLP4   NOP             ;DELAY
+.,E94E CA       DEX             DEX
+.,E94F D0 FC    BNE $E94D       BNE    MLP4
+.,E951 88       DEY             DEY
+.,E952 D0 F9    BNE $E94D       BNE    MLP4
+.,E954 84 C6    STY $C6         STY    NDX             ;CLEAR KEY QUEUE BUFFER
+                                ;
+.,E956 A6 D6    LDX $D6         MLP42  LDX TBLX
+                                ;
+.,E958 68       PLA             PULIND PLA             ;RESTORE OLD INDIRECTS
+.,E959 85 AF    STA $AF         STA    EAH
+.,E95B 68       PLA             PLA
+.,E95C 85 AE    STA $AE         STA    EAL
+.,E95E 68       PLA             PLA
+.,E95F 85 AD    STA $AD         STA    SAH
+.,E961 68       PLA             PLA
+.,E962 85 AC    STA $AC         STA    SAL
+.,E964 60       RTS             RTS
+                                NEWLIN
+.,E965 A6 D6    LDX $D6                LDX TBLX
+.,E967 E8       INX             BMT1   INX
+                                ; CPX #NLINES ;EXCEDED THE NUMBER OF LINES ???
+                                ; BEQ BMT2 ;VIC-40 CODE
+.,E968 B5 D9    LDA $D9,X              LDA LDTB1,X     ;FIND LAST DISPLAY LINE OF THIS LINE
+.,E96A 10 FB    BPL $E967              BPL BMT1        ;TABLE END MARK=>$FF WILL ABORT...ALSO
+.,E96C 8E A5 02 STX $02A5       BMT2   STX LINTMP      ;FOUND IT
+
+---
+Additional information can be found by searching:
+- "wrap_check_and_screen_scroll" which expands on invoked from wrap/insert handling to maintain screen

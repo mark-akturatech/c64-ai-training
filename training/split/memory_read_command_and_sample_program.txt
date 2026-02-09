@@ -1,0 +1,44 @@
+# ********* - Section 8.2: MEMORY-READ syntax (PRINT#file#,"M-R" CHR$(low byte) CHR$(high byte)) to read bytes from the disk controller's RAM/ROM/buffers via the error channel; the next GET#/INPUT# on channel 15 will return bytes from that address; includes a sample BASIC program (RDISKMEM.PRG) to read memory ranges.
+
+
+
+8.2 MEMORY-READ
+
+There is 16K of ROM in the disk drive as well as 2K of RAM.  You can
+get direct access to these, or to the buffers that the DOS has set up
+in the RAM, by using the MEMORY commands.  MEMORY-READ allows you to
+select which byte to read, through the error channel.
+
+FORMAT FOR MEMORY-READ:
+
+    PRINT#file#, "M-R" CHR$(low byte of address) CHR$(high byte)
+    (no abbreviation!)
+
+The next byte read using the GET# statement through channel# 15, the
+error channel, will be from that address in the disk controller's
+memory, and successive bytes will be from successive memory locations.
+
+Any INPUT# to the error channel will give peculiar results when you're
+using this command.  This can be cleared up by any other command to
+the disk (aside from a memory command).
+
+PROGRAM TO READ THE DISK CONTROLLER'S MEMORY:
+
+start tok64 rdiskmem.prg
+ 10 open 15,8,15
+ 20 input "location please";a
+ 25 for l=1 to 50
+ 30 a1=int(a/256):a2=a-a1*256
+ 40 print#15,"m-r" chr$(a2)chr$(a1)
+ 50 get#15,a$: rem get chars from error channel
+ 60 print asc(a$+chr$(0))
+ 70 a=a+1
+ 80 next
+ 90 input "continue";a$
+ 100 if left$(a$,1)="y" then 25
+ 110 goto 20
+stop tok64
+
+---
+Additional information can be found by searching:
+- "appendix_a_disk_command_summary" which expands on summary entry for MEMORY-READ (M-R) and other memory commands

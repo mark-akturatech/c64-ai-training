@@ -1,0 +1,48 @@
+# Kick Assembler - DiskWriter plugins: create custom disk image formats. Implement IDiskWriter: DiskWriterDefinition getDefinition(); void execute(IDiskData disk, IEngine engine); DiskWriterDefinition lists disk and file parameter sets (allDiskParameters, nonOptionalDiskParameters, allFileParameters, nonOptionalFileParameters). The .disk directive format is .disk WRITERNAME [..DISK PARAMETERS..] { [..FILE PARAMETERS..], ... }. Interfaces for execute: IDiskData { IParameterMap getParameters(); List<IDiskFileData> getFiles(); } and IDiskFileData { IParameterMap getParameters(); List<IMemoryBlock> getMemoryBlocks(); }. Use IEngine to open output streams.
+
+MyAutoInclude.asm"));
+return plugins;
+}
+}
+
+In the AutoIncludeFile-constructor you give:
+1. The jar-name - for use when printing error messages
+2. A random 'class'-object from the jar - this is used to open the resource.
+3. A path to the resource - the placement inside the jar.
+The file will now be compiled with the rest of the source if the archive is imported.
+For completeness, here is the IAutoIncludeFile-interface, but as mentioned, you probably wont need it.
+public interface IAutoIncludeFile extends IPlugin {
+AutoIncludeFileDefinition getDefinition();
+InputStream openStream();
+}
+public class AutoIncludeFileDefinition {
+private String filePath;
+private String jarName;
+}
+
+84
+
+Appendix A. Quick Reference
+A.1. Command Line Options
+Table A.1. Command Line Options
+Option
+
+Example
+
+Description
+
+-afo
+
+-afo
+
+Allows file output outside the output
+dir.
+
+-aom
+
+-aom
+
+---
+Additional information can be found by searching:
+- "imemoryblock_interface" which expands on Disk files provide IMemoryBlock lists with bytes to store
+- "segment_modifier_plugins" which expands on segment modifiers and disk writers both use parameter maps

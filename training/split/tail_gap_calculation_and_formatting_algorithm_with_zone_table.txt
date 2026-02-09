@@ -1,0 +1,38 @@
+# byRiclianll - Describes how the Floppy Disk Controller (FDC) formats tracks by writing overlapping $FFs then a pattern of $FFs and $55s to measure usable space. The FDC subtracts the total expected bytes for the sectors in a zone from what it wrote, and divides the remainder by the number of sectors to determine the variable tail (inter-sector) gap. Explains that the tail gap varies by track, zone, and between drives (motor speed), and includes the algorithm's minimum tail gap check (formatting fails if computed tail gap < 4 bytes). Presents the zone table with typical track ranges, sectors per track, and variable tail gap ranges.
+
+
+We  deliberately  excluded  the  inter-sector  (tail)  gap  in  calculating  the  number  of  bytes 
+in  a  given  sector.  Why?  Because  the  tail  gap  is  never  referenced  again  by  the  DOS  once 
+formatting  is  complete.  During  formatting  the  Floppy  Disk  Controller  (FDC)  erases  a 
+track  by  writing  10240  overlapping  8-bit  $FFs.  Once  a  track  has  been  erased  the  FDC 
+writes  2400  8-bit  $FFs  (%11111111)  followed  by  2400  8-bit  $55s  (%01010101).  The  intent 
+is  to  wrap  around  the  circumference  of  the  track  with  a  clearly  discernable  on/off  pat- 
+tern of  bytes.  The  FDC  then  counts  to  see  how  many  sync  ($FF)  and  nonsync  ($55)  bytes 
+were  actually  written  to  the  track.  From  this  count  the  FDC  subtracts  the  total  number 
+of  bytes  that  the  entire  range  of  sectors  in  a  given  zone  will  use.  The  remainder  is  then 
+divided  by  the  number  of  sectors  in  that  zone  to  determine  the  size  of  the  tail  gap.  The 
+algorithm  is  analogous  to  cutting  a  pie.  The  tail  gap  varies  not  only  between  tracks  due 
+to  a  decrease  in  both  circumference  and  the  sector  range  but  between  disk  drives  as 
+well,  due  to  varying  motor  speeds.  A  stopgap  measure  is  incorporated  into  the  algorithm 
+for  the  latter  reason.  If  a  tail  gap  is  not  computed  to  be  at  least  four  bytes  in  length 
+formatting  will  fail  and  an  error  will  be  reported.  In  general,  the  length  of  the  tail  gaps 
+fall  into  the  ranges  tabled  below: 
+
+
+Zone         Tracks  Number  of  Sectors  Variable  Tail  Gap 
+
+
+1  1-17  21  4-7 
+
+2  18-24  19  9  -  12 
+
+3  25-30  18  5-8 
+
+4  31-35  17  4-8 
+
+
+
+---
+Additional information can be found by searching:
+- "sector_byte_expansion_examples_and_block_byte_counts" which expands on Explains why the tail gap is excluded from per-sector recorded byte counts
+- "tail_gap_and_header_write_behavior_notes" which expands on Further notes on special-case tail gaps and header write behavior

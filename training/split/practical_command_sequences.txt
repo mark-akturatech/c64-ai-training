@@ -1,0 +1,29 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - Practical examples of TALK/LISTEN/SECOND/OPEN/CLOSE sequences: reading from device 8 channel 2 (TALK $48, SECOND $62, UNTALK $5F), writing to device 4 channel 7 (LISTEN $24, SECOND $67, UNLISTEN $3F), and device-to-device transfer (LISTEN printer, TALK disk, SECOND channel).
+
+Practical Command Sequence Examples:
+
+  Reading from device 8, channel 2:
+    $48  (TALK device 8:    $40 + 8)
+    $62  (SECOND channel 2: $60 + 2)
+    [controller reads bytes from device until EOI]
+    $5F  (UNTALK)
+
+  Writing to device 4, channel 7:
+    $24  (LISTEN device 4:  $20 + 4)
+    $67  (SECOND channel 7: $60 + 7)
+    [controller sends bytes with final byte using EOI]
+    $3F  (UNLISTEN)
+
+  Device-to-device transfer (disk 8 to printer 4):
+    $24  (LISTEN device 4:  $20 + 4)
+    $48  (TALK device 8:    $40 + 8)
+    $62  (SECOND channel 2: $60 + 2)
+    [device 8 autonomously transmits to device 4]
+    $5F  (UNTALK)
+    $3F  (UNLISTEN)
+
+
+---
+Additional information can be found by searching:
+- "command_codes" which expands on numeric encoding of commands in examples
+- "byte_transfer_sequence" which expands on how bytes are transmitted once roles are assigned

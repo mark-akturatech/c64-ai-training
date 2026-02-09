@@ -1,0 +1,49 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Strength reduction: eliminate multiplication by rewriting code (example: replacing repeated I*23 in a loop with repeated addition). Emphasizes minimizing work and preferring specialized code for multiply-by-constant cases.
+
+The Easiest Way to Multiply
+----------------------------------------
+
+
+The easiest way to multiply on the 6502 is not to do it at all.
+
+
+Actually, that statement isn't nearly as useless as it seems.
+Sometimes the nature of the problem is such that with a little
+rewriting, the multiplication can be eliminated entirely.  This happens
+often in loops, if the loop index has to be multiplied by something.
+As an example, consider the following BASIC-like code fragment:
+
+
+FOR I = 5 TO 100 STEP 5
+  J = I*23
+  Do something with J
+NEXT I
+
+
+This can be rewritten like this:
+
+
+J = 115: REM 115 = 5*23
+FOR I = 5 TO 100 STEP 5
+  Do something with J
+  J = J+115
+NEXT I
+
+
+This kind of rewriting is called strength reduction.
+Optimizing compilers will usually notice when this is possible, and
+automatically rewrite the code to take advantage of it.
+
+
+The problem with this, of course, is that many multiplications
+can't be eliminated by rewriting.  For these cases, the rule
+is, "Don't work any harder than you have to."  If all you need is to
+multiply
+by a constant, the code for that will usually be much more efficient
+than a general routine to multiply any two arbitrary numbers.
+
+
+
+---
+Additional information can be found by searching:
+- "multiplying_by_constant" which expands on detailed multiply-by-constant techniques

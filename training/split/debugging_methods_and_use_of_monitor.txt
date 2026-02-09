@@ -1,0 +1,55 @@
+# MACHINE - Debugging techniques: use breakpoints by replacing opcodes with BRK (00) to invoke monitor and inspect registers/memory; replace BRK with original opcode when done, use .G to continue; consider single-step to trace execution. Advice: write sensibly, insert stop-key tests (JSR $FFE1) to regain control, be aware of and avoid clobbering monitor workspace addresses while debugging.
+
+make the computer do whatever you choose.
+
+
+Debugging
+---------
+
+When a program has been written, the next step is to look for any possible
+errors, or bugs.  The process of searching for and systematically eliminating
+these bugs is called debugging.
+
+Most programs are made up of sections, each of which has a clear task to
+perform.  When a program misbehaves, it may be easy to go to the area of the
+bug, since you can see which parts of the program are working and where
+things start to go wrong.
+
+                                                                        :143:
+
+In case of doubt, you may insert breakpoints into your program.  Replace
+selected instructions with the instruction BRK; this may be done by replacing
+the instructions' op codes with the value 00.  Run the program; when it
+reaches the first breakpoint, it will stop and the machine language monitor
+will become active.  Examine the registers carefully to see whether they
+contain the values expected.  Display memory locations that the program
+should have written; the contents will tell you whether the program has been
+doing its job correctly.
+
+When you have confirmed that the program is behaving correctly up to the
+breakpoint, replace the BRK command at that point with the original op code.
+Command .G to that address, and the program will continue to the next
+breakpoint.  If it helps your investigation, you may even change memory or
+registers before continuing program execution.
+
+If you carried this procedure to the extreme, you might stop your program
+after every instruction.  It would take time, but you would certainly track
+down everything the program did.
+
+The best debugging takes place at the time you write the program.  Write
+sensibly, not "super cleverly."  If you fear getting caught in an endless
+loop, insert a stop key test (JSR $FFE1) so that you'll still have control of
+the computer.
+
+Get to know your machine language monitor.  The monitor uses a number of
+locations in memory; you'll have trouble debugging a program if it uses the
+same storage addresses as does your program.  Every time you try to check the
+contents of a memory location to see what your program has done, you'll see
+the monitor working values instead--and that would be misleading and
+annoying.
+
+
+
+---
+Additional information can be found by searching:
+- "symbolic_assemblers_and_source_management" which expands on Symbolic assemblers help reduce retyping and address errors during debugging

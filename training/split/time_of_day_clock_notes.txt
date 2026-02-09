@@ -1,0 +1,40 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Practical TOD usage notes: the TOD runs independently from CPU, clocked by TOD pin (mains). Procedure to set the clock: ensure CRB bit 7 = 0 (write sets clock), write hours first (stops clock), then minutes, seconds, and tenths last to restart. Procedure to set alarm: set CRB bit 7 = 1, write alarm time, then clear CRB bit 7. Reading TOD: read hours to latch all TOD registers, then minutes, seconds, and tenths (tenths release latch). BCD format example provided (12:30:00.5 PM stored as TOD HR=$92 with bit7=1).
+
+=============================================================
+10. TIME-OF-DAY CLOCK NOTES
+=============================================================
+
+The TOD clock operates independently of the CPU and timers.
+It receives its clock from the TOD pin (mains frequency).
+
+Setting the TOD clock:
+  1. Ensure CRB bit 7 = 0 (writing sets clock, not alarm)
+  2. Write hours first ($DC0B/$DD0B) - this stops the clock
+  3. Write minutes ($DC0A/$DD0A)
+  4. Write seconds ($DC09/$DD09)
+  5. Write tenths ($DC08/$DD08) - this starts the clock
+
+Setting the alarm:
+  1. Set CRB bit 7 = 1 (writing sets alarm)
+  2. Write alarm time to $0B, $0A, $09, $08
+  3. Set CRB bit 7 = 0 (return to normal TOD writes)
+
+Reading the TOD clock:
+  1. Read hours ($0B) - this latches all TOD registers
+  2. Read minutes ($0A) - returns latched value
+  3. Read seconds ($09) - returns latched value
+  4. Read tenths ($08) - releases latch
+
+BCD Format Examples:
+  12:30:00.5 PM is stored as:
+    TOD HR    = $92  (bit 7=1 for PM, $12 in BCD)
+    TOD MIN   = $30  (BCD)
+    TOD SEC   = $00  (BCD)
+    TOD 10THS = $05  (BCD)
+
+
+---
+Additional information can be found by searching:
+- "time_of_day_clock" which expands on TOD register formats and latching behavior ($08-$0B)
+- "control_register_b" which expands on CRB bit 7 selects alarm write mode
+- "interrupt_control_register_icr" which expands on ICR ALRM bit indicates TOD alarm interrupt

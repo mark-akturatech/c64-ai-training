@@ -1,0 +1,28 @@
+# byRiclianll - Explains that the BAM uses 4 bytes per track: first byte = number of free blocks on that track; next three bytes = bit map (1 bit per sector) describing free (1) vs allocated (0) sectors for up to 21 sectors per track. Example: track 14 entry located at byte 14*4 = $38 shows first byte $11 (decimal 17 free blocks) and the next three bytes form the bit map.
+
+In  the  BAM  four  bytes  are  used  to  describe  the  status  of  each  track.  As  a  result,  the 
+BAM  takes  up  a  total  of  4  x  35  =  140  bytes  (bytes  4-143  or  $04-$8F).  Let's  examine 
+the  entry  for  track  14  to  see  what  these  four  bytes  mean.  The  entry  for  track  14  begins 
+at  byte  14  x  4  =  56  ($38).  It  looks  like  this: 
+
+.    3G:    11   D7  5F   IF  00  00  00  00   .W  BAM  TRACKS  14-15 
+
+
+The  first  byte  for  track  14  (location  $38  =  56)  indicates  the  number  of  blocks  free  on 
+this  track. 
+
+.    38:    11   D7  5F   IF  00  00  00  00   .W  BAM  TRACKS  14-15 
+
+
+In  this  case  there  are  $11  or  17  (1  *  16  -i-  1)  blocks  free. 
+
+When  the  DOS  calculates  the  number  of  blocks  free  on  a  diskette,  it  sums  this  byte 
+from  each  track's  entry  in  the  BAM.  Let's  do  our  own  blocks  free  calculation  to  see 
+how  it  is  done.  All  we  have  to  do  is  sum  up  the  decimal  values  of  every  fourth  byte 
+starting  with  byte  4  like  this: 
+
+
+
+---
+Additional information can be found by searching:
+- "bam_bit_map_for_track14" which expands on detailed bit-map decoding for track 14

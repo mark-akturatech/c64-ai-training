@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Rev. A 6502 'ROR bug' detailed: chips made before June 1976 lacked control lines for ROR; ROR behaves like ASL without updating carry; N and Z flags set correctly. Provides opcode/opcycle table for ROR on Rev A and historical note about implementation change in Rev B (reportedly due to user demand).
+
+                          0                         $06 ASL zpg   $0A  ASL A      $0E  ASL abs                     $16 ASL zpg,X               $1E ASL abs,X
+                          1                         $26 ROL zpg   $2A  ROL A      $2E  ROL abs                     $36 ROL zpg,X               $3E ROL abs,X
+                          2                         $46 LSR zpg   $4A  LSR A      $4E  LSR abs                     $56 LSR zpg,X               $5E LSR abs,X
+                          3                         $66 ROR zpg   $6A  ROR A      $6E  ROR abs                     $76 ROR zpg,X               $7E ROR abs,X
+               2
+                          4                         $86 STX zpg   $8A  TXA impl   $8E  STX abs                     $96 STX zpg,Y $9A TXS impl
+                          5       $A2  LDX #        $A6 LDX zpg   $AA  TAX impl   $AE  LDX abs                     $B6 LDX zpg,Y $BA TSX impl  $BE LDX abs,Y
+                          6                         $C6 DEC zpg   $CA  DEX impl   $CE  DEC abs                     $D6 DEC zpg,X               $DE DEC abs,X
+                          7                         $E6 INC zpg   $EA  NOP impl   $EE  INC abs                     $F6 INC zpg,X               $FE INC abs,X
+          Note: The operand of instructions like "ASL A" is often depicted as implied, as well.
+          Mind that, for any practical reasons, the two notations are interchangeable for any
+          instructions involving the accumulator. — However, there are subtle differences.
+          A rotated view, rows as combinations of c and b, and columns as a:
+                                                                      6502 Instruction Set
+               c         b                                                                    a
+                                         0               1             2             3                  4            5             6             7
+                         0       $00   BRK impl     $20 JSR abs   $40 RTI impl  $60 RTS impl                    $A0 LDY #     $C0 CPY #     $E0 CPX #
+                         1                          $24 BIT zpg                                 $84   STY zpg   $A4 LDY zpg   $C4 CPY zpg   $E4 CPX zpg
+                         2       $08   PHP impl     $28 PLP impl  $48 PHA impl  $68 PLA impl    $88   DEY impl  $A8 TAY impl  $C8 INY impl  $E8 INX impl
+                         3                          $2C BIT abs   $4C JMP abs   $6C JMP ind     $8C   STY abs   $AC LDY abs   $CC CPY abs   $EC CPX abs
+               0
+                         4       $10   BPL rel      $30 BMI rel   $50 BVC rel   $70 BVS rel     $90   BCC rel   $B0 BCS rel   $D0 BNE rel   $F0 BEQ rel
+                         5                                                                      $94   STY zpg,X $B4 LDY zpg,X
+                         6       $18   CLC impl     $38 SEC impl  $58 CLI impl  $78 SEI impl    $98   TYA impl  $B8 CLV impl  $D8 CLD impl  $F8 SED impl
+                         7                                                                                      $BC LDY abs,X
+                         0       $01   ORA X,ind    $21 AND X,ind $41 EOR X,ind $61 ADC X,ind   $81   STA X,ind $A1 LDA X,ind $C1 CMP X,ind $E1 SBC X,ind
+                         1       $05   ORA zpg      $25 AND zpg   $45 EOR zpg   $65 ADC zpg     $85   STA zpg   $A5 LDA zpg   $C5 CMP zpg   $E5 SBC zpg
+                         2       $09   ORA #        $29 AND #     $49 EOR #     $69 ADC #                       $A9 LDA #     $C9 CMP #     $E9 SBC #
+                         3       $0D   ORA abs      $2D AND abs   $4D EOR abs   $6D ADC abs     $8D   STA abs   $AD LDA abs   $CD CMP abs   $ED SBC abs
+               1
+                         4       $11   ORA ind,Y    $31 AND ind,Y $51 EOR ind,Y $71 ADC ind,Y   $91   STA ind,Y $B1 LDA ind,Y $D1 CMP ind,Y $F1 SBC ind,Y
+                         5       $15   ORA zpg,X    $35 AND zpg,X $55 EOR zpg,X $75 ADC zpg,X   $95   STA zpg,X $B5 LDA zpg,X $D5 CMP zpg,X $F5 SBC zpg,X
+                         6       $19   ORA abs,Y    $39 AND abs,Y $59 EOR abs,Y $79 ADC abs,Y   $99   STA abs,Y $B9 LDA abs,Y $D9 CMP abs,Y $F9 SBC abs,Y
+                         7       $1D   ORA abs,X    $3D AND abs,X $5D EOR abs,X $7D ADC abs,X   $9D   STA abs,X $BD LDA abs,X $DD CMP abs,X $FD SBC abs,X
+                         0                                                                                      $A2 LDX #
+                         1       $06   ASL zpg      $26 ROL zpg   $46 LSR zpg   $66 ROR zpg     $86   STX zpg   $A6 LDX zpg   $C6 DEC zpg   $E6 INC zpg
+                         2       $0A   ASL A        $2A ROL A     $4A LSR A     $6A ROR A       $8A   TXA impl  $AA TAX impl  $CA DEX impl  $EA NOP impl
+                         3       $0E   ASL abs      $2E ROL abs   $4E LSR abs   $6E ROR abs     $8E   STX abs   $AE LDX abs   $CE DEC abs   $EE INC abs
+               2
+                         4
+                         5       $16   ASL zpg,X    $36 ROL zpg,X $56 LSR zpg,X $76 ROR zpg,X   $96   STX zpg,Y $B6 LDX zpg,Y $D6 DEC zpg,X $F6 INC zpg,X
+                         6                                                                      $9A   TXS impl  $BA TSX impl
+                         7       $1E   ASL abs,X    $3E ROL abs,X $5E LSR abs,X $7E ROR abs,X                   $BE LDX abs,Y $DE DEC abs,X $FE INC abs,X
+          Finally, a more complex view, the instruction set listed by rows as
+          combinations of a and c, and b in columns:
+          Address modes are either a property of b (even columns) or combinations
+          of b and c (odd columns with aspecific row-index modulus 3; i.e., every
+                                                                   6502 Instruction Set
+          third row in a given column). In those latter columns, first and third
+          rows (c = 0 and c = 2) refer to the same kind of general operation.
+          Load, store and transfer instructions as well as comparisons are typically
+          found in the lower half of the table, while most of the arithmetical and
+          logical operations as well as stack and jump instructions are found in the
+          upper half. (However, mind the exception of SBC as a "mirror" of ADC.)
+                a         c                                                                b
+                                         0               1           2            3                  4            5             6             7
+                          0      $00   BRK impl                 $08 PHP impl                 $10   BPL rel                 $18 CLC impl
+                0         1      $01   ORA X,ind    $05 ORA zpg $09 ORA #    $0D ORA abs     $11   ORA ind,Y $15 ORA zpg,X $19 ORA abs,Y $1D ORA abs,X
+                          2                         $06 ASL zpg $0A ASL A    $0E ASL abs                     $16 ASL zpg,X               $1E ASL abs,X
+                          0      $20   JSR abs      $24 BIT zpg $28 PLP impl $2C BIT abs     $30   BMI rel                 $38 SEC impl
+
+---
+Additional information can be found by searching:
+- "illegal_opcodes_mechanism_and_race_conditions" which expands on context on hardware-specific undocumented behaviors

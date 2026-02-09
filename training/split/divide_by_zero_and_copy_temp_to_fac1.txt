@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Divide-by-zero error handling and result finalisation: the divide-by-zero path sets up an error code and jumps to the error routine. The normal return path copies the 4-byte temporary mantissa into FAC1's mantissa bytes and jumps to the FAC1 normalisation/return helper.
+
+                                do "Divide by zero" error
+.,BB8A A2 14    LDX #$14        error $14, divide by zero error
+.,BB8C 4C 37 A4 JMP $A437       do error #X then warm start
+.,BB8F A5 26    LDA $26         get temp mantissa 1
+.,BB91 85 62    STA $62         save FAC1 mantissa 1
+.,BB93 A5 27    LDA $27         get temp mantissa 2
+.,BB95 85 63    STA $63         save FAC1 mantissa 2
+.,BB97 A5 28    LDA $28         get temp mantissa 3
+.,BB99 85 64    STA $64         save FAC1 mantissa 3
+.,BB9B A5 29    LDA $29         get temp mantissa 4
+.,BB9D 85 65    STA $65         save FAC1 mantissa 4
+.,BB9F 4C D7 B8 JMP $B8D7       normalise FAC1 and return
+
+
+---
+Additional information can be found by searching:
+- "divide_ay_by_fac1_core_algorithm" which expands on this is the target for the division routine's final jump or divide-by-zero branch

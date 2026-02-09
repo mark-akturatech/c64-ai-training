@@ -1,0 +1,119 @@
+# byRiclianll - Main certification logic and buffer management. Writes a worst-case binary pattern into the C64 RAM buffer at $0400 (M-W writes), initializes track/sector/counters (T, S, C, A), issues block-allocate (B-A) commands to write the pattern into unallocated sectors, prints progress/status messages, records bad sectors into an error array, and contains the sequence to restore the original BAM image back to the disk to compensate for a block-allocate command bug. Handles cases where all sectors are allocated, and prints summary messages.
+
+
+450  REM  BUFFER 
+
+460  1=0 
+
+470  F0RJ=1T0S 
+
+480  PR I NT# 15," M-W " CHR* ( I ) CHR* ( 4 ) CHR*  <  32 ) 
+
+WRITE* 
+
+490  1=1+32 
+
+500  NEXT J 
+
+510  T=l 
+
+520  S=0 
+
+530  C=0 
+
+540  A=0 
+
+550  PRINT#15, "B-A";o;T;s 
+
+560  INPUT#15,EN*,EM*,ET*,ES* 
+
+570  IFEN*="00"G0T0620 
+
+580  T=VAL(ET*) 
+
+590  IFT=0ANDC=0G0T0760 
+
+600  IFT=0G0T0800 
+
+610  S=VAL(ES*) 
+
+620  T*=RIGHT*<"0"+RIGHT*(STR*(T) ,LEN(STR 
+*(T) >-l> ,2) 
+
+630  S*=R I GHT* ( " O " +R I GHT*  <  STR*  <  S ) , LEN ( STR 
+*<S) )-l> ,2) 
+640  C=C+1 
+
+650  IFC=1THENPRINT"<:UP> 
+
+660  PRINT#15, "B-A";o;t;s 
+
+670  PRINT" t HOME X DOWN  6><RVS>CERTIFYING< 
+ROFF>   TRACK   " ; T*; "   -  SECTOR   " ; S* 
+6S0  PRINT" CDOWN>NUMBER  OF  SECTORS  CERTIF 
+lED  :";c 
+
+690  PRINT"  <:D0WN> NUMBER  OF  BAD  SECTORS  AL 
+
+LOCATED: A 
+
+700  60SUB1030 
+
+710  IFE=1G0T0550 
+
+720  A=A+1 
+
+730  T7-(A)=T 
+
+
+92 
+
+
+740  S7.(A>=S 
+750  G0T0550 
+760  CLOSE 15 
+
+770  PRINT"  <:D0WN>  ALL  SECTORS  HAVE  BEEN  AL 
+LOCATED" 
+
+780  PRINT"  <:down> <:rvs>failed<:roff>  " 
+
+790  END 
+800  1=0 
+810  F0RJ=1T06 
+
+820  PR I NT# 15," M-W " CHR$ ( I >  CHR* ( 4  >  CHR$ ( 32  > 
+MID*(BAM*, 1+1,32) 
+830  1=1+32 
+840  NEXT J 
+
+850  PR I NT# 1 5 , " M-W " CHR* ( 1 92 ) CHR* ( 4  >  CHR$ ( 3 
+2) NULL* 
+
+860  PR I NT# 15," M-W " CHR*  < 224 ) CHR* ( 4 ) CHR* ( 3 
+
+2) NULL* 
+
+870  T=18 
+
+880  S=0 
+
+890  G0SUB1030 
+
+900  PRINT»15, "10" 
+
+910  INPUT#15,EN*,EM*,ET*,ES* 
+
+920  IFAO0G0T0960 
+
+930  CLOSE 15 
+
+940  PRINT" ^DOWN>NO  BAD  SECTORS!" 
+
+950  END 
+
+---
+Additional information can be found by searching:
+- "read_bam_and_dos_check" which expands on uses the BAM snapshot read earlier to restore after certification
+- "job_queue_and_subroutines" which expands on uses disk subroutines (seek/write) and job-queue logic referenced later
+- "annotated_line_range_summary" which expands on includes mapping to the program line annotations (e.g., write buffer, block-allocate, error array)

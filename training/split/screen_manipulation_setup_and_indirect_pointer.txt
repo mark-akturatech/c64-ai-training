@@ -1,0 +1,58 @@
+# MACHINE - Setup for screen manipulation: choose line length (e.g., $28 for 40 columns) and screen page (PET/CBM $8000 or VIC/64 from $0288); store screen start address low/high into zero-page locations (e.g., $00BB/$00BC). Initialize X as line counter and prepare to loop over lines. Example code storing values and setting indirect pointer low byte to zero.
+
+varies between different machines--it might be 22 or 40 or 80 columns.
+
+No problem.  If you have a 40-column machine, 40 equals $28; code
+
+  .A 033C  LDA #$28
+
+For a 22-column machine, change the above to LDA #$16; and for an 80-column
+PET, code LDA #$50.
+
+Have you coded the correct value?  Let's proceed with our next decision.  In
+the PET/CBM, screen memory starts at address $8000; in VIC or Commodore 64,
+the screen starts at whatever page is designated in address $0288.  Let's
+code as follows:
+
+  PET/CBM:           .A 033E  LDX #$80
+                     .A 0340  NOP
+
+  VIC/Commodore 64:  .A 033E  LDX $0288
+
+The NOP instruction does nothing, but it makes the coding the same length so
+that we may continue with address $0341 in either case.  The A register tells
+us our line length, and the X register tells us the page number on which the
+screen starts.  Let's put them away.  The line length will be needed for
+addition later, so we may put it anywhere safe; the screen address will be
+part of an indirect address, so it must go into zero-page.
+
+                                                                         :86:
+
+It's hard to find a zero-page address that may be used in all Commodore
+machines; we'll choose $00BB and $00BC.  $BB contains the low byte of the
+address, of course.  Let's code
+
+  .A 0341  STA $03A0
+  .A 0344  STX $BC
+
+Note that we are using zero-page addressing mode for the instruction at
+address $0344.  That puts the high byte of the address in place.  Now we'll
+set the low byte to zero:
+
+  .A 0346  LDA #$00
+  .A 0348  STA $BB
+
+Our indirect address is now pointing at the start of screen memory.  Let's
+discuss in more detail what we want to do with the screen.  Specifically, we
+want to change a number of lines, let's say 14, on the screen.  We will step
+along our indirect address by adding to the indirect address:  maybe 22,
+maybe 40, maybe 80; whatever is in address $03A0.  And we won't do the whole
+line; we'll start in column 5 and go to column 18.  Let's count the lines in
+the X register; we'll start X at zero.
+
+  .A 034A  LDX #$00
+
+
+---
+Additional information can be found by searching:
+- "zero_page_management_hunt" which expands on choose safe zero-page addresses for indirect pointers

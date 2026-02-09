@@ -1,0 +1,36 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Search the directory buffer for duplicate entries and prepare a device write: loads X from $9F and compares it to $9E (end pointer). If not equal, it compares the entry at $0100/0101+X against $AC/$AD (the new filename bytes). On match it increments $9F (twice) to advance and then checks $93/$BD for further conditions; if the in-memory comparison indicates a new value, it loads Y from $B6 and performs STA ($AC),Y to write the byte into the buffer. If no conflicts remain it will call $FCDB (device write helper) next.
+
+.,FB08 A6 9F    LDX $9F
+.,FB0A E4 9E    CPX $9E
+.,FB0C F0 35    BEQ $FB43
+.,FB0E A5 AC    LDA $AC
+.,FB10 DD 00 01 CMP $0100,X
+.,FB13 D0 2E    BNE $FB43
+.,FB15 A5 AD    LDA $AD
+.,FB17 DD 01 01 CMP $0101,X
+.,FB1A D0 27    BNE $FB43
+.,FB1C E6 9F    INC $9F
+.,FB1E E6 9F    INC $9F
+.,FB20 A5 93    LDA $93
+.,FB22 F0 0B    BEQ $FB2F
+.,FB24 A5 BD    LDA $BD
+.,FB26 A0 00    LDY #$00
+.,FB28 D1 AC    CMP ($AC),Y
+.,FB2A F0 17    BEQ $FB43
+.,FB2C C8       INY
+.,FB2D 84 B6    STY $B6
+.,FB2F A5 B6    LDA $B6
+.,FB31 F0 07    BEQ $FB3A
+.,FB33 A9 10    LDA #$10
+.,FB35 20 1C FE JSR $FE1C
+.,FB38 D0 09    BNE $FB43
+.,FB3A A5 93    LDA $93
+.,FB3C D0 05    BNE $FB43
+.,FB3E A8       TAY
+.,FB3F A5 BD    LDA $BD
+.,FB41 91 AC    STA ($AC),Y
+
+---
+Additional information can be found by searching:
+- "store_name_bytes_into_directory_buffer_and_update_counters" which expands on examines the just-written $0100..$0101 entries for duplicates
+- "finalize_write_compute_xor_and_cleanup" which expands on successful checks lead to JSR $FCDB which is handled in the finalization step

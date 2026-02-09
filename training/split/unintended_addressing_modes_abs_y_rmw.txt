@@ -1,0 +1,94 @@
+# NMOS 6510 - Unintended addressing modes: absolute,Y indexed R-M-W sequence for several undocumented opcodes (DCP, ISC, RRA, RLA, SLO, SRE) showing the 7-cycle timing and detailed per-cycle bus operations (PC/opcode fetch, address low/high fetch, read before high-byte correction, two reads of old data and final write). Simulation link provided and note that legal equivalent is Absolute X Indexed R-M-W for certain instructions.
+
+W
+
+7
+
+AA + Y
+
+New Data
+
+W
+
+Simulation Link: http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=22&d=a0d0db10eaeaeaeaeaeaeaeaeaeaeaea1280
+equivalent legal mode: Absolute X Indexed (R-M-W)
+• 3 bytes, 7 cycles
+ASL abs, x
+
+DEC abs, x
+
+df lo hi
+ff lo hi
+7f lo hi
+3f lo hi
+1f lo hi
+5f lo hi
+
+DCP abs, x
+ISC abs, x
+RRA abs, x
+RLA abs, x
+SLO abs, x
+SRE abs, x
+
+Cycle
+
+INC abs, x
+
+LSR abs, x
+
+ROL abs, x
+
+Address-Bus
+
+ROR abs, x
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+PC + 2
+
+Absolute Address High
+
+R
+
+4
+
+< AAH, AAL + X >
+
+Byte at target address before high byte was corrected R
+
+5
+
+AA + X
+
+Old Data
+
+R
+
+6
+
+---
+Additional information can be found by searching:
+- "dcp_opcode_variants_table" which expands on DCP appears in this unintended addressing mode mapping
+- "isc_opcode_variants_and_examples" which expands on ISC appears in this unintended abs,Y R-M-W mapping

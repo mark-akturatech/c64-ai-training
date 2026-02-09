@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Details on instruction table layout and mapping bits to groups: explanation of a-b-c (aaabbbcc) mapping to opcode binary, examples (ROR row mapping), and several tabular views showing the opcode map grouped by c then a then b. Table highlights where operations and addressing modes are placed. Notes about empty columns when c=3 and layout exceptions where c=0,2 and b selects groups (branch, set flag).
+
+          The overflow flag has no meaning in decimal mode.
+          Multi-byte operations are just as in decimal mode: We first prepare the carry
+          and then chain operations of the individual bytes in increasing value order,
+          starting with the lowest value pair.
+          (It may be important to note that Western Design Center (WDC) version of
+          the processor, the 65C02, always clears the decimal flag when it enters an
+          interrupt, while the original NMOS version of the 6502 does not.)
+          6502 Jump Vectors and Stack Operations
+          The 256 bytes processor stack of the 6502 is located at $0100 ... $01FF in
+          memory, growing down from top to bottom.
+          There are three 2-byte address locations at the very top end of the 64K address
+          space serving as jump vectors for reset/startup and interrupt operations:
+            $FFFA, $FFFB ... NMI (Non-Maskable Interrupt) vector
+            $FFFC, $FFFD ... RES (Reset) vector
+            $FFFE, $FFFF ... IRQ (Interrupt Request) vector
+          As an interrupt occurs, any instruction currently processed is completed first.
+          Only then, the value of the program counter (PC) is put in high-low order onto
+          the stack, followed by the value currently in the status register, and control
+          will be transferred to the address location found in the respective interrupt
+          vector. The registers stored on the stack are recovered at the end of an
+          interrupt routine, as control is transferred back to the interrupted code by
+          the RTI instruction.
+                                                                     6502 Instruction Set
+                                ADDRESS           MEMORY
+                               ADH   ADL   MNEMONIC OP CODE  LOW MEMORY
+                              0  1  0   E                       SP AFTER IRQ OR NMI
+                                                                BUT BEFORE RTI
+                              0  1  0   F   STATUS       •
+                              0  1  1   0     PCL       02
+                              0  1  1   1     PCH       03      SP BEFORE IRQ OR NMI
+                                                                AND AFTER RTI
+                              0  1  1   2
+                                                       STACK
+                                                               PC AT TIME OF IRQ OR
+                  PC          0  3  0   0                      NMI · THIS INSTRUCTION
+                              0  3  0   1                      WILL COMPLETE BEFORE
+                                                               INTERRUPT IS SERVICED
+                              0  3  0   2                      PC AFTER RTI
+                              0  4  0   5      •               INTERRUPT SERVICE
+                                                               MAIN BODY
+                              0  4  0   6      •
+                              0  4  0   7     RTI       40     RETURN FROM
+                                                               INTERRUPT
+                              F  F  F   A     ADL
+                                                               NMI VECTOR
+                              F  F  F   B     ADH
+                              F  F  F   C     ADL
+                                                               RES VECTOR
+                              F  F  F   D     ADH
+                              F  F  F   E     ADL       05
+                                                               IRQ VECTOR
+                              F  F  F   F     ADH       04
+                                                             HIGH MEMORY
+                               IRQ, NMI, RTI, BRK OPERATION
+                (Reset after: MCS6502 Instruction Set Summary, MOS Technology, Inc.)
+          Similarly, as a JSR instruction is encountered, PC is dumped onto the stack
+          and recovered by the RTS instruction. (Here, the value stored is actually the
+          address before the location, the program will eventually return to. Thus, the
+          effective return address is PC+1.)
+                                                                     6502 Instruction Set
+
+---
+Additional information can be found by searching:
+- "illegal_opcodes_revisited" which expands on how illegal opcodes map into the table and why they arise

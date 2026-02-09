@@ -1,0 +1,114 @@
+# COMMODORE 64 - COMMODORE 64 Memory Map (part 1): Table header and the beginning of the memory map including zero page addresses $0000-$0030 and key zero-page variables (e.g., D6510 $0000 data-direction register, R6510 $0001 on-chip I/O port), floating/integer convert vectors at $0003-$0006, CHRGET entry and early zero-page workspace. Lists labels and brief descriptions covering addresses through INDEX, TXTTAB, VARTAB and other early zero-page pointers.
+
+  COMMODORE 64 MEMORY MAP
+
+             HEX        DECIMAL
+   LABEL   ADDRESS      LOCATION               DESCRIPTION
+  -------------------------------------------------------------------------
+
+  D6510   0000            0        6510 On-Chip Data-Direction Register
+  R6510   0001            1        6510 On-Chip 8-Bit Input/Output Register
+          0002            2        Unused
+  ADRAY1  0003-0004       3-4      Jump Vector: Convert Floating-Integer
+
+
+
+  310   BASIC TO MACHINE LANGUAGE
+~
+
+
+             HEX        DECIMAL
+   LABEL   ADDRESS      LOCATION               DESCRIPTION
+  -------------------------------------------------------------------------
+
+  ADRAY2  0005-0006       5-6      Jump Vector: Convert Integer--Floating
+  CHARAC  0007            7        Search Character
+  ENDCHR  0008            8        Flag: Scan for Quote at End of String
+  TRMPOS  0009            9        Screen Column From Last TAB
+  VERCK   000A           10        Flag: 0 = Load, 1 = Verify
+  COUNT   000B           11        Input Buffer Pointer / No. of Subscripts
+  DIMFLG  000C           12        Flag: Default Array DiMension
+  VALTYP  000D           13        Data Type: $FF = String, $00 = Numeric
+  INTFLG  000E           14        Data Type: $80 = Integer, $00 = Floating
+  GARBFL  000F           15        Flag: DATA scan/LIST quote/Garbage Coll
+  SUBFLG  0010           16        Flag: Subscript Ref / User Function Call
+  INPFLG  0011           17        Flag: $00 = INPUT, $40 = GET, $98 = READ
+  TANSGN  0012           18        Flag TAN sign / Comparison Result
+          0013           19        Flag: INPUT Prompt
+  LINNUM  0014-0015      20-21     Temp: Integer Value
+  TEMPPT  0016           22        Pointer Temporary String
+  LASTPT  0017-0018      23-24     Last Temp String Address
+  TEMPST  0019-0021      25-33     Stack for Temporary Strings
+  INDEX   0022-0025      34-37     Utility Pointer Area
+
+  INDEX1  0022-0023      34-35     First Utility Pointer.
+  INDEX2  0024-0025      36-37     Second Utility Pointer.
+
+  RESHO   0026-002A      38-42     Floating-Point Product of Multiply
+  TXTTAB  002B-002C      43-44     Pointer: Start of BASIC Text
+  VARTAB  002D-002E      45-46     Pointer: Start of BASIC Variables
+  ARYTAB  002F-0030      47-48     Pointer: Start of BASIC Arrays
+  STREND  0031-0032      49-50     Pointer End of BASIC Arrays (+1)
+  FRETOP  0033-0034      51-52     Pointer: Bottom of String Storage
+  FRESPC  0035-0036      53-54     Utility String Pointer
+  MEMSIZ  0037-0038      55-56     Pointer: Highest Address Used by BASIC
+  CURLIN  0039-003A      57-58     Current BASIC Line Number
+  OLDLIN  003B-003C      59-60     Previous BASIC Line Number
+  OLDTXT  003D-003E      61-62     Pointer: BASIC Statement for CONT
+  DATLIN  003F-0040      63-64     Current DATA Line Number
+  DATPTR  0041-0042      65-66     Pointer: Current DATA Item Address
+  INPPTR  0043-0044      67-68     Vector: INPUT Routine
+  VARNAM  0045-0046      69-70     Current BASIC Variable Name
+
+                                            BASIC TO MACHINE LANGUAGE   311
+~
+
+
+             HEX        DECIMAL
+   LABEL   ADDRESS      LOCATION               DESCRIPTION
+  -------------------------------------------------------------------------
+
+  VARPNT  0047-0048      71-72     Pointer: Current BASIC Variable Data
+  FORPNT  0049-004A      73-74     Pointer: Index Variable for FOR/NEXT
+          004B-0060      75-96     Temp Pointer / Data Area
+
+  VARTXT  004B-004C      75-76     Temporary storage for TXTPTR during
+                                     READ, INPUT and GET.
+  OPMASK  004D           77        Mask used during FRMEVL.
+  TEMPF3  004E-0052      78-82     Temporary storage for FLPT value.
+  FOUR6   0053           83        Length of String Variable during Garbage
+                                     collection.
+  JMPER   0054-0056      84-86     Jump Vector used in Function Evaluation-
+                                     JMP followed by Address ($4C,$LB,$MB).
+  TEMPF1  0057-005B      87-91     Temporary storage for FLPT value.
+  TEMPF2  005C-0060      92-96     Temporary storage for FLPT value.
+  FACEXP  0061           97        Floating-Point Accumulator #1: Exponent
+  FACHO   0062-0065      98-101    Floating Accum. #1: Mantissa
+  FACSGN  0066          102        Floating Accum. #1: Sign
+  SGNFLG  0067          103        Pointer: Series Evaluation Constant
+  BITS    0068          104        Floating Accum. #1: Overflow Digit
+  ARGEXP  0069          105        Floating-Point Accumulator #2: Exponent
+  ARGHO   006A-006D     106-109    Floating Accum. #2: Mantissa
+  ARGSGN  006E          110        Floating Accum. #2: Sign
+  ARISGN  006F          111        Sign Comparison Result: Accum. # 1 vs #2
+  FACOV   0070          112        Floating Accum. #1. Low-Order (Rounding)
+  FBUFPT  0071-0072     113-114    Pointer: Cassette Buffer
+  CHRGET  0073-008A     115-138    Subroutine: Get Next Byte of BASIC Text
+
+  CHRGOT  0079          121        Entry to Get Same Byte of Text Again
+  TXTPTR  007A-007B     122-123    Pointer: Current Byte of BASIC Text
+
+  RNDX    008B-008F     139-143    Floating RND Function Seed Value
+  STATUS  0090          144        Kernal I/O Status Word: ST
+  STKEY   0091          145        Flag: STOP key / RVS key
+  SVXT    0092          146        Timing Constant for Tape
+  VERCK   0093          147        Flag: 0 = Load, 1 = Verify
+  C3PO    0094          148        Flag: Serial Bus-Output Char. Buffered
+  BSOUR   0095          149        Buffered Character for Serial Bus
+  SYNO    0096          150        Cassette Sync No.
+
+  312   BASIC TO MACHINE LANGUAGE
+
+---
+Additional information can be found by searching:
+- "memory_map_part2_zero_page_continued" which expands on Continues zero-page variable listings and floating point workspace

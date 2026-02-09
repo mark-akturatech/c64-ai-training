@@ -1,0 +1,50 @@
+# COMMODORE 64 - BASIC program listing (tok64) used to turn ON the Z-80 and TURN OFF the 6510: program logic and remarks showing storing Z-80 code at $1000 (Z-80 $0000), poking locations to disable 6510 IRQs (POKE 56333,127), enable the Z-80 card (POKE 56832,00), re-enable 6510 IRQs when done (POKE 56333,129), data blocks containing Z-80 machine code and turn-on/turn-off sequences, and an example data section with Z-80 opcodes and a jump to $0000.
+
+
+
+
+
+
+
+
+  370   INPUT/OUTPUT GUIDE
+~
+
+
+    To TURN ON the Z-80 and TURN OFF the 6510 chip, type in the following
+  program:
+
+start tok64 page371.prg
+  10 rem this program is to be used with the z80 card
+  20 rem it first stores z80 data at $1000 (Z80=$0000)
+  30 rem then it turns off the 6510 irq's and enables
+  40 rem the z80 card. the z80 card must be turned off
+  50 rem to reenable the 6510 system.
+  100 rem store z80 data
+  110 read b: rem get size of z80 code to be moved
+  120 for i=4096 to 4096+b-1:rem move code
+  130 read a:poke i,a
+  140 next i
+  200 rem run z80 code
+  210 poke 56333,127: rem turn of 6510 irq's
+  220 poke 56832,00 : rem turn on z80 card
+  230 poke 56333,129: rem turn on 6510 irq's when z80 done
+  240 end
+  1000 rem z80 machine language code data section
+  1010 data 18 : rem size of data to be passed
+  1100 rem z80 turn on code
+  1110 data 00,00,00 : rem our z80 card requires turn on time at $0000
+  1200 rem z80 task data here
+  1210 data 33,02,245: rem ld hl,nn (location on screen)
+  1220 data 52 : rem inc hl (increment that location)
+  1300 rem z80 self-turn off data here
+  1310 data 62,01 : rem ld a,n
+  1320 data 50,00,206 : rem ld (nn),a :i/o location
+  1330 data 00,00,00  : rem nop, nop, nop
+  1340 data 195,00,00 : rem jmp $0000
+stop tok64
+
+---
+Additional information can be found by searching:
+- "expansion_port_signal_descriptions" which expands on Relies on bus control and DMA/IRQ behavior of the expansion bus
+- "z80_memory_address_translation" which expands on The program stores Z-80 code at C64 address $1000 which maps to Z-80 $0000 per the translation table

@@ -1,0 +1,127 @@
+# COMMODORE 64 - Explains per-pixel address calculation in bitmap mode using coordinates (X,Y). Defines ROW = INT(Y/8), CHAR = INT(X/8), LINE = Y AND 7, BIT = 7-(X AND 7). Gives formula BYTE = BASE + ROW*320 + CHAR*8 + LINE. To set a pixel: POKE BYTE, PEEK(BYTE) OR 2^BIT. Also explains organization of bytes in memory for the 25x40 character grid used as bitmap blocks.
+
+
+
+
+    Now RUN the program again. You should see the screen clearing, then the
+  greenish blue color, cyan, should cover the whole screen. What we want to
+  do now is to turn the dots on and off on the HI-RES screen.
+
+
+                                                 PROGRAMMING GRAPHICS   123
+~
+
+
+    To SET a dot (turn a dot ON) or UNSET a dot (turn a dot OFF) you must
+  know how to find the correct bit in the character memory that you have to
+  set to a 1. In other words, you have to find the character you need to
+  change, the row of the character, and which bit of the row that you
+  have to change. You need a formula to calculate this.
+    We will use X and Y to stand for the horizontal and vertical positions
+  of a dot, The dot where X=0 and Y=0 is at the upper-left of the display.
+  Dots to the right have higher X values, and the dots toward the bottom
+  have higher Y values. The best way to use bit mapping is to arrange the
+  bit map display something like this:
+
+
+
+  0. . . . . . . . . . . . . . . . . .X. . . . . . . . . . . . . . . . .319
+
+  .                                                                      .
+
+  .                                                                      .
+
+  .                                                                      .
+
+  .                                                                      .
+
+  Y                                                                      .
+
+  .                                                                      .
+
+  .                                                                      .
+
+  .                                                                      .
+
+  .                                                                      .
+
+  199. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+
+    Each dot will have an X and a Y coordinate. With this format it is easy
+  to control any dot on the screen.
+
+
+
+
+  124   PROGRAMMING GRAPHICS
+~
+
+
+     However, what you actually have is something like this:
+
+
+  ----- BYTE 0   BYTE 8   BYTE 16    BYTE 24 ..................... BYTE 312
+        BYTE 1   BYTE 9      .          .                          BYTE 313
+        BYTE 2   BYTE 10     .          .                          BYTE 314
+        BYTE 3   BYTE 11     .          .                          BYTE 315
+        BYTE 4   BYTE 12     .          .                          BYTE 316
+        BYTE 5   BYTE 13     .          .                          BYTE 317
+        BYTE 6   BYTE 14     .          .                          BYTE 318
+  ----- BYTE 7   BYTE 15     .          .                          BYTE 319
+
+  ----- BYTE 320 BYTE 328 BYTE 336 BYTE 344....................... BYTE 632
+        BYTE 321 BYTE 329    .          .                          BYTE 633
+        BYTE 322 BYTE 330    .          .                          BYTE 634
+        BYTE 323 BYTE 331    .          .                          BYTE 635
+        BYTE 324 BYTE 332    .          .                          BYTE 636
+        BYTE 325 BYTE 333    .          .                          BYTE 637
+        BYTE 326 BYTE 334    .          .                          BYTE 638
+  ----- BYTE 327 BYTE 335    .          .                          BYTE 639
+
+
+    The programmable characters which make up the bit map are arranged in
+  25 rows of 40 columns each. While this is a good method of organization
+  for text, it makes bit mapping somewhat difficult. (There is a good
+  reason for this method. See the section on MIXED MODES.)
+    The following formula will make it easier to control a dot on the bit
+  map screen:
+    The start of the display memory area is known as the BASE, The row
+  number (from 0 to 24) of your dot is:
+
+    ROW = INT(Y/8) (There are 320 bytes per line.)
+
+  The character position on that line (from 0 to 39) is:
+
+    CHAR = INT(X/8) (There are 8 bytes per character.)
+
+  The line of that character position (from 0 to 7) is:
+
+    LINE = Y AND 7
+
+
+
+                                                 PROGRAMMING GRAPHICS   125
+~
+
+
+  The bit of that byte is:
+
+    BIT = 7-(X AND 7)
+
+
+    Now we put these formulas together. The byte in which character memory
+  dot (X,Y) is located is calculated by:
+
+    BYTE = BASE + ROW*320+ CHAR*8 + LINE
+
+
+    To turn on any bit on the grid with coordinates (X,Y), use this line:
+
+  POKE BYTE, PEEK(BYTE) OR 2^BIT
+
+---
+Additional information can be found by searching:
+- "bitmap_example_and_clearing_screen" which expands on BASE and clearing before plotting
+- "sine_curve_bitmap_example" which expands on example plotting using these formulas

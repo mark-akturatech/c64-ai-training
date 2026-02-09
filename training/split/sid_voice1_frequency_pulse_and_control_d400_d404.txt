@@ -1,0 +1,25 @@
+# ********* - SID Voice 1 registers ($D400-$D404): FRELO1/FREHI1 16-bit frequency control with formula (FREQUENCY = REGISTER_VALUE * CLOCK / 16777216), PWLO1/PWHI1 12-bit pulse width (duty cycle relation), Voice 1 Control Register ($D404) bits for gate, sync, ring modulation, test, and waveform selection (triangle/saw/pulse/noise).
+
+To read the fire buttons, you can PEEK the appropriate port and use
+the AND operator to mask all but bit 4:
+
+T1=(PEEK(56321)AND16)/16
+
+The above will return a 0 if the button is pressed, and a 1 if it is
+not.  Substitute location 56320 as the location to PEEK for Trigger
+Button 2.
+
+Since CIA #1 Data Port B is used for reading the keyboard as well as
+joystick 1, some confusion can result.  The routine that checks the
+keyboard has no way of telling whether a particular bit was set to 0
+by a keypress or one of the joystick switches.  For example, if you
+plug the joystick into Controller Port 1 and push the stick to the
+right, the routine will interpret this as the 2 key being pressed,
+because both set the same bit to 0.  Likewise, when you read the
+joystick, it will register as being pushed to the right if the 2 key
+is being pressed.
+
+
+---
+Additional information can be found by searching:
+- "sid_envelope_controls_and_adsr" which expands on ADSR registers control envelope phases for each voice

@@ -1,0 +1,36 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Routine to toggle between text and graphics character sets and to enable/disable the <Shift-CBM> keys. Called by the main output-to-screen routine with A containing a CBM ASCII code on entry. Handles switching to lower/upper case by manipulating VIC memory control ($D018) and enables/disables MODE (<Shift-CBM>) via $0291.
+
+                                *** GRAPHICS / TEXT CONTROL
+                                This routine is used to toggle between text and graphics
+                                character set, and to enable/disable the <shift-CBM> keys.
+                                The routine is called by the main 'output to screen'
+                                routine, and (A) holds a CBM ASCII code on entry.
+.,EC44 C9 0E    CMP #$0E        <switch to lower case>
+.,EC46 D0 07    BNE $EC4F       nope
+.,EC48 AD 18 D0 LDA $D018       VIC memory control register
+.,EC4B 09 02    ORA #$02        set bit1
+.,EC4D D0 09    BNE $EC58       always branch
+.,EC4F C9 8E    CMP #$8E        <switch to upper case>
+.,EC51 D0 0B    BNE $EC5E       nope
+.,EC53 AD 18 D0 LDA $D018       VIC memory control register
+.,EC56 29 FD    AND #$FD        clear bit1
+.,EC58 8D 18 D0 STA $D018       and store
+.,EC5B 4C A8 E6 JMP $E6A8       finish screen print
+.,EC5E C9 08    CMP #$08        <disable <shift-CBM>>
+.,EC60 D0 07    BNE $EC69       nope
+.,EC62 A9 80    LDA #$80
+.,EC64 0D 91 02 ORA $0291       disable MODE
+.,EC67 30 09    BMI $EC72       always jump
+.,EC69 C9 09    CMP #$09        <enable <shift-CBM>>
+.,EC6B D0 EE    BNE $EC5B       nope, exit
+.,EC6D A9 7F    LDA #$7F
+.,EC6F 2D 91 02 AND $0291       enable MODE
+.,EC72 8D 91 02 STA $0291       store MODE, enable/disable shift keys
+.,EC75 4C A8 E6 JMP $E6A8       finish screen print
+
+
+---
+Additional information can be found by searching:
+- "keyboard_table_commodore" which expands on Commodore character set affected by this routine
+- "keyboard_table_control" which expands on control keys that can enable/disable upper/lower switching
+- "video_chip_setup_table" which expands on VIC register $D018 is part of the initial VIC setup

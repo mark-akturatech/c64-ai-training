@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Vendor credit (MOS Technology) and the beginning of '6502 Instructions in Detail' section. Starts ADC instruction detailed opcode table and flags summary (A + M + C -> A, flags N Z C I D V) with addressing forms and opcodes/cycles listing for ADC. Begin AND instruction details following ADC.
+
+           Like with "zero-page,Y" mode, the total instruction length is 2
+           bytes, but there it takes an additional CPU cycles to resolve and
+           index the 16-bit pointer. As with "absolute,X" mode, the effective
+           address may overflow into the next page, in the case of which the
+           execution uses an extra CPU cycle.
+           These instructions are useful, wherever we want to perform lookups
+           on varying bases addresses or whenever we want to loop over tables,
+           the base address of which we have stored in the zero-page.
+                                                                         6502 Instruction Set
+            Mnemonic    Instruction         Lookup             Data
+            LDA ($70),Y    B1 70    $0070: 43 35
+                                                    + = $3553: 23
+                                            Y: 10
+                                                            A: 23
+           Mnemonic Examples:
+           LDA ($70),Y ... add the contents of the Y-register to the pointer provided in
+                            "$0070" and "$0071" and load the contents of this address into A
+           STA ($A2),Y ... store the contents of A in the location given by the pointer
+                            in "$00A2" and "$00A3" plus the contents of the Y-register
+           EOR ($BA),Y ... perform an exlusive OR of the contents of A and the address
+                            given by the addition of Y to the pointer in "$00BA" and "$00BB"
+           Relative Addressing (Conditional Branching)
+           This final address mode is exlusive to conditional branch
+           instructions, which branch in the execution path depending on the
+           state of a given CPU flag. Here, the instruction provides only a
+           relative offset, which is added to the contents of the program
+           counter (PC) as it points to the immediate next instruction. The
+           relative offset is a signed single byte value in two's complement
+           encoding (giving a range of −128…+127), which allows for branching
+           up to half a page forwards and backwards.
+           On the one hand, this makes these instructions compact, fast and
+           relocatable at the same time. On the other hand, we have to mind
+           that our branch target is no farther away than half a memory page.
+           Generally, an assembler will take care of this and we only have to
+           provide the target address, not having to worry about relative
+           addressing.
+           These instructions are always of 2 bytes length and perform in 2 CPU
+           cycles, if the branch is not taken (the condition resolving to
+           'false'), and 3 cycles, if the branch is taken (when the condition
+           is true). If a branch is taken and the target is on a different
+           page, this adds another CPU cycle (4 in total).
+              PC         Mnemonic    Instruction             Target
+            $1000       BEQ $1005       F0 03
+                                                Offset
+            $1002
+                                                +        PC: $1005
+                  PC pointing to next instruction
+           Mnemonic Examples:
+           (Examples are provided in usual assembler format. Mind how these
+           look much like instructions in absolute address mode.)
+                                                                         6502 Instruction Set
+            BEQ $1005 ... branch to location "$1005", if the zero flag is set.
+                          if the current address is $1000, this will give an offset of $03.
+            BCS $08C4 ... branch to location "$08C4", if the carry flag is set.
+                          if the current address is $08D4, this will give an offset of $EE (−$12).
+            BCC $084A ... branch to location "$084A", if the carry flag is clear.
+          Vendor
+          MOS Technology, 1975
+                Image: Wikimedia Commons.
+          6502 Instructions in Detail
+
+---
+Additional information can be found by searching:
+- "adc_and_and_instructions" which expands on ADC opcodes and AND opcodes
+- "instruction_flag_legends" which expands on flag legend and notes on cycle penalties

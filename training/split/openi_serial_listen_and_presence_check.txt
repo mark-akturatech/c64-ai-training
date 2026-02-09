@@ -1,0 +1,35 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OPENI entry: called for serial/IEEE/other device opens. Loads SA and returns if SA not set; checks FNLEN and returns if no filename; clears the serial STATUS byte, issues LISTN (device LA to listen) and SECND calls, examines STATUS to detect remote presence; if device not present, strips return address (PLA PLA) and jumps ERROR5 (device not present).
+
+.,F3D5 A5 B9    LDA $B9         OPENI  LDA SA
+.,F3D7 30 FA    BMI $F3D3       BMI    OP175           ;NO SA...DONE
+                                ;
+.,F3D9 A4 B7    LDY $B7         LDY    FNLEN
+.,F3DB F0 F6    BEQ $F3D3       BEQ    OP175           ;NO FILE NAME...DONE
+                                ;
+.,F3DD A9 00    LDA #$00        LDA    #0              ;CLEAR THE SERIAL STATUS
+.,F3DF 85 90    STA $90         STA    STATUS
+                                ;
+.,F3E1 A5 BA    LDA $BA         LDA    FA
+.,F3E3 20 0C ED JSR $ED0C       JSR    LISTN           ;DEVICE LA TO LISTEN
+                                ;
+.,F3E6 A5 B9    LDA $B9         LDA    SA
+.,F3E8 09 F0    ORA #$F0        ORA    #$F0
+.,F3EA 20 B9 ED JSR $EDB9       JSR    SECND
+                                ;
+.,F3ED A5 90    LDA $90         LDA    STATUS          ;ANYBODY HOME?
+.,F3EF 10 05    BPL $F3F6       BPL    OP35            ;YES...CONTINUE
+                                ;
+                                ;THIS ROUTINE IS CALLED BY OTHER
+                                ;KERNAL ROUTINES WHICH ARE CALLED
+                                ;DIRECTLY BY OS.  KILL RETURN
+                                ;ADDRESS TO RETURN TO OS.
+                                ;
+.,F3F1 68       PLA             PLA
+.,F3F2 68       PLA             PLA
+.,F3F3 4C 07 F7 JMP $F707       JMP    ERROR5          ;DEVICE NOT PRESENT
+                                ;
+
+---
+Additional information can be found by searching:
+- "serial_send_filename" which expands on sends the filename over the serial line when device present and filename length > 0
+- "open_rs232_init_and_param_transfer" which expands on opening RS-232 ports (OPN232) is a related serial open path

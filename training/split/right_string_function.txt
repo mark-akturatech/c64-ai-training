@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Implementation of RIGHT$(): pulls string descriptor and byte parameter (JSR $B761), computes the start offset for the rightmost N characters by subtracting length from the requested byte and inverting, then jumps into the LEFT$ continuation (JMP $B706 / returns to LEFT$ processing) so the same copy/allocation path is used.
+
+                                *** perform RIGHT$()
+.,B72C 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B72F 18       CLC             clear carry for add-1
+.,B730 F1 50    SBC ($50),Y     subtract string length
+.,B732 49 FF    EOR #$FF        invert it (A=LEN(expression$)-l)
+.,B734 4C 06 B7 JMP $B706       go do rest of LEFT$()
+
+
+---
+Additional information can be found by searching:
+- "left_string_function" which expands on continues into LEFT$ processing to perform copy and allocation
+- "pull_string_and_byte_param" which expands on retrieves descriptor and byte parameter (JSR $B761)

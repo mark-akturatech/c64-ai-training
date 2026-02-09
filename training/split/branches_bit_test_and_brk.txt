@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Branch instruction opcodes and details: BCC, BCS, BEQ (opcodes, bytes, cycles). BIT instruction explanation and opcode forms (zeropage and absolute): A AND M -> affects Z and transfer of M7 to N, M6 to V. BRK behavior (software interrupt): pushes PC+2 and SR with break flag set, cycles and opcodes for BRK. Also BMI/BNE/BPL branch entries and their opcodes. Emphasis on flags and conditional branching timing.
+
+              absolute      BIT oper        2C       3      4
+          BMI Branch on Result Minus
+                                                            6502 Instruction Set
+              branch on N = 1                      N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              relative      BMI oper        30      2      2**
+          BNE Branch on Result not Zero
+              branch on Z = 0                      N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              relative      BNE oper        D0      2      2**
+          BPL Branch on Result Plus
+              branch on N = 0                      N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              relative      BPL oper        10      2      2**
+          BRK Force Break
+              BRK initiates a software interrupt similar to a hardware
+              interrupt (IRQ). The return address pushed to the stack is
+              PC+2, providing an extra byte of spacing for a break mark
+              (identifying a reason for the break.)
+              The status register will be pushed to the stack with the break
+              flag set to 1. However, when retrieved during RTI or by a PLP
+              instruction, the break flag will be ignored.
+              The interrupt disable flag is not set automatically.
+              → Further details.
+              interrupt,                           N Z C I D V
+              push PC+2, push SR                   - - - 1 - -
+              addressing    assembler       opc   bytes cycles
+              implied       BRK             00      1      7
+          BVC Branch on Overflow Clear
+              branch on V = 0                      N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              relative      BVC oper        50      2      2**
+          BVS Branch on Overflow Set
+              branch on V = 1                      N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+                                              6502 Instruction Set
+              relative      BVS oper        70      2      2**
+          CLC Clear Carry Flag
+              0 -> C                               N Z C I D V
+                                                   - - 0 - - -
+              addressing    assembler       opc   bytes cycles
+              implied       CLC             18      1      2
+          CLD Clear Decimal Mode
+              0 -> D                               N Z C I D V
+                                                   - - - - 0 -
+              addressing    assembler       opc   bytes cycles
+              implied       CLD             D8      1      2
+          CLI Clear Interrupt Disable Bit
+              0 -> I                               N Z C I D V
+                                                   - - - 0 - -
+              addressing    assembler       opc   bytes cycles
+              implied       CLI             58      1      2
+          CLV Clear Overflow Flag
+              0 -> V                               N Z C I D V
+                                                   - - - - - 0
+
+---
+Additional information can be found by searching:
+- "conditional_branching_and_interrupts" which expands on how these branches interact with flags and cycles
+- "bit_test_and_practical_examples" which expands on BIT examples for flag-testing in practice

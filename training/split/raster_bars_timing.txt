@@ -1,0 +1,19 @@
+# An Introduction to Programming C-64 Demos - Raster bars technique: change $D020 and/or $D021 on each raster line to create coloured bars. Timing critical: create a loop with exact cycle counts (63 cycles PAL, 65 NTSC) to update colours per line; watch sprite fetch interference, page-crossing cycle differences, and use different registers for counting vs table indexing to produce rolling effects.
+
+Raster Bars
+I've already explained the basics of raster bars above: change $d020 and/or $d021 on every line. There are some issues you have to pay attention to to make it work well. You don't actually need a stable raster to make it work, all you need is the correct delay values.
+
+The easiest thing is to do it in the upper or lower border. Then you'll only need to change $d020, and there are no Bad Lines that mess things up for you. All you need to do then is to write a loop that takes 63 cycles to execute (65 if you have an NTSC C-64). In the loop you read a colour value from a table (indexed by the x or y register), increment your index value, change $d020, do a delay, check if your index value has reached a certain value, otherwise branch back to the top. You'll also need to add some delay before the loop, to make it start at the right time.
+
+It might seem a bit complicated to have to count the cycles that different instructions take, but you'll learn it quickly, and it definitely pays off. Of course you'll need some trial and error to get it to work the first times...
+
+Some things can screw up the timing and make instructions take different amounts of cycles. If you're using sprites, they'll steal a few cycles on each line where they're displayed, so don't move sprites over your raster bars, at least not if they're changing Y coordinates. That requires much more timing.
+
+You'll also have to watch the page boundaries. A branch that crosses a page border takes one cycle more to execute than normally. The same goes for indexed addressing modes. Your usual LDA addr,X instruction usually takes 4 cycles. But if addr is eg. $2080, and X is greater than $80, you'll cross the page boundary, and it'll take 5 cycles instead. In some cases it's much better to use a monitor, instead of an assembler, as you know exactly where the page borders are in your code.
+
+By using different registers to count the times you do the loop and to index into the colour table, you can make the colours in the raster bar roll. Or use the same register, and alter the colour table itself each frame.
+
+
+---
+Additional information can be found by searching:
+- "d012_raster_register" which expands on waiting for specific raster lines (via $D012) to start raster bars

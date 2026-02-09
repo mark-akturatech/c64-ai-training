@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - INITAT: CHRGET routine copied into RAM at $0073 on power-up/reset. Implements a character-get loop that increments the TXTPTR low ($7A) and high ($7B) bytes, reads characters from the CHRGOT entry ($EA60), treats colon (':') as terminator and space as skip, and includes numeric character conversion logic using SEC/SBC sequences (subtracting ASCII '0' and an adjusted value). Ends with RTS. This copyable routine is the source for the CHRGET code relocated into zeropage RAM.
+
+                                *** INITAT: CHRGET FOR ZEROPAGE
+                                This is the CHRGET routine which is transferred to RAM
+                                starting at $0073 on power-up or reset.
+.,E3A2 E6 7A    INC $7A         increment <TXTPTR
+.,E3A4 D0 02    BNE $E3A8       skip high byte
+.,E3A6 E6 7B    INC $7B         increment >TXTPTR
+.,E3A8 AD 60 EA LDA $EA60       CHRGOT entry, read TXTPTR
+.,E3AB C9 3A    CMP #$3A        colon (terminator), sets (Z)
+.,E3AD B0 0A    BCS $E3B9
+.,E3AF C9 20    CMP #$20        space, get next character
+.,E3B1 F0 EF    BEQ $E3A2
+.,E3B3 38       SEC
+.,E3B4 E9 30    SBC #$30        zero
+.,E3B6 38       SEC
+.,E3B7 E9 D0    SBC #$D0
+.,E3B9 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "rndsed_random_seed" which expands on RNDSED data that is also copied into zeropage alongside CHRGET
+- "initcz_initialize_basic_ram" which expands on routine that copies this CHRGET into RAM at $0073

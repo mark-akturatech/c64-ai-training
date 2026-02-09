@@ -1,0 +1,106 @@
+# ********* - Kernal RS-232 device-specific routines: CHKOUT/CHKIN/GETIN implementations for RS-232 logical files (61409 $EFE1 CHKOUT entry, 61460 $F014 CHROUT for RS-232, 61517 $F04D CHKIN, 61574 $F086 GETIN). These routines handle defining logical files for RS-232, sending/receiving bytes, checking for buffer empty/overrun and error conditions. Also a routine to stop CIA #2 NMIs for serial/cassette timing-critical operations (61604 $F0A4).
+
+table at 65427 ($FF93).  It sends a secondary address from the
+Accumulator to the device on the serial bus that has just been
+commanded to LISTEN.  This is usually done to give the device more
+particular instructions on how the I/O is to be carried out before
+information is sent.
+
+60871         $EDC7          TKSA
+Send a Secondary Address to a Device on the Serial Bus after TALK
+
+This is a documented Kernal routine that can be entered from the jump
+table at 65430 ($FF96).  It sends a secondary address from the
+Accumulator to the device on the serial bus that has just been
+commanded to TALK.  This is usually done to give the device more
+particular instructions on how the I/O is to be carried out before
+information is sent.
+
+60893         $EDDD          CIOUT
+Send a Byte to an I/O Device over the Serial Bus
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65448 ($FFA8).  Its purpose is to send a byte of data over
+the serial bus.  In order for the data to be received, the serial
+device must have first been commanded to LISTEN and been given a
+secondary address if necessary.  This routine always buffers the
+current character, and defers sending it until the next byte is
+buffered.  When the UNLISTEN command is sent, the last byte will be
+sent with an End or Identify (EOI).
+
+60911         $EDEF          UNTLK
+Send UNTALK to a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry in the jump table is
+65451 ($FFAB).  When called, it sends the UNTALK code (95, $5F) on the
+serial bus.  This commands any TALKer on the bus to stop sending data.
+
+60926         $EDFE          UNLSN
+Send UNLISTED to a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry in the jump table is
+65454 ($FFAE).  It sends the UNLISTEN code (63, $3F) on the serial
+bus.  This commands any LISTENers to get off the serial bus, and frees
+up the bus for other users.
+
+60947         $EE13          ACPTR
+Receive a Byte of Data from a Device on the Serial Bus
+
+This is a documented Kernal routine whose entry point in the jump
+table is 65445 ($FFA5).  When called, it will get a byte of data from
+the current TALKer on the serial bus and store it in the Accumulator.
+In order to receive the data, the device must have previously been
+sent a command to TALK and a secondary address if it needs one.
+
+61061         $EE85
+Set the Serial Clock Line Low (Active)
+
+This subroutine clears the serial bus clock pulse output bit (Bit 4 of
+CIA #2 Data Port A at 56576 ($DD00)).
+
+61070         $EE8E
+Set the Serial Clock Line High (Inactive)
+
+This subroutine sets the serial bus clock pulse output bit to 1 (Bit 4
+of CIA #2 Data Port A at 56576 ($DD00)).
+
+61079         $EE97
+Set Serial Bus Data Output Line Low
+
+This subroutine clears the serial bus data output to 0 (Bit 5 of CIA
+#2 Data Port A at 56576 ($DD00)).
+
+61097         $EEA9
+Get Serial Bus Data Input Bit and Clock Pulse Input Bit
+
+This subroutine reads the serial bus data input bit and clock pulse
+input bit (Bits 7 and 6 of CIA #2 Data Port A at 56576 ($DD00)), and
+returns the data bit in the Carry flag and the clock bit in the
+Negative flag.
+
+61107         $EEB3
+Perform a One-Millisecond Delay
+
+61115         $EEBB
+Send Next RS-232 Bit (NMI)
+
+This subroutine is called by the NMI interrupt handler routine to send
+the next bit of data to the RS-232 device.
+
+61230         $EF2E
+Handle RS-232 Errors
+
+This subroutine sets the appropriate error bits in the status register
+at 663 ($297).
+
+61258         $#F4A
+Set the Word Length For the Current RS-232 Character
+
+This routine takes the number of data bits to send per RS-232
+character from the control register and puts it into the .X register
+for use by the RS-232 routines.
+
+
+---
+Additional information can be found by searching:
+- "serial_bus_kernal_routines_talk_listen_cioout" which expands on higher-level serial bus I/O uses these subroutines

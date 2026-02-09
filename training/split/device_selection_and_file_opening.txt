@@ -1,0 +1,19 @@
+# ********* - Select output device (screen or printer), set default drive variable, and open I/O channels. Shows default d$ assignment, prompts to choose screen (s) or printer (p), handling of jj$ input, prints confirmation of chosen output, and OPEN statements (OPEN 15,8,15 for CBM device, OPEN 4,4, and OPEN 2,8,2 "#") with Gosub 650 for error handling.
+
+ 251 d$="0"
+ 253 print "        {reverse on}s{reverse off}creen{down}{left*8}";\
+     "or {down}{left}{reverse on}p{reverse off}rinter"
+ 254 get jj$:if jj$="" then 254
+ 255 if jj$="s" then print "        {down}{reverse on}screen";\
+     "{reverse off}"
+ 256 if jj$="p" then print "        {down}{reverse on}printer";\
+     "{reverse off}"
+ 260 open 15,8,15,"i"+d$:gosub 650
+ 265 open 4,4
+ 270 open 2,8,2,"#":gosub 650
+
+---
+Additional information can be found by searching:
+- "display_ts_overview_and_constants" which expands on string constants used for prompts and output
+- "load_track_sector_into_disk_buffer" which expands on subsequent disk commands use opened channels
+- "subroutines_header_and_error_routine" which expands on error handling (GOSUB 650)

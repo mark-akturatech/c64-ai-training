@@ -1,0 +1,17 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - START TIMER: Starts CIA#1 timer A and configures CIA#1 control registers to enable IRQ when timer B reaches zero. Sets $DC0D to enable IRQ on timer B, forces load of timer A values by setting bits in $DC0E and jumps to serial clock-off routine at $EE8E to continue serial handling.
+
+                                *** START TIMER
+                                This routine starts the CIA#1 timer and jumps into a
+                                routine that handles the serial clock.
+.,FF6E A9 81    LDA #$81        Enable IRQ when timer B reaches zero
+.,FF70 8D 0D DC STA $DC0D       CIA#1 interrupt control register
+.,FF73 AD 0E DC LDA $DC0E       CIA#1 control register A
+.,FF76 29 80    AND #$80
+.,FF78 09 11    ORA #$11        Force load of timer A values -bit4, and start -bit0
+.,FF7A 8D 0E DC STA $DC0E       Action!
+.,FF7D 4C 8E EE JMP $EE8E       Continue to 'serial clock off'
+
+
+---
+Additional information can be found by searching:
+- "enable_timer" which expands on uses precomputed timer values to start the timer

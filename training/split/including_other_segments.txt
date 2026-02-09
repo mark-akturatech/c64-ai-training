@@ -1,0 +1,22 @@
+# Kick Assembler - Shows including memory blocks from other segments via the 'segments' parameter in .segmentdef (e.g., .segmentdef Combi1 [segments="Code, Data"]). A segment can be included in multiple other segments. Can be combined with adding code or commands inside the segment.
+
+cmp $d012
+bne loop
+inc $d020
+jsr $1003
+dec $d020
+jmp loop
+
+10.11. Boundaries
+It is possible to set a minimum and maximum address of the segment using the 'min' and 'max' parameters. If
+a block gets outside the given boundaries, it will give an error:
+.segment Data [start=$c000, min=$c000, max=$cfff]
+.fill $1800, 0
+
+// Error since range is $c000-$d7ff
+
+In some cases it is useful to ensure a segment have a specific site. By setting the 'fill' parameter to true all non
+
+---
+Additional information can be found by searching:
+- "prg_files_import" which expands on including prg files into segments

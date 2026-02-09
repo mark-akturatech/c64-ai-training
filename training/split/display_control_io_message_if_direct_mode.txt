@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - If control messages are enabled (message-mode flag at $9D), iterate the kernel I/O message table (starts $F0BD), mask high bit, and output each character via the kernel CHROUT vector ($FFD2). Preserves processor status between character outputs and loops until end-of-message.
+
+                                *** display control I/O message if in direct mode
+.,F12B 24 9D    BIT $9D         test message mode flag
+.,F12D 10 0D    BPL $F13C       exit if control messages off
+                                display kernel I/O message
+.,F12F B9 BD F0 LDA $F0BD,Y     get byte from message table
+.,F132 08       PHP             save status
+.,F133 29 7F    AND #$7F        clear b7
+.,F135 20 D2 FF JSR $FFD2       output character to channel
+.,F138 C8       INY             increment index
+.,F139 28       PLP             restore status
+.,F13A 10 F3    BPL $F12F       loop if not end of message
+.,F13C 18       CLC             
+.,F13D 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "kernel_io_message_table" which expands on message text the routine reads and outputs
+- "get_character_from_input_device" which expands on message display is part of higher-level I/O operations

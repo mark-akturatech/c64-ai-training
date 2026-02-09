@@ -1,0 +1,40 @@
+# NMOS 6510 - Example: DCP (zp),y as a compact replacement for LDA (zp),Y / SEC / SBC #1 / STA (zp),Y. Using DCP (zp),y saves bytes and cycles and leaves A untouched while giving a compare for free.
+
+
+- 24 -
+
+Example: decrementing 16bit value with lowbyte in Akku and Carry always set
+
+In the case when you want to decrement a 16bit value with the lowbyte in the akkumulator and
+you need the carry set after the operation, you can also use DCP:
+instead of this:
+; lowbyte is in A, carry is set
+SBC #$01
+BCS +
+; carry is cleared
+DEC highbyte
+SEC
+
+; set carry again
+
++
+you can write this, which saves one byte and two cycles:
+; lowbyte is in A, carry is set
+SBC #$01
+BCS +
+; carry is cleared, Akku is $FF
+DCP highbyte
+
+; since Akku is $FF, the CMP
+; in DCP will set the carry
+
++
+
+Example: simulate extra addressing modes for DEC
+
+If you can afford clobbering the flags (or even use the result of the CMP), DCP turns into DEC and
+makes some addressing modes available that do not exist for regular DEC:
+
+---
+Additional information can be found by searching:
+- "dcp_opcode_variants_table" which expands on DCP (zp),y opcode variant and cycles

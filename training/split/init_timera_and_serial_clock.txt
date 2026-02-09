@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Set up VIA 1 timer A: enable timer A interrupt (#$81 into $DC0D), read $DC0E, mask/load bits to set TOD and load/start timer A, write CRA ($DC0E) with start bits and then jump to set serial clock low ($EE8E).
+
+                                *** ??
+.,FF6E A9 81    LDA #$81        enable timer A interrupt
+.,FF70 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FF73 AD 0E DC LDA $DC0E       read VIA 1 CRA
+.,FF76 29 80    AND #$80        mask x000 0000, TOD clock
+.,FF78 09 11    ORA #$11        mask xxx1 xxx1, load timer A, start timer A
+.,FF7A 8D 0E DC STA $DC0E       save VIA 1 CRA
+.,FF7D 4C 8E EE JMP $EE8E       set the serial clock out low and return
+
+---
+Additional information can be found by searching:
+- "initialise_vic_and_screen_editor" which expands on continues device initialisation

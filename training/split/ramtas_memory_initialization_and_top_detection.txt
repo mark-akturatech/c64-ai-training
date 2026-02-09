@@ -1,0 +1,59 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RAMTAS memory initialization and sizing: zeroes low memory and system/user buffers (RAMTZ loop), allocates tape buffer pointers (TBUFFR/TAPE1), iterates through memory to detect RAM top via $55/$AA test pattern (RAMTBT, RAMTZ1, RAMTZ2 loop), restores original data, and on success calls SETTOP to record detected top-of-memory. Also sets default MEMBOT (MEMSTR) and HIBASE (screen base) values and returns. Covers labels RAMTAS, RAMTZ0..RAMTZ2, RAMTBT, SIZE and the SETTOP call.
+
+                                ; RAMTAS - MEMORY SIZE CHECK AND SET
+                                ;
+.,FD50 A9 00    LDA #$00        RAMTAS LDA #0          ;ZERO LOW MEMORY
+.,FD52 A8       TAY                    TAY             ;START AT 0002
+.,FD53 99 02 00 STA $0002,Y     RAMTZ0 STA $0002,Y     ;ZERO PAGE
+.,FD56 99 00 02 STA $0200,Y            STA $0200,Y     ;USER BUFFERS AND VARS
+.,FD59 99 00 03 STA $0300,Y            STA $0300,Y     ;SYSTEM SPACE AND USER SPACE
+.,FD5C C8       INY                    INY
+.,FD5D D0 F4    BNE $FD53              BNE RAMTZ0
+                                ;
+                                ;ALLOCATE TAPE BUFFERS
+                                ;
+.,FD5F A2 3C    LDX #$3C               LDX #<TBUFFR
+.,FD61 A0 03    LDY #$03               LDY #>TBUFFR
+.,FD63 86 B2    STX $B2                STX TAPE1
+.,FD65 84 B3    STY $B3                STY TAPE1+1
+                                ;
+                                ; SET TOP OF MEMORY
+                                ;
+                                RAMTBT
+.,FD67 A8       TAY                    TAY             ;MOVE $00 TO .Y
+.,FD68 A9 03    LDA #$03               LDA #3          ;SET HIGH INITAL INDEX
+.,FD6A 85 C2    STA $C2                STA TMP0+1
+                                ;
+.,FD6C E6 C2    INC $C2         RAMTZ1 INC TMP0+1      ;MOVE INDEX THRU MEMORY
+.,FD6E B1 C1    LDA ($C1),Y     RAMTZ2 LDA (TMP0)Y     ;GET PRESENT DATA
+.,FD70 AA       TAX                    TAX             ;SAVE IN .X
+.,FD71 A9 55    LDA #$55               LDA #$55        ;DO A $55,$AA TEST
+.,FD73 91 C1    STA ($C1),Y            STA (TMP0)Y
+.,FD75 D1 C1    CMP ($C1),Y            CMP (TMP0)Y
+.,FD77 D0 0F    BNE $FD88              BNE SIZE
+.,FD79 2A       ROL                    ROL A
+.,FD7A 91 C1    STA ($C1),Y            STA (TMP0)Y
+.,FD7C D1 C1    CMP ($C1),Y            CMP (TMP0)Y
+.,FD7E D0 08    BNE $FD88              BNE SIZE
+.,FD80 8A       TXA                    TXA             ;RESTORE OLD DATA
+.,FD81 91 C1    STA ($C1),Y            STA (TMP0)Y
+.,FD83 C8       INY                    INY
+.,FD84 D0 E8    BNE $FD6E              BNE RAMTZ2
+.,FD86 F0 E4    BEQ $FD6C              BEQ RAMTZ1
+                                ;
+.,FD88 98       TYA             SIZE   TYA             ;SET TOP OF MEMORY
+.,FD89 AA       TAX                    TAX
+.,FD8A A4 C2    LDY $C2                LDY TMP0+1
+.,FD8C 18       CLC                    CLC
+.,FD8D 20 2D FE JSR $FE2D              JSR SETTOP
+.,FD90 A9 08    LDA #$08               LDA #$08        ;SET BOTTOM OF MEMORY
+.,FD92 8D 82 02 STA $0282              STA MEMSTR+1    ;ALWAYS AT $0800
+.,FD95 A9 04    LDA #$04               LDA #$04        ;SCREEN ALWAYS AT $400
+.,FD97 8D 88 02 STA $0288              STA HIBASE      ;SET BASE OF SCREEN
+.,FD9A 60       RTS                    RTS
+
+---
+Additional information can be found by searching:
+- "system_start_reset_sequence" which expands on RAMTAS is called during startup to size and initialize RAM
+- "memtop_gettop_settop_and_membot" which expands on uses SETTOP/GETTOP helpers to record the detected top-of-memory
+- "cassette_irq_indirect_table" which expands on tape buffer pointers allocated here correspond to cassette IRQ handling table

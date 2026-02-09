@@ -1,0 +1,40 @@
+# byRiclianll - Describes the block-allocate (B-A) command which marks a sector as 'in use' in the BAM by setting its associated bit low (0) on track 18 sector 0. Syntax: PRINT# file#, "B-A"; drive; track; sector (alternate with colon). Example: PRINT#15, "B-A";0;1;7. Explains valid ranges and cautions that allocated sectors are prevented from being used by normal DOS writes, but can be overwritten via direct-access block-write (U2).
+
+5.8  Block-Allocate  Command  (B-A) 
+
+The  block-allocate  command  allocates  a  sector  in  the  BAM  as  in  use.  A  sector  is  allocated 
+by  setting  its  associated  bit  low  (0)  on  track  18,  sector  0.  (Review  the  coverage  on  bit 
+mapping  in  Chapter  4  if  necessary.)  The  DOS  will  not  write  to  an  allocated  sector  dur- 
+ing a  normal  write  operation  such  as  a  SAVE.  However,  an  allocated  sector  can  be  over- 
+written with  a  block-write  command  (U2).  Hence  the  origin  of  the  term  "direct-access." 
+The  format  of  a  block-allocate  command  is: 
+
+SYNTAX: 
+
+PRINT#  file#,  "B-A";   drive#;   track;  sector 
+ALTERNATE: 
+
+PRINT#  file#,  "B-A:";   drive#;   track;  sector 
+
+EXAMPLE: 
+
+PRINT#15, "B-A";0;  l;7 
+
+where 
+
+file#  =  the  logical  file  number  of  the  command  channel 
+
+drive*  =  0 
+
+track  =  1  to  35 
+
+sector  =  0  to  the  range  for  a  given  track 
+
+The  following  program  allocates  every  sector  on  a  diskette.  Run  this  program  on  a  test 
+diskette. 
+
+
+---
+Additional information can be found by searching:
+- "block_allocate_program" which expands on example program that allocates every sector on a diskette
+- "bam_and_bam_handling_notes" which expands on why BAM must be handled carefully when allocating blocks, directory caveats

@@ -1,0 +1,37 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Compute and prepare tape timing constants used for pulse classification. Uses tape timing min/max bytes ($B0/$B1), performs shifts and additions to form thresholds, saves max byte in $B1. Then polls VIA1 timer B (DC06/DC07) until it reaches a minimum value, adds computed timing, and saves VIA timer A low/high (DC04/DC05). Saves CRA/CRB shadow copy and CRA to shadow ($02A4/$DC0E).
+
+                                *** # set timing
+.,F8E2 86 B1    STX $B1         save tape timing constant max byte
+.,F8E4 A5 B0    LDA $B0         get tape timing constant min byte
+.,F8E6 0A       ASL             *2
+.,F8E7 0A       ASL             *4
+.,F8E8 18       CLC             clear carry for add
+.,F8E9 65 B0    ADC $B0         add tape timing constant min byte *5
+.,F8EB 18       CLC             clear carry for add
+.,F8EC 65 B1    ADC $B1         add tape timing constant max byte
+.,F8EE 85 B1    STA $B1         save tape timing constant max byte
+.,F8F0 A9 00    LDA #$00        
+.,F8F2 24 B0    BIT $B0         test tape timing constant min byte
+.,F8F4 30 01    BMI $F8F7       branch if b7 set
+.,F8F6 2A       ROL             else shift carry into ??
+.,F8F7 06 B1    ASL $B1         shift tape timing constant max byte
+.,F8F9 2A       ROL             
+.,F8FA 06 B1    ASL $B1         shift tape timing constant max byte
+.,F8FC 2A       ROL             
+.,F8FD AA       TAX             
+.,F8FE AD 06 DC LDA $DC06       get VIA 1 timer B low byte
+.,F901 C9 16    CMP #$16        compare with ??
+.,F903 90 F9    BCC $F8FE       loop if less
+.,F905 65 B1    ADC $B1         add tape timing constant max byte
+.,F907 8D 04 DC STA $DC04       save VIA 1 timer A low byte
+.,F90A 8A       TXA             
+.,F90B 6D 07 DC ADC $DC07       add VIA 1 timer B high byte
+.,F90E 8D 05 DC STA $DC05       save VIA 1 timer A high byte
+.,F911 AD A2 02 LDA $02A2       read VIA 1 CRB shadow copy
+.,F914 8D 0E DC STA $DC0E       save VIA 1 CRA
+.,F917 8D A4 02 STA $02A4       save VIA 1 CRA shadow copy
+
+---
+Additional information can be found by searching:
+- "check_flag_interrupt_and_invoke_irq" which expands on this setup is invoked via JSR from the interrupt pre-check
+- "irq_routine_read_t2c_and_compute_difference" which expands on the IRQ routine reads timer values that depend on these timing thresholds

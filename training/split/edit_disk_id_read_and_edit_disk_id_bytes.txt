@@ -1,0 +1,36 @@
+# byRiclianll - Reads the disk ID bytes from the drive buffer: issues PRINT#15,"B-P";2;162 to position the channel pointer to the disk ID offset, then loops to GET#2,B* twice to read two ID bytes. Normalizes each byte (map 0/space to CHR$(0), clear high bit, replace non-printable or quotes with '?' (represented as 63) ), builds the old ID string (ODI*), displays it, prompts the user for a new ID (NDI*), verifies length (1..2 characters), asks for confirmation (Y/N), and pads/truncates the new ID to exactly 2 characters for writing.
+
+360  PRINT#15, "B-P";2; 162 
+370  F0RI=1T02 
+380  GET#2,B* 
+
+390  I FB*= " " THENB*=CHR* ( O ) 
+
+400  A=ASC(B*) 
+
+410  IFA>127THENA=A-128 
+
+420  IFA<320RA>95THENA=63 
+
+430  IFA=34THENA=63 
+
+440  ODI*=ODI*+CHR* (A) 
+
+450  NEXT I 
+
+460  PRINT" CDOWNJ OLD  DISK   ID:  ";ODI* 
+470  INPUT" <DOWN>NEW  DISK  ID";NDI* 
+480  I FLEN ( ND I *  X  >0ANDLEN ( ND I *  X  3G0T0500 
+490  G0T0690 
+
+500  INPUT" CDOWNl ARE  YOU  SURE  (Y/N)  Y^LE 
+FT  3>";Q* 
+
+510  I FQ*<  > " Y " G0T0690 
+
+520  ND I *=LEFT* ( ND I *+CHR* ( O ) , 2 ) 
+
+---
+Additional information can be found by searching:
+- "edit_disk_id_buffer_open_and_dos_version_query" which expands on must open the buffer and confirm DOS version before reading the disk ID
+- "edit_disk_id_write_and_finish_procedure" which expands on writes the validated/padded new ID back into the buffer and commits the block write

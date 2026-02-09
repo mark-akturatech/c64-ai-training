@@ -1,0 +1,36 @@
+# Kick Assembler - Segment modifier plugins: modify memory blocks of a named segment before output (useful for packers, etc.). Example: .file [modify="MyPacker", _start=$2000] A SegmentModifier implements ISegmentModifier with methods: SegmentModifierDefinition getDefinition(); List<IMemoryBlock> execute(List<IMemoryBlock> memoryBlocks, IParameterMap parameters, IEngine engine); SegmentModifierDefinition includes name, allParameters, nonOptionalParameters. Convention: prefix modifier parameters with '_' to avoid collisions (e.g. '_start').
+
+list.add(new MyMacro());
+list.add(new MyModifyer());
+return list;
+}
+}
+
+The following plugin directive will then register both MyMacro and MyModifyer.
+.plugin "test.plugins.archives.MyArchive"
+
+17.5.6. AutoIncludeFile Plugins
+AutoIncludeFile plugins are used to include source code files in archives. It could be that you want to bundle
+a source file containing a depack macro together with a segment modifier that packs a segment.
+AutoIncludeFile plugins have an interface like all other plugins, but in 99% of all cases you can use the standard
+implementation included in the KickAssembler jar. Suppose you have a source file (MyAutoInclude.asm) with a
+macro you want to auto include when importing the archive:
+//FILE: MyAutoInclude.asm
+.macro SetColor(color) {
+lda #color
+sta $d020
+}
+
+Then you put MyAutoInclude.asm in your jar-file in the package 'include' and add an object of the class AutoIncludeFile to your archive. You archive could look like this:
+public class MyArchive implements IArchive{
+@Override
+public List<IPlugin> getPluginObjects() {
+ArrayList<IPlugin> plugins = new ArrayList<>();
+plugins.add(new SomePlugin1());
+plugins.add(new SomePlugin2());
+plugins.add(new AutoIncludeFile("MyArcive.jar",getClass(),"/include/
+
+---
+Additional information can be found by searching:
+- "modifier_plugins_interface" which expands on modifier vs segment modifier differences
+- "imemoryblock_interface" which expands on segment modifiers operate on IMemoryBlock lists

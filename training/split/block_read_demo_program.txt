@@ -1,0 +1,43 @@
+# byRiclianll - Complete BASIC demonstration program that exercises the B-R (block-read) behavior: OPEN 15, PRINT#15, INPUT#15 for error/status, OPEN channel to buffer, a B-R command (PRINT#15 'B-R';...), status checks, B-P pointer reset, a FOR loop with GET# to read buffer bytes, ASCII/ASC printing and printable-character filtering, and cleanup CLOSE/END.
+
+100  REM  BLOCK-READ  (B-R) 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GOTO  300 
+
+150  OPEN  2,8,2, "#" 
+
+160  PRINT#i5, "B-R";2;0; 18;0 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+
+180   IF  EN*<>"00"GOTO  280 
+
+190  PRINT#15, "B-P";2;0 
+
+200  FOR   1=0  TO  255 
+
+210  GET«2,B* 
+
+220   IF  B*=""THEN  B*=CHR*(0) 
+230  A=ASC(B*> 
+240  PRINT  ST, I , A, 
+
+250   IF  A>31   AND  A<96  THEN  PRINT  B*, 
+260  PRINT 
+270  NEXT  I 
+280  CLOSE  2 
+
+290  INPUT#15,EN*,EM*,ET*,ES* 
+300  CLOSE  15 
+310  END 
+
+---
+Additional information can be found by searching:
+- "direct_access_entomology_intro_and_block_read_overview" which expands on illustrates the B-R anomalies described in the overview
+- "block_read_and_block_write_interaction_and_recommendation" which expands on follow-up discussion: how B-R behaves after a B-W rewrite of a sector

@@ -1,0 +1,23 @@
+# MACHINE - Important note about the 6525's Interrupt Stack used to maintain priority interrupt information. Explains that a read of AIR pushes the interrupt stack and a write to AIR pops it; warns against extraneous reads/writes to AIR (should only read AIR to respond to an interrupt and write AIR to signal service completion).
+
+  *------------------------------------------------------------------------*
+  | NOTE:  It was indicated that the 6525 will maintain Priority Interrupt |
+  | information from previously serviced interrupts.                       |
+  |                                                                        |
+  | This is achieved by the use of an Interrupt Stack.  This stack is      |
+  | pushed whenever a read of AIR occurs and is pulled whenever a write to |
+  | AIR occurs.  It is therefore important not to perform any extraneous   |
+  | reads or writes to AIR since this will cause extra and unwanted stack  |
+  | operations to occur.                                                   |
+  |                                                                        |
+  | The only time a read of AIR should occur is to respond to an interrupt |
+  | request.                                                               |
+  |                                                                        |
+  | The only time a write of AIR should occur is to signal the 6525 that   |
+  | the interrupt service is complete.                                     |
+  *------------------------------------------------------------------------*
+
+---
+Additional information can be found by searching:
+- "6525_active_interrupt_register_AIR" which expands on read/write operations affect AIR and the stack
+- "6525_IP1_example_higher_priority_interrupt" which expands on stack usage when nesting interrupts occurs

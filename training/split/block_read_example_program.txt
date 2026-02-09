@@ -1,0 +1,58 @@
+# byRiclianll - Example BASIC program demonstrating U1: open command channel (15), initialize drive, open direct-access channel (GET#2) letting 1541 assign buffer, PRINT#15 "U1";2;0;18;0 to read track 18 sector 0 (BAM) into buffer; use GET#2 to retrieve 256 bytes; convert null strings to CHR$(0) before ASC(); print byte indices and ASCII values and characters within printable range. Illustrates three U1 parameter formats and null handling.
+
+
+
+73 
+
+
+After  a  given  track  and  sector  has  been  transferred  to  a  buffer  with  a  block-read  com- 
+mand (Ul),  the  buffer  pointer  is  automatically  left  in  position  255.  Bytes  0-255  of  the 
+buffer  are  now  accessible  from  the  starting  position,  i.e.,  byte  0.  The  GET#  command 
+is  normally  used  to  retrieve  one  byte  at  a  time  from  the  buffer  by  way  of  the  logical 
+file  number  of  the  direct-access  OPEN  statement.  The  GET#  command  is  used  rather 
+than  INPUT*  because  the  data  may  contain  null  bytes,  carriage  returns  and/or  line  feeds, 
+commas,  colons,  or  other  control  characters.  When  using  the  GET#  command  you  must 
+remember  to  test  each  incoming  byte  for  equality  with  the  null  string  "".  A  null  byte 
+must  be  converted  to  CHR$(0)  or  an  7ILLEGAL  QUANTITY  ERROR  will  result  when 
+you  try  to  find  the  ASCII  value  of  the  byte.  (The  GET#  command  fails  to  make  the 
+necessary  conversion  for  you.)  The  ASCII  value  of  a  byte  is  used  to  check  for  control 
+characters.  These  characters  are  misinterpreted  by  the  INPUT*  command.  The  follow- 
+ing example  reads  the  block  from  track  18,  sector  0  (the  BAM)  into  disk  RAM  and  prints 
+the  contents  to  the  screen. 
+
+100  REM  BLOCK-READ  (Ul) 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "10" 
+
+1 30  I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+
+140  IF  EN*<>"00"GOTO  290 
+
+150  OPEN  2,8,2, 
+
+160  PRINT#15, "Ul";2;o; 18;0 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+180   IF  EN*<>"00"GOTO  270 
+190  FOR   I=0  TO  255 
+200  GET#2,B* 
+
+210   IF  B*=""THEN  B*=CHR*(0) 
+220  A=ASC(B*) 
+230  PRINT  ST, I, A, 
+
+240  IF  A>31  AND  A<96  THEN  PRINT  B*, 
+250  PRINT 
+260  NEXT  I 
+270  CLOSE  2 
+
+280   I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+290  CLOSE  15 
+300  END 
+
+---
+Additional information can be found by searching:
+- "block_read_u1_syntax" which expands on U1 syntax used in the example
+- "block_read_program_explanation" which expands on line-by-line explanation of the sample program

@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - POPEN routine and module end: POPEN (patch for universal KERNAL) calculates BAUDOF (M51AJB-based half-bit rate adjustment) by rotating and adding CBIT-derived offsets, stores BAUDOF and BAUDOF+1, and returns. The file ends with a couple of NOPs and the .END directive. Comments note M51AJB meaning (FREQ/BAUD/2 - 100) and that POPEN is used when configuring RS-232 open behavior.
+
+                                ;
+                                ; POPEN - PATCHES OPEN RS232 FOR UNIVERSAL KERNAL
+                                ;
+.,FF2E AA       TAX             POPEN  TAX             ;WE'RE CALCULATING BAUD RATE
+.,FF2F AD 96 02 LDA $0296              LDA M51AJB+1    ; M51AJB=FREQ/BAUD/2-100
+.,FF32 2A       ROL                    ROL A
+.,FF33 A8       TAY                    TAY
+.,FF34 8A       TXA                    TXA
+.,FF35 69 C8    ADC #$C8               ADC #CBIT+CBIT
+.,FF37 8D 99 02 STA $0299              STA BAUDOF
+.,FF3A 98       TYA                    TYA
+.,FF3B 69 00    ADC #$00               ADC #0
+.,FF3D 8D 9A 02 STA $029A              STA BAUDOF+1
+.,FF40 60       RTS                    RTS
+.,FF41 EA       NOP                    NOP
+.,FF42 EA       NOP                    NOP
+                                .END
+
+---
+Additional information can be found by searching:
+- "baud_table_and_cbit" which expands on POpen computes BAUDOF and BAUDOF+1 that are used along with BAUDO table entries
+- "nmi_prepare_and_t1_transmit" which expands on BAUD/bit timing values computed here affect NXTBIT and transmit timing

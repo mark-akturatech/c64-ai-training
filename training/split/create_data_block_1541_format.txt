@@ -1,0 +1,26 @@
+# byRiclianll - Creates the data block for a 1541 formatted disk sector. Loads the data identifier (LDA #*4B) and writes it into the data area (STA *0500). Uses X indexing (LDX/INX/BNE loop) to fill the buffer at *0500,X with the appropriate data pattern for the format.
+
+780   ;*  CREATE  DATA  * 
+790  ; 
+
+800  LDA  #*4B  ;    1541  FORMAT 
+
+810  STA  *05O0 
+
+820  LDX  4**01  ;    1541  FORMAT 
+
+830  TXA 
+
+840  DATA  STA  *0500, X 
+
+850  INX 
+
+860  BNE  DATA 
+
+870  ; 
+
+
+---
+Additional information can be found by searching:
+- "compute_header_checksum_and_verify" which expands on uses the header validation result before creating the data block
+- "convert_data_to_gcr_with_rom_routines" which expands on data block is converted to GCR encoding in the next stage

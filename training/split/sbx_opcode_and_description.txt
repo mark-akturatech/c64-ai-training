@@ -1,0 +1,71 @@
+# NMOS 6510 - SBX (AXS, SAX, XMA) undocumented opcode ($CB): performs X = (A & X) - imm. Immediate-mode combined effect derived from CMP semantics; sets flags like CMP (N/Z set per X), not affected by decimal mode. Includes opcode byte, size, cycles, and notes on behavior and equivalence attempts.
+
+Example:
+SAX #$5A
+
+;CB 5A
+SBX #$5A
+
+;CB 5A
+
+Equivalent Instructions:
+STA $02
+TXA
+AND $02
+SEC
+SBC #$5A
+TAX
+LDA $02
+
+STA $02
+; save accumulator
+TXA
+; hack because there is no 'AND WITH X'
+AND $02
+; instruction
+CMP #$5A ; set flags like CMP
+PHP
+; save flags
+SEC
+CLD
+; subtract without being affected by
+SBC #$5A ; decimal mode
+Note: MemoryTAX
+location $02 would not be altered by the SAX opcode.
+LDA $02
+; restore accumulator
+PLP
+; restore flags
+Note: SBX is not easily expressed entirely correct using legal opcodes. Memory location $02
+would not be altered by the SBX opcode, and it would not use the stack.
+
+Test code: Lorenz-2.15/sbxb.prg, 64doc/sbx.prg, 64doc/vsbx.prg,
+64doc/sbx-c100.prg
+
+- 35 -
+
+Example: decrement X by more than 1
+
+Sometimes you need/want to decrease the X register by more than one. That is often done by the
+following piece of code:
+TXA
+SEC
+SBC #$xx
+
+;where xx is (obviously) the value
+;to decrease by
+
+TAX
+This procedure takes 8 cycles (and 5 bytes in memory). If the value of the carry flag is always
+known at this point in the code, it can be removed and the snippet would then take 6 cycles (and 4
+bytes in memory). However, you can use SBX like this:
+And the modified code snippet using SBX instead looks like this:
+LDA #$ff
+
+;Next opcode contains a implicit AND with
+;the A register, so turn all bits ON!
+
+
+---
+Additional information can be found by searching:
+- "lax_and_ane_magic_constant" which expands on SBX is a combined immediate opcode similar in spirit to combined A/X ops like LAX

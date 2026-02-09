@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Entry points and initial sign/exponent handling for subtraction operations where FAC1 is subtracted from a memory operand (AY) or from FAC2. Calls the unpack routine to load the memory operand into FAC2, complements FAC1's sign to prepare for subtraction, computes sign comparison (FAC1 EOR FAC2), and begins exponent handling/branching for the subtract path (including a jump into the add/subtract alignment logic and a reference to the right-shift routine when large shifts are needed).
+
+                                *** perform subtraction, FAC1 from (AY)
+.,B850 20 8C BA JSR $BA8C       unpack memory (AY) into FAC2
+
+                                *** perform subtraction, FAC1 from FAC2
+.,B853 A5 66    LDA $66         get FAC1 sign (b7)
+.,B855 49 FF    EOR #$FF        complement it
+.,B857 85 66    STA $66         save FAC1 sign (b7)
+.,B859 45 6E    EOR $6E         EOR with FAC2 sign (b7)
+.,B85B 85 6F    STA $6F         save sign compare (FAC1 EOR FAC2)
+.,B85D A5 61    LDA $61         get FAC1 exponent
+.,B85F 4C 6A B8 JMP $B86A       add FAC2 to FAC1 and return
+.,B862 20 99 B9 JSR $B999       shift FACX A times right (>8 shifts)
+.,B865 90 3C    BCC $B8A3       go subtract mantissas
+
+---
+Additional information can be found by searching:
+- "unpack_memory_operand_for_add" which expands on uses the BA8C unpack routine to load memory(AY) into FAC2
+- "add_fac2_to_fac1_alignment_and_mantissa_operations" which expands on branches/jumps into the main exponent alignment and mantissa add/subtract logic

@@ -1,0 +1,84 @@
+# MACHINE - Indirect, indexed addressing (LDA ($C0),Y): operand is an address in zero page containing a two-byte base address; Y is added to that base to form the effective address. Allows reaching anywhere in memory by setting the indirect pointer and scanning within a chunk with Y. Indirect pointer must be in zero page.
+
+
+
+Data From Anywhere:  Indirect, Indexed
+--------------------------------------
+
+The problems with indexed addressing have been noted:  the reach of only 256
+bytes limits the data capability of this method.
+
+Indirect addressing seems to offer a total solution.  We can write an
+instruction that points at an indirect address.  Since we can change the
+indirect address at will, or add to or subtract from it, we can cause our
+instruction to deal with data anywhere in memory.
+
+In fact, we get a limitation and a bonus.  First, the limitation:  for
+indirect, indexed instructions the indirect address must be in zero-page--two
+bytes, of course, organized low byte first, as always.  Next, the bonus:
+after the indirect address is obtained, it will be indexed with the Y
+register to form the final effective address.
+
+Let's step our way through the mechanism and see how it works.  Suppose I
+code LDA ($C0),Y with values $11 in address $00C0 and $22 in address $00C1.
+If the Y register contains a value of 3, the instruction will follow these
+steps:  The address at $00C0-1 is extracted, giving $2211; then the contents
+of Y are added to give the effective address of $2214.  If the contents of Y
+changed, the effective address would change slightly.  If the indirect
+address at $C0 and $C1 was changed, the effective address would change
+radically.
+
+                                                                         :82:
+
+The combination of indirect and indexing may seem like overkill.  If you can
+designate any location in memory with an indirect address, why bother with
+indexing?  After all, anywhere plus one is still anywhere.
+
+Indirect addressing plus indexing proves to be an ideal combination for the
+manipulation of data.  Almost all data breaks up into logical chunks of some
+sort:  records, table entries, screen lines, words, and so on.  Here's the
+technique.  We position the indirect address at the start of a given logical
+data chunk, and use the Y register to scan through the information.  When
+we're ready to move to the next item, we move the indirect address along, and
+repeat the same scanning of the Y register through the new data.
+
+
+   $00            $FF
+  +-------+---+------+---------------------------------------------------+
+  |       |   |      |              MEMORY                               |
+  +-------+---+------+---------------------------------------------------+
+           ^ |            ^  ^
+           | |            |  |
+           | |            +--'
+           | `------------' Y
+      INDIRECT
+      ADDRESS
+
+  Figure 5.7
+
+
+One may think of it as a fishing analogy:  We anchor the boat in a certain
+spot (fix the indirect address) and then use the fishing line (the Y
+register) to reach the data we need.  When we're ready for the next item, we
+pull up the anchor and move along to a new place.
+
+      .--------------DATA IN MEMORY--------------.
+      |                                          |
+      v                                          v
+     +--------------+--------------+--------------+
+     |  NAME, ETC.  |  NAME, ETC.  |  NAME, ETC.  |
+     +--------------+--------------+--------------+
+      ^              ^              ^
+      |              |              |
+      A              B
+
+     Figure 5.8
+
+
+We'll be working through an elaborate example that uses indirect, indexed
+addressing to manipulate the computer screen.  First, a brief diversion.
+
+---
+Additional information can be found by searching:
+- "indexed_indirect_addressing" which expands on comparison with indexed,indirect (X first) mode
+- "screen_manipulation_setup_and_indirect_pointer" which expands on practical use to manipulate screen memory across pages

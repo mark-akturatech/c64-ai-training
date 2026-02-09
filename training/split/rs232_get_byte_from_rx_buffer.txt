@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Return one byte from the RS-232 receive circular buffer: inspect RS-232 status ($0297) and Rx buffer start/end indices ($029C/$029B), return null if buffer empty (and set Rx-empty bit), otherwise clear empty flag, load the byte via (buffer_ptr), increment start index, and return the byte.
+
+                                *** get byte from RS232 buffer
+.,F086 AD 97 02 LDA $0297       get the RS232 status register
+.,F089 AC 9C 02 LDY $029C       get index to Rx buffer start
+.,F08C CC 9B 02 CPY $029B       compare with index to Rx buffer end
+.,F08F F0 0B    BEQ $F09C       return null if buffer empty
+.,F091 29 F7    AND #$F7        clear the Rx buffer empty bit
+.,F093 8D 97 02 STA $0297       save the RS232 status register
+.,F096 B1 F7    LDA ($F7),Y     get byte from Rx buffer
+.,F098 EE 9C 02 INC $029C       increment index to Rx buffer start
+.,F09B 60       RTS             
+.,F09C 09 08    ORA #$08        set the Rx buffer empty bit
+.,F09E 8D 97 02 STA $0297       save the RS232 status register
+.,F0A1 A9 00    LDA #$00        return null
+.,F0A3 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_input_highlevel_handshake_and_interrupt_control" which expands on called when higher-level checks permit receiving
+- "rs232_device_input_handling_loop" which expands on consumer of this routine when getting device input

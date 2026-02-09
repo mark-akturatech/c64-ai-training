@@ -1,0 +1,48 @@
+# Kick Assembler - Large example showing .segmentdef Code [start=$0900] .segmentdef Data [start=$8000] .file [name="segments.prg", segments="Code,Data", modify="BasicUpstart", marg1=$0900] and multiple named .segment Code "Main", .segment Data "Colors", .segment Code "Text Setup" with text/data separated and memory labels (colors:.byte LIGHT_GRAY,DARK_GRAY; text:.text "hello world!" .byte $ff). Demonstrates placing code and data close in source but separated in memory.
+
+
+$0914-$0924 Text Setup
+Data-segment:
+$8000-$8001 Colors
+$8002-$800e Static Text
+
+The code and data are now separated in memory, but close together in the source code.
+Note that scoping and segments don't affect each other so you can switch segments within a scope. In the above
+its used so the 'text' label is local. It can be seen from textSetup code but not from other routines. If you want to
+have a scroll text routine it could have its own 'text' label and they wouldn't collide.
+
+10.7. The default memory block
+Code placed inside a segment is added to the default memory block until a block is explicitly defined (Not to
+be confused with the 'Default' segment):
+.segment Code [start=$1000]
+inc $d020
+// Places code in the default memoryblock
+jmp *-3
+*=$2000
+inc $d021
+jmp *-3
+
+// Start a new memoryblock
+
+The default memory block is special since it can be controlled by parameters given when the segment is defined.
+Notice the 'start=$1000' parameter that sets the start of the default memory block.
+In some cases you want one segment to start after each other. This is done with the 'startAfter' parameter.
+.segmentdef Code [start=$1000]
+.segmentdef Data [startAfter="Code"]
+
+The ability to control code in this way can be useful, for instance when you want to save memory. If you have
+some initialization code, that is only used once in the upstart phase, then you could place it after the rest of the
+code, and use the same memory for a buffer that is used after the init phase:
+.file [name="program.prg", segments="Code, InitCode"]
+.segmentdef Code
+.segmentdef InitCode
+.segmentdef Buffer
+
+[start=$1000]
+[startAfter="Code"]
+[startAfter="Code"]
+
+---
+Additional information can be found by searching:
+- "naming_memory_blocks_when_switching_segment" which expands on using text names for memblocks
+- "memory_map_and_scope_segments" which expands on resulting memory map

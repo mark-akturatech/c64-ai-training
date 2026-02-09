@@ -1,0 +1,108 @@
+# byRiclianll - Overview and review of a SEEK/READ example using buffer #1. Covers: initializing track (18) and sector (0); issuing SEEK and READ jobs; checking FDC error code; three-parameter memory-read (M-R) of the directory area; concatenating disk name bytes into a printable ASCII representation; setting up try counter and job queue entries; key memory addresses for working buffer #1 ($0400-$04FF), header table track/sector addresses ($0008-$0009), and job-queue job code location ($0001). Also explains job order (SEEK then READ) and introduces the next program which will use buffer #2 ($0500-$05FF) with header addresses $000A/$000B and job-queue location $0002.
+
+
+Line  Range 
+
+Description 
+
+ion  1/in 
+
+r  orce  oi  habit. 
+
+IdU 
+
+Initialize  track  to  18. 
+
+170 
+
+Initialize  sector  to  0. 
+
+180-190 
+
+SEEK  track  18. 
+
+200 
+
+Query  FDC  error  code. 
+
+220-230 
+
+READ  sector  0  on  track  18  into  buffer  number  1 
+
+($0400-$04FF). 
+
+240 
+
+Query  FDC  error  code. 
+
+250 
+
+Three  parameter  memory-read  ($0490-$049F). 
+
+260-340 
+
+Concatenate  the  disk  name  one  byte  at  a  time  by  jam- 
+
+ming it  within  printable  ASCII  range. 
+
+390 
+
+Initialize  try  counter. 
+
+400 
+
+Stuff  the  track  and  sector  number  into  buffer  number  I's 
+
+header  table  ($0008-$0009). 
+
+410 
+
+Stuff  the  job  code  number  into  buffer  number  I's  job 
+
+queue  table  ($0001). 
+
+420-480 
+
+Wait  for  FDC  to  complete  the  job. 
+
+490 
+
+Return  with  FDC  error  code  in  hand. 
+
+Not  much  new  here  except  the  buffer  in  use.  Let's  review  the  key  memory  addresses 
+
+for  working  buffer  number  1  ($0400-$04FF): 
+
+BUFFER  NUMBER  1 
+
+=  $0400  -  $04FF 
+
+TRACK  NUMBER 
+
+=  $0008  (HEADER  TABLE) 
+
+SECTOR  NUMBER 
+
+=  $0009  (HEADER  TABLE) 
+
+JOB  CODE 
+
+=  $0001  (JOB  QUEUE  TABLE) 
+
+While  we're  at  it,  we  might  as  well  review  the  order  of  jobs  for  the  sake  of  posterity. 
+First  SEEK  a  track.  Then  READ  a  sector. 
+
+
+The  next  program  incorporates  four  FDC  job  codes,  namely  a  SEEK,  a  READ,  a 
+WRITE,  and  indirectly  a  VERIFY.  This  routine  is  a  modification  of  the  edit  disk  name 
+program  found  in  the  previous  chapter.  Keep  in  mind  that  we  are  working  buffer  number 
+2  here  ($0500-$05FF).  The  header  table  addresses  are  $000A  for  the  track  and  $000B 
+for  the  sector.  The  job  codes  themselves  will  be  poked  into  location  $0002  in  the  job 
+queue  table. 
+
+
+
+---
+Additional information can be found by searching:
+- "basic_ui_and_device_open_error_check" which expands on BASIC program start: UI, opening device, and initial error check
+- "job_queue_subroutine_and_error_handler" which expands on Job queue mechanics and error handling used by the examples

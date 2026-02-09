@@ -1,0 +1,41 @@
+# COMMODORE 64 - After copying ROM to RAM and setting the character pointer (POKE 53272,(PEEK(53272)AND240)+12), characters on screen come from RAM. Shows how to reverse characters (FOR I=12288 TO 12288+7:POKE I,255-PEEK(I):NEXT) and gives a small table mapping character display codes to their starting locations in RAM when using the 12288 base (e.g., '@' code 0 -> 12288). Notes only first 64 characters were copied in example.
+
+    Now POKE location 53272 with (PEEK(53272)AND240)+12. Nothing happens,
+  right? Well, almost nothing. The Commodore 64 is now getting it's
+  character information from your RAM, instead of from ROM. But since we
+  copied the characters from ROM exactly, no difference can be seen... yet.
+    You can easily change the characters now. Clear the screen and type
+  an @ sign. Move the cursor down a couple of lines, then type:
+
+  FOR I=12288 TO 12288+7:POKE 1,255-PEEK(I):NEXT
+
+  You just created a reversed @ sign!
+
+  +-----------------------------------------------------------------------+
+  | TIP: Reversed characters are just characters with their bit patterns  |
+  | in character memory reversed.                                         |
+  +-----------------------------------------------------------------------+
+
+    Now move the cursor up to the program again and hit <RETURN> again to
+  re-reverse the character (bring it back to normal). By looking at the
+  table of screen display codes, you can figure out where in RAM each
+  character is. Just remember that each character takes eight memory
+  locations to store. Here's a few examples just to get you started:
+
+  110   PROGRAMMING GRAPHICS
+~
+
+
+  +-----------+--------------+--------------------------------------------+
+  | CHARACTER | DISPLAY CODE |      CURRENT STARTING LOCATION IN RAM      |
+  +-----------+--------------+--------------------------------------------+
+  |     @     |       0      |                    1228                    |
+  |     A     |       1      |                   12296                    |
+  |     !     |      33      |                   12552                    |
+  |     >     |      62      |                   12784                    |
+  +-----------+--------------+--------------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "creating_character_patterns_and_worksheet" which expands on how to create custom character patterns in RAM

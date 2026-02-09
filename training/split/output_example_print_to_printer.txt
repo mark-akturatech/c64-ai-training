@@ -1,0 +1,56 @@
+# MACHINE - Step-by-step example: open logical file 1 in BASIC (printer/cassette/disk variants), then in machine code LDX #$01; JSR $FFC9 to switch output to logical file 1; send characters 'H' and 'I' and RETURN using LDA #$48 / JSR $FFD2 etc; finally JSR $FFCC to restore and RTS. Notes the machine code doesn't care which device logical file 1 refers to.
+
+
+The logical file concept is important.  I may send to any destination--
+cassette, printer, disk, or screen--without knowing which device is involved.
+I send the characters on their way and the operating system sees that they
+are delivered wherever they need to go.
+
+This simplifies the machine language programmer's job.  It's a simple task to
+send the characters to some logical channel; the programmer does not need to
+take special coding action depending on which device is involved.
+
+
+Output Example
+--------------
+
+If we wanted to print the message HI on the printer, we might code as
+follows.
+
+First, we'll open the printer channel in BASIC.  Let's use logical file
+number 1:
+
+  100 OPEN 1,4
+  110 SYS 828
+  120 CLOSE 1
+
+If you don't have a printer, you may open the file to cassette (OPEN 1,1,2)
+or to disk (OPEN 1,8,3,"0:DEMO,S,W").  The machine language program won't
+care:  it will sent to logical file number 1 no matter what it is; it might
+even be the screen (OPEN 1,3).  Let's write the coding:
+
+                                                                        :136:
+
+  .A 033C  LDX #$01
+  .A 033E  JSR $FFC9
+
+Now the output is connected to logical file 1.  Let's say HI:
+
+  .A 0341  LDA #$48
+  .A 0343  JSR $FFD2
+  .A 0346  LDA #$49
+  .A 0348  JSR $FFD2
+  .A 034B  LDA #$0D
+  .A 034D  JSR $FFD2
+  .A 0350  JSR $FFCC
+  .A 0353  RTS
+
+Don't forget to send the RETURN--the printer needs it.  After the machine
+language program says HI, the program will return to BASIC and close the
+file.  Notice that the machine language program doesn't care what it's saying
+HI to...it sends the data to logical file 1.
+
+
+---
+Additional information can be found by searching:
+- "input_output_kernal_calls_and_output_switching" which expands on Use of CHKOUT and CHROUT

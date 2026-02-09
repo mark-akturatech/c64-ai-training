@@ -1,0 +1,51 @@
+# byRiclianll - Sample BASIC program 'BLOCK-FREE' that deallocates every sector on a diskette. Includes opening the command channel (OPEN 15,8,15), querying DOS (PRINT#15, "10" and INPUT#15,EN*,EM*,ET*,ES*), opening a direct-access channel (OPEN 2,8,2,"#"), looping tracks 1..35 (skipping track 18 directory), computing per-track sector counts, issuing 'B-F' commands for every sector, counting and printing progress, and closing channels. Also includes a small line-range annotation summarizing key lines (e.g., 150 open direct-access channel; 160 begin track loop; 170 skip directory).
+
+100  REM  BLOCK-FREE 
+
+110  OPEN  15,8, 15 
+
+120  PRINT#15, "lO" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GOTO  260 
+
+150  OPEN  2,8,2, "#" 
+
+160  FOR  T=i   TO  35 
+
+170  IF  T=18  GOTO  240 
+
+180  NS=20+2*(T>17)  +  <T>24)  +  <T:>30) 
+
+190  FOR  S=0  TO  NS 
+
+200  PRINT#15, "B-F";0;t;s 
+
+210  BF=BF+1 
+
+220  PRINT  T,S,BF 
+
+230  NEXT  S 
+
+240  NEXT  T 
+
+250  CLOSE  2 
+
+260  INPUT#15,EN*,EM*,ET*,ES* 
+270  CLOSE  15 
+280  END 
+
+
+Line  Range    Description 
+
+
+150  Open  a  direct-access  channel. 
+
+160  Begin  loop  for  tracks  1  to  35. 
+
+170  Don't  deallocate  the  directory. 
+
+---
+Additional information can be found by searching:
+- "block_free_command_description" which expands on implements the described B-F command to deallocate sectors

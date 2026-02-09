@@ -1,0 +1,118 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Continuous insertion sort (Ocean/SWIV algorithm): maintain a persistent sortorder array between frames and perform localized swaps so sorting cost is proportional to how much sprites move relative to each other. Very fast when sprite order changes little; occasional heavy frames possible. Pseudocode initializes sortorder once (0..N-1) and then walks, performing swaps to insert out-of-order entries. Includes two ASM implementations: typical Ocean variant and a SWIV-adapted variant with zeropage temps and accumulator optimizations. Result is a sorted index array that can be traversed to fill sortsprx/sortspry and reject sprites if needed.
+
+2.1.5 Continuous insertion sorting
+
+This can be found in many Ocean/Imagine games, like Green Beret or Midnight
+Resistance. Similar algorithms are also found in Dragon Breed and SWIV.
+
+This sort routine is different from all previously mentioned. It uses an order-
+array that is not resetted each time, therefore each sorting operation is a
+continuation of the previous and if not much changes have happened (sprites not
+moving past each other in Y-direction much) it will be very fast as it doesn't
+have to do almost anything. However, there's the possibility that on some frame
+it'll eat a lot of time, when there's a lot of changes in the sprite order.
+
+First, performed only once in the beginning of the program, we need to set an
+initial state for the sort order array. One choice is all the sprite numbers
+going from 0 to maximum:
+
+for (sprite = 0; sprite < maximum_sprites; sprite++)
+{
+  sortorder[sprite] = sprite;
+}
+
+Then the sorting routine. Note one curious thing: What if the amount of sprites
+onscreen changes, how can the sortroutine deal with it? Obviously, it can't,
+directly. Therefore we must use for example the maximum Y-coordinate value 255
+to mark unused sprites; these will fall to the bottom of the sorted list when
+sorted and cause no trouble (the actual sprite display code can then easily
+notice the first unused sprite and exit)
+
+sprite1 = 0;
+
+while (true)
+{
+  if (spry[sortorder[sprite1+1]] < spry[sortorder[sprite1]])
+  {
+    sprite2 = sprite1;
+
+    while (true)
+    {
+      swap(sortorder[sprite2], sortorder[sprite2+1]);
+      if (sprite2 == 0) break;
+      sprite2--;
+      if (spry[sortorder[sprite2+1]] >= spry[sortorder[sprite2]]) break;
+    }
+  }
+  sprite1++;
+  if (sprite1 == maximum_sprites - 1) break;
+}
+
+Here's the ASM implementation as found in Ocean games:
+
+                ldx #$00
+sortloop:       ldy sortorder+1,x
+                lda spry,y
+                ldy sortorder,x
+                cmp spry,y
+                bcs sortskip
+                stx sortreload+1
+sortswap:       lda sortorder+1,x
+                sta sortorder,x
+                sty sortorder+1,x
+                cpx #$00
+                beq sortreload
+                dex
+                ldy sortorder+1,x
+                lda spry,y
+                ldy sortorder,x
+                cmp spry,y
+                bcc sortswap
+sortreload:     ldx #$00
+sortskip:       inx
+                cpx #MAXSPR-1
+                bcc sortloop
+
+And here's a variant adapted from SWIV (SWIV sorts the sprites bottom-to-top,
+so the order has been reversed here). This needs a few zeropage temp variables,
+and uses a running compare-value stored in the accumulator for slightly better
+performance.
+
+                ldx #$00
+                txa
+sortloop:       ldy sortorder,x
+                cmp spry,y
+                beq noswap2
+                bcc noswap1
+                stx temp1
+                sty temp2
+                lda spry,y
+                ldy sortorder-1,x
+                sty sortorder,x
+                dex
+                beq swapdone
+swaploop:       ldy sortorder-1,x
+                sty sortorder,x
+                cmp spry,y
+                bcs swapdone
+                dex
+                bne swaploop
+swapdone:       ldy temp2
+                sty sortorder,x
+                ldx temp1
+                ldy sortorder,x
+noswap1:        lda spry,y
+noswap2:        inx
+                cpx #MAX_SPR
+                bne sortloop
+
+This sorting loop produces a sorted index array of the sprites, which can be
+walked through and sprites be copied to the sortsprx, sortspry etc. arrays and
+rejected if necessary. I believe this is the overall best algorithm (for game
+use, at least) I've got to know so far.
+
+
+---
+Additional information can be found by searching:
+- "sprite_arrays_and_terms" which expands on uses sortorder as an index array
+- "mapping_virtual_to_physical_sprites" which expands on sorted order is used to map virtual sprites to physical ones

@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Conditional branch instructions overview (relative addressing, signed 8-bit offsets): BCC, BCS, BEQ, BMI, BNE, BPL, BVC, BVS. Branch behavior: 2 bytes, 2 cycles if not taken, 3 cycles if taken, +1 cycle if page crossed. Jumps & Subroutines: JMP, JSR, RTS (JSR pushes return address, RTS pulls). Interrupts: IRQ and NMI behavior (push PC and SR then vector to respective vectors), BRK behaves similar to NMI but pushes PC+2 and sets break flag on pushed SR. RTI restores SR and PC. Notes on interrupt disable flag and BRK interactions.
+
+           CLC ......... clear the carry flag
+           ROL A ....... rotate contents of accumulator left by one position
+           ROL ......... same as above, implicit notation (A implied)
+           TXA ......... transfer contents of X-register to the accumulator
+           PHA ......... push the contents of the accumulator to the stack
+           RTS ......... return from subroutine (by pulling PC from stack)
+           Mind that some of these instructions, while simple in appearance,
+           may be quite complex operations, like "PHA", which involves the
+           accumulator, the stack pointer and memory access.
+           Immediate Addressing
+           Here, a literal operand is given immediately after the instruction.
+           The operand is always an 8-bit value and the total instruction
+           length is always 2 bytes. In memory, the operand is a single byte
+           following immediately after the instruction code. In assembler, the
+           mode is usually indicated by a "#" prefix adjacent to the operand.
+            Mnemonic    Instruction
+            LDA #7        A9 07
+                          A: 07
+           Mnemonic Examples:
+           LDA #$07 .... load the literal hexidecimal value "$7" into the accumulator
+           ADC #$A0 .... add the literal hexidecimal value "$A0" to the accumulator
+           CPX #$32 .... compare the X-register to the literal hexidecimal value "$32"
+           Absolute Addressing
+           Absolute addressing modes provides the 16-bit address of a memory
+           location, the contents of which used as the operand to the
+           instruction. In machine language, the address is provided in two
+           bytes immediately after the instruction (making these 3-byte
+           instructions) in low-byte, high-byte order (LLHH) or little-endian.
+           In assembler, conventional numbers (HHLL order or big-endian words)
+           are used to provide the address.
+           Absolute addresses are also used for the jump instructions JMP and
+           JSR to provide the address for the next instruction to continue with
+           in the control flow.
+                                                                    6502 Instruction Set
+            Mnemonic      Instruction          Data
+            LDA $3010      AD 10 30     $3010: 34
+                                            A: 34
+           Mnemonic Examples:
+           LDA $3010 ... load the contents of address "$3010" into the accumulator
+           ROL $08A0 ... rotate the contents of address "$08A0" left by one position
+           JMP $4000 ... jump to (continue with) location "$4000"
+           Zero-Page Addressing
+           The 16-bit address space available to the 6502 is thought to consist
+           of 256 "pages" of 256 memory locations each ($00…$FF). In this model
+           the high-byte of an address gives the page number and the low-byte a
+           location inside this page. The very first of these pages, where the
+           high-byte is zero (addresses $0000…$00FF), is somewhat special.
+           The zero-page address mode is similar to absolute address mode, but
+           these instructions use only a single byte for the operand, the low-
+           byte, while the high-byte is assumed to be zero by definition.
+           Therefore, these instructions have a total length of just two bytes
+           (one less than absolute mode) and take one CPU cycle less to
+           execute, as there is one byte less to fetch.
+            Mnemonic    Instruction            Data
+            LDA $80        A5 80        $0080: 34
+                                            A: 34
+           Mnemonic Examples:
+           LDA $80 ..... load the contents of address "$0080" into the accumulator
+           BIT $A2 ..... perform bit-test with the contents of address "$00A2"
+           ASL $9A ..... arithmetic shift left of the contents of location "$009A"
+
+---
+Additional information can be found by searching:
+- "jump_vectors_and_stack_operations" which expands on stack operations during IRQ/NMI/BRK/RTI
+- "branch_addressing_modes" which expands on relative addressing details and page crossing penalties

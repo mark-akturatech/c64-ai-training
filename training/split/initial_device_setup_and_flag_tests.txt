@@ -1,0 +1,28 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Setup and early checks before writing directory entries: calls initialization subroutine ($FB97), stores the result to $9C, sets X to #$DA and calls $F8E2 to prepare buffers. Loads $BE and conditionally stores it into $A7. Tests bits in $AA via BIT $AA / BPL and examines $B5/$B6 counters; may call $FE1C to communicate with the device and sets/clears $AA accordingly. Exits this path with a JMP to $FEBC if certain conditions fail.
+
+.,FA60 20 97 FB JSR $FB97
+.,FA63 85 9C    STA $9C
+.,FA65 A2 DA    LDX #$DA
+.,FA67 20 E2 F8 JSR $F8E2
+.,FA6A A5 BE    LDA $BE
+.,FA6C F0 02    BEQ $FA70
+.,FA6E 85 A7    STA $A7
+.,FA70 A9 0F    LDA #$0F
+.,FA72 24 AA    BIT $AA
+.,FA74 10 17    BPL $FA8D
+.,FA76 A5 B5    LDA $B5
+.,FA78 D0 0C    BNE $FA86
+.,FA7A A6 BE    LDX $BE
+.,FA7C CA       DEX
+.,FA7D D0 0B    BNE $FA8A
+.,FA7F A9 08    LDA #$08
+.,FA81 20 1C FE JSR $FE1C
+.,FA84 D0 04    BNE $FA8A
+.,FA86 A9 00    LDA #$00
+.,FA88 85 AA    STA $AA
+.,FA8A 4C BC FE JMP $FEBC
+
+---
+Additional information can be found by searching:
+- "determine_write_parameters_and_call_device_routine" which expands on continues with branch when BIT $AA indicates negative/overflow
+- "finalize_write_compute_xor_and_cleanup" which expands on overall flow eventually jumps to $FEBC which is the central exit handled later

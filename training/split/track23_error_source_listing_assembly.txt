@@ -1,0 +1,108 @@
+# byRiclianll - Full Track 23 Error assembly source listing (23M.PAL). Contains the human-readable assembly version of the destructive routine: REM headers, OPEN/SYS line references from the BASIC invocation, assembler directives (.OPT, origin *= *0500), and sequential 6502 assembly instructions and labels (LDA, STA, JSR, LDX, BVC, CLV, DEX, TXA, etc.). This listing provides the commented, symbolic representation of the machine-code DATA block and the drive-side routine logic and flow.
+
+
+FULL  TRACK  23  ERROR  SOURCE  LISTING 
+
+
+100  REM  23M.PAL 
+110  REM 
+
+120  0PEN2,8,2, "@0:23M.B,P,W" 
+130  REM 
+140  SYS40960 
+150  ; 
+
+160   .OPT  P,02 
+170  ; 
+
+180  *=  *0500 
+190  ; 
+
+200  LDA  #*04 
+210  STA  *31 
+220  ; 
+
+230  LDA  *3A 
+240  TAX 
+250  INX 
+CKSUM 
+260  TXA 
+270  STA  *3A 
+280  ; 
+
+290  JSR  *F7aF 
+R 
+
+300  JSR  *F510 
+310  ; 
+
+320  LDX  #*08 
+
+330  WAITGAP  BVC  WAITGAP     ;    WAIT  OUT  GAP 
+340  CLV 
+350  DEX 
+
+
+;    INCREMENT  CHE 
+
+
+;   CONVERT  TO  GC 
+
+
+FIND  HEADER 
+
+
+139 
+
+
+360 
+
+BNE 
+
+WAITGAP 
+
+370 
+
+i 
+
+380 
+
+LDA 
+
+#*FF 
+
+390 
+
+STA 
+
+*1C03 
+
+400 
+
+LDA 
+
+*1C0C 
+
+410 
+
+AND 
+
+#*1F 
+
+420 
+
+□RA 
+
+#*C0 
+
+430 
+
+STA 
+
+*1C0C 
+
+
+---
+Additional information can be found by searching:
+- "track23_error_data_bytes" which expands on Exact machine-code bytes (DATA statements) that correspond to this assembly source
+- "job_queue_basic_handshake_and_retry" which expands on BASIC-side code that uploads/invokes the assembly routine on the drive

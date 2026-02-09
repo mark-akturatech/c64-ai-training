@@ -1,0 +1,83 @@
+# ********* - Appendix B continued: Detailed descriptions of DOS error messages (note to ignore numbers <20 except 1), including READ/WRITE error explanations for codes 20–29 (headers, sync, data missing, checksum, decode errors, write-protect, ID mismatch), syntax and file-related errors 30–39, record/file size errors 50–66, and other DOS/drive errors up through 74. Guidance on causes and suggested diagnostics.
+
+
+DESCRIPTION OF DOS ERROR MESSAGES
+
+NOTE: Error message numbers less than 20 should be ignored with the
+exception of 01 which gives information about the number of files
+scratched with the SCRATCH command.
+
+20: READ ERROR (block header not found) -- The disk controller is
+unable to locate the header of the requested data block. Caused by an
+illegal block number, or the header has been destroyed.
+
+21: READ ERROR (no sync character) -- The disk controller is unable to
+detect a sync mark on the desired track. Caused by misalignment of the
+read/writer head, no diskette is present, or unformatted or improperly
+seated diskette. Can also indicate a hardware failure.
+
+22: READ ERROR (data block not present) -- The disk controller has
+been requested to read or verify a data block that was not properly
+written. This error message occurs in conjunction with the BLOCK
+commands and indicates an illegal track and/or block request.
+
+23: READ ERROR (checksum error in data block) -- This error message
+indicates that there is an error in one or more of the data bytes. The
+data has been read into the DOS memory, but the checksum over the data
+is in error. This message may also indicate grounding problems.
+
+24: READ ERROR (byte decoding error) -- The data or header as been
+read into the DOS memory, but a hardware error has been created due to
+an invalid bit pattern in the data byte. This message may also
+indicate grounding problems.
+
+25: WRITE ERROR (write-verify error) -- This message is generated if
+the controller detects a mismatch between the written data and the
+data in the DOS memory.
+
+26: WRITE PROTECT ON -- This message is generated when the controller
+has been requested to write a data block while the write protect
+switch is depressed. Typically, this is caused by using a diskette
+with a write a protect tab over the notch.
+
+27: READ ERROR (checksum error in header) -- The controller has
+detected an error in the header of the requested data block. The block
+has not been read into the DOS memory.  This message may also indicate
+grounding problems.
+
+28: WRITE ERROR (long data block) -- The controller attempts to detect
+the sync mark of the next header after writing a data block. If the
+sync mark does not appear within a predetermined time, the error
+message is generated.  The error is caused by a bad diskette format
+(the data extends into the next block), or by hardware failure.
+
+29: DISK ID MISMATCH -- This message is generated when the controller
+has been requested to access a diskette which has not been initialized.
+The message can also occur if a diskette has a bad header.
+
+30: SYNTAX ERROR (general syntax) -- The DOS cannot interpret the
+command sent to the command channel.  Typically, this is caused by an
+illegal number of file names, or pattems are illegally used. For
+example, two file names may appear on the left side of the COPY
+command.
+
+31: SYNTAX ERROR (invalid command) -- The DOS does not recognize the
+command.  The command must start in the first position.
+
+32: SYNTAX ERROR (invalid command) -- The command sent is longer than
+58 characters.
+
+33: SYNTAX ERROR (invalid file name) -- Pattem matching is invalidly
+used in the OPEN or SAVE command.
+
+34: SYNTAX ERROR (no file given) -- the file name was left out of a
+command or the DOS does not recognize it as such.  Typically, a colon
+(:) has been left out of the command,
+
+39: SYNTAX ERROR (invalid command) -- This error may result if the
+command sent to command channel (secondary address 15) is unrecognized
+
+---
+Additional information can be found by searching:
+- "reading_error_channel_example_and_error_fields" which expands on use the BASIC error-channel reader to obtain the error code plus track and block for diagnosis
+- "validate_command_defragment_and_caution_with_random_files" which expands on some errors (like file open/write or directory errors) are connected to improper file states that VALIDATE can address in some cases

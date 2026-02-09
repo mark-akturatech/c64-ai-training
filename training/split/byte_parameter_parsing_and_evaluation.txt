@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routines for scanning and obtaining byte parameters: a memory-scan helper call (JSR $0073), a 'get byte parameter' entry that evaluates an expression and checks numeric type (JSR $AD8A), and a byte-expression evaluator (JSR $B1B8) that evaluates an integer expression, checks FAC1 mantissa bytes ($64/$65) for null/valid results, and then scans memory/returns (JMP $0079). Used by string functions to parse numeric byte parameters and check for range/type errors.
+
+                                *** scan and get byte parameter
+.,B79B 20 73 00 JSR $0073       increment and scan memory
+
+                                *** get byte parameter
+.,B79E 20 8A AD JSR $AD8A       evaluate expression and check is numeric, else do
+                                type mismatch
+
+                                *** evaluate byte expression, result in X
+.,B7A1 20 B8 B1 JSR $B1B8       evaluate integer expression, sign check
+.,B7A4 A6 64    LDX $64         get FAC1 mantissa 3
+.,B7A6 D0 F0    BNE $B798       if not null do illegal quantity error then warm start
+.,B7A8 A6 65    LDX $65         get FAC1 mantissa 4
+.,B7AA 4C 79 00 JMP $0079       scan memory and return
+
+
+---
+Additional information can be found by searching:
+- "mid_string_function" which expands on uses byte-parameter parsing to retrieve the optional MID length
+- "chr_string_creation" which expands on uses byte-expression evaluator for CHR$ argument
+- "pull_string_and_byte_param" which expands on invoked during parameter parsing and retrieval sequences

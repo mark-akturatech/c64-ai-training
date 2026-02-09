@@ -1,0 +1,52 @@
+# COMMODORE 64 - EXAMPLE PROGRAM 7 (siren) code: sets oscillator 3 to triangle, uses peek(S+27) to modulate voice 1 frequency, shows timing loop and gating. EXAMPLE PROGRAM 8 (hand clap imitation using filtered noise) code: sets noise waveform for voice 1, ADSR for percussion-like envelope, sets filter cutoff and type, uses repeated gated bursts (start/stop noise waveform control) to create clap effect, includes POKE register settings.
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 7:
+
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                         Description                         |
+  +---------+-------------------------------------------------------------+
+  | 10      | Set S to start of sound chip.                               |
+  | 20      | Clear sound chip registers.                                 |
+  | 30      | Set low frequency of voice 3.                               |
+  | 40      | Set triangular waveform voice 3.                            |
+  | 50      | Set high pulse width for voice 1.                           |
+  | 60      | Set volume 15, turn off audio output of voice 3.            |
+  | 70      | Set Sustain/Release for voice I (S=15, R=0).                |
+  | 80      | POKE start pulse waveform control voice 1.                  |
+  | 90      | Set lowest frequency for siren.                             |
+  | 100     | Begin timing loop.                                          |
+  | 110     | Get new frequency using output of oscillator 3.             |
+  | 120     | Get high and low frequencies.                               |
+  | 130     | POKE high.and low frequencies for voice 1.                  |
+  | 140     | End timing loop.                                            |
+  | 150     | Turn off volume.                                            |
+  +---------+-------------------------------------------------------------+
+
+                                          PROGRAMMING SOUND AND MUSIC   205
+~
+
+
+    The noise waveform can be used to provide a wide range of sound
+  effects. This example mimics a hand clap using a filtered noise waveform:
+
+  EXAMPLE PROGRAM 8:
+
+start tok64 page206.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+0,240:pokes+1,33
+  40 pokes+5,8
+  50 pokes+22,104
+  60 pokes+23,1
+  70 pokes+24,79
+  80 forn=1to15
+  90 pokes+4,129
+  100 fort=1to250:next:pokes+4,128
+  110 fort=1to30:next:next
+  120 pokes+24,0
+stop tok64
+
+---
+Additional information can be found by searching:
+- "example6_explanation_and_example7" which expands on relationship between Examples 6 and 7 (modulation)
+- "example8_explanation" which expands on explanation of clap program and why filter + noise produce the effect

@@ -1,0 +1,68 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - ACPTR: RECEIVE FROM SERIAL BUS. KERNAL ACPTR ($FFA5) implementation. Disables interrupts, initializes a countdown ($A5) and sets CLK=1, then uses CIA#1 timer B ($DC07/$DC0F) as a ~65 ms one-shot timeout. If timer B fires, sets ST to read-timeout (#$02) via JSR $FE1C. Tests for EOI and sets ST #$40 (EOF) if present. Receives one byte bit-by-bit into temporary ($A4): waits for bus settle, samples data by ASL/ROR into $A4, repeats 8 times. On EOI returns without transferring the byte; otherwise transfers $A4 to A, re-enables interrupts (CLI), clears C (CLC) to indicate no error, and RTS. Covers timer setup, EOI handling, bit-loop receive, and status-word updates.
+
+                                *** ACPTR: RECIEVE FROM SERIAL BUS
+                                The KERNAL routine ACPTR ($ffa5) points to this routine. A
+                                timing loop is entered using the CIA timer, and if a byte
+                                is not received in 65 ms, ST is set to #$02, ie. a read
+                                timeout. A test is made for EOI and if this occurs, ST is
+                                set to #$40, indicating end of file. The byte is then
+                                received from the serial bus and built up bit by bit in
+                                the temporary store at #$a4. This is transferred to (A) on
+                                exit, unless EOI has occurred.
+.,EE13 78       SEI
+.,EE14 A9 00    LDA #$00
+.,EE16 85 A5    STA $A5         CNTDN, counter
+.,EE18 20 85 EE JSR $EE85       set CLK 1
+.,EE1B 20 A9 EE JSR $EEA9       get serial in and clock
+.,EE1E 10 FB    BPL $EE1B       wait for CLK = 1
+.,EE20 A9 01    LDA #$01
+.,EE22 8D 07 DC STA $DC07       setup CIA#1 timer B, high byte
+.,EE25 A9 19    LDA #$19
+.,EE27 8D 0F DC STA $DC0F       set 1 shot, load and start CIA timer B
+.,EE2A 20 97 EE JSR $EE97       set data 1
+.,EE2D AD 0D DC LDA $DC0D
+.,EE30 AD 0D DC LDA $DC0D       read CIA#1 ICR
+.,EE33 29 02    AND #$02        test if timer B reaches zero
+.,EE35 D0 07    BNE $EE3E       timeout
+.,EE37 20 A9 EE JSR $EEA9       get serial in and clock
+.,EE3A 30 F4    BMI $EE30       CLK 1
+.,EE3C 10 18    BPL $EE56       CLK 0
+.,EE3E A5 A5    LDA $A5         CNTDN
+.,EE40 F0 05    BEQ $EE47
+.,EE42 A9 02    LDA #$02        flag read timeout
+.,EE44 4C B2 ED JMP $EDB2       set I/O status word
+.,EE47 20 A0 EE JSR $EEA0       set data 1
+.,EE4A 20 85 EE JSR $EE85       set CLK 1
+.,EE4D A9 40    LDA #$40        flag EOI
+.,EE4F 20 1C FE JSR $FE1C       set I/O status word
+.,EE52 E6 A5    INC $A5         increment CNTDN, counter
+.,EE54 D0 CA    BNE $EE20       again
+.,EE56 A9 08    LDA #$08        set up CNTDN to receive 8 bits
+.,EE58 85 A5    STA $A5
+.,EE5A AD 00 DD LDA $DD00       serial bus I/O port
+.,EE5D CD 00 DD CMP $DD00       compare
+.,EE60 D0 F8    BNE $EE5A       wait for serial bus to settle
+.,EE62 0A       ASL
+.,EE63 10 F5    BPL $EE5A       wait for data in =1
+.,EE65 66 A4    ROR $A4         roll in received bit in temp data area
+.,EE67 AD 00 DD LDA $DD00       serial bus I/O port
+.,EE6A CD 00 DD CMP $DD00       compare
+.,EE6D D0 F8    BNE $EE67       wait for bus to settle
+.,EE6F 0A       ASL
+.,EE70 30 F5    BMI $EE67       wait for data in =0
+.,EE72 C6 A5    DEC $A5         one bit received
+.,EE74 D0 E4    BNE $EE5A       repeat for all 8 bits
+.,EE76 20 A0 EE JSR $EEA0       set data 1
+.,EE79 24 90    BIT $90         STATUS, I/O status word
+.,EE7B 50 03    BVC $EE80       not EOI
+.,EE7D 20 06 EE JSR $EE06       handshake and exit without byte
+.,EE80 A5 A4    LDA $A4         read received byte
+.,EE82 58       CLI             enable interrupts
+.,EE83 18       CLC             clear carry, no errors
+.,EE84 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "flag_errors" which expands on sets I/O status word (ST) on read timeout or EOI
+- "wait_for_clock" which expands on uses serial clock/data primitives (set CLK/data routines) to sample bits

@@ -1,0 +1,64 @@
+# Analyzing C64 tape loaders - Disassembly: Loader Setup Part 1. Shows instructions that disable interrupts, switch memory ($01), clear CIA#1 mask ($DC0D), clear interrupt latch (read $DC0D), set CIA#1 Timer A latch ($DC04/$DC05) to a threshold ($027C in example), enable only FLAG-line interrupt ($DC0D=$90), write IRQ vector ($FFFE/$FFFF) to point at the loader ISR ($0351), and initialize loop and buffer variables ($02,$03). Ends with jump to Part 2.
+
+
+
+
+==== Disassembly ====
+
+Disassembly of the code stored in the CBM Header and Data files:
+
+<code>
+; ********************************************
+; * Loader Setup-Part 1                      *
+; * Description: Hardware setup instructions *
+; ********************************************
+02A7  78             SEI            ; Disable interrupts, since we are about to
+                                    ; change the vector table at $FFFA-$FFFF, whose
+                                    ; vectors point to 2 Interrupt Service Routines.
+
+02A8  A9 05          LDA #$05       ; Select ROM at $A000       (bit 0)
+02AA  85 01          STA $01        ; and switch in I/O devices (bit 2).
+
+02AC  A9 1F          LDA #$1F       ; CIA #1 Interrupt Control Register reset:
+02AE  8D 0D DC       STA $DC0D      ;  disable Timer A interrupt               (bit 0)
+                                    ;  disable Timer B interrupt               (bit 1)
+                                    ;  disable TOD clock alarm interrupt       (bit 2)
+                                    ;  disable serial shift register interrupt (bit 3)
+                                    ;  disable FLAG line interrupt             (bit 4)
+
+02B1  AD 0D DC       LDA $DC0D      ; Clear Interrupt Latch to prevent servicing
+                                    ; interrupt requests not requested by our program.
+                                    ; This register is clear-on-read.
+
+02B4  A9 7C          LDA #$7C       ; CIA #1 Timer A Latch value setup.
+02B6  8D 04 DC       STA $DC04
+02B9  A9 04          LDA #$04
+02BB  8D 05 DC       STA $DC05      ; (Threshold=$027C clock cycles)
+
+02BE  A9 90          LDA #$90       ; CIA #1 Interrupt Control Register setup:
+02C0  8D 0D DC       STA $DC0D      ;  enable just FLAG line interrupt (bit 4) (1)
+
+; (1) This FLAG line is connected to the Cassette Read line of the Cassette Port.
+;     The interrupt triggers on negative edges.
+
+02C3  A9 51          LDA #$51       ; Maskable Interrupt Request Vector setup:
+02C5  8D FE FF       STA $FFFE      ;  make this vector point to our IRQ handler (ISR)
+02C8  A9 03          LDA #$03       ;  located at $0351, so that the only active
+02CA  8D FF FF       STA $FFFF      ;  Interrupt (FLAG line) will cause its execution
+                                    ;  on request.
+
+02CD  A9 00          LDA #$00       ; Initialization of:
+02CF  85 02          STA $02        ;  loop_break variable (see later)
+02D1  85 03          STA $03        ;  buffer where to build a byte, pulse by pulse.
+
+02D3  EA             NOP
+
+02D4  4C E5 02       JMP $02E5      ; Jump to Part 2
+; ********************************************
+; * Loader Setup-Part 1.END                  *
+; ********************************************
+
+---
+Additional information can be found by searching:
+- "irq_loader_setup_part2_disassembly" which expands on Continues hardware setup (NMI vector, CIA#2 timers)
+- "irq_isr" which expands on ISR referenced by the IRQ vector set here ($0351)

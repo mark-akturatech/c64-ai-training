@@ -1,0 +1,104 @@
+# Kick Assembler - Section 3.4: Label syntax and usage (labels ending with ':'), label-in-argument usage (self-modifying code), multi-labels (!label with + and - to navigate instances), using '*' for current memory location, the .zp directive to mark labels as zeropage, and caveats regarding macros and pseudocommands within .zp blocks.
+
+3.4. Labels, Arguments Labels and Multi Labels
+Label declarations in Kick Assembler end with ‘:’ and have no postfix when referred to, as shown in the
+following program:
+loop:
+
+inc $d020
+inc $d021
+jmp loop
+
+You can put labels in front of mnemonic arguments. This can be useful when creating self modifying code:
+stx tmpX
+...
+ldx tmpX:#$00
+
+Kick Assembler also supports multi labels, which are labels that can be declared more than once. These are
+useful to prevent name conflicts between labels. A multi label starts with a ‘!’ and when your reference it you have
+to end with a ‘+’ to refer to the next multi label or ‘-‘ to refer to the previous multi label:
+
+!loop:
+
+!loop:
+
+ldx #100
+inc $d020
+dex
+bne !loop- // Jumps to the previous instance of !loop
+ldx #100
+inc $d021
+dex
+bne !loop- // Jumps to the previous instance of !loop
+
+or
+ldx #10
+!loop:
+
+!:
+
+jmp !+ // Jumps over the two next nops to the ! label
+nop
+nop
+jmp !+ // Jumps over the two next nops to the ! label
+nop
+nop
+
+!:
+dex
+bne !loop- // Jumps to the previous !loop label
+
+Applying more than one '+' or '-' will skip labels. E.g. '+++' will jump to the third label:
+
+!:
+!:
+!:
+
+jmp !+++ // Jumps to the third '!' label
+nop
+nop
+// <- here!
+
+Another way to avoid conflicting variables is to use user defined scopes, which are explained in the scoping
+section of Chapter 4, Introducing the Script Language.
+
+6
+
+Basic Assembler Functionality
+
+A ‘*’ returns the value of the current memory location so instead of using labels you can write your jumps
+like this:
+// Jumps with '*'
+jmp *
+inc $d020
+inc $d021
+jmp *-6
+// The same jumps with labels
+this:
+jmp this
+!loop:
+
+inc $d020
+inc $d021
+jmp !loop-
+
+When referencing a label that is not yet resolved, the assembler will assume a two byte address, even though it
+later is found to be in the zeropage. You can mark labels as being in the zeropage with the .zp directive:
+// Uses zeropage form of lda and sta eventhough the labels is first
+// resolved later
+lda zpReg1
+sta zpReg2
+*=$10 virtual
+.zp {
+zpReg1: .byte 0
+zpReg2: .byte 0
+}
+
+Note: Currently the .zp directive doesn't handle macros and pseudocommands called within the {}. Labels
+inside these will be in the form defined in the macro.
+
+
+---
+Additional information can be found by searching:
+- "scopes_and_namespaces_scopes" which expands on label visibility and scope rules described in Chapter 9
+- "memory_directives_and_pc_management" which expands on interaction with program counter and memory blocks (*)

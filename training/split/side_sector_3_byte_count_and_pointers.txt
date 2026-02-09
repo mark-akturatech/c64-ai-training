@@ -1,0 +1,23 @@
+# byRiclianll - Analysis of side sector #3 bytes: Byte 1 shows a byte count of 159 ($9F); bytes 16-255 in a side sector are a list of track/sector pointers for up to 120 data blocks; bytes 158 and 159 (interpreted together) point to the last block of the sequential data file (track 23 / $17, sector 12 / $0C); the remainder of the side sector is padded with nulls until the relative file grows. Explains how bytes 160/161 will point to further track/sector pairs, and that when side sector #3 fills, a new side sector #4 is allocated and bytes 0/1 in side sector #3 will then point to side sector #4; additionally bytes 12/13 in side sectors 0–2 will be updated to reflect creation of side sector #4.
+
+Hold  it  right  there  please.  Bytes  0  and  1  should  look  familiar  by  now.  Still  thinking? 
+(Hint:  End  of  chain  and  a  byte  count.) 
+
+.    OO:    OO  9F  03  96   11   OD  OC  13   
+
+
+Byte  1  of  side  sector  3  shows  a  byte  count  of  159  ($9F).  Recall  that  bytes  16-255  in  a 
+side  sector  are  a  list  of  track  and  sector  pointers  to  120  data  blocks.  As  a  result,  bytes 
+158  and  159  must  be  interpreted  together.  They  point  to  the  last  block  in  our  sequential 
+data  file  in  this  instance.  The  last  block  is  stored  on  track  23  ($17),  sector  12  ($0C).  Notice 
+too,  that  the  remainder  of  the  side  sector  is  padded  with  nulls.  The  remaining  96  bytes 
+are  in  limbo  until  our  relative  file  is  expanded.  Bytes  160  and  161  will  then  point  to  the 
+next  track  and  sector  of  data  and  so  on.  When  side  sector  3  is  full,  a  new  side  sector 
+will  be  created.  Bytes  0  and  1  of  side  sector  3  will  then  point  to  side  sector  4.  Bytes 
+12  and  13  in  side  sectors  0,  1,  and  2  will  also  be  updated  to  reflect  the  creation  of  side 
+sector  4. 
+
+---
+Additional information can be found by searching:
+- "track_19_sector_15_side_sector_3_dump" which expands on points being analyzed in the dump
+- "sequential_file_example_track_17_sector_03" which expands on sequential file blocks referenced by the pointers

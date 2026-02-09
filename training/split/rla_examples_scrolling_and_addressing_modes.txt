@@ -1,0 +1,47 @@
+# NMOS 6510 - Practical examples using RLA: (1) 'scroll over a background layer' showing how RLA can replace a ROL+LDA+AND+STA sequence to save cycles and bytes (code sample, cycle/byte comparison: 18 cycles/16 bytes vs 14 cycles/12 bytes). (2) 'simulate extra addressing modes for ROL' — using RLA when clobbering A and flags is acceptable to emulate addressing modes not available to ROL (examples: RLA abs,Y ; RLA (zp),Y ; RLA (zp,X)). Notes that A and N/Z are affected by the AND portion.
+
+
+Example: scroll over a background layer
+
+Lets say you want to create a scroller that moves text over some fixed background graphics.
+Suppose the data of the sliding text is stored at scrollgfx and the data of the fixed background
+at backgroundgfx. The actual data that is displayed is located at buffer.
+Combining the sliding and fixed data without RLA would go something like (for the rightmost
+byte of the top line of the gfx data) this:
+ROL scrollgfx
+LDA scrollgfx
+AND backgroundgfx
+STA buffer
+
+; shift left (with carry)
+; combine with background
+
+… which takes 18 cycles in 16 bytes
+instead you can write:
+LDA backgroundgfx
+RLA scrollgfx
+STA buffer
+
+; shift left and combine with bg
+
+… which takes 14 cycles in 12 bytes
+
+Example: simulate extra addressing modes for ROL
+
+If you can afford clobbering A and the flags (or even use the final value), RLA turns into ROL and
+makes some addressing modes available that do not exist for regular ROL:
+; C is shifted into the LSB
+RLA abs, y
+; like ROL abs, y
+RLA (zp), y
+; like ROL (zp), y
+RLA (zp, x)
+; like ROL (zp, x)
+; A was changed as with additional AND
+; N,Z were set as with additional AND
+
+
+---
+Additional information can be found by searching:
+- "rla_opcodes_and_addressing_modes" which expands on addressing modes and opcode bytes that enable these usage patterns
+- "rla_operation_flags_and_equivalents" which expands on details the combined ROL+AND behavior which these examples exploit

@@ -1,0 +1,102 @@
+# byRiclianll - Section 3.4: Data block layout: SYNC MARK, Data Block ID byte (normally $07), 256 data bytes (DOS uses first two bytes as forward track/sector pointer for chained sectors), Data Block checksum (EOR of all 256 data bytes), two $00 OFF bytes (padding), and the inter-sector (tail) gap. Inter-sector gap length varies by zone and drive (4-12 bytes between sectors typical; longer between last sector and sector 0). Data blocks (including sync) are rewritten whenever data is recorded.
+
+3.4  The  Data  Block 
+
+The  data  block  of  a  sector  stores  the  256  data  bytes  for  this  sector.  It  is  composed  of 
+a  sync  mark,  a  data  block  ID  character,  the  256  bytes  of  data,  a  data  block  checksum 
+byte,  two  off  bytes,  and  an  inter-sector  gap.  The  diagram  below  depicts  the  layout  of 
+a  data  block. 
+
+
+SYNC 
+
+DATA 
+
+2S6 
+
+DATA 
+
+SOO 
+
+$00 
+
+INTER- 
+
+SYNC 
+
+HEADER 
+
+MARK 
+
+BLOCK 
+
+DATA  BYTES 
+
+BLDCK 
+
+BYTE 
+
+BYTE 
+
+SECTDR 
+
+MARK 
+
+BLOCK 
+
+ID 
+
+CHECKSUM 
+
+GAP 
+
+ID 
+
+Let's  examine  the  bytes  that  make  up  the  data  block: 
+
+Sync  mark:  This  consists  of  10  or  more  1  bits  as  previously  described.  It  warns  the 
+DOS  that  either  a  data  block  or  a  header  block  is  coming. 
+
+Data  Block  ID:  This  byte  is  normally  a  $07.  It  serves  to  indicate  to  the  DOS  that  this 
+is  a  data  block  and  not  a  header  block  ($08). 
+
+256  Data  Bytes:  This  is  the  actual  data  stored  in  the  sector.  See  Chapter  4  about  how 
+Commodore  uses  the  first  two  bytes  as  a  forward  track  and  sector  pointer  instead  of 
+actual  data. 
+
+Data  Block  Checksum:  This  is  a  checksum  character  used  by  the  DOS  to  ensure  that 
+the  data  block  was  read  correctly.  It  is  found  by  EORing  all  256  data  bytes  together. 
+
+$00  Bytes:  These  two  bytes  are  also  called  OFF  bytes.  They  are  used  to  pad  a  data 
+block  before  it  is  written.  They  are  not  referenced  again  by  the  DOS. 
+
+
+33 
+
+
+Inter-sector  Gap:  This  is  also  known  as  the  "tail  gap."  Its  purpose  is  to  provide  breathing 
+room  between  the  end  of  the  data  block  and  the  start  of  the  next  sector.  The  length 
+of  the  gap  varies  from  zone  to  zone  and  from  one  drive  to  another  (see  the  chart  in  Sec- 
+tion 7.1).  Between  consectutive  sectors  the  gap  is  normally  4  to  12  bytes  long.  The  gap 
+between  the  last  sector  on  a  track  and  sector  zero  is  often  longer  —  up  to  100  bytes 
+in  length.  The  gap  is  designed  to  be  long  enough  so  that  if  you  write  a  data  block  on 
+a  day  when  your  drive  is  turning  slightly  faster  than  300  rpm,  you  won't  overwrite  the 
+start  of  the  next  sector.  (Your  drive  may  not  be  turning  at  exactly  300  rpm  all  the  time 
+because  of  fluctuations  in  the  power  supplied  to  your  home  or  office,  mechanical  wear, 
+belt  slippage,  changes  in  temperature,  etc.)  Note  that  the  DOS  never  reads  these  bytes. 
+
+The  entire  data  block  (including  the  preceding  sync  mark)  is  rewritten  each  time  data 
+is  recorded  on  a  diskette. 
+
+This  concludes  our  overview  on  how  a  diskette  is  formatted.  Additional  details  about 
+how  bytes  are  encoded  on  the  surface  of  a  diskette  are  provided  in  Section  7.1.  The  ac- 
+tual recording  process  is  described  in  Section  9.7. 
+
+
+34 
+
+
+
+---
+Additional information can be found by searching:
+- "header_block_structure_and_fields" which expands on differences between header and data blocks

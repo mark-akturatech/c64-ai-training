@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Set up a divide-by-10 operation: round and copy FAC1 to FAC2, load pointer to the floating 10 constant (low/high), clear sign, save sign compare and then branch into the generic divide-by-(AY) routine by unpacking (AY) into FAC1 and jumping to the divide routine entry.
+
+                                *** divide FAC1 by 10
+.,BAFE 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BB01 A9 F9    LDA #$F9        set 10 pointer low byte
+.,BB03 A0 BA    LDY #$BA        set 10 pointer high byte
+.,BB05 A2 00    LDX #$00        clear sign
+
+                                *** divide by (AY) (X=sign)
+.,BB07 86 6F    STX $6F         save sign compare (FAC1 EOR FAC2)
+.,BB09 20 A2 BB JSR $BBA2       unpack memory (AY) into FAC1
+.,BB0C 4C 12 BB JMP $BB12       do FAC2/FAC1
+                                Perform divide-by
+
+
+---
+Additional information can be found by searching:
+- "divide_ay_by_fac1_core_algorithm" which expands on the generic divide routine called to perform FAC1/10
+- "multiply_fac1_by_10_and_constant" which expands on provides the floating-point representation of 10 used here

@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Round FAC1 and prepare to extract digits: add 0.5 (round), call routine to convert FAC1 floating to fixed representation, set up default digits-before-decimal count and compute the precise count (including handling very large counts), store exponent adjustment and digits-before-decimal into working locations. This block finishes the arithmetic preparation before emitting characters.
+
+                                now we have just the digits to do
+.,BE2F 20 49 B8 JSR $B849       add 0.5 to FAC1 (round FAC1)
+.,BE32 20 9B BC JSR $BC9B       convert FAC1 floating to fixed
+.,BE35 A2 01    LDX #$01        set default digits before dp = 1
+.,BE37 A5 5D    LDA $5D         get number exponent count
+.,BE39 18       CLC             clear carry for add
+.,BE3A 69 0A    ADC #$0A        up to 9 digits before point
+.,BE3C 30 09    BMI $BE47       if -ve then 1 digit before dp
+.,BE3E C9 0B    CMP #$0B        A>=$0B if n>=1E9
+.,BE40 B0 06    BCS $BE48       branch if >= $0B
+                                carry is clear
+.,BE42 69 FF    ADC #$FF        take 1 from digit count
+.,BE44 AA       TAX             copy to X
+.,BE45 A9 02    LDA #$02        set exponent adjust
+.,BE47 38       SEC             set carry for subtract
+.,BE48 E9 02    SBC #$02        -2
+.,BE4A 85 5E    STA $5E         save exponent adjust
+.,BE4C 86 5D    STX $5D         save digits before dp count
+.,BE4E 8A       TXA             copy to A
+.,BE4F F0 02    BEQ $BE53       branch if no digits before dp
+.,BE51 10 13    BPL $BE66       branch if digits before dp
+
+---
+Additional information can be found by searching:
+- "choose_notation_and_scale_fac1_to_get_digit_count" which expands on uses the computed exponent/digit counts from scaling
+- "digit_extraction_loop_and_output_write" which expands on next: extract digits from the fixed FAC1 and write them to the output buffer

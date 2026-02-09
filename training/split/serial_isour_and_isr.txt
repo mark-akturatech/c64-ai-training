@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Serial bus ISOUR/ISR routines: ISOUR/ISOURA send buffered bytes with EOI handling; check device presence, toggle CLK and DATA lines (CLKHI/CLKLO/DATAHI/DATALO), use delays (W1MS) and DEBPIA to debounce PIA, and update status flags (C3P0, R2D2). Implements EOI sequence and framing error handling (FRMERR) and returns with appropriate status changes.
+
+.,ED47 B0 64    BCS $EDAD              BCS NODEV
+.,ED49 20 85 EE JSR $EE85              JSR CLKHI       ;CLOCK LINE HIGH
+.,ED4C 24 A3    BIT $A3                BIT R2D2        ;EOI FLAG TEST
+.,ED4E 10 0A    BPL $ED5A              BPL NOEOI
+                                ; DO THE EOI
+.,ED50 20 A9 EE JSR $EEA9       ISR02  JSR DEBPIA      ;WAIT FOR DATA TO GO HIGH
+.,ED53 90 FB    BCC $ED50              BCC ISR02
+                                ;
+.,ED55 20 A9 EE JSR $EEA9       ISR03  JSR DEBPIA      ;WAIT FOR DATA TO GO LOW
+.,ED58 B0 FB    BCS $ED55              BCS ISR03
+                                ;
+.,ED5A 20 A9 EE JSR $EEA9       NOEOI  JSR DEBPIA      ;WAIT FOR DATA HIGH
+.,ED5D 90 FB    BCC $ED5A       BCC    NOEOI
+.,ED5F 20 8E EE JSR $EE8E       JSR    CLKLO           ;SET CLOCK LOW
+                                ;
+                                ; SET TO SEND DATA
+                                ;
+.,ED62 A9 08    LDA #$08        LDA    #$08            ;COUNT 8 BITS
+.,ED64 85 A5    STA $A5         STA    COUNT
+                                ;
+                                ISR01
+.,ED66 AD 00 DD LDA $DD00       LDA    D2PRA           ;DEBOUNCE THE BUS
+.,ED69 CD 00 DD CMP $DD00       CMP    D2PRA
+.,ED6C D0 F8    BNE $ED66       BNE    ISR01
+.,ED6E 0A       ASL             ASL    A               ;SET THE FLAGS
+.,ED6F 90 3F    BCC $EDB0       BCC    FRMERR          ;DATA MUST BE HI
+                                ;
+.,ED71 66 95    ROR $95         ROR    BSOUR           ;NEXT BIT INTO CARRY
+.,ED73 B0 05    BCS $ED7A       BCS    ISRHI
+.,ED75 20 A0 EE JSR $EEA0       JSR    DATALO
+.,ED78 D0 03    BNE $ED7D       BNE    ISRCLK
+.,ED7A 20 97 EE JSR $EE97       ISRHI  JSR DATAHI
+.,ED7D 20 85 EE JSR $EE85       ISRCLK JSR CLKHI       ;CLOCK HI
+.,ED80 EA       NOP             NOP
+.,ED81 EA       NOP             NOP
+.,ED82 EA       NOP             NOP
+.,ED83 EA       NOP             NOP
+.,ED84 AD 00 DD LDA $DD00       LDA    D2PRA
+.,ED87 29 DF    AND #$DF        AND    #$FF-$20        ;DATA HIGH
+.,ED89 09 10    ORA #$10        ORA    #$10            ;CLOCK LOW
+.,ED8B 8D 00 DD STA $DD00       STA    D2PRA
+.,ED8E C6 A5    DEC $A5         DEC    COUNT
+.,ED90 D0 D4    BNE $ED66       BNE    ISR01
+.,ED92 A9 04    LDA #$04        LDA    #$04            ;SET TIMER FOR 1MS
+.,ED94 8D 07 DC STA $DC07       STA    D1T2H
+.,ED97 A9 19    LDA #$19        LDA    #TIMRB          ;TRIGGER TIMER
+.,ED99 8D 0F DC STA $DC0F       STA    D1CRB
+.,ED9C AD 0D DC LDA $DC0D       LDA    D1ICR           ;CLEAR THE TIMER FLAGS<<<<<<<<<<<<<
+.,ED9F AD 0D DC LDA $DC0D       ISR04  LDA D1ICR
+.,EDA2 29 02    AND #$02        AND    #$02
+.,EDA4 D0 0A    BNE $EDB0       BNE    FRMERR
+.,EDA6 20 A9 EE JSR $EEA9       JSR    DEBPIA
+.,EDA9 B0 F4    BCS $ED9F       BCS    ISR04
+.,EDAB 58       CLI             CLI                    ;LET IRQ'S CONTINUE
+.,EDAC 60       RTS             RTS
+                                ;
+                                NODEV                  ;DEVICE NOT PRESENT ERROR
+.,EDAD A9 80    LDA #$80        LDA    #$80
+.:EDAF 2C       .BYTE $2C       .BYT   $2C
+                                FRMERR                 ;FRAMING ERROR
+
+---
+Additional information can be found by searching:
+- "serial_command_and_listen" which expands on high-level LISTN/TALK commands rely on ISOUR/ISOURA and ISR sequences

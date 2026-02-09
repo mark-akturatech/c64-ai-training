@@ -1,0 +1,92 @@
+# byRiclianll - Main body of the 'EDIT DISK NAME' BASIC program. Opens the data channel (OPEN2,8,2,"#"), sends drive read commands to fetch BAM/ID buffer (PRINT#15,'U1';2;0;18;0 and subsequent 'B-P' pointer commands), reads bytes (GET#2) and reconstructs the current (old) disk name, detects DOS version from the BAM header, prompts the user for a new disk name (NDN$), validates length and gets confirmation, pads/truncates the new name to 16 characters, overwrites the buffer via data channel (PRINT#2,NDN$;), issues a block-write (U2) to write track 18 sector 0 back to disk, checks error/status responses from the drive and prints failure messages when appropriate. Also includes commands to update the BAM via '10' commands and prints completion before END.
+
+
+280  0PEN2,8,2, "#" 
+
+290  PRINT#15, "Ui";2;o; 18;0 
+
+300  INPUT#15,EN*,EM*,ET*,ES* 
+
+310  PRINT#15, "B-P";2;2 
+
+320  GET#2,B* 
+
+330  I FB*= " " THENB*=CHR*  <  0 ) 
+
+340  DOS=ASC(B*) 
+
+350  IFD0S=65G0T0390 
+
+360  PRINT" <D0WN>73,CBM  DOS  V2.6  1541,00, 
+00" 
+
+370  PRINT" <DOWN>  <RVS>FAILED<ROFF> " 
+380  G0T0720 
+
+390  PRINT#15, "B-P";2; 144 
+400  F0RI=1T016 
+410  GET#2,B* 
+
+420  IFB*=""THENB*=CHR*<0) 
+
+430  A=ASC(B*) 
+
+440  IFA>127THENA=A-128 
+
+450  IFA<320RA>95THENA=63 
+
+460  IFA=34THENA=63 
+
+470  ODN*=ODN*+CHR*(A) 
+
+480  NEXTI 
+
+490  PRINT" <DOWN>OLD  DISK  NAME:    " ; ODN* 
+
+500   INPUT" <DOWN>NEW  DISK  NAME";NDN* 
+
+510   I FLEN  <  NDN* ) <  >OANDLEN  <  NDN* ) < 1 7G0T0530 
+
+520  G0T0720 
+
+530  INPUT"  <:D0WN> ARE  YOU  SURE  (Y/N)  YtLE 
+FT  3>";Q* 
+
+
+78 
+
+
+540  IFQ*<>"Y"G0T0720 
+
+550  NDN«=LEFT«(NDN«+PAD*, 16) 
+
+560  PRINT#15, "B-P";2; 144 
+
+570  PRINT#2,NDN*; 
+
+580  FRINT#15, "U2";2;o; 18;0 
+
+590   INPUT#15,,  EN*,EM«,ET*,ES* 
+
+hOO  IFEN*="0b"G0T0640 
+
+hlO  PRINT" €DOWN> "EN«" ,    "EM«" , "ET*" , "ES« 
+
+620  PRINT" <:down> <:RVS>FAILED€R0FF> " 
+630  G0T0720 
+640  CL0SE2 
+
+650  INPUT#15,EN*,EM*,ET*,ES* 
+660  PRINT#15, "10" 
+670  INPUT#15,EN*,EM«,ET*,ES* 
+680  CLOSE 15 
+
+690  PRINT" CDOWNIDONE ! " 
+
+700  END 
+
+
+---
+Additional information can be found by searching:
+- "edit_disk_name_intro_and_drive_init" which expands on Program initialization and drive status check
+- "edit_disk_name_close_routine" which expands on Cleanup/close routine used to finalize and close channels after the write

@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OP35/OP40 sequence to send the filename over a serial link: checks FNLEN, loops over filename bytes via (FNADR),Y and calls CIOUT for each character, increments pointer until FNLEN bytes sent, then jumps to CUNLSN (UNLSN + cleanup sequence).
+
+.,F3F6 A5 B7    LDA $B7         OP35   LDA FNLEN
+.,F3F8 F0 0C    BEQ $F406       BEQ    OP45            ;NO NAME...DONE SEQUENCE
+                                ;
+                                ;SEND FILE NAME OVER SERIAL
+                                ;
+.,F3FA A0 00    LDY #$00        LDY    #0
+.,F3FC B1 BB    LDA ($BB),Y     OP40   LDA (FNADR)Y
+.,F3FE 20 DD ED JSR $EDDD       JSR    CIOUT
+.,F401 C8       INY             INY
+.,F402 C4 B7    CPY $B7         CPY    FNLEN
+.,F404 D0 F6    BNE $F3FC       BNE    OP40
+                                ;
+.,F406 4C 54 F6 JMP $F654       OP45   JMP CUNLSN      ;JSR UNLSN: CLC: RTS
+
+---
+Additional information can be found by searching:
+- "openi_serial_listen_and_presence_check" which expands on filename send is performed after successful LISTN/SECND presence checks
+- "open_rs232_init_and_param_transfer" which expands on parallel/RS-232 open may also use filename/parameter transfer to device registers

@@ -1,0 +1,61 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Bucket-sort by character row (Y divided by 8): O(N) execution but doesn't guarantee strict Y order inside buckets (i.e., only partial ordering). Implementation notes: managing buckets in C64 ASM can be done by precomputing bucket sizes and storing contents contiguously, avoiding two-dimensional arrays. Pseudocode shows zeroing amount_in_bucket[], assigning sprites to bucket spry[sprite]/8, and then walking buckets to fill the sorted arrays. Labelled 'incorrect' because it only approximates order.
+
+2.1.3 Sorting according to Y divided by 8 (incorrect)
+
+This sort method doesn't guarantee correct order of sprites but is fast
+(execution time proportional to N.) It's what I used in MW1-3, but won't be
+using any longer - it's like taking only the latter step of a radix-sort.
+
+This is based on the idea of "buckets" where sprites are stored. Handling those
+buckets with C64 ASM involves some creativity, but you can look at the sources
+to see how I did it. Basically, my solution is to not use any two-dimensional
+arrays, but finding out the amount of sprites in each bucket before actually
+starting to put sprites into buckets; therefore each bucket's contents can be
+next to each other in memory and the sorted sprite order emerges then directly
+from the bucket memory area, without having to actually walk through each
+separate bucket like is done in this example.
+
+If this sounds complicated, don't worry, this isn't a good solution. We'll come
+to the best solution (in my opinion) last...
+
+;Reset the amount of sprites in each bucket to 0. There has to be as many
+;buckets as there are character rows in the visible sprite range.
+
+for (bucket = 0; bucket < maximum_buckets; bucket++)
+{
+  amount_in_bucket[bucket] = 0;
+}
+
+;Store sprites to buckets, according to their Y coordinates. The
+;buckets are actually a two-dimensional array.
+
+for (sprite = 0; sprite < maximum_sprites; sprite++)
+{
+  bucket_number = spry[sprite] / 8;
+  bucket[bucket_number][amount_in_bucket[bucket_number]] = sprite;
+  amount_in_bucket[bucket_number]++;
+}
+
+;Walk through all buckets to get the sprite order. In this example,
+;the sprites are directly copied to the sorted table.
+
+sorted_sprites = 0;
+
+for (bucket = 0; bucket < maximum_buckets; bucket++)
+{
+  for (index = 0; index < amount_in_bucket[bucket]; index++)
+  {
+    sprite = bucket[bucket][index];
+    sortspry[sorted_sprites] = spry[sprite];
+    sortsprx[sorted_sprites] = sprx[sprite];
+    sortsprf[sorted_sprites] = sprf[sprite];
+    sortsprc[sorted_sprites] = sprc[sprite];
+    sorted_sprites++;
+  }
+}
+
+
+---
+Additional information can be found by searching:
+- "radix_sorting_for_sprites" which expands on radix sorting refines the bucket idea to guarantee correct order
+- "continuous_insertion_sort_ocean_algorithm" which expands on practical high-performance alternative used in games

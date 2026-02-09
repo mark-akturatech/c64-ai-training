@@ -1,0 +1,58 @@
+# MACHINE - Explains the typical monitor display when entering an MLM: example header showing B*, and register titles (PC SR AC XR YR SP). Describes meanings: B* (break), PC (next instruction address), SR (status register), AC/XR/YR (A/X/Y contents), SP (stack pointer example $01F8), and mentions IRQ as an extra monitor field stored in memory. Explains the period prompt as 'ready' for commands.
+
+                                                                         :15:
+
+Monitor Display
+---------------
+
+The moment you enter the MLM, you'll see a display that looks something like
+this:
+
+  B*
+      PC  SR AC XR YR SP
+  .; 0005 20 54 23 6A F8
+  .
+
+The cursor will be flashing to the right of the period on the bottom line.
+The exact appearance of the screen information may vary according to the
+particular monitor you are using.  Other material may be displayed--in
+particular, a value called IRQ--which we will ignore for the time being.
+
+The information you see may be interpreted as follows:
+
+  B*--we have reached the MLM by means of a "break."  More about that later.
+
+  PC--The value shown below this title is the contents of the program
+  counter.  This indicates where the program "stopped."  In other words, if
+  the value shown is address 0005, the program stopped at address 0004, since
+  the PC is ready to continue at the following address.  The exact value
+  (0004 versus 0005) may vary depending on the particular MLM.
+
+  SR--The value shown below shows the status register, which tells us the
+  results of recent tests and data operations.  We'd need to split apart the
+  eight bits and look at them individually to establish all the information
+  here; we will do this at a later time.
+
+  AC, XR, and YR--The values shown below these three titles are the contents
+  of our three data registers:  A, X, and Y.
+
+  SP--The value shown below is that of the stack pointer, which indicates a
+  temporary storage area that the program might use.  A value of F8, for
+  example, tells us that the next item to be dropped into the stack would go
+  to address $01F8 in memory.  More on this later.
+
+The period is roughly the equivalent of the READY statement in BASIC.  It
+indicates that the computer is ready to receive a command from you.
+
+You will notice that the display printed by the monitor (called the register
+display) shows the internal registers within the 650x chip.  Sometimes there
+is another term of information, titled IRQ, in this display.  It doesn't
+belong, since it does not represent a microprocessor register.  IRQ tells us
+to what address the computer will go to if an interrupt occurs; this
+information is stored in memory, not within the 650x.
+
+
+---
+Additional information can be found by searching:
+- "mlm_commands_reference" which expands on commands to use from the monitor (exit .X, display memory .M, run .G, etc.)
+- "displaying_memory_and_format" which expands on how memory displays appear and what the hex bytes mean

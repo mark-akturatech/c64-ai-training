@@ -1,0 +1,23 @@
+# byRiclianll - Annotated explanation of the Multiple ID Formatting driver and how it operates. Describes that this is a modification of the standard NEW ($EE0D) formatting routine: embedded IDs are read from each master track and tabled in 1541 RAM starting at $0431; the driver stores the appropriate ID for each track into the master disk ID location ($12/$13) before passing control to the FDC to format each track; after formatting the IP regains control to load the next ID and repeat. Notes the limitation (no NO:DISK NAME, ID command in the command buffer) which prevents reuse of the standard routine's later portions for BAM/directory creation, and points to driver cleanup lines (lines 670-780).
+
+Multiple  ID  Formatting  Source  Annotation 
+
+This  is  a  modification  of  the  standard  formatting  routine,  NEW  ($EEOD).  Embedded 
+IDs  are  read  from  each  track  on  the  master  and  tabled  in  1541  RAM  starting  at  $0431 
+
+
+161 
+
+
+by  the  driver.  The  appropriate  ID  for  each  track  is  stored  as  the  master  disk  ID  ($12/3) 
+by  the  IP  before  control  is  passed  to  the  FDC  to  format  a  track.  After  a  track  is  format- 
+ted, the  IP  retakes  control,  finds  the  next  ID  in  the  table,  stores  it  at  $12/3,  and  passes 
+control  back  to  the  FDC.  Because  we  do  not  have  a  NO:DISK  NAME, ID  command  in 
+the  command  buffer,  we  cannot  use  the  later  portions  of  the  standard  formatting  routine 
+to  create  the  BAM  and  directory.  Lines  670-780  of  the  driver  clean  up  afterward. 
+
+
+---
+Additional information can be found by searching:
+- "multiple_id_formatting_driver_source_listing" which expands on Explains the purpose and behavior of the listed driver code
+- "how_to_backup_dos_protected_diskette_and_1541_backup_program" which expands on Related disk utility content (backup procedures) in the following section

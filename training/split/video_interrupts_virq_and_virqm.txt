@@ -1,0 +1,42 @@
+# Contents - Video interrupts: VIRQ ($D019) holds interrupt status bits (raster, sprite-background collision, sprite-sprite collision, light pen, and a 'any enabled interrupt' flag). To clear an interrupt bit you must write a 1 to that bit. Interrupts are only signaled to the CPU if corresponding bits are set in the video interrupt mask register VIRQM ($D01A); however VIRQ can still be read even if VIRQM doesn't enable CPU interrupts.
+
+
+VIDEO INTERRUPTS 
+
+Different conditions within the VIC chip can 
+generate interrupts. The interrupt status can be read 
+by reading the video interrupts register, VIRQ 
+($D019). The bits have the following meanings: 
+
+
+
+Bit Type of Interrupt 
+
+RASTER 
+
+1 SPRITE TO BACKGROUND 
+COLLISION 
+
+2 SPRITE TO SPRITE COLLISION 
+
+3 LIGHT PEN 
+
+7 SET ON ANY ENABLED 
+INTERRUPT 
+
+Once an interrupt bit has been set, a 1 must be 
+written to that bit position in order to clear it. This 
+allows you to process interrupts one at a time, 
+without having to store the data elsewhere. 
+
+Interrupts will only be sent to the 
+microprocessor if the corresponding bit in the video 
+interrupt mask register, VIRQM ($D01A), is set. You 
+will still be able to read the interrupts from the 
+VIRQ register, but if the appropriate bit in the 
+VIRQM register is not set, no interrupts will be 
+generated. See the section on using interrupts for 
+
+---
+Additional information can be found by searching:
+- "raster_register_and_interrupt_setup" which expands on writing raster value triggers VIRQ when matched

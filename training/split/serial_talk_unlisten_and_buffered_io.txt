@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Talk/Listen/Unlisten/Untalk routines and buffered I/O: TKSA/TKATN/TKATN1 manage sending secondary addresses and shifting to listener, CI OUT (buffered output) handles storing buffer (BSOUR/BSOUR flags), CI routines toggle C3P0 buffer flags, and UNTLK/UNLSN handle unlisten/untalk commands by releasing ATN and toggling lines. Also includes CIOUT/ISOUR buffering logic.
+
+.,EDB0 A9 03    LDA #$03        LDA    #$03
+.,EDB2 20 1C FE JSR $FE1C       CSBERR JSR UDST        ;COMMODORE SERIAL BUSS ERROR ENTRY
+.,EDB5 58       CLI             CLI                    ;IRQ'S WERE OFF...TURN ON
+.,EDB6 18       CLC             CLC                    ;MAKE SURE NO KERNAL ERROR RETURNED
+.,EDB7 90 4A    BCC $EE03       BCC    DLABYE          ;TURN ATN OFF ,RELEASE ALL LINES
+                                ;
+                                ;SEND SECONDARY ADDRESS AFTER LISTEN
+                                ;
+.,EDB9 85 95    STA $95         SECND  STA BSOUR       ;BUFFER CHARACTER
+.,EDBB 20 36 ED JSR $ED36       JSR    ISOURA          ;SEND IT
+                                ;RELEASE ATTENTION AFTER LISTEN
+                                ;
+.,EDBE AD 00 DD LDA $DD00       SCATN  LDA D2PRA
+.,EDC1 29 F7    AND #$F7        AND    #$FF-$08
+.,EDC3 8D 00 DD STA $DD00       STA    D2PRA           ;RELEASE ATTENTION
+.,EDC6 60       RTS             RTS
+                                ;TALK SECOND ADDRESS
+                                ;
+.,EDC7 85 95    STA $95         TKSA   STA BSOUR       ;BUFFER CHARACTER
+.,EDC9 20 36 ED JSR $ED36       JSR    ISOURA          ;SEND SECOND ADDR
+                                TKATN                  ;SHIFT OVER TO LISTENER
+.,EDCC 78       SEI             SEI                    ;NO IRQ'S HERE
+.,EDCD 20 A0 EE JSR $EEA0       JSR    DATALO          ;DATA LINE LOW
+.,EDD0 20 BE ED JSR $EDBE       JSR    SCATN
+.,EDD3 20 85 EE JSR $EE85       JSR    CLKHI           ;CLOCK LINE HIGH JSR/RTS
+.,EDD6 20 A9 EE JSR $EEA9       TKATN1 JSR DEBPIA      ;WAIT FOR CLOCK TO GO LOW
+.,EDD9 30 FB    BMI $EDD6       BMI    TKATN1
+.,EDDB 58       CLI             CLI                    ;IRQ'S OKAY NOW
+.,EDDC 60       RTS             RTS
+                                ;BUFFERED OUTPUT TO SERIAL BUS
+                                ;
+.,EDDD 24 94    BIT $94         CIOUT  BIT C3P0        ;BUFFERED CHAR?
+.,EDDF 30 05    BMI $EDE6       BMI    CI2             ;YES...SEND LAST
+                                ;
+.,EDE1 38       SEC             SEC                    ;NO...
+.,EDE2 66 94    ROR $94         ROR    C3P0            ;SET BUFFERED CHAR FLAG
+.,EDE4 D0 05    BNE $EDEB       BNE    CI4             ;BRANCH ALWAYS
+                                ;
+.,EDE6 48       PHA             CI2    PHA             ;SAVE CURRENT CHAR
+.,EDE7 20 40 ED JSR $ED40       JSR    ISOUR           ;SEND LAST CHAR
+.,EDEA 68       PLA             PLA                    ;RESTORE CURRENT CHAR
+.,EDEB 85 95    STA $95         CI4    STA BSOUR       ;BUFFER CURRENT CHAR
+.,EDED 18       CLC             CLC                    ;CARRY-GOOD EXIT
+.,EDEE 60       RTS             RTS
+                                ;SEND UNTALK COMMAND ON SERIAL BUS
+                                ;
+.,EDEF 78       SEI             UNTLK  SEI
+.,EDF0 20 8E EE JSR $EE8E       JSR    CLKLO
+.,EDF3 AD 00 DD LDA $DD00       LDA    D2PRA           ;PULL ATN
+.,EDF6 09 08    ORA #$08        ORA    #$08
+.,EDF8 8D 00 DD STA $DD00       STA    D2PRA
+.,EDFB A9 5F    LDA #$5F        LDA    #$5F            ;UNTALK COMMAND
+.:EDFD 2C       .BYTE $2C       .BYT   $2C             ;SKIP TWO BYTES
+                                ;SEND UNLISTEN COMMAND ON SERIAL BUS
+                                ;
+.,EDFE A9 3F    LDA #$3F        UNLSN  LDA #$3F        ;UNLISTEN COMMAND
+.,EE00 20 11 ED JSR $ED11              JSR LIST1       ;SEND IT
+                                ;
+                                ; RELEASE ALL LINES
+.,EE03 20 BE ED JSR $EDBE       DLABYE JSR SCATN       ;ALWAYS RELEASE ATN
+
+---
+Additional information can be found by searching:
+- "serial_isour_and_isr" which expands on uses the CLKHI/CLKLO/DATAHI/DATALO primitives

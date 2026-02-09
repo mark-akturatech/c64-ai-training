@@ -1,0 +1,48 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - General series-evaluation framework used by EXP, SQR^2 path and other polynomial evaluations. Saves and restores pointer/count bytes, packs FAC1, reads the constants count from the table, iterates through the constants list (5 bytes per coefficient), converts each constant with convert AY (FAC1*(AY)), adds the (AY) term to FAC1, decrements the count, and loops until all coefficients are processed. Ends with RTS. This routine implements repeated FAC multiplications and adds to evaluate polynomial/series expansions.
+
+                                ^2 then series evaluation
+.,E043 85 71    STA $71         save count pointer low byte
+.,E045 84 72    STY $72         save count pointer high byte
+.,E047 20 CA BB JSR $BBCA       pack FAC1 into $57
+.,E04A A9 57    LDA #$57        set pointer low byte (Y already $00)
+.,E04C 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,E04F 20 5D E0 JSR $E05D       go do series evaluation
+.,E052 A9 57    LDA #$57        pointer to original # low byte
+.,E054 A0 00    LDY #$00        pointer to original # high byte
+.,E056 4C 28 BA JMP $BA28       do convert AY, FCA1*(AY)
+                                do series evaluation
+.,E059 85 71    STA $71         save count pointer low byte
+.,E05B 84 72    STY $72         save count pointer high byte
+                                do series evaluation
+.,E05D 20 C7 BB JSR $BBC7       pack FAC1 into $5C
+.,E060 B1 71    LDA ($71),Y     get constants count
+.,E062 85 67    STA $67         save constants count
+.,E064 A4 71    LDY $71         get count pointer low byte
+.,E066 C8       INY             increment it (now constants pointer)
+.,E067 98       TYA             copy it
+.,E068 D0 02    BNE $E06C       skip next if no overflow
+.,E06A E6 72    INC $72         else increment high byte
+.,E06C 85 71    STA $71         save low byte
+.,E06E A4 72    LDY $72         get high byte
+.,E070 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,E073 A5 71    LDA $71         get constants pointer low byte
+.,E075 A4 72    LDY $72         get constants pointer high byte
+.,E077 18       CLC             clear carry for add
+.,E078 69 05    ADC #$05        +5 to low pointer (5 bytes per constant)
+.,E07A 90 01    BCC $E07D       skip next if no overflow
+.,E07C C8       INY             increment high byte
+.,E07D 85 71    STA $71         save pointer low byte
+.,E07F 84 72    STY $72         save pointer high byte
+.,E081 20 67 B8 JSR $B867       add (AY) to FAC1
+.,E084 A9 5C    LDA #$5C        set pointer low byte to partial
+.,E086 A0 00    LDY #$00        set pointer high byte to partial
+.,E088 C6 67    DEC $67         decrement constants count
+.,E08A D0 E4    BNE $E070       loop until all done
+.,E08C 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "exp_kernel_continuation_and_overflow_handling" which expands on called/entered by EXP kernel to evaluate exponentiation series
+- "exp_constants_series_table" which expands on reads coefficient counts and 5-byte constants from this table
+- "power_function_driver" which expands on power driver uses LOG/EXP which triggers series evaluation

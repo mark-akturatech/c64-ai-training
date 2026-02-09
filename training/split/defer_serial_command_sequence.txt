@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Sequence to defer a serial command: STA $95 to save the deferred character, SEI to disable interrupts, set serial data/clock lines (JSRs to $EE97/$EE85), compare read byte with $3F (CMP #$3F), and read VIA2 DRA ($DD00) to manipulate ATN/data/clock lines. If conditions indicate, sets ATN low (ORA #$08; STA $DD00), then disables interrupts, toggles serial clock/data lines and waits (JSR $EE8E/$EE97/$EEB3) to defer the byte transmission by ~1ms.
+
+                                *** defer a command
+.,ED21 85 95    STA $95         save as serial defered character
+.,ED23 78       SEI             disable the interrupts
+.,ED24 20 97 EE JSR $EE97       set the serial data out high
+.,ED27 C9 3F    CMP #$3F        compare read byte with $3F
+.,ED29 D0 03    BNE $ED2E       branch if not $3F, this branch will always be taken as
+                                after VIA 2's PCR is read it is ANDed with $DF, so the
+                                result can never be $3F ??
+.,ED2B 20 85 EE JSR $EE85       set the serial clock out high
+.,ED2E AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,ED31 09 08    ORA #$08        mask xxxx 1xxx, set serial ATN low
+.,ED33 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+                                if the code drops through to here the serial clock is low and the serial data has been
+                                released so the following code will have no effect apart from delaying the first byte
+                                by 1ms
+                                set the serial clk/data, wait and Tx byte on the serial bus
+.,ED36 78       SEI             disable the interrupts
+.,ED37 20 8E EE JSR $EE8E       set the serial clock out low
+.,ED3A 20 97 EE JSR $EE97       set the serial data out high
+.,ED3D 20 B3 EE JSR $EEB3       1ms delay
+
+
+---
+Additional information can be found by searching:
+- "serial_bus_commands_and_send_control_character" which expands on deferred characters and flags ($95,$94,$A3) are set/checked when sending control characters
+- "serial_tx_byte_routine" which expands on after deferring, the Tx byte routine is used to transmit the deferred byte

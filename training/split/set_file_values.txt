@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SET FILE VALUES (SEETF): Given an offset in (X) into the file tables, sets current logical number LA ($B8), device FA ($BA) and secondary address SA ($B9) by loading from LAT ($0259), FAT ($0263) and SAT ($026D). Uses indexed LDA/STA.
+
+                                *** SEET FILE VALUES
+                                This routine sets the current logical file number, device
+                                number and secondary address from the file parameter
+                                tables. On entry (X) must hold the offset to the position
+                                of the file in the table.
+.,F31F BD 59 02 LDA $0259,X     LAT, table of active logical files
+.,F322 85 B8    STA $B8         store in LA
+.,F324 BD 63 02 LDA $0263,X     FAT, table of active device numbers
+.,F327 85 BA    STA $BA         store in FA
+.,F329 BD 6D 02 LDA $026D,X     SAT, table of active secondary addresses
+.,F32C 85 B9    STA $B9         store in SAT
+.,F32E 60       RTS             return
+
+---
+Additional information can be found by searching:
+- "find_file" which expands on find_file returns offset used by this routine

@@ -1,0 +1,42 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Soft-scrolling with XSCROLL/YSCROLL (bits 0-2 of $D011/$D016): per-pixel scrolling inside the display window (0-7 pixels right/down) and required alignment values to keep graphics aligned with the window (25 lines/40 columns: X/YSCROLL=0 and 3; 24 lines/38 columns: both 7). Complete timing/dimension table for VIC variants (6567R56A, 6567R8, 6569) listing video system, total lines, visible lines, cycles per line, visible pixels per line, vertical blank first/last lines, first X coordinate of a raster line, and first/last visible X coordinates. Explanation of why the 'first visible X coordinates' can appear numerically after the 'last visible' ones: X coordinates wrap at $1FF ($1F7 on 6569) and the raster IRQ reference point doesn't coincide with X coordinate 0; this causes the apparent ordering.
+
+With XSCROLL/YSCROLL (bits 0-2 of registers $d011 (XSCROLL) and $d016
+(YSCROLL)), the position of the graphics inside the display window can be
+scrolled in single-pixel units up to 7 pixels to the right and to the
+bottom. This can be used for soft scrolling. The position of the display
+window itself doesn't change. To keep the graphics aligned with the window,
+X/YSCROLL have to be 0 and 3 for 25 lines/40 columns and both 7 for 24
+lines/38 columns.
+
+The dimensions of the video display for the different VIC types are as
+follows:
+
+          | Video  | # of  | Visible | Cycles/ |  Visible
+   Type   | system | lines |  lines  |  line   | pixels/line
+ ---------+--------+-------+---------+---------+------------
+ 6567R56A | NTSC-M |  262  |   234   |   64    |    411
+  6567R8  | NTSC-M |  263  |   235   |   65    |    418
+   6569   |  PAL-B |  312  |   284   |   63    |    403
+
+          | First  |  Last  |              |   First    |   Last
+          | vblank | vblank | First X coo. |  visible   |  visible
+   Type   |  line  |  line  |  of a line   |   X coo.   |   X coo.
+ ---------+--------+--------+--------------+------------+-----------
+ 6567R56A |   13   |   40   |  412 ($19c)  | 488 ($1e8) | 388 ($184)
+  6567R8  |   13   |   40   |  412 ($19c)  | 489 ($1e9) | 396 ($18c)
+   6569   |  300   |   15   |  404 ($194)  | 480 ($1e0) | 380 ($17c)
+
+If you are wondering why the first visible X coordinates seem to come after
+the last visible ones: This is because for the reference point to mark the
+beginning of a raster line, the occurrence of the raster IRQ has been
+chosen, which doesn't coincide with X coordinate 0 but with the coordinate
+given as "First X coo. of a line". The X coordinates run up to $1ff (only
+$1f7 on the 6569) within a line, then comes X coordinate 0. This is
+explained in more detail in the explanation of the structure of a raster
+line.
+
+
+---
+Additional information can be found by searching:
+- "frame_building_and_coordinate_system" which expands on use of raster line and cycle/X coordinate when specifying VIC memory access timing
+- "rsel_csel_display_window_sizes" which expands on relationship between chosen display window size and necessary scroll alignment values

@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initial entry sequence to perform EXP(): sets pointers to the 1/LOG(2) constant, performs a convert-AY (FAC1*(AY)), applies rounding based on FAC1 rounding byte, optionally calls round FAC1, then jumps to the EXP kernel continuation in the KERNAL at $E000.
+
+
+                                *** perform EXP()
+.,BFED A9 BF    LDA #$BF        set 1.443 pointer low byte
+.,BFEF A0 BF    LDY #$BF        set 1.443 pointer high byte
+.,BFF1 20 28 BA JSR $BA28       do convert AY, FCA1*(AY)
+.,BFF4 A5 70    LDA $70         get FAC1 rounding byte
+.,BFF6 69 50    ADC #$50        +$50/$100
+.,BFF8 90 03    BCC $BFFD       skip rounding if no carry
+.,BFFA 20 23 BC JSR $BC23       round FAC1 (no check)
+.,BFFD 4C 00 E0 JMP $E000       continue EXP()
+
+
+---
+Additional information can be found by searching:
+- "exp_constants_series_table" which expands on loads the 1/LOG(2) pointer and uses series coefficients from that table
+- "exp_kernel_continuation_and_overflow_handling" which expands on continues EXP computation at $E000 for exponent handling and series evaluation

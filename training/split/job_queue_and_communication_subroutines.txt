@@ -1,0 +1,43 @@
+# byRiclianll - JOB QUEUE and I/O helper routines used by the BASIC driver. Contains the 'JOB QUEUE' REM, TRY/retry loop, printing and sending M-W/M-R commands to the drive, GET#/INPUT# handling, ASCII conversion and bounds checking, retry limits and branch-on-failure behaviour, CLOSE and failure message. This block implements the low-level communication and error/retry handling between BASIC and the 1541 drive.
+
+
+570  REM  JOB  QUEUE 
+580  TRY=0 
+
+590  PRINT#15, "M-W"CHR« (12) CHR« (O) CHR«  <2) 
+CHR*<T)CHR«<S) 
+
+600  PRINT#15, "M-W"CHR*<3)CHR«(0)CHR«<1)C 
+HR«(JOB) 
+
+
+145 
+
+
+610  TRY=TRY+1 
+
+620  PRINT#15, "M-R"CHR*(3)CHR*(0) 
+
+630  GET#15,E* 
+
+640  IFE*=""THENE*=CHR*(0) 
+
+650  E=ASC(E*> 
+
+660  IFTRY=500G0T0690 
+
+670  IFE>127G0T0610 
+
+680  RETURN 
+
+690  CLOSE 15 
+
+700  PRINT"  <:down>  •crvsjfailed^roff:-  " 
+
+710  END 
+
+
+---
+Additional information can be found by searching:
+- "basic_driver_user_interface_and_execution_flow" which expands on Called from the BASIC driver to perform reads/writes and handle drive responses
+- "embedded_machine_language_data_blocks_21_and_20m" which expands on Sends/loads the embedded machine-code data to the drive via M-W

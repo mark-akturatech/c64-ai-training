@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Processor stack description: LIFO, top-down at $0100-$01FF; bytes and words (8-bit bytes, 16-bit words little-endian). Signed values are two's complement. System vectors and addresses: $FFFA/$FFFB NMI vector, $FFFC/$FFFD RESET vector, $FFFE/$FFFF IRQ vector (all 16-bit low-high). Start/reset sequence: 7-cycle start-up, PC read from reset vector at $FFFC then JMP. Notes on initialization and that PC is set by reset vector.
+
+          Signed values are two's complement, sign in bit 7 (most significant bit).
+          (%11111111 = $FF = -1, %10000000 = $80 = -128, %01111111 = $7F = +127)
+          Signed binary and binary coded decimal (BCD) arithmetic modes.
+          System Vectors
+          $FFFA, $FFFB ... NMI (Non-Maskable Interrupt) vector, 16-bit (LB, HB)
+          $FFFC, $FFFD ... RES (Reset) vector, 16-bit (LB, HB)
+          $FFFE, $FFFF ... IRQ (Interrupt Request) vector, 16-bit (LB, HB)
+          Start/Reset Operations
+          An active-low reset line allows to hold the processor in a known disabled
+          state, while the system is initialized. As the reset line goes high, the
+          processor performs a start sequence of 7 cycles, at the end of which the
+          program counter (PC) is read from the address provided in the 16-bit reset
+          vector at $FFFC (LB-HB). Then, at the eighth cycle, the processor transfers
+          control by performing a JMP to the provided address.
+          Any other initializations are left to the thus executed program. (Notably,
+          instructions exist for the initialization and loading of all registers, but
+          for the program counter, which is provided by the reset vector at $FFFC.)
+                                                                6502 Instruction Set
+          Instructions by Type
+            Transfer Instructions
+            Load, store, interregister transfer
+            LDA .... load accumulator
+            LDX .... load X
+            LDY .... load Y
+            STA .... store accumulator
+            STX .... store X
+            STY .... store Y
+            TAX .... transfer accumulator to X
+            TAY .... transfer accumulator to Y
+            TSX .... transfer stack pointer to X
+            TXA .... transfer X to accumulator
+            TXS .... transfer X to stack pointer
+            TYA .... transfer Y to accumulator
+            Stack Instructions
+            These instructions transfer the accumulator or status register
+            (flags) to and from the stack. The processor stack is a last-in-
+            first-out (LIFO) stack of 256 bytes length, implemented at addresses
+            $0100 - $01FF. The stack grows down as new values are pushed onto it
+            with the current insertion point maintained in the stack pointer
+            register.
+            (When a byte is pushed onto the stack, it will be stored in the
+            address indicated by the value currently in the stack pointer, which
+            will be then decremented by 1. Conversely, when a value is pulled
+            from the stack, the stack pointer is incremented. The stack pointer
+            is accessible by the TSX and TXS instructions.)
+            PHA .... push accumulator
+            PHP .... push processor status register (with break flag set)
+            PLA .... pull accumulator
+            PLP .... pull processor status register
+            Decrements & Increments
+            DEC .... decrement (memory)
+            DEX .... decrement X
+            DEY .... decrement Y
+            INC .... increment (memory)
+            INX .... increment X
+            INY .... increment Y
+            Arithmetic Operations
+                                                               6502 Instruction Set
+           ADC .... add with carry (prepare by CLC)
+           SBC .... subtract with carry (prepare by SEC)
+
+---
+Additional information can be found by searching:
+- "start_reset_operations" which expands on reset/start sequence details
+- "jump_vectors_and_stack_operations" which expands on how interrupts and JSR/RTS push/pull PC and SR

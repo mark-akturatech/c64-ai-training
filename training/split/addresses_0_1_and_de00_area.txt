@@ -1,0 +1,48 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Behavior of CPU addresses $DE00-$DFFF and $0000/$0001: normally expansion area $DE00-$DFFF reads appear random; on some C64s they return the byte the VIC read in the first phase of the clock cycle (used to measure VIC timing and run code from the $DE00 area by making VIC supply opcodes). Addresses $0000/$0001 normally map to 6510 I/O port DDR/DR registers, but writes can be effected by arranging VIC reads so that the VIC supplies the desired byte on the bus during the write (VIC read in previous cycle becomes written because R/W is low and VIC data appear on bus). Additionally, CPU can read these areas via the $DE00 trick or sprite-collision based bit probing (display a bitmap at address 0 and test single-bit collisions to reconstruct bytes).
+
+4. The addresses 0 and 1 and the $de00 area
+-------------------------------------------
+
+The address range $de00-$dfff of the 6510 (see 2.4.1.) is reserved for
+external expansions of the C64 and normally not connected with any other
+unit (RAM, I/O). A read access will fetch data that looks random at first
+sight. The same is true for the upper nybbles of the addresses $d800-$dbff
+(the Color RAM).
+
+But on some C64, this data is not "random" at all but rather identical to
+the data that the VIC has read from memory in the first phase of the clock
+cycle. This effect is however not reproducible on all machines and not
+always precisely.
+
+Apart from the fact that this gives the possibility to measure the VIC
+timing completely by software (the timing diagrams in [4] on which the
+diagrams in this article are based, have e.g. been created with this
+method), you can also make the 6510 execute programs in the $de00-area or
+in the Color RAM if the VIC displays a graphics in such a way that the 6510
+gets valid opcodes from the graphics data read by the VIC.
+
+With a similar effect you can also write to RAM addresses 0 and 1 from the
+processor. They are normally not available as the internal data direction
+register and data register of the 6510 I/O port are mapped to these
+addresses, and the data bus drivers stay in tri-state on a write access.
+But the R/W line is set to low state (this can be explained as the I/O port
+has been integrated afterwards into the existing design of the 6502) and so
+the byte read by the VIC in the first clock phase is written to RAM. If you
+want to write a certain value to addresses 0 or 1 you only have to write an
+arbitrary value to these addresses and take care that the VIC read the
+desired value from RAM in the clock phase before.
+
+The addresses 0 and 1 can of course also be read by the processor. Either
+with via the $de00-area of with the aid of sprite collisions. For this, you
+make the VIC display a bitmap starting at address 0 and move a sprite
+consisting only of one pixel over the single bits of the first two bytes of
+the bitmap. Depending on whether a collision has been detected or not, you
+can find out the state of the single bits and put them together to one
+byte.
+
+
+
+---
+Additional information can be found by searching:
+- "memory_map_cpu" which expands on address overlaying: CPU view of $D000-$DFFF and $0000-$0001 I/O port mapping
+- "timing_of_raster_line" which expands on using VIC timing and BA/AEC to make VIC drive bus for $DE00 and $0000/$0001 effects

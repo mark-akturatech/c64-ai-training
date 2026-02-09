@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - BASIC SAVE implementation: call the shared parameter parser for LOAD/SAVE, take the start and end addresses from BASIC variables/index bytes and call the KERNAL save routine ($FFD8) to write RAM to device; branch to BASIC I/O error handler on error, otherwise RTS. (Includes LDX/LDY loads of start/end address bytes and the JSR $FFD8 call.)
+
+                                *** perform SAVE
+.,E156 20 D4 E1 JSR $E1D4       get parameters for LOAD/SAVE
+.,E159 A6 2D    LDX $2D         get start of variables low byte
+.,E15B A4 2E    LDY $2E         get start of variables high byte
+.,E15D A9 2B    LDA #$2B        index to start of program memory
+.,E15F 20 D8 FF JSR $FFD8       save RAM to device, A = index to start address, XY = end
+                                address low/high
+.,E162 B0 95    BCS $E0F9       if error go handle BASIC I/O error
+.,E164 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_params_for_load_save" which expands on parsing filename/device/addresses used by SAVE
+- "perform_verify_and_load" which expands on LOAD/VERIFY share the same parameter parsing and KERNAL device calls

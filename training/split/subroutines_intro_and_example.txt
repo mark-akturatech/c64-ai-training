@@ -1,0 +1,36 @@
+# MACHINE - Subroutines in machine language: RTS returns to caller (BASIC or ML). Example subroutine listing (addresses $033C-$0351) that accepts numeric keys, echoes them, converts ASCII to binary and uses JSR $FFE1, BEQ, JSR $FFE4, CMP #$30 / BCC / CMP #$3A / BCS, JSR $FFD2, AND #$0F, RTS.
+
+
+
+Subroutines
+-----------
+
+We have written programs that are subroutines called by BASIC.  We have
+written subroutine calls to built-in operations such as $FFD2 or $FFE4.  Can
+we also write our own subroutine and arrange to call it?
+
+Of course we can.  RTS (return from subroutine) does not mean "return to
+BASIC."  It means "return to whoever called this routine."  If BASIC called
+up the machine language routine, RTS takes you back to BASIC.  If another
+machine language program called up the subroutine, RTS will return to the
+calling point.
+
+We wrote a successful subroutine in the last chapter.  It's purpose was to
+accept only numeric keys, echo them to the screen, and convert the ASCII
+value to binary.  Now we'll use this subroutine to build a more powerful
+program.  Here its.  Be sure it's entered in your computer.
+
+  .A 033C  JSR $FFE1
+  .A 033F  BEQ $0351
+  .A 0341  JSR $FFE4
+  .A 0344  CMP #$30
+  .A 0346  BCC $033C
+  .A 0348  CMP #$3A
+  .A 034A  BCS $033C
+  .A 034C  JSR $FFD2
+  .A 034F  AND #$0F
+  .A 0351  RTS
+
+---
+Additional information can be found by searching:
+- "addition_program_using_subroutine" which expands on reuse subroutine to build a small calculator example

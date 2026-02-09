@@ -1,0 +1,29 @@
+# A Minimal C64 Datasette Program Loader - Subroutine get_pulse: waits for pulse start/end via bit testing $DC0D (the tape input port), reads low byte of Timer B ($DD06), restarts Timer B via $DD0F, returns negative length in A and sets the C flag if the pulse was short. Uses LDA/STA/LDX and BIT/BEQ/BNE for timing synchronization.
+
+get_pulse Routine
+-----------------
+
+The subroutine measures a pulse by reading the low byte of Timer B and
+restarts the timer. It returns the (negative) length in the accumulator
+and sets the C flag if it was a short pulse.
+
+    get_pulse:
+        lda #$10
+    p1: bit $dc0d       ;wait for start
+        bne p1          ;of pulse
+
+        ldx #%01011001  ;value to restart timer b
+    p2: bit $dc0d       ;wait for end
+        beq p2          ;of pulse
+
+        lda $dd06       ;read timer b
+        stx $dd0f       ;restart timer b
+        cmp #$ff-threshold_short_medium
+        rts             ;c=1: short
+
+
+
+---
+Additional information can be found by searching:
+- "pulse_thresholds" which expands on compares timer reading to threshold_short_medium
+- "get_byte_routine" which expands on consumes get_pulse to assemble bits/bytes

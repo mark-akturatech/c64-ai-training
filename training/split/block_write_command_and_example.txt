@@ -1,0 +1,39 @@
+# ********* - Section 6.4: BLOCK-WRITE command format (PRINT#file#,"B-W:" channel; drive; track; block) to write contents of a data buffer to a disk block. Explains buffer-pointer behavior and includes a sample program writing to track 1 sector 1.
+
+
+
+6.4 BLOCK-WRITE
+
+The BLOCK-WRITE command is the exact opposite of the BLOCK-READ
+command.  First you must fill up a data buffer with your information,
+then you write that buffer to the correct location on the disk.
+
+FORMAT FOR BLOCK-WRITE COMMAND:
+
+   PRINT#file#, "BLOCK-WRITE:" channel; drive; track; block
+
+or abbreviated as
+
+   PRINT#file, "B-W:" channel; drive; track; block
+
+When the data is being put into the buffer, a pointer in the DOS keeps
+track of how many characters there are.  When you perform the BLOCK-
+WRITE operation, that pointer is recorded on the disk.  That is the
+reason for the ST check in line 70 of the program above: the ST will
+become non-zero when you try to read past the end-of-file marker
+within the record.
+
+SAMPLE PROGRAM TO WRITE DATA ON TRACK 1, SECTOR 1:
+
+ 10 OPEN 15,8,15
+ 20 OPEN 5,8,5,"#":REM OPEN A RANDOM ACCESS CHANNEL
+ 30 FOR L=1 TO 50
+ 40 PRINT#5,"TEST"
+ 50 NEXT
+ 60 PRINT#15,"B-W:"5;0;1;1
+ 70 CLOSE 5:CLOSE 15
+
+
+---
+Additional information can be found by searching:
+- "block_allocate_and_error_handling" which expands on importance of allocating blocks before writing with BLOCK-WRITE

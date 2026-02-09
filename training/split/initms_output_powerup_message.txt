@@ -1,0 +1,30 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - INITMS: Output the power-up/startup message and compute BASIC memory available. Reads TXTTAB ($2B/$2C) and MEMSIZ ($37/$38), calls a memory-overlap check (JSR $A408), outputs the startup message string, computes BASIC bytes free by subtracting TXTTAB from MEMSIZ using SEC/SBC into A/X, outputs the numeric value via JSR $BDCD, prints the 'BASIC BYTES FREE' message at pointer $E460, and exits to perform NEW by jumping to $A644. Key operations: LDA/LDY of TXTTAB, JSR $A408, output string via JSR $AB1E, SBC to compute free bytes, JSR $BDCD for number output, JMP $A644.
+
+                                *** INITMS: OUTPUT POWER-UP MESSAGE
+                                This routine outputs the startup message. It then
+                                calculates the number of BASIC bytes free by subtracting
+                                the TXTTAB from MEMSIZ, and outputs this number. The
+                                routine exits via NEW.
+.,E422 A5 2B    LDA $2B         read TXTTAB, start of BASIC
+.,E424 A4 2C    LDY $2C
+.,E426 20 08 A4 JSR $A408       check for memory overlap
+.,E429 A9 73    LDA #$73        $e473, startup message
+.,E42B A0 E4    LDY #$E4
+.,E42D 20 1E AB JSR $AB1E       output (A/Y)
+.,E430 A5 37    LDA $37         MEMSIZ, highest address in BASIC
+.,E432 38       SEC             prepare for subtract
+.,E433 E5 2B    SBC $2B         subtract TXTTAB
+.,E435 AA       TAX             move to (X)
+.,E436 A5 38    LDA $38         and highbyte
+.,E438 E5 2C    SBC $2C
+.,E43A 20 CD BD JSR $BDCD       output number in (A/X)
+.,E43D A9 60    LDA #$60        $e460
+.,E43F A0 E4    LDY #$E4        pointer to 'BASIC BYTES FREE'
+.,E441 20 1E AB JSR $AB1E       output (A/Y)
+.,E444 4C 44 A6 JMP $A644       perform NEW
+
+
+---
+Additional information can be found by searching:
+- "initcz_initialize_basic_ram" which expands on initialization that sets TXTTAB and MEMSIZ used in the bytes-free calculation
+- "init_cold_start" which expands on cold start calls this routine to show the message before restarting BASIC

@@ -1,0 +1,28 @@
+# byRiclianll - Explains the core job-queue mechanism: the subroutine writes track and sector into the buffer's header table and the job code into the job-queue table, then polls the job byte until the FDC clears bit 7. Specifies the example buffer 0 mapping: header addresses $0006 (track) and $0007 (sector) and job code at $0000. Explains convention that job codes have bit 7 set (>127) and completed jobs are replaced by error codes with bit 7 cleared (<128), so waiting checks bit 7 until cleared.
+
+
+
+The  good  news  is  that  working  the  job  queue  is  not  quite  as  complex  as  it  at  first  ap- 
+pears. The  subroutine  in  lines  370-470  is  the  very  heart  of  the  matter.  We  simply  stuff 
+
+
+106 
+
+
+our  track  and  sector  into  the  header  table,  our  job  code  into  the  job  queue  table,  and 
+wait  until  the  FDC  has  completed  the  operation. 
+
+Keep  in  mind  that  this  example  was  using  buffer  number  0  ($0300-$03FF).  The  corre- 
+sponding header  table  and  job  queue  table  addresses  were  $0006  for  the  track,  $0007 
+for  the  sector,  and  $0000  for  the  job  code.  Please  note  that  every  job  code  is  greater 
+than  127.  (Bit  7  is  deliberately  set  high  (1).)  Recall  that  when  the  FDC  has  completed 
+a  job,  the  job  code  is  replaced  with  an  error  code.  All  error  codes  are  less  than  128. 
+(Bit  7  is  deliberately  set  low  (0).)  Line  460  waits  until  bit  7  of  the  job  code  is  set  low 
+(0)  by  the  FDC.  If  bit  7  is  high  (1),  the  FDC  is  still  working  so  we  must  continue  to 
+wait  Gine  410). 
+
+---
+Additional information can be found by searching:
+- "basic_job_queue_read_program_listing" which expands on Where the subroutine writes the track/sector and job code
+- "fdc_error_handling_and_job_hierarchy" which expands on How to interpret the returned FDC error codes after job completion
+- "warning_dangers_of_bypassing_parser_and_alignment_requirements" which expands on Risks when directly manipulating job/header tables and bypassing parser protections

@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Compute scaled timing values by shifting the measured ($FFFF - T2C) right twice (divide by 4) and compare it with a threshold computed as min + $3C (from $B0 plus constant). If the measured value is below threshold, branch to the short-pulse handling path. Saves intermediate results in $B1.
+
+.,F953 4A       LSR             A = $FF - T2C_h >> 1
+.,F954 66 B1    ROR $B1         shift tape timing constant max byte
+                                $B1 = $FF - T2C_l >> 1
+.,F956 4A       LSR             A = $FF - T2C_h >> 1
+.,F957 66 B1    ROR $B1         shift tape timing constant max byte
+                                $B1 = $FF - T2C_l >> 1
+.,F959 A5 B0    LDA $B0         get tape timing constant min byte
+.,F95B 18       CLC             clear carry for add
+.,F95C 69 3C    ADC #$3C        
+.,F95E C5 B1    CMP $B1         compare with tape timing constant max byte
+                                compare with ($FFFF - T2C) >> 2
+.,F960 B0 4A    BCS $F9AC       branch if min + $3C >= ($FFFF - T2C) >> 2
+
+---
+Additional information can be found by searching:
+- "cassette_pulse_types_and_loader_overview" which expands on uses the timing difference concept described in the overview
+- "pulse_classification_and_store_character_calls" which expands on continues to classify pulses as B/C/D and possibly store bytes

@@ -1,0 +1,24 @@
+# MACHINE - Shows the code to install the wedge via $0308 vector: save old vector into $03A0/$03A1, then store new vector address $033C into $0308/$0309, and return (RTS). Instructs to invoke the installer with SYS 862. Explains that BASIC will now accept '&' as the special command.
+
+The above code prints an asterisk ($2A) ten times and then prints a RETURN
+($0D).  It then goes to the regular BASIC interpreter, which will look behind
+the ampersand character for a new BASIC command.
+
+Now we need to set up the link to our program.  We'll write the code to do
+this starting at $035E, so that SYS 862 will put the new command (ampersand)
+into effect:
+
+  .A 035E  LDA $0308
+  .A 0361  STA $03A0
+  .A 0364  LDA $0309
+  .A 0367  STA $03A1
+  .A 036A  LDA #$3C
+  .A 036C  STA $0308
+  .A 036F  LDA #$03
+  .A 0371  STA $0309
+  .A 0374  RTS
+
+
+---
+Additional information can be found by searching:
+- "ampersand_wedge_command_implementation_part1" which expands on Intercept code that handles '&' command

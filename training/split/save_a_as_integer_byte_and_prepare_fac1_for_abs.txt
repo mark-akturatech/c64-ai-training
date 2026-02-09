@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Save A as integer byte and prepare FAC1 for ABS/normalisation: store the sign/indicator into FAC1 mantissa1 ($62), clear mantissa bytes 2 and 3, set exponent to $88, complement mantissa1 and rotate sign into carry, clear mantissa 3 and 4, store exponent, clear rounding byte and sign bit, then jump to the ABS+normalise routine.
+
+                                *** save A as integer byte
+.,BC3C 85 62    STA $62         save FAC1 mantissa 1
+.,BC3E A9 00    LDA #$00        clear A
+.,BC40 85 63    STA $63         clear FAC1 mantissa 2
+.,BC42 A2 88    LDX #$88        set exponent
+                                set exponent = X, clear FAC1 3 and 4 and normalise
+.,BC44 A5 62    LDA $62         get FAC1 mantissa 1
+.,BC46 49 FF    EOR #$FF        complement it
+.,BC48 2A       ROL             sign bit into carry
+                                set exponent = X, clear mantissa 4 and 3 and normalise FAC1
+.,BC49 A9 00    LDA #$00        clear A
+.,BC4B 85 65    STA $65         clear FAC1 mantissa 4
+.,BC4D 85 64    STA $64         clear FAC1 mantissa 3
+                                set exponent = X and normalise FAC1
+.,BC4F 86 61    STX $61         set FAC1 exponent
+.,BC51 85 70    STA $70         clear FAC1 rounding byte
+.,BC53 85 66    STA $66         clear FAC1 sign (b7)
+.,BC55 4C D2 B8 JMP $B8D2       do ABS and normalise FAC1
+
+
+---
+Additional information can be found by searching:
+- "perform_sgn" which expands on uses the sign result saved in A to create an integer byte
+- "abs_fac1" which expands on clears the sign bit and returns; this code prepares FAC1 then jumps to ABS+normalise

@@ -1,0 +1,40 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Step-by-step procedure to install a raster interrupt routine: 1) SEI to disable interrupts while changing vectors; 2) set Bit 0 of $D01A to enable raster IRQ; 3) write 9-bit raster value across $D012 (low) and $D011 (high bit); 4) write the low and high bytes of the handler address into the IRQ vector at locations 788-789 ($314-$315); includes formula for calculating HIBYTE and LOWBYTE for an address; 5) CLI to re-enable interrupts.
+
+                          The interrupt routine will first check if the desired condition is the
+                          source of the interrupt (see above entry) and then make the changes to
+                          the screen display.  Once you have written this interrupt routine, you
+                          must take the following steps to install it.
+
+                          1.  Set the interrupt disable flag in the status register with an SEI
+                          instruction.  This will disable all interrupts and prevent th system
+                          from crashing while you are changing the interrupt vectors.
+
+                          2.  Enable the raster interrupt.  This is done by setting Bit 0 of the
+                          VIC- II chip interrupt enable register at location 53274 ($D01A) to 1.
+
+                          3.  Indicate the scan line on which you want the interrupt to occur by
+                          writing to the raster registers.  Don't forget that this is a nine-bit
+                          value, and you must set both the low byte (in location 53266 ($D012))
+                          and the high bit (in the register at 53265 ($D011)) in order to insure
+                          that the interrupt will start at the scan line you want it to, and not
+                          256 lines earlier or later.
+
+                          4.  Let the computer know where the machine language routine that you
+                          want the interrupt to execute starts.  This is done by placing the
+                          address in the interrupt vector at locations 788-789 ($314-$315).
+                          This address is split into two parts, a low byte and a high byte, with
+                          the low byte stored at 788.
+
+                          To calculate the two values for a given address AD, you may use the
+                          formula HIBYTE=INT(AD/156) and LOWBYTE=AD-(HIBYTE*256).  The value
+                          LOWBYTE would go into location 788, and the value HIBYTE would go into
+                          location 789.
+
+                          5.  Reenable interrupts with a CLI instruction, which clears the
+                          interrupt disable flag on the status register.
+
+
+---
+Additional information can be found by searching:
+- "raster_compare_irq_and_raster_scan_basics" which expands on Why the raster registers and 9-bit value matter
+- "preserving_jiffy_clock_and_vectors" which expands on How to preserve/chain the existing timer (jiffy) interrupt vector

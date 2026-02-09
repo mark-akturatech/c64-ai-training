@@ -1,0 +1,63 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Cursor movement, editing (NXT1..NXT3, NXTX, NXTX1) and insert/delete logic: routines for moving cursor left/right/up/down, backspace handling (BAK1UP/BKLN), wrap-around checks (WLOG) and functions to set and update display and color pointers (SCOLOR/DSPP). Implements insertion (INS3/INS1) copying bytes and colors, updating LNMX and PNTR.
+
+.,E703 D0 06    BNE $E70B              BNE BKLN1
+.,E705 86 D3    STX $D3                STX PNTR
+.,E707 68       PLA                    PLA
+.,E708 68       PLA                    PLA
+.,E709 D0 9D    BNE $E6A8              BNE LOOP2
+                                ;
+.,E70B CA       DEX             BKLN1  DEX
+.,E70C 86 D6    STX $D6                STX TBLX
+.,E70E 20 6C E5 JSR $E56C              JSR STUPT
+.,E711 A4 D5    LDY $D5                LDY LNMX
+.,E713 84 D3    STY $D3                STY PNTR
+.,E715 60       RTS                    RTS
+                                ;PRINT ROUTINE
+                                ;
+.,E716 48       PHA             PRT    PHA
+.,E717 85 D7    STA $D7         STA    DATA
+.,E719 8A       TXA             TXA
+.,E71A 48       PHA             PHA
+.,E71B 98       TYA             TYA
+.,E71C 48       PHA             PHA
+.,E71D A9 00    LDA #$00        LDA    #0
+.,E71F 85 D0    STA $D0         STA    CRSW
+.,E721 A4 D3    LDY $D3         LDY    PNTR
+.,E723 A5 D7    LDA $D7         LDA    DATA
+.,E725 10 03    BPL $E72A       BPL    *+5
+.,E727 4C D4 E7 JMP $E7D4       JMP    NXTX
+.,E72A C9 0D    CMP #$0D        CMP    #$D
+.,E72C D0 03    BNE $E731       BNE    NJT1
+.,E72E 4C 91 E8 JMP $E891       JMP    NXT1
+.,E731 C9 20    CMP #$20        NJT1   CMP #'
+.,E733 90 10    BCC $E745       BCC    NTCN
+.,E735 C9 60    CMP #$60        CMP    #$60            ;LOWER CASE?
+.,E737 90 04    BCC $E73D       BCC    NJT8            ;NO...
+.,E739 29 DF    AND #$DF        AND    #$DF            ;YES...MAKE SCREEN LOWER
+.,E73B D0 02    BNE $E73F       BNE    NJT9            ;ALWAYS
+.,E73D 29 3F    AND #$3F        NJT8   AND #$3F
+.,E73F 20 84 E6 JSR $E684       NJT9   JSR QTSWC
+.,E742 4C 93 E6 JMP $E693       JMP    NXT3
+.,E745 A6 D8    LDX $D8         NTCN   LDX INSRT
+.,E747 F0 03    BEQ $E74C       BEQ    CNC3X
+.,E749 4C 97 E6 JMP $E697       JMP    NC3
+.,E74C C9 14    CMP #$14        CNC3X  CMP #$14
+.,E74E D0 2E    BNE $E77E       BNE    NTCN1
+.,E750 98       TYA             TYA
+.,E751 D0 06    BNE $E759       BNE    BAK1UP
+.,E753 20 01 E7 JSR $E701              JSR BKLN
+.,E756 4C 73 E7 JMP $E773              JMP BK2
+.,E759 20 A1 E8 JSR $E8A1       BAK1UP JSR CHKBAK      ;SHOULD WE DEC TBLX
+.,E75C 88       DEY                    DEY
+.,E75D 84 D3    STY $D3         STY    PNTR
+.,E75F 20 24 EA JSR $EA24       BK1    JSR SCOLOR      ;FIX COLOR PTRS
+.,E762 C8       INY             BK15   INY
+.,E763 B1 D1    LDA ($D1),Y     LDA    (PNT)Y
+.,E765 88       DEY             DEY
+.,E766 91 D1    STA ($D1),Y     STA    (PNT)Y
+.,E768 C8       INY             INY
+.,E769 B1 F3    LDA ($F3),Y     LDA    (USER)Y
+
+---
+Additional information can be found by searching:
+- "wlogic_wrapping_and_line_move" which expands on wrap/scroll integration during cursor moves

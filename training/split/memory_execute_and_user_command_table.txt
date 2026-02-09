@@ -1,0 +1,50 @@
+# ********* - Section 8.4–8.5: MEMORY-EXECUTE syntax (PRINT#file#,"M-E" CHR$(low) CHR$(high)) to run code in DOS memory; USER command table (U1..U9, U; etc.) mapping USERn to jump vectors/addresses in disk RAM and examples of sending USER commands (PRINT# 15,"U3" or concatenated USER strings), description of UI+/UI- for speed switching.
+
+
+
+
+8.4 MEMORY-EXECUTE
+
+Any routine in the DOS memory, RAM or ROM, can be executed with the
+MEMORY-EXECUTE command.
+
+FORMAT FOR MEMORY-EXECUTE:
+
+    PRINT#file#, "M-E" CHR$(low address byte) CHR$(high byte)
+
+See line 30 above for an example.
+
+8.5 USER COMMANDS
+
+Aside from the USER1 and USER2 commands discussed in chapter 6, and
+the UI+ and UI- commands in chapter 2, the USER commands are jumps to
+a table of locations in the disk drive's RAM memory.
+
+USER COMMAND                    FUNCTION
+
+ U1 or UA      BLOCK-READ without changing buffer-pointer
+ U2 or UB      BLOCK-WRITE without changing buffer-pointer
+ U3 or UC      jump to $0500  --+
+ U4 or UD      jump to $0503    |
+ U5 or UE      jump to $0506    |
+ U6 or UF      jump to $0509    + (HEXADECIMAL LOCATIONS)
+ U7 or UG      jump to $050C    |
+ U8 or UH      jump to $05OF    |
+ U9 or UI      jump to $FFFA  --+
+ U; or UJ      power-up vector
+ UI+           set Commodore 64 speed
+ UI-           set VIC 20 speed
+
+By loading these locations with another jump command, like JMP $0520,
+you can create longer routines that operate in the disk's memory along
+with an easy-to-use jump table -- even from BASIC!
+
+EXAMPLES OF USER COMMANDS:
+
+     PRINT# 15, "U3"
+     PRINT# 15, "U"+CHR$(50+Q)
+     PRINT# 15, "UI"
+
+---
+Additional information can be found by searching:
+- "using_with_vic20_or_commodore64_switching_speeds" which expands on UI+/UI- to switch between C64 and VIC-20 modes described earlier (Chapter 2)

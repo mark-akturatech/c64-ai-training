@@ -1,0 +1,22 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Explanation that at least two raster interrupts are required to change only a portion of the screen: one interrupt to change display mode/values and another to change it back. Introduction to the sample program that divides the display into three sections (top high-res bitmap, middle text, bottom multicolor bitmap) using raster-scan interrupts.
+
+                          Another thing that you should keep in mind is that at least two raster
+                          interrupts are required if you want to change only a part of the
+                          screen.  Not only must the interrupt routine change the display, but
+                          it must also set up another raster interrupt that will change it back.
+
+                          The sample program below uses a raster-scan interrupt to divide the
+                          display into three sections.  The first 80 scan lines are in
+                          high-resolution bitmap mode, the next 40 are regular text, and the
+                          last 80 are in multicolor bitmap mode.  The screen will split this way
+                          as soon as a SYS to the routine that turns on the interrupt occurs.
+                          The display will stay split even after the program ends.  Only if you
+                          hit the STOP and RESTORE keys together will the display return to
+                          normal.
+
+
+---
+Additional information can be found by searching:
+- "raster_compare_irq_and_raster_scan_basics" which expands on How raster interrupts allow mid-screen register changes
+- "sample_program_registers_and_data_locations" which expands on Registers and data tables used by the sample program
+- "raster_interrupt_example_basic_and_data_listing" which expands on Full BASIC + machine-code sample that implements the split-screen

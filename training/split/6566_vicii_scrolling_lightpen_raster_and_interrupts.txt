@@ -1,0 +1,120 @@
+# COMMODORE 64 - VIC-II display window and interaction features: screen blanking (DEN), row/column select (RSEL/CSEL) for 24/25 rows and 38/40 columns, horizontal and vertical fine scrolling bits (X2..X0, Y2..Y0), light-pen latch behavior and registers (LPX, LPY), raster register and raster interrupt compare behavior and visible raster window, interrupt register and enable bits (latches and enable bits for raster, MOB-DATA and MOB-MOB collisions, light-pen), and details on interrupt latching/clearing.
+
+
+
+
+                                                           APPENDIX N   445
+~
+
+
+  ROW/COLUMN SELECT
+
+    The normal display consists of 25 rows of 40 characters (or character
+  regions) per row. For special display purposes, the display window may be
+  reduced to 24 rows and 38 characters. There is no change in the format of
+  the displayed information, except that characters (bits) adjacent to the
+  exterior border area will now be covered by the border. The select bits
+  operate as follows:
+
+
+    RSEL |      NUMBER OF ROWS        |  CSEL |     NUMBER OF COLUMNS
+  -------+----------------------------+-------+----------------------------
+     0   |          24 rows           |   0   |         38 columns
+     1   |          25 rows           |   1   |         40 columns
+
+  The RSEL bit is in register 17 ($11) and the CSEL bit is in register 22
+  ($16). For standard display the larger display window is normally used,
+  while the smaller display window is normally used in conjunction with
+  scrolling.
+
+
+  SCROLLING
+
+    The display data may be scrolled up to one entire character space in
+  both the horizontal and vertical direction. When used in conjunction with
+  the smaller display window (above), scrolling can be used to create a
+  smooth panning motion of display data while updating the system memory
+  only when a new character row (or column) is required. Scrolling is also
+  used to center a fixed display within the display window.
+
+           BITS         |      REGISTER      |          FUNCTION
+  ----------------------+--------------------+-----------------------------
+         X2,X1,X0       |      22 ($16)      |     Horizontal Position
+         Y2,Y1,Y0       |      17 ($11)      |     Vertical Position
+
+  LIGHT PEN
+
+    The light pen input latches the current screen position into a pair of
+  registers (LPX,LPY) on a low-going edge. The X position register 19 ($13)
+  will contain the 8 MSB of the X position at the time of transition. Since
+  the X position is defined by a 512-state counter (9 bits) resolution to 2
+  horizontal dots is provided. Similarly, the Y position is latched to its
+
+  446   APPENDIX N
+~
+
+
+  register 20 ($14) but here 8 bits provide single raster resolution within
+  the visible display. The light pen latch may be triggered only once per
+  frame, and subsequent triggers within the same frame will have no effect.
+  Therefore, you must take several samples before turning the light pen to
+  the screen (3 or more samples, average), depending upon the
+  characteristics of your light pen.
+
+
+  RASTER REGISTER
+
+    The raster register is a dual-function register. A read of the raster
+  register 18 ($12) returns the lower 8 bits of the current raster position
+  (the MSB-RC8 is located in register 17 ($11)). The raster register can be
+  interrogated to implement display changes outside the visible area to
+  prevent display flicker. The visible display window is from raster 51
+  through raster 251 ($033-$0FB). A write to the raster bits (including
+  RC8) is latched for use in an internal raster compare. When the current
+  raster matches the written value, the raster interrupt latch is set.
+
+
+  INTERRUPT REGISTER
+
+    The interrupt register shows the status of the four sources of
+  interrupt. An interrupt latch in register 25 ($19) is set to "1" when an
+  interrupt source has generated an interrupt request. The four sources of
+  interrupt are:
+
+   LATCH |ENABLE|
+    BIT  | BIT  |                       WHEN SET
+  -------+------+----------------------------------------------------------
+    IRST | ERST | Set when (raster count) = (stored raster count)
+    IMDC | EMDC | Set by MOB-DATA collision register (first collision only)
+    IMMC | EMMC | Set by MOB-MOB collision register (first collision only)
+    ILP  | ELP  | Set by negative transition of LP input (once per frame)
+    IRQ  |      | Set high by latch set and enabled (invert of /IRQ output)
+
+    To enable an interrupt request to set the /IRQ output to "0", the
+  corresponding interrupt enable bit in register 26 ($1A) must be set to
+  "1". Once an interrupt latch has been set, the latch may be cleared only
+  by writing a "1" to the desired latch in the interrupt register. This
+  feature allows selective handling of video interrupts without software
+  required to "remember" active interrupts.
+
+                                                           APPENDIX N   447
+~
+
+
+  DYNAMIC RAM REFRESH
+
+    A dynamic ram refresh controller is built in to the 6566/6567 devices.
+  Five 8-bit row addresses are refreshed every raster line. This rate
+  guarantees a maximum delay of 2.02 ms between the refresh of any single
+  row address in a 128 refresh scheme. (The maximum delay is 3.66 ms in a
+  256 address refresh scheme.) This refresh is totally transparent to the
+  system, since the refresh occurs during Phase 1 of the system clock. The
+  6567 generates both /RAS and /CAS which are normally connected directly
+  to the dynamic rams. /RAS and /CAS are generated for every Phase 2 and
+  every video data access (including refresh) so that external clock
+  generation is not required.
+
+---
+Additional information can be found by searching:
+- "6566_vicii_bitmap_and_mob_overview" which expands on MOB collision information and MOB-related interrupt behavior
+- "6566_vicii_theory_of_operation_and_memory_interface" which expands on how these features are implemented via bus/memory timing and refresh

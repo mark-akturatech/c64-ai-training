@@ -1,0 +1,54 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Filter registers $D415-$D418: $D415 Filter cutoff low 3 bits, $D416 Filter cutoff high 8 bits (11-bit cutoff 0-2047, mapping differs 6581 vs 8580), $D417 Resonance (bits 7-4), external input route (bit 3) and voice routing bits (bits 0-2), $D418 Filter mode bits (mute voice 3 bit 7, HP bit6, BP bit5, LP bit4) and master volume (bits 3-0). Explains filter mode combinations and approximate cutoff ranges for 6581/8580.
+
+--------------------------------------------------------------------------------
+3.4 FILTER REGISTERS ($D415-$D418)
+--------------------------------------------------------------------------------
+
+$D415 / 54293 - FILTER CUTOFF FREQUENCY LOW (Write-only)
+  Bits 2-0: Low 3 bits of the 11-bit cutoff frequency
+  Bits 7-3: Unused
+
+$D416 / 54294 - FILTER CUTOFF FREQUENCY HIGH (Write-only)
+  Bits 7-0: High 8 bits of the 11-bit cutoff frequency
+  Cutoff value = (HighByte * 8) + (LowByte AND 7)
+  Range: 0-2047
+  The actual frequency response varies between 6581 and 8580 revisions.
+
+  Approximate cutoff frequency mapping:
+    6581: ~200 Hz to ~12 kHz (non-linear, temperature dependent)
+    8580: ~30 Hz to ~12 kHz (more linear response)
+
+$D417 / 54295 - FILTER RESONANCE AND VOICE ROUTING (Write-only)
+  Bits 7-4: RESONANCE (0-15)
+             Controls the peak/emphasis at the cutoff frequency.
+             Higher values = more pronounced resonance peak.
+             At maximum, filter can self-oscillate on the 6581.
+  Bit 3:    FILT EX  - Route external audio input through filter
+  Bit 2:    FILT 3   - Route Voice 3 through filter
+  Bit 1:    FILT 2   - Route Voice 2 through filter
+  Bit 0:    FILT 1   - Route Voice 1 through filter
+
+$D418 / 54296 - FILTER MODE AND MASTER VOLUME (Write-only)
+  Bit 7:    MUTE 3   - Disconnect Voice 3 output (1 = muted)
+                        Voice 3 oscillator still runs and can be read
+                        at $D41B for modulation purposes.
+  Bit 6:    HP       - High-pass filter enable (1 = on)
+  Bit 5:    BP       - Band-pass filter enable (1 = on)
+  Bit 4:    LP       - Low-pass filter enable (1 = on)
+  Bits 3-0: VOLUME   - Master volume (0-15)
+
+  Filter modes can be combined:
+    LP only:       Low-pass filter
+    BP only:       Band-pass filter
+    HP only:       High-pass filter
+    LP + HP:       Notch/band-reject filter (attenuates at cutoff)
+    LP + BP:       Low-pass with wider rolloff
+    HP + BP:       High-pass with wider rolloff
+    LP + BP + HP:  All-pass (phase shifting)
+
+
+---
+Additional information can be found by searching:
+- "filter_cutoff_frequency" which expands on detailed cutoff mapping and differences
+- "resonance_control" which expands on resonance behavior and self-oscillation (6581)
+- "pinout_reference" which expands on EXT IN pin and external audio routing

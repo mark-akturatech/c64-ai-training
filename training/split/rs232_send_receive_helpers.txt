@@ -1,0 +1,78 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - RS232 transmit state machine and configuration: RS232 SEND main routine (handles sending bits under NMI, uses BITTS/BITNUM/RODATA/ROPRTY for parity and bits), SEND NEW RS232 BYTE (setup BITTS, ROPRTY, read out buffer pages RODBS/RODBE), checks for 3-line vs X-line handshake (DSR/CTS), and sets RS232 status RSSTAT on handshake errors. Uses 6551 command/control images in $0293-$029D and buffer pointers $0298-$029E.
+
+                                *** RS232 SEND
+                                This routine is concerned with sending a byte on the RS232
+                                port. The data is actually written to the port under NMI
+                                interrupt control. The CTS line generates an NMI when the
+                                port is ready for data. If all the bits in the byte have
+                                been sent, then a new RS232 byte is set up. Otherwise,
+                                this routine calculates parity and number of stop bits set
+                                up in the OPEN command. These bits are added to the end of
+                                the byte being sent.
+.,EEBB A5 B4    LDA $B4         BITTS, RS232 out bit count
+.,EEBD F0 47    BEQ $EF06       send new RS232 byte
+.,EEBF 30 3F    BMI $EF00
+.,EEC1 46 B6    LSR $B6         RODATA, RS232 out byte buffer
+.,EEC3 A2 00    LDX #$00
+.,EEC5 90 01    BCC $EEC8
+.,EEC7 CA       DEX
+.,EEC8 8A       TXA
+.,EEC9 45 BD    EOR $BD         ROPRTY, RS232 out parity
+.,EECB 85 BD    STA $BD
+.,EECD C6 B4    DEC $B4         BITTS
+.,EECF F0 06    BEQ $EED7
+.,EED1 8A       TXA
+.,EED2 29 04    AND #$04
+.,EED4 85 B5    STA $B5         NXTBIT, next RS232 bit to send
+.,EED6 60       RTS
+.,EED7 A9 20    LDA #$20
+.,EED9 2C 94 02 BIT $0294       M51CDR, 6551 command register image
+.,EEDC F0 14    BEQ $EEF2       no parity
+.,EEDE 30 1C    BMI $EEFC       mark/space transmit
+.,EEE0 70 14    BVS $EEF6       even parity
+.,EEE2 A5 BD    LDA $BD         ROPRTY, out parity
+.,EEE4 D0 01    BNE $EEE7
+.,EEE6 CA       DEX
+.,EEE7 C6 B4    DEC $B4         BITTS, out bit count
+.,EEE9 AD 93 02 LDA $0293       M51CTR, 6551 control register image
+.,EEEC 10 E3    BPL $EED1       one stop bit only
+.,EEEE C6 B4    DEC $B4         BITTS
+.,EEF0 D0 DF    BNE $EED1
+.,EEF2 E6 B4    INC $B4         BITTS
+.,EEF4 D0 F0    BNE $EEE6
+.,EEF6 A5 BD    LDA $BD         ROPRTY
+.,EEF8 F0 ED    BEQ $EEE7
+.,EEFA D0 EA    BNE $EEE6
+.,EEFC 70 E9    BVS $EEE7
+.,EEFE 50 E6    BVC $EEE6
+.,EF00 E6 B4    INC $B4         BITTS
+.,EF02 A2 FF    LDX #$FF
+.,EF04 D0 CB    BNE $EED1
+
+                                *** SEND NEW RS232 BYTE
+                                This routine sets up the system variables ready to send a
+                                new byte to the RS232 port. A test is made for 3-line or
+                                X-line mode. In X-line mode, DSR and  CTS are checked.
+.,EF06 AD 94 02 LDA $0294       M51CDR, 6551 command register
+.,EF09 4A       LSR             test handshake mode
+.,EF0A 90 07    BCC $EF13       3-line mode (no handshake)
+.,EF0C 2C 01 DD BIT $DD01       RS232 port
+.,EF0F 10 1D    BPL $EF2E       no DSR, error
+.,EF11 50 1E    BVC $EF31       no CTS, error
+.,EF13 A9 00    LDA #$00
+.,EF15 85 BD    STA $BD         ROPRTY, RS232 out parity
+.,EF17 85 B5    STA $B5         NXTBIT, next bit to send
+.,EF19 AE 98 02 LDX $0298       BITNUM, number of bits left to send
+.,EF1C 86 B4    STX $B4         BITTS, RS232 out bit count
+.,EF1E AC 9D 02 LDY $029D       RODBS, start page of out buffer
+.,EF21 CC 9E 02 CPY $029E       RODBE, index to end if out buffer
+.,EF24 F0 13    BEQ $EF39       disable timer
+.,EF26 B1 F9    LDA ($F9),Y     RS232 out buffer
+.,EF28 85 B6    STA $B6         RODATA, RS232 out byte buffer
+.,EF2A EE 9D 02 INC $029D       RODBS
+.,EF2D 60       RTS
+
+---
+Additional information can be found by searching:
+- "rs232_error_and_timer_and_bitcount" which expands on error codes, timer control and bit count computation
+- "rs232_receive_and_processing" which expands on receiver-side state machine that complements this transmitter

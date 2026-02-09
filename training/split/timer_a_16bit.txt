@@ -1,0 +1,30 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Timer A (TALO/T AHI) at offsets $04/$05: a 16-bit down-counter. Writes update the timer latch; latch is transferred to counter on underflow (continuous mode), on forced load via CRA bit 4, or when starting the timer. Count sources selected by CRA bit 5: PHI2 system clock (~1 MHz) or positive edges on CNT pin. On underflow Timer A can trigger an interrupt (ICR), toggle/pulse PB6 (CRA PBON/OUTMODE), and clock Timer B when configured. Reading returns current counter value.
+
+-------------------------------------------------------------
+5.4  Timer A (TALO/TAHI) - Offsets $04/$05
+-------------------------------------------------------------
+
+Timer A is a 16-bit down-counter (low byte at $04, high byte at $05).
+
+Reading: Returns the current counter value.
+Writing: Loads the timer latch. The latch value is transferred
+         to the counter on timer underflow (in continuous mode),
+         on forced load (bit 4 of CRA), or when the timer is
+         started while stopped.
+
+Timer A can count:
+  - System clock pulses (PHI2, ~1 MHz on C64)
+  - Positive edges on CNT pin
+  (Selected by bit 5 of CRA)
+
+On underflow, Timer A can:
+  - Trigger an interrupt (if enabled in ICR)
+  - Toggle or pulse bit 6 of Port B (if enabled in CRA)
+  - Clock Timer B (if Timer B is set to count Timer A underflows)
+
+
+---
+Additional information can be found by searching:
+- "control_register_a" which expands on CRA bits control Timer A start, mode, input source, and PB6 output
+- "timer_b_16bit" which expands on Timer B can count Timer A underflows (cascading)
+- "interrupt_control_register_icr" which expands on Timer underflow can trigger an interrupt flagged in ICR

@@ -1,0 +1,105 @@
+# byRiclianll - Support routines and data used by the 'create 27 errors' BASIC program: job queue setup (TRY loop, PRINT#15 M-W/M-R sequences), error handling (GET#15/GET/ASCII checks), and embedded DATA records (data bytes forming the injected machine code/data blocks). Shows how BASIC issues disk commands and polls results.
+
+
+570  REM  JOB  QUEUE 
+580  TRY=0 
+
+590  PRINT#15, "M-W"CHR* (12) CHR* (O) CHR* (2) 
+CHR* (T)CHR* (S) 
+
+600  PRINT#15, "M-W"CHR*(3)CHR*(0)CHR*(1)C 
+
+HR*<JOB) 
+
+610  TRY=TRY+1 
+
+620  PRINT#15, "M-R"CHR* (3) CHR* (0) 
+
+630  GET#15,E* 
+
+640  IFE*=""THENE*=CHR*(0) 
+
+650  E=ASC(E*) 
+
+660  IFTRY=500G0T0690 
+
+670  IFE>127G0T0610 
+
+680  RETURN 
+
+690  CLOSE 15 
+
+700  PRINT"  CDOWN}-  ^RVS>FAILEDtROFF>  " 
+710  END 
+
+720  REM  21  ERROR 
+
+730  DATA  32,163,253,169,  85,141,  1,  28 
+740  DATA  162,255,160,  48,  32,201,253,  32 
+750  DATA  0,254,169,  1,  76,105,249,234 
+760  REM  27M  ERROR 
+
+770  DATA169,  0,133,127,166,  12,134,  81 
+780  DATA134, 128, 166,    13,232,134,  67,169 
+
+
+151 
+
+
+790  DATA  i 
+800  DATA  6 
+810  DATA193 
+820  DATA232 
+830  DATA232 
+840  DATA  O 
+850  DATA232 
+860  DATA  O 
+870  DATA  93 
+880  DATA  2 
+890  DATA  40 
+900  DATA 186 
+910  DATA162 
+920  DATA250 
+930  DATA  49 
+940  DATA229 
+950  DATA  49 
+960  DATA247 
+970  DATA  O 
+980  DATA 133 
+990  DATA  6 
+1000  DATA 14 
+
+
+S8 
+O 
+
+
+,141,    32,      6,169,  8,141, 
+,169,      0,141,    40,      6,  32, 
+162,      O, 169,      a, 157,      O,  3 
+232,173,    40,      6,157,      O,  3 
+165,    81,157,      O,  3,232,169 
+157,      O,      3,232,157,     O,  3 
+169,    15,157,      O,  3,232,157 
+3,232,169,      0,    93,250,  2 
+251,      2,    93,252,      2,  93,253 
+157,249,      2,254,249,  2,238 
+6,173,    40,      6,197,  67,208 
+138,    72,169,    75,141,      O,  5 
+1,138,157,      O,  5,232,208 
+169,      0,133,    48,169,  3,133 
+32,   48,254,104,168,136,  32 
+253,   32,245,253,169,  5,133 
+32,233,245,133,   58,  32,143 
+169,   35,133,  81,169,169,141 
+6,169,      5,141,      1,  6,169 
+141,      2,      6,169,    49,141,  3 
+169,    76,141,      4,  6,169,170 
+1,     5,      6,169,252,141,      6,  6 
+
+
+
+---
+Additional information can be found by searching:
+- "basic_create_27_errors_full_track" which expands on main BASIC driver that uses these job-queue patterns
+- "m_w_m_r_machine_protocol" which expands on low-level M-W / M-R command formats used on channel 15

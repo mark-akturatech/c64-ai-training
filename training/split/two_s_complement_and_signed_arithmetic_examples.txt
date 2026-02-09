@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Two's complement examples and signed arithmetic breakdown: examples showing how to compute -4 via bitwise complement plus 1, signed value ranges, multi-byte signed values examples (-512, -516), and demonstration of binary addition combining signed and unsigned. Explanation of SBC as adding the operand's one's complement plus carry and how carry acts as borrow indicator. Emphasis on flag behavior during arithmetic.
+
+                      bit tested     assembler       opc bytes cycles
+                      0 [-------0]   BBR0 oper        0F   2      5**
+                      1 [------0-]   BBR1 oper        1F   2      5**
+                      2 [-----0--]   BBR2 oper        2F   2      5**
+                      3 [----0---]   BBR3 oper        3F   2      5**
+                      4 [---0----]   BBR4 oper        4F   2      5**
+                      5 [--0-----]   BBR5 oper        5F   2      5**
+                      6 [-0------]   BBR6 oper        6F   2      5**
+                      7 [0-------]   BBR7 oper        7F   2      5**
+                 BBS  Branch on Bit Set
+                      Similar to BBR, but branches on bit n set.
+                      Individual mnemonics designate the tested bit,
+                      as in BBSn, where n = 0..7.
+                      As with all branch instructions, the address
+                      mode is relative, taking a signed single-byte
+                      offset as operand.
+                      branch on An = 1                    N Z C I D V
+                                                          - - - - - -
+                      bit tested     assembler       opc bytes cycles
+                      0 [-------1]   BBS0 oper        8F   2      5**
+                      1 [------1-]   BBS1 oper        9F   2      5**
+                      2 [-----1--]   BBS2 oper        AF   2      5**
+                      3 [----1---]   BBS3 oper        BF   2      5**
+                      4 [---1----]   BBS4 oper        CF   2      5**
+                      5 [--1-----]   BBS5 oper        DF   2      5**
+                      6 [-1------]   BBS6 oper        EF   2      5**
+                      7 [1-------]   BBS7 oper        FF   2      5**
+                 RMB  Reset Memory Bit
+                      Resets a bit in memory at the given zeropage
+                      location. This is an entire family of eight
+                      instructions in total, resetting one of bits #0
+                      to #7, each. Individual mnemonics designate the
+                      bit to be reset, as in RMBn, where n = 0..7.
+                      The operand is always a zeropage address.
+                                                                  6502 Instruction Set
+                      0 -> Mn                             N Z C I D V
+                                                          - - - - - -
+                      bit reset      assembler       opc bytes cycles
+                      0 [-------0]   RMB0 zpg         07   2      5
+                      1 [------0-]   RMB1 zpg         17   2      5
+                      2 [-----0--]   RMB2 zpg         27   2      5
+                      3 [----0---]   RMB3 zpg         37   2      5
+                      4 [---0----]   RMB4 zpg         47   2      5
+                      5 [--0-----]   RMB5 zpg         57   2      5
+                      6 [-0------]   RMB6 zpg         67   2      5
+                      7 [0-------]   RMB7 zpg         77   2      5
+                 SMB  Set Memory Bit
+                      Similar to RMB, but sets the respective bit.
+                      This is an entire family of eight instructions
+                      in total, setting one of bits #0to #7, each.
+                      Individual mnemonics designate the bit to be
+                      set, as in SMBn, where n = 0..7.
+                      The operand is always a zeropage address.
+                      1 -> Mn                             N Z C I D V
+                                                          - - - - - -
+                      bit set        assembler       opc bytes cycles
+                      0 [-------1]   SMB0 zpg         87   2      5
+                      1 [------1-]   SMB1 zpg         97   2      5
+                      2 [-----1--]   SMB2 zpg         A7   2      5
+                      3 [----1---]   SMB3 zpg         B7   2      5
+
+---
+Additional information can be found by searching:
+- "a_primer_of_6502_arithmetic_operations" which expands on multi-byte addition/subtraction examples and carry/borrow semantics

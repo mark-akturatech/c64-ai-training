@@ -1,0 +1,78 @@
+# NMOS 6510 - Overview of Blackmail's "FLI Graph v2.2" FLI display trick and the display-routine requirements. Explains that the VIC-II will fetch colour-ram data from the open bus in the first 3 columns, so the opcode placed directly after the store to $D011 determines the colour. Lists the per-line requirements (23 cycles, change $D018, force a badline via $D011 at a fixed cycle, place a specific opcode after the $D011 store to set colour-ram fetch opcode, change background colour in $D021). Presents the common prologue sequence used each line: LDX zp (value for $D011), LDA #<screen> (value for $D018), STA $D018, STX $D011, and the cycle counts (13 cycles total). Notes that the following per-opcode part uses opcodes from the $A* row (loads) and always takes 10 cycles; includes the small fix (using A=$0f..$7f) to make the LAX#imm variant work for all 16 colours.
+
+Blackmail FLI
+In 1989 ASP of Blackmail released “FLI Graph v2.2”, which for the first time included a FLI
+display routine exploiting that in the first 3 columns of a FLI picture the VICII would fetch the
+colour-ram colour from “open” bus, with the result that whatever opcode comes after the write to
+$D011 in the FLI displayer will define said colour.
+The following shows the extracted code snippets used for creating the various colours in the first 3
+columns, including a small fix that makes it possible to use all 16 colours.
+First let’s outline what this display routine needs to do:
+•
+
+for each line use 23 cycles (each line is a badline)
+
+•
+
+in each line change the vram base address (via $D018)
+
+•
+
+in each line force a badline (via $D011) at the same cycle within the line
+
+•
+
+in each line alter the colour ram colour in the first 3 column by placing a specific opcode
+right after the store to $D011
+
+•
+
+in each line change the background colour ($D021)
+
+The first half of code for each line is always the same, first the X register is preloaded with the
+value that will be stored to $D011. The same value will also be used for indirect-x indexed
+addressing in some variants of the second half of the code. After that the Akku is loaded with the
+value used for $D018, then $D018 is written, and finally $D011 is stored. These 4 opcodes take
+13 cycles total:
+(3) a6 xx
+
+ldx zp
+
+; $69/$6b/$6d/$6f/$71/$73/$75/$77
+; → loaded value is $b8,$b9..$bf
+
+(2) a9 xx
+
+lda # <screen>
+
+; original code uses $08..$78 here.
+; however if we use $0f-$7f instead,
+; the LAX#imm used in one variant
+; of the second half will always
+; work as intended, and for all 16
+; colours
+
+(4) 8d 18 d0
+
+sta $d018
+
+(4) 8e 11 d0
+
+stx $d011
+
+After this follows a different part of code, depending on the colour that should be used for the
+colour ram in the first 3 columns. This was achieved by using one of the opcodes in the $aX row of
+the opcode matrix, which are all loads. The opcode used selects the colour fetched for the colour
+ram, the value fetched by this opcode selects the colour stored to $D021. This part of the code
+alwas takes 10 cycles.
+
+- 101 -
+
+
+---
+Additional information can be found by searching:
+- "blackmail_fli_variants_0_black_to_3_cyan" which expands on Variants 0-3 (black, white, red, cyan) — opcode sequences and background writes
+- "blackmail_fli_variants_4_violet_to_7_yellow" which expands on Variants 4-7 (violet, green, blue, yellow) — opcode sequences and background writes
+- "blackmail_fli_variants_8_orange_to_9_brown" which expands on Variants 8-9 (orange, brown) — opcode sequences and background writes
+- "blackmail_fli_variants_a_lred_to_b_dgrey" which expands on Variants a-b (light red, dark grey) — opcode sequences and notes on LAX#imm
+- "blackmail_fli_variants_c_mgrey_to_f_lgrey" which expands on Variants c-f (mid-grey, light green, light blue, light grey) — absolute addressing variants

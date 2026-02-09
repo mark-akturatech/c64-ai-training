@@ -1,0 +1,54 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Time-of-Day (TOD) clock at offsets $08-$0B: a 24-hour BCD clock with 1/10 second resolution, clocked from the TOD pin (mains frequency 50 Hz PAL / 60 Hz NTSC). Offsets: $08 tenths, $09 seconds (BCD), $0A minutes (BCD), $0B hours (BCD + AM/PM flag in bit 7). CRA bit 7 selects 50/60 Hz input. TOD uses BCD storage; reading hours latches the TOD registers until tenths are read; writing hours stops the clock until tenths are written. CRB bit 7 selects ALARM write mode; TOD alarm triggers an interrupt (ICR bit 2).
+
+-------------------------------------------------------------
+5.6  Time-of-Day Clock (TOD) - Offsets $08-$0B
+-------------------------------------------------------------
+
+The TOD is a 24-hour clock with 1/10 second resolution.
+It is clocked by the TOD pin, which receives 50 Hz (PAL) or
+60 Hz (NTSC) mains frequency. The CRA bit 7 selects between
+50/60 Hz input.
+
+All TOD registers are stored in BCD (Binary Coded Decimal) format.
+
+Offset $08 - TOD 10THS (Tenths of Seconds):
+  Bits 0-3: Tenths of seconds (0-9)
+  Bits 4-7: Not used
+
+Offset $09 - TOD SEC (Seconds):
+  Bits 0-3: Seconds ones digit (0-9)
+  Bits 4-6: Seconds tens digit (0-5)
+  Bit 7:    Not used
+
+Offset $0A - TOD MIN (Minutes):
+  Bits 0-3: Minutes ones digit (0-9)
+  Bits 4-6: Minutes tens digit (0-5)
+  Bit 7:    Not used
+
+Offset $0B - TOD HR (Hours):
+  Bits 0-3: Hours ones digit (0-9)
+  Bit 4:    Hours tens digit (0-1)
+  Bits 5-6: Not used
+  Bit 7:    AM/PM flag (0 = AM, 1 = PM)
+
+TOD Latching Behaviour:
+  - Reading the Hours register ($0B) latches the TOD outputs.
+    Subsequent reads of $0A, $09, $08 return the latched values.
+    Reading $08 (10ths) releases the latch.
+    This prevents reading inconsistent time during a rollover.
+  - Writing the Hours register ($0B) stops the TOD clock.
+    The clock is restarted when $08 (10ths) is written.
+    This ensures consistent time setting.
+
+TOD Alarm:
+  - Setting bit 7 of CRB (ALARM) causes writes to TOD registers
+    to set the ALARM time instead of the clock time.
+  - When the TOD clock matches the alarm time, an interrupt is
+    triggered (if enabled in ICR bit 2).
+
+
+---
+Additional information can be found by searching:
+- "control_register_a" which expands on CRA bit 7 selects TOD input frequency (50/60 Hz)
+- "control_register_b" which expands on CRB bit 7 toggles alarm write mode for TOD
+- "interrupt_control_register_icr" which expands on TOD alarm flag appears in ICR (ALRM)

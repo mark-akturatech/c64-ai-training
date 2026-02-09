@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Make-space helper for strings: the routine that allocates A bytes in string memory (returns X=pointer low byte, Y=pointer high byte), updates bottom-of-string-space and utility pointers, tests for out-of-memory and garbage-collected flags, and triggers garbage collection when allocation would fail. Saves and restores necessary bytes and loops to retry allocation after GC.
+
+                                *** make space in string memory for string A long
+                                return X = pointer low byte, Y = pointer high byte
+.,B4F4 46 0F    LSR $0F         clear garbage collected flag (b7)
+                                make space for string A long
+.,B4F6 48       PHA             save string length
+.,B4F7 49 FF    EOR #$FF        complement it
+.,B4F9 38       SEC             set carry for subtract, two's complement add
+.,B4FA 65 33    ADC $33         add bottom of string space low byte, subtract length
+.,B4FC A4 34    LDY $34         get bottom of string space high byte
+.,B4FE B0 01    BCS $B501       skip decrement if no underflow
+.,B500 88       DEY             decrement bottom of string space high byte
+.,B501 C4 32    CPY $32         compare with end of arrays high byte
+.,B503 90 11    BCC $B516       do out of memory error if less
+.,B505 D0 04    BNE $B50B       if not = skip next test
+.,B507 C5 31    CMP $31         compare with end of arrays low byte
+.,B509 90 0B    BCC $B516       do out of memory error if less
+.,B50B 85 33    STA $33         save bottom of string space low byte
+.,B50D 84 34    STY $34         save bottom of string space high byte
+.,B50F 85 35    STA $35         save string utility ptr low byte
+.,B511 84 36    STY $36         save string utility ptr high byte
+.,B513 AA       TAX             copy low byte to X
+.,B514 68       PLA             get string length back
+.,B515 60       RTS             
+.,B516 A2 10    LDX #$10        error code $10, out of memory error
+.,B518 A5 0F    LDA $0F         get garbage collected flag
+.,B51A 30 B6    BMI $B4D2       if set then do error code X
+.,B51C 20 26 B5 JSR $B526       else go do garbage collection
+.,B51F A9 80    LDA #$80        flag for garbage collected
+.,B521 85 0F    STA $0F         set garbage collected flag
+.,B523 68       PLA             pull length
+.,B524 D0 D0    BNE $B4F6       go try again (loop always, length should never be = $00)
+
+
+---
+Additional information can be found by searching:
+- "garbage_collection_main_routine" which expands on calls garbage collection ($B526) when allocation fails

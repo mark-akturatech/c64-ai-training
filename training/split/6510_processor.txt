@@ -1,0 +1,54 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Description of the 6510 (6502-family) CPU used in the C64: 8-bit data bus, 16-bit address bus, clock frequencies (NTSC 1022.7 kHz, PAL 985.248 kHz), two-phase clock (φ2), important signals (φ2, R/W, IRQ, RDY, AEC) and the built-in 6-bit I/O port (P0-P5 mapped at addresses $0000/$0001). Notes on RDY/AEC interaction with VIC (bus arbitration).
+
+2.2. 6510 processor
+-------------------
+
+The 6510 microprocessor [1] has an 8 bit data bus and a 16 bit address bus
+and is object code compatible with the famous 6502. It has two external
+interrupt inputs (one maskable (IRQ) and one non-maskable (NMI)) and as a
+special feature a 6 bit wide bidirectional I/O port. It is clocked at 1MHz
+in the C64.
+
+Important signals:
+
+�2     Processor clock output
+       This clock signal is the reference for the complete bus timing. Its
+       frequency is 1022.7 kHz (NTSC models) or 985.248 kHz (PAL models).
+       One period of this signal corresponds to one clock cycle consisting
+       of two phases: �2 is low in the first phase and high in the second
+       phase (hence the name '�2' for "phase 2"). The 6510 only accesses
+       the bus in the second clock phase, the VIC normally only in the
+       first phase.
+
+R/W    This signal flags a read (R/W high) or write (R/W low) access.
+
+IRQ    If this input is held on low level, an interrupt sequence is
+       triggered unless interrupts are masked with the interrupt mask bit
+       in the status register. The interrupt sequence begins after two
+       or more clock cycles at the start of the next instruction. With this
+       pin, the VIC can trigger an interrupt in the processor. Interrupts
+       are only recognized if the RDY line is high.
+
+RDY    If this line is low during a read access, the processor stops with
+       the address lines reflecting the current address being fetched. It
+       is ignored during write accesses. In the C64, RDY is used to stop
+       the processor if the VIC needs additional bus cycles for character
+       pointer and sprite data accesses. It is connected to the BA signal
+       on the VIC.
+
+AEC    This pin tri-states the address lines. This is used for making the
+       processor address bus inactive during VIC accesses. The signal is
+       connected to the AEC output on the VIC.
+
+P0-P5  This is the built-in 6 bit I/O port. Each line can be individually
+       programmed as input or output. A data direction register and a data
+       register are internally mapped to addresses 0 and 1, respectively.
+       You may therefore expect that the processor cannot access the RAM
+       addresses 0 and 1 (as they are overlayed by the I/O port), but more
+       on this later...
+
+
+---
+Additional information can be found by searching:
+- "memory_access_timing" which expands on Bus phase division between VIC and CPU
+- "addresses_0_1_and_de00_area" which expands on special behavior of addresses $0000/$0001 when VIC drives bus

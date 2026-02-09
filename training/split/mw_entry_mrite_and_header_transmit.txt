@@ -1,0 +1,76 @@
+# byRiclianll - The first M-W (memory-to-disk / write) entry routine labeled MRITE. Initializes the PART pointer (TEMP) with LDA #*00 / STA TEMP, then L00P3 loads TEMP, adds #*20 (increments the PART pointer by $20), stores back to TEMP and branches to DONE if it wraps (BEQ DONE). Prepares channel 15 for output (LDX #*0F; JSR CHKOUT) and transmits the "M-W" command header and parameters by looping L00P4: LDX #*00; L00P4 LDA MW,X; JSR CHROUT; INX; CPX #*06; BNE L00P4 — sending 6 bytes from the MW table.
+
+MRITE  LDA  #*00   ; INITIALIZE  PART  1 
+
+POINTER 
+
+920 
+
+STA 
+
+TEMP 
+
+930 
+
+BED 
+
+ENTER 
+
+940 
+
+« 
+
+950 
+
+L00P3  LDA  TEMP 
+
+960 
+
+CLC 
+
+970 
+
+ADC 
+
+#*20 
+
+9S0 
+
+STA 
+
+TEMP 
+
+990 
+
+BEQ 
+
+DONE 
+
+1000  ; 
+
+1010  ENTER  LDX  #*0F   ; PREPARE  CHANNEL  15 
+
+FOR  OUTPUT 
+
+1020  JSR  CHKOUT 
+
+1030  ; 
+
+104O  LDX  #*00 
+
+105O  L00P4  LDA  MW, X    ; SEND   "M-W  LO  HI  *20 
+
+II 
+
+1060  JSR  CHROUT 
+
+1070  I NX 
+
+1080  CPX  #*06 
+
+1090  BNE  L00P4 
+
+---
+Additional information can be found by searching:
+- "send_to_disk_section_header" which expands on Provides the section title and comment that introduce this MRITE entry
+- "buffer_pointer_setup_and_loop1_start" which expands on Continues with setup of buffer pointers/indices and the LOOP1 processing that follows the header transmit

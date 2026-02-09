@@ -1,0 +1,65 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Builds/clears a tape header in the tape buffer: saves I/O start and tape end addresses, clears header bytes, writes header type, file name and start/end addresses into the header buffer, sets tape buffer start/end pointers (JSR $F7D7), sets write lead cycle count and calls the tape write entry (JSR $F86B). Restores saved registers and returns.
+
+.,F76F 90 5E    BCC $F7CF       if < $0200 just exit ??
+.,F771 A5 C2    LDA $C2         get I/O start address high byte
+.,F773 48       PHA             save it
+.,F774 A5 C1    LDA $C1         get I/O start address low byte
+.,F776 48       PHA             save it
+.,F777 A5 AF    LDA $AF         get tape end address high byte
+.,F779 48       PHA             save it
+.,F77A A5 AE    LDA $AE         get tape end address low byte
+.,F77C 48       PHA             save it
+.,F77D A0 BF    LDY #$BF        index to header end
+.,F77F A9 20    LDA #$20        clear byte, [SPACE]
+.,F781 91 B2    STA ($B2),Y     clear header byte
+.,F783 88       DEY             decrement index
+.,F784 D0 FB    BNE $F781       loop if more to do
+.,F786 A5 9E    LDA $9E         get the header type back
+.,F788 91 B2    STA ($B2),Y     write it to header
+.,F78A C8       INY             increment the index
+.,F78B A5 C1    LDA $C1         get the I/O start address low byte
+.,F78D 91 B2    STA ($B2),Y     write it to header
+.,F78F C8       INY             increment the index
+.,F790 A5 C2    LDA $C2         get the I/O start address high byte
+.,F792 91 B2    STA ($B2),Y     write it to header
+.,F794 C8       INY             increment the index
+.,F795 A5 AE    LDA $AE         get the tape end address low byte
+.,F797 91 B2    STA ($B2),Y     write it to header
+.,F799 C8       INY             increment the index
+.,F79A A5 AF    LDA $AF         get the tape end address high byte
+.,F79C 91 B2    STA ($B2),Y     write it to header
+.,F79E C8       INY             increment the index
+.,F79F 84 9F    STY $9F         save the index
+.,F7A1 A0 00    LDY #$00        clear Y
+.,F7A3 84 9E    STY $9E         clear the name index
+.,F7A5 A4 9E    LDY $9E         get name index
+.,F7A7 C4 B7    CPY $B7         compare with file name length
+.,F7A9 F0 0C    BEQ $F7B7       if all done exit the loop
+.,F7AB B1 BB    LDA ($BB),Y     get file name byte
+.,F7AD A4 9F    LDY $9F         get buffer index
+.,F7AF 91 B2    STA ($B2),Y     save file name byte to buffer
+.,F7B1 E6 9E    INC $9E         increment file name index
+.,F7B3 E6 9F    INC $9F         increment tape buffer index
+.,F7B5 D0 EE    BNE $F7A5       loop, branch always
+.,F7B7 20 D7 F7 JSR $F7D7       set tape buffer start and end pointers
+.,F7BA A9 69    LDA #$69set write lead cycle count
+.,F7BC 85 AB    STA $AB         save write lead cycle count
+.,F7BE 20 6B F8 JSR $F86B       do tape write, no cycle count set
+.,F7C1 A8       TAY             
+.,F7C2 68       PLA             pull tape end address low byte
+.,F7C3 85 AE    STA $AE         restore it
+.,F7C5 68       PLA             pull tape end address high byte
+.,F7C6 85 AF    STA $AF         restore it
+.,F7C8 68       PLA             pull I/O start addresses low byte
+.,F7C9 85 C1    STA $C1         restore it
+.,F7CB 68       PLA             pull I/O start addresses high byte
+.,F7CC 85 C2    STA $C2         restore it
+.,F7CE 98       TYA             
+.,F7CF 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "set_tape_buffer_start_and_end_pointers" which expands on called (JSR $F7D7) to derive I/O and end pointers from buffer start
+- "initiate_tape_write" which expands on calls the tape write entry (JSR $F86B)
+- "get_tape_buffer_start_pointer" which expands on helper used by the set-pointer routine that this code calls

@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Practical discussion of compare instructions (CMP, CPX, CPY): how flags Z, C, N map to register <, =, > operand relations and using carry as >= test; BIT instruction deep dive: performs A AND M -> Z, transfers M7 -> N and M6 -> V, allowing tests of specific bits without modifying A; examples from MS/Commodore BASIC demonstrating BIT in flag setting and checking sequences (using ROR, BIT, BVS/BMI, BCS) for complex control flows.
+
+                      absolute       TRB oper         1C   3      6
+                      zeropage       TRB oper         14   2      5
+                 TSB  Test and Set Memory Bit***
+                      Similar to TRB, but sets the bits according to the bit
+                      mask in A.
+                      TSB sets the bits set in A in the specified location
+                      and sets Z, if any of these bits were previously set,
+                      otherwise resetting Z.
+                      A AND M -> Z, A OR M -> M           N Z C I D V
+                                                          - + - - - -
+                      addressing     assembler       opc bytes cycles
+                      absolute       TRB oper         0C   3      6
+                      zeropage       TRB oper         04   2      5
+                 WAI  Wait for Interrupt
+                      Stops and pulls the signal on pin RDY to low.
+                      The processor goes into a low-power mode,
+                      similar to STP, until an IRQ or NMI signal is
+                      encountered to "wake it up" again.
+                      stop and wait for sIRQ/sNMI         N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      implied        WAI              CB   1      3
+                  *   add 1 to cycles if page boundary is crossed
+                  **  add 1 to cycles if branch occurs on same page
+                      add 2 to cycles if branch occurs to different page
+                  *** Instructions for bit manipulation not present on the G65SC02.
+                      Early versions of the W65C02 implement TRB and TSB only.
+                      Instructions BBR, BBS, RMB and SMB on the W65C02S are as on
+                      the Rockwell R6500/11/12/15 family.
+                 Additional NOPs, "Reserved for Future Use" (W65C02)
+                 There are no undefined opcodes on the W65C02.
+                 Opcodes not in use are marked as "reserved for future use" and execute
+                 as NOPs. These additional NOPs come at various byte sizes and cycle
+                 times, here listed by their respective instruction codes (W65C02S):
+                   NOP 1 byte, 1 cycle:
+                                                                  6502 Instruction Set
+                   03, 13, 23, 33, 43, 53, 63, 73,
+                   83, 93, A3, B3, C3, D3, E3, F3,
+                   0B, 1B, 2B, 3B, 4B, 5B, 6B, 7B,
+                   8B, 9B, AB, BB, EB, FB
+                   NOP 2 bytes, 2 cycles:
+                   02, 22, 42, 62, 82, C2, E2
+                   NOP 2 bytes, 3 cycles:
+                   44
+                   NOP 2 bytes, 4 cycles:
+                   54, F4, F4
+                   NOP 3 bytes, 4 cycles:
+                   DC, FC
+                   NOP 3 bytes, 8 cycles:
+                   5C
+                 Modified Cycle Times (W65C02)
+                   Cycle Penalty for BCD Arithmetics
+                   For instructions ADC and SBC, the negative flag (N), the overflow flag (V)
+                   and the zero flag (Z) are now set correctly for decimal mode. However, this
+                   comes at the general cost of an extra cycle for these instructions, for any
+                   BCD arithmetics.
+                   Add 1 to any cycle times stated if the processor is currently in decimal
+                   mode (D flag = 1).
+                   Read-Modify-Write Instructions with Absolute Indexed Addresses
+                   execute in one cycle less when remaining at the same memory page.
+
+---
+Additional information can be found by searching:
+- "a_primer_of_6502_arithmetic_operations" which expands on how ADC/SBC use carry and set flags in multi-byte arithmetic

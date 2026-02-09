@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - TAPE entry: configures 6526 (CIA) registers for cassette operations. Sets D1ICR/D1CRB to enable/disable selected timer IRQs (clears unwanted IRQs, sets OR mask to enable T2 for cassette write), preserves 50/60Hz TOD bit, stores CASTON for auto mode, and prepares for RS-232 completion. Also disables the VIC display (clears bit in $D011) and saves the current IRQ vector into IRQTMP (IRQTMP, IRQTMP+1) before calling BSIV to install the cassette-specific IRQ vector.
+
+.,F875 A0 7F    LDY #$7F        TAPE   LDY #$7F        ;KILL UNWANTED IRQ'S
+.,F877 8C 0D DC STY $DC0D              STY D1ICR
+.,F87A 8D 0D DC STA $DC0D              STA D1ICR       ;TURN ON WANTED
+.,F87D AD 0E DC LDA $DC0E              LDA D1CRA       ;CALC TIMER ENABLES
+.,F880 09 19    ORA #$19               ORA #$19
+.,F882 8D 0F DC STA $DC0F              STA D1CRB       ;TURN ON T2 IRQ'S FOR CASS WRITE(ONE SHOT)
+.,F885 29 91    AND #$91               AND #$91        ;SAVE TOD 50/60 INDICATION
+.,F887 8D A2 02 STA $02A2              STA CASTON      ;PLACE IN AUTO MODE FOR T1
+                                ; WAIT FOR RS-232 TO FINISH
+.,F88A 20 A4 F0 JSR $F0A4              JSR RSP232
+                                ; DISABLE SCREEN DISPLAY
+.,F88D AD 11 D0 LDA $D011              LDA VICREG+17
+.,F890 29 EF    AND #$EF               AND #$FF-$10    ;DISABLE SCREEN
+.,F892 8D 11 D0 STA $D011              STA VICREG+17
+                                ; MOVE IRQ TO IRQTEMP FOR CASS OPS
+.,F895 AD 14 03 LDA $0314       LDA    CINV
+.,F898 8D 9F 02 STA $029F       STA    IRQTMP
+.,F89B AD 15 03 LDA $0315       LDA    CINV+1
+.,F89E 8D A0 02 STA $02A0       STA    IRQTMP+1
+.,F8A1 20 BD FC JSR $FCBD       JSR    BSIV            ;GO CHANGE IRQ VECTOR
+
+---
+Additional information can be found by searching:
+- "block_entry_read_write_setup" which expands on Called from read/write entry points to start tape operations
+- "motor_control_and_interrupt_enable" which expands on Follows IRQ setup to start motor and local counters
+- "tape_completion_wait_loop" which expands on Uses the new IRQ vector and IRQTMP to determine completion

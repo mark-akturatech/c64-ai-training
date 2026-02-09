@@ -1,0 +1,105 @@
+# ********* - Explains how each character is 8 bytes long representing an 8x8 bitmap, bit-value table for bits 0..7 (1..128). Provides example: first 8 bytes for '@' are 60,102,110,110,96,98,60,0 and breaks down bits to show pixels. Includes a BASIC program to display any ROM character shape (PEEK from 53248). Discusses VIC-II limitations and character ROM mapping into visible RAM spaces; suggests copying ROM to RAM for user-defined characters and describes multicolor text mode needing custom character sets (enabled by Bit 4 of 53270 $D016).
+
+(128+64+32+16+8+4+2+1=255), while a byte whose value is 0 is made up
+of all zero bits.  Numbers in between are made up of combinations of
+bits set to 1 and bits set to 0.  If you think of every bit that holds
+0 as a dot on the screen which is the color of the screen background,
+and every bit that holds a 1 as a dot whose color is that of the
+appropriate nybble in Color RAM, you can begin to get an idea of how
+the byte values relate to the shape of the character.  For example, if
+you PEEK at the first eight bytes of the character ROM (the technique
+is explained in the entry for location 1), you will see the numbers
+60, 102, 110, 110, 96, 98, 60, 0.  Breaking these data bytes down into
+their bit values gives us a picture that looks like the following:
+
+00111100   0 +   0 +  32 +  16 +   8 +   4 +   0 +   0 =  60
+01100110   0 +  64 +  32 +   0 +   0 +   4 +   2 +   0 = 101
+01101110   0 +  64 +  32 +   0 +   8 +   4 +   2 +   0 = 110
+01101110   0 +  64 +  32 +   0 +   8 +   4 +   2 +   0 = 110
+01100000   0 +  64 +  32 +   0 +   0 +   0 +   0 +   0 =  96
+01100010   0 +  64 +  32 +   0 +   0 +   0 +   2 +   0 =  98
+00111100   0 +   0 +  32 +  16 +   8 +   4 +   0 +   0 =  60
+00000000   0 +   0 +   0 +   0 +   0 +   0 +   0 +   0 =   0
+
+If you look closely, you will recognize the shape of the commercial at
+sign (@) as it's displayed on your screen.  The first byte of data is
+60, and you can see that Bits 5, 4, 3, and 2 are set to 1.  The chart
+above shows that the bit values for these bits are 32, 16, 8, and 4.
+Adding these together, you get 32+16+8+4=60.  This should give you an
+idea of how the byte value corresponds to the patterns of lit dots.
+For an even more graphic display, type in the following program, which
+shows the shape of any of the 512 characters in the ROM, along with
+the number value of each byte of the shape.
+
+10 DIM B%(7),T%(7):FOR I=0 TO 7:T%(I)=2^I:NEXT
+20 POKE 53281,2:PRINT CHR$(147):POKE 53281,1:POKE 53280,0:POKE 646,11
+30 POKE 214,20:PRINT:INPUT" CHARACTER NUMBER (0-511)";C$
+40 C=VAL(C$):GOSUB 80:FOR I=0 TO 7
+50 POKE 214,6+I:PRINT:PRINT TAB(23);B%(I);CHR$(20);"   "
+60 FOR J=7 TO 0 STEP-1:POKE 1319+(7-J)+I*40,32-128*((B%(I)ANDT%(J))=T%(J))
+70 NEXT J,I:POKE 214,20:PRINT:PRINT TAB(27)"    ":GOTO 30
+80 POKE 56333,127:POKE 1,51:FOR I=0 TO 7
+90 B%(I)=PEEK(53248+C*8+I):NEXT:POKE 1,55:POKE 56333,129:RETURN
+
+If you have read about the VIC-II video chip, you know that it can
+address only 16K of memory at a time, and that all display data such
+as screen memory, character shape data, and sprite shape data must be
+stored within that 16K block.
+
+Since it would be very inconvenient for the VIC-II chip to be able to
+access the character data only at the 16K block which includes
+adresses 53248-57343 ($D000-$DFFF), the 64 uses an addressing trick
+that makes the VIC-II chip see an image of the Character ROM at
+4096-8191 ($1000-$1FFF) and at 36864-40959 ($9000-$9FFF).  It is not
+available in the other two blocks.  To generate characters in these
+blocks, you must supply your own user-defined character set, or copy
+the ROM data to RAM.  A machine language routine for doing this is
+included in a sample program at the entry for 56576 ($DD00).
+
+As indicated above, you are by no means limited to useing the
+character data furnished by the ROM.  The availability of user-defined
+characters greatly extends the graphics power of the 64.  It allows
+you to create special text characters, like math or chemistry symbols
+and foreign language alphabets.  You can also develop special graphics
+characters as a substitute for plotting points in bitmap graphics.
+You can achieve the same resolution using a custom character as in
+high-resolution bitmap mode, but with less memory. Once you have
+defined the character, it is much faster to print it to the screen
+than in would be to plot out all of the individual points.
+
+To employ user-defined characters, you must first pick a spot to put
+the shape data.  This requires choosing a bank of 16K for video chip
+memory (see the entry under Bits 0-1 of 56576 ($DD00) for the
+considerations involved), and setting the pointer to the 2K area of
+character memory in 53272 ($D018).  It is then up to you to supply the
+shape data for the characters.  You can use part of the ROM character
+set by reading the ROM and transferring the data to your character
+shape area (see the entry for location 1 for a method of reading the
+ROM).
+
+Your original characters may be created by darkening squares on an 8
+by 8 grid, converting all darkened squares to their bit values, and
+then adding the bit values for each of the eight bytes.  Or, you may
+use one of the many character graphics editor programs that are
+available commercially to generate the data interactively by drawing
+on the screen.
+
+One graphics mode, multicolor text mode, almost requires that you
+define your own character set in order to use it effectively.
+Multicolor mode is enabled by Bit 4 of location 53270 ($D016).
+Instead of using each bit to control whether an individual dot will be
+foreground color (1) or background color (0), that mode breaks down
+each byte of shape data in four bit-pairs.  These bit pairs control
+whether a dot will be the color in Background Color Register #0 (00),
+the color in Background Color Register #1 (01), the color in
+Background Color Register #2 (10), or the color in the appropriate
+nybble of Color RAM (11).  Since each pair of bits controls one dot,
+each character is only four dots across.  To make up for this, each
+dot is twice as wide as a normal high-resolution dot.
+
+
+
+---
+Additional information can be found by searching:
+- "vic_memory_blocks_and_considerations_for_graphics" which expands on where to place user-defined characters in VIC-II banks
+- "changing_vic_memory_banks_from_basic_and_sample_program" which expands on sample ML/BASIC routines to copy ROM to RAM

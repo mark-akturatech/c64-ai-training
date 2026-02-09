@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - After normalization, handle exponent adjustment and underflow: subtract saved exponent from FAC1 exponent (SBC), branch to clear result on underflow (if BCS), otherwise compute two's complement of exponent difference and store as FAC1 exponent (handling negative result storage).
+
+.,B92B 38       SEC             set carry for subtract
+.,B92C E5 61    SBC $61         subtract FAC1 exponent
+.,B92E B0 C7    BCS $B8F7       branch if underflow (set result = $0)
+.,B930 49 FF    EOR #$FF        complement exponent
+.,B932 69 01    ADC #$01        +1 (twos complement)
+.,B934 85 61    STA $61         save FAC1 exponent
+                                test and normalise FAC1 for C=0/1
+
+---
+Additional information can be found by searching:
+- "post_add_normalisation_shift_loop" which expands on normalization precedes this exponent adjustment
+- "overflow_handling_and_final_rols" which expands on if carry indicates overflow, handle increment/rotate and possible error

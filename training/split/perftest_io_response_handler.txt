@@ -1,0 +1,18 @@
+# ********* - I/O response display and failure handler (label at 1840): prints the prepared command/status text (cc$), performs INPUT#1,en,em$,et,es to read the drive's status bytes and error messages, prints a compact status line showing error code and messages, returns immediately if en<2 (success/OK range); on error prints 'unit is failing' and 'performance test', then saves ti$, calls the 'continue?' prompt routine (GOSUB 1750) to let the operator choose, restores ti$ and returns. Centralized handling for device replies used by format/open/write/read/track commands.
+
+ 1820 :
+ 1830 :
+ 1840 print cc$
+ 1850 input#1,en,em$,et,es
+ 1860 print tab(12)""en;em$;et;es;""
+ 1870 if en<2 then return
+ 1880 print "{down} unit is failing"
+ 1890 print "{down}   performance test"
+ 1900 tm$=ti$:gosub 1750:ti$=tm$:return
+ 1910 :
+
+---
+Additional information can be found by searching:
+- "perftest_continue_prompt" which expands on prompts operator whether to continue when a failure is detected
+- "perftest_mechanical_file_test" which expands on invoked after file open/write/read operations to check status (GOSUB 1840)
+- "perftest_track_write_read_test" which expands on invoked after track-level commands to check status (GOSUB 1840)

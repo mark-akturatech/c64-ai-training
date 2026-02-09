@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Print routine: copies the character (A) to Y (TAY), initializes a cursor countdown ($CD) for repeat timing, calculates the colour-RAM pointer (JSR $EA24), restores the character (TYA), then saves the character at the cursor column via STA ($D1),Y and stores the colour from X (TXA -> STA ($F3),Y). Returns (RTS).
+
+                                *** print character A and colour X
+.,EA13 A8       TAY             copy the character
+.,EA14 A9 02    LDA #$02set the count to $02, usually $14 ??
+.,EA16 85 CD    STA $CD         save the cursor countdown
+.,EA18 20 24 EA JSR $EA24       calculate the pointer to colour RAM
+.,EA1B 98       TYA             get the character back
+
+                                *** save the character and colour to the screen @ the cursor
+.,EA1C A4 D3    LDY $D3         get the cursor column
+.,EA1E 91 D1    STA ($D1),Y     save the character from current screen line
+.,EA20 8A       TXA             copy the colour to A
+.,EA21 91 F3    STA ($F3),Y     save to colour RAM
+.,EA23 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "calculate_colour_ram_pointer_ea24" which expands on Called to compute the colour-RAM pointer for the current line before storing the colour byte

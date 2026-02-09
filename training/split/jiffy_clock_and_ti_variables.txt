@@ -1,0 +1,32 @@
+# ********* - Explains the BASIC reserved variables TI and TI$, how they are implemented as calls to the Kernal routines RDTIM and SETTIM, how reading/assigning them interacts with these routines, includes a short BASIC example showing setting the jiffy clock, and notes that the IRQ (keyboard) interrupt and routines that steal or redirect IRQ (e.g. tape I/O) will interfere with the software jiffy clock.
+
+
+The jiffy clock is used by the BASIC reserved variables TI and TI$.
+These are not ordinary variables that are stored in the RAM variable
+area, but are functions that call the Kernal routines RDTIM (63197,
+$F6DD), and SETTIM (63204, $F6E4).  Assigning the value of TI or TI$
+to another variable reads these locations, while assigning a given
+value to TI$ alters these locations.
+
+To illustrate the relationship between these locations and TI$, try
+the following program.  The program sets the jiffy clock to 23 hours,
+50 minutes.  After the program has been running for one minute, all
+these locations will be reset to 0.
+
+100 TI$="235900"
+110 PRINT TI$,PEEK(160),PEEK(161),PEEK(162)
+120 GOTO 110
+
+Since updating is done by the IRQ interrupt that reads the keyboard,
+anything which affects the operation of that interrupt routine will
+also interfere with this clock.  A typical example is tape I/O
+operations, which steal the IRQ vector for their own use, and restore
+it afterwards.  Obviously, user routines which redirect the IRQ and do
+not send it back to the normal routine will upset software clock
+operation as well.
+
+
+---
+Additional information can be found by searching:
+- "tape_buffer_count_and_force_output_BUFPNT" which expands on tape I/O interactions that can affect IRQ and the jiffy clock
+- "tape_buffer_pointer_TAPE1_B2_B3" which expands on cassette buffer pointer and tape operations

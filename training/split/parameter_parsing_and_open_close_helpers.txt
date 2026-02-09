@@ -1,0 +1,102 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Helpers for parsing BASIC parameters and preparing KERNAL calls: SLPARA (SETNAM/SETLFS sequence for SAVE/LOAD with default FA/SA handling), COMBYT (get next one-byte parameter), DEFLT (test CHRGOT for presence of optional parameter), CMMERR (check for comma then terminator test), OCPARA (parameters for OPEN/CLOSE - logical file, device, secondary address and filename; uses SETNAM $FFBD and SETLFS $FFBA). Uses CHRGOT and text pointer routines at $E200-$E21F range; stores FA/SA in $49/$4A and calls $FFBD/$FFBA.
+
+                                *** SLPARA: GET PARAMETERS FOR LOAD/SAVE
+                                This routine gets the filename, devicenumber and secondary
+                                address for LOAD/VERIFY and SAVE operations. The KERNAL
+                                routines SETNAM and SETLFS are used to do this. Default
+                                parameters are set up, then tests are made if any of the
+                                parameters were given. If so, these are set up as wanted.
+.,E1D4 A9 00    LDA #$00        clear length of filename
+.,E1D6 20 BD FF JSR $FFBD       SETNAM
+.,E1D9 A2 01    LDX #$01        default FA, device number is #01
+.,E1DB A0 00    LDY #$00        default SA, secondary address is #00
+.,E1DD 20 BA FF JSR $FFBA       SETLFS, and device number
+.,E1E0 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E1E3 20 57 E2 JSR $E257       set up given filename and perform SETNAM
+.,E1E6 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E1E9 20 00 E2 JSR $E200       check for comma, and input one byte, FA, to (X)
+.,E1EC A0 00    LDY #$00
+.,E1EE 86 49    STX $49
+.,E1F0 20 BA FF JSR $FFBA       perform new SETLFS with device number
+.,E1F3 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E1F6 20 00 E2 JSR $E200       check for comma, and input one byte, SA, to (X)
+.,E1F9 8A       TXA             transfer (X) to (Y)
+.,E1FA A8       TAY
+.,E1FB A6 49    LDX $49         get FA
+.,E1FD 4C BA FF JMP $FFBA       perform SETLFS with both device number and secondary
+                                address. Then exit
+
+                                *** COMBYT: GET NEXT ONE-BYTE PARAMETER
+                                This routine checks if the next character of text is a
+                                comma, and then inputs the parameter following into (X).
+.,E200 20 0E E2 JSR $E20E       check for comma
+.,E203 4C 9E B7 JMP $B79E       input one byte parameter to (X)
+
+                                *** DEFLT: CHECK DEFAULT PARAMETERS
+                                This routine tests CHRGOT to see if a optional parameter
+                                was included in the text. If it was, a normal exit is
+                                performed via RTS. If not, the return address on the stack
+                                is discarded, and the routine exits both this and the
+                                calling routine.
+.,E206 20 79 00 JSR $0079       get CHRGOT
+.,E209 D0 02    BNE $E20D       if last character is a character, do normal exit
+.,E20B 68       PLA             else, remove return address
+.,E20C 68       PLA             to exit this AND the calling routine.
+.,E20D 60       RTS             exit
+
+                                *** CMMERR: CHECK FOR COMMA
+                                This routine confirms that the next character in the text
+                                is a comma. It also test that the comma is not immediately
+                                followed by a terminator. If so, exit and do SYNTAX error.
+.,E20E 20 FD AE JSR $AEFD       confirm comma
+.,E211 20 79 00 JSR $0079       get CHRGOT
+.,E214 D0 F7    BNE $E20D       else than null
+.,E216 4C 08 AF JMP $AF08       execute SYNTAX error
+
+                                *** OCPARA: GET PARAMETERS FOR OPEN/CLOSE
+                                This routine gets the logical file number, device number,
+                                secondary address and filename for OPEN/CLOSE. Initially
+                                the default filename is set to null, and the device number
+                                to #1. The logical filenumber is compulsory, and is
+                                obtained from text and placed in <FORPNT. The other
+                                parameters are optional and are obtained if present. The
+                                device number is stored in >FORPNT. The parameters are set
+                                via the KERNAL routines SETNAM and SETLFS.
+.,E219 A9 00    LDA #$00        default filename is null
+.,E21B 20 BD FF JSR $FFBD       SETNAM
+.,E21E 20 11 E2 JSR $E211       confirm TXTPNT is no terminator, if so - error
+.,E221 20 9E B7 JSR $B79E       input one byte character to (X)
+.,E224 86 49    STX $49         store logical filenumber in <FORPNT
+.,E226 8A       TXA             set default parameters to
+.,E227 A2 01    LDX #$01        device = #1
+.,E229 A0 00    LDY #$00        secondary address = #0
+.,E22B 20 BA FF JSR $FFBA       SETLFS
+.,E22E 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E231 20 00 E2 JSR $E200       check for comma, and input FA, device number
+.,E234 86 4A    STX $4A         store in >FORPNT
+.,E236 A0 00    LDY #$00        secondary address = #0
+.,E238 A5 49    LDA $49         logical file number from temp store
+.,E23A E0 03    CPX #$03        test if serial device
+.,E23C 90 01    BCC $E23F       nope
+.,E23E 88       DEY             if serial, set secondary address to $ff
+.,E23F 20 BA FF JSR $FFBA       SETLFS
+.,E242 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E245 20 00 E2 JSR $E200       check for comma, and input SA, secondary address
+.,E248 8A       TXA
+.,E249 A8       TAY             SA to (Y)
+.,E24A A6 4A    LDX $4A         FA
+.,E24C A5 49    LDA $49         LA
+.,E24E 20 BA FF JSR $FFBA       SETLFS
+.,E251 20 06 E2 JSR $E206       test if "end of line", if so end here
+.,E254 20 0E E2 JSR $E20E       check for comma only
+.,E257 20 9E AD JSR $AD9E       evaluate expression in text
+.,E25A 20 A3 B6 JSR $B6A3       do string housekeeping
+.,E25D A6 22    LDX $22         pointers to given filename
+.,E25F A4 23    LDY $23
+.,E261 4C BD FF JMP $FFBD       SETNAM and exit
+
+
+---
+Additional information can be found by searching:
+- "basic_file_commands_sys_save_load_verify_open_close" which expands on used by SAVE/LOAD/OPEN/CLOSE routines
+- "file_io_and_serial_open_close" which expands on serial device handling when opening/closing files

@@ -1,0 +1,28 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Flexible Line Distance (FLD): by manipulating YSCROLL, Bad Lines can be delayed/suppressed to control which raster lines start text lines. This allows arbitrary vertical spacing between text lines and vertical shifts of the display without moving memory bytes. Example: allowing only three Bad Lines will display three text lines at chosen positions with idle state between them.
+
+3.14.2. FLD
+-----------
+
+When building the graphics out of text lines, the VIC orientates itself
+exclusively by the occurrence of Bad Lines: A Bad Line gives the "start
+signal" for the display of one text line. By appropriately changing YSCROLL
+(in register $d011) you can suppress and arbitrarily delay the Bad Line
+Condition (see 3.5.). So you can exactly control in which raster lines Bad
+Lines should occur and thus from which raster lines the VIC should start to
+display one text line each. The distance between two text lines can be
+arbitrarily increased if only you hold back the next Bad Line long enough.
+This effect is called "Flexible Line Distance" (FLD).
+
+E.g. if you only allow three Bad Lines on the screen at raster lines $50,
+$78 and $a0, the VIC will also only display three text lines at these
+positions. The sequencer is in idle state in the lines between.
+
+If you only delay the occurrence of the first Bad Line, you can scroll down
+the complete graphics display by large distances without moving a single
+byte in display memory.
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on FLD relies on controlling Bad Line occurrence via YSCROLL
+- "dma_delay" which expands on other techniques to reposition display timing (horizontal) complement FLD

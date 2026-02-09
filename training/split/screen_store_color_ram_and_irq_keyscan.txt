@@ -1,0 +1,107 @@
+# ********* - Screen write and Color RAM synchronization routines: Store to screen (59932 $EA1C, 59940 $EA24), synchronize Color RAM pointer to screen (59940 $EA24), clear screen line and cursor blink timing (59903 $E9FF, 59923 $EA13). IRQ entry (59953 $EA31) is main IRQ handler called by CIA#1 Timer A (~1/60s) to update software clock, cursor flash, tape interlock and call keyboard scan routine (SCNKEY 60039 $EA87). SCNKEY reads keyboard via CIA#1 and decodes keycodes into PETASCII.
+
+58726         $E566
+Home the Cursor
+
+This routine sets PNTR (211, $D3) and TBLX (214, $D6) to 0, and falls
+through to the next routine.
+
+58732         $E56C
+Set Pointer to Current Screen Line
+
+This routine sets the pointer PNT (209, $D1) to the address of the
+first byte of the current logical line.  In figuring this address, it
+takes into account the status of the screen line link table, which can
+indicate that two physical lines should be joined as one logical line.
+
+58784         $E5A0
+Set Default I/O Devices and Set Default Values for VIC-II Chip
+Registers
+
+This routine sets the keyboard and screen as the current input and
+output devices.  It then writes the default values found in the table
+at 60601 ($ECB9) to the VIC-II chip.
+
+58804         $E5B4          LP2
+Get a Character from the Keyboard Buffer
+
+This routine transfers the first character from the keybard buffer to
+the .A register, bumps the rest of the characters one place up in
+line, and decrements the pointer, showing how many characters are
+waiting in the buffer.
+
+58826         $E5CA
+Wait for a Carriage Return from the Keyboard
+
+This subroutine is called by the portion of the CHKIN routine that
+handles keyboard input.  It turns the cursor on, gets characters, and
+echoes them to the screen until a carriage return has been entered.
+It also looks for the shifted RUN/STOP key, and forces the output of
+the commands LOAD and RUN if it finds it.
+
+58930         $E632
+Input a Character from Screen or Keyboard
+
+This routine is the portion of the Kernal CHRIN routine that handles
+input from the keyboard and screen devices.  CHRIN gets one byte at a
+time from the current screen position, or inputs a whole line from the
+keyboard and returns it one byte at a time.
+
+59012         $E684
+Test for Quote Marks
+
+This subroutine checks if the current character is a quotation mark,
+and if it is, toggles the quote switch at 212 ($D4).
+
+59025         $E691
+Add a Character to the Screen
+
+This is part of the routine that outputs a character to the screen.
+It puts printable characters into screen memory.
+
+59048         $E6A8
+Return from Outputting a Character to the Screen
+
+This is the common exit point for the screen portion of the CHROUT
+routine.
+
+59062         $E6B6
+Advance the Cursor
+
+This routine advances the cursor, and provides for such things as
+scrolling at the end of the screen, and inserting a blank line in
+order to add another physical line to the current logical line.
+
+59137         $E701
+Move Cursor Back over a 40-Column Line Boundary
+
+59158         $E716
+Output to the Screen
+
+This is the main entry point for the part of CHROUT that handles
+output to the screen device.  It takes an ASCII character number, and
+tests if the character is printable.  If it is, it prints it (taking
+into consideration the reverse flag, if any inserts are left, etc.).
+If it is a nonprinting character, the routine performs the appropriate
+cursor movement, color change, screen clearing, or whatever else might
+be indicated.
+
+59516         $E87C
+Move Cursor to Next Line
+
+This subroutine moves the cursor down to the next line if possible, or
+scrolls the screen if the cursor is on the last line.
+
+59537         $E891
+Output a Carriage Return
+
+A carriage return is performed by clearing insert mode, reverse video,
+and quote mode, and moving the cursor to the next line.
+
+59553         $E8A1
+If at the Beginning of a Screen Line, Move Cursor to Previous Line
+
+---
+Additional information can be found by searching:
+- "cia1_timer_usage_on_c64" which expands on Timer A used to generate the IRQ which drives keyscan and software clock
+- "keyboard_decode_tables_and_vectors" which expands on where keycodes are translated into PETASCII tables

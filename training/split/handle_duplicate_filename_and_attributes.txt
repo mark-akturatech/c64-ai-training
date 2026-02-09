@@ -1,0 +1,76 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Handles duplicate-name detection and file attribute adjustments: toggles attribute bits, adjusts counters ($A3,$A4,$A7,$A8,$A9), updates temporary registers and status bytes ($92,$96,$9B,...), and jumps to final exit or continues iterative resolution. Contains arithmetic to compute name checksums and status flags.
+
+.,F9D5 A5 92    LDA $92
+.,F9D7 F0 07    BEQ $F9E0
+.,F9D9 30 03    BMI $F9DE
+.,F9DB C6 B0    DEC $B0
+.:F9DD 2C       .BYTE $2C
+.,F9DE E6 B0    INC $B0
+.,F9E0 A9 00    LDA #$00
+.,F9E2 85 92    STA $92
+.,F9E4 E4 D7    CPX $D7
+.,F9E6 D0 0F    BNE $F9F7
+.,F9E8 8A       TXA
+.,F9E9 D0 A0    BNE $F98B
+.,F9EB A5 A9    LDA $A9
+.,F9ED 30 BD    BMI $F9AC
+.,F9EF C9 10    CMP #$10
+.,F9F1 90 B9    BCC $F9AC
+.,F9F3 85 96    STA $96
+.,F9F5 B0 B5    BCS $F9AC
+.,F9F7 8A       TXA
+.,F9F8 45 9B    EOR $9B
+.,F9FA 85 9B    STA $9B
+.,F9FC A5 B4    LDA $B4
+.,F9FE F0 D2    BEQ $F9D2
+.,FA00 C6 A3    DEC $A3
+.,FA02 30 C5    BMI $F9C9
+.,FA04 46 D7    LSR $D7
+.,FA06 66 BF    ROR $BF
+.,FA08 A2 DA    LDX #$DA
+.,FA0A 20 E2 F8 JSR $F8E2
+.,FA0D 4C BC FE JMP $FEBC
+.,FA10 A5 96    LDA $96
+.,FA12 F0 04    BEQ $FA18
+.,FA14 A5 B4    LDA $B4
+.,FA16 F0 07    BEQ $FA1F
+.,FA18 A5 A3    LDA $A3
+.,FA1A 30 03    BMI $FA1F
+.,FA1C 4C 97 F9 JMP $F997
+.,FA1F 46 B1    LSR $B1
+.,FA21 A9 93    LDA #$93
+.,FA23 38       SEC
+.,FA24 E5 B1    SBC $B1
+.,FA26 65 B0    ADC $B0
+.,FA28 0A       ASL
+.,FA29 AA       TAX
+.,FA2A 20 E2 F8 JSR $F8E2
+.,FA2D E6 9C    INC $9C
+.,FA2F A5 B4    LDA $B4
+.,FA31 D0 11    BNE $FA44
+.,FA33 A5 96    LDA $96
+.,FA35 F0 26    BEQ $FA5D
+.,FA37 85 A8    STA $A8
+.,FA39 A9 00    LDA #$00
+.,FA3B 85 96    STA $96
+.,FA3D A9 81    LDA #$81
+.,FA3F 8D 0D DC STA $DC0D
+.,FA42 85 B4    STA $B4
+.,FA44 A5 96    LDA $96
+.,FA46 85 B5    STA $B5
+.,FA48 F0 09    BEQ $FA53
+.,FA4A A9 00    LDA #$00
+.,FA4C 85 B4    STA $B4
+.,FA4E A9 01    LDA #$01
+.,FA50 8D 0D DC STA $DC0D
+.,FA53 A5 BF    LDA $BF
+.,FA55 85 BD    STA $BD
+.,FA57 A5 A8    LDA $A8
+.,FA59 05 A9    ORA $A9
+.,FA5B 85 B6    STA $B6
+.,FA5D 4C BC FE JMP $FEBC
+
+---
+Additional information can be found by searching:
+- "parse_and_validate_filename_entries" which expands on continuation and refinement of name validation
+- "copy_name_to_directory_and_write_to_buffer" which expands on on success, name data is copied into directory buffers

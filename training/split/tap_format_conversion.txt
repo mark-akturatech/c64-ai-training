@@ -1,0 +1,33 @@
+# Analyzing C64 tape loaders - Describes TAP format details: each nonzero TAP byte encodes a single pulse length. Gives conversion formula: Tap Data Byte = Pulse length (s) * C64 PAL Frequency / 8 (PAL freq=985248Hz), equivalent Tap Data Byte = Pulse length (µs) * 0.123156. Provides example values for CBM pulses (short=$2B, medium=$3F, long=$53) and notes quantization/variance and leader synchronization.
+
+
+==== Tap Format ====
+
+ Designed by Per Hakan Sundell (author of the CCS64 C64 emulator) in 1997, this format attempts to duplicate the data stored on a C64 cassette tape, pulse after pulse.
+The difference from a WAV sampling of any C64 tape and its Tap file data is that Tap file is not a sampled version of the waveforms stored on tape.
+
+Each nonzero byte in the Tap file data area represents the time length of a single pulse. The conversion formula is given here:
+
+Tap Data Byte=Pulse length (expressed in seconds)*C64 PAL Frequency/8
+
+where "C64 Pal Frequency" is 985248 Hz. By calculating the constant 1E-6*C64 PAL Frequency/8, the following equivalent formula can be produced:
+
+Tap Data Byte=Pulse length (microseconds)*0.123156
+
+where "Pulse length" is the time interval between two negative edges of the received square wave.
+As example, CBM pulses correspond to the following TAP values:
+
+<code>
+short:  352 * 0.123156 = 43.35 = $2B
+medium: 512 * 0.123156 = 63.01 = $3F
+long:   672 * 0.123156 = 82.76 = $53
+</code>
+
+It is clear that this conversion introduces some information alteration due to quantization: two pulses with similar length may produce the same Tap value.
+
+NOTE about CBM pulses size: Tap imports of older tapes show a better consistence with the above mentioned values than younger ones. Anyway the operating system can produce a correction factor which allows a very wide variation in tape speed without affecting reading. In fact, the sequence of short pulses written on the CBM leader is used to synchronize the read routine timing to the timing on the tape.
+
+
+---
+Additional information can be found by searching:
+- "data_encoding_pulses" which expands on Pulse durations used in the conversion examples

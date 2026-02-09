@@ -1,0 +1,46 @@
+# Contents - Explains the Commodore 64 built-in character generator ROM and how it interacts with the CPU and VIC. Covers that the character generator ROM is physically at $D000-$DFFF (overlapping the hardware I/O register address range), that bit 2 of the processor I/O port at $01 controls whether the CPU sees the I/O hardware registers (bit=1) or the character generator ROM (bit=0), and that the VIC chip does not use the same $D000 area but instead sees an image of the character generator at $1000-$1FFF and $9000-$AFFF (only when certain memory banks are selected). Also notes that the CPU can use the VIC's character-generator-addressed areas for data without conflict, typical choice of banks (commonly bank 1 or 3) for graphics, and options for using text (copying from the character generator or creating a custom character set).
+
+
+generator ROM, which is physically at 
+
+SD000-$DFFF. You may have noticed that this is the 
+same address range where the hardware registers 
+in the Commodore 64 are. This is possible only 
+because the hardware registers are not available to 
+the microprocessor at the same time as the 
+character generate ROM is. Bit 2 of the I/O port at 
+SOI controls whether the ROM or hardware 
+
+
+
+registers will be available to the microprocessor. 
+When this bit is set to a 1 , the hardware registers 
+will be available. When this bit is set to 0, the 
+character generator ROM can be read by the 
+microprocessor. The VIC chip does not see the 
+character generator at this address, however. The 
+VIC chip has been tricked into seeing the character 
+generator from $1000-$1FFF. The VIC chip also 
+
+
+
+sees an image of the character generator ROM from 
+$9000-$AFFF. Notice that the VIC chip can only 
+see an image of the character generator when in 
+banks and 2 of memory. The microprocessor does 
+not see the character generator in the same place 
+that the VIC chip does, so there is no conflict with 
+the microprocessor when using one of the areas in 
+memory to store data that the VIC chip thinks is 
+the character generator. You will normally choose 
+either bank 1 or 3 for your graphics, so that the im- 
+age of the character generator does not get in your 
+way. If you do need to use text in your program, you 
+can either copy data out of the character generator 
+or create your own character set. 
+
+
+---
+Additional information can be found by searching:
+- "memory_map_default_42k_ram" which expands on Shows the default map and where the character generator / I/O addresses sit relative to ROM and RAM
+- "memory_map_60k_ram_no_kernal" which expands on Alternate memory configuration that omits KERNAL ROM and affects available RAM regions

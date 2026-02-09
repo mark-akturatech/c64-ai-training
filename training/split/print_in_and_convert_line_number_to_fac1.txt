@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Print the ' IN ' message and print the current line number: set up pointer to the literal ' IN ', JSR to print a null-terminated string, load the current line number bytes into X and A, store them as FAC1 mantissa bytes, set the FAC1 exponent (via JSR to the exponent setter) and call the FAC1->ASCII conversion routine, then JSR to print the resulting null-terminated string.
+
+                                *** do " IN " line number message
+.,BDC2 A9 71    LDA #$71        set " IN " pointer low byte
+.,BDC4 A0 A3    LDY #$A3        set " IN " pointer high byte
+.,BDC6 20 DA BD JSR $BDDA       print null terminated string
+.,BDC9 A5 3A    LDA $3A         get the current line number high byte
+.,BDCB A6 39    LDX $39         get the current line number low byte
+
+                                *** print XA as unsigned integer
+.,BDCD 85 62    STA $62         save high byte as FAC1 mantissa1
+.,BDCF 86 63    STX $63         save low byte as FAC1 mantissa2
+.,BDD1 A2 90    LDX #$90        set exponent to 16d bits
+.,BDD3 38       SEC             set integer is +ve flag
+.,BDD4 20 49 BC JSR $BC49       set exponent = X, clear mantissa 4 and 3 and normalise
+                                FAC1
+.,BDD7 20 DF BD JSR $BDDF       convert FAC1 to string
+.,BDDA 4C 1E AB JMP $AB1E       print null terminated string
+
+
+---
+Additional information can be found by searching:
+- "convert_fac1_to_ascii_sign_and_zero_handling" which expands on converts the FAC1 value (the line number) to an ASCII string

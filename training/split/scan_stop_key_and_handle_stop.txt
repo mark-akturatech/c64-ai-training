@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Scan the STOP key routine: reads saved stop-key column, compares to STOP pressed value, and if just STOP was pressed saves processor status, closes input/output channels (JSR $FFCC), saves the keyboard buffer index into $C6, and returns with appropriate flags.
+
+
+                                *** scan the stop key, return Zb = 1 = [STOP]
+.,F6ED A5 91    LDA $91         read the stop key column
+.,F6EF C9 7F    CMP #$7F        compare with [STP] down
+.,F6F1 D0 07    BNE $F6FA       if not [STP] or not just [STP] exit
+                                just [STP] was pressed
+.,F6F3 08       PHP             save status
+.,F6F4 20 CC FF JSR $FFCC       close input and output channels
+.,F6F7 85 C6    STA $C6         save the keyboard buffer index
+.,F6F9 28       PLP             restore status
+.,F6FA 60       RTS             
+
+---
+Additional information can be found by searching:
+- "increment_jiffy_clock_and_keyboard_sampling" which expands on relies on the stored stop-key column determined earlier
+- "file_error_messages" which expands on closing I/O channels during STOP interacts with error/IO reporting paths

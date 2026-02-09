@@ -1,0 +1,101 @@
+# ********* - Kernal floating-point math routines: COS, SIN (57956 $E264 and 57960 $E268), TAN (58036 $E2B4) and associated constant tables for PI/2, 2*PI, 1/4 and SIN/TAN evaluation constants (58080-58095 $E2E0-$E2EF, 58095 contains SINCON table). Also ATN (58126 $E30E) and its constants ATNCON (58174 $E33E) tables. These implement trig and inverse trig via series and table constants.
+
+will cause errors when the overwritten variables are referenced.
+Likewise, strings whose text was referenced at its location within the
+original program listing will be incorrect.
+
+Since a LOAD from a program causes the program execution to continue
+at the first line, when loading a machine language routine or data
+file with a nonrelocating load (for example, LOAD"FILE",8,1) from a
+program, you should read a flag and GOTO the line after the LOAD if
+you don't want the program to keep rerunning indefinitely:
+
+10 IF FLAG=1 THEN GOTO 30
+20 FLAG=1:LOAD"FILE",8,1
+30 REM PROGRAM CONTINUES HERE
+
+57790         $E1BE          OPEN
+Perform OPEN
+
+The BASIC OPEN statement calls the Kernal OPEN routine.
+
+57799         $E1C7          CLOSE
+Perform CLOSE
+
+The BASIC CLOSE statement calls the Kernal CLOSE routine.
+
+57812         $E1D4
+Set Parameters for LOAD, VERIFY, and SAVE
+
+This routine is used in common by LOAD, SAVE, and VERIFY for setting
+the filename, the logical file, device number, and secondary address,
+all of which must be done prior to these operations.
+
+57856         $E200
+Skip Comma and Get Integer in .X
+
+This subroutine is used to skip the comma between parameters and get
+the following integer value in the .X register.
+
+57862         $E206
+Fetch Current Character and Check for End of Line
+
+This subroutine gets the current character, and if it is 0 (end of
+line), it pulls its own return address off the stack and returns.
+This terminates both its own execution and that of the subroutine
+which called it.
+
+57870         $E20E
+Check for Comma
+
+This subroutine checks for a comma, moves the text pointer past it if
+found, and returns an error if it is not found.
+
+57881         $E219
+Set Parameters for OPEN and CLOSE
+
+This routine is used in common by OPEN and CLOSE for setting the
+filename, the logical file, device number, and secondary address, all
+of which must be done prior to these operations.
+
+57956         $E264          COS
+Perform COS
+
+COS is executed by adding PI/2 to the contents of FAC1 and dropping
+through to SIN.
+
+57960         $E268          SIN
+Perform SIN
+
+This routine evaluates the SIN of the number in FAC1 (which represents
+the angle in radians), and leaves the result there.
+
+58036         $E2B4          TAN
+Perform TAN
+
+This routine evaluates the tangent of the number in FAC1 (which
+represents the angle in radians) by dividing its sine by its cosine.
+
+Location Range: 58080-58125 ($E2E0-$E30D)
+Table of Constants for Evaluation of SIN, COS, and TAN
+
+58080         $E2E0          PI2
+The Five-Byte Floating Point Representation of the Constant PI/2
+
+58085         $E2E5          TWOPI
+The Five-Byte Floating Point Representation of the Constant 2*PI
+
+58090         $E2EA          FR4
+The Five-Byte Floating Point Representation of the Constant 1/4
+
+58095         $E2EF          SINCON
+Table of Constants for Evaluation of SIN, COS, and TAN
+
+This table starts with a counter byte of 5, indicating that there are
+six entries in the table.  This is followed by the six floating point
+constants of five bytes each.
+
+
+---
+Additional information can be found by searching:
+- "kernal_polynomial_routines_and_rnd_constants" which expands on POLY routines used for series evaluation

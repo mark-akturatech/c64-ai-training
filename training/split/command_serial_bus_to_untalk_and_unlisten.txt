@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Issue UNTALK and UNLISTEN commands on the IEC bus: disable interrupts, pull clock low, set ATN low (UNTALK = $5F, UNLISTEN = $3F), send control character, set ATN high again, perform a short delay, then set clock/data lines high and return.
+
+                                *** command serial bus to UNTALK
+.,EDEF 78       SEI             disable the interrupts
+.,EDF0 20 8E EE JSR $EE8E       set the serial clock out low
+.,EDF3 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EDF6 09 08    ORA #$08        mask xxxx 1xxx, set the serial ATN low
+.,EDF8 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EDFB A9 5F    LDA #$5F        set the UNTALK command
+.:EDFD 2C       .BYTE $2C       makes next line BIT $3FA9
+
+                                *** command serial bus to UNLISTEN
+.,EDFE A9 3F    LDA #$3F        set the UNLISTEN command
+.,EE00 20 11 ED JSR $ED11       send a control character
+.,EE03 20 BE ED JSR $EDBE       set serial ATN high
+                                1ms delay, clock high then data high
+.,EE06 8A       TXA             save the device number
+.,EE07 A2 0A    LDX #$0A        short delay
+.,EE09 CA       DEX             decrement the count
+.,EE0A D0 FD    BNE $EE09       loop if not all done
+.,EE0C AA       TAX             restore the device number
+.,EE0D 20 85 EE JSR $EE85       set the serial clock out high
+.,EE10 4C 97 EE JMP $EE97       set the serial data out high and return
+
+
+---
+Additional information can be found by searching:
+- "send_secondary_address_after_listen_and_talk_set_atn" which expands on similar use of deferred Tx and ATN control
+- "serial_pin_control_and_1ms_delay" which expands on uses routines to set clock/data lines and the 1ms delay

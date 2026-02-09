@@ -1,0 +1,41 @@
+# NMOS 6510 - Two SRE-related examples: (1) Compute parity of a byte in A by storing it to memory and executing SRE seven times to rotate bits into A, then AND #$01 to leave parity (A=0 and Z=1 for even parity; A=1 and Z=0 for odd parity). (2) Technique to simulate extra LSR addressing modes using SRE when clobbering A and flags is acceptable: using SRE abs,y, SRE (zp),y, or SRE (zp,x) to get LSR-like behavior (0 shifted into MSB), with notes that A and N/Z will be modified due to the EOR side-effect.
+
+- 12 -
+
+Example: compute the parity of a byte
+
+Parity means counting the number of set bits, if the number of set bit is odd the parity is odd, if
+the number of set bit is even the parity is even (Note that zero is even). This is often used in
+transfer protocols as a simple error detection mechanism.
+; byte is in A
+STA temp
+SRE temp
+SRE temp
+SRE temp
+SRE temp
+SRE temp
+SRE temp
+SRE temp
+AND #$01
+; A=0 and flag Z=1 if even parity
+; A=1 and flag Z=0 if odd parity
+
+Example: simulate extra addressing modes for LSR
+
+If you can afford clobbering A and the flags (or even use the final value), SRE turns into LSR and
+makes some addressing modes available that do not exist for regular LSR:
+; 0 is shifted into the MSB
+SRE abs, y
+; like LSR abs, y
+SRE (zp), y
+; like LSR (zp), y
+SRE (zp, x)
+; like LSR (zp, x)
+; A was changed as with additional EOR
+; N,Z were set as with additional EOR
+
+
+---
+Additional information can be found by searching:
+- "sre_opcode_and_addressing_modes" which expands on Behavior and effects of SRE that make these examples possible
+- "sre_8bit_one_of_eight_counter_example" which expands on Related example of using SRE for bit-mask rotation in graphics

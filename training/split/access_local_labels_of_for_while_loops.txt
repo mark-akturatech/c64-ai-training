@@ -1,0 +1,20 @@
+# Kick Assembler - Explains that placing a label in front of a .for or .while loop creates a label-scope array so inner loop labels are accessible from outside or between loops. Example: .for (var i=0; i<20; i++) { lda #i sta loop2[i].color+1 } loop2: color: and another .for to clear colors.
+
+understand everything in the following examples, but it helps to know where we are heading before going into
+the details.
+If you want to have one section of you code output to another file you can assemble it into a segment and write
+that segment to a file like this:
+.segment File1 [outPrg="MyFile.prg"]
+*=$1000
+lda #00
+... more code ...
+.segment Default
+
+If you want to patch a file you can load the file into a Base segment, put a Patch segment on top of it with the
+modifications and write the result to a file. Since the Patch is on top it will overwrite the base:
+.file [name="Out.prg", segments="Base,Patch", allowOverlap]
+.segment Base [prgFiles="basefile.prg"]
+
+---
+Additional information can be found by searching:
+- "access_local_labels_of_macros_and_pseudocommands" which expands on label scopes for different constructs

@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Read/set top of memory: Branch on carry to read or set. If reading (carry set) LDX $0283 and LDY $0284 to return pointer. If setting (carry clear) STX $0283 and STY $0284 to change top of memory. RTS.
+
+                                *** read/set the top of memory, Cb = 1 to read, Cb = 0 to set
+.,FE25 90 06    BCC $FE2D       if Cb clear go set the top of memory
+
+                                *** read the top of memory
+.,FE27 AE 83 02 LDX $0283       get memory top low byte
+.,FE2A AC 84 02 LDY $0284       get memory top high byte
+
+                                *** set the top of memory
+.,FE2D 8E 83 02 STX $0283       set memory top low byte
+.,FE30 8C 84 02 STY $0284       set memory top high byte
+.,FE33 60       RTS             
+
+---
+Additional information can be found by searching:
+- "test_ram_and_find_ram_end" which expands on calls this to set top of memory
+- "read_set_top_of_memory_wrapper" which expands on wrapper at $FF99

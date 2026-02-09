@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Handles the <CARRIAGE RETURN> action in the editor. Disables editor modes (insert, reversed, quotes), resets PNTR to column 0, and places the cursor at the start of the next line by calling go_to_next_line. Then jumps to finish screen print.
+
+                                *** OUTPUT <CARRIAGE RETURN>
+                                All editor modes are switched off and the cursor placed at
+                                the start of the next line.
+.,E891 A2 00    LDX #$00
+.,E893 86 D8    STX $D8         INSRT, disable insert mode
+.,E895 86 C7    STX $C7         RVS, disable reversed mode
+.,E897 86 D4    STX $D4         QTSW, disable quotes mode
+.,E899 86 D3    STX $D3         PNTR, put cursor at first column
+.,E89B 20 7C E8 JSR $E87C       go to next line
+.,E89E 4C A8 E6 JMP $E6A8       finish screen print
+
+
+---
+Additional information can be found by searching:
+- "go_to_next_line" which expands on moves cursor to next line
+- "print_to_screen" which expands on follows carriage return behavior to finish screen print

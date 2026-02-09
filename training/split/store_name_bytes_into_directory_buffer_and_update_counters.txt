@@ -1,0 +1,41 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Copy parsed filename bytes into the directory buffer at $0100+X and update counters: calls $FCD1 to talk to device, checks carry for device ack, then iterates using $A7 as a length/index. Compares the next character ($BD) against the current buffer pointer ($AC),Y; if different, sets $B6 to indicate modification. When modification is required, loops write $AD/$AC into $0101,X and $0100,X respectively, increments X twice and stores the result back to $9E. Finally jumps to the next processing stage at $FB3A.
+
+.,FAC0 A5 B5    LDA $B5
+.,FAC2 F0 0A    BEQ $FACE
+.,FAC4 A9 04    LDA #$04
+.,FAC6 20 1C FE JSR $FE1C
+.,FAC9 A9 00    LDA #$00
+.,FACB 4C 4A FB JMP $FB4A
+.,FACE 20 D1 FC JSR $FCD1
+.,FAD1 90 03    BCC $FAD6
+.,FAD3 4C 48 FB JMP $FB48
+.,FAD6 A6 A7    LDX $A7
+.,FAD8 CA       DEX
+.,FAD9 F0 2D    BEQ $FB08
+.,FADB A5 93    LDA $93
+.,FADD F0 0C    BEQ $FAEB
+.,FADF A0 00    LDY #$00
+.,FAE1 A5 BD    LDA $BD
+.,FAE3 D1 AC    CMP ($AC),Y
+.,FAE5 F0 04    BEQ $FAEB
+.,FAE7 A9 01    LDA #$01
+.,FAE9 85 B6    STA $B6
+.,FAEB A5 B6    LDA $B6
+.,FAED F0 4B    BEQ $FB3A
+.,FAEF A2 3D    LDX #$3D
+.,FAF1 E4 9E    CPX $9E
+.,FAF3 90 3E    BCC $FB33
+.,FAF5 A6 9E    LDX $9E
+.,FAF7 A5 AD    LDA $AD
+.,FAF9 9D 01 01 STA $0101,X
+.,FAFC A5 AC    LDA $AC
+.,FAFE 9D 00 01 STA $0100,X
+.,FB01 E8       INX
+.,FB02 E8       INX
+.,FB03 86 9E    STX $9E
+.,FB05 4C 3A FB JMP $FB3A
+
+---
+Additional information can be found by searching:
+- "determine_write_parameters_and_call_device_routine" which expands on uses the write parameters ($A7,$AA,$AB) determined earlier
+- "check_for_duplicate_entries_and_write_buffer_to_device" which expands on after copying bytes the routine proceeds to check for duplicates and write buffers to device

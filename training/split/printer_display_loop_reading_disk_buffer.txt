@@ -1,0 +1,26 @@
+# ********* - Printer-mode loop to read the drive buffer and send formatted output to the printer. Initializes k and nb(1) from a$(0), then iterates j=0..15 with inner loop i=k..15 to read up to 16 bytes per printer line into a$(i). Builds hex address and ASCII text for each 16-byte line using Gosub 790 and Gosub 850, checks for 'n' from the continue subroutine to abort, and sends each formatted line to printer channel 4 (PRINT#4).
+
+ 460 rem******************************
+ 462 rem* read & printer display     *
+ 464 rem******************************
+ 466 k=1:nb(1)=asc(a$(0))
+ 468 for j=0 to 15
+ 470 for i=k to 15
+ 472 get#2,a$(i):if a$(i)="" then a$(i)=nl$
+ 474 if k=1 and i<2 then nb(2)=asc(a$(i))
+ 476 next i:k=0
+ 478 a$="":b$=":":n=j*16:gosub 790:a$=a$+":"
+ 480 for i=0 to 15:n=asc(a$(i)):gosub 790:if z$="n" then j=40:\
+     goto 571
+ 482 c$=a$(i):gosub 850:b$=b$+c$
+ 484 next i
+ 486 if jj$="p" then print#4,a$b$
+ 488 next j:goto 571
+
+---
+Additional information can be found by searching:
+- "read_byte0_and_m_r_commands" which expands on uses a$(0) read from drive before entering this loop
+- "screen_continue_subroutine" which expands on printer loop also respects continue prompt (z$)
+- "byte_to_hex_subroutine" which expands on Gosub 790 used for hex formatting
+- "byte_to_ascii_subroutine" which expands on Gosub 850 used for ASCII conversion
+- "next_track_sector_prompt_and_loop" which expands on after printing, code prompts for next track/sector

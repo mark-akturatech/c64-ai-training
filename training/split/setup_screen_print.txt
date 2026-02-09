@@ -1,0 +1,36 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Prepare and perform a single character print to screen. Tests RVS (reverse) and INSRT (insert mode) flags, toggles bit7 of the character for reversed display, decrements insert counter if active, fetches current COLOR ($0286) into X, calls the low-level print-to-screen routine ($EA13), advances cursor, and restores registers/flags before returning. (Code: $E691..$E6B5).
+
+                                *** SET UP SCREEN PRINT
+                                The RVS flag is tested to see if reversed characters are
+                                to be printed. If insert mode is on, the insert counter is
+                                decremented by one. When in insert mode, all characters
+                                will be displayed, ie. DEL RVS etc. The character colour is
+                                placed in (X) and the character is printed to the screen
+                                and the cursor advanced.
+.,E691 09 40    ORA #$40
+.,E693 A6 C7    LDX $C7         test RVS, flag for reversed characters
+.,E695 F0 02    BEQ $E699       nope
+.,E697 09 80    ORA #$80        set bit 7 to reverse character
+.,E699 A6 D8    LDX $D8         test INSRT, flag for insert mode
+.,E69B F0 02    BEQ $E69F       nope
+.,E69D C6 D8    DEC $D8         decrement number of characters left to insert
+.,E69F AE 86 02 LDX $0286       get COLOR, current character colour code
+.,E6A2 20 13 EA JSR $EA13       print to screen
+.,E6A5 20 B6 E6 JSR $E6B6       advance cursor
+.,E6A8 68       PLA
+.,E6A9 A8       TAY
+.,E6AA A5 D8    LDA $D8         INSRT
+.,E6AC F0 02    BEQ $E6B0
+.,E6AE 46 D4    LSR $D4
+.,E6B0 68       PLA
+.,E6B1 AA       TAX
+.,E6B2 68       PLA
+.,E6B3 18       CLC
+.,E6B4 58       CLI
+.,E6B5 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "output_to_screen_unshifted_and_control_codes" which expands on used by the CHROUT output path to perform the actual character print and cursor advance
+- "advance_cursor" which expands on calls advance cursor after printing a character

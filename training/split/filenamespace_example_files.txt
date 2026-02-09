@@ -1,0 +1,26 @@
+# Kick Assembler - Demonstrates using .filenamespace to avoid name collisions across files. Example layout: /* FILE 0 */ calls to jsr part1.init etc, /* FILE 1 */ .filenamespace part1 with init/exec labels, and /* FILE 2 */ .filenamespace part2. Shows how placing .filenamespace at top of file scopes its labels.
+
+You can also put new entities in the root scope when defining them from within another scope:
+jsr outside_label
+rts
+{
+@outside_label:
+lda #0
+sta $d020
+sta $d020
+rts
+}
+
+or:
+{
+.label @x = 1234
+.var @y= "Hello world"
+.const @z= true
+}
+.print "x="+x
+.print "y="+y
+.print "z="+z
+
+---
+Additional information can be found by searching:
+- "namespace_usage_and_filenamespace_intro" which expands on intro to .filenamespace

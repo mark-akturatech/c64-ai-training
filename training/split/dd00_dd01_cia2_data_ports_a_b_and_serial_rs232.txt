@@ -1,0 +1,54 @@
+# - C64 I/O Map (Mapping The Commodore 64) - CIA #2 Data Ports A and B ($DD00-$DD01): Data port A used for Serial Bus signals (bits 5 & 7 for data out/in, bits 4 & 6 for clock out/in, bit 3 ATN), and bit 2 for RS-232 data output (connected to User Port). RS-232 heavily uses Port B pins (DSR, CTS, DCD, RI, DTR, RTS, SIN). User Port exposes Port B pins and PA2. Serial Bus/RS-232 are slower serial protocols; CIA-2 timers used for RS-232 timing (CIA-1 Timer B used by Serial Bus).
+
+$DD00-$DD01               CIA #2 Data Ports A and B
+
+                          These registers are where the communication with the Serial Bus,
+                          RS-232 device, and User Port take place.  The Serial Bus is like the
+                          IEEE bus which is used by the PET, in that it allows more than one
+                          device to be connected to the port at a time, in a daisychain
+                          arrangement.  Since each byte of data is sent one bit at a time,
+                          however, the Serial Bus is at least eight times slower than the IEEE.
+                          It is presently used to control the 1541 Disk Drive and 1525 printer,
+                          and other devices (such as printer interface for Centronics- type
+                          parallel printers and stringy floppy wafer tape storage units) can be
+                          placed on this bus.
+
+                          Data Port A is used for communication with the Serial Bus.  Bits 5 and
+                          7 are used for Serial Bus Data Output and Input, respectively, and
+                          Bits 4 and 6 are used for the Serial Bus Clock Pulse Output and Input.
+                          Bit 3 of Data Port A is used to send the ATN signal on the Serial Bus.
+
+                          The 64 has built-in software to handle RS-232 communications through a
+                          modem or other device plugged in the RS-232/User Port.  The RS-232
+                          device uses Bit 2 of Data Port A for data output (it is the only line
+                          from Port A that is connected to the RS-232/User Port jack).  It also
+                          makes heavy use of Port B, using Bit 7 for the Data Set Ready (DSR)
+                          signal, Bit 6 for the Clear to Send (CTS), Bit 4 for the Carrier
+                          Detect (DCD), Bit 3 for the Ring Indicator (RI), Bit 2 for Data
+                          Terminal Ready (DTR), Bit 1 for Request to Send (RTS), and Bit 0 for
+                          data input.  See locations 659-660 ($293-$294) for more details on the
+                          RS-232 device.
+
+                          All of the data lines which the RS-232 device uses are also available
+                          to the user as part of the User Port.  All of the Port B data lines,
+                          and Bit 2 of Port A, are brought out to the User Port connector on the
+                          back of the 64.  These data bits are utilized in the normal way:  The
+                          port connections are made to TTL-level input or output devices, and
+                          the direction of data is determined by the Data Direction Registers.
+
+                          In addition, the User Port has pins connected to the two CIA Serial
+                          Ports (whose eight-bit shift registers are well-suited for
+                          serial-to-parallel and parallel-to-serial conversion),and the two CNT
+                          lines which aid in the operation of the Serial Ports.  The CNT lines
+                          can also be used in conjunction with the CIA Timers, and allow them to
+                          be used as frequency counters, event counters, interval timers, etc.
+                          The advanced features of the CIA chip make almost any type of
+                          interfacing application possible, and in the near future we will
+                          probably see many interesting applications for the User Port on the
+                          64.  A pin description of the User Port connector is provided below:
+
+
+---
+Additional information can be found by searching:
+- "user_port_pinout" which expands on Pin mapping of the User Port to CIA #2 signals and RS-232 DB-25
+- "dd04_dd07_timers_overview" which expands on CIA #2 timers used for RS-232 timing

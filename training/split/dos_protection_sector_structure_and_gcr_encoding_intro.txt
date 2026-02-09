@@ -1,0 +1,107 @@
+# byRiclianll - Introduces CHAPTER 7: DOS PROTECTION and Commodore's data encoding scheme. Describes how a 1541 sector is divided into a Header Block (16 bytes: sync, header ID $08, header checksum, sector number, track number, ID LO, ID HI, off bytes $0F, header gap $55) and a Data Block (260 bytes: sync, data block ID $07, 256 data bytes, data checksum, off bytes $00, tail gap $55). Explains continuous bitstream writing on a track, purpose of sync marks (DOS 2.6 sync = five $FF bytes) and the two write modes (sync vs normal). Introduces the binary→GCR conversion process: split each 8-bit byte into high and low 4-bit nybbles, example using $12 (%00010010), and prepares for the 16-entry GCR lookup table that follows.
+
+
+112 
+
+
+CHAPTER  7 
+
+
+DOS  PROTECTION 
+
+
+7.1  Commodore's  Data  Encoding  Scheme 
+
+Before  we  can  enter  the  netherworld  of  DOS  protection  you  have  to  possess  a  thorough 
+understanding  of  how  the  1541  records  a  sector  on  a  diskette.  Any  given  sector  is  di- 
+vided into  two  contiguous  parts,  a  header  block  and  a  data  block.  For  clarity  sake  let's 
+review  the  parts  of  a  sector  discussed  in  Chapter  3. 
+
+Header  Block  (16  8-bit  bytes) 
+
+
+Number  of  Bytes 
+
+
+Description 
+
+
+2 
+8 
+
+
+Sync  Character 
+
+Header  Block  Identifier  ($08) 
+
+Header  Block  Checksum 
+
+Sector  Number 
+
+Track  Number 
+
+ID  LO 
+
+ID  HI 
+
+Off  Bytes  ($0F) 
+Header  Gap  ($55) 
+
+
+Data  Block  (260  8-bit  bytes) 
+
+Number  of  Bytes  Description 
+
+
+-  Sync  Character 
+
+1  Data  Block  Identifier  ($07) 
+
+256  Data  Bytes 
+
+1  Data  Block  Checksum 
+
+2  Off  Bytes  ($00) 
+Variable  Tail  Gap  ($55) 
+
+The  1541  writes  a  track  on  the  surface  of  a  diskette  as  one  continuous  bit  stream.  There 
+are  no  demagnetized  zones  between  sectors  on  a  track  to  delineate  where  one  sector 
+ends  and  another  one  begins.  Instead,  Commodore  relies  upon  synchronization  characters 
+
+
+113 
+
+
+for  reference  marks.  A  DOS  2.6  sync  mark  can  be  defined  as  five  8-bit  $FF's  written 
+in  succession  to  disk.  Note  that  a  sync  mark  is  recorded  at  the  front  end  of  each  header 
+block  and  each  data  block.  To  differentiate  a  sync  mark  from  a  normal  data  byte,  the 
+1541  writes  to  diskette  in  two  modes,  a  sync  mode  and  a  normal  write  mode. 
+
+To  appreciate  the  uniqueness  of  a  sync  mark  we  must  first  look  at  how  a  normal  data 
+byte  is  recorded.  During  normal  write  mode  each  8-bit  byte  is  encoded  into  10  bits  before 
+it  is  written  to  disk.  Commodore  calls  this  encoding  scheme  binary  to  GCR  (Group  Code 
+Recording)  conversion.  The  conversion  technique  itself  is  quite  straightforward.  Each 
+8-bit  byte  is  separated  into  two  4-bit  nybbles,  a  high  nybble  and  a  low  nybble.  For  ex- 
+ample, the  binary  representation  of  $12  (18)  is  %00010010.  The  breakdown  of  this  8-bit 
+byte  into  its  two  4-bit  nybbles  is  depicted  below: 
+
+
+Hexadecimal       Binary        High  Nybble    Low  Nybble 
+
+$12  (18)  00010010         OOOlxxxx  xxxxOOlO 
+
+Mathematically  speaking,  a  4-bit  nybble  can  be  decoded  into  any  one  of  16  different 
+decimal  values  ranging  from  0  (all  bits  turned  off)  to  15  (all  bits  turned  on)  as  follows: 
+
+Bit  Number  3         2  10 
+
+Power  of  2  3         2  1  0 
+
+Weight  8         4         2  1 
+
+Hence,  the  154rs  GCR  lookup  table  contains  just  sixteen  4-bit  nybble  equivalencies: 
+
+
+---
+Additional information can be found by searching:
+- "job_queue_examples_error_handling_and_execute_job_behaviour" which expands on Previous chapter: job queue examples and EXECUTE job details (error mapping and non-interruptible execution)

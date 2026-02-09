@@ -1,0 +1,36 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Comparison of MOS 6581 vs MOS 8580: production years, process (NMOS vs HMOS-II), supply voltages, filter capacitor values, tonal differences, DC offset, digi playback quirk on 6581 and hardware mod for 8580, and 6581 sub-revisions R1/R2/R3/R4AR.
+
+2. CHIP VARIANTS: 6581 vs 8580
+================================================================================
+
++------------------+---------------------------+---------------------------+
+| Feature          | MOS 6581                  | MOS 8580 (R5)             |
++------------------+---------------------------+---------------------------+
+| Production       | 1982-1987                 | 1987-1993                 |
+| Process          | NMOS                      | HMOS-II                   |
+| Supply Voltage   | +12V (Vdd)                | +9V (Vdd)                 |
+| Filter Caps      | 470 pF (CAP1A/B, CAP2A/B)| 22 nF (CAP1A/B, CAP2A/B) |
+| Filter Sound     | Darker, "grittier"        | Brighter, cleaner         |
+| DC Offset        | Present in audio output   | Minimal DC offset         |
+| Digi Playback    | 4-bit via volume register | "Fixed" - requires HW mod |
+|                  | (unintended "bug")        | (resistor on EXT IN pin)  |
+| Audio Output     | 6V DC bias, 3Vp-p max    | Lower DC bias             |
++------------------+---------------------------+---------------------------+
+
+Sub-revisions of the 6581:
+  - 6581 R1/R2: Original production (1982-1983)
+  - 6581 R3: Most common revision (1983-1985)
+  - 6581 R4AR: Late revision (1985-1987)
+
+The 8580 "fixed" a design characteristic in the 6581 where changing the master
+volume register caused an audible click proportional to the volume change. This
+"bug" was exploited by programmers to play 4-bit digitized samples by rapidly
+writing sample values to the volume register. On the 8580, this technique
+produces barely audible output unless a ~330k ohm resistor is connected between
+the EXT IN pin and ground.
+
+
+---
+Additional information can be found by searching:
+- "filter_resonance_and_characteristics" which expands on filter behavior differences (6581 vs 8580)
+- "sample_playback_digi_techniques" which expands on 4-bit digi playback differences and resistor mod

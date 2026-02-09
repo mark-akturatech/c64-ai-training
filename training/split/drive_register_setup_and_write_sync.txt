@@ -1,0 +1,23 @@
+# byRiclianll - Sets drive/IEC hardware registers and runs the write-sync loop. Loads and stores values to drive registers (*1C03, *1C0C, *1C01), manipulates bits with AND/ORA to set required drive control lines, and executes a WRITESYNC loop (BVC/CLV/DEX/BNE) to synchronize with the drive's write window. After sync is achieved it loads Y with the overflow-area start (LDY «*BB) to prepare for writing the first chunk of GCR data from the overflow buffer.
+
+
+530  LDY  «*BB 
+
+540  OVERFLOW  LDA  *0100, Y  ;    WRITE  OUT 
+
+OVERFLOW  BUFFER 
+
+550  WAITl   BVC  WAITl 
+
+560  CLV 
+
+570  STA  *1C01 
+
+580   I NY 
+
+590  BNE  OVERFLOW 
+
+---
+Additional information can be found by searching:
+- "find_header_and_wait_gap" which expands on synchronization follows header/gap detection
+- "write_overflow_and_buffer_write_loops" which expands on next: writes overflow-area GCR bytes then the main buffer

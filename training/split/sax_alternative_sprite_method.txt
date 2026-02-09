@@ -1,0 +1,39 @@
+# NMOS 6510 - Alternative method for updating sprite pointers by swapping the roles of A and X. Contains code showing LDX/LDA setup, SAX and STX interleaving, INX increments, stored pointer results comments, and a note that this approach saves 3 bytes (not cycles).
+
+
+Alternatively you can swap the roles of A and X, and you get the following:
+LDX #$04
+
+;X=%00000100
+
+LDA #$fb
+
+;A=%11111011
+
+SAX screen + $3f8 ;$00
+STX screen + $3fc ;$04
+INX
+
+;X=%00000101
+
+SAX screen + $3f9 ;$01
+STX screen + $3fd ;$05
+INX
+
+;X=%00000110
+
+SAX screen + $3fa ;$02
+STX screen + $3fe ;$06
+INX
+
+;X=%00000111
+
+SAX screen + $3fb ;$03
+STX screen + $3ff ;$07
+This does not save any cycles, but 3 bytes.
+
+
+---
+Additional information can be found by searching:
+- "sax_examples_mask_and_sprite_primary" which expands on original sprite-pointer example for comparison
+- "sax_overview_and_operation" which expands on SAX operation semantics used by these snippets

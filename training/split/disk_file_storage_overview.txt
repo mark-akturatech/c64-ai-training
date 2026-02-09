@@ -1,0 +1,96 @@
+# COMMODORE 64 - Diskette data storage types: Sequential, Relative, and Random. Discusses characteristics of each and notes printing/formatting limitations similar to tape (need separators). Relative and random files use separate data and command channels. Recommends relative files for large datasets. Suggests consulting disk drive manual for detailed programming guidance.
+
+                               +-+-+-+-+----------------+
+    <control register>- Is a single byte character (see Figure 6-1, Control
+  Register Map) required to specify the baud rates. If the lower 4 bits of
+  the baud rate is equal to zero (0), the <opt baud low><opt baud high>
+  characters give you a rate based on the following:
+    <opt baud low>=<system frequency/rate/2-100-<opt baud high>*256
+    <opt baud high>=INT((system frequency/rate/2-100)/256
+
+  350   INPUT/OUTPUT GUIDE
+~
+
+
+                              +-+-+-+-+-+-+-+-+
+                              |7|6|5|4|3|2|1|0|
+                              +-+-+-+-+-+-+-+-+
+                               | | | | | | | |
+                               | | | | | | | |
+                               | | | | | | | |
+                               | | | | | | | |
+            PARITY OPTIONS ----+-+-+ | | | | +----- HANDSHAKE
+  +---+---+---+---------------------+| | | |
+  |BIT|BIT|BIT|     OPERATIONS      || | | |        0 - 3-LINE
+  | 7 | 6 | 5 |                     || | | |        1 - X-LINE
+  +---+---+---+---------------------+| | | |
+  | - | - | 0 |PARITY DISABLED, NONE|| | | |
+  |   |   |   |GENERATED/RECEIVED   || | | |
+  +---+---+---+---------------------+| | | +------- UNUSED
+  | 0 | 0 | 1 |ODD PARITY           || | +--------- UNUSED
+  |   |   |   |RECEIVER/TRANSMITTER || +----------- UNUSED
+  +---+---+---+---------------------+|
+  | 0 | 1 | 1 |EVEN PARITY          ||
+  |   |   |   |RECEIVER/TRANSMITTER |+------------- DUPLEX
+  +---+---+---+---------------------+
+  | 1 | 0 | 1 |MARK TRANSMITTED     |               0 - FULL DUPLEX
+  |   |   |   |PARITY CHECK DISABLED|               1 - HALF DUPLEX
+  +---+---+---+---------------------+
+  | 1 | 1 | 1 |SPACE TRANSMITTED    |
+  |   |   |   |PARITY CHECK DISABLED|
+  +---+---+---+---------------------+
+
+
+
+
+
+                      Figure 6-2. Command Register Map.
+
+  The formulas above are based on the fact that:
+
+    system frequency = 1.02273E6 NTSC (North American TV standard)
+                     = 0.98525E6 PAL (U.K. and most European TV standard)
+
+    <command register>- Is a single byte character (see Figure 6-2, Command
+  Register Map) that defines other terminal parameters. This character is
+  NOT required.
+
+                                                    INPUT/OUTPUT GUIDE  351
+~
+
+
+  KERNAL ENTRY:
+
+    OPEN ($FFC0) (See KERNAL specifications for more information on entry
+  conditions and instructions.)
+
+  +-----------------------------------------------------------------------+
+  | IMPORTANT NOTE: In a BASIC program, the RS-232 OPEN command should be |
+  | performed before creating any variables or arrays because an automatic|
+  | CLR is performed when an RS-232 channel is OPENed (This is due to the |
+  | allocation of 512 bytes at the top of memory.) Also remember that your|
+  | program will be destroyed if 512 bytes of space are not available at  |
+  | the time of the OPEN statement.                                       |
+  +-----------------------------------------------------------------------+
+
+  GETTING DATA FROM AN RS-232 CHANNEL
+
+    When getting data from an RS-232 channel, the Commodore 64 receiver
+  buffer will hold up to 255 characters before the buffer overflows. This
+  is indicated in the RS-232 status word (ST in BASIC, or RSSTAT in machine
+  language). If an overflow occurs, then all characters received during a
+  full buffer condition, from that point on, are lost. Obviously, it pays
+  to keep the buffer as clear as possible.
+    If you wish to receive RS-232 data at high speeds (BASIC can only go so
+  fast, especially considering garbage collects. This can cause the re-
+  ceiver buffer to overflow), you will have to use machine language
+  routines to handle this type of data burst.
+
+  BASIC SYNTAX:
+
+    Recommended: GET#lfn, <string variable>
+    NOT Recommended: INPUT#lfn <variable list>
+
+---
+Additional information can be found by searching:
+- "open_statement_parameters_table" which expands on OPEN parameters for disk devices (device 8..11)

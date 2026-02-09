@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Classification of pulses into short/medium/long ranges by adding different offsets to min timing ($B0) and comparing with the computed max ($B1). Handles EOI (end-of-information) flag checks, may call the 'store the tape character' routine when a full byte is received, and branches to appropriate handlers for each pulse type. Uses constants added (#$30, #$26, #$2C) to discriminate B/C/D ranges.
+
+                                min + $3C < ($FFFF - T2C) >> 2
+.,F962 A6 9C    LDX $9C         get byte received flag
+.,F964 F0 03    BEQ $F969        if not byte received ??
+.,F966 4C 60 FA JMP $FA60       store the tape character
+.,F969 A6 A3    LDX $A3         get EOI flag byte
+.,F96B 30 1B    BMI $F988       
+.,F96D A2 00    LDX #$00        
+.,F96F 69 30    ADC #$30        
+.,F971 65 B0    ADC $B0         add tape timing constant min byte
+.,F973 C5 B1    CMP $B1         compare with tape timing constant max byte
+.,F975 B0 1C    BCS $F993       
+.,F977 E8       INX             
+.,F978 69 26    ADC #$26        
+.,F97A 65 B0    ADC $B0         add tape timing constant min byte
+.,F97C C5 B1    CMP $B1         compare with tape timing constant max byte
+.,F97E B0 17    BCS $F997       
+.,F980 69 2C    ADC #$2C        
+.,F982 65 B0    ADC $B0         add tape timing constant min byte
+.,F984 C5 B1    CMP $B1         compare with tape timing constant max byte
+.,F986 90 03    BCC $F98B       
+.,F988 4C 10 FA JMP $FA10       
+
+---
+Additional information can be found by searching:
+- "compute_shifted_timing_and_threshold_compare" which expands on uses the computed timing thresholds to branch here
+- "bit_count_handling_phase_toggle_and_timing_adjust" which expands on after classifying a pulse, code updates bit counts, phase, and timing

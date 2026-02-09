@@ -1,0 +1,56 @@
+# byRiclianll - Detailed decoding of the three-bit-map bytes for track 14: shows the three bytes (locations $39-$3B) values (e.g., $D7, $5F, $1F) and their binary representations. Explains how bits map to sector numbers (byte for sectors 0-7, next for 8-15, third for 16-20), and that bit=1 denotes FREE, bit=0 denotes ALLOCATED. Confirms bit counts match the first-byte 'blocks free' value ($11 = 17).
+
+Now  that  you  have  seen  how  to  calculate  the  number  of  blocks  free  on  a  diskette,  let's 
+get  back  to  our  analysis  of  track  14.  The  BAM  entry  looked  like  this: 
+
+.    38:    11   D7  5F   IF  00  OO  00  OO   .W  BAM  TRACKS  14-15 
+
+** 
+
+The  first  byte  was  easy  to  interpret.  The  remaining  three  bytes  are  a  bit  trickier  (no 
+pun  intended).  They  are  a  bit  map  showing  the  status  of  the  sectors  on  a  given  track. 
+Bit  mapping  is  used  to  save  space.  If  one  byte  were  used  for  each  of  the  683  sectors, 
+the  BAM  would  take  up  three  sectors  (683  /  256).  This  would  be  inefficient.  By  using 
+bit  mapping,  each  byte  describes  the  status  of  eight  sectors.  This  way  only  three  bytes 
+are  needed  for  each  track.  Let's  examine  the  bit  map  for  track  14  of  our  1541 
+TEST/DEMO. 
+
+.    38:    11   D7  5F   IF  00  OO  OO  OO   -W  BAM  TRACKS  14-15 
+
+*♦  ♦* 
+
+
+LOCATION  *39=57  *3A=58  *3B=59 
+
+BYTE  VALUE  *D7                *5F  *1F 
+
+BINARY  llOlOlll  OlOlllll  OOOlllll  ♦ 
+
+SECTOR  mill  21111 
+
+NUMBER  76543210  5432 1098  xxx09876 
+
+
+♦   1   =  FREE 
+
+O  =  ALLOCATED 
+
+
+39 
+
+
+Sectors  0  to  7  are  represented  by  the  byte  at  location  57.  Sectors  8  through  15  are  stored 
+in  the  byte  at  location  58.  Finally,  sectors  16  through  20  are  depicted  by  the  byte  at 
+location  59.  When  decoded,  a  bit  that  is  high  or  a  1  indicates  that  a  sector  is  not  current- 
+ly in  use  (free)  and  can  be  written  to.  A  bit  that  is  low  or  a  0  is  currently  in  use  (allocated) 
+and  will  be  overlooked  by  the  DOS  when  writing  subsequently  takes  place  to  the  diskette. 
+The  third  byte  is  always  incomplete  since  a  maximum  of  21  sectors  are  written  to  any 
+track.  This  particular  byte  is  automatically  adjusted  by  the  DOS  during  initial  format- 
+ting to  indicate  the  proper  number  of  sectors  for  this  track.  Three  bytes  are  still  used 
+irregardless  of  the  zone,  however.  If  you  count  up  the  Is  in  the  bit  map  for  track  14, 
+you  will  find  that  there  are  17  free  sectors  on  track  14.  This  agrees  with  the  blocks  free 
+count  for  the  track  stored  at  byte  location  $38  (56)  in  the  BAM,  i.e.,  $11  or  17  decimal. 
+
+---
+Additional information can be found by searching:
+- "bam_entry_format_and_track14_example" which expands on per-track BAM format

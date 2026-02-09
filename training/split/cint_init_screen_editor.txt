@@ -1,0 +1,21 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CINT: INIT SCREEN EDITOR (vectored from $FF81). Sets up VIC-II for operation. Calls original CINT at $E518, uses raster compare at $D012 and $D019 to detect PAL vs NTSC by checking whether an IRQ occurs at raster 311. Stores PAL/NTSC flag ($02A6) and then calls ENABLE TIMER to configure CIA timers accordingly.
+
+                                *** CINT: INIT SCREEN EDITOR
+                                The KERNAL routine CINT ($FF81) jumps to this routine. It
+                                sets up VIC for operation. The original CINT is at $e518,
+                                and this patch checks out if this is a PAL or NTSC
+                                machine. This is done by setting the raster compare
+                                register to 311, which is the number of scanlines in a PAL
+                                machine. If no interrupt occurs, then it's a NTSC machine.
+.,FF5B 20 18 E5 JSR $E518       original I/O init
+.,FF5E AD 12 D0 LDA $D012       wait for top of screen
+.,FF61 D0 FB    BNE $FF5E       at line zero
+.,FF63 AD 19 D0 LDA $D019       Check IRQ flag register if interrupt occurred
+.,FF66 29 01    AND #$01        only first bit
+.,FF68 8D A6 02 STA $02A6       store in PAL/NTSC flag
+.,FF6B 4C DD FD JMP $FDDD       jump to ENABLE TIMER
+
+
+---
+Additional information can be found by searching:
+- "enable_timer" which expands on determines and sets CIA timer values according to PAL/NTSC

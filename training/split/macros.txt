@@ -1,0 +1,55 @@
+# Kick Assembler - Section 7.2: Defining and invoking .macro macros that generate assembler directives in-place, scope encapsulation of macros (local labels don't collide), examples (SetColor, ClearScreen), macro recursion and usage before declaration allowed, and note about accessing macro-local labels via scope/namespace techniques.
+
+You can have several functions of the same name, as long as they have different number of arguments. So
+this is valid code:
+.function polyFunction() { .return 0 }
+.function polyFunction(a) { .return 1 }
+.function polyFunction(a,b) { .return 2 }
+
+7.2. Macros
+Macros are collections of assembler directives. When called, they generate code as if the directives where
+placed at the macro call. The following code defines and executes the macro ‘SetColor’:
+// Define macro
+.macro SetColor(color) {
+lda #color
+sta $d020
+}
+
+30
+
+Functions and Macros
+
+// Execute macro
+:SetColor(1)
+SetColor(2)
+// The colon in front of macro calls is optional from version 4.0
+
+A macro can have any number of arguments. Macro calls are encapsulated in a scope, hence any variable
+defined inside a macro can't be seen from directly the outside. This means that a series of macro calls to the same
+macro doesn't interfere:
+// Execute macro
+ClearScreen($0400,$20)
+ClearScreen($4400,$20)
+
+// Since they are encapsulated in a scope
+// the two resulting loop labels don’t
+// interfere
+
+// Define macro
+.macro ClearScreen(screen,clearByte) {
+lda #clearByte
+ldx #0
+Loop:
+// The loop label can’t be seen from the outside
+sta screen,x
+sta screen+$100,x
+sta screen+$200,x
+sta screen+$300,x
+inx
+bne Loop
+}
+
+---
+Additional information can be found by searching:
+- "pseudo_commands_and_cmdvalue_api" which expands on pseudo commands are like macros but accept mnemonic-style command arguments
+- "scopes_and_namespaces_scopes" which expands on label visibility when labeling macro invocations

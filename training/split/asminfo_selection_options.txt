@@ -1,0 +1,53 @@
+# Kick Assembler - Lists available asminfo selection options (Table 15.1) such as all, allPredefined, allSourceSpecific, version, libraries, directives, preprocessorDirectives, files, syntax, errors. Explains 'meta' category usage and what each selection returns.
+
+When the category says 'meta' the option is used to select several of the sections. When the category is not
+'meta' the option refers to a specific section. The details of the sections is given in later chapters.
+
+15.2. Realtime feedback from the assembler
+For writers of editors Kick Assembler has some special features which enables you to get info about the source
+file while the user is editing it. This is done by calling Kick Assembler in strategic places like, when the user hasn't
+typed anything for a given period of time.
+First, the content of the one or several source files might not be saved. To get by this, save the content to a
+temporary file and use the replaceFile option to substitute the content of the original file:
+java -jar KickAss.jar mysource.asm -replacefile c:\ka\mysource.asm c:\tmp
+\tmpSource.asm
+
+This replaces the content of the first file with the second. It doesn't matter if the file is the main file or included
+by another filer, and your can have as many replaceFile options as you want.
+Secondly, you don't want Kick Assembler to do a complete assembling each time you call it. It might take
+too much time to assemble and you don't want the assembler to overwrite output. To take care of this, use the noeval option.
+java -jar KickAss.jar mysource.asm -noeval ...
+
+This make Kick Assembler parse the source file and do an initial pass, no evaluation will be done. This will
+detect syntax errors and return syntax information.
+
+15.3. The AsmInfo file format
+The assembly info files is divided into sections. If the first char of a line is '[' it marks a new section, and the
+name of the section is written between square brackets. Each line consist of one or more semicolon separated
+fields. Notice that in special cases, the last field might contain a semicolon itself (This will be noted in the involved
+sections). So the basic file format looks like this:
+[section1]
+field1;field2;field3
+field1;field2;field3
+field1;field2;field3
+
+72
+
+Assemble Information
+
+[section2]
+field1;field2
+field1;field2
+field1;field2
+
+As special type of field, which is used in several sections is a 'source range' which describes a range of chars
+in a source file. It consist of 5 integers:
+startline, startposition, endline, endposition, fileindex
+
+The positions is the positions in a given line. The file index tell which file it is and is an index pointing to an
+entry in the files section. An example of a source range is:
+38,8,38,17,1
+
+---
+Additional information can be found by searching:
+- "asminfo_option_and_output_format" which expands on how to request different sections

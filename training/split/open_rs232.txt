@@ -1,0 +1,72 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - OPEN RS232: RS232-specific open sequence. Calls RS232 initialization helper $F483, sets up RS232 parameter storage ($0293-$0297), copies filename bytes to buffer $0293,Y for up to 4 bytes, uses lookup tables for baud/parameters ($FEC1,$FEC0 or $E4EB,$E4EA) and stores results in $0295-$029B and RS232 state bytes ($F8/$FA/$F7/$F9). Finally jumps to MEMTOP/_ROBOF update via $FE2D. Uses STA/LDY/JSR/ASL/LSR/BCS/BNE.
+
+                                *** OPEN RS232
+.,F409 20 83 F4 JSR $F483
+.,F40C 8C 97 02 STY $0297
+.,F40F C4 B7    CPY $B7
+.,F411 F0 0A    BEQ $F41D
+.,F413 B1 BB    LDA ($BB),Y
+.,F415 99 93 02 STA $0293,Y
+.,F418 C8       INY
+.,F419 C0 04    CPY #$04
+.,F41B D0 F2    BNE $F40F
+.,F41D 20 4A EF JSR $EF4A
+.,F420 8E 98 02 STX $0298
+.,F423 AD 93 02 LDA $0293
+.,F426 29 0F    AND #$0F
+.,F428 F0 1C    BEQ $F446
+.,F42A 0A       ASL
+.,F42B AA       TAX
+.,F42C AD A6 02 LDA $02A6
+.,F42F D0 09    BNE $F43A
+.,F431 BC C1 FE LDY $FEC1,X
+.,F434 BD C0 FE LDA $FEC0,X
+.,F437 4C 40 F4 JMP $F440
+.,F43A BC EB E4 LDY $E4EB,X
+.,F43D BD EA E4 LDA $E4EA,X
+.,F440 8C 96 02 STY $0296
+.,F443 8D 95 02 STA $0295
+.,F446 AD 95 02 LDA $0295
+.,F449 0A       ASL
+.,F44A 20 2E FF JSR $FF2E
+.,F44D AD 94 02 LDA $0294
+.,F450 4A       LSR
+.,F451 90 09    BCC $F45C
+.,F453 AD 01 DD LDA $DD01
+.,F456 0A       ASL
+.,F457 B0 03    BCS $F45C
+.,F459 20 0D F0 JSR $F00D
+.,F45C AD 9B 02 LDA $029B
+.,F45F 8D 9C 02 STA $029C
+.,F462 AD 9E 02 LDA $029E
+.,F465 8D 9D 02 STA $029D
+.,F468 20 27 FE JSR $FE27
+.,F46B A5 F8    LDA $F8
+.,F46D D0 05    BNE $F474
+.,F46F 88       DEY
+.,F470 84 F8    STY $F8
+.,F472 86 F7    STX $F7
+.,F474 A5 FA    LDA $FA
+.,F476 D0 05    BNE $F47D
+.,F478 88       DEY
+.,F479 84 FA    STY $FA
+.,F47B 86 F9    STX $F9
+.,F47D 38       SEC
+.,F47E A9 F0    LDA #$F0
+.,F480 4C 2D FE JMP $FE2D
+.,F483 A9 7F    LDA #$7F
+.,F485 8D 0D DD STA $DD0D
+.,F488 A9 06    LDA #$06
+.,F48A 8D 03 DD STA $DD03
+.,F48D 8D 01 DD STA $DD01
+.,F490 A9 04    LDA #$04
+.,F492 0D 00 DD ORA $DD00
+.,F495 8D 00 DD STA $DD00
+.,F498 A0 00    LDY #$00
+.,F49A 8C A1 02 STY $02A1
+.,F49D 60       RTS
+
+---
+Additional information can be found by searching:
+- "open_file_part1" which expands on called from OPEN when device is RS232
+- "rs232_init_helper" which expands on initialization code at $F483 used here

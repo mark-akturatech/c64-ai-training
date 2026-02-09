@@ -1,0 +1,47 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - IOINIT routine: initializes I/O devices and chip registers. Disables interrupts, clears interrupt-control for CIA timers (D1ICR, D2ICR), enables STOP key, shuts off timers, configures CIA registers (CRA/CRB) for timers, sets keyboard and user-port DDRs and PRAs/PRBs, disables SID output, sets 6510 port defaults ($01 and $00), reads PAL/NTSC flag to choose keyboard-timer interval, initializes timer1 low/high bytes for keyboard scan (SIXTY/SIXTYP), then jumps to PIOKEY. Includes commented-out alternative timer enable code and the IOKEYS PAL/NTSC branch logic.
+
+                                ; IOINIT - INITILIZE IO DEVICES
+                                ;
+.,FDA3 A9 7F    LDA #$7F        IOINIT LDA #$7F        ;KILL INTERRUPTS
+.,FDA5 8D 0D DC STA $DC0D              STA D1ICR
+.,FDA8 8D 0D DD STA $DD0D              STA D2ICR
+.,FDAB 8D 00 DC STA $DC00              STA D1PRA       ;TURN ON STOP KEY
+.,FDAE A9 08    LDA #$08               LDA #%00001000  ;SHUT OFF TIMERS
+.,FDB0 8D 0E DC STA $DC0E              STA D1CRA
+.,FDB3 8D 0E DD STA $DD0E              STA D2CRA
+.,FDB6 8D 0F DC STA $DC0F              STA D1CRB
+.,FDB9 8D 0F DD STA $DD0F              STA D2CRB
+                                ; CONFIGURE PORTS
+.,FDBC A2 00    LDX #$00               LDX #$00        ;SET UP KEYBOARD INPUTS
+.,FDBE 8E 03 DC STX $DC03              STX D1DDRB      ;KEYBOARD INPUTS
+.,FDC1 8E 03 DD STX $DD03              STX D2DDRB      ;USER PORT (NO RS-232)
+.,FDC4 8E 18 D4 STX $D418              STX SIDREG+24   ;TURN OFF SID
+.,FDC7 CA       DEX                    DEX
+.,FDC8 8E 02 DC STX $DC02              STX D1DDRA      ;KEYBOARD OUTPUTS
+.,FDCB A9 07    LDA #$07               LDA #%00000111  ;SET SERIAL/VA14/15 (CLKHI)
+.,FDCD 8D 00 DD STA $DD00              STA D2PRA
+.,FDD0 A9 3F    LDA #$3F               LDA #%00111111  ;SET SERIAL IN/OUT, VA14/15OUT
+.,FDD2 8D 02 DD STA $DD02              STA D2DDRA
+                                                       ;
+                                                       ; SET UP THE 6510 LINES
+                                                       ;
+.,FDD5 A9 E7    LDA #$E7               LDA #%11100111  ;MOTOR ON, HIRAM LOWRAM CHAREN HIGH
+.,FDD7 85 01    STA $01                STA R6510
+.,FDD9 A9 2F    LDA #$2F               LDA #%00101111  ;MTR OUT,SW IN,WR OUT,CONTROL OUT
+.,FDDB 85 00    STA $00                STA D6510
+.,FDDD AD A6 02 LDA $02A6       IOKEYS LDA PALNTS      ;PAL OR NTSC
+.,FDE0 F0 0A    BEQ $FDEC              BEQ I0010       ;NTSC
+.,FDE2 A9 25    LDA #$25               LDA #<SIXTYP
+.,FDE4 8D 04 DC STA $DC04              STA D1T1L
+.,FDE7 A9 40    LDA #$40               LDA #>SIXTYP
+.,FDE9 4C F3 FD JMP $FDF3              JMP I0020
+.,FDEC A9 95    LDA #$95        I0010  LDA #<SIXTY     ;KEYBOARD SCAN IRQ'S
+.,FDEE 8D 04 DC STA $DC04              STA D1T1L
+.,FDF1 A9 42    LDA #$42               LDA #>SIXTY
+.,FDF3 8D 05 DC STA $DC05       I0020  STA D1T1H
+.,FDF6 4C 6E FF JMP $FF6E              JMP PIOKEY
+
+---
+Additional information can be found by searching:
+- "system_start_reset_sequence" which expands on IOINIT is invoked early in startup to configure I/O hardware
+- "sixty_and_file_io_helpers" which expands on the SIXTY/SIXTYP constants used here are defined nearby and influence keyboard timer setup

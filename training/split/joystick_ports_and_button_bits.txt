@@ -1,0 +1,103 @@
+# Contents - Joysticks: C64 has two joystick ports. Configure as inputs by setting DDRA ($DC02) and DDRB ($DC03) to $00. Read data from JOY1 ($DC00) or JOY2 ($DC01). Bit 4 = fire button (cleared when pressed). Lower five bits represent directions: bits for UP, DOWN, LEFT, RIGHT and FIRE (table shown). Often useful to invert input (NOT) and mask unused bits before use; sample code shows reading, NOT, AND #$0F to get 4-bit direction value.
+
+on the graphics mode that the screen is in. 
+
+
+
+JOYSTICKS 
+
+At some point, you will want to allow the player 
+to have control over his character in the game. Th( 
+most common form of input to a video game is 
+joystick. The Commodore 64 has two input port; 
+that can be used for joysticks. By setting both 
+DDRA ($DC02) and DDRB ($DC03) to $00, the two 
+ports will be configured as inputs. Once the port; 
+have been configured, the data from the joystick 
+can be read from JOY1 ($DC00 ) or JOY2 ($DC01 ) 
+Bit 4 of a joystick port represents the fire button 
+on that joystick. If that bit is clear, the fire button 
+
+
+
+34 
+
+
+
+depressed. The lower five bits of a joystick port 
+represent the direction of the joystick as shown 
+below: 
+
+
+
+Bit 
+
+
+Direction 
+
+
+
+
+
+UP 
+
+
+1 
+
+
+DOWN 
+
+
+2 
+
+
+LEFT 
+
+
+3 
+
+
+RIGHT 
+
+
+4 
+
+
+FIRE BUTTON 
+
+
+
+nient or manageable to have a bit set representing 
+a closed switch, the NOT macro can be used to in- 
+vert the data. Before using the joystick data as any 
+type of an index into a table of data, you must mask 
+the unused bits in the register. You will normally 
+want to mask the entire upper nibble and treat the 
+fire button separately. The following routine will in- 
+vert the joystick data from port and mask the 
+unused bits as well as the fire bit. The result will 
+be a four bit value that represents the joystick 
+direction. 
+
+
+
+When a contact on the joystick is pressed, its LDA JOY1 
+
+corresponding bit in the joystick register is clear. NOT 
+When two out of the lower four bits are clear, the 
+
+joystick is on an angle. If you find it more conve AND #$OF 
+
+
+
+;READ THE JOYSTICK PORT 
+
+COMPLEMENT THE 
+
+/ACCUMULATOR 
+
+; MASK THE UPPER BITS TO 
+
+---
+Additional information can be found by searching:
+- "hardware_scrolling_and_registers" which expands on example code uses bit masking similar to joystick handling

@@ -1,0 +1,59 @@
+# MACHINE - Explains the monitor's disassembler (.D): inverse-assembly to translate bytes back to mnemonics, how to disassemble starting at an address (example .D 033C), reading the listing, editing errors directly by changing bytes on the left-hand side, and re-assembling a corrected line.
+
+Checking:  The Disassembler
+---------------------------
+
+When we changed our source code into object code, we called this process of
+translation assembly, and we called a program that did the job an assembler.
+
+Now we're written a program and it's safely stored in memory.  We have
+inspected memory and have seen the bytes there; but they are hard to read.
+It would be convenient if we could perform an inverse assembly, that is, take
+the contents of memory and translate it into source code.  The monitor has
+this capability, called a disassembler.
+
+If we ask the computer to disassemble the code starting at $033C, it will
+examine the code there and establish that the contents ($A9) correspond to an
+LDA immediate command.  It will then print for our information LDA #$48,
+which is much more readable than the original two bytes, A9 48.
+
+Give the command .D 033C and press RETURN.  D stands for disassemble, of
+course, and the address must follow.
+
+The computer will now show a full screen of code.  On the left is the address
+followed by the bytes making up the instruction.  On the right is the
+reconstructed source code.  The screen shows much more memory than our
+program needs.  Again, we ignore all lines beyond address $0341, which is the
+last instruction of our program.  Anything following is "junk" left in memory
+that the program does not use.
+
+An interesting feature of most disassembly listings is that the cursor is
+left flashing on the last line of the disassembly rather than on the line
+below.  When you have a large program, this allows you to type the letter D
+followed by RETURN and the next part of your program will immediately be
+displayed.  On the other hand, if you don't want to disassemble more code,
+press the cursor down key and move to a "clean" line before typing your next
+instruction.
+
+A disassembly is a good way to check for errors.  If you find an error in the
+listing, you may correct that line by re-assembling it, using the .A command
+once again.  Minor errors may be corrected directly on the left-hand side of
+the disassembly listing.  In other words, suppose that you had incorrectly
+coded LDA #$58 during the assembly phase; when you perform the disassembly,
+this line will show as
+
+                                                                         :30:
+
+  .,033C A9 58     LDA #$58
+
+You recognize that the 58 should be 48; you may move the cursor up--use the
+cursor home if you wish--and type over the value on the left-hand side.  In
+this case, you place the cursor over the 5, type 4 to change the display to
+48, and press RETURN.  You will see from the display that the problem has
+been fixed.
+
+
+---
+Additional information can be found by searching:
+- "display_memory_and_object_bytes" which expands on disassembling the bytes you inspected
+- "running_program_with_monitor" which expands on run the program after verifying with the disassembler

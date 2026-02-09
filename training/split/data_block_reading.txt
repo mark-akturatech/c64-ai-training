@@ -1,0 +1,25 @@
+# A Minimal C64 Datasette Program Loader - get_block routine: reads a specified number of bytes into memory via an indirect pointer (STA (ptr),Y), decrementing a count and incrementing Y. Returns early with the carry flag set if an end-of-data marker is detected (via get_byte returning carry). Uses JSR get_byte and STA (ptr),Y to store data.
+
+Data Block Reading
+------------------
+
+    get_block:
+        sta count
+        ldy #0
+    g1: jsr get_byte
+        bcs g2
+        sta (ptr),y
+        iny
+        dec count
+        bne g1
+    g2: rts
+
+This reads a specified number of bytes into memory at a given address,
+returning early with carry set if an end-of-data marker is encountered.
+
+
+
+---
+Additional information can be found by searching:
+- "get_byte_routine" which expands on detects end-of-data markers used to stop block reading
+- "header_format" which expands on the header is read as a 192-byte data block

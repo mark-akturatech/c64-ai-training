@@ -1,0 +1,35 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Notes on needing coarse scroll when fine-scroll bits wrap (0<->7) and the requirement of using raster interrupts to isolate portions of the screen to scroll independently, because changing bits affects the whole display.
+
+                          As you can see, after the display has moved over seven dots, it starts
+                          over at its original position.  In order to continue with the scroll,
+                          you must do a coarse scroll every time the value of the scroll bits
+                          goes from 7 to 0, or from 0 to 7.  This is accomplished by moving each
+                          byte of display data on each line over one position, overwriting the
+                          last character, and introducing a new byte of data on the opposite end
+                          of the screen line to replace it.
+
+                          Obviously, only a machine language program can move all of these bytes
+                          quickly enough to maintain the effect of smooth motion.  The following
+                          BASIC program, however, will give you an idea of what the combination
+                          of fine and coarse scrolling looks like.
+
+                              10 POKE 53281,0:PRINT CHR$(5);CHR$(147):FOR I=1 TO 5:PRINT CHR$(17):NEXT
+                              20 FOR I=1 TO 30
+                              30 PRINT TAB(I-1)"{UP}{10 SPACES}{UP}"
+                              40 WAIT53265,128:POKE53270,PEEK(53270)AND248:PRINTTAB(I)"AWAY WE GO"
+                              50 FOR J=1 TO 7
+                              60 POKE 53270,(PEEK(53270)AND248)+J
+                              70 FORK=1TO30-I
+                              80 NEXT K,J,I:RUN
+
+                          Changing the value of the three horizontal scroll bits will affect the
+                          entire screen display.  If you wish to scroll only a portion of the
+                          screen, you will have to use raster interrupts (see 53274 ($D01A)
+                          below) to establish a scroll zone, change the value of these scroll
+                          bits only when that zone is being displayed, and change it back to 0
+                          afterward.
+
+
+---
+Additional information can be found by searching:
+- "d01a_irqmask_and_raster_interrupts" which expands on Use raster interrupts to limit scroll zone

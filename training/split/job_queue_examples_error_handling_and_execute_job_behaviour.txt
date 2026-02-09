@@ -1,0 +1,77 @@
+# byRiclianll - Covers job-queue example operations and the job-queue error handler: sample job steps (SEEK, READ sector 0 of track 18 into buffer $0500-$05FF, WRITE buffer back to track 18 sector 0, and an error handler). Explains conversion from FDC error codes to IP codes (add 18 to restrict IP errors to 20–29), handling of out-of-range FDC codes (treated as TIME OUT), automatic VERIFY after an FDC WRITE (WRITE $90 is followed by VERIFY $A0; mismatches show FDC error 7 → IP error 25 WRITE ERROR), the pointless BUMP job ($C0), the JUMP job ($D0) behavior (executes a RAM machine-language routine), and detailed EXECUTE job ($E0) behavior: FDC ensures drive up to speed, head on correct track, head settled; EXECUTE is non-interruptible (no BRK debugging), and the programmer must set the job code to $01 at the end of the routine to signal completion or the FDC will re-run it.
+
+
+Line  Range  Description 
+
+
+290-320  SEEK  track  18. 
+
+340-350  READ  contents  of  sector  0  from  track  18  into  buffer 
+
+number  2  ($0500-$05FF). 
+
+550-560  WRITE  buffer  number  2  ($0500-$05FF)  to  track  18,  sec- 
+
+tor 0. 
+
+770-890  Error  handler. 
+
+
+Ill 
+
+
+Lines  100  to  530  should  be  self  explanatory  by  now.  Lines  540-560  are  equivalent  to 
+a  block-write  command  (U2).  To  write  a  sector  via  the  job  queue  we  stuff  the  track  and 
+sector  in  the  header  table  and  a  $90  (144)  into  the  job  queue  table  and  let  her  rip. 
+
+The  error  handler,  however,  is  of  interest.  The  conversion  from  FDC  code  to  IP  code 
+is  quite  easy.  We  simply  add  18  to  the  FDC  error  code  (line  820).  Note  that  we  try  to 
+restrict  all  errors  within  a  range  of  20  to  29.  An  FDC  error  code  of  0  or  greater  than 
+11  is  indicative  that  something  went  radically  wrong.  Line  820  arbitrarily  reports  a 
+?TIME  OUT  in  this  situation.  Speaking  from  experience,  the  job  just  plainly  didn't  get 
+done.  A  time  out  occurs  very  rarely,  unless  of  course,  one  is  inspecting  a  damaged  or 
+DOS-protected  diskette. 
+
+Line  840  is  another  highlight.  An  FDC  WRITE  ($90)  automatically  flips  to  an  FDC 
+VERIFY  ($A0)  to  compare  the  contents  of  the  buffer  against  the  sector  just  written. 
+Kind  of  neat,  isn't  it?  If  the  buffer  and  the  sector  do  not  match,  we  see  an  FDC  error 
+7,  i.e.,  an  IP  error  number  25,  WRITE  ERROR.  Since  a  VERIFY  is  done  automatical- 
+ly by  the  FDC,  we  will  not  elaborate  any  further  on  this  particular  job  code. 
+
+The  job  code  for  a  BUMP  is  a  $C0  (192).  Why  anybody  would  ever  want  to  implement 
+this  job  request  is  beyond  us. 
+
+A  subtle  difference  exists  between  the  remaining  two  job  codes,  a  JUMP  ($D0)  and  an 
+EXECUTE  ($E0).  A  JUMP  executes  a  machine  language  routine  poked  into  RAM.  No 
+more,  no  less.  Like  a  BUMP  job,  it  is  seldom  used.  The  program  that  moves  the 
+read/write  head  in  Chapter  9  is  the  only  place  where  we  have  ever  found  a  practical 
+use  for  it. 
+
+An  EXECUTE  ($E0)  is  the  Rolls  Royce  of  job  codes,  however.  Before  a  machine  language 
+routine  is  executed,  the  FDC  makes  sure  that: 
+
+1.  The  drive  is  up  to  speed. 
+
+2.  The  read/write  head  is  on  the  right  track. 
+
+3.  The  read/write  head  has  settled. 
+
+The  FDC  cannot  be  interrupted  when  performing  an  EXECUTE  job.  Once  the  FDC 
+starts  to  EXECUTE  the  machine  language  routine,  control  is  not  returned  to  the  IP 
+until  the  routine  is  completed.  A  runaway  routine  cannot  be  debugged  even  with  BRK 
+instructions.  You  must  power  down  the  1541  and  try  to  second  guess  the  side  effects 
+of  the  routine  to  determine  what  went  wrong. 
+
+NOTE:  The  FDC  does  not  automatically  return  an  error  code  when  the  routine  is  com- 
+pleted. It  is  the  programmer's  responsibihty  to  change  the  job  code  in  the  job  queue 
+table  from  an  EXECUTE  ($E0)  to  an  $01  at  the  end  of  the  routine.  If  this  is  not  done, 
+the  FDC  will  find  the  same  EXECUTE  request  on  its  next  scan  of  the  job  queue  and 
+re-run  the  routine.  Infinite  regression! 
+
+Most  of  the  programs  in  Chapter  7  make  use  of  the  EXECUTE  job  code  in  one  form 
+or  another.  Therefore,  example  programs  will  be  given  there. 
+
+
+---
+Additional information can be found by searching:
+- "dos_protection_sector_structure_and_gcr_encoding_intro" which expands on Next chapter starts: DOS protection and data encoding basics (sector layout, sync marks, GCR encoding)

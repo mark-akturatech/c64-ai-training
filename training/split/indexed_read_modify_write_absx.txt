@@ -1,0 +1,90 @@
+# NMOS 6510 - Indexed Read-Modify-Write behaviour for Absolute X Indexed forms: ASL/DEC/INC/LSR/ROL/ROR/DCP/ISC etc on abs,X. Shows the per-cycle sequence including dummy fetch from target address before high byte corrected on page-cross, the unmodified data write-back, and the final write of modified data. Notes dummy fetch and unmodified write-back semantics.
+
+Address-Bus
+
+SRE abs, y
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+PC + 2
+
+Absolute Address High
+
+R
+
+4 (*1) < AAH, AAL + Y >
+
+Byte at target address before high byte was corrected R
+
+5
+
+AA + Y
+
+Old Data
+
+R
+
+6 (*2) AA + Y
+
+Old Data
+
+W
+
+7
+
+New Data
+
+W
+
+AA + Y
+
+Simulation Link: http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=22&d=a0d0db10eaeaeaeaeaeaeaeaeaeaeaea1280
+(*1) Dummy fetch from target address before the high byte was incremented
+(*2) Unmodified data is written back to the target address
+Zeropage X indexed (R-M-W)
+ASL zp, x
+RRA zp, x
+
+DCP zp, x
+SLO zp, x
+
+Cycle
+
+DEC zp, x
+SRE zp, x
+
+INC zp, x
+
+ISC zp, x
+
+Address-Bus
+
+LSR zp, x
+
+RLA zp, x
+
+
+---
+Additional information can be found by searching:
+- "unintended_addressing_modes_absolute_x_rmw" which expands on unintended abs,X R-M-W opcodes that use same timing

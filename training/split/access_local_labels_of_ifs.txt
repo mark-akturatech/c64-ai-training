@@ -1,0 +1,22 @@
+# Kick Assembler - Shows label scope behavior for .if directives. Placing a label before an .if creates access to labels defined only in the taken branch. If the condition is false and no else-branch exists, references to symbols in the taken branch raise 'symbol undefined'. Example: jmp myIf.label myIf: .if (true) { label: lda #0 } else { label: nop }
+
+*=$8021 "Insert jump"
+jmp $8044
+
+Segments can also be used for outputting code in alternative formats. Here is an example writing code for a
+cartridge with 4 banks:
+.segment CARTRIDGE_FILE [outBin="myfile.bin"]
+.segmentout [segments ="BANK1"]
+.segmentout [segments ="BANK2"]
+.segmentout [segments ="BANK3"]
+.segmentout [segments ="BANK4"]
+.segmentdef BANK1 [min=$1000, max=$1fff, fill]
+.segmentdef BANK2 [min=$1000, max=$1fff, fill]
+.segmentdef BANK3 [min=$1000, max=$1fff, fill]
+.segmentdef BANK4 [min=$1000, max=$1fff, fill]
+.segment BANK1
+..code for segment 1 goes here...
+
+---
+Additional information can be found by searching:
+- "access_local_labels_of_for_while_loops" which expands on control-structure label scopes

@@ -1,0 +1,21 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Description of the SID ADSR bug: internal rate counter can delay Attack when triggered during Release due to LFSR-based rate counter. Workarounds include setting GATE=0 then GATE=1 or 'hard restart' techniques to preset envelope state before retriggering.
+
+--------------------------------------------------------------------------------
+4.2 ADSR BUG
+--------------------------------------------------------------------------------
+
+The SID has a well-known ADSR bug caused by the internal rate counter mechanism.
+When the GATE bit is set and the envelope is in the Release phase, the Attack
+phase may exhibit a brief delay before the amplitude begins to rise. This
+occurs because the internal LFSR-based rate counter must complete its current
+cycle before responding to the new GATE state.
+
+Workaround: Many music players set GATE=0 followed immediately by GATE=1 in
+successive frames, or use a "hard restart" technique where they pre-set the
+envelope to a known state before triggering a new note.
+
+
+---
+Additional information can be found by searching:
+- "adsr_overview" which expands on ADSR operation and timing table
+- "programming_initialization" which expands on initialization/hard restart techniques in player code

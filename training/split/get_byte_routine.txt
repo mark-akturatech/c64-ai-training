@@ -1,0 +1,28 @@
+# A Minimal C64 Datasette Program Loader - Subroutine get_byte: waits for a byte marker by calling get_pulse and checking for a 'long' marker (using threshold_medium_long). Detects end-of-data if marker's second pulse is short. Then reads 8 data bits by calling get_pulse twice per bit (first pulse ignored for data), assembling bits with ROR and using a canary bit technique to detect completion. Uses instructions: JSR, CMP, BCS, BCS, LDA, PHA, PLA, ROR, BCS, RTS.
+
+get_byte Routine
+----------------
+
+    get_byte:
+    ; wait for byte marker
+        jsr get_pulse
+        cmp #$ff-threshold_medium_long
+        bcs get_byte    ;not long
+        jsr get_pulse
+        bcs b2          ;short = end of data
+    ; get 8 bits
+        lda #%01111111
+    b1: pha
+        jsr get_pulse   ;ignore first
+        jsr get_pulse
+        pla
+        ror             ;shift in bit
+        bcs b1          ;until canary bit
+    b2: rts
+
+
+---
+Additional information can be found by searching:
+- "get_pulse_routine" which expands on relies on get_pulse for pulse classification
+- "canary_bit_technique" which expands on explains canary bit method used here
+- "data_block_reading" which expands on get_byte is used to read bytes into memory

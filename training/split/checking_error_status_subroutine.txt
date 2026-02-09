@@ -1,0 +1,38 @@
+# byRiclianll - Example BASIC subroutine to check the drive error status using the command channel: OPEN 15,8,15 ; INPUT#15,EN,EM$,ET,ES ; checks error code EN (<20 means no error) ; prints EN, EM$, ET, ES ; CLOSE 15. Explains EN (error number), EM$ (message), ET (track), ES (sector), and refers to full error list in the 1541 User's Manual and Chapter 7.
+
+You  can  check  the  error  status  of  your  disk  drive  using  the  command  channel.  The  DOS 
+monitors  every  disk  operation  as  it  is  carried  out  and  prepares  a  status  report  indicating 
+whether  or  not  the  operation  was  completed  successfully.  The  report  consists  of  an  er- 
+ror code  number,  an  English  language  message,  and  the  track  and  sector  where  the 
+problem,  if  any,  was  encountered.  Here  is  a  subroutine  that  checks  the  error  status. 
+
+lOO  OPEN   15,8,15   :  REM 
+
+THE  OPEN  COMMAND  CHANNEL 
+
+500   INPUT#15,EN,EM*,ET,ES   :  REM 
+
+INPUT  THE  ERROR  STATUS 
+510   IF  EN  <   20  THEN  RETURN   :  REM 
+
+NO  ERROR  ENCOUNTERED 
+520  PRINT  EN;EM«;ET;ES   :  REM 
+
+PRINT  THE  ERROR  STATUS  ON  SCREEN 
+530  CLOSE   15   :    END   :  REM 
+
+ABORT  ON  BAD  STATUS 
+
+Line  100  opens  the  command  channel.  It  is  a  good  idea  to  open  the  command  channel 
+at  the  beginning  of  your  program  and  leave  it  open  until  the  end.  Line  500  inputs  the 
+status  report.  The  error  code  number  is  stored  in  EN,  the  message  in  EM$,  the  track 
+in  ET,  and  the  sector  in  ES.  Error  codes  less  than  20  may  be  ignored  Gine  510).  A  com- 
+plete list  of  the  error  codes  and  messages  is  contained  in  the  back  of  your  15U1  User's 
+Manual.  A  detailed  explanation  of  the  nature  and  cause  of  many  of  these  errors  is  pro- 
+vided in  Chapter  7  on  Disk  Protection. 
+
+
+---
+Additional information can be found by searching:
+- "input_get_syntax_and_usage" which expands on uses INPUT# to read the error message
+- "validate_operation_and_risks_unclosed_files" which expands on error handling and consequences during validate/housekeeping

@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - LEN() implementation and its helper: performs LEN by calling the evaluate-string routine (JSR $B782) which returns the string length in A (and in Y). The evaluate-string routine (JSR $B6A3) evaluates a string expression, clears the numeric/data-type flag (sets $0D=0 numeric), copies the evaluated length into Y and returns. LEN then converts Y into FAC1 byte form and returns (JMP $B3A2).
+
+                                *** perform LEN()
+.,B77C 20 82 B7 JSR $B782       evaluate string, get length in A (and Y)
+.,B77F 4C A2 B3 JMP $B3A2       convert Y to byte in FAC1 and return
+
+                                *** evaluate string, get length in Y
+.,B782 20 A3 B6 JSR $B6A3       evaluate string
+.,B785 A2 00    LDX #$00        set data type = numeric
+.,B787 86 0D    STX $0D         clear data type flag, $FF = string, $00 = numeric
+.,B789 A8       TAY             copy length to Y
+.,B78A 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "asc_function" which expands on ASC also calls same evaluate-string routine (JSR $B782)
+- "pull_string_and_byte_param" which expands on related descriptor handling for string expressions (JSR $B6A3 called to evaluate string)

@@ -1,0 +1,42 @@
+# COMMODORE 64 - KERNAL SECOND (call $FF93 / 65427): Send secondary address to an I/O device after LISTEN has been called. Uses A (secondary address). Cannot be used after TALK. Secondary address must be ORed with $60 on serial bus. Stack requirements: 8. Example: LDA #8 ; JSR LISTEN ; LDA #15 ; JSR SECOND.
+
+  B-27. Function Name: SECOND
+
+    Purpose: Send secondary address for LISTEN
+    Call address: $FF93 (hex) 65427 (decimal)
+    Communication registers: A
+    Preparatory routines: LISTEN
+    Error returns: See READST
+    Stack requirements: 8
+    Registers affected: A
+
+    Description: This routine is used to send a secondary address to an
+  I/O device after a call to the LISTEN routine is made, and the device is
+  commanded to LISTEN. The routine canNOT be used to send a secondary
+  address after a call to the TALK routine.
+    A secondary address is usually used to give setup information to a
+  device before I/O operations begin.
+    When a secondary address is to be sent to a device on the serial bus,
+  the address must first be ORed with $60.
+
+  How to Use:
+
+    1) load the accumulator with the secondary address to be sent.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    ;ADDRESS DEVICE #8 WITH COMMAND (SECONDARY ADDRESS) #15
+    LDA #8
+    JSR LISTEN
+    LDA #15
+    JSR SECOND
+
+  296   BASIC TO MACHINE LANGUAGE
+~
+
+
+
+---
+Additional information can be found by searching:
+- "listen_kernal_routine" which expands on SECOND must be used after LISTEN

@@ -1,0 +1,66 @@
+# Kick Assembler - Table 11.3 General file parameters: hide (if true file not shown in directory), interleave (file interleave), name (filename), noStartAddr (if true two address bytes are not added to beginning of file), type (file type: "del","seq","prg","usr","rel"; append '<' to mark locked).
+
+of the type to mark it as
+locked
+
+11.7. Custom Disk Writers
+A custom disk writer is written in a plug in. Refer to the "3rd Party Java plugins" if you want to implement
+one yourself.
+It is called like this:
+.plugin "myplugins.Mydiskwriter"
+.disk MyDiskWriter [.. disk params...]
+{
+[ ..file params.., segments="Code,Data"],
+[ ..file params.., prgFiles="data/music.prg"],
+}
+
+57
+
+Chapter 12
+Import and Export
+In this chapter we will look at other ways to get data in and out of Kick Assembler.
+
+12.1. Passing Command Line Arguments to the Script
+From the command line you can assign string values to variables, which can be read from the script. This is
+done with the ‘:’ notation like this:
+java –jar KickAss.jar mySource.asm :x=27 :sound=true :title=”Beta 2”
+
+The three variables x, sound and beta2 and their string values will now be placed in a hashtable that can be
+accessed by the global variable cmdLineVars:
+.print “version =” + cmdLineVars.get(“version”)
+.var x= cmdLineVars.get(“x”).asNumber()
+.var y= 2*x
+.var sound = cmdLineVars.get(”sound”).asBoolean()
+.if (sound) jsr $1000
+
+12.2. Import of Binary Files
+It's possible to load any file into a variable. This is done with the LoadBinary function. To extract bytes of
+the file from the variable you use the get function. You can also get the size of the file with the getSize function.
+Here is an example:
+// Load the file into the variable ’data’
+.var data = LoadBinary("myDataFile")
+// Dump the data to the memory
+myData: .fill data.getSize(), data.get(i)
+
+The get function extracts signed bytes as defined by java, which means the byte value $ff gives the number -1.
+This is not a problem when dumping bytes to memory, however if you want to process the data you might want
+an unsigned byte. To get an unsigned byte use the uget function instead. The byte value $ff will then return 255.
+When you know the format of the file, you can supply a template string that describes the memory blocks.
+Each block is given a name and a start address relative to the start of the file. When you supply a template to the
+LoadBinary function, the returned value will contain a get and a size function for each memory block:
+.var dataTemplate = "Xcoord=0,Ycoord=$100, BounceData=$200"
+.var file = LoadBinary(“moveData”, dataTemplate)
+Xcoord:
+.fill file.getXCoordSize(), file.getXCoord(i)
+Ycoord:
+.fill file.getYCoordSize(), file.getYCoord(i)
+BounceData: .fill file.getBounceDataSize(), file.getBounceData(i)
+
+Again, file.ugetXCoord(i) will return an unsigned byte.
+There is a special template tag named ‘C64FILE’ that is used to load native c64 files. When this is in the
+template string, the LoadBinary function will ignore the two first byte of the file, since the first two bytes of a
+C64 file are used to tell the loader the start address of the file. Here is an example of how to load and display a
+Koala Paint picture file:
+.const KOALA_TEMPLATE = "C64FILE, Bitmap=$0000, ScreenRam=$1f40, ColorRam=$2328,
+BackgroundColor = $2710"
+.var picture = LoadBinary("picture.prg", KOALA_TEMPLATE)

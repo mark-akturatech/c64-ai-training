@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Select and display the status message 'LOADING' or 'VERIFYING' depending on the load/verify flag. Loads the message index into Y and jumps to the kernel I/O message display routine when in direct mode. Covers $F5D2..$F12B (entry $F5D2..$F5DA in this chunk).
+
+
+                                *** display "LOADING" or "VERIFYING"
+.,F5D2 A0 49    LDY #$49        
+                                point to "LOADING"
+.,F5D4 A5 93    LDA $93         get load/verify flag
+.,F5D6 F0 02    BEQ $F5DA       branch if load
+.,F5D8 A0 59    LDY #$59        
+                                point to "VERIFYING"
+.,F5DA 4C 2B F1 JMP $F12B       display kernel I/O message if in direct mode and return
+
+---
+Additional information can be found by searching:
+- "serial_bus_load_and_receive" which expands on used to show status during serial-bus file transfers
+- "tape_load_sequence" which expands on used to show status before starting tape read
+- "print_searching_and_file_name" which expands on complements the 'Searching...' output flow

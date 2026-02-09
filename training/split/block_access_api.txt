@@ -1,0 +1,23 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - Block access API: 256-byte logical blocks identified by track/sector. '#' channel syntax allocates a buffer for direct block access. Commands include U1 (UA) read block, U2 (UB) write block, B-A allocate block in BAM, B-F free block in BAM. Example sequence to read track 18 sector 0 into a buffer via channel 2.
+
+Block Access API:
+  The block system uses 256-byte logical blocks identified by track/sector.
+  The "#" channel syntax allocates a buffer for direct block access.
+
+  Commands:
+    U1 (UA)  - Read a block into buffer
+    U2 (UB)  - Write a block from buffer
+    B-A      - Allocate a block in the BAM (Block Availability Map)
+    B-F      - Free a block in the BAM
+
+  Example: Reading track 18, sector 0 via channel 2:
+    OPEN 2,8,2,"#"       ; Allocate buffer on channel 2
+    PRINT#15,"U1:2,0,18,0" ; Read track 18, sector 0 into buffer
+    ; ... read data from channel 2 ...
+    CLOSE 2
+
+
+---
+Additional information can be found by searching:
+- "memory_and_execution_commands" which expands on M-R/M-W/M-E drive memory ops
+- "commodore_dos_channel_architecture" which expands on use of channels for block access and buffers

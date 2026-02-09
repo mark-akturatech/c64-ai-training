@@ -1,0 +1,46 @@
+# byRiclianll - Utility subroutines used by the formatter: REM DELAY (lines 900-950) which prompts the user to press Return, loops on GETC* to wait for CR, prints OK and returns; and a second REM JOB QUEUE (lines 960 onward) that initializes TRY, composes M-W job packets (CHR$ values including job and track parameters), increments TRY, sends M-R to poll for response, reads GET#15 response E$ (normalizing empty responses), converts to numeric E=ASC(E$), includes retry timeout handling (IF TRY=500 GOTO 1070) and conditional branching on response values. This chunk contains the I/O-wait and job-queue logic used by the multiple-ID formatter; it ends mid-sequence at the document boundary.
+
+
+900  REM  DELAY 
+
+910  PRINT" {DOWN>PRESS  CRVS>RETURNCR0FF3 
+TO  CONTINUE" 
+
+920  GETC*: IFC$=""THEN920 
+
+930   I FC*<  >CHR* (13) G0T0920 
+
+940  PR I NT "OK" 
+
+950  RETURN 
+
+960  REM  JOB  QUEUE 
+
+970  TRY=0 
+
+980  PRINT#15, "M-W"CHR*  <8) CHR*  <0) CHR* (2) C 
+HR*<T)CHR*<S) 
+
+990  PRINT#15, "M-W"CHR*<1)CHR*<0)CHR*<1)C 
+
+HR* (JOB) 
+
+1000  TRY=TRY+1 
+
+1010  PRINT#15, "M-R"CHR*(1)CHR*(0) 
+
+1020  GET#15,E* 
+
+1030  IFE*=""THENE*=CHR*(0) 
+
+104O  E=ASC(E*) 
+
+1050  IFTRY=500G0T01070 
+
+1060  IFEM27G0T01000 
+
+
+---
+Additional information can be found by searching:
+- "job_queue_error_handling" which expands on Related job-queue logic used earlier for the single-sector duplication example
+- "multiple_id_formatting_write_parameters_and_execute" which expands on Called to perform the SEEK/READ/WRITE job exchanges and to wait for drive responses during formatting

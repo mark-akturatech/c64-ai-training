@@ -1,0 +1,74 @@
+# Kick Assembler - Section 4.2: Declaring .var variables, using .eval for assignments and compound operators (++, --, += etc.), immutable .const declarations, .enum enumerations, and .label declarations for labels visible across scope; note about assignment rules and locking mutable values.
+
+4.2. Variables, Constants and User Defined Labels
+With variables you can store data for later use. Before you can use a variable you have to declare it. You do
+this with the .var directive:
+.var x=25
+lda #x
+// Gives lda #25
+
+If you want to change x later on you write:
+.eval x=x+10
+lda #x
+// Gives lda #35
+
+This will increase x by 10. The .eval directive is used to make Kick Assembler evaluate expressions. In fact,
+the .var directive above is just a convenient shorthand of ‘.eval var x =25’, where ‘var’ is subexpression that
+declares a variable (this will come in handy later when we want to define variables in for-loops).
+Other shorthands exist. The operators ++, --, +=, -=, *= and /= will automatically call a referenced variable
+with +1,-1, +y, -y, *y and /y. For example:
+
+14
+
+Introducing the Script Language
+
+.var x = 0
+.eval x++
+.eval x-.eval x+=3
+.eval x-=7
+.eval x*=3
+.eval x/=2
+
+// Gives x=x+1
+// Gives x=x-1
+// Gives x=x+3
+// Gives x=x-7
+// Gives x=x*3
+// Gives x=x/2
+
+Experienced users of modern programming languages will know that assignments return a value, e.g. x = y =
+z = 25 first assigns 25 to z, which returns 25 that is assigned to y, which returns 25 that is assigned to x. Kick
+Assembler supports this as well. Notice that the ++ and -- works as real ++ and –- postfix operators, which means
+that they return the original value and not the new (Ex: .eval x=0 .eval y=x++, will set x to 1 and y to 0)
+You can also declare constants:
+.const c=1
+// Declares the constant c to be 1
+.const name = "Camelot" // Constants can assume any value, for example string
+
+A constant can't be assigned a new value, so .eval pi=22 will generate an error. Note that not all values are
+immutable. If you define a constant that points to a list, the content of the list can still change. If you want to make
+a mutable value immutable, you can use its lock() function, which will lock it's content:
+.const immutableList = List().add(1,2,3).lock()
+
+After this you will get an error if you try to add an element or modify existing elements.
+With the .enum statement you can define enumerations, which are series of constants:
+.enum {singleColor, multiColor}
+// Defines singleColor=0, multiColor=1
+.enum {effect1=1,effect2=2,end=$ff} // Assigns values explicitly
+.enum {up,down,left,right, none=$ff} // You can mix implicit and explicit
+// assignment of values
+
+Variables and constants can only be seen after they are declared while labels can be seen in the entire scope.
+You can define a label with the .label directive like you define variables and constants:
+// This fails
+inc myLabel1
+.const myLabel1 = $d020
+// This is ok
+inc myLabel2
+.label myLabel2 = $d020
+
+
+---
+Additional information can be found by searching:
+- "working_with_mutable_values" which expands on locking mutable values and .define directive (Section 6.3)
+- "labels_argument_labels_and_multi_labels" which expands on label declarations and usage in assembler code (Section 3.4)

@@ -1,0 +1,21 @@
+# Analyzing C64 tape loaders - Definition of CIA Control Register B ($DC0F): bits 0..7 meanings for Timer B. Bit 0=Start Timer B, Bit 1=select Timer B output on Port B (bit7), Bit 2=output mode toggle/pulse, Bit 3=one-shot/continuous, Bit 4=force load latch-to-counter, Bits 5-6 select Timer B input mode (00=CPU cycles, 01=CNT line, 10=count Timer A underflows, 11=Timer A+CNT), Bit 7 selects TOD write mode.
+
+56335 $DC0F CIACRB
+Control Register B
+
+Bit 0: Start Timer B (1=start, 0=stop)
+Bit 1: Select Timer B output on Port B (1=Timer B output appears on Bit 7 of Port B)
+Bit 2: Port B output mode (1=toggle Bit 7, 0=pulse Bit 7 for one cycle)
+Bit 3: Timer B run mode (1=one-shot, 0=continuous)
+Bit 4: Force latched value to be loaded to Timer B counter (1=force load strobe)
+Bits 5-6: Timer B input mode
+00 = Timer B counts microprocessor cycles
+01 = Count signals on CNT line at pin 4 of User Port
+10 = Count each time that Timer A counts down to 0
+11 = Count Timer A 0's when CNT pulses are also present
+Bit 7: Select Time of Day write (0=writing to TOD registers sets alarm, 1=writing to TOD registers sets clock)
+</code>
+
+---
+Additional information can be found by searching:
+- "cia1_timers_and_usage" which expands on Implications of Timer B input modes for threshold schemes

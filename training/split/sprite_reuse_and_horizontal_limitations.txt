@@ -1,0 +1,20 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Describes reuse limits: sprites can be reused vertically by changing their Y coordinate after (or during) display completion; if comparisons match again the sprite will display again at the new Y (allowing more than 8 sprites on screen). Horizontal reuse is not possible: after 24 displayed pixels the shift register is empty, so changing X within the same line cannot produce more sprite data — only up to 8 sprites can be displayed on a single raster line.
+
+Sprites can be "reused" vertically: If you change the Y coordinate of a
+sprite to a later raster line during or after its display has completed, so
+that the comparisons mentioned in rules 1 and 2 will match again, the
+sprite is displayed again at that Y coordinate (you may then of course
+freely set a new X coordinate and sprite data pointer). It is therefore
+possible to display more than 8 sprites on the screen.
+
+This is not possible in the horizontal direction. After 24 displayed
+pixels, the shift register has run empty and even if you change the X
+coordinate within a line so that the comparison in rule 4 will match again,
+no sprite data is displayed any more. So you can only display up to 8
+sprites within one raster line at a time.
+
+
+---
+Additional information can be found by searching:
+- "sprite_data_sequencer_and_registers" which expands on Shift register length (24 bits) limiting horizontal reuse
+- "sprite_y_position_offset_and_start_timing" which expands on How Y coordinate and timing affect vertical reuse

@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - A0INT routine: tests for an $8000 ROM signature by comparing memory bytes against TBLA0R data. Returns Z set if $8000 ROM present. Includes the TBLA0R/TBLA0E data bytes ('.BYT $C3,$C2,$CD,'80'') used for the comparison.
+
+                                ; A0INT - TEST FOR AN $8000 ROM
+                                ;  RETURNS Z - $8000 IN
+                                ;
+.,FD02 A2 05    LDX #$05        A0INT  LDX #TBLA0E-TBLA0R ;CHECK FOR $8000
+.,FD04 BD 0F FD LDA $FD0F,X     A0IN1  LDA TBLA0R-1,X
+.,FD07 DD 03 80 CMP $8003,X            CMP $8004-1,X
+.,FD0A D0 03    BNE $FD0F              BNE A0IN2
+.,FD0C CA       DEX                    DEX
+.,FD0D D0 F5    BNE $FD04              BNE A0IN1
+.,FD0F 60       RTS             A0IN2  RTS
+                                ;
+.:FD10 C3 C2 CD 38 30           TBLA0R .BYT $C3,$C2,$CD,'80' ;..CBM80..
+                                TBLA0E
+
+---
+Additional information can be found by searching:
+- "system_start_reset_sequence" which expands on called early in startup to decide whether to jump to an alternate ROM
+- "restore_and_vector_initialization" which expands on vector/table initialization that follows the ROM test in startup

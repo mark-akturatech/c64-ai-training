@@ -1,0 +1,74 @@
+# COMMODORE 64 - ASCII connector diagram and complete top-side (pins 1-12) and bottom-side (pins A-N) pin descriptions for the USER port. Covers GND, +5V, RESET (cold start behavior), CNT1/SP1/CNT2/SP2/PC2 (CIA serial/handshaking lines), SERIAL ATN, 9VAC phases, and PORT B / PORT A signals (PB0-PB7, FLAG2, PA2) including mention of the PORT B register address at 56577 ($DD01) and that data direction controls whether each PB line is input or output.
+
+  PORT PIN DESCRIPTION
+
+                                             1 1 1
+                           1 2 3 4 5 6 7 8 9 0 1 2
+                        +--@-@-@-@-@-@-@-@-@-@-@-@--+
+                        |                           |
+                        +--@-@-@-@-@-@-@-@-@-@-@-@--+
+                           A B C D E F H J K L M N
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                   INPUT/OUTPUT GUIDE   359
+~
+
+
+                            PORT PIN DESCRIPTION
+  +-----------+-----------+-----------------------------------------------+
+  |    PIN    |           |                                               |
+  +-----------+DESCRIPTION|                     NOTES                     |
+  | TOP SIDE  |           |                                               |
+  +-----------+-----------+-----------------------------------------------+
+  |     1     |  GROUND   |                                               |
+  |     2     |   +5V     |  (100 mA MAX.)                                |
+  |     3     |  RESET    |  By grounding this pin, the Commodore 64 will |
+  |           |           |  do a COLD START, resetting completely. The   |
+  |           |           |  pointers to a BASIC program will be reset,   |
+  |           |           |  but memory will not be cleared. This is also |
+  |           |           |  a RESET output for the external devices.     |
+  |     4     |    CNT1   |  Serial port counter from CIA#1(SEE CIA SPECS)|
+  |     5     |    SP1    |  Serial port from CIA #l (SEE 6526 CIA SPECS) |
+  |     6     |    CNT2   |  Serial port counter from CIA#2(SEE CIA SPECS)|
+  |     7     |    SP2    |  Serial port from CIA #l (SEE 6526 CIA SPECS) |
+  |     8     |    PC2    |  Handshaking line from CIA #2 (SEE CIA SPECS) |
+  |     9     |SERIAL ATN |  This pin is connected to the ATN line of the |
+  |           |           |  serial bus.                                  |
+  |    10     |9 VAC+phase|  Connected directly to the Commodore          |
+  |    11     |9 VAC-phase|  64 transformer (50 mA MAX.).                 |
+  |    12     |    GND    |                                               |
+  |           |           |                                               |
+  |BOTTOM SIDE|           |                                               |
+  |           |           |                                               |
+  |     A     |    GND    |  The Commodore 64 gives you control over      |
+  |     B     |   FLAG2   |  PORT B on CIA chip #1. Eight lines for input |
+  |     C     |    PB0    |  or output are available, as well as 2 lines  |
+  |     D     |    PB1    |  for handshaking with an outside device. The  |
+  |     E     |    PB2    |  I/O lines for PORT B are controlled by two   |
+  |     F     |    PB3    |  locations. One is the PORT itself, and is    |
+  |     H     |    PB4    |  located at 56577 ($DD01 HEX). Naturally you  |
+  |     I     |    PB5    |  PEEK it to read an INPUT, or POKE it to set  |
+  |     K     |    PB6    |  an OUTPUT. Each of the eight I/O lines can   |
+  |     L     |    PB7    |  be set up as either an INPUT or an OUTPUT by |
+  |     M     |    PA2    |  by setting the DATA DIRECTION REGISTER       |
+  |     N     |    GND    |  properly.                                    |
+  +-----------+-----------+-----------------------------------------------+
+
+
+
+---
+Additional information can be found by searching:
+- "user_port_overview" which expands on general purpose and CIA connection
+- "user_port_data_direction_register_ddr_usage" which expands on how to set PB lines as input or output via the DDR
+- "user_port_flag1_and_pa2_handshaking" which expands on special handling of FLAG1/FLAG2 and PA2 signals

@@ -1,0 +1,68 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=1, BMM=0, MCM=1 invalid text mode: produces black pixels (screen appears black) but internals generate valid sequencer output that can affect sprite collisions (so underlying pattern can be read via collisions). Generated graphics resemble multicolor text mode but character set limited to 64 (ECM effect). g-access addresses set bits accordingly; g-data results in black for both background and foreground.
+
+3.7.3.6. Invalid text mode (ECM/BMM/MCM=1/0/1)
+----------------------------------------------
+
+Setting the ECM and MCM bits simultaneously doesn't select one of the
+"official" graphics modes of the VIC but creates only black pixels.
+Nevertheless, the graphics data sequencer internally generates valid
+graphics data that can trigger sprite collisions even in this mode. By
+using sprite collisions, you can also read out the generated data (but you
+cannot see anything, the screen is black). You can, however, only
+distinguish foreground and background pixels as you cannot get color
+information from sprite collisions.
+
+The generated graphics is similar to that of the multicolor text mode, but
+the character set is limited to 64 characters as in ECM mode.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | MC |         unused         | D5 | D4 | D3 | D2 | D1 | D0 |
+ |flag|                        |    |    |    |    |    |    |
+ +----+------------------------+----+----+----+----+----+----+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13|CB12|CB11|  0 |  0 | D5 | D4 | D3 | D2 | D1 | D0 | RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       | MC flag = 0
+ | "0": Black (background)               |
+ | "1": Black (foreground)               |
+ +---------------------------------------+
+ |         4 pixels (2 bits/pixel)       |
+ |                                       |
+ | "00": Black (background)              | MC flag = 1
+ | "01": Black (background)              |
+ | "10": Black (foreground)              |
+ | "11": Black (foreground)              |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "sprite_priority_and_collision" which expands on use sprite collisions to read generated, otherwise invisible graphics

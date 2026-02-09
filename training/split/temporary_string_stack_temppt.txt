@@ -1,0 +1,22 @@
+# ********* - TEMPPT ($16): pointer to the next available slot in the temporary string descriptor stack. Describes the stack layout (three 3-byte descriptors at $19-$21) and values TEMPPT can hold: $19 when empty, $1C with one entry, $1F with two entries, $22 when full. Explains error behavior: when full (34 decimal/$22), FORMULA TOO COMPLEX is raised; otherwise TEMPPT is incremented by three when adding an entry. Includes the immediately following blank/separator line.
+
+22            $16            TEMPPT
+Pointer to the Next Available Space in the Temporary String Stack
+
+This location points to the next available slot in the temporary
+string descriptor stack located at 25-33 ($19-$21).  Since that stack
+has room for three descriptors of three bytes each, this location will
+point to 25 ($19) if the stack is empty, to 28 ($1C) if there is one
+entry, to 31 ($1F) if there are two entries, and to 34 ($22) if the
+stack is full.
+
+If BASIC needs to add an entry to the temporary string descriptor
+stack, and this location holds a 34, indicating that the stack is
+full, the FORMULA TOO COMPLEX error message is issued.  Otherwise, the
+entry is added, and three is added to this pointer.
+
+
+---
+Additional information can be found by searching:
+- "linnum_target_line_integer" which expands on previous pointer and control-flow storage
+- "temporary_string_stack_lastpt" which expands on pointer to the last-used temporary string descriptor

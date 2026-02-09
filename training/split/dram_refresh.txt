@@ -1,0 +1,25 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - DRAM refresh performed by VIC: five read accesses per raster line driven by an 8-bit refresh counter REF. REF is reset to $FF in raster line 0 and decremented by 1 after each refresh access. Addresses read in a line correspond to REF bits used as low address bits: example mapping of addresses $3FFF..$3FFB for line 0 and subsequent address sequences for following lines.
+
+3.13. DRAM refresh
+------------------
+
+The VIC does five read accesses in every raster line for the refresh of the
+dynamic RAM. An 8 bit refresh counter (REF) is used to generate 256 DRAM
+row addresses. The counter is reset to $ff in raster line 0 and decremented
+by 1 after each refresh access.
+
+So the VIC will access addresses $3fff, $3ffe, $3ffd, $3ffc and $3ffb in
+line 0, addresses $3ffa, $3ff9, $3ff8, $3ff7 and $3ff6 in line 1 etc.
+
+ Refresh addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |  1 |  1 |  1 |  1 |  1 |  1 |REF7|REF6|REF5|REF4|REF3|REF2|REF1|REF0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+
+---
+Additional information can be found by searching:
+- "memory_access_timing" which expands on where DRAM refresh accesses occur in the per-line access schedule

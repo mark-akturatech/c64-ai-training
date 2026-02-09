@@ -1,0 +1,41 @@
+# ********* - Tables for File Numbers, Device Numbers, and Secondary Addresses (locations 601-630 / $259-$276). Layout and purpose of the three 10-byte tables (LAT at $259-$262 for logical file numbers, FAT at $263-$26C for device numbers, SAT at $26D-$276 for secondary addresses). How entries are added on OPEN (appended) and removed on CLOSE (tables compacted), increment/decrement of location 152 ($98) indicating active I/O files, and the Kernal CLALL routine effect (zeroing location 152 to empty tables).
+
+Location Range: 601-630 ($259-$276)
+Tables for File Numbers, Device Numbers, and Secondary Addresses
+
+All three of the tables here have room for ten one-byte entries, each
+of which represents an active Input/Output file.  When an I/O file is
+opened, its logical file number is put into the table at 601 ($259),
+the device number of the I/O device is put into the table at 611
+($263), and its secondary address is put into the table at 621 ($26D).
+
+The entry for any particular I/O file will occupy the same position in
+each of the three tables.  That is, if logical file number 2 is the
+third entry in the file number table, its secondary address will be
+the third entry in the secondary address table, and its corresponding
+device number will occupy the third spot in the device number table.
+
+Every time a device is OPENed, its information is added as the last
+entry in each table, and the value at location 152 ($98) is increased
+by one, indicating that there is one more active I/O file.  When a
+device is CLOSEd, the value at location 152 is decreased by one, and
+all entries that occupy a position in the tables that is higher than
+that of the closed device are moved down one position, thus
+eliminating the entry for that device.  The Kernal CLALL routine
+(62255, $F32F) simply zeros location 152, which has the effect of
+emptying these tables.
+
+601-610       $259-$262      LAT
+Kernal Table of Active Logical File Numbers
+
+611-620       $263-$26C      FAT
+Kernal Table of Device Numbers for Each Logical File
+
+621-630       $26D-$276      SAT
+Kernal Table of Secondary Addresses for Each Logical File
+
+
+---
+Additional information can be found by searching:
+- "basic_kernal_working_storage_and_buf_input_buffer" which expands on previous: description of working storage area and BUF
+- "keyboard_buffer_dynamic_keyboard_and_program_merge_techniques" which expands on next: keyboard buffer and dynamic keyboard techniques

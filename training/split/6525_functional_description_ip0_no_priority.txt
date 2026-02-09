@@ -1,0 +1,23 @@
+# MACHINE - Functional description of 6525 operation when IP = 0 (No Priority). Explains that ILR contents are immediately transferred to AIR, /IRQ is asserted, reading AIR resets /IRQ and clears ILR bits via ILR xor AIR, and writing AIR clears AIR and may trigger new interrupts. Notes multiple simultaneous interrupts may be present in AIR and must be handled by software.
+
+Functional Description
+----------------------
+
+1.  IP = 0  No Priority
+
+All interrupt information latched into interrupt latch register (ILR) is
+immediately transferred into active interrupt register (AIR) and /IRQ is
+pulled low.  Upon read of interrupt the /IRQ is reset high and the
+appropriate bit(s) of the interrupt latch register is cleared by exclusive
+OR-ing the ILR with AIR (ILR xor AIR).  After the appropriate interrupt
+request has been serviced a Write to the AIR will clear it and initiate a new
+interrupt sequence if any interrupts were received during previous interrupt
+servicing.  In this non-prioritized mode it is possible for two or more
+interrupts to occur simultaneously and be transferred to the AIR.  If this
+occurs it is a software effort to recognize this and act accordingly.
+
+
+---
+Additional information can be found by searching:
+- "6525_interrupt_latch_register_ILR" which expands on ILR to AIR transfer and ILR xor AIR clearing
+- "6525_interrupt_stack_note" which expands on cautions about reading/writing AIR

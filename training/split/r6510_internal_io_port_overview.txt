@@ -1,0 +1,34 @@
+# ********* - Introduces location 1 ($01), the R6510 internal I/O port. Lists the meaning of each bit (Bit 0 LORAM, Bit 1 HIRAM, Bit 2 CHAREN, Bit 3 cassette data out, Bit 4 cassette switch sense, Bit 5 cassette motor control, Bits 6-7 unused). Explains the register's chief function: selecting which ROM/RAM and I/O blocks the CPU addresses, noting the C64's ROMs and I/O chips and that address space must be swapped to fit everything.
+
+1             $1             R6510
+
+Bit 0: LORAM signal.  Selects ROM or RAM at 40960 ($A000).  1=BASIC, 0=RAM
+Bit 1: HIRAM signal.  Selects ROM or RAM at 57344 ($E000).  1=Kernal, 0=RAM
+Bit 2: CHAREN signal.  Selects character ROM or I/O devices.  1=I/O, 0=ROM
+Bit 3: Cassette Data Output line.
+Bit 4: Cassette Switch Sense.  Reads 0 if a button is pressed, 1 if not.
+Bit 5: Cassette Motor Switch Control.  A 1 turns the motor on, 0 turns it off.
+Bits 6-7: Not connected--no function presently defined.
+
+The chief function of this register is to determine which blocks of
+RAM and ROM the 6510 microprocessor will address.  The Commodore 64
+comes with 64K RAM, even though it normally does not use all of that
+RAM at once.  In addition, it has an 8K BASIC Interpreter ROM, an 8K
+Operating System Kernal ROM, a 4K Character Generator ROM, a Sound
+Interface Device (SID), a 6566 Video Interface Controller (VIC-II),
+and two 6526 Complex Interface adapter chips.
+
+To address all of these at once would require 88K, 24K past the
+addressing limit of the 6510 microprocessor.  In order to allocate
+address space, the I/O Port is used to affect the addressing lines,
+and thus determine which segments of RAM and ROM will be addressed at
+any one time.
+
+
+---
+Additional information can be found by searching:
+- "d6510_data_direction_register_at_0" which expands on Data direction required for reading cassette switch and for controlling port bits
+- "loram_hiram_and_moving_rom_to_ram_examples" which expands on Detailed behavior of LORAM/HIRAM (Bits 0-1), examples of copying ROM to RAM and switching ROMs
+- "charen_bit_and_reading_character_rom_into_ram" which expands on Details of CHAREN (Bit 2) and how to read the character ROM into RAM
+- "cartridges_game_exrom_and_memory_configurations" which expands on How cartridge lines (GAME/EXROM) interact with these port signals to change memory mapping
+- "datasette_control_bits_and_motor_interlock" which expands on Cassette-related bits (Bits 3-5) and motor/interlock behavior

@@ -21,6 +21,7 @@ Usage:
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import uuid
@@ -53,11 +54,42 @@ def save_cache(cache: dict):
     CACHE_FILE.write_text(json.dumps(cache, indent=2) + "\n")
 
 
-def split_example_md(content: str) -> tuple[str, str]:
-    """Split an example MD into header (for embedding) and full content (for payload).
+def strip_references(content: str) -> tuple[str, list[dict]]:
+    """Strip the ## References section from content and parse it.
+
+    Returns (content_without_refs, references_list).
+    Each reference is {"chunk": "name", "description": "what it covers"}.
+    """
+    marker = "\n## References\n"
+    idx = content.find(marker)
+    if idx == -1:
+        return content.strip(), []
+
+    before = content[:idx].strip()
+    refs_text = content[idx + len(marker):]
+
+    refs = []
+    for line in refs_text.split("\n"):
+        line = line.strip()
+        if not line or not line.startswith("- "):
+            continue
+        line = line[2:]  # strip "- "
+        # Parse: "chunk_name" — description
+        if line.startswith('"') and '"' in line[1:]:
+            end_quote = line.index('"', 1)
+            chunk_name = line[1:end_quote]
+            desc = line[end_quote + 1:].lstrip(" —-–").strip()
+            refs.append({"chunk": chunk_name, "description": desc})
+
+    return before, refs
+
+
+def split_source_code(content: str) -> tuple[str, str]:
+    """Split markdown into header (for embedding) and full content (for payload).
 
     Returns (header_text, full_content).
     Header is everything before '## Source Code'.
+    Works for both example files and documentation chunks with assembly listings.
     """
     marker = "## Source Code"
     idx = content.find(marker)
@@ -68,9 +100,84 @@ def split_example_md(content: str) -> tuple[str, str]:
     return header, content.strip()
 
 
+# Pattern: $XXXX-$YYYY (address range, dash with optional whitespace)
+_RANGE_PATTERN = re.compile(
+    r'\$([0-9A-Fa-f]{2,4})[-–]\$([0-9A-Fa-f]{2,4})'
+)
+# Pattern: individual $XXXX
+_ADDR_PATTERN = re.compile(r'\$([0-9A-Fa-f]{2,4})')
+
+MAX_RANGE_EXPAND = 256  # don't expand ranges larger than this
+MAX_REGISTERS_PER_CHUNK = 16  # chunks with more registers than this are "area" docs, not register docs
+
+# Pattern: ROM disassembly line: .,XXXX (4-digit hex address at start of instruction)
+_DISASM_ADDR_PATTERN = re.compile(r'^\.,([0-9A-Fa-f]{4})', re.MULTILINE)
+
+
+def extract_registers_from_line(line: str) -> list[str]:
+    """Extract register addresses from a Key Registers line, expanding ranges.
+
+    For '$D000-$D02E', expands to all addresses in the range.
+    For '$D020/$D021', extracts both individually.
+    Ranges > MAX_RANGE_EXPAND just keep endpoints.
+    """
+    addrs = set()
+
+    # First pass: find and expand ranges like $07C0-$07E7
+    range_spans = []
+    for m in _RANGE_PATTERN.finditer(line):
+        start = int(m.group(1), 16)
+        end = int(m.group(2), 16)
+        range_spans.append((m.start(), m.end()))
+        if start <= end and (end - start) <= MAX_RANGE_EXPAND:
+            for val in range(start, end + 1):
+                addrs.add(f"${val:04X}")
+        else:
+            # Too large or inverted — just keep endpoints
+            addrs.add(f"${start:04X}")
+            addrs.add(f"${end:04X}")
+
+    # Second pass: find individual addresses not part of a range
+    for m in _ADDR_PATTERN.finditer(line):
+        # Skip if this match falls within a range match
+        in_range = any(rs <= m.start() and m.end() <= re for rs, re in range_spans)
+        if not in_range:
+            addrs.add(f"${m.group(1).upper()}")
+
+    return sorted(addrs)
+
+
+def extract_code_addresses(content: str) -> list[str]:
+    """Extract instruction addresses from ROM disassembly in ## Source Code.
+
+    Parses .,XXXX patterns (ROM disassembly lines) to make chunks
+    findable by any address within the disassembled range.
+    Only applies to actual disassembly — BASIC/data tables are ignored.
+    """
+    marker = "## Source Code"
+    idx = content.find(marker)
+    if idx == -1:
+        return []
+
+    # Find the end of Source Code section (next ## heading or EOF)
+    rest = content[idx + len(marker):]
+    end_idx = rest.find("\n## ")
+    source_block = rest[:end_idx] if end_idx != -1 else rest
+
+    addrs = set()
+    for m in _DISASM_ADDR_PATTERN.finditer(source_block):
+        addrs.add(f"${m.group(1).upper()}")
+
+    return sorted(addrs)
+
+
 def extract_metadata(content: str, filename: str) -> dict:
     """Extract structured metadata from the markdown content."""
     meta = {"filename": filename}
+
+    # Chunks with ## Source Code have concrete backing for their registers
+    # (register maps, disassembly, etc.) — bypass the cap
+    has_source_code = "## Source Code" in content
 
     # Detect type
     if filename.startswith("example_"):
@@ -84,32 +191,72 @@ def extract_metadata(content: str, filename: str) -> dict:
             meta["title"] = line[2:].strip()
             break
 
-    # For examples, extract hardware and techniques
+    # For examples, extract hardware, techniques, and key registers
     if meta["type"] == "example":
         in_techniques = False
         in_hardware = False
+        in_registers = False
         techniques = []
+        registers = []
         for line in content.split("\n"):
             if line.startswith("## Techniques"):
                 in_techniques = True
                 in_hardware = False
+                in_registers = False
                 continue
             elif line.startswith("## Hardware"):
                 in_hardware = True
                 in_techniques = False
+                in_registers = False
+                continue
+            elif line.startswith("## Key Registers"):
+                in_registers = True
+                in_techniques = False
+                in_hardware = False
                 continue
             elif line.startswith("## "):
                 in_techniques = False
                 in_hardware = False
+                in_registers = False
                 continue
 
             if in_techniques and line.startswith("- "):
                 techniques.append(line[2:].strip())
             elif in_hardware and line.strip():
                 meta["hardware"] = line.strip()
+            elif in_registers and line.startswith("- "):
+                registers.extend(extract_registers_from_line(line))
 
         if techniques:
             meta["techniques"] = techniques
+        if registers:
+            unique = sorted(set(registers))
+            if has_source_code or len(unique) <= MAX_REGISTERS_PER_CHUNK:
+                meta["registers"] = unique
+
+    # For all types, parse ## Key Registers if present
+    if "registers" not in meta:
+        in_registers = False
+        registers = []
+        for line in content.split("\n"):
+            if line.startswith("## Key Registers"):
+                in_registers = True
+                continue
+            elif line.startswith("## ") and in_registers:
+                break
+            elif in_registers and line.startswith("- "):
+                registers.extend(extract_registers_from_line(line))
+        if registers:
+            unique = sorted(set(registers))
+            if has_source_code or len(unique) <= MAX_REGISTERS_PER_CHUNK:
+                meta["registers"] = unique
+
+    # Merge in disassembly instruction addresses from ## Source Code
+    # These bypass MAX_REGISTERS_PER_CHUNK — they're precise code locations, not area descriptions
+    code_addrs = extract_code_addresses(content)
+    if code_addrs:
+        existing = set(meta.get("registers", []))
+        meta["registers"] = sorted(existing | set(code_addrs))
 
     return meta
 
@@ -130,7 +277,7 @@ def qdrant_collection_exists() -> bool:
 
 
 def qdrant_create_collection():
-    """Create the Qdrant collection with proper vector config."""
+    """Create the Qdrant collection with proper vector config and payload indexes."""
     r = requests.put(
         f"{QDRANT_URL}/collections/{COLLECTION_NAME}",
         json={
@@ -142,6 +289,17 @@ def qdrant_create_collection():
     )
     r.raise_for_status()
     print(f"  Created collection '{COLLECTION_NAME}' ({EMBEDDING_DIMENSIONS}d cosine)")
+
+    # Create payload index on registers for keyword filtering
+    r = requests.put(
+        f"{QDRANT_URL}/collections/{COLLECTION_NAME}/index",
+        json={
+            "field_name": "registers",
+            "field_schema": "keyword",
+        },
+    )
+    r.raise_for_status()
+    print(f"  Created payload index on 'registers' (keyword)")
 
 
 def qdrant_delete_collection():
@@ -264,10 +422,17 @@ def main():
         is_example = f.name.startswith("example_")
         metadata = extract_metadata(content, f.name)
 
+        # Strip references from embedding text, store as metadata
+        content_no_refs, refs = strip_references(content)
+        if refs:
+            metadata["references"] = refs
+
+        # Strip source code from embedding text for all types
+        embed_text, _ = split_source_code(content_no_refs)
+        # Payload stores full content (examples without refs, docs with refs)
         if is_example:
-            embed_text, full_content = split_example_md(content)
+            _, full_content = split_source_code(content_no_refs)
         else:
-            embed_text = content
             full_content = content
 
         items.append({

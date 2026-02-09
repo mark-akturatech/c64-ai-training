@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle READY return to BASIC after device operations: read I/O status word, mask error bits, branch to error handling if needed. If returning to immediate mode, set the start-of-variables addresses, print 'READY.' and perform the warm start sequence (reset execution state, clear variables, flush stack, rebuild BASIC chain). Otherwise set BASIC execute pointer and rebuild line chaining before returning. (Includes calls to $FFB7, printing READY/OK strings, and jumping to warm start and rebuild routines.)
+
+                                *** do READY return to BASIC
+.,E195 20 B7 FF JSR $FFB7       read I/O status word
+.,E198 29 BF    AND #$BF        mask x0xx xxxx, clear read error
+.,E19A F0 05    BEQ $E1A1       branch if no errors
+.,E19C A2 1D    LDX #$1D        error $1D, load error
+.,E19E 4C 37 A4 JMP $A437       do error #X then warm start
+.,E1A1 A5 7B    LDA $7B         get BASIC execute pointer high byte
+.,E1A3 C9 02    CMP #$02        compare with $02xx
+.,E1A5 D0 0E    BNE $E1B5       branch if not immediate mode
+.,E1A7 86 2D    STX $2D         set start of variables low byte
+.,E1A9 84 2E    STY $2E         set start of variables high byte
+.,E1AB A9 76    LDA #$76        set "READY." pointer low byte
+.,E1AD A0 A3    LDY #$A3        set "READY." pointer high byte
+.,E1AF 20 1E AB JSR $AB1E       print null terminated string
+.,E1B2 4C 2A A5 JMP $A52A       reset execution, clear variables, flush stack,
+                                rebuild BASIC chain and do warm start
+.,E1B5 20 8E A6 JSR $A68E       set BASIC execute pointer to start of memory - 1
+.,E1B8 20 33 A5 JSR $A533       rebuild BASIC line chaining
+.,E1BB 4C 77 A6 JMP $A677       rebuild BASIC line chaining, do RESTORE and return
+
+
+---
+Additional information can be found by searching:
+- "perform_verify_and_load" which expands on LOAD/VERIFY call this path when finishing successfully
+- "perform_sys_routine" which expands on SYS returns to BASIC using saved register/status conventions; both are part of BASIC control flow

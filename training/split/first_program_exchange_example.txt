@@ -1,0 +1,74 @@
+# MACHINE - A step-by-step first program: goal to exchange contents of $0380 and $0381. Planning (can't copy memory-to-memory directly), choose registers (LDA $0380, LDX $0381, STA $0381, STX $0380) and append BRK to stop. Introduces assembly mnemonics (LDA/LDX/STA/STX/BRK) and hand-assembly concept. Explains little-endian address byte order (low byte first) and why addresses need two bytes after opcodes.
+
+
+
+First Program Project
+---------------------
+
+Here's a programming task:  locations $0380 and $0381 contain information.
+We wish to write a program to exchange the contents of the two locations.
+How can we do this?
+
+We must make up a plan.  We know that we cannot transfer information directly
+from memory to memory.  We must load to a register, and then store.  But
+there's more.  We must not store and destroy data in memory until that data
+has been safely put away.  How can we do this?
+
+Here's our plan.  We may load one value into A (say, the contents of $0380),
+and load the other value into X (the contents of $0381).  Then we could store
+A and  X back, the other way around.
+
+                                                                         :12:
+
+We could have chosen a different pair of registers for our plan, of course:
+A and Y, or X and Y.  But let's stay with the original plan.  We can code our
+plan in a more formal way:
+
+LDA $0380  (bring in first value)
+LDX $0381  (bring in second value)
+STA $0381  (store in opposite place)
+STX $0380  (and again)
+
+You will notice that we have coded "load A" as LDA, "load X" as LDX, "store
+A" as STA, and "store X" as STX.  Every command has a standard three-letter
+abbreviation called a mnemonic.  Had we used the Y register, we might have
+needed to use LDY and STY.
+
+One more command is needed.  We must tell the computer to stop when it has
+finished the four instructions.  In fact, we can't stop the computer, but if
+we use the command BRK (break), the computer will go to the machine language
+monitor (MLM) and wait for further instructions.  We'll talk about the MLM in
+a few moments.
+
+We have written our program in a notation styled for human readability,
+called assembly language.  But the computer doesn't understand this notation.
+We must translate it into machine language.
+
+The binary code for LDA is %10101101, or hexadecimal AD.  That's what the
+computer recognizes; that's the instruction we must place in memory.  So we
+code the first line:
+
+  AD 80 03     LDA $0380
+
+It's traditional to write the machine code on the left, and the source code
+on the right.  Let's look closely at what has happened.
+
+LDA has been translated into $AD.  This is the operation code, or op code,
+which says what to do.  It will occupy one byte of memory.  But we need to
+follow the instruction with the address from which we want the load to take
+place.  That's address $0380; it's sixteen bits long, and so it will take two
+bytes to hold the address.   We place the address of the instruction, called
+the operand, in memory immediately behind the instruction.  But there's a
+twist.  The last byte comes first, so that address $0380 is stored as two
+bytes:  80 first, and the 03.
+
+This method of storing addresses--low byte first--is standard in the 650x.
+It seems unusual, but it's there for good reason.  That is, the computer gets
+extra speed from this "backwards" address.  Get used to it; you'll see it
+again, many times.
+
+
+---
+Additional information can be found by searching:
+- "opcode_encoding_and_translation" which expands on shows machine code opcodes corresponding to the mnemonics used
+- "choosing_program_location" which expands on selects where to put the assembled program in RAM (cassette buffer $033C)

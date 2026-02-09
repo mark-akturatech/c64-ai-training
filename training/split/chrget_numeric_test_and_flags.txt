@@ -1,0 +1,41 @@
+# MACHINE - Shows pseudocode of CHRGOT: LDA $xxxx; CMP #$3A; BCS EXIT (colon test); CMP #$20; BEQ CHRGET (skip spaces). Demonstrates an odd but correct test sequence using SEC; SBC #$30; SEC; SBC #$D0 which leaves A unchanged but sets C if < $30 and Z if zero—achieving the numeric test and setting flags as required. Exit via RTS.
+
+
+  3.  If we find a numeric, we wish the C flag to be clear; if we do not find
+      a numeric, we wish the C flag to be set.
+
+
+  CHRGOT  LDA $xxxx
+          CMP #$3A
+          BCS EXIT
+
+If the character is a colon ($3A), we'll leave the subroutine with the Z flag
+set.  That's one of our objectives.  Here's part of another one:  if the
+character is $3A or higher, it can't possibly be an ASCII numeric--numerics
+are in the range of $30 to $39.
+
+          CMP #$20
+          BEQ CHRGET
+
+If the character is a space, we go back and get another character.
+
+                                                                        :124:
+
+The following code looks rather strange, but it's correct.  After the two
+subtractions, the A register will be back where it started:
+
+          SEC
+          SBC #$30
+          SEC
+          SBC #$D0
+
+After this, the A register is not changed; but the C flag will be set if the
+number is less than $30, which means that it is not an ASCII numeric.
+Additionally, the Z flag will be set if A contains a binary zero.  We have
+met all of our objectives and may now return:
+
+  EXIT    RTS
+
+---
+Additional information can be found by searching:
+- "breaking_into_basic_wedge_constraints" which expands on Constraints when modifying CHRGET/CHRGOT

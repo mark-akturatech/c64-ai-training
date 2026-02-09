@@ -1,0 +1,79 @@
+# MACHINE - Describes the three main device types on the memory bus: RAM (read/write program/data storage), ROM (read-only routines/OS), and IA (interface adapters: memory-mapped I/O devices like PIA/VIA/CIA/VIC/SID). Includes Figure 1.4 illustrating RAM/ROM/IA on the memory bus and an example of memory-mapped I/O ($D020 sets C64 border color). Also discusses address ranges and device decoding.
+
+
+
+Memory Elements
+---------------
+
+There are generally three types of devices attached to the memory buses
+(address, data, and control buses):
+
+ o RAM:  Random access memory.  This is the read and write memory, where we
+   will store the programs we write, along with values used by the program.
+   We may store information into RAM, and may recall the information at any
+   time.
+
+ o ROM:  Read only memory.  This is where the fixed routines are kept within
+   the computer.  We may not store information into ROM; its contents were
+   fixed when the ROM was made.  We will use program units (subroutines)
+   stored in ROM to do special tasks for us, such as input and output.
+
+
+    +------+ ADDRESS BUS
+    |      |-------------------------------------------------------
+    |      |      ->              ->              ->            ->
+    |      |-------------+ +-------------+ +-------------+ +-------  TO
+    | 650x |             | |             | |             | |         OTHER
+    |      | MEMORY BUS  | |             | |             | |         CHIPS
+    |      |-------------|||-------------|||-------------|||-------
+    |      |  <->        |v|  <->        |v|  <->        |v|  <->
+    |      |-------+ +---| |-------+ +---| |-------+ +---| |-------
+    +------+       | |   | |       | |   | |       | |   | |
+                   |^|   | |       |^|   | |       |^|   | |
+                   |||   | |       |||   | |       |||   | |
+                   |v|   | |       | |   | |       |v|   | |
+                   | |   | |       | |   | |       | |   | |
+                 +-----------+   +-----------+   +-----------+
+                 |    RAM    |   |    ROM    |   |    IA     |
+                 | (read and |   |(read only)|   | (special) |
+                 |   write)  |   |           |   |           |
+                 +-----------+   +-----------+   +-----------+
+                                                    |||||||
+                                                    ^^^^^^^
+                                                    |||||||
+                                                    vvvvvvv
+                                                    |||||||
+                                                  CONNECTIONS
+                                               TO "OUTSIDE WORLD"
+    Figure 1.4
+
+                                                                          :9:
+
+ o IA:  Interface adapter chips.  These are not memory in the usual sense;
+   but, these chips are assigned addresses on the address bus, so we call
+   them "memory-mapped" devices.  Information may be passed to and from these
+   devices, but the information is generally not stored in the conventional
+   sense.  IA chips contain such functions as:  input/output (I/O) interfaces
+   that serve as connections to the "outside world"; timing devices;
+   interrupt control system; and sometimes specialized functions, such as
+   video control or sound generation.  IA chips come in a wide variety of
+   designs, including the PIA (peripheral interface adapter), the VIA
+   (versatile interface adapter), the CIA (complex interface adapter), the
+   VIC (video interface chip), and the SID (sound interface device).
+
+Within a given computer, some addresses may not be used at all.  Some devices
+may respond to more than one address, so that they seem to be in two places
+in memory.
+
+An address may be thought of as split in two parts.  One part, usually the
+high part of the address, selects the specific chip.  The other part of the
+address selects a particular part of memory within the chip.  For example, in
+the Commodore 64, the hex address $D020 (decimal 53280) sets the border color
+of the video screen.  The first part of the address (roughly, $D0...) selects
+the video chip; the last part of the address (...20) selects the part of the
+chip that controls the border color.
+
+---
+Additional information can be found by searching:
+- "bus_overview_650x" which expands on explains how devices are selected using the address bus
+- "microprocessor_registers" which expands on registers are used to address or manipulate data in these memory elements

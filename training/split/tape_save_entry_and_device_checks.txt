@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Entry for SAVING to tape / device checks: tests whether target is RS232 (LSR/BCS), traps illegal device numbers (JMP $F713), obtains tape buffer pointer (JSR $F7D0), waits for PLAY/RECORD, prints 'saving <filename>', selects header type (relocatable vs non-relocatable), calls write-tape-header routine, initiates the tape write operation (JSR $F867), and handles the 'logical end of tape' header bit.
+
+.,F659 4A       LSR             
+.,F65A B0 03    BCS $F65F       if not RS232 device ??
+.,F65C 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F65F 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F662 90 8D    BCC $F5F1       if < $0200 do illegal device number and return
+.,F664 20 38 F8 JSR $F838       wait for PLAY/RECORD
+.,F667 B0 25    BCS $F68E       exit if STOP was pressed
+.,F669 20 8F F6 JSR $F68F       print saving <file name>
+.,F66C A2 03    LDX #$03        set header for a non relocatable program file
+.,F66E A5 B9    LDA $B9         get the secondary address
+.,F670 29 01    AND #$01        mask non relocatable bit
+.,F672 D0 02    BNE $F676       if non relocatable program go ??
+.,F674 A2 01    LDX #$01        else set header for a relocatable program file
+.,F676 8A       TXA             copy header type to A
+.,F677 20 6A F7 JSR $F76A       write tape header
+.,F67A B0 12    BCS $F68E       exit if error
+.,F67C 20 67 F8 JSR $F867       do tape write, 20 cycle count
+.,F67F B0 0D    BCS $F68E       exit if error
+.,F681 A5 B9    LDA $B9         get the secondary address
+.,F683 29 02    AND #$02        mask end of tape flag
+.,F685 F0 06    BEQ $F68D       if not end of tape go ??
+.,F687 A9 05    LDA #$05        else set logical end of the tape
+.,F689 20 6A F7 JSR $F76A       write tape header
+.:F68C 24       .BYTE $24       makes next line BIT $18 so Cb is not changed
+.,F68D 18       CLC             flag ok
+.,F68E 60       RTS             
+
+---
+Additional information can be found by searching:
+- "serial_output_loop_and_close_device" which expands on lower-level serial output/close used for serial devices
+- "print_saving_message" which expands on prints the 'SAVING <file name>' status
+- "write_tape_header" which expands on routine invoked to write the tape header

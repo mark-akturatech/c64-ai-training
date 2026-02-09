@@ -1,0 +1,41 @@
+# MACHINE - Subtraction rules on 6502: treat subtraction as 'upside-down' addition, set carry with SEC before subtraction sequence (carry acts as inverted borrow), perform low byte first, check C for unsigned overflow (clear means overflow) or V for signed overflow (set means overflow). Example: SEC; LDA $0380; SBC $0381; STA $0382.
+
+Subtraction
+-----------
+
+Subtraction might be defined as "upside down" addition.  The carry flag again
+serves to link the parts of a multi-byte subtraction, but its role is
+reversed.  The carry flag is sometimes called an "inverted borrow" when used
+in subtraction.  Before performing a subtraction, we must set the C flag with
+SEC.  If we are worried about unsigned overflow, we look to confirm that the
+carry is set at the completion of the subtraction operation.  If the carry is
+clear, there's a problem.
+
+Thus, to perform a subtraction, we follow these rules:
+
+  1.  Before we start a subtraction sequence, set the carry with SEC.
+
+  2.  If the numbers are more than one byte in size, start at the low byte
+      and work up to the high ones.  Subtraction will take place in the A
+      register only; you may subtract the contents of an address or an
+      immediate value.  The C flag will take care of any "borrows."
+
+  3.  When the subtraction sequence is complete, check for overflow:
+      a)  if the numbers are unsigned, a clear C flag indicates overflow;
+      b)  if the numbers are signed, a set V flag indicates overflow.
+
+                                                                         :61:
+
+Thus, to subtract two unsigned numbers located at addresses $0380 and $0381
+and to place the result at $0382, we might code
+
+  SEC
+  LDA $0380
+  SBC $0381
+  STA $0382
+
+A BCC could go to an error routine.
+
+---
+Additional information can be found by searching:
+- "addition_and_multi_byte_addition" which expands on analogous handling of carries/borrows for multi-byte arithmetic

@@ -1,0 +1,43 @@
+# NMOS 6510 - Practical examples and notes for ADC in decimal mode: converting a hex digit to ASCII using SED/CMP/ADC/CLD sequence (and an alternative non-BCD approach), converting a hex nibble into BCD with ADC #$00, and a compatibility test illustrating the difference between NMOS 6502 and CMOS 65C02 regarding the Z flag after decimal ADC.
+
+Example: convert a hex digit to ASCII
+SED
+CMP #$0A
+ADC #$30
+CLD
+
+This code converts a hex digit 0 to F (i.e. the accumulator $00 to $0F) to $30 to $39 (for 0 to 9) and
+$41 to $46 (for A to F). However, this can also be done without using BCD arithmetic, as follows:
+CMP #$0A
+BCC SKIP
+ADC #$66 ; Add $67 (the carry is set), convert $0A to $0F --> $71 to $76
+SKIP EOR #$30 ; Convert $00 to $09, $71 to $76 --> $30 to $39, $41 to $46
+
+Which takes 2 more bytes, but the same number of cycles (or one less if the BCC is taken to the
+same page).
+Example: convert a hex digit to BCD
+; A contains 0-f (hex)
+SED
+CLC
+ADC #$00
+CLD
+; A contains 0-15 (BCD)
+
+Example: Distinguish NMOS 6502 from CMOS 65C02
+SED
+CLC
+LDA #$99
+ADC #$01
+CLD
+
+This code returns with the Z flag set on a 65C02 (the Z flag is valid), and returns with the Z flag
+clear on a 6502 (the Z flag is invalid, and in this case it does not match the result in the
+accumulator).
+
+- 75 -
+
+
+---
+Additional information can be found by searching:
+- "adc_opcode_table_and_decimal_flags" which expands on Explains which ADC opcodes and flags the examples exercise
+- "adc_decimal_mode_pseudocode" which expands on Underlying BCD fixup and flag-setting logic that explains the examples' behavior

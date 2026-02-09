@@ -1,0 +1,49 @@
+# MACHINE - Exchanging data: simplest via POKE/PEEK to shared memory. More advanced: ML locates BASIC variable table via SOV pointer, scans variable names using indirect, indexed addressing, and extracts integer values (straightforward) or floating/descriptors (more complex). Shortcut: define variables in known order to avoid name search.
+
+
+Exchanging Data:  BASIC and Machine Language
+--------------------------------------------
+
+If BASIC and machine language wish to pass data back and forth, there are
+several approaches.  Perhaps the simplest is to have BASIC POKE the values
+into a given location, and machine language load them as needed; in the
+opposite direction, machine language will store the values and BASIC will
+PEEK them.
+
+                                                                        :105:
+
+Another method is more sophisticated.  BASIC variables are stored in memory;
+why can't a machine language program go after the variables exactly where
+they lie and extract their value or change them?  It sounds like a good idea.
+
+By now, we know how to ask machine language to search for a specific BASIC
+variable.  Given the name, we can get the address of the first variable from
+the SOV pointer and store it as an indirect address.  Using indirect, indexed
+addressing and stepping the Y register from 0 to 1 we can see if the name
+matches.  If not, we add seven to the indirect address to take us to the next
+variable.  If it does match, our indirect address is set up at the start of
+the variable; we can set Y to 2, 3, 4, 5, and 6 and extract the whole value.
+If the variable type is integer, we need only extract the first two bytes
+(Y=2 and 3).  If the variable is not in the variable table, we'll step our
+indirect address until it matches the start-of-arrays; at that point, we know
+that we have missed the variable.
+
+For a small number of variables, there's a short cut.  Variables are placed
+into the variable table in the order in which they are defined:  whichever
+variable is defined first in the BASIC program will be first in the variable
+table.  So if we arrange for our variables to be defined in a certain order,
+we can streamline our machine language to "first variable," "second
+variable," and so on, with no need to examine the names.
+
+Let's take this one step further.  If we want to use the first variable, all
+we need to have is the address of the first variable somewhere in zero-page
+so that we may use it as an indirect address.  We already have that address--
+it's the SOV, the start-of-variables, and it's there pointing helpfully at
+the first variable for us.  By increasing the value of Y appropriately, we
+can reach beyond the first variable and into the second, or for that matter,
+the third or the thirty-sixth.
+
+
+---
+Additional information can be found by searching:
+- "basic_variable_table_and_types" which expands on structure of variable entries for ML extraction

@@ -1,0 +1,111 @@
+# byRiclianll - Section 3.3: Header block layout: SYNC MARK, Header ID byte ($08), Header checksum (EOR of track, sector, two ID bytes), Sector number, Track number, ID char #2 (ID HI), ID char #1 (ID LO), several $0F 'OFF' bytes used as padding during format, and a header gap of eight $55 bytes (4040 uses nine). Note that header block is written only during formatting and never rewritten.
+
+3.3  The  Header  Block 
+
+The  header  block  of  a  sector  allows  the  DOS  to  identify  which  track  and  sector  is  being 
+read.  It  is  composed  of  a  sync  mark,  eight  bytes  of  identifying  information,  and  a  header 
+gap.  The  diagram  below  shows  the  layout  of  a  header  block. 
+
+
+SYNC 
+
+HEADER 
+
+HEADER 
+
+SECTOR 
+
+TRACK 
+
+ID 
+
+ID 
+
+SOF 
+
+SOF 
+
+HEADER 
+
+MARK 
+
+RLDCK 
+
+BLOCK 
+
+NDMBER 
+
+NDMBER 
+
+CHARACTER 
+
+CHARACTER 
+
+BYTE 
+
+BYTE 
+
+GAP 
+
+ID 
+
+CHECKSDM 
+
+NUMBER  2 
+
+NUMRER  1 
+
+NOTE:  The  header  is  recorded  on  disk  exactly  as  indicated  above.  The  diagram  on  page 
+54  of  the  ISJfl  User's  Manual  is  incorrect. 
+
+Let's  examine  the  bytes  that  make  up  the  header  block: 
+
+Sync  Mark:  This  consists  of  10  or  more  1  bits  as  described  above.  It  warns  the  DOS 
+that  either  a  data  block  or  a  header  block  is  coming. 
+
+Header  Block  ID:  This  is  normally  a  $08  byte.  It  serves  to  indicate  to  the  DOS  that 
+this  is  a  header  block  and  not  a  data  block. 
+
+Header  Block  Checksum:  This  is  a  checksum  character  used  by  the  DOS  to  ensure 
+that  the  header  block  was  read  correctly.  It  is  found  by  EORing  the  track  number,  the 
+sector  number,  and  the  two  ID  characters.  If  you  are  not  sure  what  an  EOR  is,  you 
+may  want  to  read  through  Section  7.1. 
+
+Sector  Number:  This  byte  is  the  number  of  this  particular  sector.  The  sectors  are 
+numbered  consecutively  around  a  track. 
+
+Track  Number:  This  byte  is  the  number  of  this  particular  track.  The  DOS  uses  this 
+byte  to  check  to  be  sure  that  the  record/play  head  is  positioned  to  the  correct  track. 
+
+ID  Character  #  2:This  is  the  second  ID  character  that  you  specified  in  the  NEW  com- 
+mand when  the  diskette  was  formatted  (e.g.,  the  1  in  "N0:GAMES,V1").  It  is  sometimes 
+referred  to  as  the  ID  HI.  The  DOS  checks  this  byte  against  a  master  disk  ID  to  ensure 
+that  you  have  not  swapped  diskettes. 
+
+
+32 
+
+
+ID  Character  #1:  This  is  the  first  ID  character  that  you  specified  in  the  NEW  com- 
+mand when  the  diskette  was  formatted  (e.g.,  the  V  in  "N0:GAMES,V1")-  It  is  sometimes 
+referred  to  as  the  ID  LO.  The  DOS  checks  this  byte  against  a  master  disk  ID  to  ensure 
+that  you  have  not  swapped  diskettes. 
+
+$0F  Bytes:  These  bytes  are  used  as  padding  (spacing)  by  the  DOS  during  initial  format- 
+ting. They  are  called  "OFF"  bytes.  Once  formatting  is  complete  OFF  bytes  are  never 
+referenced  again. 
+
+Header  Gap:  The  header  gap  consists  of  eight  $55  bytes.  These  eight  bytes  are  used 
+to  provide  breathing  room  between  the  header  block  and  the  data  block.  The  DOS  never 
+reads  these  bytes.  They  allow  the  DOS  time  to  set-up  for  reading  the  data  block  that 
+follows.  NOTE:  The  4040  drive  uses  a  nine  byte  header  gap.  This  is  one  of  the  reasons 
+why  1541  drives  and  4040  drives  are  NOT  WRITE  COMPATIBLE!  See  Chapter  9  for 
+more  information. 
+
+NOTE:  A  header  block  is  written  only  during  the  formatting  process.  It  is  never  rewrit- 
+ten again,  period. 
+
+---
+Additional information can be found by searching:
+- "sector_structure_overview" which expands on header vs data block roles
+- "bam_sector_dump_and_overview" which expands on location and format differences that affect compatibility (4040 vs 1541)

@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Finish cassette open (common read/write exit): set BUF size/force-read flag (LDA #$BF), test SA for read/open type, initialize buffer pointers for the tape buffer (store TYPE flag at (TAPE1),Y and set BUFPT to point to data), clear carry to signal a successful open and return (CLC/RTS).
+
+                                ;
+.,F3C2 A9 BF    LDA #$BF        OP171  LDA #BUFSZ-1    ;ASSUME FORCE READ
+                                ;
+.,F3C4 A4 B9    LDY $B9         LDY    SA
+.,F3C6 C0 60    CPY #$60        CPY    #$60            ;OPEN FOR READ?
+.,F3C8 F0 07    BEQ $F3D1       BEQ    OP172
+                                ;
+                                ;SET POINTERS FOR BUFFERING DATA
+                                ;
+.,F3CA A0 00    LDY #$00        LDY    #0
+.,F3CC A9 02    LDA #$02        LDA    #BDF            ;TYPE FLAG FOR BLOCK
+.,F3CE 91 B2    STA ($B2),Y     STA    (TAPE1)Y        ;TO BEGIN OF BUFFER
+.,F3D0 98       TYA             TYA
+                                ;
+.,F3D1 85 A6    STA $A6         OP172  STA BUFPT       ;POINT TO DATA
+.,F3D3 18       CLC             OP175  CLC             ;FLAG GOOD OPEN
+.,F3D4 60       RTS             OP180  RTS             ;EXIT IN PEACE
+
+---
+Additional information can be found by searching:
+- "tape_read_decision_and_search" which expands on searching and header handling that come before finalizing the open
+- "openi_serial_listen_and_presence_check" which expands on OPENI follows tape open for other device types (serial/RS-232)

@@ -1,0 +1,21 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Method 2.4.2: 'Just after the old sprite'—write the first 8 sprites at frame top; then, for each subsequent virtual sprite, wait for the raster line just below the sprite being replaced and write new values. If Y is written last, glitches are prevented because a delayed write just results in the new sprite not being displayed (clean failure). Simpler and cleaner, but may drop sprites in tight formations (unacceptable in some games).
+
+2.4.2 Just after the old sprite
+
+For this method, the first 8 sprites have to be written at the top of the
+frame. Then, we wait for the rasterline just below the first sprite, and write
+the new sprite register values to re-use it. Repeat for the second sprite and
+on until the last virtual sprite's register values have been written.
+
+If we write the Y-coordinate last, we will actually ensure that no glitches
+are possible: in the case the new sprite is too close to the old or writes are
+otherwise delayed, the new sprite simply won't be displayed at all!
+
+This method is simpler & cleaner, but in games where close sprite packing is
+inevitable (like Green Beret), missing sprites to avoid glitches might not be
+acceptable.
+
+
+---
+Additional information can be found by searching:
+- "write_registers_just_before_new_sprite" which expands on alternative approach with different trade-offs

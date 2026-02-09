@@ -1,0 +1,55 @@
+# MACHINE - Indexed, indirect addressing (LDA ($C0,X)) adds X to the supplied zero-page address first to select one of several indirect addresses, then fetches the two-byte pointer there. Useful for tables of indirect pointers (e.g., per-line buffers). Typically X is even to step two-byte pointers.
+
+
+                                                                         :83:
+
+A Rarity:  Indexed, Indirect
+----------------------------
+
+There is another addressing mode that is little used in Commodore computers:
+indexed, indirect.  It uses the X register rather than the Y, and is coded as
+in the following example:  LDA ($C0,X).  In this case, indexing takes place
+first.  The contents of X are added to the indirect address (in this case,
+$C0) to make an effective indirect address.  If X were equal to 4 in this
+example, the effective indirect address would be $00C4, and the contents of
+$00C4 and $00C5 would be used as the effective address of the data.
+
+ $00               $FF
+  ++--+--+--+--------+---------------------------------------------------+
+  ||..|..|..|        |              MEMORY                               |
+  ++--+--+--+--------+---------------------------------------------------+
+    ^     ^|                    ^
+    |     ||                    |
+    |  X  |`--------------------'
+    +-----'
+    |
+  INDEXED, INDIRECT ALLOWS ONE OF SEVERAL
+  INDIRECT ADDRESSES TO BE CHOSEN USING
+  THE X INDEX REGISTER
+
+  Figure 5.9
+
+
+In certain types of control processing, this is a quite useful address mode.
+X will contain an even number; since each indirect address is two bytes long,
+we will need to skip from one to the other, two bytes at a time.
+
+Let's take a hypothetical communications system that is connected to four
+telecommunications lines and see how indexed, indirect addressing might be
+used.  Characters are being received from the four lines almost
+simultaneously.  As each character arrives, it must be put away into a memory
+buffer belonging to that particular line; in that way, traffic received from
+the various sources won't get mixed together.  Zero-page will contain four
+indirect addresses, one for each line; each indirect address points at an
+input area for one line.  Suppose a character is received into the A register
+from one of the lines; the line number (times two) is in the X register.  We
+could then put the character away with the instruction STA ($60,X).  Thus, if
+line zero was involved, its indirect address at address $60/61 would be used;
+for line 1, the address at $62/63 would be used; and so on.  After we had
+stored the character concerned, we'd need to bump the indirect pointer so
+that the next character will go into a new position:  INC $60,X would do the
+trick.
+
+---
+Additional information can be found by searching:
+- "indirect_indexed_addressing" which expands on contrast between (addr),Y and (addr,X) forms

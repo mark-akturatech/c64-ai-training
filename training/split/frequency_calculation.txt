@@ -1,0 +1,35 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Frequency formula: Fout = (Fn * Fclk) / 16777216 where Fn is 16-bit frequency register (0-65535). PAL Fclk=985248 Hz, NTSC Fclk=1022727 Hz. Inverse formula and examples (PAL/NTSC minimum/maximum frequencies).
+
+
+--------------------------------------------------------------------------------
+6.1 FREQUENCY CALCULATION
+--------------------------------------------------------------------------------
+
+  Fout = (Fn * Fclk) / 16777216
+
+  Where:
+    Fn   = 16-bit frequency register value (0-65535)
+    Fclk = System clock frequency
+           PAL:  985248 Hz
+           NTSC: 1022727 Hz
+    Fout = Output frequency in Hz
+
+  Solving for Fn:
+    Fn = (Fout * 16777216) / Fclk
+
+  PAL:  Fn = Fout / 0.058725  = Fout * 17.028
+  NTSC: Fn = Fout / 0.060959  = Fout * 16.404
+
+  Minimum frequency (Fn=1):
+    PAL:  0.0587 Hz
+    NTSC: 0.0610 Hz
+
+  Maximum frequency (Fn=65535):
+    PAL:  3848.4 Hz  (approximately, with audible harmonics extending higher)
+    NTSC: 3995.2 Hz
+
+
+---
+Additional information can be found by searching:
+- "note_frequency_table_pal" which expands on PAL Fn table and A4=440Hz example
+- "voice1_registers" which expands on writing frequency low/high bytes ($D400/$D401)

@@ -1,0 +1,37 @@
+# Kick Assembler - Explains LoadPicture to convert GIF/JPG to C64 formats. Examples: single color logo placement: *=$2000 .var logo = LoadPicture("CML_32x8.gif") .fill $800, logo.getSinglecolorByte((i>>3)&$1f, (i&7) | (i>>8)<<3). Shows alternative loops and using a color table (List().add(RGB values)) for multi-color conversion: .var picture = LoadPicture("Picture_16x16.gif", List().add($444444,$6c6c6c,$959595,$000000)) .fill $800, picture.getMulticolorByte(i>>7,i&$7f). Also mentions picture.getPixel(x,y) for extracting RGB.
+
+
+Converts 4 pixels to a multi color byte using the color table. X is given as a byte number (= pixel position/8) and
+y is given in pixels. (NB. This function ignores every
+second pixel since the C64 multi color format is half the
+resolution of the single color.)
+
+12.5. Writing to User Defined Files
+With the createFile function you can create/overwrite a file on the disk. You call it with a file name and it
+returns a value that can be used to write data to the file:
+.var myFile = createFile("breakpoints.txt")
+.eval myFile.writeln("Hello World")
+
+IMPORTANT! For security reasons, you will have to use the –afo switch on the command line otherwise file
+generation will be blocked. Eg “java –jar KickAss.jar source.asm -afo” will do the trick.
+File creation is useful for generating extra data for emulators. The following example shows how to generate
+a file with breakpoint for VICE:
+.var brkFile = createFile("breakpoints.txt")
+.macro break() {
+.eval brkFile.writeln(“break “ + toHexString(*))
+}
+*=$0801 “Basic”
+BasicUpstart(start)
+*=$1000 "Code"
+start:
+inc $d020
+break()
+jmp start
+
+When running VICE with the breakpoint file (use the –moncommands switch), VICE will run until the break
+and then exit to the monitor.
+Here is a list of the functions on a file value:
+
+---
+Additional information can be found by searching:
+- "picturevalue_functions" which expands on functions available on picture values

@@ -1,0 +1,30 @@
+# ********* - Practical example: determining record length for a mailing list with multiple fields (first name, last name, address lines, city/state/zip/phone) and rationale for adding separator bytes; describes starting the file with a record number tracker and shows beginning of a program to create/read mailing-list type relative files.
+
+
+ 5 X=0
+ 10 OPEN 1,8,15
+ 20 OPEN 2,8,3,"0:MAILING LIST,L," + CHR$(108)
+ 30 GOSUB 900
+ 40 PRINT#1 "P" CHR$(3+96) CHR$(1) CHR$(0) CHR$(1)
+ 50 GOSUB 900
+ 60 IF E=50 THEN PRINT#2,1:GOTO 40
+ 70 INPUT#2,X
+ 75 PRINT X
+ 300 STOP:CLOSE 1:CLOSE 2:END
+ 900 INPUT#1,E,B$,C,D: REM ERROR SUBROUTINE
+ 910 IF (E=50) OR (E<20) THEN RETURN
+ 920 PRINT E;B$;C;D:STOP:RETURN
+
+Error #50 which is checked in line 60 of the program is the RECORD NOT
+PRESENT error, which means that the record hadn't been created yet.
+Writing into the record will solve the problem.  This error condition
+must be watched carefully within your programs.
+
+So far, all it does is create the file and the first record, but
+doesn't actually put any data in it.  Below is a greatly expanded
+version of the program, to actually allow you to work with a mailing
+list where the records are coded by numbers.
+
+---
+Additional information can be found by searching:
+- "mailing_list_sample_program_and_usage" which expands on complete mailing-list sample program that demonstrates creation, reading, and writing

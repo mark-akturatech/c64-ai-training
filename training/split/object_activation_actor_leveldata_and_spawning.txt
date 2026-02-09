@@ -1,0 +1,31 @@
+# Multidirectional Scrolling Techniques by Cadaver - Managing many objects: distinguish active 'actors' (near/on-screen) from inactive 'leveldata' (store positions and types, minimal info). Each frame process a portion of leveldata (e.g. 16 objects); if they fit the visible rectangle (or margin), spawn as actors and remove from leveldata; if active objects leave the rectangle, put them back into leveldata. Storing level positions at block accuracy simplifies checks by testing highbytes against visible rectangle.
+
+4. How to handle the huge amount of objects in a "game world"?
+
+Naturally, a C64 game cannot process tens or hundreds of objects each frame,
+instead it must concentrate on the things on the visible part or near them.
+So, there must be a way to distinguish between these inactive (far) and active
+(near) objects.
+
+I call the active objects "actors" and the inactive objects are part of what
+I call "leveldata", that basically stores their positions and actor types,
+possibly hitpoints, but not any other information.
+
+Each frame I check a part of the leveldata (for example 16 objects). If they
+fit to the rectangle of the visible screen (or actually a bit larger rectangle)
+they are put on the screen as new "actors" and removed from the leveldata.
+I also check that if the active objects go outside that rectangle, they are
+removed from the screen (from the "actor" table) and put back to the leveldata.
+In some special cases objects are never removed (the player actor!)
+
+Another advantage of the latter world-coordinate system I described is that now
+putting objects onscreen becomes very easy. In the leveldata I usually store
+the objects' locations only at block accuracy. So, checking which objects to
+put onscreen and which to remove becomes just a matter of checking the
+coordinate highbytes.
+
+
+
+---
+Additional information can be found by searching:
+- "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy" which expands on storing positions at block accuracy leverages the highbyte representation

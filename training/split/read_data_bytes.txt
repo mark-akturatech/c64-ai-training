@@ -1,0 +1,32 @@
+# Analyzing C64 tape loaders - Primary data load loop: uses indirect store STA ($07),Y to write incoming bytes to memory at the load address pointer, computes XOR checksum in $05, increments address pointer ($07/$08), updates screen border flash ($D020) and checks if destination pointer reached end address (16-bit compare using $07/$08 vs $09/$0A). When done, changes branch to checksum stage.
+
+; ********************************************
+; * Read Data bytes                          *
+; ********************************************
+03B3  A0 00          LDY #$00
+03B5  91 07          STA ($07),Y    ; Load data into memory
+03B7  45 05          EOR $05        ; Compute checksum
+03B9  85 05          STA $05
+03BB  E6 07          INC $07
+03BD  D0 05          BNE $03C4
+03BF  E6 08          INC $08
+
+03C1  EE 20 D0       INC $D020      ; Change the border flash base colors
+
+03C4  A5 07          LDA $07        ; Check if we finished
+03C6  C5 09          CMP $09
+03C8  A5 08          LDA $08
+03CA  E5 0A          SBC $0A
+03CC  90 AB          BCC $0379
+03CE  A9 67          LDA #$67
+03D0  8D 6D 03       STA $036D      ; Change the branch at $036C, to jump to $03D5
+03D3  D0 A4          BNE $0379      ; (6)
+; ********************************************
+; * Read data bytes.END                      *
+; ********************************************
+
+
+---
+Additional information can be found by searching:
+- "read_checksum_byte" which expands on After data loop completes, loader reads and compares checksum
+- "loader_structure" which expands on Maps this read loop to the loader's data layout

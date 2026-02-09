@@ -1,0 +1,15 @@
+# ********* - Subroutine to convert a single disk buffer byte c$ into a displayable ASCII character appended to b$. If asc(c$)<32, replaces with space; if asc(c$) between 128 and 159 inclusive, maps to a special 3-character string using ss$; otherwise leaves c$ unchanged. (GOSUB 850 in main loops.)
+
+ 850 rem******************************
+ 860 rem* disk byte to asc display   *
+ 870 rem* character                  *
+ 880 rem******************************
+ 890 if asc(c$)<32 then c$=" ":return
+ 910 if asc(c$)<128 or asc(c$)>159 then return
+ 920 c$=mid$(ss$,3*(asc(c$)-127),3):return
+
+---
+Additional information can be found by searching:
+- "read_and_crt_display" which expands on used to build ASCII column for screen hex dumps
+- "printer_display_loop_reading_disk_buffer" which expands on used to build ASCII column for printer hex dumps
+- "byte_to_hex_subroutine" which expands on paired with hex formatting to produce full dump lines

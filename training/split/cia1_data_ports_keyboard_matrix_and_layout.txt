@@ -1,0 +1,67 @@
+# - C64 I/O Map (Mapping The Commodore 64) - CIA #1 Data Ports A ($DC00) and B ($DC01): explanation of keyboard matrix (8 columns via writes to Port A, rows read from Port B); matrix layout of keys shown. Procedure to read keys: set Port A outputs and Port B inputs, write column select to Port A and read Port B; 0 bit indicates key pressed. Also explains Port mapping for joysticks: Controller Port 1 read from Data Port B, Controller Port 2 read from CIA Data Port A (counterintuitive).
+
+$DC00-$DC01               CIA #1 Data Ports A and B
+
+                          These registers are where the actual communication with outside
+                          devices takes place.  Bits of data written to these registers can be
+                          sent to external devices, while bits of data that those devices send
+                          can be read here.
+
+                          The keyboard is so necessary to the computer's operation that you may
+                          have a hard time thinking of it as a peripheral device.  Nonetheless,
+                          it cannot be directly read by the 6510 microprocessor.  Instead, the
+                          keys are connected in a matrix of eight rows by eight columns to CIA
+                          #1 Ports A and B.  The layout of this matrix is shown below.
+
+                              WRITE TO PORT A               READ PORT B (56321, $DC01)
+                              56320/$DC00
+                                       Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
+
+                              Bit 7    STOP    Q       C=      SPACE   2       CTRL    <-      1
+
+                              Bit 6    /       ^       =       RSHIFT  HOME    ;       *       LIRA
+
+                              Bit 5    ,       @       :       .       -       L       P       +
+
+                              Bit 4    N       O       K       M       0       J       I       9
+
+                              Bit 3    V       U       H       B       8       G       Y       7
+
+                              Bit 2    X       T       F       C       6       D       R       5
+
+                              Bit 1    LSHIFT  E       S       Z       4       A       W       3
+
+                              Bit 0    CRSR DN F5      F3      F1      F7      CRSR RT RETURN  DELETE
+
+                          As you can see, there are two keys which do not appear in the matrix.
+                          The SHIFT LOCK key is not read as a separate key, but rather is a
+                          mechanical device which holds the left SHIFT key switch in a closed
+                          position.  The RESTORE key is not read like the other keys either.  It
+                          is directly connected to the NMI interrupt line of the 6510
+                          microprocessor, and causes an NMI interrupt to occur whenever it is
+                          pressed (not just when it is pressed with the STOP key).
+
+                          In order to read the individual keys in the matrix, you must first set
+                          Port A for all outputs (255, $FF), and Port B for all inputs (0),
+                          using the Data Direction Registers.  Note that this is the default
+                          condition.  Next, you must write a 0 in the bit of Data Port A that
+                          corresponds to the column that you wish to read, and a 1 to the bits
+                          that correspond to columns you wish to ignore.  You will then be able
+                          to read Data Port B to see which keys in that column are being pushed.
+
+                          A 0 in any bit position signifies that the key in the corresponding
+                          row of the selected column is being pressed, while a 1 indicates that
+                          the key is not being pressed.  A value of 255 ($FF) means that no keys
+                          in that column are being pressed.
+
+                          Fortunately for us all, an interrupt routine causes the keyboard to be
+                          read, and the results are made available to the Operating System
+                          automatically every 1/60 second.  And even when the normal interrupt
+                          routine cannot be used, you can use the Kernal SCNKEY routine at 65439
+                          ($FF9F) to read the keyboard.
+
+
+---
+Additional information can be found by searching:
+- "cia_data_direction_registers" which expands on Data Direction Registers ($DC02-$DC03) control input/output behavior
+- "game_paddle_inputs_and_sid_paddle_reading" which expands on Paddle selection conflicts with keyscan

@@ -1,0 +1,51 @@
+# VIC-II Memory Banking and Address Configuration Guide - CIA-2 registers for VIC bank selection and safe write practices:
+- $DD02 / 56578: CIA-2 Data Direction Register for Port A (bits 0-1 set as outputs by default)
+- $DD00 / 56576: CIA-2 Data Port A (bank selection in bits 0-1)
+
+Warning: $DD00 also controls serial bus and other CIA functions. Do NOT write a full value with STA; use read-modify-write. Examples:
+6502 assembly:
+  lda $DD00
+  and #%11111100    ; clear bits 0-1
+  ora #%000000xx    ; set desired bank bits
+  sta $DD00
+
+BASIC:
+  POKE 56578, PEEK(56578) OR 3
+  POKE 56576, (PEEK(56576) AND 252) OR x
+
+Directly loading $DD00 can clear other CIA functions and cause a black screen.
+
+Control Registers for Bank Selection
+-------------------------------------
+
+  $DD02 / 56578  -  CIA-2 Data Direction Register for Port A
+  $DD00 / 56576  -  CIA-2 Data Port A (bank selection in bits 0-1)
+
+The two least significant bits of $DD02 are set as outputs by default for
+VIC bank selection.
+
+CRITICAL: The $DD00 register also controls serial bus transfer and other CIA
+functions. Never write to it directly with a simple STA. Always use a
+read-modify-write approach to preserve the other bits:
+
+  Assembly (6502):
+
+    lda $DD00
+    and #%11111100       ; Clear bits 0-1
+    ora #%000000xx       ; Set desired bank value (see table above)
+    sta $DD00
+
+  BASIC:
+
+    POKE 56578, PEEK(56578) OR 3          : REM ensure bits set as outputs
+    POKE 56576, (PEEK(56576) AND 252) OR x : REM x = bank bit pattern
+
+Directly loading a value into $DD00 clears other CIA functions and can cause
+a black screen.
+
+
+
+---
+Additional information can be found by searching:
+- "vic_bank_overview" which expands on which bits select the bank
+- "basic_example_switch_bank2" which expands on BASIC usage example for switching banks

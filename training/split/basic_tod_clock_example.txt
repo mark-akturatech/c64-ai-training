@@ -1,0 +1,27 @@
+# - C64 I/O Map (Mapping The Commodore 64) - BASIC digital clock example demonstrating use of CIA Time of Day registers (PEEK/POKE at 56328-56331 / $DC08-$DC0B). Complete listing of the program that reads hours/minutes/seconds/tenths, allows user to set time, and displays a running clock.
+
+                          The following digital clock program, written in BASIC, will
+                          demonstrate the use of these timers:
+
+                              10 PRINT CHR$(147):GOSUB 200
+                              20 H=PEEK(56331):POKE 1238,(H AND 16)/16+48:POKE 1239,(H AND 15)+48
+                              30 M=PEEK(56330):POKE 1241,(M AND 240)/16+48:POKE 1242,(M AND 15)+48
+                              40 S=PEEK(56329):POKE 1244,(S AND 240)/16+48:POKE 1245,(S AND 15)+48
+                              50 T=PEEK(56328)AND15:POKE 1247,T+48:GOTO 20
+                              200 INPUT"WHAT IS THE HOUR";H$:IF H$="" THEN 200
+                              210 H=0:IF LEN(H$)>1 THEN H=16
+                              220 HH=VAL(RIGHT$(H$,1)):H=H+HH:POKE56331,H
+                              230 INPUT "WHAT IS THE MINUTE";M$:IF M$=""THEN 200
+                              240 M=0:IF LEN(M$)>1 THEN M=16*VAL(LEFT$(M$,1))
+                              250 MM=VAL(RIGHT$(M$,1)):M=M+MM:POKE56330,M
+                              260 INPUT "WHAT IS THE SECOND";S$:IF S$=""THEN 200
+                              270 S=0:IF LEN(S$)>1 THEN S=16*VAL(LEFT$(S$,1))
+                              280 SS=VAL(RIGHT$(S$,1)):S=S+SS:POKE56329,S:POKE56328,0
+                              290 POKE 53281,1:PRINT CHR$(147):POKE 53281,6
+                              300 POKE 1240,58:POKE 1243,58:POKE 1246,58:GOTO 20
+
+
+---
+Additional information can be found by searching:
+- "cia_tod_write_mode_and_latch_behavior" which expands on Explains latch and write behavior used by the program
+- "dc08_dc0b_time_of_day_registers" which expands on Addresses and bit meanings for TOD registers used by the program

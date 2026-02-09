@@ -1,0 +1,37 @@
+# Analyzing C64 tape loaders - Checksum verification and post-load control flow (autostart / chain / return to BASIC). Covers: checksum check (LDA $F7; EOR $02; ORA $90) and soft-reset on mismatch (JMP $FCE2); first flag byte ($31) deciding whether other files need loading (branch to $02B9); second flag byte ($32) deciding whether to jump to the executed address (JMP ($002F)) or to give control back to BASIC by relinking (JSR $A533); relinking routine and keyboard-buffer injection of 'R', 'SHIFT+U', 'RETURN' via copies into $0276,X and final JMP $02E9 to resume BASIC flow.
+
+03BB  A5  F7      LDA $F7  ; Checks checksum
+03BD  45  02      EOR $02
+03BF  05  90      ORA $90
+03C1  F0  03      BEQ $03C6
+
+03C3  4C  E2  FC  JMP $FCE2  ; A wrong checksum causes a SOFT
+                             ; Reset
+
+03C6  A5  31      LDA $31    ; First flag byte: other files
+03C8  F0  03      BEQ $03CD  ; need to be loaded?
+03CA  4C  B9  02  JMP $02B9
+
+03CD  A5  32      LDA $32    ; Second flag byte: use the Exec.
+03CF  F0  03      BEQ $03D4  ; address or give back control
+                             ; to BASIC?
+
+
+03D1  6C  2F  00  JMP ($002F)  ; Jumps to Exec. address
+
+03D4  20  33  A5  JSR $A533  ; Relinks Lines of a BASIC
+                             ; Program.
+
+03D7  A2  03      LDX #$03   ; Puts 3 chars in the Keyboard
+03D9  86  C6      STX $C6    ; Buffer
+
+03DB  BD  F3  02  LDA $02F3,X  ; Those are "R", "SHIFT+U"
+03DE  9D  76  02  STA $0276,X  ; and "RETURN"
+03E1  CA          DEX
+03E2  D0  F7      BNE $03DB
+03E4  4C  E9  02  JMP $02E9
+
+---
+Additional information can be found by searching:
+- "post_load_cleanup_and_irq_restore" which expands on This follows the IRQ restore and vector copy performed earlier
+- "loader_core_leader_sync_and_header_read" which expands on Uses flag bytes that were read into the header area earlier to decide autostart/chain behavior

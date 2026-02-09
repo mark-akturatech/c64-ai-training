@@ -1,0 +1,38 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Control Register B (CRB) at offset $0F. Read/Write. Bits: 0 START (start/stop Timer B), 1 PBON (route Timer B output to PB7), 2 OUTMODE (toggle vs pulse PB7), 3 RUNMODE (one-shot vs continuous), 4 LOAD (force load latch into counter; strobe), bits 5-6 INMODE (00=PHI2, 01=CNT edges, 10=Timer A underflows, 11=Timer A underflows coincident with CNT), 7 ALARM (when 1, writes to TOD registers set the alarm time instead of the clock).
+
+-------------------------------------------------------------
+5.10 Control Register B (CRB) - Offset $0F
+-------------------------------------------------------------
+
+Read/Write. Controls Timer B and related functions.
+
+  Bit 0: START   - 1 = Start Timer B
+                   0 = Stop Timer B
+
+  Bit 1: PBON    - 1 = Timer B output on PB7
+                   0 = PB7 is normal I/O
+
+  Bit 2: OUTMODE - 1 = Toggle PB7 on each underflow
+                   0 = Pulse PB7 for one cycle on underflow
+
+  Bit 3: RUNMODE - 1 = One-Shot mode (timer stops after underflow)
+                   0 = Continuous mode (timer reloads and continues)
+
+  Bit 4: LOAD    - 1 = Force load latch value into timer counter
+                   (This is a strobe bit; it always reads 0)
+
+  Bits 5-6: INMODE - Timer B input mode selection:
+    %00 = Timer B counts PHI2 clock pulses
+    %01 = Timer B counts positive CNT edges
+    %10 = Timer B counts Timer A underflow pulses
+    %11 = Timer B counts Timer A underflows coincident with
+           positive CNT edge
+
+  Bit 7: ALARM   - 1 = Writing to TOD registers sets ALARM time
+                   0 = Writing to TOD registers sets TOD clock time
+
+
+---
+Additional information can be found by searching:
+- "timer_b_16bit" which expands on CRB bits select Timer B input source and start/mode/pulse behavior
+- "time_of_day_clock" which expands on CRB bit 7 selects alarm write mode for TOD

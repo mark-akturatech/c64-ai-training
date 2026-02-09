@@ -1,0 +1,31 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Example assembly demonstrating multiplication by 10. Starts by storing NUM into RESULT, uses repeated ASL/ROL to form 2x and 4x, adds NUM to form 5x, then shifts to get 10x. Shows full sequence for two-byte values and comments on composing 8x + 2x (or 2*(4x+x)).
+
+
+
+Or we can multiply by 10 using the fact that 10x = 8x +
+2x (or, factoring out a 2, 10x = 2(4x + x)):
+
+
+LDA NUM       ;Start with RESULT = NUM
+        STA RESULT
+        LDA NUM+1
+        STA RESULT+1
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 2*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 4*NUM
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 5*NUM
+        ASL RESULT
+        ROL RESULT+1  ;RESULT = 10*NUM
+
+
+---
+Additional information can be found by searching:
+- "multiply_by_non_power_of_two_strategy" which expands on Illustrates composing powers of two to make 10x
+- "binary_decomposition_of_constants_examples" which expands on Binary representation of 10 (1010b) corresponds to needed shifts

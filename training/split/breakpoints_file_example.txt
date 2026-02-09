@@ -1,0 +1,22 @@
+# Kick Assembler - Example generating a breakpoint file for VICE: .var brkFile = createFile("breakpoints.txt") .macro break() { .eval brkFile.writeln("break " + toHexString(*)) } and using break() inside code to emit breakpoint entries. Explains running VICE with breakpoint file via -moncommands to run until break and enter monitor.
+
+Chapter 13
+Modifiers
+With modifiers, you can modify assembled bytes before they are stored to the target file. It could be you want
+to encrypt, pack or crunch the bytes. Currently, the only way to create a modifier is to implement a java plugin
+(See the plugin chapter).
+
+13.1. Modify Directives
+You can modify the assembled bytes of a limited block or of the whole source file. To modify the whole source
+file use the .filemodify directive at the top of the file. The following modifies the whole file with the modifier
+‘MyModifier’ called with the parameter 25.
+.filemodify MyModifier(25)
+
+To modify a limited block you use the .modify directive:
+.modify MyModifier() {
+*=$8080
+main:
+
+---
+Additional information can be found by searching:
+- "writing_to_user_defined_files_createfile" which expands on file creation security and usage

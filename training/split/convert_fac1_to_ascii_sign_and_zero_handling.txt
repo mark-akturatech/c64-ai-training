@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Start of the FAC1-to-ASCII conversion routine: set up an output index, detect sign (save leading ' ' or '-' into the output buffer and save FAC1 sign), handle FAC1 == 0 as a special case (write a '0', [EOT] and exit). This block establishes the output buffer and handles the zero/leading-sign cases.
+
+                                *** convert FAC1 to ASCII string result in (AY)
+.,BDDD A0 01    LDY #$01        set index = 1
+.,BDDF A9 20    LDA #$20        character = " " (assume +ve)
+.,BDE1 24 66    BIT $66         test FAC1 sign (b7)
+.,BDE3 10 02    BPL $BDE7       branch if +ve
+.,BDE5 A9 2D    LDA #$2D        else character = "-"
+.,BDE7 99 FF 00 STA $00FF,Y     save leading character (" " or "-")
+.,BDEA 85 66    STA $66         save FAC1 sign (b7)
+.,BDEC 84 71    STY $71         save index
+.,BDEE C8       INY             increment index
+.,BDEF A9 30    LDA #$30        set character = "0"
+.,BDF1 A6 61    LDX $61         get FAC1 exponent
+.,BDF3 D0 03    BNE $BDF8       branch if FAC1<>0
+                                exponent was $00 so FAC1 is 0
+.,BDF5 4C 04 BF JMP $BF04       save last character, [EOT] and exit
+
+---
+Additional information can be found by searching:
+- "choose_notation_and_scale_fac1_to_get_digit_count" which expands on next: determine whether to scale/divide/multiply FAC1 and whether to use scientific notation
+- "finalize_string_pointer_and_return" which expands on special-case zero path jumps to final string pointer setup and return

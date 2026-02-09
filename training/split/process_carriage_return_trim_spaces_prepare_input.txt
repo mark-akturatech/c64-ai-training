@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles a carriage return key: distinguishes CR from other keys, trims trailing spaces from the current input line stored on screen (decrements end-of-line pointer past trailing spaces), records the input EOL pointer and clears input-from-screen flag and quote flag in preparation for executing the input.
+
+                                was not [SHIFT][RUN]
+.,E5FE C9 0D    CMP #$0D        compare the key with [CR]
+.,E600 D0 C8    BNE $E5CA       if not [CR] print the character and get the next key
+                                else it was [CR]
+.,E602 A4 D5    LDY $D5         get the current screen line length
+.,E604 84 D0    STY $D0         input from keyboard or screen, $xx = screen,
+                                $00 = keyboard
+.,E606 B1 D1    LDA ($D1),Y     get the character from the current screen line
+.,E608 C9 20    CMP #$20        compare it with [SPACE]
+.,E60A D0 03    BNE $E60F       if not [SPACE] continue
+.,E60C 88       DEY             else eliminate the space, decrement end of input line
+.,E60D D0 F7    BNE $E606       loop, branch always
+.,E60F C8       INY             increment past the last non space character on line
+.,E610 84 C8    STY $C8         save the input [EOL] pointer
+.,E612 A0 00    LDY #$00        clear A
+.,E614 8C 92 02 STY $0292       clear the screen scrolling flag, $00 = scroll
+.,E617 84 D3    STY $D3         clear the cursor column
+.,E619 84 D4    STY $D4         clear the cursor quote flag, $xx = quote, $00 = no quote
+
+---
+Additional information can be found by searching:
+- "wait_for_key_and_autoload_run_sequence" which expands on entered after key retrieval when CR is detected
+- "set_input_cursor_pointers_and_bounds_check" which expands on next: determine input cursor position to decide source

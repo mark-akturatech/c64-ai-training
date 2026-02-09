@@ -1,0 +1,100 @@
+# MACHINE - Step-by-step programming project that implements a subroutine to wait for a numeric key (0-9): checks RUN/STOP via JSR $FFE1, calls GETIN ($FFE4) to read a key, uses CMP #$30 and BCC to reject values < '0', CMP #$3A and BCS to reject > '9' (note why #$3A is used), echoes valid key via JSR $FFD2, converts ASCII digit to binary with AND #$0F, and returns RTS. Includes notes on assembler addresses and testing.
+
+Programming Project
+-------------------
+
+Here's our task:  we wish to write a subroutine that will wait for a numeric
+key to be pressed.  All other keys (except RUN/STOP) will be ignored.
+
+When a numeric key is pressed, it will be echoed to the screen, and then the
+subroutine will be finished.  One more thing.  The numeric character will
+arrive in ASCII from the keyboard:  we wish to change it to a binary value
+before giving the final RTS statement.  This last operation has no useful
+purpose yet, except as an exercise, but we'll connect it up in the next
+chapter.
+
+Coding sheets ready?  Here we go.
+
+  .A 033C  JSR $FFE1
+
+We will check the RUN/STOP key first.  But wait.  Where will we go if we find
+that the key is pressed?  To the RTS, of course; but we don't know where that
+is, yet.  In these circumstances, we usually make a rough guess and correct
+it later.  Make a note to check this one...
+
+                                                                         :53:
+
+  .A 033F  BEQ $0351
+  .A 0341  JSR $FFE4
+
+Now we've gotten a character; we must check that it's a legitimate numeric.
+The ASCII number set 0 to 9 has hexadecimal values $30 to $39.  So if the
+value is less than $30, it's not a number.  How do we say "less than?"  After
+a compare, it's BCC (branch carry clear).  So we code
+
+  .A 0344  CMP #$30
+  .A 0346  BCC $033C
+
+Did you spot the use of immediate mode at address $0344?  Make sure you
+follow the logic on this.  Another point:  what if no key has been pressed?
+We're safe.  There will be a zero in the A register, which is less than hex
+30; this will cause us to go back and try again.
+
+Now for the high side.  If the number is greater than hex 39, we must reject
+it since it cannot be an ASCII numeric.  Our first instinct is to code CMP
+#$39 and BCS.  But wait!  BCS (branch carry set) means "branch if greater
+than or equal to."  Our proposed coding would reject the digit 9, since the
+carry flag would be set when we compared to a value of hex 39.
+
+We must check against a value that is one higher than $39.  Be careful,
+though, for we're in hexadecimal.  The next value is $3A.  Code it:
+
+  .A 0348  CMP #$3A
+  .A 034A  BCS $033C
+
+If we get this far, we must have an ASCII character from 0 to 9; let's print
+it to the screen so that the user gets visual feedback that the right key has
+been pressed:
+
+  .A 034C  JSR $FFD2
+
+Now for our final task.  We are asked to change the ASCII character into true
+binary.  We may do this by knocking off the high bits.  We remember, of
+course, that to turn bits off we must use AND:
+
+  .A 034F  AND #$0F
+  .A 0351  RTS
+
+It's a good thing that we printed the character first, and then converted to
+binary; the character must be ASCII to print correctly.
+
+One last thing.  We had a branch (on the RUN/STOP key) that needed to connect
+up with the RTS.  Did you make that note about going back and fixing up the
+branch?  Now is the time to do it, but before you go back, terminate the
+assembly with an extra RETURN on the keyboard (the assembler gets confused if
+it prompts you for one address and you give another; get out before you go
+back).
+
+                                                                         :54:
+
+By a fortunate stroke of luck, we happen to have guessed the right address
+for the BEQ at address $033F.  But if we hadn't, you know how to change it,
+don't you?
+
+Check your coding, disassemble, go back to BASIC and run with a SYS 828.  Tap
+a few letter keys and note that nothing happens.  Press a number, and see it
+appear on the screen.  The program will terminate.  SYS it again and see if
+the RUN/STOP works.  Try a BASIC loop to confirm that BASIC and machine
+language work together.
+
+Project for enthusiasts:  Try modifying the program so that it checks for
+alphabetic characters only.  Alphabetic characters run from $41 to $5A,
+inclusive.
+
+
+
+---
+Additional information can be found by searching:
+- "getin_subroutine_keyboard_input" which expands on Uses GETIN for keyboard input
+- "stop_subroutine_runstop_key" which expands on Uses STOP to detect RUN/STOP key
+- "why_logical_operations_and_ascii_conversion" which expands on Converts ASCII to binary using AND #$0F

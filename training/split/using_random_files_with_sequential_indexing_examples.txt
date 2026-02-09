@@ -1,0 +1,59 @@
+# ********* - Section 6.7: Strategies for tracking which disk blocks belong to random files (maintain a companion sequential file as an index of track/block locations). Two sample programs: writing 10 random-access blocks with a sequential index and reading them back, showing allocation, write/read, and freeing of blocks.
+
+
+
+6.7 USING RANDOM FILES
+
+The only problem with what you've learned about random files so far is
+that you have no way of keeping track of which blocks on the disk you
+used.  After all, you can't tell one used block on the BAM from
+another.  You can't tell whether it contains your random file, just
+part of a program, or even sequential or relative files.
+
+To keep track, the most common method is to build up a sequential file
+to go with each random file.  Use this file to keep just a list of
+record, track, and block locations. This means that there are 3
+channels open to the disk for each random file: one for the command
+channel, one for the random data, and the other for the sequential
+data. This also means that there are 2 buffers that you're filling up
+at the same time!
+
+SAMPLE PROGRAM WRITING 10 RANDOM-ACCESS BLOCKS WITH SEQUENTIAL FILE:
+
+ 10 OPEN 15,8,15
+ 20 OPEN 5,8,5,"#"
+ 30 OPEN 4,8,4,"@0:KEYS,S,W"
+ 40 A$="RECORD CONTENTS #"
+ 50 FOR R=1 TO 10
+ 70 PRINT#5,A$","R
+ 90 T=1:B=1  <-------------------------+---------------------+
+ 100 PRINT#15,"B-A:"0;T;B  <-----------+ FIND NEXT AVAILABLE |
+ 110 INPUT#15,A,B$,C,D  <--------------+ TRACK & BLOCK       |
+ 120 IF A=65 THEN T=C:B=D:GOTO 100  <--+---------------------+
+ 130 PRINT#15,"B-W:"5;0;T;B
+ 140 PRINT#4,T","B
+ 150 NEXT R
+ 160 CLOSE 4:CLOSE 5:CLOSE 15
+
+SAMPLE PROGRAM READING BACK 10 RANDOM-ACCESS BLOCKS WITH SEQUENTIAL
+FILE:
+
+ 10 OPEN 15,8,15                  +------------+
+ 20 OPEN 5,8,5,"#"                | CHECKS TO  |
+ 30 OPEN 4,8,4,"KEYS,S,R"         | MAKE SURE  |
+ 40 FOR R=1 TO 10                 | DATA IS OK |
+ 50 INPUT#4,T,B                   +------------+
+ 60 PRINT#15,"B-R:"5;0;T;B        |
+ 80 INPUT#5,A$,X                  |
+ 90 IF A$<>"RECORD CONTENTS #" OR X<>R THEN STOP
+ 100 PRINT A$;R
+ 110 PRINT#15,"B-F:"0;T;B  <---+---------------+
+ 120 NEXT R                    | FREES THIS    |
+ 130 CLOSE 4:CLOSE 5           | TRACK & BLOCK |
+ 140 PRINT#15,"S0:KEYS"        | FOR LATER USE |
+ 150 CLOSE 15                  +---------------+
+
+
+---
+Additional information can be found by searching:
+- "buffer_pointer_and_record_subdivision_examples" which expands on using BUFFER-POINTER to create records inside blocks and access them

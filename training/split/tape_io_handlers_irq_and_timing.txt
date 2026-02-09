@@ -1,0 +1,106 @@
+# ********* - Tape I/O implementation details: routines to find tape file headers, write/read tape blocks, set timers (Timer B) and IRQ vectors for tape I/O (63605 $F875 common code, 63696 $F8D0 STOP key test during tape I/O, 63714 $F8E2 adjust CIA#1 Timer A for tape bit timing, 63788 $F92C Read Tape Data (IRQ), 64096 $FA60 receive/store next cassette character). Also routines to toggle tape data output line (64422 $FBA6) using CIA#1 Timer B/CNT and 6510 port bit toggles.
+
+This is a documented Kernal routine whose jump table entry point is at
+65487 ($FFCF).
+
+The routine jumps through a RAM vector at 804 ($324).  Its function is
+to get a character from the current input device (whose device number
+is stored at 153 ($99)).  This device must first have been OPENed and
+then designated as the input channel by the CHKIN routine.
+
+When this routine is called, the next byte of data available from this
+device is returned in the Accumulator.  The only exception is the
+routine for the keyboard device (which is the default input device).
+It the keyboard is the current input device, this routine blinks the
+cursor, fetches characters from the keyboard buffer, and echoes them
+to the screen until a carriage return is encountered.  When a carriage
+return is round, the routine sets a flag to indicate the length of the
+last logical line before the return character, and reads the first
+character of this logical line from the screen.
+
+Subsequent calls to this routine will cause the next character in the
+line to be read from the screen and returned in the Accumulator, until
+the carriage return character is returned to indicate the end of the
+line.  Any call after this character is received will start the whole
+process over again.
+
+Note that only the last logical line before the carriage return is
+used.  Any time you type in more than 80 characters, a new logical
+line is started.  This routine will ignore any characters on the old
+logical line, and process only the most recent 80-character group.
+
+61898         $F1CA          CHROUT
+Output a Byte
+
+This is a documented Kernal routine whose jump table entry point is at
+65490 ($FFD2).  The routine jumps through a RAM vector at 806 ($326).
+It is probably one of the best known and most used Kernal routines,
+because it sends the character in the Accumulator to the current
+output device.  Unless a device has been OPENed and designated as the
+current output channel using the CHKOUT routine, the character is
+printed to the screen, which is the default output device.  If the
+cassette is the current device, outputting a byte will only add it to
+the buffer.  No actual transmission of data will occur until the
+192-byte buffer is full.
+
+61966         $F20E          CHKIN
+Designate a Logical File As the Current Input Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65478 ($FFC6).
+
+The routine jumps through a RAM vector at 798 ($31E).  If you wish to
+get data from any device other than the keyboard, this routine must be
+called after OPENing the device, before you can get a data byte with
+the CHRIN or GETIN routine.  When called, the routine will designate
+the logical file whose file number is in the .X register as the
+current file, its device as the current device, and its secondary
+address as the current secondary address.  If the device on the
+channel is a serial device, which requires a TALK command and
+sometimes a secondary address, this routine will send them over the
+serial bus.
+
+62032         $F250          CHKOUT
+Designate a Logical File As the Current Output Channel
+
+This is a documented Kernal routine which can be entered from the jump
+table at 65481 ($FFC9).
+
+The routine jumps through a RAM vector at 800 ($320).  If you wish to
+output data to any device other than the screen, this routine must be
+called after OPENing the device, and before you output a data byte
+with the CHROUT routine.  When called, the routine will designate the
+logical file whose file number is in the .X register as the current
+file, its device as the current device, and its secondary address as
+the current secondary address.  If the device on the channel uses the
+serial bus, and therefore requires a LISTEN command and possibly a
+secondary address, this information will be sent on the bus.
+
+62097         $F291          CLOSE
+Close a Logical I/O File
+
+CLOSE is a documented Kernal routine which can be entered via the jump
+table at 65475 ($FFC3).
+
+The routine jumps through a RAM vector at 796 ($31C).  It is used to
+close a logical file after all I/O operations involving that file have
+been completed.  This is accomplished by loading the Accumulator with
+the logical file number of the file to be closed, and calling this
+routine.
+
+Closing an RS-232 file will de-allocate space at the top of memory for
+the receiving and trasmit buffers.  Closing a cassette file that was
+opened for writing will force the last block to be written to
+cassette, even if it is not a full 192 bytes.  Closing a serial bus
+device will send an UNLISTEN command on the bus.  Remember, it is
+necessary to properly CLOSE a cassette or disk data file in order to
+retrieve the file later.
+
+For all types of files, CLOSE removes the file's entry from the tables
+of logical files, device, and secondary address at 601, 611, and 621
+($259, $263, $26D), and moves all higher entries in the table down one
+space.
+
+---
+Additional information can be found by searching:
+- "cia_timers_register_behavior_and_timing" which expands on how timers are used for cassette bit timing

@@ -1,0 +1,23 @@
+# byRiclianll - TABLE loop that iterates per-track: LDY *51 (track number), LDA IDL,Y ; STA *13 (store ID low into $13), LDA IDH,Y ; STA *12 (store ID high into $12). Compares Y to #*23 (track 35) with CPY #*23 and BNE TABLE to loop until track 35 is reached. Implements loading of ID low/high bytes from the ID table into device command bytes.
+
+TABLE  LDY  *51    ;    TRACK  NUMBER 
+
+
+LDA  IDL.Y 
+STA  *13 
+5 
+
+LDA  IDH,Y 
+STA  *12 
+? 
+
+CPY  #*23 
+BNE  TABLE 
+? 
+
+
+---
+Additional information can be found by searching:
+- "vector_and_drive_initialization" which expands on Setup that prepares device and vectors before entering the TABLE loop
+- "wait_loop_and_final_jmp" which expands on After TABLE completes, code proceeds to WAIT/poll loop and final JMP
+- "inline_comments_id_labels" which expands on Comments and labels describing ID LO / ID HI / TRACK 35 data following the code

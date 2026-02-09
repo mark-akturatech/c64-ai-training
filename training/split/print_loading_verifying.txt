@@ -1,0 +1,16 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - PRINT 'LOADING/VERIFYING': Chooses message based on VERCK ($93) load/verify flag. Loads Y with the message offset (verify or load) and jumps to the I/O message print routine at $F12B/$F12F.
+
+                                *** PRINT "LOADING/VERIFYING"
+                                The load/verify flag is checked, and if the message to be
+                                output is flagged according to the result. This message is
+                                printed from the KERNAL I/O messages table.
+.,F5D2 A0 49    LDY #$49        offset to verify message
+.,F5D4 A5 93    LDA $93         VERCK, load/verify flag
+.,F5D6 F0 02    BEQ $F5DA       verify
+.,F5D8 A0 59    LDY #$59        offset to load message
+.,F5DA 4C 2B F1 JMP $F12B       output message flagged by (Y)
+
+
+---
+Additional information can be found by searching:
+- "load_from_serial_bus" which expands on used during load to print either 'LOADING' or 'VERIFYING'

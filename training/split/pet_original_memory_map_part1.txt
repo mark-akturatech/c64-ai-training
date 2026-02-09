@@ -1,0 +1,85 @@
+# MACHINE - Original ROM PET zero page guidance and start of a detailed memory map: notes 'Great Zero-Page Hunt' and lists critical zero-page locations not to modify (e.g., $03, $05, $64-$67, $7A-$87, etc.). Memory map entries begin: $0000-$0002 USR jump, various zero-page uses through $00FF, tape buffers, stack, and screen pointers; includes many labeled addresses and their purposes in PET original ROM.
+
+When you see a reference to a POKE or PEEK location--in this book or from
+other sources--check it in these maps.  They will help add perspective.
+
+                                                                        :162:
+
+"Original ROM" PET
+==================
+
+
+The Great Zero-Page Hunt
+------------------------
+
+Most users help themselves to the high part of the input buffer ($0040 to
+$0059), which is not used except when long lines of data are inputted.
+
+Most zero-page locations may be copied to another part of memory so that
+their original contents can be restored after use.  However, the programmer
+should take great care in modifying the following locations, which are
+critical within the operating system or BASIC:  $03, $05, $64 to $67, $7A to
+$87, $89, $A2 to $A3, $B7, $C2 to $D9, $E0 to $E2, $F5.
+
+
+Memory Map
+----------
+
+Hex         Decimal       Description
+-------------------------------------------------------------------
+0000-0002       0-2       USR jump
+0003            3         Current I/O-prompt suppress
+0005            5         Cursor control position
+0008-0009       8-9       Integer value (for SYS, GOTO, and so on)
+000A-0059      10-89      Input buffer
+005A           90         Search character
+005B           91         Scan-between-quotes flag
+005C           92         Input buffer pointer; number of subscripts
+005D           93         Default DIM flag
+005E           94         Type:  FF = string; 00 = numeric
+005F           95         Type:  80 = integer; 00 = floating point
+0060           96         Flag:  DATA scan; LIST quote; memory
+0061           97         Subscript flag; FNx flag
+0062           98         0 = INPUT; $40 = GET; $98 = READ
+0063           99         ATN sign; Comparison evaluation flag
+0064          100         Input flag (suppress output)
+0065-0067     101-103     Pointers for descriptor stack
+    
+                                                                        :163:
+
+0068-0070     104-112     Descriptor stack (temporary strings)
+0071-0074     113-116     Utility pointer area
+0075-0078     117-120     Product area for multiplication
+0079          121         [unused?  not listed in original text. -wf]
+007A-007B     122-123     Pointer:  start-of-BASIC
+007C-007D     124-125     Pointer:  start-of-variables
+007E-007F     126-127     Pointer:  start-of-arrays
+0080-0081     128-129     Pointer:  end-of-arrays
+0082-0083     130-131     Pointer:  string-storage (moving down)
+0084-0085     132-133     Utility string pointer
+0086-0087     134-135     Pointer:  limit-of-memory
+0088-0089     136-137     Current BASIC line number
+008A-008B     138-139     Previous BASIC line number
+008C-008D     140-141     Pointer:  BASIC statement for CONT
+008E-008F     142-143     Current DATA line number
+0090-0091     144-145     Current DATA address
+0092-0093     146-147     Input vector
+0094-0095     148-149     Current variable name
+0096-0097     150-151     Current variable address
+0098-0099     152-153     Variable pointer for FOR/NEXT
+009A-009B     154-155     Y-save; op-save; BASIC pointer save
+009C          156         Comparison symbol accumulator
+009D-00A2     157-162     Miscellaneous work area, pointers, and so on
+00A3-00A5     163-165     Jump vector for functions
+00A6-00AF     166-175     Miscellaneous numeric work area
+00B0          176         Accumulator #1:  exponent
+00B1-00B4     177-180     Accumulator #1:  mantissa
+00B5          181         Accumulator #1:  sign
+00B6          182         Series evaluation constant pointer
+00B7          183         Accumulator #1:  high-order (overflow)
+00B8          184         Accumulator #2:  exponent
+00B9-00BC     185-188     Accumulator #2:  mantissa
+
+---
+Additional information can be found by searching:
+- "pet_original_memory_map_part2" which expands on Continuation of PET memory map (more addresses)

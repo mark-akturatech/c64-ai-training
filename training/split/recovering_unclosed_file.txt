@@ -1,0 +1,48 @@
+# byRiclianll - Recovering an unclosed file (section 8.7): unclosed files are listed with an asterisk prefix in the directory (e.g., *SEQ, *PRG). There is an undocumented disk-drive read mode 'M' (MODIFY) that allows reading unclosed files. Syntax examples: OPEN 2,8,2,"file name,B,M" for SEQ and OPEN 2,8,2,"file name,P,M" for PRG. When reading in M mode, no EOI is returned so the read program must display incoming bytes and have a breakpoint to stop before reading beyond the actual file contents; the last sector will contain an erroneous forward track/sector pointer. After saving recovered data to another disk, restore internal BASIC links for PRG files using techniques from section 8.3 and VALIDATE the diskette (since scratching an unclosed file poisons the BAM). (Also covers surrounding blank lines and page number markers.)
+
+8.7  Recovering  an  Unclosed  File 
+
+An  unclosed  file  is  one  whose  file  type  is  preceded  by  an  asterisk  in  a  directory  listing 
+(e.g.,  *SEQ,  *PRG).  Such  files  cannot  be  read  normally.  However,  there  is  an  un- 
+documented read  mode  that  will  allow  you  to  read  an  unclosed  file.  This  is  the  M  mode. 
+The  M  stands  for  MODIFY.  The  way  to  open  a  file  for  a  read  normally  looks  like  this: 
+
+
+177 
+
+
+SYNTAX: 
+
+OPEN  2,   8,   2,    "file  name,B,R"  (SEQ  file) 
+
+OPEN  2,   8,    2,    "file  name,P,R"  (PRG  file) 
+
+To  read  an  unclosed  file  substitute,  an  M  for  the  R  in  the  OPEN  statement  like  this: 
+SYNTAX: 
+
+OPEN  2,   8,    2,    "-file  name,B,M"  (SEQ  file) 
+
+OPEN  2,   8,    2,    "file  name,P,M"  (PRG  file) 
+
+The  file  can  now  be  read  into  the  C64  and  stored  in  RAM.  There  is  one  problem,  though. 
+You  will  have  to  display  the  incoming  data  bytes  because  an  EOI  will  not  be  returned 
+by  the  disk  drive.  Note  that  the  last  sector  written  to  the  diskette  will  contain  an  er- 
+roneous forward  track  and  sector  pointer.  As  a  result,  there  is  no  realistic  way  to  deter- 
+mine when  you  have  read  beyond  the  actual  contents  of  the  unclosed  file  itself.  Watch 
+the  incoming  data  bytes  carefully.  Your  read  program  should  have  an  embedded  break- 
+point. When  you  think  you've  captured  all  of  the  data  bytes,  rewrite  them  to  another 
+diskette. 
+
+
+Once  you  have  the  data  safely  stored  on  another  diskette,  use  the  techniques  described 
+at  the  end  of  Section  8.3  to  restore  the  internal  BASIC  links  if  it  was  a  PRG  file. 
+
+
+Don't  forget  to  VALIDATE  the  diskette  which  has  the  unclosed  file  in  the  directory 
+while  you're  at  it.  Recall  that  scratching  an  unclosed  file  poisons  the  BAM. 
+
+
+
+---
+Additional information can be found by searching:
+- "recovering_hard_error" which expands on Use the link-restoration techniques from hard-error recovery to restore internal BASIC links after reading an unclosed PRG

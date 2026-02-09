@@ -1,0 +1,80 @@
+# NMOS 6510 - Documentation of unintended Absolute Y indexed (read-modify-write) addressing-mode behavior for a set of undocumented opcodes. Specifies instruction length (3 bytes) and timing (7 cycles). Lists opcode encodings (db lo hi, fb lo hi, 7b lo hi, 3b lo hi, 1b lo hi, 5b lo hi) and corresponding mnemonic opcodes: DCP abs,Y; ISC abs,Y; RRA abs,Y; RLA abs,Y; SLO abs,Y; SRE abs,Y. Provides a per-cycle bus activity table (cycles 1–6) showing address bus, data bus, and read/write actions: opcode fetch from PC, absolute address low/high reads, a read of the byte at the (AAH,AAL+Y) address before the high byte is corrected, and subsequent reads of the old data at AA+Y for the R-M-W sequence.
+
+
+- 66 -
+
+Unintended addressing modes
+Absolute Y Indexed (R-M-W)
+•
+
+3 bytes, 7 cycles
+
+db lo hi
+fb lo hi
+7b lo hi
+3b lo hi
+1b lo hi
+5b lo hi
+
+DCP abs, y
+ISC abs, y
+RRA abs, y
+RLA abs, y
+SLO abs, y
+SRE abs, y
+
+Cycle
+
+Address-Bus
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+PC + 2
+
+Absolute Address High
+
+R
+
+4
+
+< AAH, AAL + Y >
+
+Byte at target address before high byte was corrected R
+
+5
+
+AA + Y
+
+Old Data
+
+R
+
+6
+
+AA + Y
+
+Old Data
+
+---
+Additional information can be found by searching:
+- "lax_safe_usage_examples_and_magic_constant_detection" which expands on related undocumented opcode behaviours and practical testing

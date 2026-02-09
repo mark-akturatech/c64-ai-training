@@ -1,0 +1,39 @@
+# byRiclianll - Logic to find the drive header/gap and synchronize transfer timing. Loads X with #*08 then loops (WAITGAP) using BVC/CLV/DEX/BNE to time/skip header gap bytes. This sequence clears the overflow status flags as part of finding the correct write window before enabling writes.
+
+
+310  ; 
+
+320  LDX  #*08 
+330  WAITGAP  BVC  WAITGAP 
+AP 
+
+340  CLV 
+350  DEX 
+
+360  BNE  WAITGAP 
+370  ; 
+
+380  LDA  «*FF 
+TE 
+
+390  STA  *1C03 
+400  LDA  *1C0C 
+410  AND  «*1F 
+420  ORA  #*C0 
+430  STA  *1C0C 
+440  LDA  #*FF 
+450  LDX  «*05 
+460  STA  *1C01 
+470  CLV 
+
+480  WRITESYNC  BVC  WRITESYNC 
+490  CLV 
+500  DEX 
+
+510  BNE  WRITESYNC 
+520  ; 
+
+---
+Additional information can be found by searching:
+- "initialization_and_gcr_conversion" which expands on follows GCR conversion and checksum increment
+- "drive_register_setup_and_write_sync" which expands on next: sets drive registers and issues write-sync once header is aligned

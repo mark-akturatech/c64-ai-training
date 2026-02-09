@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - PRINT FILENAME: Prints the filename pointed to by FNADR ($BB) with length FNLEN ($B7) using CHROUT ($FFD2). Loops through characters via (Y) indexing and JSR $FFD2 for output.
+
+                                *** PRINT FILENAME
+                                Filename is pointed to by FNADR, and length in FNLEN. The
+                                KERNAL routine CHROUT is used to print filename.
+.,F5C1 A4 B7    LDY $B7         FNLEN, length of current filename
+.,F5C3 F0 0C    BEQ $F5D1       exit
+.,F5C5 A0 00    LDY #$00
+.,F5C7 B1 BB    LDA ($BB),Y     get character in filename
+.,F5C9 20 D2 FF JSR $FFD2       output
+.,F5CC C8       INY             next character
+.,F5CD C4 B7    CPY $B7         ready?
+.,F5CF D0 F6    BNE $F5C7
+.,F5D1 60       RTS             back
+
+---
+Additional information can be found by searching:
+- "print_searching" which expands on called from PRINT 'SEARCHING' when filename is present

@@ -1,0 +1,27 @@
+# MACHINE - Details: IRQ fires ~60Hz on Commodore machines; NMI used for RESTORE and RS-232 (machine-specific); BRK behaves like IRQ but sets B flag. ROM interrupt code typically pushes A/X/Y/etc for ISR preservation. Understand stack contents during interrupt (PC and SR) differ from JSR/RTS stored address (no '-1').
+
+
+Note that the address on the stack is the return address.  This differs from
+JSR/RTS, where the return address minus one is stored.
+
+On all Commodore machines, the IRQ strikes about sixty times a second.  The
+NMI is unused (but available) on PET/CBM; it isn't available in the 264
+series; and on the VIC-20 and Commodore 64, it is used for the RESTORE key
+and for RS-232 communications.
+
+                                                                        :116:
+
+The BRK command can be distinguished from the IRQ signal by means of a bit in
+the status register.  Bit 4 is the B, or break flag; if it's set, the last
+interrupt was caused by a BRK and not by an IRQ.
+
+Later, we will discuss using the interrupt routines for our own programming.
+By the time we can "catch" the interrupt, several more things will have been
+pushed to the stack:  the A, X, and Y registers.  This is done by a ROM
+program, not the processor; but it will prove handy since we can use these
+registers, safe in the knowledge that they will be restored at the end of the
+interrupt.
+
+---
+Additional information can be found by searching:
+- "interrupts_and_rti" which expands on mechanics and differences between BRK and IRQ

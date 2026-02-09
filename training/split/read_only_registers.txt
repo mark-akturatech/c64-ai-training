@@ -1,0 +1,32 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Readable SID registers $D419-$D41C: $D419 Paddle X (8-bit analog value), $D41A Paddle Y, $D41B Voice 3 oscillator output (upper 8 bits of waveform; saw: ramp 0-255, triangle: up/down, pulse: 0/255, noise: random), $D41C Voice 3 envelope output (ADSR envelope 0-255). Updated timing notes and typical usage for modulation.
+
+--------------------------------------------------------------------------------
+3.5 READ-ONLY REGISTERS ($D419-$D41C)
+--------------------------------------------------------------------------------
+
+$D419 / 54297 - PADDLE X (Read-only)
+  Bits 7-0: Current analog value from Paddle X input (updated every 512 cycles)
+
+$D41A / 54298 - PADDLE Y (Read-only)
+  Bits 7-0: Current analog value from Paddle Y input (updated every 512 cycles)
+
+$D41B / 54299 - VOICE 3 OSCILLATOR OUTPUT (Read-only)
+  Bits 7-0: Upper 8 bits of Voice 3 oscillator waveform output
+  Returns the current instantaneous value of Voice 3's waveform generator.
+  This value reflects the selected waveform shape:
+    Sawtooth:  Ramps 0 to 255 repeatedly
+    Triangle:  Ramps 0 to 255 then 255 to 0
+    Pulse:     Alternates between 0 and 255
+    Noise:     Random values
+  Useful for software-based modulation effects (LFO, vibrato, tremolo).
+
+$D41C / 54300 - VOICE 3 ENVELOPE OUTPUT (Read-only)
+  Bits 7-0: Current value of Voice 3's ADSR envelope generator (0-255)
+  Independent of oscillator output.
+  Useful for envelope-following and modulation effects.
+
+
+---
+Additional information can be found by searching:
+- "voice3_modulation_source" which expands on using $D41B/$D41C for vibrato/tremolo/filter sweeps
+- "complete_register_map_intro" which expands on which registers are read-only vs write-only

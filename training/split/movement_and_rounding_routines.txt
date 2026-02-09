@@ -1,0 +1,36 @@
+# ********* - MOVFM (move five-byte FP from memory into FAC1), MOV2F (move FAC1 to memory), MOVFA (move FAC2 to FAC1), MOVAF (round and move FAC1 to FAC2), MOVEF (copy FAC1 to FAC2 without rounding), and ROUND (adjust rounding byte — may increment FAC1). Covers routines that move floating point values between memory and the two accumulators and rounding behavior.
+
+48034         $BBA2          MOVFM
+Move a Floating Point Number from Memory to FAC1
+
+This routine loads FAC1 with the five-byte floating point number
+pointed to by the address stored in the Accumulator (low byte) and the
+.Y register (high byte).
+
+48071         $BBC7          MOV2F
+Move a Floating Point Number from FAC1 to Memory
+
+This routine is used to move a number from the Floating Point
+Accumulator (FAC1) to memory at either 92-96 ($5C-$60) or 87-91
+($57-$5B), depending on the entry point to the routine.
+
+48124         $BBFC          MOVFA
+Move a Floating Point Number from FAC2 to FAC1
+
+48140         $BC0C          MOVAF
+Round and Move a Floating Point Number from FAC1 to FAC2
+
+48143         $BC0F          MOVEF
+Copy FAC1 to FAC2 Without Rounding
+
+48155         $BC1B          ROUND
+Round Accumulator #1 by Adjusting the Rounding Byte
+
+If doubling the rounding byte at location 112 ($70) makes it greater
+than 128, the value of FAC1 is increased by 1.
+
+
+---
+Additional information can be found by searching:
+- "qint_and_int_integer_conversion" which expands on Routines that convert between floating point and integer formats rely on these move/round helpers.
+- "fin_string_to_fp_finlog_and_constants" which expands on MOVFM/MOV2F are used when loading/storing numbers during string conversion (FIN/FOUT).

@@ -1,0 +1,65 @@
+# COMMODORE 64 - GOSUB <line number>: calls a subroutine and saves return location on the stack; RETURN returns to the statement following GOSUB. Explains benefits of subroutines, example showing replacing repeated code with a GOSUB, and stack usage details (256-byte stack limits for storing return addresses; caution to ensure each GOSUB reaches a corresponding RETURN).
+
+  50   BASIC LANGUAGE VOCABULARY
+~
+
+
+  GOSUB
+
+  TYPE: Statement
+  FORMAT: GOSUB <line number>
+
+    Action: This is a specialized form of the GOTO statement, with one
+  important difference: GOSUB remembers where it came from. When the
+  RETURN statement (different from the <RETURN> key on the keyboard)
+  is reached in the program, the program jumps back to the statement
+  immediately following the original GOSUB statement.
+    The major use of a subroutine (GOSUB really means GO to a SUBroutine)
+  is when a small section of program is used by different sections of the
+  program. By using subroutines rather than repeating the same lines over
+  and over at different places in the program, you can save lots of program
+  space. In this way, GOSUB is similar to DEF FN. DEF FN lets you save
+  space when using a formula, while GOSUB saves space when using a several-
+  line routine. Here is an inefficient program that doesn't use GOSUB:
+
+    100 PRINT "THIS PROGRAM PRINTS"
+    110 FOR L = 1 TO 500:NEXT
+    120 PRINT "SLOWLY ON THE SCREEN"
+    130 FOR L = 1 TO 500:NEXT
+    140 PRINT "USING A SIMPLE LOOP"
+    150 FOR L = 1 TO 500:NEXT
+    160 PRINT "AS A TIME DELAY."
+    170 FOR L = 1 TO 500:NEXT
+
+  Here is the same program using GOSUB:
+
+    100 PRINT "THIS PROGRAM PRINTS"
+    110 GOSUB 200
+    120 PRINT "SLOWLY ON THE SCREEN"
+    130 GOSUB 200
+    140 PRINT "USING A SIMPLE LOOP"
+    150 GOSUB 200
+    160 PRINT "AS A TIME DELAY."
+    170 GOSUB 200
+    180 END
+    200 FOR L = 1 TO 500 NEXT
+    210 RETURN
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   51
+~
+
+
+    Each time the program executes a GOSUB, the line number and position
+  in the program line are saved in a special area called the "stack,"
+  which takes up 256 bytes of your memory. This limits the amount of data
+  that can be stored in the stack. Therefore, the number of subroutine
+  return addresses that can be stored is limited, and care should be taken
+  to make sure every GOSUB hits the corresponding RETURN, or else you'll
+  run out of memory even though you have plenty of bytes free.
+
+---
+Additional information can be found by searching:
+- "return_statement" which expands on RETURN behavior and usage
+- "stack_overflow_and_limits" which expands on stack limitations and effects on program

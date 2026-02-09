@@ -1,0 +1,18 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Doubled text lines: assertion of a Bad Line Condition between cycles 54-57 in the last raster line of a text line causes RC to be incremented again and the previous text line to be displayed twice (no new video matrix data read). This duplicates text lines on screen.
+
+3.14.5. Doubled text lines
+--------------------------
+
+The display of a text line is normally finished after 8 raster lines,
+because then RC=7 and in cycle 58 of the last line the sequencer goes to
+idle state (see section 3.7.2.). But if you now assert a Bad Line Condition
+between cycles 54-57 of the last line, the sequencer stays in display state
+and the RC is incremented again (and thus overflows to zero). The VIC will
+then in the next line start again with the display of the previous text
+line. But as no new video matrix data has been read, the previous text line
+is simply displayed twice.
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on timing window (cycles 54-57) where asserting Bad Line extends display of previous text line

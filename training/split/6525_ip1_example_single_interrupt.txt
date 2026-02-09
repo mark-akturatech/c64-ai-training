@@ -1,0 +1,22 @@
+# MACHINE - IP = 1 example A: single interrupt servicing. Step-by-step sequence when I1 occurs alone: I1 latched in ILR; /IRQ pulled low; A1 set in AIR; CPU reads AIR (which resets I1 in ILR and /IRQ); CPU services interrupt; CPU signals completion by writing AIR which clears A1.
+
+A.  The first case is the simplest.  A single interrupt occurs and the
+    processor can service it completely before another interrupt request is
+    received.
+
+    1.  Interrupt I1 is received.
+    2.  Bit I1 is set high in Interrupt Latch Register.
+    3.  /IRQ is pulled low.
+    4.  A1 is set high.
+    5.  Processor recognizes /IRQ and reads AIR to determine which interrupt
+        occurred.
+    6.  Bit I1 is reset and /IRQ is reset to high.
+    7.  Processor services Interrupt and signals completion of Service
+        routine by writing to AIR.
+    8.  A1 is reset low and interrupt sequence is complete.
+
+
+---
+Additional information can be found by searching:
+- "6525_functional_description_IP1_intro_priority_order" which expands on priority mode overview
+- "6525_active_interrupt_register_AIR" which expands on AIR set/cleared during this sequence

@@ -1,0 +1,33 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - 6502 one-byte unsigned multiply (schoolbook/binary algorithm) implementation. Registers and instructions: LDA #0 to init RESULT, LDX #8 for 8 bits, loop LSR NUM2 to get low bit, BCC to skip add, CLC/ADC NUM1 to add (if bit=1), ROR A and ROR RESULT to perform 'stairstep' shifting and capture carry, DEX/BNE for loop, final STA RESULT+1 to store hi byte. Notes that multiplying one-byte values yields a two-byte result and how to extend the method.
+
+This is quite easy to turn into machine language - the only tricky
+thing in the code below is that instead of shifting the added number to
+the left, it shifts the answer one place to the right each time,
+catching the lost bit in a memory location.  Here it is for one-byte
+numbers:
+
+
+LDA #0       ;Initialize RESULT to 0
+        LDX #8       ;There are 8 bits in NUM2
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        CLC          ;If 1, add NUM1
+        ADC NUM1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        DEX
+        BNE L1
+        STA RESULT+1
+
+
+Note that though we were multiplying one-byte numbers, the result
+requires two bytes.  The general rule for multiplication is that the
+number of bytes in the result will be equal to the number of bytes in
+the first number, plus the number of bytes in the second number.
+
+
+
+---
+Additional information can be found by searching:
+- "binary_multiplication_algorithm" which expands on algorithmic origin
+- "two_byte_multiplication_routine" which expands on 4-byte result from two 2-byte operands

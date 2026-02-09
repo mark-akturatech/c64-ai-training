@@ -1,0 +1,42 @@
+# COMMODORE 64 - RS-232 Status Register layout and usage. Bit-by-bit definitions: parity error, framing error, receiver buffer overrun, receiver buffer-empty (use after GET#), CTS signal missing, unused bit, DSR signal missing, and BREAK detected. Notes: BIT=0 means no error; how BASIC reads the status using the ST variable; reading ST (or KERNAL READST) clears the status word when you exit; advice to assign ST to another variable (e.g., SR=ST) if multiple uses of the status word are needed; the RS-232 status is read/cleared only when the RS-232 channel was the last external I/O used.
+
+  +-----------------------------------------------------------------------+
+  | [7] [6] [5] [4] [3] [2] [1] [0] (Machine Lang.-RSSTAT                 |
+  |  |   |   |   |   |   |   |   +- PARITY ERROR BIT                      |
+  |  |   |   |   |   |   |   +----- FRAMING ERROR BIT                     |
+  |  |   |   |   |   |   +--------- RECEIVER BUFFER OVERRUN BIT           |
+  |  |   |   |   |   +------------- RECEIVER BUFFER-EMPTY                 |
+  |  |   |   |   |                  (USE TO TEST AFTER A GET#)            |
+  |  |   |   |   +----------------- CTS SIGNAL MISSING BIT                |
+  |  |   |   +--------------------- UNUSED BIT                            |
+  |  |   +------------------------- DSR SIGNAL MISSING BIT                |
+  |  +----------------------------- BREAK DETECTED BIT                    |
+  |                                                                       |
+  +-----------------------------------------------------------------------+
+                     Figure 6-3. RS-232 Status Register.
+
+                                                   INPUT/OUTPUT GUIDE   355
+~
+
+
+  +-----------------------------------------------------------------------+
+  | NOTES:                                                                |
+  |   If the BIT=0, then no error has been detected.                      |
+  |   The RS-232 status register can be read from BASIC using the variable|
+  | ST.                                                                   |
+  |   If ST is read by BASIC or by using the KERNAL READST routine the    |
+  | RS-232 status word is cleared when you exit. If multiple uses of the  |
+  | STATUS word are necessary the ST should be assigned to another        |
+  | variable. For example:                                                |
+  |                                                                       |
+  | SR=ST: REM ASSIGNS ST TO SR                                           |
+  |                                                                       |
+  |   The RS-232 status is read (and cleared) only when the RS-232 channel|
+  | was the last external I/O used.                                       |
+  +-----------------------------------------------------------------------+
+
+---
+Additional information can be found by searching:
+- "user_port_rs232_pin_assignments" which expands on Which hardware signals correspond to the status conditions
+- "sample_basic_program_pet_ascii" which expands on Example showing SR=ST and status bit testing
+- "rs232_nonzero_page_control_and_fifos" which expands on RSSTAT nonzero-page location that holds the status register

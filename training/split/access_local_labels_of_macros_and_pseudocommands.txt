@@ -1,0 +1,27 @@
+# Kick Assembler - Explains how placing a label before executing a macro or pseudocommand creates a label scope array so you can reference inner labels of the executed macro. Example: start: c1: c2: *=$1000 inc c1.color dec c2.color :setColor() :setColor() jmp start and macro .macro setColor() { .label color = *+1 lda #0 sta $d020 } allowing increment/decrement of macro-created labels.
+
+jmp myIf.label
+myIf: .if (true) {
+...
+label:
+lda #0 // <-- Jumps here
+...
+} else {
+...
+label:
+nop
+...
+}
+
+42
+
+Chapter 10
+Segments
+10.1. Introduction
+Segments are lists of memory blocks which are used to organize your code. You can use them to define the
+order which things are placed in memory (data after code etc). Your can combine segments to form new segments
+and you can use modifiers to process the output of a segment. Finally, you can direct the output of a segment to
+
+---
+Additional information can be found by searching:
+- "label_scopes_for_functions" which expands on label scopes concept

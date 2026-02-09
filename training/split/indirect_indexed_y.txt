@@ -1,0 +1,20 @@
+# 6502 ADDRESSING MODES - Indirect Indexed (format (aa),Y): zero page based indirect mode using Y. Operation: read a 16-bit base address from zero page at aa (low byte) and aa+1 (high byte), then add Y to that 16-bit address to form the effective address. Example: if $A5 contains $28 and $A6 contains $77, LDY $08; LDA ($A5),Y adds $08 to $7728 producing $7730 and loads A from $7730. Summarised as 'find the address and then add the offset'.
+
+Indirect Indexed	(aa), Y
+
+This is also a mixture of indexed and indirect addressing, but this one can only be used with the Y register.  It can be summarised as ‘Find the address and then add the offset’.
+
+The operand is a 1 byte zero page address, which contains the least significant byte of a 2 byte address.  The most significant byte is held in the next byte (aa+1).  To that 2 byte address, add the contents of the Y register.  The resulting address contains the data.  For example, if we assume that 
+
+location 		$A5	contains		$28
+		$A6	contains		$77
+
+LDY	$08
+LDA	($A5), Y
+
+will result in the address $7728 having $08 added to it to produce the address $7730.  The content of location $7730 will then be loaded into the accumulator.
+
+---
+Additional information can be found by searching:
+- "indexed_indirect_x" which expands on contrast 'add then find' (X) vs 'find then add' (Y)
+- "zero_page_addressing" which expands on uses zero page address pointers

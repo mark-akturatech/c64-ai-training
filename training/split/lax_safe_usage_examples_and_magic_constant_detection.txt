@@ -1,0 +1,46 @@
+# NMOS 6510 - Practical examples and tests for using the undocumented LAX immediate opcode safely. Example: LAX #0 (AB 00) is equivalent to LDA #0; TAX and is safe because using 0 removes the magic constant from the result. Example: LAX #<value> when A was $FF is equivalent to LDA #<value>; TAX and safe because A=$FF neutralizes the magic constant. Also shows a method to read the current machine's magic constant: LDA #0; LAX #$FF — afterwards A and X contain the magic constant. Warns the constant can be unstable on the same chip and depend on temperature and supply voltage; do not rely on it.
+
+
+- 65 -
+
+Example: clear A and X
+
+LAX #0
+
+; AB 00
+
+is equivalent to:
+LDA #0
+TAX
+… and is safe to use, as using 0 as the immediate value takes the 'magic constant' out of the
+equation.
+
+Example: load A and X with same value
+
+; assuming A=$ff from previous operation
+LAX #<value>
+
+; AB <value>
+
+is equivalent to:
+LDA #<value>
+TAX
+… and is safe to use, as a value of $FF in accumulator takes the 'magic constant' out of the
+equation.
+
+Example: read the 'magic constant'
+
+To determine the 'magic constant' which is in effect on your particular machine, you can do this:
+LDA #0
+LAX #$ff
+
+; A,X contain the magic constant
+
+This is mostly useful for experimenting and proving the constant is actually different on different
+set-ups. Do not rely on this value! It may not be stable even on the same chip and depend on
+temperature and/or the supplied voltage.
+
+---
+Additional information can be found by searching:
+- "lax_opcode_example_lax_ff" which expands on raw example where the magic constant manifests (shows why using 0 or $FF is safe)
+- "lax_wizball_emulator_recommendation" which expands on empirical emulator guidance and problematic magic-constant values

@@ -1,0 +1,89 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - FAC pack/unpack helpers: unpack FAC1/FAC2 from memory (AY) into FAC registers, pack FAC1 back into memory or variables (to addresses like $5C and variable pointers), copy FAC2->FAC1 and FAC1->FAC2 routines, and the low-level routines to store FAC bytes into destination (including sign/mantissa/exponent layout adjustments). Also includes a generic pack-into-(XY) helper.
+
+                                *** unpack memory (AY) into FAC1
+.,BBA2 85 22    STA $22         save pointer low byte
+.,BBA4 84 23    STY $23         save pointer high byte
+.,BBA6 A0 04    LDY #$04        5 bytes to do
+.,BBA8 B1 22    LDA ($22),Y     get fifth byte
+.,BBAA 85 65    STA $65         save FAC1 mantissa 4
+.,BBAC 88       DEY             decrement index
+.,BBAD B1 22    LDA ($22),Y     get fourth byte
+.,BBAF 85 64    STA $64         save FAC1 mantissa 3
+.,BBB1 88       DEY             decrement index
+.,BBB2 B1 22    LDA ($22),Y     get third byte
+.,BBB4 85 63    STA $63         save FAC1 mantissa 2
+.,BBB6 88       DEY             decrement index
+.,BBB7 B1 22    LDA ($22),Y     get second byte
+.,BBB9 85 66    STA $66         save FAC1 sign (b7)
+.,BBBB 09 80    ORA #$80        set 1xxx xxxx (add normal bit)
+.,BBBD 85 62    STA $62         save FAC1 mantissa 1
+.,BBBF 88       DEY             decrement index
+.,BBC0 B1 22    LDA ($22),Y     get first byte (exponent)
+.,BBC2 85 61    STA $61         save FAC1 exponent
+.,BBC4 84 70    STY $70         clear FAC1 rounding byte
+.,BBC6 60       RTS             
+
+                                *** pack FAC1 into $5C
+.,BBC7 A2 5C    LDX #$5C        set pointer low byte
+.:BBC9 2C       .BYTE $2C       makes next line BIT $57A2
+
+                                *** pack FAC1 into $57
+.,BBCA A2 57    LDX #$57        set pointer low byte
+.,BBCC A0 00    LDY #$00        set pointer high byte
+.,BBCE F0 04    BEQ $BBD4       pack FAC1 into (XY) and return, branch always
+
+                                *** pack FAC1 into variable pointer
+.,BBD0 A6 49    LDX $49         get destination pointer low byte
+.,BBD2 A4 4A    LDY $4A         get destination pointer high byte
+
+                                *** pack FAC1 into (XY)
+.,BBD4 20 1B BC JSR $BC1B       round FAC1
+.,BBD7 86 22    STX $22         save pointer low byte
+.,BBD9 84 23    STY $23         save pointer high byte
+.,BBDB A0 04    LDY #$04        set index
+.,BBDD A5 65    LDA $65         get FAC1 mantissa 4
+.,BBDF 91 22    STA ($22),Y     store in destination
+.,BBE1 88       DEY             decrement index
+.,BBE2 A5 64    LDA $64         get FAC1 mantissa 3
+.,BBE4 91 22    STA ($22),Y     store in destination
+.,BBE6 88       DEY             decrement index
+.,BBE7 A5 63    LDA $63         get FAC1 mantissa 2
+.,BBE9 91 22    STA ($22),Y     store in destination
+.,BBEB 88       DEY             decrement index
+.,BBEC A5 66    LDA $66         get FAC1 sign (b7)
+.,BBEE 09 7F    ORA #$7F        set bits x111 1111
+.,BBF0 25 62    AND $62         AND in FAC1 mantissa 1
+.,BBF2 91 22    STA ($22),Y     store in destination
+.,BBF4 88       DEY             decrement index
+.,BBF5 A5 61    LDA $61         get FAC1 exponent
+.,BBF7 91 22    STA ($22),Y     store in destination
+.,BBF9 84 70    STY $70         clear FAC1 rounding byte
+.,BBFB 60       RTS             
+
+                                *** copy FAC2 to FAC1
+.,BBFC A5 6E    LDA $6E         get FAC2 sign (b7)
+                                save FAC1 sign and copy ABS(FAC2) to FAC1
+.,BBFE 85 66    STA $66         save FAC1 sign (b7)
+.,BC00 A2 05    LDX #$05        5 bytes to copy
+.,BC02 B5 68    LDA $68,X       get byte from FAC2,X
+.,BC04 95 60    STA $60,X       save byte at FAC1,X
+.,BC06 CA       DEX             decrement count
+.,BC07 D0 F9    BNE $BC02       loop if not all done
+.,BC09 86 70    STX $70         clear FAC1 rounding byte
+.,BC0B 60       RTS             
+
+                                *** round and copy FAC1 to FAC2
+.,BC0C 20 1B BC JSR $BC1B       round FAC1
+                                copy FAC1 to FAC2
+.,BC0F A2 06    LDX #$06        6 bytes to copy
+.,BC11 B5 60    LDA $60,X       get byte from FAC1,X
+.,BC13 95 68    STA $68,X       save byte at FAC2,X
+.,BC15 CA       DEX             decrement count
+.,BC16 D0 F9    BNE $BC11       loop if not all done
+.,BC18 86 70    STX $70         clear FAC1 rounding byte
+.,BC1A 60       RTS             
+
+---
+Additional information can be found by searching:
+- "multiply_divide_and_accumulator_algorithms" which expands on these helpers are invoked to load/store FACs before numeric operations
+- "fac_sign_abs_int_conversion_and_shifts" which expands on copy/round helpers used before integer conversions

@@ -1,0 +1,67 @@
+# byRiclianll - Annotated mapping and explanatory notes for the CERTIFY program. Lists which program line ranges perform specific tasks (e.g., 330-380 store the BAM, 390-440 query DOS version, 460-500 write worst-case pattern to $0400, 510-540 initialize counters, 550 block-allocate command, 700 write pattern to a deallocated track/sector, 710 query error channel, 720-740 error array, 800-890 restore BAM, 960-980 allocate bad sectors). Also explains that lines 330-380 and 800-890 compensate for a block-allocate bug, and that lines 1020-1230 (job queue) are detailed in Chapter 6.
+
+Line  Range 
+
+Description 
+
+330-380 
+
+Store  the  BAM  ($0700  -  $07A0). 
+
+390-440 
+
+Query  DOS  version. 
+
+460-500 
+
+Write  worst-case  binary  pattern  to  buffer  at  $0400. 
+
+510-540 
+
+Initialize  track,  sector,  and  counters. 
+
+550 
+
+Block-allocate  command. 
+
+700 
+
+Write  worst-case  binary  pattern  at  $0400  -  $04FF  to  a 
+
+deallocated  track  and  sector. 
+
+710 
+
+Query  error  channel. 
+
+720-740 
+
+Error  array. 
+
+800-890 
+
+Restore  the  BAM. 
+
+960-980 
+
+Allocate  any  bad  sectors  in  error  array. 
+
+The  alternate  format  of  the  two  block-allocate  commands  above  are: 
+
+
+550  PRINT#15, "B-a: " ; o; t; s 
+
+970  PRINT#15,  "B-A:  " ;  O;  TV.  ( I  > ;  S%  <  I  > 
+
+Lines  330-380  and  800-890  compensate  for  a  bug  in  the  block-allocate  command.  (See 
+Chapter  9  for  the  lowdown.)  Lines  330-380  store  an  image  of  the  BAM  in  C64  RAM. 
+The  BAM  is  restored  in  lines  800-890.  Lines  1020-1230  will  be  explained  in  detail  in 
+Chapter  6  on  intermediate  disk  programming  techniques. 
+
+
+
+---
+Additional information can be found by searching:
+- "read_bam_and_dos_check" which expands on explains the BAM-store referenced in lines 330-380
+- "buffer_init_certify_loop_and_restore_bam" which expands on summarizes the certification and restore behavior described in multiple line ranges
+- "job_queue_and_subroutines" which expands on notes that the job-queue logic (lines 1020-1230) is covered in more detail elsewhere

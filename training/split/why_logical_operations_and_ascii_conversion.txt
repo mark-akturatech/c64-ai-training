@@ -1,0 +1,45 @@
+# MACHINE - Explains why logical operators are useful: to control individual bits (IA port I/O control lines), to mask input bits for testing (use AND and check Z), to create oscillating effects (EOR), and for code translation tasks. Provides ASCII vs binary example (ASCII '5' = %00110101 vs binary 5 = %00000101) and notes how AND/ORA can convert between ASCII and numeric values more simply than arithmetic.
+
+Why Logical Operations?
+-----------------------
+
+We use these three commands--AND, ORA, and EOR--to change to control
+individual bits within a byte of information.  The commands are unusual in
+that each bit may be manipulated independently of the others.
+
+We don't seem to be working with numbers when we use these commands.  Rather,
+we're working with each individual bit, turning it on or off as we wish.
+
+Why would we turn individual bits on or off?  There are several possible
+reasons.  For example, we might wish to control external devices through the
+IA's (interface adapters).  Within the IA's input and output ports each of
+the eight bits might control a different signal; we might want to switch one
+control line on or off without affecting other lines.
+
+When we're looking at input from an IA port, we often read several input
+lines mixed together within a byte.  If we want to test a specific bit to see
+if it is on or off, we might mask out all the other bits with the AND
+instruction (changing unwanted bits to zero); if the remaining bit is zero,
+the whole byte will now be zero and the Z flag will be set.
+
+Why would we want to flip bits over?  Many "oscillating" effects--screen
+flashing or musical notes--can be accomplished this way.
+
+Finally the logical operators can be useful in code translation.  For
+example, here are the values for ASCII 5 and binary 5:
+
+  ASCII   %00110101
+  Binary  %00000101
+
+We must use the ASCII value for input or output.  We must use the binary
+value for arithmetic, particularly addition and subtraction.  How could we
+get from one to the other?  By taking bits out (AND) or putting bits in
+(ORA).  Alternatively, we could use addition or subtraction; the logical
+operators, however, are simpler.
+
+
+
+---
+Additional information can be found by searching:
+- "logical_eor_and_examples" which expands on EOR example and flipping bits
+- "getin_subroutine_keyboard_input" which expands on GETIN returns ASCII input useful to convert with logical ops

@@ -1,0 +1,33 @@
+# COMMODORE 64 - Timer latch/counter load behavior and the register formats. Explains that the timer latch loads into the counter on timer underflow, on a force load, or after writing the high byte of the prescaler when the timer is stopped; writing the prescaler high byte while running loads the latch but not the counter. Includes the read register layouts for Timer A/B low/high (TA LO/HI, TB LO/HI) showing TALx/TAHx and TBLx/TBHx bits, and the write (prescaler) register layouts for TA/TB LO/HI (PALx/PAHx and PBLx/PBHx).
+
+
+  430   APPENDIX M
+~
+
+
+    The timer latch is loaded into the timer on any timer underflow, on a
+  force load or following a write to the high byte of the prescaler while
+  the timer is stopped. If the timer is running, a write to the high byte
+  will load the timer latch, but not reload the counter.
+
+  READ (TIMER)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  4  |  TA LO  | TAL7 | TAL6 | TAL5 | TAL4 | TAL3 | TAL2 | TAL1 | TAL0 |
+  |  5  |  TA HI  | TAH7 | TAH6 | TAH5 | TAH4 | TAH3 | TAH2 | TAH1 | TAH0 |
+  |  6  |  TB LO  | TBL7 | TBL6 | TBL5 | TBL4 | TBL3 | TBL2 | TBL1 | TBL0 |
+  |  7  |  TB HI  | TBH7 | TBH6 | TBH5 | TBH4 | TBH3 | TBH2 | TBH1 | TBH0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+  WRITE (PRESCALER)
+    REG    NAME
+  +-----+---------+------+------+------+------+------+------+------+------+
+  |  4  |  TA LO  | PAL7 | PAL6 | PAL5 | PAL4 | PAL3 | PAL2 | PAL1 | PAL0 |
+  |  5  |  TA HI  | PAH7 | PAH6 | PAH5 | PAH4 | PAH3 | PAH2 | PAH1 | PAH0 |
+  |  6  |  TB LO  | PBL7 | PBL6 | PBL5 | PBL4 | PBL3 | PBL2 | PBL1 | PBL0 |
+  |  7  |  TB HI  | PBH7 | PBH6 | PBH5 | PBH4 | PBH3 | PBH2 | PBH1 | PBH0 |
+  +-----+---------+------+------+------+------+------+------+------+------+
+
+---
+Additional information can be found by searching:
+- "6526_timers_overview" which expands on Purpose of the timer counter and latch and general behavior
+- "6526_timer_control_functions" which expands on Control bits that affect load and operation (Force Load, Input Mode, etc.)

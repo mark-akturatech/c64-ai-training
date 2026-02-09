@@ -1,0 +1,52 @@
+# MACHINE - Relative address mode used by branch instructions: one-byte signed offset indicating forward/backward jump from next instruction (range -128..+127). Branch address computed from target minus (PC after branch). Long branches limited to +/-127; use JMP for farther transfers. Branches are relocation-friendly.
+
+                                                                         :79:
+
+Branching:  Relative Address Mode
+---------------------------------
+
+We have written several branch instructions already; the assembler allowed us
+to enter the actual addresses to which we want to branch.  The assembler
+translates it to a different form--the relative address.
+
+
+         ,---------.
+         |  ,---.  |
+         v  |   v  |
+  +----------------------------------------------------------------------+
+  |                                 MEMORY                               |
+  +----------------------------------------------------------------------+
+
+  Figure 5.5
+
+
+Relative address means, "branch forward or backwards a certain number of
+bytes from this point."  The relative address is one byte, making the whole
+instruction two bytes long.  Its value is taken as a signed number.
+
+A branch instruction with a relative address of $05 would mean, "if the
+branch is taken, skip the next 5 bytes."  A branch instruction with a
+relative address of $F7 would mean, "if the branch is taken, back up 9 bytes
+from where you would otherwise be."  As a signed number, $F7 is equal to a
+value of -9.
+
+We can calculate a branch by performing hexadecimal subtraction; the "target"
+address is subtracted from the PC address.  If we have a branch at $0341 that
+should go to $033C, we would work as follows:  $033C (the target) minus $0343
+(the location following the branch instruction) would give a result of $F9,
+or minus 7.  This is tedious to do, and often results in mistakes; such
+mistakes in calculating a branch address are often fatal to the program run.
+We are much better off using an assembler to work out the arithmetic for us.
+
+The longest branches are:  $7F, or 127 locations ahead; and $80, or 128
+locations back.  This poses no difficulties with short programs, such as the
+ones we are writing here.  But in larger programs, the branch may not be able
+to reach far enough.  The usual solution to this is to place a JMP (jump)
+instruction nearby, which is capable of going anywhere in memory; JMP uses
+absolute addressing.  The appropriate branch instruction will go to the JMP,
+which in turn will take the program to the desired location.
+
+
+---
+Additional information can be found by searching:
+- "jmp_indirect_mode_and_rom_link" which expands on contrast relative branches with JMP absolute/indirect

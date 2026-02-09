@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OP170/OP200 sequence for opening cassette for write: JSR FAH (GET ANY OLD HEADER) and checks for STOP, then for the write path calls CSTE2 (prompt "PRESS PLAY AND RECORD"), handles STOP-key, loads the cassette data-file header type (#$04) and calls TAPEH to write the header.
+
+.,F3AF 20 2C F7 JSR $F72C       OP170  JSR FAH         ;GET ANY OLD HEADER
+.,F3B2 F0 20    BEQ $F3D4       BEQ    OP180           ;STOP KEY PRESSED
+.,F3B4 90 0C    BCC $F3C2       BCC    OP171           ;ALL O.K.
+.,F3B6 B0 F4    BCS $F3AC       BCS    OP160           ;FILE NOT FOUND...
+                                ;
+                                ;OPEN CASSETTE TAPE FOR WRITE
+                                ;
+.,F3B8 20 38 F8 JSR $F838       OP200  JSR CSTE2       ;TELL "PRESS PLAY AND RECORD"
+.,F3BB B0 17    BCS $F3D4       BCS    OP180           ;STOP KEY PRESSED
+.,F3BD A9 04    LDA #$04        LDA    #BDFH           ;DATA FILE HEADER TYPE
+.,F3BF 20 6A F7 JSR $F76A       JSR    TAPEH           ;WRITE IT
+                                ;
+                                ;FINISH OPEN FOR TAPE READ/WRITE
+
+---
+Additional information can be found by searching:
+- "tape_read_decision_and_search" which expands on alternative tape-read path that precedes this write flow
+- "tape_open_finish_and_buffer_init" which expands on common post-open buffer initialization for tape reads/writes

@@ -1,0 +1,90 @@
+# Analyzing C64 tape loaders - CBM Data block assembly listing for a non-IRQ turbo loader (addresses $02A7-$0303 etc). Includes boot sequence: SEI/CLI usage, vector modification (Kernal STOP), initialization of zeroed locations, blanking screen via $D011, setting interrupt disable, a Read Bit subroutine using Timer B countdown at $DD07/$DD0F, a return-to-prompt routine that restores CHRGET and prints READY. Also shows table data and IMAIN autostart bytes at $0302.
+
+Using Final TAP to exam the mentioned Tap file, you can get the following listings.
+
+<code>
+******************
+* CBM Data block *
+******************
+
+--New STOP routine (ignore it now)-
+02A7  A9  80      LDA #$80
+02A9  05  91      ORA $91
+02AB  4C  EF  F6  JMP $F6EF
+-----------------------------------
+
+************************
+* Start of this Loader *
+************************
+--Boot-----------------------------
+02AE  A9  A7      LDA #$A7
+02B0  78          SEI
+02B1  8D  28  03  STA $0328  ; Changes Vector to "Kernal STOP
+02B4  A9  02      LDA #$02   ; Routine" into $02A7
+02B6  8D  29  03  STA $0329
+
+02B9  58          CLI
+
+02BA  A0  00      LDY #$00   ; Inits some locations used by
+02BC  84  C6      STY $C6    ; this loader
+02BE  84  C0      STY $C0
+02C0  84  02      STY $02
+
+02C2  AD  11  D0  LDA $D011  ; Blanks screen
+02C5  29  EF      AND #$EF
+02C7  8D  11  D0  STA $D011
+
+02CA  CA          DEX        ; A small pause here
+02CB  D0  FD      BNE $02CA
+02CD  88          DEY
+02CE  D0  FA      BNE $02CA
+
+02D0  78          SEI        ; Sets interrupt disable
+                             ; status bit
+02D1  4C  51  03  JMP $0351
+-----------------------------------
+
+--Read Bit subroutine--------------
+02D4  AD  0D  DC  LDA $DC0D  ; Checks the interrupt register
+02D7  29  10      AND #$10   ; to see if the pulse (negative
+02D9  F0  F9      BEQ $02D4  ; edge on a C64) came in or not
+
+02DB  AD  0D  DD  LDA $DD0D  ; Checks the countdown (bit 2 will
+                             ; be 1 if countdown runned out)
+
+02DE  8E  07  DD  STX $DD07  ; Sets a new Timer B countdown
+
+02E1  4A          LSR        ; Move bit 2 to the Carry bit
+02E2  4A          LSR
+02E3  A9  19      LDA #$19   ; Starts Timer B (one shot, force
+02E5  8D  0F  DD  STA $DD0F  ; latch value being loaded)
+02E8  60          RTS
+-----------------------------------
+
+--Back to prompt-------------------
+02E9  20  8E  A6  JSR $A68E  ; Resets the CHRGET pointer
+
+02EC  A9  00      LDA #$00
+02EE  A8          TAY
+02EF  91  7A      STA ($7A),Y
+
+02F1  4C  74  A4  JMP $A474  ; Prints Ready and then
+                             ; processes keyboard buffer
+-----------------------------------
+
+--Tables---------------------------
+02F4  52 D5 0D    ;"R", "SHIFT+U", "RETURN" (stays for "RUN", followed by RETURN key)
+
+02F7  00 00 00 00 00 00 00 00 00
+
+0300  8B E3       ; default value, not changed
+
+0302  AE 02       ; used to perform the Autostart
+-----------------------------------
+</code>
+
+
+---
+Additional information can be found by searching:
+- "nonirq_cbm_header_block_listing" which expands on CBM Header block contains remaining loader core
+- "nonirq_loader_autostart_i_main" which expands on Autostart via IMAIN vector ($0302-$0303)

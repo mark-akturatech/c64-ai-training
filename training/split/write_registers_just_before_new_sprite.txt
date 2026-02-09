@@ -1,0 +1,34 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Method 2.4.1: 'Just before the new sprite'—wait until raster is close to the sprite's start Y and then write the sprite registers. 'Close enough' depends on worst-case time to write all relevant sprite registers (writing 8 sprites could require ~10-12 lines). Benefits of precalculation: decide adjustment based on number of sprites to write, and write Y-coordinates first (they're critical) then X/frame/color. Precalculated interrupts allow optimized timing and reduce cosmetic errors.
+
+2.4.1 Just before the new sprite
+
+The idea is to wait until we are close enough to the starting Y-coordinate of a
+sprite, and then write the sprite registers. If the following sprite is close
+to it, it can also be written in the same raster interrupt.
+
+What is "close enough"? In fact, it is the amount of rastertime taken to write
+all 8 sprites under a worst-case condition. If we come closer to a sprite's
+Y-coordinate before writing the registers, there could be the possibility that
+we don't have time to write all 8 sprites, if all of them would happen to be
+at the same Y-coordinate. But the closer we can come, the neater tight-packed
+sprite formations will look like (less graphical errors.)
+
+If the raster interrupts (when they happen, from what sprite to start, how many
+sprites to write) are precalculated, there are two benefits:
+
+- The "close enough"-factor (adjustment to raster interrupt position) can be
+  decided based on the number of sprites that will be written in the next
+  raster interrupt. For example, if there's only one sprite, the interrupt
+  can happen just for example 2 lines before its Y-coordinate, but if there's
+  all sprites, the interrupt must happen about 10-12 lines before.
+
+- Y-coordinates are critical, they must be ready when the sprites start to
+  display, everything else is cosmetic. So we can write the Y-coordinates first
+  in the raster interrupt, because we know what sprites to write, and only
+  after that the rest (X-coords, frame, color)
+
+
+---
+Additional information can be found by searching:
+- "raster_interrupt_code_example_and_notes" which expands on shows naive register write sequence and $D010 MSB handling
+- "raster_interrupt_optimizations_and_unrolled_code" which expands on shows faster per-physical-sprite unrolled code and optimizations

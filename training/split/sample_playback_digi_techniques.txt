@@ -1,0 +1,55 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Digitized sample playback on 6581 using volume-register click: code example for nybble-packed 4-bit samples played via writes to $D418 (two 4-bit samples per byte). Notes: produces 4-bit audio (16 levels), CPU intensive, conflicts with normal music (shared volume register), works well on 6581 but barely on 8580 without ~330kΩ resistor on EXT IN. Mentions advanced Mahoney 8-bit techniques.
+
+================================================================================
+12. SAMPLE PLAYBACK (DIGI)
+================================================================================
+
+The 6581 has an unintended feature where writing to the volume register ($D418)
+produces an audible click proportional to the volume change. This can be
+exploited for 4-bit digitized audio playback:
+
+  ; Play 4-bit sample (nybble-packed, 2 samples per byte)
+  ; Called at sample rate (typically 4-8 kHz via CIA timer)
+  play_sample:
+    ldy sample_index
+    lda (sample_ptr),y   ; Load packed sample byte
+
+    ; Extract high nybble (first sample)
+    lsr
+    lsr
+    lsr
+    lsr
+    ora #$10             ; Keep low-pass filter on (optional)
+    sta $d418            ; Write to volume register
+
+    ; ... wait half sample period ...
+
+    lda (sample_ptr),y   ; Reload
+    and #$0f             ; Extract low nybble (second sample)
+    ora #$10             ; Keep filter bits
+    sta $d418
+
+    iny
+    sty sample_index
+    rts
+
+This technique:
+  - Produces 4-bit quality audio (16 amplitude levels)
+  - Requires significant CPU time (tight timing loop or CIA timer IRQ)
+  - Conflicts with normal SID music (volume register shared)
+  - Works well on the 6581; barely audible on the 8580 without hardware mod
+  - Typical sample rates: 4 kHz (low quality) to 8 kHz (phone quality)
+
+For the 8580, a ~330k ohm resistor between the EXT IN pin and ground restores
+digi playback capability.
+
+Advanced techniques (Mahoney's 8-bit digi):
+  Exploit combined waveform behavior and pulse width tricks to achieve up to
+  8-bit effective resolution on the 6581.
+
+================================================================================
+
+---
+Additional information can be found by searching:
+- "chip_variants_6581_8580" which expands on why 8580 requires resistor mod for digi
+- "known_quirks" which expands on volume register click exploited for digi playback

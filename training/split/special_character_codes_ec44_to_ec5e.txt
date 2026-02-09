@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Checks for special decoded character codes after table lookup. Handles SWITCH TO LOWER CASE ($0E) and SWITCH TO UPPER CASE ($8E) by adjusting the character memory base ($D018) to point to lower- or upper-case character sets. Also handles the [SHIFT]+[C=] disable/lock check (compares with $08 and sets the lock bit when applicable). On change, saves new $D018 and branches to restore registers and set quote flag before exiting.
+
+
+                                *** check for special character codes
+.,EC44 C9 0E    CMP #$0E        compare with [SWITCH TO LOWER CASE]
+.,EC46 D0 07    BNE $EC4F       if not [SWITCH TO LOWER CASE] skip the switch
+.,EC48 AD 18 D0 LDA $D018       get the start of character memory address
+.,EC4B 09 02    ORA #$02        mask xxxx xx1x, set lower case characters
+.,EC4D D0 09    BNE $EC58       go save the new value, branch always
+                                check for special character codes except fro switch to lower case
+.,EC4F C9 8E    CMP #$8E        compare with [SWITCH TO UPPER CASE]
+.,EC51 D0 0B    BNE $EC5E       if not [SWITCH TO UPPER CASE] go do the [SHIFT]+[C=] key
+                                check
+.,EC53 AD 18 D0 LDA $D018       get the start of character memory address
+.,EC56 29 FD    AND #$FD        mask xxxx xx0x, set upper case characters
+.,EC58 8D 18 D0 STA $D018       save the start of character memory address
+.,EC5B 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+                                do the [SHIFT]+[C=] key check
+.,EC5E C9 08    CMP #$08        compare with disable [SHIFT][C=]
+.,EC60 D0 07    BNE $EC69       if not disable [SHIFT][C=] skip the set
+.,EC62 A9 80    LDA #$80        set to lock shift mode switch
+
+---
+Additional information can be found by searching:
+- "key_decode_tables_eb79_ec43" which expands on these special codes are values produced by the decode tables
+- "evaluate_shift_ctrl_c_keys_eb48_to_eb76" which expands on SHIFT+C= handling interacts with locking/toggling behavior

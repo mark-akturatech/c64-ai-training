@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Handle a second NMI as a nested/subroutine call due to 6526 ICR semantics: test for another NMI (TXA AND #$12) and branch accordingly. If T2 set, call T2NMI to process a received bit; if FLAG, call FLNMI for start-bit handling. After handling, JSR RSTRAB is called to recompute necessary parameters and then branch/jump to NMIRTI for return processing.
+
+                                ; BECAUSE OF 6526 ICR STRUCTURE...
+                                ;  HANDLE ANOTHER NMI AS A SUBROUTINE
+                                ;
+.,FE8B 8A       TXA                    TXA             ;TEST FOR ANOTHER NMI
+.,FE8C 29 12    AND #$12               AND #$12        ;TEST FOR T2 OR FLAG
+.,FE8E F0 0D    BEQ $FE9D              BEQ NNMI25
+.,FE90 29 02    AND #$02               AND #$02        ;CHECK FOR T2
+.,FE92 F0 06    BEQ $FE9A              BEQ NNMI22      ;MUST BE A FLAG
+                                ;
+.,FE94 20 D6 FE JSR $FED6              JSR T2NMI       ;HANDLE A NORMAL BIT IN...
+.,FE97 4C 9D FE JMP $FE9D              JMP NNMI25      ;...THEN CONTINUE OUTPUT
+                                ;
+.,FE9A 20 07 FF JSR $FF07       NNMI22 JSR FLNMI       ;HANDLE A START BIT...
+                                ;
+.,FE9D 20 BB EE JSR $EEBB       NNMI25 JSR RSTRAB      ;GO CALC INFO (CODE COULD BE IN LINE)
+.,FEA0 4C B6 FE JMP $FEB6              JMP NMIRTI
+
+---
+Additional information can be found by searching:
+- "nmi_prepare_and_t1_transmit" which expands on called after T1 transmit restores NMI enables and checks for additional NMIs
+- "t2nmi_subroutine_sample_and_timer_update" which expands on T2NMI handles normal received-bit processing
+- "flnmi_half_bit_setup_and_return" which expands on FLNMI handles start-bit (flag edge) setup

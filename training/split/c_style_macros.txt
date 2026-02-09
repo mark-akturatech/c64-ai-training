@@ -1,0 +1,63 @@
+# ca65 Users Guide - .DEFINE-style (C-style) macros: single-line replacement macros detected at scanner level. Rules: cannot span multiple logical lines (but can use line continuation), share namespace with classic macros, allowed anywhere in a line, formal parameters in parentheses (actual invocation should NOT include parentheses), parameter count must match exactly, empty parameters not allowed. Examples: .define EQU =, .define VERSION "12.3a", .define DEBUG(message) .out message, and pitfalls when invoking with/without parentheses.
+
+12.7 C style macros
+Starting with version 2.5 of the assembler, there is a second macro type available: C style macros using the .DEFINE directive. These macros are similar to the classic macro type described above, but behaviour is sometimes different:
+
+
+Macros defined with .DEFINE may not span more than a line. You may use line continuation (see line_continuations) to spread the definition over more than one line for increased readability, but the macro itself may not contain an end-of-line token.
+Macros defined with .DEFINE share the name space with classic macros, but they are detected and replaced at the scanner level. While classic macros may be used in every place, where a mnemonic or other directive is allowed, .DEFINE style macros are allowed anywhere in a line. So they are more versatile in some situations.
+.DEFINE style macros may take parameters. While classic macros may have empty parameters, this is not true for .DEFINE style macros. For this macro type, the number of actual parameters must match exactly the number of formal parameters. To make this possible, formal parameters are enclosed in parentheses when defining the macro. If there are no parameters, the empty parentheses may be omitted.
+Since .DEFINE style macros may not contain end-of-line tokens, there are things that cannot be done. They may not contain several processor instructions for example. So, while some things may be done with both macro types, each type has special usages. The types complement each other.
+Parentheses work differently from C macros. The common practice of wrapping C macros in parentheses may cause unintended problems here, such as accidentally implying an indirect addressing mode. While the definition of a macro requires parentheses around its argument list, when invoked they should not be included.
+Let's look at a few examples to make the advantages and disadvantages clear.
+
+To emulate assemblers that use "EQU" instead of "=" you may use the following .DEFINE:
+
+
+.define EQU     =
+
+foo     EQU     $1234           ; This is accepted now
+You may use the directive to define string constants used elsewhere:
+
+
+; Define the version number
+.define VERSION "12.3a"
+
+        ; ... and use it
+        .asciiz VERSION
+Macros with parameters may also be useful:
+
+
+.define DEBUG(message)  .out    message
+
+        DEBUG   "Assembling include file #3"
+Note that, while formal parameters have to be placed in parentheses, the actual argument used when invoking the macro should not be. The invoked arguments are separated by commas only; if parentheses are used by accident, they will become part of the replaced token.
+
+If you wish to have an expression follow the macro invocation, the last parameter can be enclosed in curly braces {} to indicate the end of that argument.
+
+Examples:
+
+
+.define COMBINE(ta,tb,tc) ta+tb*10+tc*100
+
+.word COMBINE 5,6,7      ; 5+6*10+7*100 = 765
+.word COMBINE(5,6,7)     ; (5+6*10+7)*100 = 7200 ; incorrect use of parentheses
+.word COMBINE 5,6,7+1    ; 5+6*10+7+1*100 = 172
+.word COMBINE 5,6,{7}+1  ; 5+6*10+7*100+1 = 766 ; {} encloses the argument
+.word COMBINE 5,6-2,7    ; 5+6-2*10+7*100 = 691
+.word COMBINE 5,(6-2),7  ; 5+(6-2)*10+7*100 = 745
+.word COMBINE 5,6,7+COMBINE 0,1,2    ; 5+6*10+7+0+1*10+2*100*100 = 20082
+.word COMBINE 5,6,{7}+COMBINE 0,1,2  ; 5+6*10+7*100+0+1*10+2*100 = 975
+With C macros it is common to enclose the results in parentheses to prevent unintended interactions with the text of the arguments, but additional care must be taken in this assembly context where parentheses may alter the meaning of a statement. In particular, indirect addressing modes may be accidentally implied:
+
+
+.define DUO(ta,tb) (ta+(tb*10))
+
+        lda DUO(5,4), Y         ; LDA (indirect), Y
+        lda 0+DUO(5,4), Y       ; LDA absolute indexed, Y
+12.8 Characters in macros
+
+---
+Additional information can be found by searching:
+- "macro_parameters_and_curly_braces" which expands on classic macro parameter behavior vs .DEFINE behavior
+- "macro_detect_parameter_types" which expands on token/list handling considerations when mixing macros

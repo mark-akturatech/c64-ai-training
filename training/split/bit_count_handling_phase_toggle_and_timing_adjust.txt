@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Process bit-count bookkeeping after a detected pulse: read the bit count ($B4), save receiver bit count ($A8), update start-bit check flag ($A9) via INC/DEC depending on branch outcomes, compute a timing adjustment into $92 (subtract max $B1 and add constant $92), toggle the bit cycle phase ($A4), and store X into $D7 for later comparison.
+
+.,F98B A5 B4    LDA $B4         get the bit count
+.,F98D F0 1D    BEQ $F9AC       if all done go ??
+.,F98F 85 A8    STA $A8         save receiver bit count in
+.,F991 D0 19    BNE $F9AC       branch always
+.,F993 E6 A9    INC $A9         increment ?? start bit check flag
+.,F995 B0 02    BCS $F999       
+.,F997 C6 A9    DEC $A9         decrement ?? start bit check flag
+.,F999 38       SEC             
+.,F99A E9 13    SBC #$13        
+.,F99C E5 B1    SBC $B1         subtract tape timing constant max byte
+.,F99E 65 92    ADC $92         add timing constant for tape
+.,F9A0 85 92    STA $92         save timing constant for tape
+.,F9A2 A5 A4    LDA $A4         get tape bit cycle phase
+.,F9A4 49 01    EOR #$01        
+.,F9A6 85 A4    STA $A4         save tape bit cycle phase
+.,F9A8 F0 2B    BEQ $F9D5       
+.,F9AA 86 D7    STX $D7         
+
+---
+Additional information can be found by searching:
+- "pulse_classification_and_store_character_calls" which expands on handles bookkeeping after a classified pulse
+- "timer_a_check_clear_phase_and_timing_setup" which expands on subsequent checks clear phase or set timing and may exit the IRQ

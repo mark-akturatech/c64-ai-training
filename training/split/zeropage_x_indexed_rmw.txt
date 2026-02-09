@@ -1,0 +1,82 @@
+# NMOS 6510 - Zero-page X indexed (R-M-W) timing: ASL/DEC/INC/ISC/LSR/ROL/ROR/RRA etc on zp,X. Shows the per-cycle sequence including dummy fetch from direct offset before the index was added, then reads/writes at DO+X, and unmodified data write-back before final write. Notes dummy fetch and unmodified write-back semantics.
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Direct Offset
+
+R
+
+3
+
+DO
+
+Absolute Address Low
+
+R
+
+4
+
+DO + 1
+
+Absolute Address High
+
+R
+
+5 (*1) < AAH, AAL + Y >
+
+Byte at target address before high byte was corrected
+
+R
+
+6
+
+AA + Y
+
+Old Data
+
+R
+
+7 (*2) AA + Y
+
+Old Data
+
+W
+
+8
+
+New Data
+
+W
+
+AA + Y
+
+Simulation Link: http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=22&d=a0d0d310eaeaeaeaeaeaeaeaeaeaeaea1280
+(*1) Dummy read from target address before high byte is incremented
+(*2) Unmodified data is written back to the target address
+Zeropage X Indexed Indirect (R-M-W)
+DCP (zp, x)
+
+ISC (zp, x)
+
+Cycle
+
+RLA (zp, x)
+
+RRA (zp, x)
+
+SLO (zp, x)
+
+---
+Additional information can be found by searching:
+- "zeropage_x_indexed_indirect_rmw_unintended" which expands on zp,X indirect R-M-W unintended variants

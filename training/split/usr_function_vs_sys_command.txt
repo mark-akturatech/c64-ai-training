@@ -1,0 +1,34 @@
+# MACHINE - USR function vs SYS command: SYS executes a fixed numeric address as subroutine; USR executes address stored in USR vector and is used as a function returning a value to BASIC. USR argument is computed into floating accumulator (shared memory $5E-$63 on PET or $61-$66 on VIC/C64) before call; result returned in floating accumulator. Beginners often avoid floating-point passing and use POKEs or integer variables.
+
+
+
+USR:  A Brother to SYS
+----------------------
+
+We have used SYS a number of times.  It means, "Go to the address supplied
+and execute machine code there as a subroutine."  USR is similar in may
+respects:  it means, "Go to a fixed address and execute machine code there as
+a subroutine."  The fixed address may be POKEd into the USR vector.  On most
+Commodore machines this is at addresses 1 and 2; on the Commodore 64, it's at
+addresses 7875 and 786 (hex 0311 and 0312).
+
+                                                                        :117:
+
+There's another difference that seems important at first.  SYS is a command;
+USR is a function.  You cannot type the command USR(0)--all you'll get is
+SYNTAX ERROR.  You must say something like PRINT USR(0) or X=USR(0), where
+USR is used as a function.  It seems as if SYS was meant to connect to action
+programs, and USR was meant to link to evaluation programs.  In reality, the
+difference in usage is not that great.
+
+Whatever value is within the parentheses--the argument of the USR function--
+is computed and placed into the floating accumulator before the USR function
+is called.  The floating accumulator is located at $5E to $63 in most PET/CBM
+computers, and at $61 to $66 in VIC-20, Commodore 64, and PLUS/4.  Floating-
+point representation is complex, as we have hinted in Chapter 6.  Most
+beginning programmers prefer to leave this area alone and pass values through
+memory POKEs or integer values.
+
+---
+Additional information can be found by searching:
+- "basic_variable_table_and_types" which expands on floating accumulator and variable formats when exchanging data

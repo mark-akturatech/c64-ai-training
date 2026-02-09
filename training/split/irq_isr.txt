@@ -1,0 +1,97 @@
+# Analyzing C64 tape loaders - Full IRQ Interrupt Service Routine (ISR) for FLAG-line (cassette read) interrupts. Saves A/Y on stack, toggles border color for debugging, reads CIA Timer A current value ($DC05), restarts Timer A for the next pulse ($DC0E), adjusts timer value by XOR/EOR and logical shifts to determine if pulse > threshold (subtracts $200 cycles), uses ROL $03 to assemble bits MSb-first, uses self-modifying branch trick to change state for pilot/sync/header/data reading, clears CIA interrupt latch ($DC0D), restores registers, and RTI. Comments explain carry usage, branch modification and pilot/sync alignment phases.
+
+; ***************************************************************
+; * ISR                                                         *
+; * Description: Interrupt Service Routine that handles FLAG    *
+; *              line interrupts                                *
+; ***************************************************************
+
+; Each interrupt is triggered by a pulse read from tape, so we need to
+; compare it's size (counted by a timer) with a Threshold value, to
+; decide if it's a Bit 0 pulse or Bit 1 pulse.
+
+0351  48             PHA            ; We'll be using A and Y registers
+0352  98             TYA            ; so we save them on the processor stack,
+0353  48             PHA            ; just as every Interrupt Service Routine does.
+
+0354  AD 20 D0       LDA $D020      ; Perform border flash among 2 colors
+0357  49 05          EOR #$05
+0359  8D 20 D0       STA $D020
+
+035C  AD 05 DC       LDA $DC05      ; Read the Timer value
+
+035F  A0 19          LDY #$19       ; CIA #1 Control Register A re-initialized
+0361  8C 0E DC       STY $DC0E      ; for the next pulse measurement:
+                                    ;  Start Timer A                (bit 0)
+                                    ;  Timer A run mode: continuous (bit 3)
+                                    ;  Force latched value to be
+                                    ;  loaded to Timer A counter    (bit 4)
+
+0364  49 02          EOR #$02       ; This piece of code subtracts $200 clock cycles
+0366  4A             LSR            ; from the Timer value. (4)
+0367  4A             LSR            ; Carry is set when pulse is bigger than Threshold
+                                    ; ie. [Latch value - $200] clock cycles.
+
+0368  26 03          ROL $03        ; Group bits with MSb First
+
+036A  A5 03          LDA $03
+036C  90 02          BCC $0370      ; IF AND ONLY IF the last bit of a byte was just
+                                    ; read, a 0 will be moved from bit 7 of $03
+                                    ; to the Carry by the "ROL $03" instruction,
+                                    ; otherwise the Carry will be set (see code
+                                    ; at $0379 to understand why).
+                                    ; Therefore Carry is set IFF a complete byte
+                                    ; is not yet available.(5)
+                                    ; If a complete byte is available, it is kept
+                                    ; by the A register.
+
+; (4) Why not to use the SBC instruction to subtract?
+;     Answer: with SBC we should invert the carry bit (that holds
+;     the borrow at the end of the instruction) to use it in the
+;     following "ROL $03" instruction.
+;     Also remember that SBC would need a CLC before it and that it
+;     affects more Processor Status register bits (N, Z, C, and V).
+
+; (5) This is a self-modified Branch which branches to different addresses during load,
+;     to properly use the available byte just read.
+;     It's a VERY common thing in IRQ loaders to use a self-modifying branch there.
+;     When we are waiting for the FIRST Pilot Byte (to align the byte-oriented loader
+;     to the bit-oriented pulse storage method), this branches to $0370.
+;     When alignment was done, we need to read in the whole pilot sequence and the
+;     Sync Byte, so that this branch branches to $0384.
+;     When Sync Byte is found, we read a single byte we don't even use, at $0399.
+;     And so on...
+
+036E  B0 0D          BCS $037D      ; Always jumps
+
+; -----------------------------------------------------------------------------------
+0370  C9 40          CMP #$40       ; Check if this byte is the FIRST Pilot Byte
+0372  D0 09          BNE $037D
+0374  A9 16          LDA #$16
+0376  8D 6D 03       STA $036D      ; Change the branch at $036C, to jump to $0384
+; -----------------------------------------------------------------------------------
+
+; This code is executed everytime we exit from the ISR (with the RTI).
+;
+
+0379  A9 FE          LDA #$FE       ; This will cause the "ROL $03" instruction to
+037B  85 03          STA $03        ; always set Carry if a whole byte was not yet
+                                    ; built in the byte buffer at $03.
+
+037D  AD 0D DC       LDA $DC0D      ; Clear Interrupt Latch.
+                                    ; This register is clear-on-read.
+
+0380  68             PLA            ; Pop the values of A and Y registers from
+0381  A8             TAY            ; the Processor stack before returning.
+0382  68             PLA
+
+0383  40             RTI
+; ***************************************************************
+; * ISR.END                                                     *
+; ***************************************************************
+
+
+---
+Additional information can be found by searching:
+- "read_pilot_train_and_sync_byte" which expands on ISR transitions into pilot/sync reading logic (self-modified branch addresses)
+- "figuring_out_threshold_value" which expands on How the ISR comparison yields the threshold value

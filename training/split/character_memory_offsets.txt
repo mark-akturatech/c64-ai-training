@@ -1,0 +1,53 @@
+# VIC-II Memory Banking and Address Configuration Guide - Character (charset) memory positions defined by $D018 bits 3-1: 8 positions spaced $0800 (2048) bytes apart. Offset = (bits 3-1) * $0800 added to the selected bank base.
+Mappings:
+%000 -> $0000
+%001 -> $0800
+%010 -> $1000
+... up to %111 -> $3800
+
+Examples:
+- In Bank 0, %010 -> $0000 + $1000 = $1000 (ROM charset shadow in banks 0/2)
+- In Bank 1, %111 -> $4000 + $3800 = $7800
+
+To change only character bits in assembly:
+  lda $D018
+  and #%11110001    ; preserve screen and unused bits
+  ora #%0000xxx0    ; set desired character offset in bits 3-1
+  sta $D018
+
+Character Memory Offsets (Bits 3-1)
+-------------------------------------
+
+There are 8 possible character set positions within a bank. Each position
+is 2048 bytes ($0800) apart. The offset is added to the bank base address.
+
+  $D018 Bits 3-1  | Offset from Bank Base
+  -----------------|------------------------------
+  %xxxx000x        | $0000  (0)
+  %xxxx001x        | $0800  (2048)
+  %xxxx010x        | $1000  (4096)
+  %xxxx011x        | $1800  (6144)
+  %xxxx100x        | $2000  (8192)
+  %xxxx101x        | $2800  (10240)
+  %xxxx110x        | $3000  (12288)
+  %xxxx111x        | $3800  (14336)
+
+Example: In Bank 0, character offset %010 points to $0000 + $1000 = $1000.
+In banks 0 and 2, this corresponds to the ROM character set shadow.
+
+Example: In Bank 1, character offset %111 points to $4000 + $3800 = $7800
+(30720).
+
+To modify only the character memory bits:
+
+    lda $D018
+    and #%11110001       ; Preserve screen and unused bits
+    ora #%0000xxx0       ; Set desired character offset value
+    sta $D018
+
+
+
+---
+Additional information can be found by searching:
+- "d018_bit_layout_and_defaults" which expands on bits 3-1 meaning
+- "rom_charset_shadows" which expands on ROM charset mapping in banks 0 and 2

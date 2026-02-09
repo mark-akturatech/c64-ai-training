@@ -1,0 +1,38 @@
+# An Introduction to Programming C-64 Demos - Example code to clear the screen: set $d020/$d021 to 0, use TAX to set X, loop storing $20 (space) into screen memory at $0400-$07FF using STA $0400,X etc., DEX/BNE loop indexing technique and wrap-around behaviour.
+
+Clearing the Screen
+Let's just take another simple example, that shows some other instructions, and actually does something useful. What we'll do is to clear the screen. That may not sound very interesting, but it's something you'll need to do at the beginning of most demo parts you write, so it's actually useful. And of course, after you have cleared the screen, you can just jump to some other routine, like eg. the one that flashes the border.
+
+Here's the code to clear the screen:
+
+
+           * = $1000
+
+           lda #$00      ; Put the value 0 in accumulator
+           sta $d020     ; Put value of acc in $d020
+           sta $d021     ; Put value of acc in $d021
+           tax           ; Put value of acc in x reg
+           lda #$20      ; Put the value $20 in acc
+clrloop:   sta $0400,x   ; Put value of acc in $0400 + value in x reg
+           sta $0500,x
+           sta $0600,x
+           sta $0700,x
+           dex            ; Decrement value in x reg
+           bne clrloop    ; If not zero, branch to clrloop
+So, how does the program above clear the screen? The comments should explain most of what goes on, but here's an overview:
+
+
+We start by setting the border and background colours to black. The value 0 means black, and, as you probably remember from the last example, $d020 and $d021 are the addresses that control the colour of the border and the main screen.
+
+Now we want to remove all the characters from screen memory. Screen memory is by default located at $0400, and is $400 bytes long4, so we need a loop to clear it all. We clear it by setting every character position to $20, which is the character code for the space character.
+
+Note how cleverly we handle the loop index, in the X register. We start by setting it to 0. Then we decrement for each iteration and then compare it so 0. The first time we decrement it, it will wrap around to $ff, and then it will go all the way down to 0 again.
+If there's anything about this test program that you don't understand, look up the instructions and the various addressing modes in your 6502 assembler reference.
+
+Note that this program won't behave very well if you just type it in and run it, because it doesn't really end. After the loop has finished, it will just happily get whatever is at the address after the loop and try to execute it as an instruction. That will probably not work very well, and something weird will happen. You will have to figure out yourself how to make it behave. One idea is to end this program by appending the border flashing code from the previous example.
+
+
+---
+Additional information can be found by searching:
+- "screen_and_colour_ram" which expands on screen memory at $0400 and length
+- "using_an_assembler" which expands on Turbo Assembler syntax used in examples

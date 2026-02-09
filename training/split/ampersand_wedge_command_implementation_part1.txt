@@ -1,0 +1,51 @@
+# MACHINE - Implementation of a wedge command for VIC and C64: use $0308 vector to intercept commands. Code example starts at $033C: LDY #$01; LDA ($7A),Y to peek next char via TXTPTR; CMP #$26 (ampersand) and branch. If not ampersand, JMP via indirect vector to regular BASIC. If ampersand, call CHRGET to move pointer and then prepare to print ten asterisks using CHROUT ($FFD2) in a loop and then print carriage return ($0D), then JMP back to BASIC interpreter.
+
+As with our interrupt program, we'll copy the old address from $0308/$0309
+into an indirect address location, so that we can link up with the normal
+computer routines as necessary.
+
+An important point:  the vector will give us control, if we want it, with
+TXTPTR positioned immediately before the next instruction.  When we return
+control to BASIC, we must be sure that TXTPTR is similarly positioned.
+
+Here's our instruction "intercept":
+
+  .A 033C  LDY #$01
+
+We're going to use indirect, indexed addressing to "look ahead" at the
+instruction.  Let's look, using TXTPTR as an indirect address:
+
+  .A 033E  LDA ($7A),Y
+
+Since Y equals one, we'll look just beyond the address to which TXTPTR is
+pointing:
+
+  .A 0340  CMP #$26
+  .A 0342  BEQ $0347
+  .A 0344  JMP ($03A0)
+
+If the character is an ampersand, we'll branch ahead to $0347.  If not, we'll
+connect through the indirect vector to the regular BASIC interpreter code:
+
+  .A 0347  JSR $0073
+
+We may call CHRGET to move the pointer along.  Now TXTPTR points squarely at
+the ampersand character.  We are ready to print ten asterisks:
+
+                                                                        :126:
+
+  .A 034A  LDY #$00
+  .A 034C  LDA #$2A
+  .A 034E  JSR $FFD2
+  .A 0351  INY
+  .A 0352  CPY #$0A
+  .A 0354  BCC $034E
+  .A 0356  LDA #$0D
+  .A 0358  JSR $FFD2
+  .A 035B  JMP $0344
+
+
+---
+Additional information can be found by searching:
+- "ampersand_wedge_command_installation" which expands on Code to install wedge vector and enable via SYS
+- "kernal_chrout_and_charget" which expands on Use of $FFD2 (CHROUT) and $0073 (CHRGET) in wedge

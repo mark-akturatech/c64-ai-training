@@ -1,0 +1,60 @@
+# COMMODORE 64 - EXAMPLE PROGRAM 1: Single-voice BASIC demonstration. Code (lines 5–100) sets S=54272, clears SID registers, sets Attack/Decay and Sustain/Release, sets volume (register 24), reads DATA triplets (hf,lf,dr) to play notes. Includes line-by-line summary describing clearing chip (forl=stos+24 POKEl,0), setting ADSR and volume, writing frequency high and low bytes to registers, gating waveform (POKE S+4), timing loop for duration and release. DATA lines included for song notes.
+
+  EXAMPLE PROGRAM 1:
+start tok64 page185.prg
+  5 s=54272
+  10 forl=stos+24:pokel,0:next:rem clear sound chip
+  20 pokes+5,9:pokes+6,0
+  30 pokes+24,15              :rem set volume to maximum
+  40 readhf,lf,dr
+  50 ifhf<0thenend
+  60 pokes+1,hf:pokes,lf
+  70 pokes+4,33
+  80 fort=1todr:next
+  90 pokes+4,32:fort=1to50:next
+  100 goto40
+  110 data25,177,250,28,214,250
+  120 data25,177,250,25,177,250
+  130 data25,177,125,28,214,125
+  140 data32,94,750,25,177,250
+  150 data28,214,250,19,63,250
+  160 data19,63,250,19,63,250
+  170 data21,154,63,24,63,63
+  180 data25,177,250,24,63,125
+  190 data19,63,250,-1,-1,-1
+stop tok64
+
+    Here's a line-by-line description of the program you've just typed in.
+  Refer to it whenever you feel the need to investigate parts of the pro-
+  gram that you don't understand completely.
+
+                                          PROGRAMMING SOUND AND MUSIC   185
+~
+
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 1:
+
+  +--------+--------------------------------------------------------------+
+  | Line(s)|                         Description                          |
+  +--------+--------------------------------------------------------------+
+  | 5      | Set S to start of sound chip.                                |
+  | 10     | Clear all sound chip registers.                              |
+  | 20     | Set Attack/Decay for voice 1 (A=O,D=9).                      |
+  |        | Set Sustain/Release for voice 1 (S=O,R=O),                   |
+  | 30     | Set volume at maximum.                                       |
+  | 40     | Read high frequency, low frequency, duration of note.        |
+  | 50     | When high frequency less than zero, song is over.            |
+  | 60     | Poke high and low frequency of voice 1.                      |
+  | 70     | Gate sawtooth waveform for voice 1.                          |
+  | 80     | Timing loop for duration of note.                            |
+  | 90     | Release sawtooth waveform for voice 1.                       |
+  | 100    | Return for next note.                                        |
+  | 110-180| Data for song: high frequency, low frequency, duration       |
+  |        | (number of counts) for each note.                            |
+  | 190    | Last note of song and negative Is signaling end of song.     |
+  +--------+--------------------------------------------------------------+
+
+---
+Additional information can be found by searching:
+- "volume_and_frequencies" which expands on how frequency registers map to pitch and the Fn formula
+- "adsr_registers_and_examples" which expands on how registers 5 and 6 control ADSR

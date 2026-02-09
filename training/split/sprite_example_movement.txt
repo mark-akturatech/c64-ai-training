@@ -1,0 +1,67 @@
+# An Introduction to Programming C-64 Demos - Full example of moving sprite 0: enabling sprite via $D015, setting colour via $D027, coordinates via $D000/$D001, pointer $07F8 to $80 (sprite data at $2000). Main loop polls $D012 for raster line $FF before updating coordinates and direction logic, demonstrates jerky movement problem caused by timer interrupts.
+
+Sprite Example
+Here's an example that moves a sprite around on the screen:
+
+
+           * = $0801
+
+           lda #$01
+           sta $d015    ; Turn sprite 0 on
+           sta $d027    ; Make it white
+           lda #$40
+           sta $d000    ; set x coordinate to 40
+           sta $d001    ; set y coordinate to 40
+           lda #$80
+           sta $07f8    ; set pointer: sprite data at $2000
+
+mainloop
+           lda $d012
+           cmp #$ff     ; raster beam at line $ff?
+           bne mainloop ; no: go to mainloop
+
+           lda dir      ; in which direction are we moving?
+           beq down     ; if 0, down
+
+                        ; moving up
+           ldx coord    ; get coord
+           dex          ; decrement it
+           stx coord    ; store it
+           stx $d000    ; set sprite coords
+           stx $d001
+           cpx #$40     ; if it's not equal to $40...
+           bne mainloop ; just go back to the mainloop
+
+           lda #$00     ; otherwise, change direction
+           sta dir
+           jmp mainloop
+
+down
+           ldx coord    ; this should be familiar
+           inx
+           stx coord
+           stx $d000
+           stx $d001
+           cpx #$e0
+           bne mainloop
+
+           lda #$01
+           sta dir
+           jmp mainloop
+
+coord
+           .byte $40   ; current x and y coordinate
+dir
+           .byte 0     ; direction: 0 = down-right, 1 = up-left
+That's a bit more code than in the previous examples, but it shouldn't be hard to understand. Just read the code and comments and you should be able to understand it.
+
+If you type in and run the example program (you should), you'll notice that the movement isn't very smooth. It's not like anyone would accept a jerky movement like that in a real demo, so you'll have to fix it. The question to ask is why it's moving so jerky. The thing is that we haven't turned off timer interrupts. This means that sometimes we'll be in the kernal interrupt handler while we're passing raster line $ff, which means we'll miss it, and the sprite movement won't be updated until the next frame. You'll learn more about interrupts later.
+
+A good exercise, to get your hands dirty with some more interesting sprite programming, would be to display several sprites at once, and make them move according to a sine table. With the help of your friend $d012, you should also be able to make a multiplexer, if you're really ambitious. You've got all the tools, now all you have to do is to think it up and express it in code.
+
+
+
+---
+Additional information can be found by searching:
+- "d012_raster_register" which expands on polling $d012 for frame sync
+- "interrupts_overview" which expands on timer/CIA interrupts can cause jerky movement

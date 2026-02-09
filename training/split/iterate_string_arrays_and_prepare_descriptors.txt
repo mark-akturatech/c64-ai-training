@@ -1,0 +1,55 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Iterates string arrays and prepares per-array descriptors: saves start-of-arrays ($58/$59) as a working pointer, sets descriptor step size to 3 ($53) for array descriptors, loops through arrays comparing pointer to array-end ($32/$31), advances to the next array by adding array-size to the pointer (updating $58/$59), inspects array header bytes (name, flags, size, #dimensions), computes the descriptor start for the array elements (ASL*2 + 5), adjusts for carry into high byte, checks whether the array contains strings and, for each element descriptor, calls the salvageability check (JSR $B5C7) before moving to the next element.
+
+                                done string variables, now do string arrays
+.,B566 85 58    STA $58         save start of arrays low byte as working pointer
+.,B568 86 59    STX $59         save start of arrays high byte as working pointer
+.,B56A A9 03    LDA #$03        set step size, collecting descriptors
+.,B56C 85 53    STA $53         save step size
+.,B56E A5 58    LDA $58         get pointer low byte
+.,B570 A6 59    LDX $59         get pointer high byte
+.,B572 E4 32    CPX $32         compare with end of arrays high byte
+.,B574 D0 07    BNE $B57D       branch if not at end
+.,B576 C5 31    CMP $31         else compare with end of arrays low byte
+.,B578 D0 03    BNE $B57D       branch if not at end
+.,B57A 4C 06 B6 JMP $B606       collect string, tidy up and exit if at end ??
+.,B57D 85 22    STA $22         save pointer low byte
+.,B57F 86 23    STX $23         save pointer high byte
+.,B581 A0 00    LDY #$00        set index
+.,B583 B1 22    LDA ($22),Y     get array name first byte
+.,B585 AA       TAX             copy it
+.,B586 C8       INY             increment index
+.,B587 B1 22    LDA ($22),Y     get array name second byte
+.,B589 08       PHP             push the flags
+.,B58A C8       INY             increment index
+.,B58B B1 22    LDA ($22),Y     get array size low byte
+.,B58D 65 58    ADC $58         add start of this array low byte
+.,B58F 85 58    STA $58         save start of next array low byte
+.,B591 C8       INY             increment index
+.,B592 B1 22    LDA ($22),Y     get array size high byte
+.,B594 65 59    ADC $59         add start of this array high byte
+.,B596 85 59    STA $59         save start of next array high byte
+.,B598 28       PLP             restore the flags
+.,B599 10 D3    BPL $B56E       skip if not string array
+                                was possibly string array so ...
+.,B59B 8A       TXA             get name first byte back
+.,B59C 30 D0    BMI $B56E       skip if not string array
+.,B59E C8       INY             increment index
+.,B59F B1 22    LDA ($22),Y     get # of dimensions
+.,B5A1 A0 00    LDY #$00        clear index
+.,B5A3 0A       ASL             *2
+.,B5A4 69 05    ADC #$05        +5 (array header size)
+.,B5A6 65 22    ADC $22         add pointer low byte
+.,B5A8 85 22    STA $22         save pointer low byte
+.,B5AA 90 02    BCC $B5AE       branch if no rollover
+.,B5AC E6 23    INC $23         else increment pointer hgih byte
+.,B5AE A6 23    LDX $23         get pointer high byte
+.,B5B0 E4 59    CPX $59         compare pointer high byte with end of this array high byte
+.,B5B2 D0 04    BNE $B5B8       branch if not there yet
+.,B5B4 C5 58    CMP $58         compare pointer low byte with end of this array low byte
+.,B5B6 F0 BA    BEQ $B572       if at end of this array go check next array
+
+---
+Additional information can be found by searching:
+- "collect_string_variables_setup_and_loop" which expands on follows variable collection
+- "check_string_salvageability_for_variables_and_update_pointers" which expands on calls the salvageability routine for each element
+- "collect_string_and_compact_memory" which expands on if an element needs collecting, control transfers to the collect routine

@@ -1,0 +1,49 @@
+# MACHINE - Absolute, indexed addressing (absolute,X and absolute,Y) adds index register X or Y to a full absolute address, giving access to a 256-byte range starting at base address. Indexing always increases the address; wrap-around only occurs if address crosses page boundary.
+
+                                                                         :77:
+
+A Range of 256 Addresses:  Absolute, Indexed Mode
+-------------------------------------------------
+
+Indexing has already been used in Chapter 2.  We give an absolute address,
+and then indicate that the contents of X or Y should be added to this address
+to give an effective address.
+
+
+  +----------------------------------------------------------------------+
+  |                                 MEMORY                               |
+  +----------------------------------------------------------------------+
+                  ^        ^
+                  |        |
+                  +--------'
+                  |      INDEX
+                BASE     VALUE
+               ADDRESS
+
+  Figure 5.3
+
+
+Indexing is used only for data handling:  it's available for such activities
+as load and store, but not for branch or jump.  Many instructions give you a
+choice of X or Y as an index register; a few are limited specifically to X or
+Y.  Instructions that compare or store X and Y (CPX, CPY, STX, and STY) do
+not have absolute, indexed addressing; neither does the BIT instruction.
+
+An instruction using absolute, indexed addressing can reach up to 256
+locations.  Registers X and Y may hold values from 0 to 255, so that the
+effective address may range from the address given to 255 locations higher.
+Indexing always increases the address; there is no such thing as a negative
+index when used with an absolute address.  If the address given is above
+$FF00, a high value in the index may cause the address to "wrap around" and
+generate an effective address in the region of $0000; otherwise, the
+effective address is never lower than the instruction address.
+
+We've seen the use of indexing.  An instruction can reference a certain
+address, then, as the program loops or as the need for information changes,
+the same instruction can reference the contents of a different address.  The
+maximum range of 256 locations is an important limitation.
+
+
+---
+Additional information can be found by searching:
+- "zero_page_indexed_addressing" which expands on contrast with zero-page indexed which wraps within page 0

@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Places the cursor at the start of the next logical screen line. Handles linked (double) logical lines by advancing two physical lines when necessary. Uses LXSP ($C9) and TBLX ($D6) pointers, tests for bottom-of-screen and calls the scroll routine when needed. Ends by storing updated TBLX and jumping to set screen pointers.
+
+                                *** GO TO NEXT LINE
+                                The cursor is placed at the start of the next logical
+                                screen line. This involves moving down two lines for a
+                                linked line. If this places the cursor below the bottom of
+                                the screen, then the screen is scrolled.
+.,E87C 46 C9    LSR $C9         LXSP, cursor X-Y position
+.,E87E A6 D6    LDX $D6         TBLX, current line number
+.,E880 E8       INX             next line
+.,E881 E0 19    CPX #$19        26th line
+.,E883 D0 03    BNE $E888       nope, scroll is not needed
+.,E885 20 EA E8 JSR $E8EA       scroll down
+.,E888 B5 D9    LDA $D9,X       test LTDB1, screen line link table if first of two
+.,E88A 10 F4    BPL $E880       yes, jump down another line
+.,E88C 86 D6    STX $D6         store in TBLX
+.,E88E 4C 6C E5 JMP $E56C       set screen pointers
+
+
+---
+Additional information can be found by searching:
+- "scroll_screen" which expands on called when cursor moves past bottom of screen (scroll down)
+- "set_start_of_line" which expands on sets screen pointers after moving to the next line
+- "output_carriage_return" which expands on used by carriage return to position cursor

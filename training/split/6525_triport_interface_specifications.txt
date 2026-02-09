@@ -1,0 +1,134 @@
+# MACHINE - 6525 Tri-Port Interface chip specifications: three 8-bit parallel ports with active interrupt inputs and priority logic
+
+
+
+Concept
+-------
+
+The 6525 Tri-Port Interface (TPI) is designed to simplify the implementation
+of complex I/O operations in microcomputer systems.  It combines two
+dedicated 8-bit I/O ports with a third 8-bit port programmable for either
+normal I/O operations or priority interrupt/handshaking control.  Depending
+on the mode selected, the 6525 can provide 24 individually programmable I/O
+lines or 16 I/O lines, 2 handshake lines and 5 priority interrupt inputs.
+
+
+Register Map
+------------
+
+  +---+---+---+---+----+---------------------------------------------------+
+  |RS2|RS1|RS0|REG|NAME| DESCRIPTION                                       |
+  +---+---+---+---+----+---------------------------------------------------+
+  | 0 | 0 | 0 |R0 |PRA | Port Register A                                   |
+  | 0 | 0 | 1 |R1 |PRB | Port Register B                                   |
+  | 0 | 1 | 0 |R2 |PRC | Port Register C                                   |
+  | 0 | 1 | 1 |R3 |DDRA| Data Direction Register A                         |
+  | 1 | 0 | 0 |R4 |DDRB| Data Direction Register B                         |
+  | 1 | 0 | 1 |R5 |DDRC| Data Direction Register C/Interrupt Mask Register |
+  | 1 | 1 | 0 |R6 |CR  | Control Register                                  |
+  | 1 | 1 | 1 |R7 |AIR | Active Interrupt Register                         |
+  +---+---+---+---+----+---------------------------------------------------+
+                                                                          
+
+                            6525 Control Registers
+
+                       +-----+-----+-----+-----+-----+-----+-----+-----+
+      CR               | CB1 | CB0 | CA1 | CA0 | IE4 | IE3 | IP  | MC  |
+                       +-----+-----+-----+-----+-----+-----+-----+-----+
+      AIR                                | A4  | A3  | A2  | A1  | A0  |
+                                         +-----+-----+-----+-----+-----+
+      DDRC (When MC=1)                   | M4  | M3  | M2  | M1  | M0  |
+                       +-----+-----+-----+-----+-----+-----+-----+-----+
+      PRC (When MC=1)  | CB  | CA  |/IRQ | I4  | I3  | I2  | I1  | I0  |
+                       +-----+-----+-----+-----+-----+-----+-----+-----+
+
+
+
+CA, CB Functional Description
+-----------------------------
+
+The CA, CB lines are outputs used in the same fashion as the CA2 and CB2
+output of the 6520.
+
+                                                                        :305:
+
+                              CA Output Modes
+
+CA1 CA0      MODE       DESCRIPTION
+----------------------------------------------------------------------------
+ 0   0    "Handshake"   CA is set high on an active transition of the I3
+            on Read     interrupt signal and set low by a microprocessor
+                        "Read A Data" operation.  This allows positive
+                        control of data transfers from the peripheral device
+                        to the microprocessor.
+
+ 0   1   Pulse Output   CA goes low for 1ms after a "Read A Data" operation.
+                        This pulse can be used to signal the peripheral
+                        device that data was taken.
+
+ 1   0   Manual Output  CA set low.
+
+ 1   1   Manual Output  CA set high.
+
+
+                              CB Output Modes
+
+CB1 CB0      MODE       DESCRIPTION
+----------------------------------------------------------------------------
+ 0   0    "Handshake"   CB is set low on microprocessor "Write B Data"
+           on Write     operation and is set high by an active transition of
+                        the I4 interrupt input signal.  This allows positive
+                        control of data transfers from the microprocessor to
+                        the peripheral device.
+
+ 0   1   Pulse Output   CB goes low for 1ms after a microprocessor "Write B
+                        Data" operation.  This can be used to signal the
+                        peripheral device that data is available.
+
+ 1   0   Manual Output  CB set low.
+
+ 1   1   Manual Output  CB set high.
+
+
+
+Interrupt Mask Register Description
+-----------------------------------
+
+When the Interrupt Mode is selected (MC = 1), the Data Direction Register for
+Port C (DDRC) is used to enable or disable a corresponding interrupt input.
+For example:  If M0=0 then I0 is disabled and any I0 interrupt latched in the
+interrupt latch register will not be transferred to the AIR and will not
+cause IRQ to go low.  The interrupt latch can be cleared by writing a zero to
+the appropriate I bit in PRC.
+
+                                                                        :306:
+
+Port Register C Description
+---------------------------
+
+Port Register C (PRC) can operate in two modes.  The mode is controlled by
+bit MC in register CR.  When MC=0, PRC is a standard I/O port, operating
+identically to PRA & PRB.  If MC=1, then port register C is used for
+handshaking and priority interrupt input and output.
+
+
+                               PRC When MC = 0
+
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+              | PC7 | PC6 | PC5 | PC4 | PC3 | PC2 | PC1 | PC0 |
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+
+
+                               PRC When MC = 1
+
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+              | CB  | CA  |/IRQ | I4  | I3  | I2  | I1  | I0  |
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+
+
+Interrupt Edge Control
+----------------------
+
+Bits IE4 and IE3 in the control register (CR) are used to determine the
+active edge which will be recognized by the interrupt latch.
+

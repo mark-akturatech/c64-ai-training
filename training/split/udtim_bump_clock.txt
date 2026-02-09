@@ -1,0 +1,30 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - UDTIM: Increment jiffy clock ($A0/$A1/$A2). Increments low byte, cascades carry through mid/high bytes. If clock reaches $4F1A01 (5184001 jiffies = 24 hours) it resets to zero. Uses SEC/SBC to subtract constant and BCC to decide reset. Finally calls LOG CIA KEY READING routine.
+
+                                *** UDTIM: BUMP CLOCK
+                                The KERNAL routine UDTIM ($ffea) jumps to this routine.
+                                The three byte jiffy clock in RAM is incremented. If it
+                                has reached $4f1a01, then it is reset to zero. this number
+                                represents 5184001 jiffies (each jiffy is 1/60 sec) or 24
+                                hours. finally, the next routine is used to log the CIA
+                                key reading.
+.,F69B A2 00    LDX #$00
+.,F69D E6 A2    INC $A2         low byte of jiffy clock
+.,F69F D0 06    BNE $F6A7
+.,F6A1 E6 A1    INC $A1         mid byte of jiffy clock
+.,F6A3 D0 02    BNE $F6A7
+.,F6A5 E6 A0    INC $A0         high byte of jiffy clock
+.,F6A7 38       SEC
+.,F6A8 A5 A2    LDA $A2         subtract $4f1a01
+.,F6AA E9 01    SBC #$01
+.,F6AC A5 A1    LDA $A1
+.,F6AE E9 1A    SBC #$1A
+.,F6B0 A5 A0    LDA $A0
+.,F6B2 E9 4F    SBC #$4F
+.,F6B4 90 06    BCC $F6BC       and test carry if 24 hours
+.,F6B6 86 A0    STX $A0         yepp, reset jiffy clock
+.,F6B8 86 A1    STX $A1
+.,F6BA 86 A2    STX $A2
+
+---
+Additional information can be found by searching:
+- "log_cia_key_reading" which expands on called after bumping the jiffy clock to log key presses

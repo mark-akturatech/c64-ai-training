@@ -1,0 +1,53 @@
+# COMMODORE 64 - Vertical (Y) positioning: 200 visible dot positions (0..199) exist. Sprite Y registers can hold 0..255 to allow smooth on/off-screen movement. First on-screen Y for unexpanded sprite is 30 (for expanded it is 9). Sprite is fully on-screen (all 21 lines) starting at Y=50; last fully-on for unexpanded is 229; expanded last fully-on is 208. Fully off occurs at Y=250. Includes simple BASIC example showing enabling sprite, setting pointer, sprite data and X/Y positions.
+
+    The position of a sprite is calculated from the TOP LEFT corner of the
+  24 dot by 21 dot area that your sprite can be designed in. It does NOT
+  matter how many or how few dots you use to make up a sprite. Even if only
+  one dot is used as a sprite, and you happen to want it in the middle of
+  the screen, you must still calculate the exact positioning by starting at
+  the top left corner location.
+
+  VERTICAL POSITIONING
+
+    Setting up positions in the horizontal direction is a little more
+  difficult than vertical positioning, so we'll discuss vertical (Y)
+  positioning first.
+
+  138   PROGRAMMING GRAPHICS
+~
+
+
+    There are 200 different dot positions that can be individually pro-
+  grammed onto your TV screen in the Y direction. The sprite Y position
+  registers can handle numbers up to 255. This means that you have more
+  than enough register locations to handle moving a sprite up and down. You
+  also want to be able to smoothly move a sprite on and off the screen.
+  More than 200 values are needed for this.
+    The first on-screen value from the top of the screen, and in the Y
+  direction for an unexpanded sprite is 30. For a sprite expanded in the Y
+  direction it would be 9. (Since each dot is twice as tall, this makes a
+  certain amount of sense, as the initial position is STILL calculated from
+  the top left corner of the sprite.)
+    The first Y value in which a sprite (expanded or not) is fully on the
+  screen (all 21 possible lines displayed) is 50.
+    The last Y value in which an unexpanded sprite is fully on the screen
+  is 229. The last Y value in which an expanded sprite is fully on the
+  screen is 208.
+    The first Y value in which a sprite is fully off the screen is 250.
+
+  EXAMPLE:
+
+start tok64 page139.prg
+  10 print"{clear}"                :rem clear screen
+  20 poke 2040,13                  :rem get sprite 0 data from block 13
+  30 fori=0to62:poke832+i,129:next :rem poke sprite data into block 13
+  40 v=53248                       :rem set beginning of video chip
+  50 pokev+21,1                    :rem enable sprite 0
+  60 pokev+39,1                    :rem set sprite 0 color
+  70 pokev+1,100                   :rem set sprite 0 y position
+  80 pokev+16,0:pokev,100          :rem set sprite 0 x position
+stop tok64
+
+---
+Additional information can be found by searching:
+- "sprite_position_registers_and_addresses" which expands on register addresses for sprite X/Y

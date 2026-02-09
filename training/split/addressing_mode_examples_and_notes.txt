@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Examples and expanded notes for each address mode: immediate mode examples (LDA #$07 etc.), absolute addressing (3-byte little-endian format), zero-page benefits (faster, smaller), indexed addressing details for absolute,X/Y (page crossing penalty) and zero-page,X/Y (wraparound, no penalty), pre-indexed indirect (LDA (zeropage,X)) and post-indexed indirect (LDA (zeropage),Y) examples and timing, and relative addressing exceptions (branch range -128..+127 and cycle costs on taken branches and page crossing).
+
+           Like the absolute JMP instruction it uses a 16-bit address (3 bytes
+           in total), but takes two additional CPU cycles to execute, since
+           there are two additional bytes to fetch for the lookup of the
+           effective jump target.
+           Generally, indirect addressing is denoted by putting the lookup
+           address in parenthesis.
+            Mnemonic      Instruction          Lookup
+            JMP ($FF82)    6C 82 FF     $FF82: C4 80
+                                           PC: $80C4 (Effective Targe
+           Mnemonic Example:
+           JMP ($FF82) ... jump to address given in locations "$FF82" and "$FF83"
+           Note: On the original NMOS 6502, the high-byte of the lookup address
+           is not incremented at page boundaries. Meaning, if the low-byte of
+           the lookup address is $FF, the high-byte will be fetched from $00 at
+           the same page. (E.g., "JMP ($11FF)" will effectively resolve to a
+           lookup at $1199 for the low-byte and $1100 for the high-byte, while
+           we should expect $1200 being used for the latter.)
+           This is corrected on the CMOS version of the CPU, where this behaves
+           as expected, but the processor will take an extra cycle to so.
+           Pre-Indexed Indirect, "(Zero-Page,X)"
+           Indexed indirect address modes are generally available only for
+           instructions supplying an operand to the accumulator (LDA, STA, ADC,
+           SBC, AND, ORA, EOR, etc). The placement of the index register inside
+           or outside of the parenthesis indicating the address lookup will
+           give you clue what these instructions are doing.
+           Pre-indexed indirect address mode is only available in combination
+           with the X-register. It works much like the "zero-page,X" mode, but,
+           after the X-register has been added to the base address, instead of
+           directly accessing this, an additional lookup is performed, reading
+                                                                       6502 Instruction Set
+           the contents of resulting address and the next one (in LLHH little-
+           endian order), in order to determine the effective address.
+           Like with "zero-page,X" mode, the total instruction length is 2
+           bytes, but there are two additional CPU cycles in order to fetch the
+           effective 16-bit address. As "zero-page,X" mode, a lookup address
+           will never overflow into the next page, but will simply wrap around
+           in the zero-page.
+           These instructions are useful, whenever we want to loop over a table
+           of pointers to disperse addresses, or where we want to apply the
+           same operation to various addresses, which we have stored as a table
+           in the zero-page.
+            Mnemonic    Instruction           Lookup        Data
+            LDA ($70,X)   A1 70
+                                 + = $0075: 23 30     $3023: A5
+                          X: 05
+                                                         A: A5
+           Mnemonic Examples:
+           LDA ($70,X) ... load the contents of the location given in addresses
+                           "$0070+X" and "$0070+1+X" into A
+           STA ($A2,X) ... store the contents of A in the location given in
+                           addresses "$00A2+X" and "$00A3+X"
+           EOR ($BA,X) ... perform an exlusive OR of the contents of A and the contents
+                           of the location given in addresses "$00BA+X" and "$00BB+X"
+           Post-Indexed Indirect, "(Zero-Page),Y"
+           Post-indexed indirect addressing is only available in combination
+           with the Y-register. As indicated by the indexing term ",Y" being
+           appended to the outside of the parenthesis indicating the indirect
+           lookup, here, a pointer is first read (from the given zero-page
+           address) and resolved and only then the contents of the Y-register
+           is added to this to give the effective address.
+
+---
+Additional information can be found by searching:
+- "6502_address_modes_in_detail" which expands on mode summaries and NMOS quirks
+- "branch_addressing_modes" which expands on relative branch cycle penalties

@@ -1,0 +1,32 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Practical tricks to implement the square-table multiplication: store x^2/4 to save one byte per entry (2 bytes instead of 3) since both (a+b)^2 and (a-b)^2 lose same low bits so subtraction cancels; store both (a+b)^2/4 and (a-b)^2/4 tables (total ~2048 bytes); offset (a-b)^2/4 table by one so -A-1 indexing with EOR #$FF works without adding 1; page-align tables for streamlined (indirect,Y) indexing. These tricks minimize memory and speed costs.
+
+Thus we can do a multiplication with an addition, two subtractions,
+a couple of right shifts, and a couple of lookups in a table of squares.
+And if we're clever about the coding, we can make most of that work
+trivial - Here are the tricks to make it work:
+
+
+  * Instead of storing a table of x^2, the table will
+    store x^2/4.  This means each table entry needs only two
+    bytes intstead of three.  The two low-order bits of each entry are
+    lost, but that's OK, since (a+b)^2 and
+    (a-b)^2 are guaranteed to lose exactly the same
+    bits, so the subtraction cancels the lost bits.
+
+  * We'll actually store the table twice, once to look up
+    (a+b)^2/4, and once to look up (a-b)^2/4.
+    The total memory cost is 2048 bytes (2K).
+
+  * The (a-b)^2/4 table is offset by one.  This is so we
+    can store b in the accumulator, and negate it with
+    EOR #$FF without having to add 1.
+
+  * The tables are page-aligned.  This greatly streamlines the
+    indexing.
+
+
+
+---
+Additional information can be found by searching:
+- "algebraic_square_trick" which expands on the identity used
+- "pointer_setup_for_square_tables" which expands on how to supply pointers in page zero

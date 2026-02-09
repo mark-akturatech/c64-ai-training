@@ -1,0 +1,46 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Explanation of X coordinates in VIC: VIC has no readable X register, but LPX ($D013) latches current X on negative LP edge. Absolute X positions measured by wiring IRQ to LP and using raster interrupts as line start reference; display and memory accesses are separate units (display delayed ~12 pixels), so measured X coordinates refer to display and access timing correlation. Assumes LPX values match sprite X coordinates.
+
+3.6.1. The X coordinates
+------------------------
+
+Before explaining the timing of memory accesses within a raster line, we
+will quickly explain how to obtain the X coordinates. This is necessary
+because the VIC doesn't have a counterpart to the RASTER register (which
+gives the current Y coordinate) to hold the X coordinates, so you cannot
+simply read them with the processor. But the VIC surely keeps track of the
+X coordinates internally as the horizontal sprite positions are based on
+them, and a pulse at the lightpen input LP latches the current X position
+in the register LPX ($d013).
+
+Determining the absolute X coordinates of events within a raster line is
+not trivial as you cannot e.g. simply put a sprite to a well-defined X
+coordinate and conclude from the text characters displayed at the same X
+position to the X coordinates of the memory accesses belonging to these
+characters. The memory access and the display are separate function units
+and the read graphics data is not immediately displayed on the screen
+(there is a delay of 12 pixels).
+
+So a different approach has been taken: The absolute position of a single X
+coordinate within the raster line was measured with the LPX register and
+the other X coordinates were determined relative to this. To do that, the
+IRQ output of the VIC has been connected to the LP input and the VIC has
+been programmed for a raster line interrupt. As the negative edge of IRQ
+was defined to be the start of a raster line, the absolute X position of
+the line start could be determined. The position of the negative edge of BA
+during a Bad Line was also measured with this method and the result was
+consistent with the relative distance of IRQ and BA to each other. Based on
+these two measurements, the X coordinates of all other events within a
+raster line have been determined (see [4]). Not until now the sprite X
+coordinates were used to be able to determine the moment of the display
+generation of the text characters.
+
+This of course implicitly assumes that the LPX coordinates are the same as
+the sprite X coordinates. There is, however, no indication and thus no
+reason to suppose that they don't (a direct correlation would also be the
+most simple solution in terms of circuit design).
+
+
+---
+Additional information can be found by searching:
+- "lightpen" which expands on LPX/LPY registers and usage to measure X positions
+- "timing_of_raster_line" which expands on detailed per-cycle X coordinate timings and where BA/AEC/IRQ occur

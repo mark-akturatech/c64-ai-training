@@ -1,0 +1,55 @@
+# NMOS 6510 - TAS examples: when used with addresses where (H+1) is $FF, TAS reduces to SAX (store A & X) and also sets SP=A&X. Demonstrates how to use TAS to get A&X value into SP for repeated use and suggests saving/restoring SP when appropriate. Test code references for TAS instabilities and page-boundary behaviors.
+
+notable that this behaviour can not be reproduced in visual6502, which hints on it
+being some analogue side effect that the simulation does not cover. This also contributes
+to the instabilities.
+
+- 60 -
+
+ANE (XAA, AXM)
+
+Type: Combination of an immediate and an implied command
+Opc.
+$8B
+
+Mnemonic
+ANE #imm
+
+Function
+
+Size
+
+A = (A | {CONST}) & X & #{imm}
+
+2
+
+Cycles N V - B D I Z C
+2
+
+o
+
+o
+
+Operation: This opcode ORs the A register with CONST, ANDs the result with X. ANDs the result
+with an immediate value, and then stores the result in A.
+Instability: CONST is chip- and/or temperature dependent (common values may be $ee, $00, $ff
+…). Some dependency on the RDY line. Bit 0 and Bit 4 are “weaker” than the other bits, and may
+drop to 0 in the first cycle of DMA when RDY goes low.
+Do not use ANE with any immediate value other than 0, or when the accumulator value is $ff
+(both take the magic constant out of the equation)! (Or, more accurately, these are safe if all bits
+that could be 0 in A are 0 in either the immediate value or X or both.)
+Example:
+ANE #{IMM}
+
+;8B {IMM}
+
+Equivalent Instructions:
+ORA #{CONST}
+AND #{IMM}
+STX $02
+
+; hack because there is no 'AND WITH X'
+
+---
+Additional information can be found by searching:
+- "tas_opcode" which expands on TAS semantics and instability details

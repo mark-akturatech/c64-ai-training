@@ -1,0 +1,52 @@
+# MACHINE - Zero-page addressing targets addresses $0000-$00FF using a single byte operand (e.g., LDA $90) which is smaller and faster. Zero page is heavily used for system variables and special addressing modes; it's a limited resource often conserved.
+
+
+
+Zero-Page Mode
+--------------
+
+A hexadecimal address such as $0381 is sixteen bits long and takes up two
+bytes of memory.  We call the high byte (in this case, $03), the "memory
+page" of the address.  We might say (but usually don't) that this address is
+in page 3 at position $81.
+
+
+   $00     $FF $100
+  +-----------+----------------------------------------------------------+
+  |           |                     MEMORY                               |
+  +-----------+----------------------------------------------------------+
+          ^
+          |
+
+  Figure 5.2  Zero-Page Mode Specifies A Single Address from $00 to $FF.
+
+
+Addresses such as $004C and $00F7 are in page zero; in fact, page zero
+consists of all addresses from $0000 to $00FF.  Page-zero locations are very
+popular and quite busy.  There's an address mode specifically designed to
+quickly get to these locations:  zero-page addressing.  We may think of it as
+a short address, and omit the first two digits.  Instead of coding LDA $0090,
+we may write LDA $90, and the resulting code will occupy less space and run
+slightly faster.
+
+Zero-page locations are so popular that we'll have a hard time finding spare
+locations for our own programs.  As a result, we tend to conserve zero-page
+locations on Commodore machines.  We'll need the few that are available for a
+special addressing mode, indirect, indexed, that will be discussed later.
+
+There are many locations in zero page that are useful to read.  For example,
+the BASIC system variable ST, which is important in input/output handling,
+may be examined there (location $96 in PET/CBM, location $90 in VIC-20 and
+Commodore 64).  If you need to know whether the user is holding down a key,
+there's an address in zero page that will tell you that (location $97 in
+PET/CBM, $CB in VIC and 64).
+
+Zero-page addressing, like absolute addressing, references one location only.
+It's good for a specific value; but for a range of values we need something
+more.
+
+
+---
+Additional information can be found by searching:
+- "zero_page_indexed_addressing" which expands on zero-page indexed addressing wraps within zero page
+- "basic_variable_table_and_types" which expands on BASIC and system variables are often stored in zero page

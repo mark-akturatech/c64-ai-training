@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RS232NMI entry sequence: SEI and JMP to NMINV, push A,X,Y on stack, disable all NMIs by storing #$7F into D2ICR, read D2ICR to test whether the interrupt is a real NMI source, call A0INT to check for $A000 ROM presence, and jump through ($8002) if the $A000 ROM is present.
+
+                                .LIB   RS232NMI
+.,FE43 78       SEI             NMI    SEI             ;NO IRQ'S ALLOWED...
+.,FE44 6C 18 03 JMP ($0318)            JMP (NMINV)     ;...COULD MESS UP CASSETTES
+.,FE47 48       PHA             NNMI   PHA
+.,FE48 8A       TXA                    TXA
+.,FE49 48       PHA                    PHA
+.,FE4A 98       TYA                    TYA
+.,FE4B 48       PHA                    PHA
+.,FE4C A9 7F    LDA #$7F        NNMI10 LDA #$7F        ;DISABLE ALL NMI'S
+.,FE4E 8D 0D DD STA $DD0D              STA D2ICR
+.,FE51 AC 0D DD LDY $DD0D              LDY D2ICR       ;CHECK IF REAL NMI...
+.,FE54 30 1C    BMI $FE72              BMI NNMI20      ;NO...RS232/OTHER
+                                ;
+.,FE56 20 02 FD JSR $FD02       NNMI18 JSR A0INT       ;CHECK IF $A0 IN...NO .Y
+.,FE59 D0 03    BNE $FE5E              BNE NNMI19      ;...NO
+.,FE5B 6C 02 80 JMP ($8002)            JMP ($8002)     ;...YES
+
+---
+Additional information can be found by searching:
+- "stop_key_and_warm_start_restore" which expands on stop-key check and warm-start handling reached if not ROM
+- "nmi_prepare_and_t1_transmit" which expands on continues into preparing for NMI handling and T1 transmit

@@ -1,0 +1,53 @@
+# ********* - Section 3.4: Pattern matching on disk with '*' to match any trailing characters and '?' as a single-character wildcard; syntax examples for LOAD and directory filtering (e.g., LOAD "$0:T*", LOAD "$0:T?ST*"), and behavior of using just '*' to load the last-accessed program.
+
+
+
+3.4 PATTERN MATCHING AND WILD CARDS
+
+When using the tape deck, you can LOAD any program starting with
+certain letters just by leaving off any following letters.  Thus, the
+command LOAD "T" will find the first program on the tape beginning
+with the letter T. And LOAD "HELLO" will find the first program
+beginning with the letters HELLO, like "HELLO THERE."
+
+When using the disk, this option is called pattern matching, and there
+is a special character in the file name used to designate this.  The
+asterisk (*) character following any program name tells the drive you
+want to find any program starting with that name.
+
+FORMAT FOR PATTERN MATCHING:
+			      +-------------------+
+ LOAD name$ + "*", 8          | Can Be a String   |
+	 |                    | Variable Or The   |
+	 +--------------------+ Name Inside Quotes|
+			      +-------------------+
+
+In other words, if you want to LOAD the first program on the disk
+starting with the letter T, use the command LOAD "T*", 8.
+
+If only the "*" is used for the name, the last program accessed on the
+disk is the one LOADed.  If no program has yet been LOADed, the first
+one listed in the directory is the one used.
+
+You are probably familiar with the concept of wild cards in poker
+where one card can replace any other card needed.  On your 1541, the
+question mark (?) can be used as a wild card on the disk.  The program
+name on the disk is compared to the name in the LOAD command, but any
+characters where there is a question mark in the name aren't checked.
+
+For instance, when the command LOAD "T?NT", 8 is given, programs that
+match include TINT, TENT, etc.
+
+When LOADing the directory of the disk, pattern matching and wild
+cards can be used to check for a list of specific programs.  If you
+gave the command LOAD "$0:TEST", only the program TEST would appear in
+the directory (if present on the disk).  The command LOAD "$0:T*"
+would give you a directory of all programs beginning with the letter T.
+And LOAD "$0:T?ST" would give you all the programs with 4-letter names
+having the first letter of T and the third and fourth letters ST. LOAD
+"$0:T?ST*" would give names of any length with the correct first,
+third, and fourth letters.
+
+---
+Additional information can be found by searching:
+- "scratch_command_erasing_files_and_pattern_matching" which expands on pattern matching is also used with SCRATCH to remove groups of files

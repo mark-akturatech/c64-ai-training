@@ -1,0 +1,22 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Derives and writes the pointer to colour RAM based on the current screen line address in $D1/$D2. Copies low byte $D1 to $F3, masks and ORs the high byte $D2 with $D8 and stores it in $F4 so subsequent operations access the correct $D800 colour RAM area.
+
+                                *** SYNCHRONISE COLOUR POINTER
+                                The pointer to the colour RAM is set up according to the
+                                current screen line address. This is done by reading the
+                                current screen line address and modifying it to colour RAM
+                                pointers and write it to USER at $f3/$f4
+.,EA24 A5 D1    LDA $D1         copy screen line low byte
+.,EA26 85 F3    STA $F3         to colour RAM low byte
+.,EA28 A5 D2    LDA $D2         read'n modify the hi byte
+.,EA2A 29 03    AND #$03
+.,EA2C 09 D8    ORA #$D8
+.,EA2E 85 F4    STA $F4         to suite the colour RAM
+.,EA30 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "print_to_screen" which expands on called to sync colour pointer before printing a character
+- "clear_screen_line" which expands on used to position colour writes when clearing a line
+- "move_a_screen_line" which expands on used to prepare colour pointer prior to moving a line
+- "synchronise_colour_transfer" which expands on lower-level call that also uses this pointer setup

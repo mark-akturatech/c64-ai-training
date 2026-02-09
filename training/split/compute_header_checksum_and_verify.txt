@@ -1,0 +1,26 @@
+# byRiclianll - Computes the header checksum by XOR'ing multiple bytes (EOR *02FA,X; EOR *02FB,X; EOR *02FC,X; EOR *02FD,X) and storing the result (STA *02F9,X). Increments and checks the header index/counter at *0628 and compares it with the stored header index at *43; loops to HEADER if not equal. Preserves A/X (TXA/PHA) for later use.
+
+COMPUTE  CHECKSUM 
+
+
+640  EOR  *02FA, X 
+650  EOR  1i02FB,X 
+660  EOR  *02FC,X 
+670  EOR  *02FD,X 
+680  STA  *02F9, X 
+690  ; 
+
+700   INC  *0628 
+710  LDA  *0628 
+720  CMP  *43 
+730  BNE  HEADER 
+740  ; 
+750  TXA 
+760  PHA 
+770  ; 
+
+
+---
+Additional information can be found by searching:
+- "write_gap_and_header_table" which expands on header bytes that are inputs to this checksum
+- "create_data_block_1541_format" which expands on data block creation that uses the validated header

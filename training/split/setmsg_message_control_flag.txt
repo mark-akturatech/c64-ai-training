@@ -1,0 +1,28 @@
+# ********* - SETMSG routine: controls Kernal printing of control messages and error messages via bits in the message control flag. Bit 6 controls general Kernal control messages (SEARCHING FOR, LOADING, etc.); Bit 7 controls Kernal error messages. Describes which messages are suppressed or printed and notes BASIC's separate message handling.
+
+65048         $FE18          SETMSG
+Set the Message Control Flag
+
+This documented Kernal routine can be entered through its jump table
+vector at 65424 ($FF90).
+
+The routine controls the printing of error messages and control
+messages by the Kernal.  It Bit 6 is seto to 1 (bit value of 64),
+Kernal control messages can be printed.  These messages include
+SEARCHING FOR, LOADING, and the like.  If Bit 6 is cleared to 0, these
+messages will not be printed (BASIC will clear this bit when a program
+is running so that the messages do not appear when I/O is performed
+from a program).  Setting Bit 6 will not suppress the PRESS PLAY ON
+TAPE or PRESS PLAY & RECORD messages, however.
+
+If Bit 7 is set to 1 (bit value of 128), Kernal error messages can be
+printed.  If Bit 7 is set to 0, those error messages (for example, I/O
+ERROR #nn) will be suppressed.  Note that BASIC has its own set of
+error messages (such as FILE NOT FOUND ERROR) which it uses in
+preference to the Kernal's message.
+
+
+---
+Additional information can be found by searching:
+- "power_on_reset_routine" which expands on message control flag behavior during system initialization and BASIC operation
+- "readst_read_io_status_word" which expands on I/O errors relate to messages controlled by SETMSG

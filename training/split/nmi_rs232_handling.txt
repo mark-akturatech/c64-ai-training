@@ -1,0 +1,56 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - NMI RS232 HANDLING: Handles RS232 activity inside NMI. Checks CIA#2 ENABL ($02A1) and bits that indicate sending/receiving. For send path: updates CIA#1 port DRA ($DD00) to drive RS232 TX line and sets UP/ENABL, then jumps to RS232 out NMI routine ($FF07). For receive path: handles timing, enabling and dispatch to RS232 in handler ($FED6). Uses bit tests AND #$01/#$12/#$10 and JSRs to RS232 IN/OUT processing code. Restores CIA#2 ICR at end.
+
+                                *** NMI RS232 HANDLING
+.,FE72 98       TYA             Read CIA#2 interrupt control register
+.,FE73 2D A1 02 AND $02A1       mask with ENABL, RS232 enable
+.,FE76 AA       TAX             temp store in (X)
+.,FE77 29 01    AND #$01        test if sending (%00000001)
+.,FE79 F0 28    BEQ $FEA3       nope, jump to receive test
+.,FE7B AD 00 DD LDA $DD00       load CIA#1 DRA
+.,FE7E 29 FB    AND #$FB        mask bit2 (RS232 send)
+.,FE80 05 B5    ORA $B5         NXTBIT, next bit to send
+.,FE82 8D 00 DD STA $DD00       and write to port
+.,FE85 AD A1 02 LDA $02A1
+.,FE88 8D 0D DD STA $DD0D       write ENABL to CIA#2 I.C.R
+.,FE8B 8A       TXA             get temp
+.,FE8C 29 12    AND #$12        test if receiving (bit1), or waiting for receiver
+                                edge (bit4) ($12 = %00010010)
+.,FE8E F0 0D    BEQ $FE9D       nope, skip receiver routine
+.,FE90 29 02    AND #$02        test if receiving
+.,FE92 F0 06    BEQ $FE9A       nope
+.,FE94 20 D6 FE JSR $FED6       jump to NMI RS232 in
+.,FE97 4C 9D FE JMP $FE9D
+.,FE9A 20 07 FF JSR $FF07       jump to NMI RS232 out
+.,FE9D 20 BB EE JSR $EEBB       RS232 send byte
+.,FEA0 4C B6 FE JMP $FEB6       goto exit
+.,FEA3 8A       TXA             get temp
+.,FEA4 29 02    AND #$02        test bit1
+.,FEA6 F0 06    BEQ $FEAE       nope
+.,FEA8 20 D6 FE JSR $FED6       NMI RS232 in???
+.,FEAB 4C B6 FE JMP $FEB6       goto exit
+.,FEAE 8A       TXA             set temp
+.,FEAF 29 10    AND #$10        test bit4
+.,FEB1 F0 03    BEQ $FEB6       nope, exit
+.,FEB3 20 07 FF JSR $FF07       NMI RS232 out
+.,FEB6 AD A1 02 LDA $02A1       ENABL
+.,FEB9 8D 0D DD STA $DD0D       CIA#2 interrupt control register
+.,FEBC 68       PLA             restore registers (Y),(X),(A)
+.,FEBD A8       TAY
+.,FEBE 68       PLA
+.,FEBF AA       TAX
+.,FEC0 68       PLA
+.,FEC1 40       RTI             back from NMI
+
+                                *** RS232 TIMING TABLE - NTSC
+                                Timing table for RS232 NMI for use with NTSC machines. The
+                                table contains 10 entries which corresponds to one of the
+                                fixed RS232 rates, starting with lowest (50 baud) and
+                                finishing with the highest (2400 baud). Since the clock
+                                frequency is different between NTSC and PAL systems, there
+                                is another table for PAL machines at $e4ec.
+.:FEC2 C1 27                    50 baud
+
+---
+Additional information can be found by searching:
+- "nmi_rs232_in" which expands on NMI RS232 IN handler sets timer and calls RS232 receive routine
+- "nmi_rs232_out" which expands on NMI RS232 OUT handler sets up baud timers and counters

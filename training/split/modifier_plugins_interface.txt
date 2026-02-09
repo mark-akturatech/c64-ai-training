@@ -1,0 +1,31 @@
+# Kick Assembler - Modifier plugins modify output bytes of a code block or memory block. Example usage: .modify MyModifier(27) { *=$8080 ... } Interface: public interface IModifier extends IPlugin { ModifierDefinition getDefinition(); byte[] execute(List<IMemoryBlock> memoryBlocks, IValue[] parameters, IEngine engine); } ModifierDefinition holds the 'name' property. Modifiers receive memory blocks to transform and must return replacement byte arrays.
+
+List<IMemoryBlock> getMemoryBlocks();
+}
+
+These represent the given parameters and provides the values and the bytes which should be stored in each file.
+When creating the output file, use the IEngine object to open an output stream for storing the bytes. For details,
+refer to the example project.
+
+17.5.5. Archive Plugins
+You can collect more plugins in one archive. This makes it possible to register them with only one plugin
+directive. To create an archive you implement a class of the IArchive interface:
+public interface IArchive extends IPlugin {
+public List<IPlugin> getPluginObjects();
+}
+
+An implementation could look like this:
+public class MyArchive implements IArchive{
+@Override
+public List<Object> getPluginObjects() {
+
+83
+
+3rd Party Java plugins
+
+List<Object> list = new ArrayList<Object>();
+
+---
+Additional information can be found by searching:
+- "imemoryblock_interface" which expands on Modifiers accept List<IMemoryBlock> to modify
+- "segment_modifier_plugins" which expands on segment modifiers are similar but operate on segments

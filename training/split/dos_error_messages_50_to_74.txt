@@ -1,0 +1,82 @@
+# ********* - Disk Operating System (DOS) error messages 50 through 74 with short explanations. Covers: RECORD NOT PRESENT (50), OVERFLOW IN RECORD (51), FILE TOO LARGE (52), WRITE FILE OPEN (60), FILE NOT OPEN (61), FILE NOT FOUND (62), FILE EXISTS (63), FILE TYPE MISMATCH (64), NO BLOCK (65) with B-A context and parameters, ILLEGAL TRACK AND SECTOR (66), ILLEGAL SYSTEM T OR S (67), NO CHANNEL (70) and channel limits, DIRECTORY ERROR (71) with BAM note, DISK FULL (72), DOS MISMATCH (73) with explanation of read/write incompatibility, and DRIVE NOT READY (74) when no diskette is present.
+
+by the DOS.
+
+50: RECORD NOT PRESENT -- Result of disk reading past the last record
+through INPUT#, or GET# commands.  This message will also occur after
+positioning to a record beyond end of file in a relative file.  If the
+intent is to expand the file by adding the new record (with a PRINT#
+command), the error message may be ignored.  INPUT or GET should not
+be attempted after this error is detected without first repositioning.
+
+51: OVERFLOW IN RECORD -- PRINT# statement exceeds record boundary.
+Information is cut off.  Since the carriage return is sent as a record
+terminator is counted in the record size.  This message will occur if
+the total characters in the record (including the final carriage
+return) exceeds the defined size.
+
+52: FILE TOO LARGE -- Record position within a relative file indicates
+that disk overflow will result.
+
+60: WRITE FILE OPEN -- This message is generated when a write file
+that has not been closed is being opened for reading.
+
+61: FILE NOT OPEN -- This message is generated when a file is being
+accessed that has not been opened in the DOS.  Sometimes, in this case,
+a message is not generated; the request is simply ignored.
+
+62: FILE NOT FOUND -- The requested file does not exist on the
+indicated drive.
+
+63: FILE EXISTS -- The file name of the file being created already
+exists on the diskette.
+
+64: FILE TYPE MISMATCH -- The file type does not match the file type
+in the directory entry for the requested file.
+
+65: NO BLOCK -- This message occurs in conjunction with the B-A
+command.  It indicates that the block to be allocated has been
+previously allocated.  The parameters indicate the track and sector
+available with the next highest number.  If the parameters are zero
+(0), then all blocks higher in number are in use.
+
+66: ILLEGAL TRACK AND SECTOR -- The DOS has attempted to access a
+track or block which does not exist in the format being used.  This
+may indicate a problem reading the pointer to the next block.
+
+67: ILLEGAL SYSTEM T OR S -- This special error message indicates an
+illegal system track or block.
+
+70: NO CHANNEL (available) -- The requested channel is not available,
+or all channels are in use.  A maximum of five sequential files may be
+opened at one time to the DOS.  Direct access channels may have six
+opened files.
+
+71: DIRECTORY ERROR -- The BAM does not match the internal count.
+There is a problem in the BAM allocation or the BAM has been
+overwritten in DOS memory.  To correct this problem, reinitialize the
+diskette to restore the BAM in memory.  Some active files may be
+terminated by the corrective action.  NOTE: BAM = Block Availability
+Map
+
+72: DISK FULL -- Either the blocks on the diskette are used or the
+directory is at its entry limit. DISK FULL is sent when two blocks are
+available on the 1541 to allow the current file to be closed.
+
+73: DOS MISMATCH (73, CBM DOS V2.6 1541) -- DOS 1 and 2 are read
+compatible but not write compatible.  Disks may be interchangeably
+read with either DOS, but a disk formatted on one version cannot be
+written upon with the other version because the format is different.
+This error is displayed whenever an attempt is made to write upon a
+disk which has been formatted in a non-compatible format. (A utility
+routine is available to assist in converting from one format to
+another.) This message may also appear after power up.
+
+74: DRIVE NOT READY -- An attempt has been made to access the 1541
+Single Drive Floppy Disk without any diskettes present in either drive.
+
+
+---
+Additional information can be found by searching:
+- "index_section" which expands on See Index for error message cross-references
+- "bam_format_1541" which expands on Directory error (71) references the BAM (Block Availability Map)

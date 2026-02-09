@@ -1,0 +1,41 @@
+# Kick Assembler - Section 9.2: Namespaces explained — containers for functions, macros and pseudocommands (each namespace has its own associated scope), .namespace directive usage, examples showing reuse and re-declaration behaviors, and getNamespace() to query current namespace.
+
+9.2. Namespaces
+Namespaces are containers of functions, macros and pseudocommands. There can only be one of each of these
+entities in namespace. Every namespace also have an its own associated scope so each time you define a namespace
+a scopes is automatically defined.
+A simple way to declare a namespace is shown in the following example. The namespace directives is covered
+in more detail later (and often the .filenamespace directive is more handy):
+.function myFunction() { .return 1 }
+label1:
+.namespace mySpace {
+.function myFunction() { .return 1 } // <- This won't collide
+label1: <- This won't collide
+}
+
+Namespace can be declared more than once. The second time you declare it, it will simply continue with the
+already existing namespace.
+.namespace repeatedSpace {
+endless: jmp *
+.function myFunc() { return 1}
+}
+.namespace repeatedSpace { // <- Don't give an error, we reuse the namespace
+jmp endless
+.function myFunc() { return 2} // <-- This gives an error, myFunc is already
+defined
+}
+
+If you are in doubt of which namespace you are in, you can get its name by the 'getNamespace()' function.
+.print "Namespace = "+getNamespace()
+.namespace MySpace {
+.print "Namespace = "+getNamespace()
+.namespace MySubSpace {
+.print "Namespace = "+getNamespace()
+}
+}
+
+
+---
+Additional information can be found by searching:
+- "scopes_and_namespaces_scopes" which expands on how namespaces are tied to scope hierarchy
+- "namespace_directives_and_filenamespace" which expands on .filenamespace usage to place file content in a namespace

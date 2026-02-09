@@ -1,0 +1,35 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - BASIC vector bytes and startup messages: table of vector bytes (copied to $0300..), the code copying those vectors into RAM, and the startup message data (strings for banner, READY messages, and formatting characters). Prepares the in-RAM vectors used by BASIC runtime.
+
+                                *** BASIC vectors, these are copied to RAM from $0300 onwards
+.:E447 8B E3                    error message          $0300
+.:E449 83 A4                    BASIC warm start       $0302
+.:E44B 7C A5                    crunch BASIC tokens    $0304
+.:E44D 1A A7                    uncrunch BASIC tokens  $0306
+.:E44F E4 A7                    start new BASIC code   $0308
+.:E451 86 AE                    get arithmetic element $030A
+
+                                *** initialise the BASIC vectors
+.,E453 A2 0B    LDX #$0B        set byte count
+.,E455 BD 47 E4 LDA $E447,X     get byte from table
+.,E458 9D 00 03 STA $0300,X     save byte to RAM
+.,E45B CA       DEX             decrement index
+.,E45C 10 F7    BPL $E455       loop if more to do
+.,E45E 60       RTS             
+
+                                *** BASIC startup messages
+.:E45F 00 20 42 41 53 49 43 20  basic bytes free
+.:E467 42 59 54 45 53 20 46 52
+.:E46F 45 45 0D 00 93 0D 20 20
+.:E473 93 0D 20 20 20 20 2A 2A  (clr) **** commodore 64 basic v2 ****
+.:E47B 2A 2A 20 43 4F 4D 4D 4F  (cr) (cr) 64k ram system
+.:E483 44 4F 52 45 20 36 34 20
+.:E48B 42 41 53 49 43 20 56 32
+.:E493 20 2A 2A 2A 2A 0D 0D 20
+.:E49B 36 34 4B 20 52 41 4D 20
+.:E4A3 53 59 53 54 45 4D 20 20
+.:E4AB 00
+
+
+---
+Additional information can be found by searching:
+- "basic_warm_and_cold_start_initialisation" which expands on initialises vectors during cold start

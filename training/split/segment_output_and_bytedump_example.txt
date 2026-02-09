@@ -1,0 +1,28 @@
+# Kick Assembler - Explains that defining segments alone produces no output unless directed. Describes -bytedump command-line option producing ByteDump.txt showing bytes per segment. Example byte dump for Default, MySegment1 and MySegment2 with addresses and opcodes.
+
+.segment Code "My Code"
+// Is the same as this
+.segment Code
+.memblock "My Code"
+
+To demonstrate this style is here given a larger example. Some of the features are first covered later. :
+.segmentdef Code [start=$0900]
+.segmentdef Data [start=$8000]
+.file [name="segments.prg", segments="Code,Data", modify="BasicUpstart", marg1=
+$0900]
+//-------------------------------------------------------// Main
+//-------------------------------------------------------.segment Code "Main"
+jsr colorSetup
+jsr textSetup
+rts
+//-------------------------------------------------------// Color
+//-------------------------------------------------------.segment Code "Color Setup"
+colorSetup:
+lda colors
+sta $d020
+lda colors+1
+sta $d021
+
+---
+Additional information can be found by searching:
+- "writing_segments_to_files" which expands on how to write segments to files

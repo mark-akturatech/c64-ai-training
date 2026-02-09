@@ -1,0 +1,24 @@
+# ca65 Users Guide - Nested procedures via .PROC: they create a named nested lexical level, add a symbol in the enclosing scope, and are equivalent to label plus .SCOPE. Example shows .proc foo ... .endproc equals foo: .scope foo ... .endscope.
+
+7.4 Nested procedures
+A nested procedure is created by use of .PROC. It differs from a .SCOPE in that it must have a name, and a it will introduce a symbol with this name in the enclosing scope. So
+
+
+        .proc   foo
+                ...
+        .endproc
+is actually the same as
+
+
+        foo:
+        .scope  foo
+                ...
+        .endscope
+This is the reason why a procedure must have a name. If you want a scope without a name, use .SCOPE.
+
+Note: As you can see from the example above, scopes and symbols live in different namespaces. There can be a symbol named foo and a scope named foo without any conflicts (but see the section titled "Scope search order").
+
+
+---
+Additional information can be found by searching:
+- "scopes_generic_and_nested_scopes" which expands on generic scopes and scoping rules

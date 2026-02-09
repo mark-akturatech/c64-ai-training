@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Overview of ADC (add with carry) and SBC (subtract with carry), the role of the carry flag for multi-byte arithmetic, and preparation steps (CLC before ADC, SEC before SBC). Example sequences for multi-byte (16-bit) addition and subtraction (load low byte, ADC/SBC low, store; then high byte chain). Note on CLD to force binary mode. Explanation of two's complement representation for signed values, how to form negatives (invert+1) and ranges of signed bytes (-128..+127), plus examples of signed arithmetic and how overflow and carry differ conceptually.
+
+                   Indirect Jumps on Page Boundaries
+                   Indirect JMP instructions with a look-up address low-byte of $FF (as in
+                   $11FF) now execute as expected, but there's an extra cycle added to the
+                   exuction time when address bytes are on different memory pages.
+                 Behavioral Changes
+                   Modified reset and interrupt sequence: the decimal flag is now reset (D=0)
+                   and the processor set to binary mode.
+                                                                  6502 Instruction Set
+                   No undefinded opcodes (all unused instruction codes execute as NOPs,
+                   instead).
+                   For ADC and SBC N, V, and Z flags are set correctly in decimal mode, but
+                   there is now an extra 1-cycle penalty for decimal mode with certain
+                   instructions.
+                   Indexed addressing across page boundaries now results in an extra read of
+                   the last instruction byte, instead of the extra read of an invalid address
+                   (NMOS).
+                   Indirect jumps, fetching the address from the last byte of a page now fetch
+                   the high-byte correctly from the next page. (E.g., "JMP ($11FF)" will fetch
+                   the low-byte of the effective address from $11FF and the high-byte from
+                   $1200. The NMOS version didn't increment the high-byte of the fetch address
+                   in these cases.) An extra cycle is added in these cases.
+                   Read-modify-write instructions do not write back the initial value to the
+                   address (as with the NMOS 6502), but perform a dummy read instead. So there
+                   are now two read cycles and one write cycle, while there were two write and
+                   one read cycle on the NMOS 6502. (Caveat: for indexed addressing, this dummy
+                   read is performed on the base address before indexing.)
+                   Read-modify-write instructions with absolute indexed addresses that do not
+                   cross page boundaries perform now in one cycle less (6 instead of 7 on the
+                   NMOS CPU).
+                   BRK instruction are fully executed before any interrupt. (On the NMOS
+                   version, if an interrupt occured while a BRK instruction was fetching the
+                   interupt vector, this would be overwritten and the interrupt executed,
+                   instead.)
+                   The signal on the RDY pin is now bidrectional. While it was just an input on
+                   the NMOS version, it is now also pulled low by the WAI instruction.
+          Rockwell R65000/11 •/12 •/15 Extensions
+                 While the Rockwell R6500 family is very similar to the MOS 6502,
+                 types /11, /12, and /15 add four instructions for bit manipulation,
+                 which were later included in the WDC instruction set.
+                 (Hence, these instructions are the same on the respective Rockwell
+                 and WDC processors.)
+                 Rockwell R6500 family processors also add additional interrupts,
+                 registers and ports for I/O communication, counters, and
+                 respective control registers. These are accessed and controlled
+                 by reserved addresses and have no impact on the instruction set.
+                 (See the respective datasheets for details.)
+                                                     6502 Instruction Set
+                 Additional Instructions (Rockwel R6500/11 /12 /15)
+                 BBR  Branch on Bit Reset
+                      This branch instruction tests a given bit of
+                      the accumulator and branches, if this bit is
+                      not set. This is an entire family of eight
+                      instructions in total, testing one of bits #0
+                      to #7, each. Individual mnemonics designate the
+                      tested bit, as in BBRn, where n = 0..7.
+                      As with all branch instructions, the address
+                      mode is relative, taking a signed single-byte
+                      offset as operand.
+                      branch on An = 0                    N Z C I D V
+                                                          - - - - - -
+
+---
+Additional information can be found by searching:
+- "decimal_mode_bcd" which expands on BCD mode behavior for ADC/SBC and differences on W65C02
+- "flags_with_adc_and_sbc" which expands on how N, V, Z, C flags are affected by ADC/SBC

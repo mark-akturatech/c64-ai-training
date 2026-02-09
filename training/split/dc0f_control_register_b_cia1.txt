@@ -1,0 +1,47 @@
+# - C64 I/O Map (Mapping The Commodore 64) - CIA #1 Control Register B at $DC0F (CIACRB): bit 0 start/stop Timer B; bit 1 Timer B output to Port B (PB7); bit 2 Port B output mode toggle/pulse; bit 3 Timer B one-shot/continuous; bit 4 force load Timer B latch; bits 5-6 select Timer B input mode (00=count CPU cycles, 01=count CNT line pulses, 10=count Timer A underflows, 11=count Timer A underflows only when CNT pulses present); bit 7 select TOD write mode (1=writing sets alarm, 0=writing sets clock). Describes linking Timer A and B for 32-bit-like timing and TOD write selection.
+
+$DC0F        CIACRB       Control Register B
+
+                     0    Start Timer B (1=start, 0=stop)
+                     1    Select Timer B output on Port B (1=Timer B output appears on
+                            Bit 7 of Port B)
+                     2    Port B output mode (1=toggle Bit 7, 0=pulse Bit 7 for one
+                            cycle)
+                     3    Timer B run mode (1=one-shot, 0=continuous)
+                     4    Force latched value to be loaded to Timer B counter (1=force
+                            load strobe)
+                     5-6  Timer B input mode
+                              00 = Timer B counts microprocessor cycles
+                              01 = Count signals on CNT line at pin 4 of User Port
+                              10 = Count each time that Timer A counts down to 0
+                              11 = Count Timer A 0's when CNT pulses are also present
+                     7    Select Time of Day write (0=writing to TOD registers sets
+                          alarm, 1=writing to TOD registers sets clock)
+
+                          Bits 0-3.  This nybble performs the same functions for Timer B that
+                          Bits 0-3 of Control Register A perform for Timer A, except that Timer
+                          B output on Data Port B appears at Bit 7, and not Bit 6.
+
+                          Bits 5 and 6.  These two bits are used to select what Timer B counts.
+                          If both bits are set to 0, Timer B counts the microprocessor machine
+                          cycles (which occur at the rate of 1,022,730 cycles per second).  If
+                          Bit 6 is set to 0 and Bit 5 is set to 1, Timer B counts pulses on the
+                          CNT line, which is connected to pin 4 of the User Port.  If Bit 6 is
+                          set to 1 and Bit 5 is set to 0, Timer B counts Timer A underflow
+                          pulses, which is to say that it counts the number of times that Timer
+                          A counts down to 0.  This is used to link the two numbers into one
+                          32-bit timer that can count up to 70 minutes with accuracy to within
+                          1/15 second.  Finally, if both bits are set to 1, Timer B counts the
+                          number of times that Timer A counts down to 0 and there is a signal on
+                          the CNT line (pin 4 of the User Port).
+
+                          Bit 7.  Bit 7 controls what happens when you write to the Time of Day
+                          registers.  If this bit is set to 1, writing to the TOD registers sets
+                          the ALARM time.  If this bit is cleared to 0, writing to the TOD
+                          registers sets the TOD clock.
+
+
+---
+Additional information can be found by searching:
+- "cia_tod_write_mode_and_latch_behavior" which expands on How CIACRB bit 7 affects TOD register writes
+- "dc0e_control_register_a_cia1" which expands on Comparison with CIACRA Timer A bits

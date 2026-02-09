@@ -1,0 +1,57 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - VIC interrupt system: IRQ output connected to CPU IRQ input (maskable). Four interrupt sources with latch ($D019) and enable ($D01A): RST (raster compare: bits in $D012 and $D011 bit7 set compare line; tested in cycle 0), MBC (sprite vs bitmap collision), MMC (sprite-sprite collision), LP (lightpen negative edge). Latch bits are set on event and must be cleared by CPU (writing '1' to clear) — VIC doesn't clear them automatically. Bit 7 of $D019 reflects inverted IRQ state. Only first collision triggers MBC/MMC until the corresponding register is read/cleared.
+
+3.12. VIC interrupts
+--------------------
+
+The VIC has the possibility to generate interrupts for the processor when
+certain events occur. This is done with the IRQ output that is directly
+connected to the IRQ input of the 6510. The VIC interrupts are therefore
+maskable with the I flag in the processor status register.
+
+There are four interrupt sources in the VIC. Every source has a
+corresponding bit in the interrupt latch (register $d019) and a bit in the
+interrupt enable register ($d01a). When an interrupts occurs, the
+corresponding bit in the latch is set. To clear it, the processor has to
+write a "1" there "by hand". The VIC doesn't clear the latch on its own.
+
+If at least one latch bit and the belonging bit in the enable register is
+set, the IRQ line is held low and so the interrupt is triggered in the
+processor. So the four interrupt sources can be independently enabled and
+disabled with the enable bits. As the VIC - as described - doesn't clear
+the interrupt latch by itself, the processor has to do it before the I
+flag is cleared resp. before the processor returns from the interrupt
+routine. Otherwise the interrupt will be triggered again immediately (the
+IRQ input of the 6510 is state-sensitive).
+
+The following table describes the four interrupt sources and their bits in
+the latch and enable registers:
+
+ Bit|Name| Trigger condition
+ ---+----+-----------------------------------------------------------------
+  0 | RST| Reaching a certain raster line. The line is specified by writing
+    |    | to register $d012 and bit 7 of $d011 and internally stored by
+    |    | the VIC for the raster compare. The test for reaching the
+    |    | interrupt raster line is done in cycle 0 of every line (for line
+    |    | 0, in cycle 1).
+  1 | MBC| Collision of at least one sprite with the text/bitmap graphics
+    |    | (one sprite data sequencer outputs non-transparent pixel at the
+    |    | same time at which the graphics data sequencer outputs a
+    |    | foreground pixel)
+  2 | MMC| Collision of two or more sprites (two sprite data sequencers
+    |    | output a non-transparent pixel at the same time)
+  3 | LP | Negative edge on the LP input (lightpen)
+
+For the MBC and MMC interrupts, only the first collision will trigger an
+interrupt (i.e. if the collision registers $d01e resp. $d01f contained the
+value zero before the collision). To trigger further interrupts after a
+collision, the concerning register has to be cleared first by reading from
+it.
+
+The bit 7 in the latch $d019 reflects the inverted state of the IRQ output
+of the VIC.
+
+
+---
+Additional information can be found by searching:
+- "sprite_priority_and_collision" which expands on which collisions set $D01E/$D01F and can trigger MBC/MMC interrupts
+- "vc_and_rc" which expands on raster interrupt (RST) compare timing and VC/RASTER registers

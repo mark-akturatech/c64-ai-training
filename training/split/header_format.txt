@@ -1,0 +1,27 @@
+# A Minimal C64 Datasette Program Loader - File header format (192 bytes, recorded and encoded like any file with leader and countdown). Header layout: Offset 0 file type (1 byte, $01 or $03 for PRG), Offset 1..2 start address (low/high), Offset 3..4 end address (low/high), Offset 5..20 filename (16 bytes), Offset 21..191 unused. Header types: $01 relocatable BASIC, $03 non-relocatable (ML).
+
+Header Format
+-------------
+
+A 192-byte header precedes each file. The header itself is encoded exactly
+like a 192 byte file and recorded just before the file data: with a leader
+and a countdown.
+
+    Offset  Length  Description
+    0       1       File Type ($01 or $03 for PRG)
+    1       2       Start Address (low/high)
+    3       2       End Address (low/high)
+    5       16      Filename (displayed)
+    21      171     unused
+
+Header Types:
+  $01 - Relocatable BASIC program
+  $03 - Non-relocatable program (machine language)
+
+
+
+---
+Additional information can be found by searching:
+- "get_countdown" which expands on header is preceded by leader and countdown
+- "read_192_byte_header" which expands on how the loader reads this 192-byte header
+- "load_program_data_loop" which expands on uses start address from header to place program

@@ -1,0 +1,53 @@
+# MACHINE - Explains numeric ranges derived from bus widths: 16-bit address bus yields 65,536 addresses; 8-bit data bus yields 256 values. Introduces bit weighting for converting binary addresses to decimal (weights 1..32768) and includes a diagram showing eight- and sixteen-bit weights (Figure 1.3).
+
+
+All other chips are still connected to the data bus, but they have not been
+selected, so they ignore the information.
+
+The address bus is accompanied by a few extra wires (sometimes called the
+control bus) that control such things as data timing and the direction in
+which the data should flow:  read or write.
+
+                                                                          :5:
+
+Number Ranges
+-------------
+
+The address bus has sixteen bits, each of which might be on or off.  The
+possible combinations number 65536 (two raised to the sixteenth power).  We
+then have 65536 different possibilities of voltages, or 65536 different
+addresses.
+
+The data bus has eight bits, which allows for 256 possibilities of voltages.
+Each memory location can store only 256 distinct values.
+
+It is often convenient to refer to an address as a decimal number.  This is
+especially true for PEEK and POKE statements in the BASIC language.  We may
+do this by giving each bit a "weight."  Bit zero (at the right) has a weight
+of 1; each bit to the left has a weight of double the amount, so that bit 15
+(at the left) has a weight of 32768.  Thus, a binary address such as
+
+  0001001010101100
+
+has a value of 4096 + 512 + 128 + 32 + 8 + 4 or 4780.  A POKE to 4780 decimal
+would use the above binary address to reach the correct part of memory.
+
+
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+              | 128 |  64 |  32 |  16 |  8  |  4  |  2  |  1  |
+              +-----+-----+-----+-----+-----+-----+-----+-----+
+
+                                 EIGHT BITS
+
+  +-----+-----+----+====+----+----+===+---+===+---+===+---+===+===+---+---+
+  |32768|16384|8192|4096|2048|1024|512|256|128| 64| 32| 16| 8 | 4 | 2 | 1 |
+  +-----+-----+----+====+----+----+===+---+===+---+===+---+===+===+---+---+
+
+                                SIXTEEN BITS
+
+  Figure 1.3
+
+---
+Additional information can be found by searching:
+- "inner_workings_binary" which expands on uses bit concepts to compute numeric weights
+- "hexadecimal_notation" which expands on introduces hex as a convenient human representation of these binary values

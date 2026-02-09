@@ -1,0 +1,42 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Performs the actual string collection/compaction: checks that a working pointer ($4E/$4F) exists, derives descriptor offset from step-size ($55) by masking and shifting, computes the block end (string start + length) into $5A/$5B, sets destination end to the current bottom-of-string-space ($33/$34) in $58/$59, calls the memory-shift/open-up routine (JSR $A3BF) to copy the string to the top of uncollected space, then writes the updated string pointer back into the descriptor (via ($4E),Y), increments the new-string-pointer high byte, and jumps back to re-run the main routine from the last ending with XA holding the new bottom-of-string-memory pointer.
+
+                                collect string
+.,B606 A5 4F    LDA $4F         get working pointer low byte
+.,B608 05 4E    ORA $4E         OR working pointer high byte
+.,B60A F0 F5    BEQ $B601       exit if nothing to collect
+.,B60C A5 55    LDA $55         get copied step size
+.,B60E 29 04    AND #$04        mask step size, $04 for variables, $00 for array or stack
+.,B610 4A       LSR             >> 1
+.,B611 A8       TAY             copy to index
+.,B612 85 55    STA $55         save offset to descriptor start
+.,B614 B1 4E    LDA ($4E),Y     get string length low byte
+.,B616 65 5F    ADC $5F         add string start low byte
+.,B618 85 5A    STA $5A         set block end low byte
+.,B61A A5 60    LDA $60         get string start high byte
+.,B61C 69 00    ADC #$00        add carry
+.,B61E 85 5B    STA $5B         set block end high byte
+.,B620 A5 33    LDA $33         get bottom of string space low byte
+.,B622 A6 34    LDX $34         get bottom of string space high byte
+.,B624 85 58    STA $58         save destination end low byte
+.,B626 86 59    STX $59         save destination end high byte
+.,B628 20 BF A3 JSR $A3BF       open up space in memory, don't set array end. this
+                                copies the string from where it is to the end of the
+                                uncollected string memory
+.,B62B A4 55    LDY $55         restore offset to descriptor start
+.,B62D C8       INY             increment index to string pointer low byte
+.,B62E A5 58    LDA $58         get new string pointer low byte
+.,B630 91 4E    STA ($4E),Y     save new string pointer low byte
+.,B632 AA       TAX             copy string pointer low byte
+.,B633 E6 59    INC $59         increment new string pointer high byte
+.,B635 A5 59    LDA $59         get new string pointer high byte
+.,B637 C8       INY             increment index to string pointer high byte
+.,B638 91 4E    STA ($4E),Y     save new string pointer high byte
+.,B63A 4C 2A B5 JMP $B52A       re-run routine from last ending, XA holds new bottom
+                                of string memory pointer
+
+
+---
+Additional information can be found by searching:
+- "check_string_salvageability_for_variables_and_update_pointers" which expands on collect is triggered after salvageability logic sets the working pointer/offset
+- "gc_init_and_process_descriptor_stack" which expands on after collection the routine re-runs from the last ending to continue processing
+- "iterate_string_arrays_and_prepare_descriptors" which expands on array and element descriptors ultimately reach this collection step when strings must be moved

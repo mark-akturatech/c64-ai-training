@@ -1,0 +1,22 @@
+# - C64 I/O Map (Mapping The Commodore 64) - How VIC-II maps Character ROM into VIC address space: VIC-II can address only 16K; character ROM is made visible to VIC-II as images at $1000-$1FFF and $9000-$9FFF so character data is accessible in those ranges. To use characters in other banks, copy ROM data into RAM (sample ML routine provided at $DD00). Notes that VIC-II reads RAM underneath ROM if RAM is present under ROM (useful under BASIC ROM).
+
+                          If you have read about the VIC-II video chip, you know that it can
+                          address only 16K of memory at a time, and that all display data such
+                          as screen memory, character shape data, and sprite shape data must be
+                          stored within that 16K block.
+
+                          Since it would be very inconvenient for the VIC-II chip to be able to
+                          access the character data only at the 16K block which includes
+                          addresses 53248-57343 ($D000-$DFFF), the 64 uses an addressing trick
+                          that makes the VIC-II chip see an image of the Character ROM at
+                          4096-8191 ($1000-$1FFF) and at 36864-40959 ($9000-$9FFF).  It is not
+                          available in the other two blocks.  To generate characters in these
+                          blocks, you must supply your own user-defined character set, or copy
+                          the ROM data to RAM.  A machine language routine for doing this is
+                          included in a sample program at the entry for 56576 ($DD00).
+
+
+---
+Additional information can be found by searching:
+- "character_generator_rom_overview_and_bit_values" which expands on Why ROM visibility matters and how character bytes map to glyphs
+- "sample_bank3_switch_program" which expands on Contains machine language copy routine to transfer ROM to RAM

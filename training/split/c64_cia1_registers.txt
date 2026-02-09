@@ -1,0 +1,59 @@
+# MACHINE - Commodore 64 CIA 1 (6526) register usage ($DC00-$DC0F). Lists Port A ($DC00) and Port B ($DC01) bit meanings: paddle selects, joystick 0 bits, keyboard row select, keyboard column read, Data Direction Registers ($DC02/$DC03), Timer A/B functionality (cassette/keyboard interrupts, TOD clock), shift register (unused), interrupt control/status ($DC0D-$DC0F) and other CA/CB control bits (light pen, serial clock, PB6/PB7 outputs, one-shot modes).
+
+Commodore 64 6526 Usage (CIA 1)
+-------------------------------
+
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC00 |Paddle |Paddle |               |          Joystick 0           | 56320
+      |SelectA|SelectB|               | Right | Left  | Down  |  Up   |
+      |                Keyboard Row Select (inverted)                 |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC01 |                               |          Joystick 1           | 56321
+      |                     Keyboard Column Read                      |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC02 |             Data Direction Register A (for $DC00)             | 56322
+      |                   Default $FF = All Output                    |                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC03 |             Data Direction Register B (for $DC01)             | 56323
+      |                    Default $00 = All Input                    |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC04 |                                                               | 56324
+      |                           Timer A:                            |
+      +- - - -                                                 - - - -+
+$DC05 |        Cassette Tape I/O or Keyboard & Clock Interrupt        | 56325
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC06 |                                                               | 56326
+      |                           Timer B:                            |
+      +- - - - - - - - - -                         - - - - - - - - - -+
+$DC07 |                   Cassette Tape I/O Timing                    | 56327
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC08 |                               |       Time-of-Day Clock       | 56328
+      |                               |        1/10th Seconds         |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC09 |       |   Time-of-Day Clock   |       Time-of-Day Clock       | 56329
+      |       |Seconds, BCD High Digit|    Seconds, BCD Low Digit     |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0A |       |   Time-of-Day Clock   |       Time-of-Day Clock       | 56330
+      |       |Minutes, BCD High Digit|    Minutes, BCD Low Digit     |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0B |       |   Time-of-Day Clock   |       Time-of-Day Clock       | 56331
+      |       | Hours, BCD High Digit |     Hours, BCD Low Digit      |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0C |                   Shift Register (*unused)                    | 56332
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0D |  IRQ  |       |       | Tape  |       |  TOD  |Timer B|Timer A| 56333
+      |Control|       |       | Input |       | Alarm |       |       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0E |       |       |       |       |Timer A|PB6 Out|Timer A|Timer A| 56334
+      |       |       |       |       |OneShot| Mode  |PB6 Out| Start |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DC0F |       |       |       |       |Timer B|PB7 Out|Timer B|Serial | 56335
+      |       |       |       |       |OneShot| Mode  |PB7 Out|Clk In |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+---
+Additional information can be found by searching:
+- "c64_cia2_registers" which expands on CIA 2 registers are similar, with NMI behavior

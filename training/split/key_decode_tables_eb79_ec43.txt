@@ -1,0 +1,45 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Character decode table pointers and the decode tables themselves. Provides the table-address block at $EB79 (pointers for standard, shift, commodore, control) followed by: the standard key decode table (bytes at $EB81..$EBC1), the shifted key table ($EBC2..$EC02), and the CBM-key table ($EC03..$EC43). Each table ends with $FF as an end marker. These tables map keyboard matrix counts to PETSCII/scan codes used by the keyboard routine.
+
+
+                                *** table addresses
+.:EB79 81 EB                    standard
+.:EB7B C2 EB                    shift
+.:EB7D 03 EC                    commodore
+.:EB7F 78 EC                    control
+
+                                *** standard keyboard table
+.:EB81 14 0D 1D 88 85 86 87 11
+.:EB89 33 57 41 34 5A 53 45 01
+.:EB91 35 52 44 36 43 46 54 58
+.:EB99 37 59 47 38 42 48 55 56
+.:EBA1 39 49 4A 30 4D 4B 4F 4E
+.:EBA9 2B 50 4C 2D 2E 3A 40 2C
+.:EBB1 5C 2A 3B 13 01 3D 5E 2F
+.:EBB9 31 5F 04 32 20 02 51 03
+.:EBC1 FF
+                                *** shifted keyboard table
+.:EBC2 94 8D 9D 8C 89 8A 8B 91
+.:EBCA 23 D7 C1 24 DA D3 C5 01
+.:EBD2 25 D2 C4 26 C3 C6 D4 D8
+.:EBDA 27 D9 C7 28 C2 C8 D5 D6
+.:EBE2 29 C9 CA 30 CD CB CF CE
+.:EBEA DB D0 CC DD 3E 5B BA 3C
+.:EBF2 A9 C0 5D 93 01 3D DE 3F
+.:EBFA 21 5F 04 22 A0 02 D1 83
+.:EC02 FF
+                                *** CBM key keyboard table
+.:EC03 94 8D 9D 8C 89 8A 8B 91
+.:EC0B 96 B3 B0 97 AD AE B1 01
+.:EC13 98 B2 AC 99 BC BB A3 BD
+.:EC1B 9A B7 A5 9B BF B4 B8 BE
+.:EC23 29 A2 B5 30 A7 A1 B9 AA
+.:EC2B A6 AF B6 DC 3E 5B A4 3C
+.:EC33 A8 DF 5D 93 01 3D DE 3F
+.:EC3B 81 5F 04 95 A0 02 AB 83
+.:EC43 FF
+
+---
+Additional information can be found by searching:
+- "keyboard_scan_entry_ea87_to_eb47" which expands on uses the decode tables via pointers in $F5/$F6 to convert key counts to characters
+- "evaluate_shift_ctrl_c_keys_eb48_to_eb76" which expands on selects which of these tables to use
+- "special_character_codes_ec44_to_ec5e" which expands on some decoded codes are handled specially (case switching, SHIFT+C=)

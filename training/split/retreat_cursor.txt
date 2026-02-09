@@ -1,0 +1,22 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Retreat cursor across logical line links. Scans the line-link table LDTB1 ($D9,X) clearing or testing bit7 to find the start of a logical line, then jumps to the routine that sets the start-of-line pointer. Also provides code to decrement TBLX (physical line) and set PNTR to 0 when moving to the previous physical line. (Code: $E6ED..$E700).
+
+                                *** RETREAT CURSOR
+                                The screen line link table is searched, and then the start
+                                of line is set. The rest of the routine sets the cursor
+                                onto the next line for the previous routine.
+.,E6ED B5 D9    LDA $D9,X       LDTB1, screen line link table
+.,E6EF 30 03    BMI $E6F4       test bit7
+.,E6F1 CA       DEX             next line
+.,E6F2 D0 F9    BNE $E6ED       till all are done
+.,E6F4 4C F0 E9 JMP $E9F0       set start of line
+.,E6F7 C6 D6    DEC $D6         decrement TBLX, cursor line
+.,E6F9 20 7C E8 JSR $E87C       goto next line
+.,E6FC A9 00    LDA #$00
+.,E6FE 85 D3    STA $D3         set PNTR, the cursor column, to zero
+.,E700 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "advance_cursor" which expands on used when advancing/wrapping the cursor needs to be reversed or when editing back past line start
+- "back_to_previous_line" which expands on used by delete/left-cursor operations to move onto the previous line

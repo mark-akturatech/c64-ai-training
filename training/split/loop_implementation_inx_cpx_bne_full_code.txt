@@ -1,0 +1,51 @@
+# MACHINE - Detailed loop implementation for printing HELLO: sample assembled lines (LDX #$00; LDA $034A,X; JSR $FFD2; INX; CPX #$06; BNE $033E; RTS), explanation of increment/decrement instructions (INX/INY/DEX/DEY), CPX compare and branch-not-equal behavior, and full assembled listing with addresses.
+
+
+                                                                         :33:
+
+  .A 033E  LDA $034A,X
+  .A 0341  JSR $FFD2
+
+The first time, the computer loads the contents of address $034A (the letter
+H of HELLO) and prints it.  When the loop comes back here, with X equal to
+one, this instruction will load the contents of $034B and print the letter E.
+
+The X register counts the number of letters printed, so we must add one to
+the contents of X.  There's a special command that will add one to the
+contents of X:  INX, for increment X.  A similar code, INY, allows Y to be
+incremented; and DEX (decrement X) and DEY (decrement Y) allow X or Y to be
+decremented, or reduced, by one.  At the moment, INX is the one we need for
+counting:
+
+  .A 0344  INX
+
+Now we can test X to see if it is equal to six yet.  The first time around,
+it won't be since X started at zero and was incremented to a value of 1.  If
+X is not equal to six, we'll go back to $033E and print another letter.
+Here's how we code it:
+
+  .A 0345  CPX #$06
+  .A 0347  BNE $033E
+
+CPX stands for compare X; note that we are testing for an immediate value of
+six, so we use the # symbol.  BNE means branch not equal; if X is not equal
+to six, back we go to address $033E.
+
+A little careful thought will reveal that the program will go back five times
+for a total of six times around the loop.  It's exactly what we want.
+
+Let's show the whole code, completing it with RTS:
+
+  .A 033C  LDX #$00
+  .A 033E  LDA $034A,X
+  .A 0341  JSR $FFD2
+  .A 0344  INX
+  .A 0345  CPX #$06
+  .A 0347  BNE $033E
+  .A 0349  RTS
+
+
+---
+Additional information can be found by searching:
+- "loops_introduction_indexed_addressing" which expands on uses indexed addressing to implement the loop
+- "storing_data_message_and_basic_call_loops" which expands on how to place string data and call the routine from BASIC

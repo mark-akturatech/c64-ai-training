@@ -1,0 +1,58 @@
+# COMMODORE 64 - Character memory: VIC-II gets character shapes either from Character Generator ROM or from RAM (programmable). Normal character set: 256 characters, 8 bytes per character = 2K. VIC-II views 16K at a time so character sets must start at one of eight 2K-aligned locations. Character memory location controlled by bits 3,2,1 of VIC-II register $D018 (53272). POKE example to change character memory: POKE 53272,(PEEK(53272) AND 240) OR A. Table of A values showing possible character memory starting addresses (0,$0000; 2->$0800; 4->$1000 ROM image in BANK 0&2 default; etc) and note to add bank address.
+
+  CHARACTER MEMORY
+
+    Exactly where the VIC-II gets it character information is important to
+  graphic programming. Normally, the chip gets the shapes of the characters
+
+                                                 PROGRAMMING GRAPHICS   103
+~
+
+
+  you want to be displayed from the CHARACTER GENERATOR ROM. In this chip
+  are stored the patterns which make up the various letters, numbers,
+  punctuation symbols, and the other things that you see on the keyboard.
+  One of the features of the Commodore 64 is the ability to use patterns
+  located in RAM memory. These RAM patterns are created by you, and that
+  means that you can have an almost infinite set of symbols for games,
+  business applications, etc.
+    A normal character set contains 256 characters in which each character
+  is defined by 8 bytes of data. Since each character takes up 8 bytes this
+  means that a full character set is 256*8=2K bytes of memory. Since the
+  VIC-II chip looks at 16K of memory at a time, there are 8 possible
+  locations for a complete character set. Naturally, you are free to use
+  less than a full character set. However, it must still start at one of
+  the 8 possible starting locations.
+    The location of character memory is controlled by 3 bits of the VIC-II
+  control register located at 53272 ($D018 in HEX notation). Bits 3,2, and
+  1 control where the characters' set is located in 2K blocks. Bit 0 is ig-
+  nored. Remember that this is the same register that determines where
+  screen memory is located so avoid disturbing the screen memory bits. To
+  change the location of character memory, the following BASIC statement
+  can be used:
+
+    POKE 53272,(PEEK(53272)AND240)OR A
+
+  Where A is one of the following values:
+  +-----+----------+------------------------------------------------------+
+  |VALUE|          |            LOCATION OF CHARACTER MEMORY*             |
+  | of A|   BITS   +-------+----------------------------------------------+
+  |     |          |DECIMAL|         HEX                                  |
+  +-----+----------+-------+----------------------------------------------+
+  |   0 | XXXX000X |     0 | $0000-$07FF                                  |
+  |   2 | XXXX001X |  2048 | $0800-$0FFF                                  |
+  |   4 | XXXX010X |  4096 | $1000-$17FF ROM IMAGE in BANK 0 & 2 (default)|
+  |   6 | XXXX011X |  6144 | $1800-$1FFF ROM IMAGE in BANK 0 & 2          |
+  |   8 | XXXX100X |  8192 | $2000-$27FF                                  |
+  |  10 | XXXX101X | 10240 | $2800-$2FFF                                  |
+  |  12 | XXXX110X | 12288 | $3000-$37FF                                  |
+  |  14 | XXXX111X | 14336 | $3800-$3FFF                                  |
+  +-----+----------+-------+----------------------------------------------+
+  +-----------------------------------------------------------------------+
+  | * Remember to add in the BANK address.                                |
+  +-----------------------------------------------------------------------+
+
+---
+Additional information can be found by searching:
+- "video_bank_value_table" which expands on bank base addition needed when computing full character addresses
+- "switching_io_and_character_rom_access" which expands on how to access and copy character ROM (switch out I/O), including interrupt handling

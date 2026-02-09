@@ -1,0 +1,85 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Overview of MOS 6567 (NTSC) / 6569 (PAL) VIC-II: supported video modes (3 text 40x25, 2 bitmap 320x200/160x200), 8 sprites, fixed 16-color palette, DRAM handling, lightpen and interrupts. Important VIC signals: A0-A13 (14-bit video address bus, multiplexing notes), D0-D11 (12-bit data bus with upper 4 bits connected to Color RAM), IRQ, BA (bus available), AEC (address enable / tri-state control), LP (lightpen input), ΦIN (pixel clock) and Φ0 (system clock).
+
+2.3. 6567/6569 graphics chip
+----------------------------
+
+The 656* series graphics chip by MOS Technologies were originally designed
+to be used in video games and graphics terminals. But as the sales in these
+markets have been rather poor, Commodore decided to use the chips when they
+were planning to make their own home computers.
+
+In the C64, the "Video Interface Controller II (VIC-II)" [2] has been used,
+featuring 3 text based (40x25 characters with 8x8 pixels each) and 2 bitmap
+based (320x200 pixels) video modes, 8 hardware sprites and a fixed palette
+of 16 colors. It can manage up to 16KB of dynamic RAM (including the
+generation of RAS and CAS and the RAM refresh) and also has a light pen
+input and interrupt possibilities.
+
+Two VIC types appear in the C64: The 6567 in NTSC machines and the 6569 in
+PAL machines. There are several mask steppings of both types, but the
+differences are mostly neglectable with the exception of the 6567R56A.
+Newer C64 versions are bearing the functionally equivalent chips 8562
+(NTSC) and 8565 (PAL). In the following, only 6567/6569 will be mentioned,
+but all statements are applicable for the 856* chips. There is also a 6566
+designed to be connected to static RAM but this one was never used in C64s.
+
+Important signals:
+
+A0-A13  The 14 bit video address bus used by the VIC to address 16KB of
+        memory. The address bits A0-A5 and A8-A13 are multiplexed in pairs
+        (i.e. A0/A8, A1/A9 etc.) on one pin each. The bits A6-A11 are
+        (additionally) available on separate lines.
+
+D0-D11  A 12 bit wide data bus over which the VIC accesses the memory. The
+        lower 8 bits are connected to the main memory and the processor
+        data bus, the upper 4 bits are connected to a special 4 bit wide
+        static memory (1024 addresses, A0-A9) used for storing color
+        information, the Color RAM.
+
+IRQ     This output is wired to the IRQ input on the processor and makes it
+        possible for the VIC to trigger interrupts. The VIC has four
+        interrupt sources: On reaching a certain raster line (raster
+        interrupt), on the collision of two or more sprites, on the
+        collision of sprites with graphics data and on a negative edge on
+        the light pen input.
+
+BA      With this signal, the VIC indicated that the bus is available to
+        the processor during the second clock phase (�2 high). BA is
+        normally high as the VIC accesses the bus mostly during the first
+        phase. But for the character pointer and sprite data accesses, the
+        VIC also needs the bus sometimes during the second phase. In this
+        case, BA goes low three cycles before the VIC access. After that,
+        AEC remains low during the second phase and the VIC performs the
+        accesses. Why three cycles? BA is connected to the RDY line of the
+        processor as mentioned, but this line is ignored on write accesses
+        (the CPU can only be interrupted on reads), and the 6510 never does
+        more than three writes in sequence (see [5]).
+
+AEC     This pin is wired to the processor signal with the same name (see
+        there). It reflects the state of the data and address line drivers
+        of the VIC. If AEC is high, they are in tri-state. AEC is normally
+        low during the first clock phase (�2 low) and high during the
+        second phase so that the VIC can access the bus during the first
+        phase and the 6510 during the second phase. If the VIC also needs
+        the bus in the second phase, AEC remains low.
+
+LP      This input is intended for connecting a light pen. On a negative
+        edge, the current position of the raster beam is latched to the
+        registers LPX and LPY. As this pin shares a line with the keyboard
+        matrix, it can also be accessed by software.
+
+�IN     This is the feed for the pixel clock of 8.18 MHz (NTSC) or 7.88 MHz
+        (PAL) that is generated from the crystal frequency. Eight pixels
+        are displayed per bus clock cycle (�2).
+
+�0      From the pixel clock on �IN, the VIC generates the system clock of
+        1.023 MHz (NTSC) or 0.985 MHz (PAL) by dividing �IN by eight. It is
+        available on this pin and fed into the processor which in turn
+        generated the signal �2 from it.
+
+
+---
+Additional information can be found by searching:
+- "c64_overview" which expands on VIC as one of the main C64 chips
+- "vic_block_diagram" which expands on internal functional blocks and signal flow
+- "memory_map_vic" which expands on VIC 16KB addressing and use of Color RAM

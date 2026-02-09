@@ -1,0 +1,30 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - GET FROM SERIAL/RS232: Two-path receive logic. If the STATUS (ST) byte indicates no serial device, returns a carriage return (#0D) in A; otherwise dispatches to the serial bus receiver (ACPTR) or the RS232 receive routine and handles RS232 status masking (RSSTAT $0297). Includes code for checking ST and branching to the appropriate receive routine.
+
+                                *** GET FROM SERIAL/RS232
+                                These routines, actually two different, is entered from
+                                the previous routine. The serial section checks the state
+                                of ST. If zero, then the data is received from the bus,
+                                otherwise carriage return (#0d) is returned in (A). In the
+                                second section, the received byte is read from the RS232
+                                port.
+.,F1AD A5 90    LDA $90         STATUS, I/O status word
+.,F1AF F0 04    BEQ $F1B5       status OK
+.,F1B1 A9 0D    LDA #$0D        else return <CR> and exit
+.,F1B3 18       CLC
+.,F1B4 60       RTS
+.,F1B5 4C 13 EE JMP $EE13       ACPTR, get byte from serial bus
+
+.,F1B8 20 4E F1 JSR $F14E       receive from RS232
+.,F1BB B0 F7    BCS $F1B4       end with carry set
+.,F1BD C9 00    CMP #$00
+.,F1BF D0 F2    BNE $F1B3       end with  carry clear
+.,F1C1 AD 97 02 LDA $0297       RSSTAT, 6551 status register
+.,F1C4 29 60    AND #$60        mask
+.,F1C6 D0 E9    BNE $F1B1       return with <CR>
+.,F1C8 F0 EE    BEQ $F1B8       get from RS232
+
+
+---
+Additional information can be found by searching:
+- "chrout_output_character" which expands on sends output to devices (screen/serial/RS232)
+- "find_file_lat_search" which expands on uses STATUS and device checks elsewhere in file I/O

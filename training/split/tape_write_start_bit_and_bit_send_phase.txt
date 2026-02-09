@@ -1,0 +1,41 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles the second start-bit cycles and begins data-bit transmission. Checks the '$A9' start-bit-check flag, sets the time constant for the start-bit second cycles via JSR $FBAD, and increments the start-bit flag (INC $A9). Calls the bit-send routine (JSR $FBA6) to toggle the tape for the data-bit LSB. Manages the bit-cycle phase toggle ($A4 EOR #$01 STA $A4) and, during the second half of a bit, inverts the bit in the write byte ($BD), masks the LSB and updates the byte parity ($9B). Returns to restore registers when a half-cycle exit occurs (JMP $FEBC).
+
+                                continue tape byte write. the first start cycle, both half cycles of it, is complete
+                                so the routine drops straight through to here
+.,FBE3 A5 A9    LDA $A9         get start bit check flag
+.,FBE5 D0 09    BNE $FBF0       if the start bit is complete go send the byte bits
+                                after the two half cycles of $0110 ststem clocks the start bit is completed with two
+                                half cycles of $00B0 system clocks. this is the same as the first part of a 1 bit
+.,FBE7 20 AD FB JSR $FBAD       set time constant for bit = 1 and toggle tape
+.,FBEA D0 1D    BNE $FC09       if first half cycle go restore registers and exit
+                                interrupt
+.,FBEC E6 A9    INC $A9         set start bit check flag
+.,FBEE D0 19    BNE $FC09       restore registers and exit interrupt, branch always
+                                continue tape byte write. the start bit, both cycles of it, is complete so the routine
+                                drops straight through to here. now the cycle pairs for each bit, and the parity bit,
+                                are sent
+.,FBF0 20 A6 FB JSR $FBA6       send lsb from tape write byte to tape
+.,FBF3 D0 14    BNE $FC09       if first half cycle go restore registers and exit
+                                interrupt
+                                else two half cycles have been done
+.,FBF5 A5 A4    LDA $A4         get tape bit cycle phase
+.,FBF7 49 01    EOR #$01        toggle b0
+.,FBF9 85 A4    STA $A4         save tape bit cycle phase
+.,FBFB F0 0F    BEQ $FC0C       if bit cycle phase complete go setup for next bit
+                                each bit is written as two full cycles. a 1 is sent as a full cycle of $0160 system
+                                clocks then a full cycle of $00C0 system clocks. a 0 is sent as a full cycle of $00C0
+                                system clocks then a full cycle of $0160 system clocks. to do this each bit from the
+                                write byte is inverted during the second bit cycle phase. as the bit is inverted it
+                                is also added to the, one bit, parity count for this byte
+.,FBFD A5 BD    LDA $BD         get tape write byte
+.,FBFF 49 01    EOR #$01        invert bit being sent
+.,FC01 85 BD    STA $BD         save tape write byte
+.,FC03 29 01    AND #$01        mask b0
+.,FC05 45 9B    EOR $9B         EOR with tape write byte parity bit
+.,FC07 85 9B    STA $9B         save tape write byte parity bit
+.,FC09 4C BC FE JMP $FEBC       restore registers and exit interrupt
+
+---
+Additional information can be found by searching:
+- "tape_write_irq_header_and_first_start_cycle" which expands on previously set up the first half-cycle; this continues to finish the start bit and begin bits
+- "tape_write_shift_count_and_new_byte_setup" which expands on after both half-cycles of a bit are done, code shifts the bit out, updates counts and may set up next byte

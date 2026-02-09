@@ -1,0 +1,61 @@
+# MACHINE - Defines the bus concept (groups of wires used together), lists 650x family chips (6502, 6510, 6509, 7501), and explains the address bus: 16 address lines sent by the CPU to select a memory/device chip; how a single chip is selected among many. Includes Figure 1.1 (address bus illustration) and remarks about address decoding.
+
+
+The Bus
+-------
+
+It's fairly common for a group of circuits to be used together.  The wires
+run from one microchip to another, and then on to the next.  Where a group of
+wires are used together and connect to several different points, the group is
+called a bus (sometimes spelled "buss").  [um, isn't a "buss" another word
+for a "kiss"?  better check what's going on inside my machine... HEY! -wf]
+
+The PET, CBM, and VIC-20 use a microprocessor chip called the 6502.  The
+Commodore 64 uses a 6510.  The Commodore B series uses a 6509 chip, and the
+Commodore PLUS/4 uses a chip called the 7501.  All these chips are similar,
+and there are other chips in the same family with numbers like 6504; every
+one works on the same principles, and we'll refer to all of them by the
+family name 650x.
+
+Let's take an example of a bus used on any 650x chip.  A 650x chip has little
+built-in storage.  To get an instruction or perform a computation, the 650x
+must call up information from "memory"--data stored within other chips.
+
+The 650x sends out a "call" to all memory chips, asking for information.  It
+does this by sending out voltages on a group of sixteen wires called the
+"address bus."  Each of the sixteen wires may carry either voltage or no
+voltage; this combination of signals is called an address.
+
+Every memory chip is connected to the address bus.  Each chip reads the
+address, the combination of voltages sent by the processor.  One and only one
+chip says, "That's me!"  In other words, the specific address causes that
+chip to be selected; it prepares to communicate with the 650x.  All other
+chips say, "That's not me!" and will not participate in data transfer.
+
+
+               +------+
+               |      | ->          ->          ->         ->
+               |      o-------o-----------o-----------o--------
+               |      o-------+o----------+o----------+o-------
+               | 650x o-------++o---------++o---------++o------
+               |      o-------+++o--------+++o--------+++o-----
+               |      |       ||||        ||||        ||||
+               |      |      |||||       |||||       |||||
+               +------+      v||||       v||||       v||||
+                              ||||        ||||        ||||
+                           +--oooo--+  +--oooo--+  +--oooo--+
+                           |        |  |        |  |        |
+                           | Memory |  | Memory |  | Memory |
+                           |  Chip  |  |  Chip  |  |  Chip  |
+                           |        |  |        |  |        |
+                           +--------+  +--------+  +--------+
+
+               Figure 1.1  Address bus connecting 650x & 3 chips
+
+                                                                          :4:
+
+
+---
+Additional information can be found by searching:
+- "data_bus_two_way" which expands on explains data flow once a chip is selected
+- "memory_elements_and_mapped_io" which expands on describes types of devices attached to the address bus (RAM/ROM/IA)

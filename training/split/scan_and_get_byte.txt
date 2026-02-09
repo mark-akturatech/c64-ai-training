@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Helper routine to scan for ',byte' parameter: calls the comma/byte scanner (E20E) and then jumps to the byte-parameter fetch routine, or uses the memory-scan exit to detect end-of-token or ':' and returns appropriately. (Includes JSR $E20E, JMP to get byte parameter at $B79E, and the E206/E20D branch/return sequence to handle end-of-token.)
+
+                                *** scan and get byte, else do syntax error then warm start
+.,E200 20 0E E2 JSR $E20E       scan for ",byte", else do syntax error then warm start
+.,E203 4C 9E B7 JMP $B79E       get byte parameter and return
+                                exit function if [EOT] or ":"
+.,E206 20 79 00 JSR $0079       scan memory
+.,E209 D0 02    BNE $E20D       branch if not [EOL] or ":"
+.,E20B 68       PLA             dump return address low byte
+.,E20C 68       PLA             dump return address high byte
+.,E20D 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "scan_comma_and_valid_byte" which expands on performs the comma scan and then validates the following byte
+- "get_params_for_load_save" which expands on LOAD/SAVE parser calls this to fetch optional numeric parameters

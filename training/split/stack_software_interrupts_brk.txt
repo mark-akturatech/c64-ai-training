@@ -1,0 +1,74 @@
+# NMOS 6510 - BRK (software interrupt) cycle sequence: opcode fetch, dummy fetch of PC+1 (signature), pushes PC high/low and status to stack, then loads IRQ vector from $FFFE/$FFFF. Detailed cycle-by-cycle address/data bus actions and note about fetch after opcode.
+
+
+Byte after opcode
+
+R
+
+3 (*2)
+
+S + 0
+
+Byte from Stack
+
+R
+
+4
+
+S + 1
+
+Status register
+
+R
+
+5
+
+S + 2
+
+Program counter low
+
+R
+
+6
+
+S + 3
+
+Program counter High
+
+R
+
+(*1) Dummy fetch from PC + 1
+(*2) Dummy fetch from S + 0
+Example: acknowledge CIA interrupts
+
+JMP $DD0C
+;DD0C
+RTI
+This will execute the RTI instruction at $DD0C, but since it will also fetch the next “opcode” it will
+also perform a read on $DD0D, which will acknowledge the NMI. This is one cycle faster than
+doing
+LDA $DD0D
+RTI
+
+- 82 -
+
+Hardware interrupts
+A special case are the hardware interrupts (IRQ, NMI, RESET).
+Cycle
+
+Address-Bus
+
+Data-Bus
+
+Read/Write
+
+1 (*1)
+
+PC
+
+Byte at PC
+
+
+---
+Additional information can be found by searching:
+- "hardware_interrupts_cycles" which expands on comparison with hardware interrupt sequence (IRQ/NMI/RESET)

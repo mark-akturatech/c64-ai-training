@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFA8 that JMPs to $EDDD to output a byte to the serial bus with full handshaking. LISTEN must be used before calling. Buffers one character and handles EOI on UNLISTEN.
+
+                                *** output a byte to serial bus
+                                this routine is used to send information to devices on the serial bus. A call to
+                                this routine will put a data byte onto the serial bus using full handshaking.
+                                Before this routine is called the LISTEN routine, $FFB1, must be used to
+                                command a device on the serial bus to get ready to receive data.
+                                the accumulator is loaded with a byte to output as data on the serial bus. A
+                                device must be listening or the status word will return a timeout. This routine
+                                always buffers one character. So when a call to the UNLISTEN routine, $FFAE,
+                                is made to end the data transmission, the buffered character is sent with EOI
+                                set. Then the UNLISTEN command is sent to the device.
+.,FFA8 4C DD ED JMP $EDDD       output byte to serial bus
+
+---
+Additional information can be found by searching:
+- "serial_output_sequence" which expands on EDDD serial output implementation (external)

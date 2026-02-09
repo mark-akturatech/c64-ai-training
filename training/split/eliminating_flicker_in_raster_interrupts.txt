@@ -1,0 +1,45 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Ways to avoid flicker & slowdown from sprite multiplexing: causes include issuing next raster interrupt too close to current ($D012 timing) or missing other important IRQs (e.g., bottom score panel). Recommendations: don't display sprites outside visible ranges; shrink usable bottom lines; at end of each raster IRQ check the next planned IRQ position against $D012 with a safety margin (example: store next IRQ Y into $D012, SEC; SBC #$03; CMP $D012; BCC go_to_irq_directly) to detect lateness and skip costly saving/acknowledging if too late. These checks don't prevent CPU overload but reduce flicker and audio slowdown.
+
+2.7 Eliminating flicker in raster interrupts
+
+Sprite multiplexing in games is quite an unpredictable operation, because the
+sprites can be anywhere. If one just blindly follows the sorted Y-coordinates
+and fires up raster interrupts according to them, flicker & slowdown (caused
+by the new raster interrupt being higher or at same position than the current
+$d012 value) may occur in at least these cases:
+
+- The next raster interrupt is so close to the current that we are already late
+  from it, according to $d012
+
+- The bottom scorepanel raster interrupt (ok, this is not in all programs, but
+  in quite many) has been missed because of sprite multiplexing.
+
+The first thing to do is to make sure that sprites outside the visible screen
+aren't displayed. Also it's a good idea to remove a couple extra lines from the
+bottom of the screen: if scorepanel begins at line 200 then don't allow for
+example sprite Y-coordinates 198 & 199 to be displayed.
+
+The second is to simply introduce this checking code at the end of each raster
+interrupt, whose location/duration we're unsure of. In this example the
+accumulator contains the position of the next raster interrupt.
+
+                sta $d012
+                sec
+                sbc #$03
+                cmp $d012                       ;Late from next IRQ?
+                bcc go_to_irq_directly
+
+Note that the go_to_irq_directly should skip all register saving/restoring, as
+well as interrupt acknowledging (obvious.) 3 lines feel like paranoidically
+much "safety" for the interrupt but in fact I got flicker in some rare cases
+if I was subtracting only 2.
+
+These two things won't prevent game slowdown when the CPU simply has too much
+to do and they won't prevent graphical errors when there's simply too many
+sprites in one place, but at least they prevent the dreaded flickering and
+music slowdown. :)
+
+
+---
+Additional information can be found by searching:
+- "raster_interrupt_code_example_and_notes" which expands on the check should be integrated into the raster IRQ flow to avoid late IRQs

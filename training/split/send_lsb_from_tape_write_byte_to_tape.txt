@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Send LSB of tape write byte: LDA $BD (tape write byte), LSR (shift LSB into carry), set default timing low byte #$60 (bit=0) or #$B0 (bit=1) depending on carry, write timer B low/high to VIA 1 ($DC06/$DC07), set VIA 1 CRB ($DC0F) to start timer B single shot (#$19), toggle tape out bit via 6510 port $01 (EOR #$08) and mask/store. Uses $BD (write byte), $9B (parity), and VIA registers $DC06/$DC07/$DC0F.
+
+                                *** send lsb from tape write byte to tape
+                                this routine tests the least significant bit in the tape write byte and sets VIA 2 T2
+                                depending on the state of the bit. if the bit is a 1 a time of $00B0 cycles is set, if
+                                the bot is a 0 a time of $0060 cycles is set. note that this routine does not shift the
+                                bits of the tape write byte but uses a copy of that byte, the byte itself is shifted
+                                elsewhere
+.,FBA6 A5 BD    LDA $BD         get tape write byte
+.,FBA8 4A       LSR             shift lsb into Cb
+.,FBA9 A9 60    LDA #$60        set time constant low byte for bit = 0
+.,FBAB 90 02    BCC $FBAF       branch if bit was 0
+                                set time constant for bit = 1 and toggle tape
+.,FBAD A9 B0    LDA #$B0        set time constant low byte for bit = 1
+                                write time constant and toggle tape
+.,FBAF A2 00    LDX #$00        set time constant high byte
+                                write time constant and toggle tape
+.,FBB1 8D 06 DC STA $DC06       save VIA 1 timer B low byte
+.,FBB4 8E 07 DC STX $DC07       save VIA 1 timer B high byte
+.,FBB7 AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,FBBA A9 19    LDA #$19        load timer B, timer B single shot, start timer B
+.,FBBC 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,FBBF A5 01    LDA $01         read the 6510 I/O port
+.,FBC1 49 08    EOR #$08        toggle tape out bit
+.,FBC3 85 01    STA $01         save the 6510 I/O port
+.,FBC5 29 08    AND #$08        mask tape out bit
+.,FBC7 60       RTS
+
+---
+Additional information can be found by searching:
+- "write_time_constant_and_toggle_tape" which expands on suboperation performed via JSR $FBB1
+- "tape_write_irq_routine" which expands on called repeatedly by the tape write IRQ sequence

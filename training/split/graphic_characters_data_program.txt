@@ -1,0 +1,47 @@
+# COMMODORE 64 - Example program demonstrating using printable characters (e.g., space and 'Q') in DATA statements to design a sprite visually. Loads character-based strings from DATA into memory, converts 'Q' to solid pixels by assembling 8-pixel blocks (computes value t using bit weights 2^(7-j)), pokes into sprite memory (832+i*3+k), and displays the numeric POKE values. Uses VIC base V=53248, enables sprite (V+21), sets color (V+39), and uses sprite pointer 2040,13 for block placement.
+
+  USING GRAPHIC CHARACTERS IN DATA STATEMENTS
+
+    The following program allows you to create a sprite using blanks and
+  solid circles <SHIFT+Q> in DATA statements. The sprite and the numbers
+  POKED into the sprite data registers are displayed.
+
+
+
+start tok64 page181.prg
+  10 print"{clear}":fori=0to63:poke832+i,0:next
+  20 gosub60000
+  999 end
+  60000 data"         QQQQQQQ        "
+  60001 data"       QQQQQQQQQQQ      "
+  60002 data"      QQQQQQQQQQQQQ     "
+  60003 data"      QQQQQ   QQQQQ     "
+  60004 data"     QQQQQ QQQ  QQQQ    "
+  60005 data"     QQQQQ QQQ QQQQQ    "
+  60006 data"     QQQQQ QQQ  QQQQ    "
+  60007 data"      QQQQQ   QQQQQ     "
+  60008 data"      QQQQQQQQQQQQQ     "
+  60009 data"      QQQQQQQQQQQQQ     "
+  60010 data"      Q QQQQQQQQQ Q     "
+  60011 data"       Q QQQQQQQ Q      "
+  60012 data"       Q  QQQQQ  Q      "
+  60013 data"        Q  QQQ  Q       "
+  60014 data"        Q  QQQ  Q       "
+  60015 data"         Q  Q  Q        "
+  60016 data"         Q  Q  Q        "
+  60017 data"          QQQQQ         "
+  60018 data"          QQQQQ         "
+  60019 data"          QQQQQ         "
+  60020 data"           QQQ          "
+  60100 v=53248:pokev,200:pokev+1,100:pokev+21,1:pokev+39,14:poke2040,13
+  60105 pokev+23,1:pokev+29,1
+  60110 fori=0to20:reada$:fork=0to2:t=0:forj=0to7:b=0
+  60140 ifmid$(a$,j+k*8+1,1)="Q"thenb=1
+  60150 t=t+b*2^(7-j):next:printt;:poke832+i*3+k,t:next:print:next
+  60200 return
+stop tok64
+
+---
+Additional information can be found by searching:
+- "sprite_data_encoding_groups_of_eight" which expands on how the conversion from 'Q' characters to numeric DATA determines pixel bytes
+- "spritemaking_chart" which expands on where to POKE sprite pointer values (2040) and sprite memory (832)

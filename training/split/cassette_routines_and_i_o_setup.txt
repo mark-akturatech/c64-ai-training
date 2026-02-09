@@ -1,0 +1,106 @@
+# ********* - Cassette/tape I/O related Kernal routines: routines to manage tape buffers and I/O: messages and control (61629 $F0BD Kernal control messages text stored at 61629 $F0BD), printing messages when file found or searching (61739 $F12B), GETIN CHRIN/CHROUT documented jump table entries and behavior regarding keyboard/screen vs devices (61758 $F13E GETIN, 61783 $F157 CHRIN, 61898 $F1CA CHROUT), and OPEN/CLOSE file operations calling Kernal (57790 $E1BE OPEN, 57799 $E1C7 CLOSE).
+
+61273         $EF59
+Receive Next RS-232 Bit (NMI)
+
+This routine is called by the NMI interrupt handler routine to receive
+the next bit of data from the RS-232 device.
+
+61310         $EF7E
+Setup to Receive a New Byte from RS-232
+
+61328         $EF90
+Test If Start Bit Received from RS-232
+
+61335         $EF97
+Put a Byte of Received Data into RS-232 Receive Buffer
+
+This routine checks for a Receive Buffer Overrun, stores the byte just
+received in the RS-232 receive buffer, and checks for Parity Error,
+Framing Error, or Break Detected Error.  It then sets up to receive
+the next byte.
+
+61409         $EFE1
+CHKOUT for the RS-232 device
+
+The Kernal CHKOUT routine calls this subroutine to define the RS-232
+device's logical file as an output channel.  Before this can be done,
+the logical file must first be OPENed.
+
+61460         $F014
+CHROUT for the RS-232 Device
+
+The Kernal CHROUT routine calls this subroutine to output a character
+to the RS-232 device.  After the logical file has been OPENed and set
+for output using CHKOUT, the CHROUT routine is used to actually send a
+byte of data.
+
+61517         $F04D
+CHKIN for the RS-232 Device
+
+The Kernal CHKIN routine calls this subroutine to define the RS-232
+device's logical file as an input channel.  A prerequisite for this is
+that the logical file first be OPENed.
+
+61574         $F086
+GETIN for the RS-232 Device
+
+The Kernal GETIN routine calls this subroutine to remove the next byte
+of data from the RS-232 receive buffer and return it in the
+Accumulator.  The routine checks for the Receive Buffer Empty Error.
+It is also called by the Kernal CHRIN routine, which essentially does
+the same thing as GETIN for the RS-232 device.
+
+61604         $F0A4
+Stop CIA #2 RS-232 NMIs for Serial/Cassette Routines
+
+This subroutine turns off the NMIs that drive the RS-232 routines
+before any I/O is done using the serial bus or cassette device.  Such
+interrupts could throw off the timing of those I/O routines, and
+interfere with the transmission of data.
+
+61629         $F0BD
+Kernal Control Messages
+
+The ASCII text of the Kernal I/O control messages is stored here.  The
+last byte of every message has Bit 7 set to 1 (ASCII value + 128).
+The messages are:
+
+I/O ERROR
+SEARCHING
+FOR
+PRESS PLAY ON TAPE
+PRESS RECORD & PLAY ON TAPE
+LOADING
+SAVING
+VERIFYING
+FOUND
+OK
+
+61739         $F12B
+Print Kernal Error Message if in Direct Mode
+
+This routine first checks location 157 ($9D) to see if the messages
+are enabled.  If they are, it prints the message indexed by the .Y
+register.
+
+61758         $F13E          GETIN
+Get One Byte from the Input Device
+
+This is a documented Kernal routine whose jump table entry point is at
+65508 ($FFE4).  The routine jumps through a RAM vector at 810 ($32A).
+Its function is to get a character from the current input device
+(whose device number is stored at 153 ($99)).  In practive, it
+operates identically to the CHRIN routine below for all devices except
+for the keyboard.  If the keyboard is the current input device, this
+routine gets one character from the keyboard buffer at 631 ($277).  It
+depends on the IRQ interrupt routine to rad the keyboard and put
+characters into the buffer.
+
+61783         $F157          CHRIN
+Input a Character from the Current Device
+
+
+---
+Additional information can be found by searching:
+- "kernal_chrin_chrout_and_file_routines" which expands on OPEN/CLOSE/SETNAM/SETLFS interactions with tape and serial I/O

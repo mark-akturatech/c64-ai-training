@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Checks and cleans up the descriptor stack. Compares YA with the top-of-stack descriptor pointer bytes ($18/$17), discards a descriptor stack item if AY matches, updates descriptor stack pointer ($16/$17) and last string pointer, clears Y, then returns (RTS).
+
+                                clean descriptor stack, YA = pointer
+                                checks if AY is on the descriptor stack, if so does a stack discard
+.,B6DB C4 18    CPY $18         compare high byte with current descriptor stack item
+                                pointer high byte
+.,B6DD D0 0C    BNE $B6EB       exit if <>
+.,B6DF C5 17    CMP $17         compare low byte with current descriptor stack item
+                                pointer low byte
+.,B6E1 D0 08    BNE $B6EB       exit if <>
+.,B6E3 85 16    STA $16         set descriptor stack pointer
+.,B6E5 E9 03    SBC #$03        update last string pointer low byte
+.,B6E7 85 17    STA $17         save current descriptor stack item pointer low byte
+.,B6E9 A0 00    LDY #$00        clear high byte
+.,B6EB 60       RTS             
+
+---
+Additional information can be found by searching:
+- "chr_string_creation" which expands on uses descriptor stack space after creating string
+- "pull_string_and_byte_param" which expands on related descriptor stack manipulations

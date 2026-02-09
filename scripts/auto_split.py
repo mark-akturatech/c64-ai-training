@@ -550,6 +550,22 @@ def refine_config(client, model, config, docs_dir, verbose=True):
     return config, num_refined
 
 
+def normalize_ignored(config):
+    """Ensure splits with 'ignored' in the name have the ignore flag set.
+
+    The AI sometimes names sections with 'ignored' but forgets to set the flag.
+    """
+    fixed = 0
+    for split in config.get('splits', []):
+        name = split.get('name', '')
+        if 'ignored' in name.lower() and not split.get('ignore', False):
+            split['ignore'] = True
+            if not split.get('reason'):
+                split['reason'] = split.get('description', 'ignored section')
+            fixed += 1
+    return fixed
+
+
 def validate_config(config, total_lines):
     """Validate a split config for gaps and overlaps."""
     splits = config.get('splits', [])
@@ -970,6 +986,11 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             if marked:
                 print(f"  Marked {marked} chunks as no_refine (cannot split further)")
 
+            # Normalize: ensure 'ignored' in name → ignore flag set
+            norm_fixed = normalize_ignored(config)
+            if norm_fixed:
+                print(f"  Fixed {norm_fixed} entries missing ignore flag")
+
             # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)
             if validation_errors:
@@ -1145,6 +1166,11 @@ def main():
 
             # Add source_md5
             config['source_md5'] = md5_content(content)
+
+            # Normalize: ensure 'ignored' in name → ignore flag set
+            norm_fixed = normalize_ignored(config)
+            if norm_fixed:
+                print(f"    Fixed {norm_fixed} entries missing ignore flag")
 
             # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)

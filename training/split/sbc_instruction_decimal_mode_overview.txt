@@ -1,0 +1,118 @@
+# NMOS 6510 - SBC (Subtract with Carry) opcode mappings for multiple addressing modes (zp,x: $F5, zp: $E5, #imm: $E9 and undocumented immediate $EB), short mnemonic forms and examples (A = A - {addr}, A = A - #{imm}). Explains the operation difference in decimal (BCD) mode vs binary mode: only a result-fixup is applied, how the internal half-carry is used for the lower nibble, behavior of high-nibble fixup, examples of wraparound ($00 - $01 => $99 in BCD), and detailed flag semantics (N and V unaffected by decimal mode; Z determined by binary op; C used as multi-byte carry). Also lists CPU/decimalmode test program filenames for SBC and its undocumented immediate variant.
+
+2
+
+6
+
+o o
+
+i
+
+o
+
+x
+
+$f5
+
+SBC zp, x
+
+2
+
+4
+
+o o
+
+i
+
+o
+
+x
+
+$e5
+
+SBC zp
+
+2
+
+3
+
+o o
+
+i
+
+o
+
+x
+
+$E9
+
+SBC #imm
+
+2
+
+2
+
+o o
+
+i
+
+o
+
+x
+
+$EB
+
+SBC #imm
+
+2
+
+2
+
+o o
+
+i
+
+o
+
+x
+
+A = A - {addr}
+
+A = A - #{imm}
+
+Operation: subtract immediate value from accumulator with carry.
+The only difference in SBC's operation in decimal mode from binary mode is the result-fixup.
+Decimal subtraction is easier than decimal addition, as you have to make the BCD fixup only when
+a nibble overflows. In decimal addition, you had to verify if the nibble was greater than 9. The
+processor has an internal "half carry" flag for the lower nibble, used to trigger the BCD fixup. When
+calculating with legal BCD values, the lower nibble cannot overflow again when fixing it.
+So, the processor does not handle overflows while performing the fixup. Similarly, the BCD fixup
+occurs in the high nibble only if the value overflows, i.e. when the C flag will be cleared.
+In binary mode, subtraction has a wraparound effect. For example $00 - $01 = $FF (and the carry is
+clear). In decimal mode, there is a similar wraparound effect: $00 - $01 = $99, and the carry is clear.
+Flags
+•
+
+The N and V flags are not affected by decimal mode.
+
+•
+
+Z flag is not affected by decimal mode, it will be set if the binary operation would become
+zero, regardless of the BCD result.
+
+•
+
+C flag works as a carry for multi byte operations as expected
+
+Test code: CPU/decimalmode/sbc00.prg CPU/decimalmode/sbc01.prg
+CPU/decimalmode/sbc02.prg CPU/decimalmode/sbc10.prg
+CPU/decimalmode/sbc11.prg CPU/decimalmode/sbc12.prg
+CPU/decimalmode/sbcEB00.prg CPU/decimalmode/sbcEB01.prg
+CPU/decimalmode/sbcEB02.prg CPU/decimalmode/sbcEB10.prg
+CPU/decimalmode/sbcEB11.prg CPU/decimalmode/sbcEB12.prg
+
+
+---
+Additional information can be found by searching:
+- "sbc_pseudocode" which expands on pseudocode implementing the decimal-mode fixups and flag updates for SBC
+- "arr_instruction_decimal_mode" which expands on related decimal-mode instruction (ARR) and how it does BCD fixups

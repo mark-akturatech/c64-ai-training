@@ -1,0 +1,48 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Comment and setup for the cassette byte handler: descriptive block explaining RDFLG modes (ignore zeros, load, wait for byte sync), error flags and pass mechanics, symbolic error codes (SPERR/CKERR/SBERR/LBERR). RD15 entry sets temporary value and uses RDFLG/BIT tests to determine mode: waiting-for-zeros mode, transitions into sync/long-block error handling, and sets RDFLG for upcoming data or ignoring bytes. This block determines whether to accept data or report block errors before entering data-load flow.
+
+                                ;*************************************************
+                                ;* BYTE HANDLER OF CASSETTE READ                 *
+                                ;*                                               *
+                                ;* THIS PORTION OF IN LINE CODE IS PASSED THE    *
+                                ;* BYTE ASSEMBLED FROM READING TAPE IN OCHAR.    *
+                                ;* RER IS SET IF THE BYTE READ IS IN ERROR.      *
+                                ;* REZ IS SET IF THE INTERRUPT PROGRAM IS READING*
+                                ;* ZEROS.  RDFLG TELLS US WHAT WE ARE DOING.     *
+                                ;* BIT 7 SAYS TO IGNORE BYTES UNTIL REZ IS SET   *
+                                ;* BIT 6 SAYS TO LOAD THE BYTE. OTHERWISE RDFLG  *
+                                ;* IS A COUNTDOWN AFTER SYNC.  IF VERCK IS SET   *
+                                ;* WE DO A COMPARE INSTEAD OF A STORE AND SET    *
+                                ;* STATUS.  FSBLK COUNTS THE TWO BLOCKS. PTR1 IS *
+                                ;* INDEX TO ERROR TABLE FOR PASS1.  PTR2 IS INDEX*
+                                ;* TO CORRECTION TABLE FOR PASS2.                *
+                                ;*************************************************
+                                ;
+                                SPERR=16
+                                CKERR=32
+                                SBERR=4
+                                LBERR=8
+                                ;
+.,FA70 A9 0F    LDA #$0F        RD15   LDA #$F
+                                ;
+.,FA72 24 AA    BIT $AA         BIT    RDFLG           ;TEST FUNCTION MODE
+.,FA74 10 17    BPL $FA8D       BPL    RD20            ;NOT WAITING FOR ZEROS
+                                ;
+.,FA76 A5 B5    LDA $B5         LDA    DIFF            ;ZEROS YET?
+.,FA78 D0 0C    BNE $FA86       BNE    RD12            ;YES...WAIT FOR SYNC
+.,FA7A A6 BE    LDX $BE         LDX    FSBLK           ;IS PASS OVER?
+.,FA7C CA       DEX             DEX                    ;...IF FSBLK ZERO THEN NO ERROR (FIRST GOOD)
+.,FA7D D0 0B    BNE $FA8A       BNE    RD10            ;NO...
+                                ;
+.,FA7F A9 08    LDA #$08        LDA    #LBERR
+.,FA81 20 1C FE JSR $FE1C       JSR    UDST            ;YES...LONG BLOCK ERROR
+.,FA84 D0 04    BNE $FA8A       BNE    RD10            ;BRANCH ALWAYS
+                                ;
+.,FA86 A9 00    LDA #$00        RD12   LDA #0
+.,FA88 85 AA    STA $AA         STA    RDFLG           ;NEW MODE IS WAIT FOR SYNC
+.,FA8A 4C BC FE JMP $FEBC       RD10   JMP PREND       ;EXIT...DONE
+                                ;
+
+---
+Additional information can be found by searching:
+- "finish_byte_and_newchar_call" which expands on RADJ stored FSBLK and then control flows here to handle the assembled byte per RDFLG
+- "load_sync_and_block_start_handling" which expands on If in load mode, flow branches to RD20/RD200 to configure address pointers and data mode

@@ -1,0 +1,29 @@
+# 6502 Microprocessor - Pre-indexed indirect: LDA (zp,X) — add zero-page address to X (wrap-around), get two bytes at that zero-page address to form effective 16-bit address, then load. Example step-by-step given. Note: wrap-around behavior on zero-page addition and only X is used.
+
+  9) Pre-indexed indirect
+  In this mode a zer0-page address is added to the contents of the X-register
+  to give the address of the bytes holding the address of the operand. The
+  indirection is indicated by parenthesis in assembly language.
+  eg.  LDA ($3E, X)
+       $A1 $3E
+  Assume the following -        byte      value
+                                X-reg.    $05
+                                $0043     $15
+                                $0044     $24
+                                $2415     $6E
+
+  Then the instruction is executed by:
+  (i)   adding $3E and $05 = $0043
+  (ii)  getting address contained in bytes $0043, $0044 = $2415
+  (iii) loading contents of $2415 - i.e. $6E - into accumulator
+
+  Note a) When adding the 1-byte address and the X-register, wrap around
+          addition is used - i.e. the sum is always a zero-page address.
+          eg. FF + 2 = 0001 not 0101 as you might expect.
+          DON'T FORGET THIS WHEN EMULATING THIS MODE.
+       b) Only the X register is used in this mode.
+
+
+---
+Additional information can be found by searching:
+- "instruction_tables_lda" which expands on LDA (Oper,X) opcode and cycles

@@ -1,0 +1,34 @@
+# Multidirectional Scrolling Techniques by Cadaver - Freedirectional scrolling method: don't center the hardware scroll register when idle; allow speeds up to 4 pixels/frame. Use two kinds of frames: (1) add speed to scroll registers and precalculate next-frame scroll values (allow wrapping on precalc); if wrapping occurs, shift screen memory in hidden screen and draw new side data; (2) shift color memory, swap doublebuffer screens, and apply precalculated scroll values. More CPU-intensive but simpler and supports freer directions. References a test program (freedir.zip).
+
+2.2 Freedirectional scrolling
+
+This is a method I found out myself and don't know if it has been actually used
+in any games. Possibly Chuck Rock or X-Out, they seem to allow quite free
+direction in scrolling.
+
+Here the scrolling doesn't need to be "centered" when idle and any speeds up
+to 4 pixels/frame can be used. As a consequence, the screen & color memory
+shifting can be split on two frames only, so it'll be more CPU-intensive.
+
+The idea is to have two kinds of frames:
+
+- The first frame we'll add the scrolling speed to the hardware scroll
+  registers. If they'd wrap, just limit them to the end of the 0-7 range. Now
+  we also precalculate the hardware scroll values for the next frame, using the
+  same scrolling speed. This time we allow wrapping. If wrapping does not
+  happen, we don't need to shift screen data and never get to the "second" kind
+  of frame. If wrapping happens, we shift the screen memory in the hidden
+  screen and draw new data to the sides.
+
+- The second frame we'll shift the color memory and finally swap the
+  doublebuffer screens & put the precalculated hardware scroll values into use.
+
+In fact, a much simpler approach than the 8-directional when you understand it.
+For an example, see the Freedirectional Scrolling test program (freedir.zip).
+
+
+
+---
+Additional information can be found by searching:
+- "scrolling_overview_doublebuffering" which expands on doublebuffering usage
+- "screen_memory_shifting_doublebuffered_copying_direction_handling" which expands on how to perform the hidden-screen shifts

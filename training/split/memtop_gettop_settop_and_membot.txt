@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Memory top/bottom management routines: MEMTOP (branch to SETTOP or GETTOP depending on carry), GETTOP (load MEMSIZ into X/Y), SETTOP (store X/Y into MEMSIZ), MEMBOT (branch to SETBOT or GETTOP depending on carry), GET bottom (load MEMSTR into X/Y), and SETBOT (store X/Y into MEMSTR). Concludes with .END. These helpers allow other routines to read or set the detected top and bottom memory boundaries.
+
+.,FE25 90 06    BCC $FE2D       MEMTOP BCC SETTOP
+                                ;
+                                ;CARRY SET--READ TOP OF MEMORY
+                                ;
+.,FE27 AE 83 02 LDX $0283       GETTOP LDX MEMSIZ
+.,FE2A AC 84 02 LDY $0284       LDY    MEMSIZ+1
+                                ;
+                                ;CARRY CLEAR--SET TOP OF MEMORY
+                                ;
+.,FE2D 8E 83 02 STX $0283       SETTOP STX MEMSIZ
+.,FE30 8C 84 02 STY $0284       STY    MEMSIZ+1
+.,FE33 60       RTS             RTS
+                                ;MANAGE BOTTOM OF MEMORY
+                                ;
+.,FE34 90 06    BCC $FE3C       MEMBOT BCC SETBOT
+                                ;
+                                ;CARRY SET--READ BOTTOM OF MEMORY
+                                ;
+.,FE36 AE 81 02 LDX $0281       LDX    MEMSTR
+.,FE39 AC 82 02 LDY $0282       LDY    MEMSTR+1
+                                ;
+                                ;CARRY CLEAR--SET BOTTOM OF MEMORY
+                                ;
+.,FE3C 8E 81 02 STX $0281       SETBOT STX MEMSTR
+.,FE3F 8C 82 02 STY $0282       STY    MEMSTR+1
+.,FE42 60       RTS             RTS
+                                .END
+
+---
+Additional information can be found by searching:
+- "ramtas_memory_initialization_and_top_detection" which expands on uses SETTOP to record detected top-of-memory during RAMTAS
+- "sixty_and_file_io_helpers" which expands on some I/O timeout and memory dependent operations use these memory-bound helpers

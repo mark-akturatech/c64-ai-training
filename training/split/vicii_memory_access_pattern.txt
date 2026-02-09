@@ -1,0 +1,33 @@
+# C64 PAL/NTSC Raster Timing Reference - Description of VIC-II and CPU shared bus behavior using two-phase clocking: phi1 (VIC-II accesses memory) and phi2 (CPU accesses memory). During phi1 the VIC-II performs g-accesses (graphics fetches), sprite p-accesses and s-accesses, DRAM refresh cycles, and idle accesses. Normally CPU uses phi2, but on bad lines and during sprite DMA the VIC-II can claim phi2 by holding AEC low, blocking the CPU. Provides an example access sequence for a typical PAL bad line (63 cycles): cycles 1-10 VIC-II phi1 idle/refresh with CPU on phi2; cycles 11-14 BA goes low and CPU finishes current instruction; cycles 15-54 VIC-II claims both phases for c-access and g-access (40 cycles); cycles 55-63 sprite pointer/data fetches then idle.
+
+=============================================================================
+SECTION 6: VIC-II MEMORY ACCESS PATTERN
+=============================================================================
+
+The VIC-II and CPU share the data bus using a two-phase clock:
+  - phi1 (low):  VIC-II accesses memory
+  - phi2 (high): CPU accesses memory
+
+During phi1, the VIC-II performs:
+  - g-accesses: Graphics data fetches (bitmap or character generator)
+  - Sprite p-accesses and s-accesses
+  - DRAM refresh cycles (5 per line)
+  - Idle accesses (when not fetching useful data)
+
+During phi2, normally the CPU has the bus. However, on bad lines and during
+sprite DMA, the VIC-II can also claim the phi2 phase by holding AEC low,
+blocking the CPU.
+
+Access sequence for a typical bad line (PAL, 63 cycles):
+  Cycles 1-10:   VIC-II phi1 idle/refresh, CPU has phi2
+  Cycles 11-14:  BA goes low, CPU finishes current instruction
+  Cycles 15-54:  VIC-II claims both phases for c-access (character pointers)
+                 and g-access (character generator data) = 40 cycles
+  Cycles 55-63:  Sprite pointer/data fetches, then idle
+
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on bad-line detection conditions and overall effect on bus access
+- "sprite_dma_timing" which expands on sprite DMA p-/s-access placement and BA timing

@@ -1,0 +1,87 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Higher-level transfer loop that masks/unmasks interrupts (PHP/SEI/PLP), toggles $D011 bits, calls helper routines ($FCBD,$FCCA,$FDDD,$FC93) to manage timed transfers, loads/stores state bytes, and loops until completion or error. Handles the interaction between the I/O transfer state and system interrupt flags.
+
+.,FC0C 46 BD    LSR $BD
+.,FC0E C6 A3    DEC $A3
+.,FC10 A5 A3    LDA $A3
+.,FC12 F0 3A    BEQ $FC4E
+.,FC14 10 F3    BPL $FC09
+.,FC16 20 97 FB JSR $FB97
+.,FC19 58       CLI
+.,FC1A A5 A5    LDA $A5
+.,FC1C F0 12    BEQ $FC30
+.,FC1E A2 00    LDX #$00
+.,FC20 86 D7    STX $D7
+.,FC22 C6 A5    DEC $A5
+.,FC24 A6 BE    LDX $BE
+.,FC26 E0 02    CPX #$02
+.,FC28 D0 02    BNE $FC2C
+.,FC2A 09 80    ORA #$80
+.,FC2C 85 BD    STA $BD
+.,FC2E D0 D9    BNE $FC09
+.,FC30 20 D1 FC JSR $FCD1
+.,FC33 90 0A    BCC $FC3F
+.,FC35 D0 91    BNE $FBC8
+.,FC37 E6 AD    INC $AD
+.,FC39 A5 D7    LDA $D7
+.,FC3B 85 BD    STA $BD
+.,FC3D B0 CA    BCS $FC09
+.,FC3F A0 00    LDY #$00
+.,FC41 B1 AC    LDA ($AC),Y
+.,FC43 85 BD    STA $BD
+.,FC45 45 D7    EOR $D7
+.,FC47 85 D7    STA $D7
+.,FC49 20 DB FC JSR $FCDB
+.,FC4C D0 BB    BNE $FC09
+.,FC4E A5 9B    LDA $9B
+.,FC50 49 01    EOR #$01
+.,FC52 85 BD    STA $BD
+.,FC54 4C BC FE JMP $FEBC
+.,FC57 C6 BE    DEC $BE
+.,FC59 D0 03    BNE $FC5E
+.,FC5B 20 CA FC JSR $FCCA
+.,FC5E A9 50    LDA #$50
+.,FC60 85 A7    STA $A7
+.,FC62 A2 08    LDX #$08
+.,FC64 78       SEI
+.,FC65 20 BD FC JSR $FCBD
+.,FC68 D0 EA    BNE $FC54
+.,FC6A A9 78    LDA #$78
+.,FC6C 20 AF FB JSR $FBAF
+.,FC6F D0 E3    BNE $FC54
+.,FC71 C6 A7    DEC $A7
+.,FC73 D0 DF    BNE $FC54
+.,FC75 20 97 FB JSR $FB97
+.,FC78 C6 AB    DEC $AB
+.,FC7A 10 D8    BPL $FC54
+.,FC7C A2 0A    LDX #$0A
+.,FC7E 20 BD FC JSR $FCBD
+.,FC81 58       CLI
+.,FC82 E6 AB    INC $AB
+.,FC84 A5 BE    LDA $BE
+.,FC86 F0 30    BEQ $FCB8
+.,FC88 20 8E FB JSR $FB8E
+.,FC8B A2 09    LDX #$09
+.,FC8D 86 A5    STX $A5
+.,FC8F 86 B6    STX $B6
+.,FC91 D0 83    BNE $FC16
+.,FC93 08       PHP
+.,FC94 78       SEI
+.,FC95 AD 11 D0 LDA $D011
+.,FC98 09 10    ORA #$10
+.,FC9A 8D 11 D0 STA $D011
+.,FC9D 20 CA FC JSR $FCCA
+.,FCA0 A9 7F    LDA #$7F
+.,FCA2 8D 0D DC STA $DC0D
+.,FCA5 20 DD FD JSR $FDDD
+.,FCA8 AD A0 02 LDA $02A0
+.,FCAB F0 09    BEQ $FCB6
+.,FCAD 8D 15 03 STA $0315
+.,FCB0 AD 9F 02 LDA $029F
+.,FCB3 8D 14 03 STA $0314
+.,FCB6 28       PLP
+.,FCB7 60       RTS
+
+---
+Additional information can be found by searching:
+- "device_packet_assembly_and_control" which expands on uses packet control results to progress transfers
+- "load_device_vectors_from_rom_table" which expands on may reload vectors as part of transfer completion

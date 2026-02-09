@@ -1,0 +1,35 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Sprites: there are eight sprites 0-7; each 24x21 dots; shapes come from 63 bytes within a 64-byte block. Sprite Data Pointers (last eight bytes of screen memory, default $7F8-$7FF / 2040-2047) select which 64-byte block (pointer * 64 = block start) within VIC-II's 16K window provides sprite shape data.
+
+                          graphics.
+
+                          Sprite graphics takes its name from the graphics characters it
+                          displays, each of which is called a sprite.  There are eight sprites,
+                          known as Sprites 0-7.  Each sprite character is 24 dots wide by 21
+                          dots high.  This is about eight times as large as a regular text
+                          character, which is only 8 dots wide by 8 dots high.
+
+                          A sprite takes its shape from 63 bytes of data in one of the 256 data
+                          blocks, each 64 bytes long, that can fit into the 16K space which the
+                          VIC-II chip can address.  The block currently assigned to any given
+                          sprite is determined by the Sprite Data Pointers, which are located at
+                          the last eight bytes of the screen memory area (the default locations
+                          are 2040-2047, $7F8-$7FF).
+
+                          The first Sprite Data Pointer determines the data block used for the
+                          shape of Sprite 0, the second for the shape of Sprite 1, etc.  The
+                          number in the pointer times 64 equals the address of the first byte of
+                          the data block within the VIC-II addressing range.
+
+                          For example, using the default values for VIC-II addressing area and
+                          screen memory, a value of 11 in location 2040 ($7F8) would mean that
+                          the shape of Sprite0 is determined by the data in the 63-byte block
+                          starting at location 704 (11*64).  It should be noted that it is
+                          possible for more than one sprite to take its shape data from the same
+                          block, so that only 64 bytes of data are required to create eight
+                          sprites, each having the same shape.
+
+
+---
+Additional information can be found by searching:
+- "sprite_shape_data_format" which expands on How sprite bits map to dots (3 bytes per line)
+- "sprite_horizontal_and_vertical_position_registers" which expands on Registers $D000-$D010 for sprite positioning

@@ -1,0 +1,47 @@
+# byRiclianll - Code that constructs sector headers in memory: LDX #0 and a sequence of LDA/STA/INX operations storing header ID bytes and track/sector/ID values into $0300,X. Includes setting fields (HBID, sector, track, IDL, IDH, GAP), and an XOR/EOR-based checksum accumulation followed by INC to update the computed checksum byte(s). Contains a few listing artifacts ('s' and '?') preserved from the original listing.
+
+LDX  #*00 
+
+HEADER  #  LDA  #*08  ;  HBID 
+STA  $0300, X 
+INX 
+INX 
+
+LDA  *062S 
+STA  *0300,X 
+INX 
+
+LDA  *51 
+STA  $0300, X 
+INX 
+
+LDA  #$00 
+STA  $0300, X 
+INX 
+
+STA  $0300. X 
+INX 
+
+LDA  #*0F 
+STA  $0300, X 
+INX 
+
+STA  $0300, X 
+INX 
+
+LDA  #*00 
+EOR  *02FA,X 
+EOR  $02FB, X 
+EOR  $02FC, X 
+EOR  $02FD,X 
+STA  *02F9,X 
+? 
+
+INC  *02F9,X 
+
+
+
+---
+Additional information can be found by searching:
+- "sector_counter_and_headers_intro" which expands on Introduced by the header-creation comment and the sector-counter setup
+- "checksum_comments_and_increment" which expands on High-level checksum comments and final increment of sector index ($0628) follow this routine

@@ -1,0 +1,53 @@
+# byRiclianll - Notes and the beginning of chapter 7.15 'How to Duplicate a 22 Error on a Single Sector'. Starts with the 'SINGLE SECTOR 22 ERROR SOURCE LISTING' commentary explaining which program lines alter the block ID to create the error, then begins the BASIC program 'DUPLICATE A SINGLE SECTOR 22 ERROR' (program header, prompts to insert master, input of T,S, validation, confirmation prompt and initial OPEN/PRINT/INPUT#15 exchange). This chunk covers the explanatory note plus the program header and initial I/O interaction up through the early command/response handling.
+
+SINGLE  SECTOR  22  ERROR  SOURCE  LISTING 
+
+None.  Line  340  in  the  program  creates  a  single  sector  22  error  by  decrementing  the 
+data  block  identifier.  Line  380  restores  the  status  quo. 
+
+7.15  How  to  Duplicate  a  22  Error  on  a  Single  Sector 
+
+Limitations:  None  (requires  disk  swapping). 
+
+Parameters:  Track  and  sector  number. 
+
+DUPLICATE  A  SINGLE  SECTOR  22  ERROR 
+
+100  REM  DUPLICATE  A  22  ERROR  -  1541 
+
+110  PRINT" CCLRJDUFLICATE  A  22  ERROR  -  15 
+
+41  " 
+
+120  PRINT"  <:D0WN>  INSERT  MASTER   IN  DRIVE" 
+130  INPUT" CDOWNJ TRACK  AND  SECTOR  (T,S)"; 
+T,S 
+
+140  IFT<10RT>35THENEND 
+
+150  NS=20+2*(T>17)+(T>24)+(T>30) 
+
+160  IFS<OORS>NSTHENEND 
+
+170   INPUT" CDOWNJARE  YOU  SURE     YCLEFT  3J " 
+
+
+156 
+
+
+1 80   I FQ*<> " Y " THENEND 
+
+190  OPENlSjB, 15 
+
+200  PRINT#15, "10" 
+
+210  INPUT#15,EN*,EM*,ET*,ES* 
+
+220  IFEN*="00"G0T0270 
+
+230  PRINT" {D0WN3 "EN*",    "EM*" , "ET*" , "ES* 
+
+---
+Additional information can be found by searching:
+- "full_track27_error_annotation_and_single_sector_22_error_listing" which expands on Related technique: creating a single-sector 22 error (this chunk describes duplicating that error)
+- "job_queue_subroutine_listing_and_io_handling" which expands on Shares the same drive I/O/command conventions and will use the job-queue subroutine for communication

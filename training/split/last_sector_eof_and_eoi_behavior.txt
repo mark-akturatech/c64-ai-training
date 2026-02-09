@@ -1,0 +1,18 @@
+# byRiclianll - Explanation of how to recognize the last sector of a file in Commodore DOS. Describes that a next-block track of $00 marks the final sector, the 'sector link' byte in the last block is actually a byte count (here indicating bytes 2..104 / $68 are valid), how BASIC's EOF is represented by three consecutive zero bytes, the End-or-Identify (EOI) serial signal sent after the indicated byte count, and that the C64 sets status variable ST to 64 on EOI. Also notes the three null bytes at $66/$67/$68 are the last bytes of the program file.
+
+Now  we're  cooking.  This  is  the  last  sector  of  the  file.  How  can  we  tell?  The  track  of 
+the  next  block  in  the  file  is  0  ($00).  But  what  about  the  sector  link?  It's  a  misnomer. 
+The  sector  link  in  the  last  block  is  actually  a  byte  count.  It  informs  the  DOS  that  only 
+bytes  2  through  104  ($68)  are  important  in  this  example.  Recall  that  an  end  of  file  in 
+BASIC  is  designated  by  three  zeros  in  a  row.  An  End-or-Identify  (EOI)  signal  will  be 
+sent  once  byte  104  has  been  transferred  across  the  serial  bus.  When  the  C64  receives 
+this  EOI  signal,  the  status  variable,  ST,  will  be  set  to  a  value  of  64.  (Any  further  at- 
+tempt to  read  a  byte  will  cause  the  drive  to  time  out.)  Here's  the  tail  end  of  our  pro- 
+gram. The  three  null  bytes,  ($00),  at  $66/7/8  are  the  last  three  bytes  in  our  program  file. 
+
+
+
+---
+Additional information can be found by searching:
+- "dir_block_dump_hex_ascii_middle_blocks" which expands on Shows the bytes that lead into this final-sector explanation
+- "dir_block_dump_tail_blocks_00_08_10_18" which expands on Shows the actual tail-end block dumps that contain the final three null bytes

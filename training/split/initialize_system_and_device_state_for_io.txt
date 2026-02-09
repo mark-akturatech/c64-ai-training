@@ -1,0 +1,84 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Large initialization/configuration helper for I/O operations: sequences of JSRs ($F82E,$F12F,$F8D0,$FCBD,$FB97), manipulates I/O registers (D011,D012-like addresses), masks/clears interrupts, sets up runtime RAM locations ($02A2,$029F,$02A0), pushes/pops on the stack and exits. Prepares the system for subsequent file/device operations.
+
+.,F838 20 2E F8 JSR $F82E
+.,F83B F0 F9    BEQ $F836
+.,F83D A0 2E    LDY #$2E
+.,F83F D0 DD    BNE $F81E
+.,F841 A9 00    LDA #$00
+.,F843 85 90    STA $90
+.,F845 85 93    STA $93
+.,F847 20 D7 F7 JSR $F7D7
+.,F84A 20 17 F8 JSR $F817
+.,F84D B0 1F    BCS $F86E
+.,F84F 78       SEI
+.,F850 A9 00    LDA #$00
+.,F852 85 AA    STA $AA
+.,F854 85 B4    STA $B4
+.,F856 85 B0    STA $B0
+.,F858 85 9E    STA $9E
+.,F85A 85 9F    STA $9F
+.,F85C 85 9C    STA $9C
+.,F85E A9 90    LDA #$90
+.,F860 A2 0E    LDX #$0E
+.,F862 D0 11    BNE $F875
+.,F864 20 D7 F7 JSR $F7D7
+.,F867 A9 14    LDA #$14
+.,F869 85 AB    STA $AB
+.,F86B 20 38 F8 JSR $F838
+.,F86E B0 6C    BCS $F8DC
+.,F870 78       SEI
+.,F871 A9 82    LDA #$82
+.,F873 A2 08    LDX #$08
+.,F875 A0 7F    LDY #$7F
+.,F877 8C 0D DC STY $DC0D
+.,F87A 8D 0D DC STA $DC0D
+.,F87D AD 0E DC LDA $DC0E
+.,F880 09 19    ORA #$19
+.,F882 8D 0F DC STA $DC0F
+.,F885 29 91    AND #$91
+.,F887 8D A2 02 STA $02A2
+.,F88A 20 A4 F0 JSR $F0A4
+.,F88D AD 11 D0 LDA $D011
+.,F890 29 EF    AND #$EF
+.,F892 8D 11 D0 STA $D011
+.,F895 AD 14 03 LDA $0314
+.,F898 8D 9F 02 STA $029F
+.,F89B AD 15 03 LDA $0315
+.,F89E 8D A0 02 STA $02A0
+.,F8A1 20 BD FC JSR $FCBD
+.,F8A4 A9 02    LDA #$02
+.,F8A6 85 BE    STA $BE
+.,F8A8 20 97 FB JSR $FB97
+.,F8AB A5 01    LDA $01
+.,F8AD 29 1F    AND #$1F
+.,F8AF 85 01    STA $01
+.,F8B1 85 C0    STA $C0
+.,F8B3 A2 FF    LDX #$FF
+.,F8B5 A0 FF    LDY #$FF
+.,F8B7 88       DEY
+.,F8B8 D0 FD    BNE $F8B7
+.,F8BA CA       DEX
+.,F8BB D0 F8    BNE $F8B5
+.,F8BD 58       CLI
+.,F8BE AD A0 02 LDA $02A0
+.,F8C1 CD 15 03 CMP $0315
+.,F8C4 18       CLC
+.,F8C5 F0 15    BEQ $F8DC
+.,F8C7 20 D0 F8 JSR $F8D0
+.,F8CA 20 BC F6 JSR $F6BC
+.,F8CD 4C BE F8 JMP $F8BE
+.,F8D0 20 E1 FF JSR $FFE1
+.,F8D3 18       CLC
+.,F8D4 D0 0B    BNE $F8E1
+.,F8D6 20 93 FC JSR $FC93
+.,F8D9 38       SEC
+.,F8DA 68       PLA
+.,F8DB 68       PLA
+.,F8DC A9 00    LDA #$00
+.,F8DE 8D A0 02 STA $02A0
+.,F8E1 60       RTS
+
+---
+Additional information can be found by searching:
+- "wait_for_device_ready_and_handle_flags" which expands on uses the same device-ready check & flag handling
+- "compute_tape_or_disk_offsets_and_dispatch" which expands on follows with address/offset computations

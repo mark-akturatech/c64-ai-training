@@ -1,0 +1,40 @@
+# An Introduction to Programming C-64 Demos - Text scroller fundamentals: set up IRQ before scroller area, use $D016 X-scroll lower 3 bits (0..7) for sub-character X scrolling; decrement X-scroll each frame, when wraps from 0->7 shift characters left in screen RAM and insert next char from text buffer; suggestions: start with X-scroll animation then add line copy routine, text buffer wrap, colours in $D800, custom charsets, larger fonts and Y-movement via $D011.
+
+Text Scroller
+I'll start with this one, not just because it's a simple effect, but because it's so fundamental in demo coding. If you can do a simple text scroller, you can then work on making it more interesting, by adding colours, different sizes of fonts, animated fonts, Y-moving scrollers etc.
+
+Doing the basic scroller is easy. Of course you start by setting up an interrupt that occurs a few lines before the actual text that should be scrolled. There you read a variable, where you've stored the current value of $d016, which is the X-scroll register. The three lower bits of $d016 control the X-scroll, so you have 8 steps of scrolling, enough to scroll one whole character. With the value 0 in the three lowest bits, you'll have your normal screen, and with the value 7, it will be scrolled 7 pixels to the right.
+
+So, what you'll have to do is to start at the value 7, and then decrement it by 1 (or 2, 3, 4 etc., if you want a faster scroller) every frame. When you already have an X-scroll value of 0, you can't decrement it, you'll have to reset it to 7 again. At the same time you'll have to move the characters in screen memory one step to the left, and insert a new character in the character at the right end of the screen. Then you just keep going.
+
+As I've said, a text scroller is a simple effect, but writing your first one isn't necessarily easy. So here are some suggestions from someone who can still remember the hassle of getting a simple text scroller to work:
+
+
+Start by putting some characters on the screen and make the $d016 fiddling work. The characters should move to the left for 8 frames and then flip back to their original position and start moving to the left again. This happens pretty fast, so it's not easy to see that everything is really correct, but if you get this effect, you're on the right way.
+
+When you've got that working, add a loop that copies characters from teh right to the left on one line of the screen, eg. the first one, which starts at $0400 and ends at $0427. That is, copy $0401 to $0400, $0402 to $0401 etc. And of course, add a new value in $0427 each time. You should now have a basic scroll.
+
+Add a routine that reads from an area of memory where you've stored your scroll text. Make sure it wraps at the end. You can do this by eg. storing the memory position of the last character somewhere, or set an end mark, eg. $ff, at the end of the text.
+When you have a basic scroller going, you can add some colours to it (by changing the values in colour RAM, $d800 to $dbe7). One thing that has been used a lot is to have the outer characters have a darker colour than the central ones, which can make it look like the characters are fading onto the screen.
+
+You can of course to other things with colours, like move the colours with the characters, so that each character has its own colour. Or you can have different colours cycling through the scroller.
+
+Then, of course, there are all sorts of things you can do with your scroller to make it look more cool:
+
+
+Use your own character set, and it'll look a lot nicer (the ROM charset isn't very hot).
+
+Use a different sized character set, like 1x2 or 2x2.
+
+Make the scroller move at different speeds (by adding different values to $d016). Just make sure you move the characters at the right time, so that it doesn't jitter.
+
+Use $d011 to move it up and down while it's scrolling from the left to the right. You can use the same concept there, copying characters, to make it scroll more than 7 pixels in the Y direction.
+
+Use multi-colour characters.
+
+Use your imagination...
+
+---
+Additional information can be found by searching:
+- "changing_charset_and_d018" which expands on using custom charsets for nicer scroller fonts
+- "fld_flexible_line_distance" which expands on use FLD to move scroller up/down

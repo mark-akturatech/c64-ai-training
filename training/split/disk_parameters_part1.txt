@@ -1,0 +1,80 @@
+# Kick Assembler - Disk parameters table (part 1): dontSplitFilesOverDir (false), filename (disk image name), format ("commodore" default, options: "commodore","speeddos","dolphindos"), id (disk id), interleave (default interleave e.g. 10), name (disk name).
+
+
+interleave=10
+
+Sets the default interleave
+value for the disk
+
+name
+
+"UNNAMED"
+
+name="THE DISK!"
+
+The disk name
+
+showInfo
+
+false
+
+showInfo
+
+Print info about the generated disk after creation.
+(Start track, sector etc.)
+
+storeFilesInDir
+
+false
+
+storeFilesInDir
+
+If set to true, files can be
+stored in the sectors of the
+directory track not used by
+the directory itself.
+
+11.6. File Parameters
+Now let's get some files from different sources on the disk:
+.disk [filename="MyDisk.d64", name="THE DISK", id="2021!" ]
+{
+[name="----------------", type="rel"
+],
+[name="BORDER COLORS
+", type="prg", segments="BORDER_COLORS" ],
+[name="BACK COLORS
+", type="prg<", segments="BACK_COLORS"
+],
+[name="HIDDEN
+", type="prg", hide, segments="HIDDEN" ],
+[name="----------------", type="rel"
+],
+[name="MUSIC FROM PRG ", type="prg", prgFiles="data/music.prg" ],
+[name="MUSIC FROM SID ", type="prg", sidFiles="data/music.sid" ],
+[name="----------------", type="rel"
+],
+}
+.segment BORDER_COLORS []
+BasicUpstart2(start1)
+start1: inc $d020
+jmp *-3
+.segment BACK_COLORS []
+BasicUpstart2(start2)
+start2: dec $d021
+jmp *-3
+.segment HIDDEN []
+.text "THIS IS THE HIDDEN MESSAGE!"
+
+The content of a file is done using an intermediate segment, which gives a wide range possibilities of specifying
+input. In the example, the content of the first three prg files comes from the segments specified below. The third
+uses a prg file from the hard drive and the fourth the content of a sid file. For all the possibilities of working with
+intermediate segments, see the segments chapter.
+The 'name' and 'type' parameters specifies the name and type of the file. Notice the '<' at the end of the second
+prg type which means the file is locked.
+The third prg file is not shown in the directory due to the 'hide' option. You can get its start track and sector
+by using the 'showInfo' disk parameter.
+A complete list of parameters is given here.
+
+---
+Additional information can be found by searching:
+- "disk_parameters_part2" which expands on remaining disk parameters

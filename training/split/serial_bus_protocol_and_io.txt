@@ -1,0 +1,110 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Serial bus (IEC) TALK/LISTEN/UNTALK/UNLISTEN handling and low-level bit output: TALK/LISTEN entry points (vectors $FFB4/$FFB1) ORA commands (set TALK/LISTEN/UNTALK/UNLISTEN flags), wait for serial bus idle, handshake and send data via SEND DATA ON SERIAL BUS routine; manipulates ATN by writing to $DD00, uses BSOUR/BSOUT buffers ($95), C3PO flags ($94), and routines to set CLK and data lines. Uses helpers to send bits by rotating right and polling DD00. Error paths set ST status via FE1C and error flags for device not present or write timeout.
+
+                                *** TALK: SEND 'TALK' / 'LISTEN'
+                                The KERNAL routine TALK ($ffb4) and LISTEN ($ffb1) are
+                                vectored here. The routine sends the command 'TALK' or
+                                'LISTEN' on the serial bus. On entry (A) must hold the
+                                device number to which the command will be sent. The two
+                                entry points differ only in that to TALK, (A) is ORed with
+                                #$40, and to LISTEN, (A) is ORed with #$20. The UNTALK
+                                (#$3f) and UNLISTEN (#$5f) are also sent via this routine,
+                                but their values are set on entry. If there is a character
+                                waiting to go out on the bus, then this is output.
+                                Handshaking is performed, and ATN (attention) is set low
+                                so that the byte is interpreted as a command. The routine
+                                drops through to the next one to output the byte on the
+                                serial bus. Note that on conclusion, ATN must be set high.
+.,ED09 09 40    ORA #$40        set TALK flag
+.:ED0B 2C       .BYTE $2C       bit $2009, mask ORA command
+.,ED0C 09 20    ORA #$20        set LISTEN flag
+.,ED0E 20 A4 F0 JSR $F0A4       check serial bus idle
+.,ED11 48       PHA
+.,ED12 24 94    BIT $94         C3PO, character in serial buffer
+.,ED14 10 0A    BPL $ED20       nope
+.,ED16 38       SEC             prepare for ROR
+.,ED17 66 A3    ROR $A3         temp data area
+.,ED19 20 40 ED JSR $ED40       send data to serial bus
+.,ED1C 46 94    LSR $94         3CPO
+.,ED1E 46 A3    LSR $A3
+.,ED20 68       PLA
+.,ED21 85 95    STA $95         BSOUR, buffered character for bus
+.,ED23 78       SEI
+.,ED24 20 97 EE JSR $EE97       set data 1, and clear serial bit count
+.,ED27 C9 3F    CMP #$3F        UNTALK?
+.,ED29 D0 03    BNE $ED2E       nope
+.,ED2B 20 85 EE JSR $EE85       set CLK 1
+.,ED2E AD 00 DD LDA $DD00       serial bus I/O port
+.,ED31 09 08    ORA #$08        clear ATN, prepare for command
+.,ED33 8D 00 DD STA $DD00       store
+.,ED36 78       SEI             disable interrupts
+.,ED37 20 8E EE JSR $EE8E       set CLK 1
+.,ED3A 20 97 EE JSR $EE97       set data 1
+.,ED3D 20 B3 EE JSR $EEB3       delay 1 ms
+
+                                *** SEND DATA ON SERIAL BUS
+                                The byte of data to be output on the serial bus must have
+                                been previously stored in the serial buffer, BSOUR. An
+                                initial test is made for bus activity, and if none is
+                                detected then ST is set to #$80, ie. ?DEVICE NOT PRESENT.
+                                The byte is output by rotating it right and sending the
+                                state of the carry flag. This is done eight times until
+                                the whole byte was sent. The CIA timer is set to 65 ms and
+                                the bus is checked for 'data accepted'. If timeout occurs
+                                before this happens then ST is set to #$03, ie. write
+                                timeout.
+.,ED40 78       SEI             disable interrupts
+.,ED41 20 97 EE JSR $EE97       set data 1
+.,ED44 20 A9 EE JSR $EEA9       get serial in and clock
+.,ED47 B0 64    BCS $EDAD       no activity, device not present.
+.,ED49 20 85 EE JSR $EE85       set CLK 1
+.,ED4C 24 A3    BIT $A3         temp data area
+.,ED4E 10 0A    BPL $ED5A
+.,ED50 20 A9 EE JSR $EEA9       get serial in and clock
+.,ED53 90 FB    BCC $ED50       wait for indata = 0
+.,ED55 20 A9 EE JSR $EEA9       get serial in and clock
+.,ED58 B0 FB    BCS $ED55       wait for indata = 1
+.,ED5A 20 A9 EE JSR $EEA9       get serial in and clock
+.,ED5D 90 FB    BCC $ED5A       wait for indata = 0
+.,ED5F 20 8E EE JSR $EE8E       set CLK 0
+
+.,ED62 A9 08    LDA #$08        output 8 bits
+.,ED64 85 A5    STA $A5
+.,ED66 AD 00 DD LDA $DD00
+.,ED69 CD 00 DD CMP $DD00
+.,ED6C D0 F8    BNE $ED66
+.,ED6E 0A       ASL
+.,ED6F 90 3F    BCC $EDB0
+.,ED71 66 95    ROR $95         BSOUR, buffered character for bus
+.,ED73 B0 05    BCS $ED7A       prepare to output 1
+.,ED75 20 A0 EE JSR $EEA0       else, serial output 0
+.,ED78 D0 03    BNE $ED7D
+.,ED7A 20 97 EE JSR $EE97
+.,ED7D 20 85 EE JSR $EE85
+.,ED80 EA       NOP
+.,ED81 EA       NOP
+.,ED82 EA       NOP
+.,ED83 EA       NOP
+.,ED84 AD 00 DD LDA $DD00
+.,ED87 29 DF    AND #$DF
+.,ED89 09 10    ORA #$10
+.,ED8B 8D 00 DD STA $DD00
+.,ED8E C6 A5    DEC $A5         decrement bit counter
+.,ED90 D0 D4    BNE $ED66       next bit till all 8 are done
+.,ED92 A9 04    LDA #$04
+.,ED94 8D 07 DC STA $DC07       CIA timer B, high byte
+.,ED97 A9 19    LDA #$19
+.,ED99 8D 0F DC STA $DC0F       set 1 shot, load and start CIA timer B
+.,ED9C AD 0D DC LDA $DC0D       CIA ICR
+.,ED9F AD 0D DC LDA $DC0D
+.,EDA2 29 02    AND #$02        timeout
+.,EDA4 D0 0A    BNE $EDB0       yep, flag write timeout
+.,EDA6 20 A9 EE JSR $EEA9       get serial in and clock
+.,EDA9 B0 F4    BCS $ED9F
+.,EDAB 58       CLI             enable interrupts
+.,EDAC 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "send_data_serial_bus_continued_and_errors" which expands on detailed send-data loop with bit-by-bit output and timeout via CIA timers
+- "acptr_receive_from_serial_bus" which expands on ACPTR complement routine to receive bytes from IEC bus

@@ -1,0 +1,65 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Editor input character processing: detailed logic for reading characters at PNT/PNTR, masking character bits (AND #$3F), multicolor handling via ORA #$80, quote-switch handling (QTSW) and toggling, incrementing PNTR, calling QTSWC to toggle quote state, handling end-of-line and carriage return, and special PI (<PI>) handling. Returns to main loop after display updates.
+
+.,E64C A6 D4    LDX $D4         LDX    QTSW
+.,E64E D0 04    BNE $E654       BNE    LOP53
+.,E650 70 02    BVS $E654       LOP52  BVS LOP53
+.,E652 09 40    ORA #$40        ORA    #$40
+.,E654 E6 D3    INC $D3         LOP53  INC PNTR
+.,E656 20 84 E6 JSR $E684       JSR    QTSWC
+.,E659 C4 C8    CPY $C8         CPY    INDX
+.,E65B D0 17    BNE $E674       BNE    CLP1
+.,E65D A9 00    LDA #$00        CLP2   LDA #0
+.,E65F 85 D0    STA $D0         STA    CRSW
+.,E661 A9 0D    LDA #$0D        LDA    #$D
+.,E663 A6 99    LDX $99         LDX    DFLTN           ;FIX GETS FROM SCREEN
+.,E665 E0 03    CPX #$03        CPX    #3              ;IS IT THE SCREEN?
+.,E667 F0 06    BEQ $E66F       BEQ    CLP2A
+.,E669 A6 9A    LDX $9A         LDX    DFLTO
+.,E66B E0 03    CPX #$03        CPX    #3
+.,E66D F0 03    BEQ $E672       BEQ    CLP21
+.,E66F 20 16 E7 JSR $E716       CLP2A  JSR PRT
+.,E672 A9 0D    LDA #$0D        CLP21  LDA #$D
+.,E674 85 D7    STA $D7         CLP1   STA DATA
+.,E676 68       PLA             PLA
+.,E677 AA       TAX             TAX
+.,E678 68       PLA             PLA
+.,E679 A8       TAY             TAY
+.,E67A A5 D7    LDA $D7         LDA    DATA
+.,E67C C9 DE    CMP #$DE        CMP    #$DE            ;IS IT <PI> ?
+.,E67E D0 02    BNE $E682       BNE    CLP7
+.,E680 A9 FF    LDA #$FF        LDA    #$FF
+.,E682 18       CLC             CLP7   CLC
+.,E683 60       RTS             RTS
+.,E684 C9 22    CMP #$22        QTSWC  CMP #$22
+.,E686 D0 08    BNE $E690       BNE    QTSWL
+.,E688 A5 D4    LDA $D4         LDA    QTSW
+.,E68A 49 01    EOR #$01        EOR    #$1
+.,E68C 85 D4    STA $D4         STA    QTSW
+.,E68E A9 22    LDA #$22        LDA    #$22
+.,E690 60       RTS             QTSWL  RTS
+.,E691 09 40    ORA #$40        NXT33  ORA #$40
+.,E693 A6 C7    LDX $C7         NXT3   LDX RVS
+.,E695 F0 02    BEQ $E699       BEQ    NVS
+.,E697 09 80    ORA #$80        NC3    ORA #$80
+.,E699 A6 D8    LDX $D8         NVS    LDX INSRT
+.,E69B F0 02    BEQ $E69F       BEQ    NVS1
+.,E69D C6 D8    DEC $D8         DEC    INSRT
+.,E69F AE 86 02 LDX $0286       NVS1   LDX COLOR PUT COLOR ON SCREEN
+.,E6A2 20 13 EA JSR $EA13       JSR    DSPP
+.,E6A5 20 B6 E6 JSR $E6B6              JSR WLOGIC      ;CHECK FOR WRAPAROUND
+.,E6A8 68       PLA             LOOP2  PLA
+.,E6A9 A8       TAY             TAY
+.,E6AA A5 D8    LDA $D8         LDA    INSRT
+.,E6AC F0 02    BEQ $E6B0       BEQ    LOP2
+.,E6AE 46 D4    LSR $D4         LSR    QTSW
+.,E6B0 68       PLA             LOP2   PLA
+.,E6B1 AA       TAX             TAX
+.,E6B2 68       PLA             PLA
+.,E6B3 18       CLC             CLC                    ;GOOD RETURN
+.,E6B4 58       CLI             CLI
+.,E6B5 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "editor_main_loop_and_print_entry" which expands on continues the print/input processing path
+- "qtsw_toggle" which expands on QTSWC handler for quote switching (referenced)

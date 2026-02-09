@@ -1,0 +1,121 @@
+# COMMODORE 64 - 6526 interface signals and timing characteristics: descriptions of important pins (/CS, R/W, RS3-RS0, DB7-DB0, IRQ, /RES, CNT, SP, TOD) and a comprehensive timing-characteristics table for 1MHz and 2MHz operation (02 clock cycle times, write/read cycle timing parameters, data access and release times) with measurement notes.
+
+  6526 INTERFACE SIGNALS
+
+  02-Clock Input
+
+    The 02 clock is a TTL compatible input used for internal device opera-
+  tion and as a timing reference for communicating with the system data
+  bus.
+
+  /CS-Chip Select Input
+
+    The /CS input controls the activity of the 6526. A low level on /CS
+  while 02 is high causes the device to respond to signals on the R/W and
+  address (RS) lines. A high on /CS prevents these lines from controlling
+  the 6526. The /CS line is normally activated (low) at 02 by the
+  appropriate address combination.
+
+  R/W-Read/Write Input
+
+    The R/W signal is normally supplied by the microprocessor and controls
+  the direction of data transfers of the 6526. A high on R/W indicates
+  a read (data transfer out of the 6526), while a low indicates a write
+  (data transfer into the 6526).
+
+  RS3-RS0-Address Inputs
+
+    The address inputs select the internal registers as described by the
+  Register Map.
+
+  DB7-DB0-Data Bus Inputs/Outputs
+
+    The eight data bus pins transfer information between the 6526 and the
+  system data bus. These pins are high impedance inputs unless CS is low
+  and R/W and 02 are high to read the device. During this read, the data
+  bus output buffers are enabled, driving the data from the selected
+  register onto the system data bus.
+
+  IRQ-Interrupt Request Output
+
+    IRQ is an open drain output normally connected to the processor inter-
+  rupt input. An external pullup resistor holds the signal high, allowing
+  multiple IRQ outputs to be connected together. The IRQ output is normally
+
+
+  426   APPENDIX M
+~
+
+
+  off (high impedance) and is activated low as indicated in the functional
+  description.
+
+  /RES-Reset Input
+
+    A low on the RES pin resets all internal registers. The port pins are
+  set as inputs and port registers to zero (although a read of the ports
+  will return all highs because of passive pullups). The timer control
+  registers are set to zero and the timer latches to all ones. All other
+  registers are reset to zero.
+
+                        6526 TIMING CHARACTERISTICS
+  +--------+-----------------------+---------------+---------------+------+
+  |        |                       |      1MHz     |      2MHz     |      |
+  |        |                       +-------+-------+-------+-------+      |
+  | Symbol |    Characteristic     |  MIN  |  MAX  |  MIN  |  MAX  | Unit |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | 02 CLOCK              |       |       |       |       |      |
+  | Tcyc   | Cycle Time            |  1000 |20,000 |   500 |20,000 |  ns  |
+  | Tr, Tf | Rise and Fall Time    |   -   |    25 |   -   |    25 |  ns  |
+  | Tchw   | Clock Pulse Width     |       |       |       |       |      |
+  |        |   (High)              |   420 |10,000 |   200 |10,000 |  ns  |
+  | Tclw   | Clock Pulse Width     |       |       |       |       |      |
+  |        |   (Low)               |   420 |10,000 |   200 |10,000 |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | WRITE CYCLE           |       |       |       |       |      |
+  | Tpd    | Output Delay From 02  |    -  |  1000 |   -   |   500 |  ns  |
+  | Twcs   | /CS low while 02 high |   420 |   -   |   200 |   -   |  ns  |
+  | Tads   | Address Setup Time    |     0 |   -   |     0 |   -   |  ns  |
+  | Tadh   | Address Hold Time     |    10 |   -   |     5 |   -   |  ns  |
+  | Trws   | R/W Setup Time        |     0 |   -   |     0 |   -   |  ns  |
+  | Trwh   | R/W Hold Time         |     0 |   -   |     0 |   -   |  ns  |
+  | Tds    | Data Bus Setup Time   |   150 |   -   |    75 |   -   |  ns  |
+  | Tdh    | Data Bus Hold Time    |     0 |   -   |     0 |   -   |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  |        | READ CYCLE            |       |       |       |       |      |
+  | Tps    | Port Setup Time       |   300 |   -   |   150 |   -   |  ns  |
+  | Twcs(2)| /CS low while 02 high |   420 |   -   |    20 |   -   |  ns  |
+  | Tads   | Address Setup Time    |     0 |   -   |     0 |   -   |  ns  |
+  | Tadh   | Address Hold Time     |    10 |   -   |     5 |   -   |  ns  |
+  | Trws   | R/W Setup Time        |     0 |   -   |     0 |   -   |  ns  |
+  | Trwh   | R/W Hold Time         |     0 |   -   |     0 |   -   |  ns  |
+
+                                                           APPENDIX M   427
+~
+
+
+  +--------+-----------------------+---------------+---------------+------+
+  |        |                       |      1MHz     |      2MHz     |      |
+  |        |                       +-------+-------+-------+-------+      |
+  | Symbol |    Characteristic     |  MIN  |  MAX  |  MIN  |  MAX  | Unit |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+  | Tacc   | Data Access from      |       |       |       |       |      |
+  |        | RS3-RS0               |   -   |   550 |   -   |   275 |  ns  |
+  | Tco(3) | Data Access from /CS  |   -   |   320 |   -   |   150 |  ns  |
+  | Tdr    | Data Release Time     |    50 |   -   |    25 |   -   |  ns  |
+  +--------+-----------------------+-------+-------+-------+-------+------+
+
+
+  +-----------------------------------------------------------------------+
+  | NOTES: 1 -All timings are referenced from Vil max and Vih min on      |
+  | inputs and Vol max and Voh min on outputs.                            |
+  |        2 -Twcs is measured from the later of 02 high or /CS low. /CS  |
+  | must be low at least until the end of 02 high.                        |
+  |        3 -Tco is measured from the later of 02 high or /CS low.       |
+  |        Valid data is available only after the later of Tacc or Tco.   |
+  +-----------------------------------------------------------------------+
+
+---
+Additional information can be found by searching:
+- "6526_timing_diagrams_and_interface_overview" which expands on timing diagram placeholders related to these timing parameters
+- "6526_register_map_and_functional_description" which expands on register map and functional descriptions that are addressed by these signals

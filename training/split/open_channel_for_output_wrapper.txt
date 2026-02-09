@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFC9 that JMPs ($0320) to open a channel for output (CHKOUT). Sends LISTEN/secondary for serial devices. Returns errors: 3=file not open,5=device not present,7:file not output.
+
+                                *** open channel for output
+                                any logical file that has already been opened by the OPEN routine, $FFC0, can be
+                                defined as an output channel by this routine the device on the channel must be an
+                                output device or an error will occur and the routine will abort.
+                                
+                                if you are sending data to anywhere other than the screen this routine must be
+                                called before using the CHROUT routine, $FFD2. if you are sending data to the
+                                screen and no other output channels are open then the calls to this routine and to
+                                the OPEN routine, $FFC0, are not needed.
+                                
+                                when used with a device on the serial bus this routine will automatically send the
+                                listen address specified by the OPEN routine, $FFC0, and any secondary address.
+                                
+                                possible errors are:
+                                
+                                3 : file not open
+                                5 : device not present
+                                7 : file is not an output file
+.,FFC9 6C 20 03 JMP ($0320)     do open channel for output
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on CHKOUT vector at $0320

@@ -1,0 +1,17 @@
+# ********* - Explains keyboard/joystick confusion because CIA #1 Data Port B is used for both keyboard rows and joystick 1. Presents techniques to avoid false reads: temporarily turning off keyscan (POKE 56333,127:POKE 56320,255 and restore with POKE 56333,129) or clearing keyboard buffer (POKE 198,0).
+
+The problem of mistaking the keyboard for the joystick can be solved
+by turning off the keyscan momentarily when reading the stick with a
+POKE 56333, 127:POKE 56320,255, and restoring it after the read with a
+POKE 56333,129.  Sometimes you can use the simpler solution of
+clearing the keyboard buffer after reading the joystick, with a POKE
+198,0.
+
+The problem of mistaking the joystick for a keypress is much more
+difficult--there is no real way to turn off the joystick.  Many
+commercially available games just use Controller Port 2 to avoid the
+
+---
+Additional information can be found by searching:
+- "reading_joystick_fire_buttons" which expands on reading joystick trigger bits
+- "ciaicr_interrupt_control" which expands on manipulating CIA interrupt mask while disabling keyscan

@@ -1,0 +1,45 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Tape-file address computation and block load: for movable or fixed files, read TAPEA/TAPESTA entries from tape header, compute EA = STA + (TAPEA - TAPESTA) using multi-byte arithmetic, store computed EAL/EAH and set STAL/STAH from MEMUSS as the start buffer, call LODING to announce load, then call TRD to perform the tape block load. Contains the byte reserved for TRD's carry result.
+
+.,F56C A0 01    LDY #$01        LD177  LDY #1          ;FIXED LOAD...
+.,F56E B1 B2    LDA ($B2),Y     LDA    (TAPE1)Y        ;...THE ADDRESS IN THE...
+.,F570 85 C3    STA $C3         STA    MEMUSS          ;...BUFFER IS THE START ADDRESS
+.,F572 C8       INY             INY
+.,F573 B1 B2    LDA ($B2),Y     LDA    (TAPE1)Y
+.,F575 85 C4    STA $C4         STA    MEMUSS+1
+.,F577 B0 04    BCS $F57D       BCS    LD179           ;JMP ..CARRY SET BY CPX'S
+                                ;
+.,F579 A5 B9    LDA $B9         LD178  LDA SA          ;CHECK FOR MONITOR LOAD...
+.,F57B D0 EF    BNE $F56C       BNE    LD177           ;...YES WE WANT FIXED TYPE
+                                ;
+.,F57D A0 03    LDY #$03        LD179  LDY #3          ;TAPEA - TAPESTA
+                                ;CARRY SET BY CPX'S
+.,F57F B1 B2    LDA ($B2),Y     LDA    (TAPE1)Y
+.,F581 A0 01    LDY #$01        LDY    #1
+.,F583 F1 B2    SBC ($B2),Y     SBC    (TAPE1)Y
+.,F585 AA       TAX             TAX                    ;LOW TO .X
+.,F586 A0 04    LDY #$04        LDY    #4
+.,F588 B1 B2    LDA ($B2),Y     LDA    (TAPE1)Y
+.,F58A A0 02    LDY #$02        LDY    #2
+.,F58C F1 B2    SBC ($B2),Y     SBC    (TAPE1)Y
+.,F58E A8       TAY             TAY                    ;HIGH TO .Y
+                                ;
+.,F58F 18       CLC             CLC                    ;EA = STA+(TAPEA-TAPESTA)
+.,F590 8A       TXA             TXA
+.,F591 65 C3    ADC $C3         ADC    MEMUSS          ;
+.,F593 85 AE    STA $AE         STA    EAL
+.,F595 98       TYA             TYA
+.,F596 65 C4    ADC $C4         ADC    MEMUSS+1
+.,F598 85 AF    STA $AF         STA    EAH
+.,F59A A5 C3    LDA $C3         LDA    MEMUSS          ;SET UP STARTING ADDRESS
+.,F59C 85 C1    STA $C1         STA    STAL
+.,F59E A5 C4    LDA $C4         LDA    MEMUSS+1
+.,F5A0 85 C2    STA $C2         STA    STAH
+.,F5A2 20 D2 F5 JSR $F5D2       JSR    LODING          ;TELL USER LOADING
+.,F5A5 20 4A F8 JSR $F84A       JSR    TRD             ;DO TAPE BLOCK LOAD
+.:F5A8 24       .BYTE $24       .BYT   $24             ;CARRY FROM TRD
+
+---
+Additional information can be found by searching:
+- "tape_load_dispatch_and_file_search" which expands on Uses header info found by FAF/FAH to determine TAPEA/TAPESTA and file type
+- "tape_finish_and_return" which expands on After TRD completes, finalizes end address and returns
+- "loading_verify_message" which expands on Uses the LODING message routine before TRD

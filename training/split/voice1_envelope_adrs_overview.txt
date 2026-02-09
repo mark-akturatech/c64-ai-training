@@ -1,0 +1,47 @@
+# - C64 I/O Map (Mapping The Commodore 64) - SID envelope (ADSR) concept: attack, decay, sustain, release stages and how they are controlled via Attack/Decay and Sustain/Release registers. Gate bit initiates attack; setting gate to 0 begins release. Notes on residual noise and ways to silence voice (turn off waveform bit, set frequency to 0, or set volume to 0).
+
+$D405-$D406               Voice 1 Envelope (ADSR) Control
+
+                          When a note is played on a musical instrument, the volume does not
+                          suddenly rise to a peak and then cut off to zero.  Rather, the volume
+                          builds to a peak, levels off to an intermediate value, and then fades
+                          away.  This creates what is known as a volume envelope.
+
+                          The first phase of the envelope, in which the volume builds to a peak,
+                          is known as the attack phase.  The second, in which it declines to an
+                          intermediate level, is called the decay phase.  The third, in which
+                          the intermediate level of volume is held, is known as the sustain
+                          period.  The final interval, in which the sound fades away, is called
+                          the release part of the cycle.
+
+                          The SID chip allows the volume envelope of each voice to be
+                          controlled, so that specific instruments may be imitated, or new
+                          sounds created.  This is done via the attack/decay and sustain/release
+                          registers.  Each register devotes four bits (which can store a number
+                          from 0 to 15) to each phase of the cycle.  When a note is gated by
+                          writing a 1 to a waveform bit and to Bit 0 of the Control Register,
+                          the attack cycle begins.
+
+                          The volume of the sound builds to a peak over the period of time
+                          specified by the high nybble of the attack/decay register.  Once it
+                          has reached the peak volume, it falls to the intermediate level during
+                          the period indicated by the low nybble of the attack/decay register
+                          (this is the decay phase).  The volume of this intermediate or sustain
+                          level is selected by placing a value in the high nybble of the
+                          sustain/release register.  This volume level is held until a 0 is
+                          written to the gate bit of the control register (while leaving the
+                          waveform bit set).  When that happens, the release phase begins, and
+                          the volume of the sound begins to taper off during the period
+                          indicated by the low nybble of the sustain/release register.
+
+                          You may notice the volume of the sound does not quite get to 0 at the
+                          end of the release cycle, and you may need to turn off the sound to
+                          get rid of the residual noise.  You can do this either by setting the
+                          waveform bit back to 0, changing the frequency to 0, or setting the
+                          volume to 0.
+
+
+---
+Additional information can be found by searching:
+- "d405_atdcy1_attack_decay_register" which expands on Attack/decay durations and mapping (D405)
+- "d406_surel1_sustain_release_register" which expands on Sustain level and release timing (D406)

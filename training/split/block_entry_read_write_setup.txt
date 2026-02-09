@@ -1,0 +1,43 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Block entry points for cassette R/W: RBLK (read header block entry) initializes status and version check flags and calls LDAD1; TRD (read load block entry) calls CSTE1 and prepares for read with SEI and clearing of multiple flags (RDFLG, SNSW1, CMP0, PTR1, PTR2, DPSW). Also includes WBLK (write header block entry) and TWRT/TWRT2/TWRT3 (write load block entry sequence): sets SHCNH, prompts 'PRESS PLAY & RECORD', handles STOP key checks, and sets up vector selection (LDX #$08 or #$0E) before jumping to the main tape entry. Contains comments and flow between read/write entry labels.
+
+                                ;READ HEADER BLOCK ENTRY
+                                ;
+.,F841 A9 00    LDA #$00        RBLK   LDA #0
+.,F843 85 90    STA $90         STA    STATUS
+.,F845 85 93    STA $93         STA    VERCK
+.,F847 20 D7 F7 JSR $F7D7       JSR    LDAD1
+                                ;READ LOAD BLOCK ENTRY
+                                ;
+.,F84A 20 17 F8 JSR $F817       TRD    JSR CSTE1       ;SAY 'PRESS PLAY'
+.,F84D B0 1F    BCS $F86E       BCS    TWRT3           ;STOP KEY PRESSED
+.,F84F 78       SEI             SEI
+.,F850 A9 00    LDA #$00        LDA    #0              ;CLEAR FLAGS...
+.,F852 85 AA    STA $AA         STA    RDFLG
+.,F854 85 B4    STA $B4         STA    SNSW1
+.,F856 85 B0    STA $B0         STA    CMP0
+.,F858 85 9E    STA $9E         STA    PTR1
+.,F85A 85 9F    STA $9F         STA    PTR2
+.,F85C 85 9C    STA $9C         STA    DPSW
+.,F85E A9 90    LDA #$90        LDA    #$90            ;ENABLE FOR CA1 IRQ...READ LINE
+.,F860 A2 0E    LDX #$0E        LDX    #14             ;POINT IRQ VECTOR TO READ
+.,F862 D0 11    BNE $F875       BNE    TAPE            ;JMP
+                                ;WRITE HEADER BLOCK ENTRY
+                                ;
+.,F864 20 D7 F7 JSR $F7D7       WBLK   JSR LDAD1
+                                ;
+                                ;WRITE LOAD BLOCK ENTRY
+                                ;
+.,F867 A9 14    LDA #$14        TWRT   LDA #20         ;BETWEEN BLOCK SHORTS
+.,F869 85 AB    STA $AB         STA    SHCNH
+.,F86B 20 38 F8 JSR $F838       TWRT2  JSR CSTE2       ;SAY 'PRESS PLAY & RECORD'
+.,F86E B0 6C    BCS $F8DC       TWRT3  BCS STOP3       ;STOP KEY PRESSED
+.,F870 78       SEI             SEI
+.,F871 A9 82    LDA #$82        LDA    #$82            ;ENABLE T2 IRQS...WRITE TIME
+.,F873 A2 08    LDX #$08        LDX    #8              ;VECTOR IRQ TO WRTZ
+                                ;START TAPE OPERATION ENTRY POINT
+                                ;
+
+---
+Additional information can be found by searching:
+- "press_play_prompt_and_debounce" which expands on Uses CSTE1 to prompt before reads
+- "tape_operation_timer_and_irq_setup" which expands on Transfers flow to TAPE entry to configure timers and IRQs for cassette operation

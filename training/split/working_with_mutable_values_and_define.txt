@@ -1,0 +1,39 @@
+# Kick Assembler - Section 6.3: Mutable vs immutable values, locking mutable values with .lock(), the .define directive to define symbols inside a function-mode scope then lock/insert them as constants outside, usage examples, and explanation of function mode restrictions.
+
+
+Data Structures
+
+6.3. Working with Mutable Values
+The list value described in the previous chapter is special since it is mutable, which means it can change its
+contents. At one point in time a list can contain the values [1,6,7] and at another time [1,4,8,9]. The values previously described in the manual (Numbers, Strings, Booleans) are immutable since instances like 1, false, or “Hello
+World” can’t change. In Kick Assembler 3 and later, you will have to lock mutable values if you want to use them
+in a pass different from the one in which they were defined. When a value is locked, it becomes immutable and
+calling a function that modifies its content will cause an error. There are two ways to lock a mutable value. You
+can call its lock function:
+// Locking a list with the lock function
+.var list1 = List().add(1,3,5).lock()
+
+Or you can define it inside a .define directive:
+// The define directive locks the defined variables outside its scope
+.define list2, list3 {
+.var list2 = List().add(1,2)
+.var list3= List()
+.eval list3.add("a")
+.eval list3.add("b")
+}
+//.eval list3.add("c") // This will give an error
+
+The .define directive defines the symbols that are listed after the .define keyword (list2 and list3). The directives
+inside {…} are executed in a new scope so any local defined variables can't be seen from the outside. After
+executing the inner directives, the defined values are locked and inserted as constants in the outside scope.
+The inner directives are executed in 'function mode', which is a bit faster and requires less memory than ordinary
+execution. So if you are using for loops to do some heavy calculations, you can optimize performance by placing
+your loop inside a define directive. As the name 'function mode' suggests, directives placed inside functions are also
+executed in ‘function mode’. In ‘function mode’ you can only use script directives (like .var, .const, .eval, .enum,
+etc) while byte output generating directives (like lda #10, byte $22, .word $33, .fill 10, 0) are not allowed.
+
+
+---
+Additional information can be found by searching:
+- "optimization_considerations_when_using_loops" which expands on placing heavy loops inside .define for performance (function mode)
+- "variables_constants_and_labels" which expands on how .const and .var interact with .define and .lock()

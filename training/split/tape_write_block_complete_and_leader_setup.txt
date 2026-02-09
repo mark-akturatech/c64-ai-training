@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles the end-of-block completion and post-block setup. Decrements copies count ($BE); if more copies remain it continues, otherwise it stops the cassette motor (JSR $FCCA). Sets the tape-write leader count ($A7 = #$50), prepares the leader-vector index (LDX #$08), disables interrupts (SEI) and sets the tape vector (JSR $FCBD) before the final branch back to restore/exit.
+
+                                tape routine, block complete exit
+.,FC57 C6 BE    DEC $BE         decrement copies remaining to read/write
+.,FC59 D0 03    BNE $FC5E       branch if more to do
+.,FC5B 20 CA FC JSR $FCCA       stop the cassette motor
+.,FC5E A9 50    LDA #$50        set tape write leader count
+.,FC60 85 A7    STA $A7         save tape write leader count
+.,FC62 A2 08    LDX #$08        set index for write tape leader vector
+.,FC64 78       SEI             disable the interrupts
+.,FC65 20 BD FC JSR $FCBD       set the tape vector
+.,FC68 D0 EA    BNE $FC54       restore registers and exit interrupt, branch always
+
+
+---
+Additional information can be found by searching:
+- "tape_write_irq_header_and_first_start_cycle" which expands on the block-complete jump (JMP $FC57) from the start-cycle code leads here to finish block processing

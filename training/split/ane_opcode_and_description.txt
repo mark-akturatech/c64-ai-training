@@ -1,0 +1,68 @@
+# NMOS 6510 - ANE (XAA/AXM) undocumented opcode ($8B) #imm: A = (A | CONST) & X & imm. Operation and instability: CONST is chip/temperature dependent (the 'magic constant', commonly but not reliably $EE/$EF/$FF), with RDY-related bit instability (bits 0 and 4 may drop during DMA). Advises safe usage patterns (imm=0 or A=$FF to remove CONST influence), example sequences, equivalence notes, and test-code/simulation references.
+
+a way that is considered stable.
+
+•
+
+The Mastertronic variant of the “burner” tape loader (used eg for the games “Spectipede”,
+“BMX Racer”) uses it in a way that is considered unstable. For the game to load, the high
+nibble of the “magic constant” must be $4, $5, $E or $F and bit 0 must be 1, bits 3, 2, 1 are
+"don't care". That means the commonly assumed value $EE for the “magic constant” will
+not work, but $EF does.
+
+•
+
+The game “Turrican 3” by Smash Designs uses ANE #imm in an unstable way in the
+scrolling routine of levels 1 and 2. It looks like the code expects the “magic constant” to be
+$EF, but luckily it will still “work” when it is $EE (but will break completely when other
+bits are different).
+
+Emulation
+
+For Emulation the best compromise between "proper emulation" and "making things work" seems
+to be to use a "magic contant" of $EF in regular cycles, and $EE in the RDY cycle.
+
+Example: clear A
+
+ANE #0
+
+; 8B 00
+
+is equivalent to
+LDA #0
+… and is safe to use as using 0 as the immediate value takes the 'magic constant' out of the
+equation.
+
+Example: A = X AND immediate
+
+;LDA #$ff
+ANE #$0f
+
+assuming A=$ff from previous operation
+; 8B 0f
+
+A = (A | const) & X & $0f
+
+is equivalent to
+TXA
+AND #$0f
+… and is safe to use as a value of $ff in accumulator takes the 'magic constant' out of the equation.
+
+- 62 -
+
+Example: read the 'magic constant'
+
+To determine the 'magic constant' which is in effect on your particular machine, you can do this:
+LDA #0
+LDX #$ff
+ANE #$ff
+
+; A contains the magic constant
+
+This is mostly useful for experimenting and proving the constant is actually different on different
+set-ups. Do not rely on this value! It may not be stable even on the same chip and depend on
+
+---
+Additional information can be found by searching:
+- "magic_constant_group_overview" which expands on ANE is a member of the magic-constant unstable opcodes
+- "ane_real_world_and_emulation" which expands on real-world usage and emulation recommendations for ANE

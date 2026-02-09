@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - System reset/startup sequence: tests for alternate ROM signature ('CBM80'), initializes CPU state (SEI, TXS, CLD), checks for $A000/$8000 ROMs (JSR A0INT), branches to alternate ROM init if present, sets VIC refresh register, calls IOINIT (I/O initialization), RAMTAS (RAM test/set), RESTOR (KERNAL vectors), CINT (screen init), enables interrupts and finally jumps to BASIC at ($A000). Covers labels START and START1 and the warm/hard-start comments.
+
+                                ; IF LOCS $8004-$8008
+                                ; = 'CBM80'
+                                ;    ^^^  > THESE HAVE MSB SET
+                                ; KERNAL EXPECTS...
+                                ; $8000- .WORD INITILIZE (HARD START)
+                                ; $8002- .WORD PANIC (WARM START)
+                                ; ... ELSE BASIC SYSTEM USED
+                                ; ******************TESTING ONLY***************
+                                ; USE AUTO DISK/CASSETTE LOAD WHEN DEVELOPED...
+                                ;
+.,FCE2 A2 FF    LDX #$FF        START  LDX #$FF
+.,FCE4 78       SEI                    SEI
+.,FCE5 9A       TXS                    TXS
+.,FCE6 D8       CLD                    CLD
+.,FCE7 20 02 FD JSR $FD02              JSR A0INT       ;TEST FOR $A0 ROM IN
+.,FCEA D0 03    BNE $FCEF              BNE START1
+.,FCEC 6C 00 80 JMP ($8000)            JMP ($8000)     ; GO INIT AS $A000 ROM WANTS
+.,FCEF 8E 16 D0 STX $D016       START1 STX VICREG+22   ;SET UP REFRESH (.X=<5)
+.,FCF2 20 A3 FD JSR $FDA3              JSR IOINIT      ;GO INITILIZE I/O DEVICES
+.,FCF5 20 50 FD JSR $FD50              JSR RAMTAS      ;GO RAM TEST AND SET
+.,FCF8 20 15 FD JSR $FD15              JSR RESTOR      ;GO SET UP OS VECTORS
+                                ;
+.,FCFB 20 5B FF JSR $FF5B              JSR CINT        ;GO INITILIZE SCREEN
+.,FCFE 58       CLI                    CLI             ;INTERRUPTS OKAY NOW
+.,FCFF 6C 00 A0 JMP ($A000)            JMP ($A000)     ;GO TO BASIC SYSTEM
+
+---
+Additional information can be found by searching:
+- "a0rom_test_tbla0r_table" which expands on performs the detailed $8000 ROM signature check used by this startup sequence
+- "ioinit_configure_io_devices_and_ports" which expands on IO device initialization invoked by this startup sequence (IOINIT)
+- "ramtas_memory_initialization_and_top_detection" which expands on RAM test and memory sizing called during startup (RAMTAS)
+- "restore_and_vector_initialization" which expands on RESTOR sets up KERNAL indirects and vectors after RAM init

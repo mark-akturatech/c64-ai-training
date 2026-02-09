@@ -1,0 +1,25 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - LP2 routine to remove and return the first character from the keyboard buffer. Reads KEYD ($0277), shifts the remaining queue bytes up one, decrements NDX ($C6), transfers the removed byte into A, restores interrupts and returns (RTS). (Code: $E5B4..$E5C9).
+
+                                *** LP2: GET CHARACTER FROM KEYBOARD BUFFER
+                                It is assumed that there is at least one character in the
+                                keyboard buffer. This character is obtained and the rest
+                                of the queue is moved up one by one to overwrite it. On
+                                exit, the character is in (A).
+.,E5B4 AC 77 02 LDY $0277       read KEYD, first character in keyboard buffer queue
+.,E5B7 A2 00    LDX #$00
+.,E5B9 BD 78 02 LDA $0278,X     overwrite with next in queue
+.,E5BC 9D 77 02 STA $0277,X
+.,E5BF E8       INX
+.,E5C0 E4 C6    CPX $C6         compare with NDX, number of characters in queue
+.,E5C2 D0 F5    BNE $E5B9       till all characters are moved
+.,E5C4 C6 C6    DEC $C6         decrement NDX
+.,E5C6 98       TYA             transfer read character to (A)
+.,E5C7 58       CLI             enable interrupt
+.,E5C8 18       CLC
+.,E5C9 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "input_from_keyboard" which expands on uses this routine to fetch characters from the keyboard queue
+- "input_from_screen_or_keyboard" which expands on keyboard input path uses LP2 when reading from keyboard

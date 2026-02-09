@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initialise for a new tape byte: LDA #$08 -> STA $A3 (bit count), clear A and store to $A4 (tape bit cycle phase), clear start-bit first-cycle flag ($A8), clear tape byte parity ($9B) and clear start-bit check flag ($A9). RTS.
+
+                                *** new tape byte setup
+.,FB97 A9 08    LDA #$08        eight bits to do
+.,FB99 85 A3    STA $A3         set bit count
+.,FB9B A9 00    LDA #$00        clear A
+.,FB9D 85 A4    STA $A4         clear tape bit cycle phase
+.,FB9F 85 A8    STA $A8         clear start bit first cycle done flag
+.,FBA1 85 9B    STA $9B         clear byte parity
+.,FBA3 85 A9    STA $A9         clear start bit check flag, set no start bit yet
+.,FBA5 60       RTS             
+
+---
+Additional information can be found by searching:
+- "store_character" which expands on called via JSR $FB97 when preparing to receive/store a new byte
+- "tape_write_irq_routine" which expands on used when sending bytes to tape (new byte setup)

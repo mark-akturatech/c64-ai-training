@@ -1,0 +1,63 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CLOSE (part 1) ($FFC3): begin close of logical file (A). Finds logical file and fetches file parameters. If device is RS232, resets RS232 port (invokes RS232 init path and clears RS232 buffers). If device is serial-bus, will UNTALK/UNLISTEN later. For keyboard or screen simple table update path. Removes entry from file tables when closing RS232 devices and calls subroutines to reset I/O buffers and MEMTOP as needed.
+
+                                *** CLOSE: CLOSE FILE, PART 1
+                                The KERNAL routine CLOSE ($ffc3) is vectored here. The
+                                file parameters are fetched, and if not found, the routine
+                                exits without any action. It checks the device number
+                                associated with the file. If it is RS232, then the RS232
+                                port is reset. If it is a serial device, the device is
+                                UNTALKed, or UNLISTENed. Finally the number of open
+                                logical files are decremented, and the table of active
+                                file numbers are updated. On entry (A) holds the file
+                                number to close.
+.,F291 20 14 F3 JSR $F314       find logical file, (X) holds location i table
+.,F294 F0 02    BEQ $F298       OK
+.,F296 18       CLC             file not found
+.,F297 60       RTS             and exit
+.,F298 20 1F F3 JSR $F31F       get file values from table, position (X)
+.,F29B 8A       TXA
+.,F29C 48       PHA             temp store
+.,F29D A5 BA    LDA $BA         FA, current device number
+.,F29F F0 50    BEQ $F2F1       keyboard?, update file table
+.,F2A1 C9 03    CMP #$03        screen
+.,F2A3 F0 4C    BEQ $F2F1       yepp, update file table
+.,F2A5 B0 47    BCS $F2EE       Serial bus
+.,F2A7 C9 02    CMP #$02        RS232
+.,F2A9 D0 1D    BNE $F2C8       nope, serial
+.,F2AB 68       PLA             retrieve (A)
+.,F2AC 20 F2 F2 JSR $F2F2       remove entry (A) from file table
+.,F2AF 20 83 F4 JSR $F483       init RS232 port by using part of RS232OPEN
+.,F2B2 20 27 FE JSR $FE27       MEMTOP, read top of memory (X/Y)
+.,F2B5 A5 F8    LDA $F8         >RIBUF, RS232 input buffer
+.,F2B7 F0 01    BEQ $F2BA
+.,F2B9 C8       INY
+.,F2BA A5 FA    LDA $FA         >ROBUF, RS232 output buffer
+.,F2BC F0 01    BEQ $F2BF
+.,F2BE C8       INY
+.,F2BF A9 00    LDA #$00        Clear RS232 input/output buffers
+.,F2C1 85 F8    STA $F8
+.,F2C3 85 FA    STA $FA
+.,F2C5 4C 7D F4 JMP $F47D       Set new ROBOF values and set new MEMTOP
+.,F2C8 A5 B9    LDA $B9
+.,F2CA 29 0F    AND #$0F
+.,F2CC F0 23    BEQ $F2F1
+.,F2CE 20 D0 F7 JSR $F7D0
+.,F2D1 A9 00    LDA #$00
+.,F2D3 38       SEC
+.,F2D4 20 DD F1 JSR $F1DD
+.,F2D7 20 64 F8 JSR $F864
+.,F2DA 90 04    BCC $F2E0
+.,F2DC 68       PLA
+.,F2DD A9 00    LDA #$00
+.,F2DF 60       RTS
+.,F2E0 A5 B9    LDA $B9
+.,F2E2 C9 62    CMP #$62
+.,F2E4 D0 0B    BNE $F2F1
+.,F2E6 A9 05    LDA #$05
+.,F2E8 20 6A F7 JSR $F76A
+.,F2EB 4C F1 F2 JMP $F2F1
+
+---
+Additional information can be found by searching:
+- "close_file_table_update" which expands on completes close by updating open-file tables and counts
+- "open_file_create_and_device_dispatch" which expands on reverse of open: sets up device-specific state when opening files

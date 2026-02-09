@@ -1,0 +1,13 @@
+# An Introduction to Programming C-64 Demos - Important sprite registers: $07F8..$07FF sprite pointers, $D015 sprite enable bits, X coordinate registers $D000, $D002.., Y coordinate registers $D001, $D003..; X high bit for each sprite stored in $D010. Sprite colour registers at $D027/$D028 etc. Single-colour sprites use those colour registers.
+
+Important Addresses
+Now we move on to how you set coordinates and colours and turn on sprites. Turning the sprites on is simple. The sprites are numbered from 0 up to 7. The sprite whose pointer you set when you poke values into $07f8 is 0, the one at $07f9 is 1, and so on. You turn on the sprites by setting the corresponding bits in $d015. So, to turn on sprite number 0, you poke the value 1 into $d015. To turn on sprites 0 and 1, put 3 in $d015.
+
+Setting the coordinates of the sprites are equally simple, with one small catch. The x coordinate registers are $d000 (sprite 0), $d002 (sprite 1) and so on, and the y coordinate registers are $d001, $d003 etc. As these registers can only store one byte each, you can only set coordinates between 0 and 255. But the visible portion of the screen is 320 pixels wide! The solution is that there's an 8th bit for each x register in $d010. So, if bit 0 in $d010 is set, sprite 0's x coordinate is 256, plus the value in $d000. This might sound a bit complicated, but you'll get used to it pretty quickly.
+
+Setting the colours is the easiest part. For single colour sprites, you just poke the colour value of each sprite into the addresses $d027, $d028 etc. Read your favourite VIC reference for information on other stuff that you can do with sprites...
+
+
+---
+Additional information can be found by searching:
+- "sprite_example_movement" which expands on example that uses these registers to move a sprite

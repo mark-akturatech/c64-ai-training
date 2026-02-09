@@ -1,0 +1,38 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SEND SA: Send secondary address and filename to serial device. Exits if no SA or no filename. Clears I/O status ($90), sends LISTEN to device ($ED0C), sends LISTEN SA ($EDB9) and checks STATUS for device presence. Sends each filename byte to serial via CIOUT/EDDD loop (uses FNADR pointer at ($BB) and FNLEN $B7). Ends by UNLISTEN via $F654 ($EDFE and auxiliary logic).
+
+                                *** SEND SA
+                                This routine exits if there is no secondary address or
+                                filename specified. The I/O status word, ST, is reset, and
+                                the serial device is commanded to LISTEN. A check is made
+                                for a possible ?DEVICE NOT PRESENT error. Finally, the
+                                filename is sent to the device.
+.,F3D5 A5 B9    LDA $B9         SA, current secondary address
+.,F3D7 30 FA    BMI $F3D3       exit
+.,F3D9 A4 B7    LDY $B7         FNLEN, length of filename
+.,F3DB F0 F6    BEQ $F3D3       exit
+.,F3DD A9 00    LDA #$00
+.,F3DF 85 90    STA $90         clear STATUS, I/O status word
+.,F3E1 A5 BA    LDA $BA         FA, current device number
+.,F3E3 20 0C ED JSR $ED0C       send LISTEN to serial bus
+.,F3E6 A5 B9    LDA $B9         SA
+.,F3E8 09 F0    ORA #$F0
+.,F3EA 20 B9 ED JSR $EDB9       send LISTEN SA
+.,F3ED A5 90    LDA $90         STATUS
+.,F3EF 10 05    BPL $F3F6       ok
+.,F3F1 68       PLA             remove two stack entries for RTS command
+.,F3F2 68       PLA
+.,F3F3 4C 07 F7 JMP $F707       I/O error #5, device not present
+.,F3F6 A5 B7    LDA $B7         FNLEN
+.,F3F8 F0 0C    BEQ $F406       unlisten and exit
+.,F3FA A0 00    LDY #$00        clear offset
+.,F3FC B1 BB    LDA ($BB),Y     FNADR, pointer to filename
+.,F3FE 20 DD ED JSR $EDDD       send byte on serial bus
+.,F401 C8       INY             next character
+.,F402 C4 B7    CPY $B7         until entire filename is sent
+.,F404 D0 F6    BNE $F3FC       again
+.,F406 4C 54 F6 JMP $F654       unlisten and exit
+
+---
+Additional information can be found by searching:
+- "open_file_part1" which expands on called by OPEN to send SA & filename for serial devices
+- "open_rs232" which expands on RS232 open path differs and uses different initialization

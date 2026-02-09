@@ -1,0 +1,31 @@
+# - C64 RAM Map (Mapping The Commodore 64) - Status (.P) register bit assignments and cautions: Bit 7 Negative (128), Bit 6 Overflow (64), Bit 5 Not used (32), Bit 4 BREAK (16), Bit 3 Decimal (8), Bit 2 Interrupt Disable (4), Bit 1 Zero (2), Bit 0 Carry (1). Advises safe clearing before SYS (POKE 783,0) and warns about Interrupt Disable flag (SEI behavior); suggests POKE 783,247 to set all except Interrupt disable.
+
+                     The Status (.P) register has seven different flags.  Their bit
+                     assignments are as follows:
+                     
+                     |Bit|Value|                   |
+                     |---|-----|-------------------|
+                     | 7 | 128 | Negative          |
+                     | 6 | 64  | Overflow          |
+                     | 5 | 32  | Not Used          |
+                     | 4 | 16  | BREAK             |
+                     | 3 | 8   | Decimal           |
+                     | 2 | 4   | Interrupt Disable |
+                     | 1 | 2   | Zero              |
+                     | 0 | 1   | Carry             |
+                     
+                     If you wish to clear any flag before a SYS, it is safe to clear them
+                     all with a POKE 783,0.  The reverse is not true, however, as you must
+                     watch out for the Interrupt disable flag.
+                     
+                     A 1 in this flag bit is equal to an SEI instruction, which turns off
+                     all IRQ interrupts (like the one that reads the keyboard, for
+                     example).  Turning off the keyboard could make the computer very
+                     difficult to operate!  To set all flags except for Interrupt disable
+                     to 1, POKE 783,247.
+                     
+
+---
+Additional information can be found by searching:
+- "register_storage_addresses" which expands on SPREG stores the status register for SYS entry/exit
+- "cinv_irq_vector" which expands on Interrupt disable implications for IRQ handling

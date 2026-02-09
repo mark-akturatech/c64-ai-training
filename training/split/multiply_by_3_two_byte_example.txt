@@ -1,0 +1,23 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Step-by-step two-byte assembly code to multiply a two-byte number by 3 using the identity 3x = 2x + x. Shows shifting the operand into RESULT and then adding the original low/high bytes with ADC to produce RESULT = 3*NUM.
+
+two-byte numbers:
+
+
+LDA NUM       ;Start with RESULT = 2*NUM
+        ASL A
+        STA RESULT
+        LDA NUM+1
+        ROL A
+        STA RESULT+1
+        CLC
+        LDA NUM
+        ADC RESULT
+        STA RESULT
+        LDA NUM+1
+        ADC RESULT+1
+        STA RESULT+1  ;RESULT = 3*NUM
+
+---
+Additional information can be found by searching:
+- "multiply_by_non_power_of_two_strategy" which expands on Uses the 2x + x decomposition described in the strategy
+- "binary_decomposition_of_constants_examples" which expands on Binary view of 3 (11b) explains why 2x + x is used

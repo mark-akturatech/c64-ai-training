@@ -1,0 +1,43 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine to open a channel for output. Finds the file (JSR $F30F), sets file details (JSR $F31F), checks device numbers to handle keyboard/screen/tape/RS232. For RS232 output it branches to the RS232 open handler; for tape it validates secondary address and saves output device number ($9A). Contains serial-bus LISTEN/TALK handling: issues LISTEN (JSR $ED0C), toggles ATN where needed, sends secondary address (JSR $EDB9/$EDBE), and verifies device presence via the serial status byte ($90). Returns with flag/status set.
+
+                                *** open channel for output
+.,F250 20 0F F3 JSR $F30F       find a file
+.,F253 F0 03    BEQ $F258       if file found continue
+.,F255 4C 01 F7 JMP $F701       else do 'file not open' error and return
+.,F258 20 1F F3 JSR $F31F       set file details from table,X
+.,F25B A5 BA    LDA $BA         get the device number
+.,F25D D0 03    BNE $F262       if the device is not the keyboard go ??
+.,F25F 4C 0D F7 JMP $F70D       go do 'not output file' error and return
+.,F262 C9 03    CMP #$03        compare the device with the screen
+.,F264 F0 0F    BEQ $F275       if the device is the screen go save output the output
+                                device number and exit
+.,F266 B0 11    BCS $F279       if > screen then go handle a serial bus device
+.,F268 C9 02    CMP #$02        compare the device with the RS232 device
+.,F26A D0 03    BNE $F26F       if not the RS232 device then it must be the tape device
+.,F26C 4C E1 EF JMP $EFE1       else go open RS232 channel for output
+                                open a tape channel for output
+.,F26F A6 B9    LDX $B9         get the secondary address
+.,F271 E0 60    CPX #$60        
+.,F273 F0 EA    BEQ $F25F       if ?? do not output file error and return
+.,F275 85 9A    STA $9A         save the output device number
+.,F277 18       CLC             flag ok
+.,F278 60       RTS             
+.,F279 AA       TAX             copy the device number
+.,F27A 20 0C ED JSR $ED0C       command devices on the serial bus to LISTEN
+.,F27D A5 B9    LDA $B9         get the secondary address
+.,F27F 10 05    BPL $F286       if address to send go ??
+.,F281 20 BE ED JSR $EDBE       else set serial ATN high
+.,F284 D0 03    BNE $F289       go ??, branch always
+.,F286 20 B9 ED JSR $EDB9       send secondary address after LISTEN
+.,F289 8A       TXA             copy device number back to A
+.,F28A 24 90    BIT $90         test the serial status byte
+.,F28C 10 E7    BPL $F275       if the device is present go save the output device number
+                                and exit
+.,F28E 4C 07 F7 JMP $F707       else do 'device not present error' and return
+
+
+---
+Additional information can be found by searching:
+- "find_file_and_find_file_A" which expands on file lookup prior to opening for output
+- "output_char_to_cassette_and_rs232" which expands on actual output paths used after opening the device
+- "set_file_details_from_table" which expands on populates device/secondary address used here

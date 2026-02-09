@@ -1,0 +1,66 @@
+# COMMODORE 64 - Techniques for moving a sprite on the screen. Shows a smooth horizontal sweep (sample lines 50 and 55) that POKEs Y position (V+5), iterates X positions (V+4) across 0–255 and uses POKE V+16 to set the RIGHT X position for wrap-around. Explains looping behavior and how to remove GOTO to make the sprite move only once. Includes a back-and-forth example (FOR with STEP -1 and reversal using POKE V+16) and a single-line vertical scrolling example (POKE V+4,24:FOR Y=0TO255:POKE V+5,Y:NEXT). Also documents erasing prior lines (erasing earlier numbered BASIC lines) to replace movement code.
+
+  MOVING YOUR SPRITE ON THE SCREEN
+
+    Now that you've created your sprite, let's do some interesting things
+  with it. To move your sprite smoothly across the screen, add these two
+  lines to your program:
+
+    50 POKE V+5,100:FOR X=24TO255:POKE V+4,X:NEXT:POKE V+16,4
+    55 FOR X=0TO65:POKE V+4,X:NEXT X:POKE V+16,0:GOTO 50
+
+    LINE 50 POKEs the Y POSITION at 100 (try 50 or 229 instead for
+  variety). Then it sets up a FOR... NEXT loop which POKEs the sprite into
+  X position 0 to X position 255, in order. When it reaches the 255th
+  position, it POKEs the RIGHT X POSITION (POKE V+16,4) which is required
+  to cross to the right side of the screen.
+
+    LINE 55 has a FOR... NEXT loop which continues to POKE the sprite in
+  the last 65 positions on the screen. Note that the X value was reset to
+  zero but because you used the RIGHT X setting (POKE V+16,2) X starts over
+  on the right side of the screen.
+    This line keeps going back to itself (GOTO 50). If you just want the
+  sprite to move ONCE across the screen and disappear, then take out
+  GOTO50.
+
+                                                 PROGRAMMING GRAPHICS   165
+~
+
+
+    Here's a line which moves the sprite BACK AND FORTH:
+
+    50 POKE V+5,100:FOR X=24TO255:POKE V+4,X:NEXT:POKE V+16,4:
+       FOR X=0TO65: POKE V+4,X: NEXT X
+    55 FOR X=65TO0 STEP-1:POKE V+4,X:NEXT:POKE V+16,0: FOR
+       X=255TO24 STEP-1: POKE V+4,X:NEXT
+    60 GOTO 50
+
+  Do you see how these programs work? This program is the same as the
+  previous one, except when it reaches the end of the right side of the
+  screen, it REVERSES ITSELF and goes back in the other direction. That is
+  what the STEP-1 accomplishes... it tells the program to POKE the sprite
+  into X values from 65 to 0 on the right side of the screen, then from 255
+  to 0 on the left side of the screen, STEPping backwards minus-1 position
+  at a time.
+
+  VERTICAL SCROLLING
+
+    This type of sprite movement is called "scrolling." To scroll your
+  sprite up or down in the Y position, you only have to use ONE LINE. ERASE
+  LINES 50 and 55 by typing the line numbers by themselves and hitting
+  <RETURN> like this:
+
+    50 <RETURN>
+    60 <RETURN>
+
+  Now enter LINE 50 again as follows:
+
+    50 POKE V+4,24:FOR Y=0TO255:POKE V+5,Y:NEXT
+
+
+
+
+---
+Additional information can be found by searching:
+- "crunched_data_statements_and_sample_basic_program" which expands on The crunched DATA program provides the sprite bitmap that these movement routines manipulate.
+- "michael_s_dancing_mouse_example_program" which expands on The 'Dancing Mouse' example applies these movement patterns (horizontal, reverse, and vertical) in a multi-sprite animation.

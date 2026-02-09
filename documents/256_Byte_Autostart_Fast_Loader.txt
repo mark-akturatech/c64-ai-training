@@ -1,0 +1,151 @@
+A 256 Byte Autostart Fast Loader for the Commodore 64
+by Michael Steil (pagetable.com)
+Source: https://www.pagetable.com/?p=568
+Complete source: https://github.com/mist64/fastboot1541
+
+Overview
+--------
+
+This article presents a compact bootloader that combines C64 and 1541 drive
+code into a single 256-byte sector. The program auto-executes after loading
+and replaces the slow ROM disk transfer routines with custom fast code.
+
+
+Hardware Context
+----------------
+
+The C64 features a 1 MHz 6502 CPU with 64 KB RAM, paired with a Commodore
+1541 disk drive - itself a 1 MHz 6502 computer with 2 KB RAM. The IEC serial
+bus connecting them uses three lines from computer to drive (ATN, CLK, DATA)
+and two return lines (CLK, DATA).
+
+
+The Speed Problem
+-----------------
+
+The original ROM implementation required software handshakes for every bit,
+achieving only about 400 bytes per second. Loading a full 64 KB program took
+over two minutes. Additionally, the ROM code disabled interrupts periodically,
+preventing background music during disk operations.
+
+
+Serial Protocol Optimization
+-----------------------------
+
+Rather than clock-based handshaking, this approach exploits synchronized CPU
+clocks between devices. Two data bits transmit simultaneously per cycle,
+completing each byte in four steps instead of eight.
+
+The protocol transmits two bits at once from the 1541 to the C64 using lines
+previously reserved for handshaking.
+
+Receiving Code (C64 side):
+
+    lda $DD00       ; get bits 6-7
+    lsr
+    lsr             ; move to bits 4-5
+    eor $DD00       ; XOR next 2 bits
+    lsr
+    lsr             ; shift down
+    eor $DD00       ; get more bits
+    lsr
+    lsr
+    eor $DD00       ; final 2 bits
+
+This achieves byte reception in 28 cycles total, enabling approximately
+20,000 bytes per second theoretically.
+
+Sending Code (1541 side):
+
+The 1541 drive encodes data using a 16-byte lookup table, correcting for
+inverted signal lines on the return path. The table entry
+"1111, 0111, 1101, 0101..." interleaves four bits with inversion.
+
+
+Badline Avoidance
+-----------------
+
+The C64's VIC-II chip performs DMA every 8th raster line (50-249), stealing
+40 CPU cycles and breaking timing synchronization. The raster check waits
+for safe line ranges:
+
+    lda $D012           ; raster position
+    cmp #50             ; outside visible area?
+    bcc wait_raster_end ; yes, safe
+    and #$07            ; check if before badline
+    cmp #$02
+    beq wait_raster     ; wait if dangerous
+
+
+Autostart Mechanism
+-------------------
+
+Rather than overwriting BASIC vectors, the loader exploits the stack return
+address. Code loads into the stack region ($01ED-$01F7), with a jump
+instruction at $0203 catching execution when the ROM loader returns.
+Filling intervening bytes with $02 provides compatibility with modified ROMs.
+
+
+Implementation Details
+----------------------
+
+The program combines both C64 and drive code in a single sector by storing
+C64 code in the first half and drive code in the second half. The 1541's
+default buffer at $0400 still contains the loaded sector, enabling the C64
+to send a "M-E" (memory-execute) command pointing to the drive code's
+address within that buffer.
+
+Sector Format:
+The 1541 filesystem stores link information in the first two bytes
+(track/sector of next block). This reduces usable space to 254 bytes,
+but also conveniently hides the drive code as "unused" space.
+
+
+Handshake Protocol
+------------------
+
+Both devices signal readiness through the IEC bus:
+
+  - Drive sets CLK=0 when ready to send
+  - C64 sets both CLK and DATA to 0 when ready to receive
+  - After transfer, both reset to not-ready state
+
+Precise timing ensures the drive's check loop completes before the C64
+starts reading:
+
+    ldx $1800       ; 4 cycles
+    bne wait_c64    ; 2-3 cycles (branch decision)
+    ; maximum delay: 10 cycles before C64 reads
+
+The C64 delays exactly 10 cycles after signaling readiness using
+PHA/PLA/BIT $00.
+
+
+Code Assembly
+-------------
+
+The article provides complete source code in ca65 assembly format,
+organized into segments:
+
+  LOADADDR - Program header
+  PART2    - Main receive logic
+  VECTOR   - Stack protection bytes
+  CMD      - "M-E" command string
+  START    - Jump to main
+  FCODE    - 1541 drive code
+
+The linker script maps these segments into specific memory regions,
+exploiting the stack trick and command buffer positioning.
+
+
+Historical Context
+------------------
+
+Individual techniques - fast protocols, drive code uploading, screen-off
+optimization - had existed previously in various fast loaders. What's
+really novel was combining these techniques into a single-sector
+implementation, demonstrating the possibility of fitting substantial
+functionality into severe size constraints.
+
+The complete source code is available at:
+https://github.com/mist64/fastboot1541

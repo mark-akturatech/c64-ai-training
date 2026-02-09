@@ -1,0 +1,46 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Add a fully received RS-232 byte to the Rx circular buffer and perform status/error handling. Increments/stores the Rx buffer end pointer ($029B/$029C), saves the assembled byte, checks whether 9 bits were received (data+stop) and shifts appropriately, and writes the byte into the Rx buffer. Also performs parity checking using the pseudo 6551 command register ($0294) and sets Rx error bits (parity, overrun, break, frame) in the RS-232 status register ($0297). Branches back to the receive-bit setup after handling error/status updates.
+
+                                *** received a whole byte, add it to the buffer
+.,EF97 AC 9B 02 LDY $029B       get index to Rx buffer end
+.,EF9A C8       INY             increment index
+.,EF9B CC 9C 02 CPY $029C       compare with index to Rx buffer start
+.,EF9E F0 2A    BEQ $EFCA       if buffer full go do Rx overrun error
+.,EFA0 8C 9B 02 STY $029B       save index to Rx buffer end
+.,EFA3 88       DEY             decrement index
+.,EFA4 A5 AA    LDA $AA         get assembled byte
+.,EFA6 AE 98 02 LDX $0298       get bit count
+.,EFA9 E0 09    CPX #$09        compare with byte + stop
+.,EFAB F0 04    BEQ $EFB1       branch if all nine bits received
+.,EFAD 4A       LSR             else shift byte
+.,EFAE E8       INX             increment bit count
+.,EFAF D0 F8    BNE $EFA9       loop, branch always
+.,EFB1 91 F7    STA ($F7),Y     save received byte to Rx buffer
+.,EFB3 A9 20    LDA #$20        mask 00x0 0000, parity enable bit
+.,EFB5 2C 94 02 BIT $0294       test the pseudo 6551 command register
+.,EFB8 F0 B4    BEQ $EF6E       branch if parity disabled
+.,EFBA 30 B1    BMI $EF6D       branch if mark or space parity
+.,EFBC A5 A7    LDA $A7         get the RS232 received data bit
+.,EFBE 45 AB    EOR $AB         EOR with the receiver parity bit
+.,EFC0 F0 03    BEQ $EFC5       
+.,EFC2 70 A9    BVS $EF6D       if ?? just exit
+.:EFC4 2C       .BYTE $2C       makes next line BIT $A650
+.,EFC5 50 A6    BVC $EF6D       if ?? just exit
+.,EFC7 A9 01    LDA #$01        set Rx parity error
+.:EFC9 2C       .BYTE $2C       makes next line BIT $04A9
+.,EFCA A9 04    LDA #$04        set Rx overrun error
+.:EFCC 2C       .BYTE $2C       makes next line BIT $80A9
+.,EFCD A9 80    LDA #$80        set Rx break error
+.:EFCF 2C       .BYTE $2C       makes next line BIT $02A9
+.,EFD0 A9 02    LDA #$02        set Rx frame error
+.,EFD2 0D 97 02 ORA $0297       OR it with the RS232 status byte
+.,EFD5 8D 97 02 STA $0297       save the RS232 status byte
+.,EFD8 4C 7E EF JMP $EF7E       setup to receive an RS232 bit and return
+.,EFDB A5 AA    LDA $AA         
+.,EFDD D0 F1    BNE $EFD0       if ?? do frame error
+.,EFDF F0 EC    BEQ $EFCD       else do break error, branch always
+
+
+---
+Additional information can be found by searching:
+- "rs232_rx_nmi_bit_processing" which expands on produces the assembled byte that this routine buffers and validates
+- "rs232_no_start_bit_received" which expands on can be reached after error conditions to restart bit reception

@@ -1,0 +1,20 @@
+# MACHINE - Code and explanation to form the original value times five. Shows CLC; LDA low byte ($033D); ADC low-byte original ($033F); store result back to $033D; then LDA high byte ($033C); ADC high-byte original ($033E); STA $033C. Explains that $033C/$033D now hold the original value times five.
+
+                                                                        :107:
+
+Since we have the original number times four in $033D/$033C, we can add it to
+the original number in $033F/$033E to get the original number times five:
+
+  .A 08A0  CLC
+  .A 08A1  LDA $033D
+  .A 08A4  ADC $033F
+  .A 08A7  STA $033D
+  .A 08AA  LDA $033C
+  .A 08AD  ADC $033E
+  .A 08B0  STA $033C
+
+
+---
+Additional information can be found by searching:
+- "extract_variable_bytes_and_prepare_for_shifts" which expands on the x4 value produced earlier in $033C/$033D and original copies in $033E/$033F
+- "double_to_make_times_ten_and_store_back" which expands on final doubling to get times-ten and storing result back into V%

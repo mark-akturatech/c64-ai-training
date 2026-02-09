@@ -1,0 +1,19 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Given X=line number, loads the low byte of the screen-line address from a ROM table and derives the high byte from the screen link table and HIBASE ($0288). Stores the computed low/high bytes into $D1/$D2 (current screen line address pointer).
+
+                                *** SET START OF LINE
+                                On entry, (X) holds the line number. The low byte of the
+                                address is set from the ROM table, and the highbyte
+                                derived from the screen link and HIBASE.
+.,E9F0 BD F0 EC LDA $ECF0,X     table of screen line to bytes
+.,E9F3 85 D1    STA $D1         <PNT, current screen line address
+.,E9F5 B5 D9    LDA $D9,X       LDTB1, screen line link table
+.,E9F7 29 03    AND #$03
+.,E9F9 0D 88 02 ORA $0288       HIBASE, page of top screen
+.,E9FC 85 D2    STA $D2         >PNT
+.,E9FE 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "synchronise_colour_pointer" which expands on after start-of-line is set, colour pointer is synchronised for that line
+- "scroll_screen" which expands on used when iterating over lines to move or clear during scroll

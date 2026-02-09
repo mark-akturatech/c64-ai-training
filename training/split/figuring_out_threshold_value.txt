@@ -1,0 +1,64 @@
+# Analyzing C64 tape loaders - Explains how to deduce the loader's threshold value from code using CIA timers. Example: before setting IRQ vector, loader writes $1F to $DC0D to disable interrupts, sets Timer B latch via $DC06/$DC07 (example $03A0 countdown), and ISR compares current Timer B counter with $0200 to see if pulse was shorter than threshold. Threshold in clock cycles = latch - $0200; convert to TAP byte via TapDataByte = Threshold(µs)*0.123156. Explains why the code subtracts $0200 via EOR/LSR rather than using SBC and documents the meaning of CIA FLAG line.
+
+==== Figuring out the threshold value ====
+
+I'm referring to those loaders using an IRQ handler routine and FLAG line(1) interrupt. For some reason, the Threshold value for them is often omitted in docs. Here is a note about how to extract it. I will refer to the ASM code of a loader I just found, which uses CIA #1, Timer B. Other loaders may use a different combination, but the results are the same.
+
+Before changing the vector to main IRQ handler (by writing to $FFFE/$FFFF) we have:
+
+<code>
+LDA #$1F       ; disable Timer A interrupt
+STA $DC0D      ; disable Timer B interrupt
+               ; disable TOD clock alarm interrupt
+               ; disable serial shift register interrupt
+               ; disable FLAG line(1) interrupt
+...
+LDA #$A0       ; Timer B Countdown start value
+STA $DC06
+LDA #$03
+STA $DC07
+</code>
+
+The loader's own IRQ handler looks this way:
+
+<code>
+PHA
+TYA
+PHA
+LDA $DC07
+
+LDY #$11       ; Re-Start Timer B
+STY $DC0F      ; Force latched value to be loaded to Timer B counter
+               ; Timer B counts microprocessor cycles
+
+INC $D020
+
+EOR #$02       ; Revert bit
+LSR
+LSR
+ROR $A9        ; Move it to MSb of $A9 (Endianess: LSbF)
+BCC done       ; Whole byte read?
+NOP
+LDA $DC0D
+PLA
+TAY
+PLA
+RTI
+</code>
+
+What this code does is to compare the Timer B Countdown value with $0200. Since the initial value is $03A0 (clock cycles), and it counts DOWN to 0, if the Countdown is at a value greater than $0200 clock cycles when a pulse received on FLAG line(1), the latter is shorter than $01A0 clock cycles. $01A0 is therefore the Threshold value (in clock cycles).
+
+In our example, the TAP value is then:
+
+TAP threshold byte = Threshold (in microseconds) * 0.123156 = $34
+
+where the Threshold (in microseconds) is Threshold * 1e6/CPUFrequency.
+
+(1) on CIA #1, this FLAG line is connected to the Cassette Read line of the Cassette Port.
+
+
+
+---
+Additional information can be found by searching:
+- "irq_loader_setup_part1_disassembly" which expands on Shows the writes to CIA timer latch and interrupt control registers used to set threshold
+- "tap_format_conversion" which expands on How to convert threshold in clock cycles to TAP byte value

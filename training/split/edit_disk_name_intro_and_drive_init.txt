@@ -1,0 +1,43 @@
+# byRiclianll - Beginning of the 'EDIT DISK NAME' BASIC program. Contains the REM header, builds a 16-character padding string, displays UI messages prompting the user to insert a diskette and press RETURN, waits for the key, opens the command channel (OPEN15,8,15), sends the '10' command to the drive to get status, reads the drive response (INPUT#15, EN*, EM*, ET*, ES*), and handles an initialization failure by printing error info, closing the command channel and exiting.
+
+77 
+
+
+100  REM  EDIT  DISK  NAME 
+110  F0RI=1T016 
+120  PAD«=PAD«+CHR«(160) 
+130  NEXTI 
+
+140  PRINT"  <:CLR3  EDIT  DISK  NAME  -  1541" 
+150  PRINT" <DOWN>REMOVE   <RVS>WRITE  PROTEC 
+T  TAB<ROFF>" 
+
+160  PRINT" <DOWN> INSERT  DISKETTE   IN  DRIVE 
+
+II 
+
+170  PRINT"  <:D0WN3  PRESS   <RVS3  RETURN <ROFF> 
+TO  CONTINUE" 
+
+180  GETC*: IFC*=""THEN180 
+
+190  IFC*<>CHR*<13)G0T0180 
+
+200  PR I NT "OK" 
+
+210  0PEN15,8, 15 
+
+220  PRINT#15, "10" 
+
+230  INPUT#15,EN*,EM*,ET*,ES* 
+
+240  IFEN*="00"B0T0280 
+
+250  PRINT" <DOWN> "EN*",    "EM*" , "ET«" , "ES* 
+260  CLOSE 15 
+270  END 
+
+---
+Additional information can be found by searching:
+- "block_vmte_write_behavior_and_overview" which expands on Explanation of U2 behavior and overview of example programs
+- "edit_disk_name_read_bam_and_modify_disk_name" which expands on Continues the program: opens the data channel, reads the BAM/disk-name buffer and proceeds to edit/write the disk name

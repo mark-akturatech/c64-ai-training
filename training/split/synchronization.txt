@@ -1,0 +1,34 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Oscillator synchronization forces one voice's accumulator to reset every cycle of the synchronizing voice producing complex harmonics. Hard-wired pairings: Voice1 syncs to Voice3 (bit1 $D404), Voice2 -> Voice1 (bit1 $D40B), Voice3 -> Voice2 (bit1 $D412). Example 'mosquito' effect and sweeping technique described.
+
+
+================================================================================
+8. SYNCHRONIZATION
+================================================================================
+
+Oscillator synchronization forces one voice's oscillator to reset its phase
+accumulator whenever the synchronizing voice's oscillator completes a cycle.
+This creates complex harmonic structures.
+
+Voice pairing (hard-wired):
+  Voice 1 syncs with Voice 3 (bit 1 of $D404)
+  Voice 2 syncs with Voice 1 (bit 1 of $D40B)
+  Voice 3 syncs with Voice 2 (bit 1 of $D412)
+
+The synchronized voice produces a waveform whose fundamental frequency matches
+the synchronizing voice, but whose harmonic content is determined by the ratio
+of the two frequencies.
+
+Example - Mosquito Sound Effect:
+  Set Voice 1 to a high-frequency triangle waveform
+  Set Voice 3 to a slightly different high frequency
+  Enable SYNC bit on Voice 1 (bit 1 of $D404)
+  The result is a complex, buzzing harmonic tone
+
+Sweeping the frequency of the synced voice while keeping the sync source
+fixed produces dramatic timbral changes.
+
+
+---
+Additional information can be found by searching:
+- "voice1_registers" which expands on SYNC bit location in control register
+- "ring_modulation" which expands on related modulation techniques for complex timbres

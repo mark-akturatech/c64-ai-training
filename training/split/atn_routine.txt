@@ -1,0 +1,33 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - ATN routine (arctangent) used by BASIC: prepares and manipulates flags and registers, pushes/pops bytes on the stack, performs comparisons and conditional branches, and calls helper floating-point routines ($BB0F, $E043, $B850, $BFB4). It sets up indexing to the ATN constants table and handles sign/edge conditions before returning with RTS. This sequence references the ATNCON table for series evaluation constants.
+
+                                *** ATN: PERFORM ATN
+.,E30E A5 66    LDA $66
+.,E310 48       PHA
+.,E311 10 03    BPL $E316
+.,E313 20 B4 BF JSR $BFB4
+.,E316 A5 61    LDA $61
+.,E318 48       PHA
+.,E319 C9 81    CMP #$81
+.,E31B 90 07    BCC $E324
+.,E31D A9 BC    LDA #$BC
+.,E31F A0 B9    LDY #$B9
+.,E321 20 0F BB JSR $BB0F
+.,E324 A9 3E    LDA #$3E
+.,E326 A0 E3    LDY #$E3
+.,E328 20 43 E0 JSR $E043
+.,E32B 68       PLA
+.,E32C C9 81    CMP #$81
+.,E32E 90 07    BCC $E337
+.,E330 A9 E0    LDA #$E0
+.,E332 A0 E2    LDY #$E2
+.,E334 20 50 B8 JSR $B850
+.,E337 68       PLA
+.,E338 10 03    BPL $E33D
+.,E33A 4C B4 BF JMP $BFB4
+.,E33D 60       RTS
+
+
+
+---
+Additional information can be found by searching:
+- "atncon_constants_table" which expands on contains the ATN series counter and 5-byte floating-point constants used by this routine

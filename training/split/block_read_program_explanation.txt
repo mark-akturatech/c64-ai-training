@@ -1,0 +1,97 @@
+# byRiclianll - Line-by-line explanation and programming technique notes for the block-read example: opening command channel (15), initializations, opening data channel (2) and buffer assignment, issuing U1 and handling responses via error channel, looping 256 bytes with GET#, converting nulls to CHR$(0), ASC() conversions, printing, closing channels, updating BAM on close, and suppressing the error light via reading the error channel. Notes also mention alternate U1 formats and combined null handling in one statement (A=ASC(B$+CHR$(0))).
+
+
+Line  Range  Description  
+
+
+110  Opens  logical  file  number  15  (PRINT#15,)  to  device  8  vdth  a 
+
+secondary  address  of  15  (command  channel). 
+120  Initializes  drive  0. 
+
+130-140  Query  the  error  channel. 
+
+150  Opens  logical  file  number  2  (GET#2,)  to  device  8  with  a  secondary 
+
+address  of  2  (channel  number  2)  letting  the  1541  assign  a  buffer 
+area. 
+
+160  Reads  the  block  from  drive  0,  track  18,  sector  0  into  channel  2  buf- 
+
+fer area. 
+
+170-180  Query  the  error  channel. 
+
+190  Begin  loop  to  read  256  bytes. 
+
+
+74 
+
+
+200 
+
+Transfer  a  byte  from  channel  2  buffer  area  to  C  64  memory  by  way 
+
+of  the  GET#  command  (GET#  logical  file  number  not  the  channel 
+
+number). 
+
+210 
+
+Test  for  equality  with  the  null  string  "". 
+
+220 
+
+ASCII  conversion  of  a  byte. 
+
+230 
+
+Print  the  status  variable  (ST),  our  loop  counter,  and  the  ASCII 
+
+value  of  the  byte. 
+
+240 
+
+Print  the  byte  if  it's  within  normal  ASCII  range. 
+
+250 
+
+Terminate  comma  tabulation. 
+
+260 
+
+Increment  loop  counter. 
+
+270 
+
+Close  logical  file  number  2. 
+
+280 
+
+Suppress  the  error  light. 
+
+290 
+
+Close  logical  file  number  15. 
+
+300 
+
+End. 
+
+An  explanation  of  programming  technique  is  in  order  here.  Initialization  (line  120)  is 
+done  prior  to  opening  a  direct-access  data  channel  Qine  150).  Initialization  automatically 
+shuts  down  all  direct-access  data  channels  (2  -14)  that  are  open  on  the  1541  side.  The 
+command  channel  (15)  is  not  affected.  Logical  files  still  remain  open  on  the  C64  side, 
+however.  Any  attempt  to  access  a  data  channel  after  initialization  results  in  a  70,  NO 
+CHANNEL  error.  The  DOS  attempts  to  rewrite  the  BAM  each  time  a  direct-access 
+channel  is  closed  (line  270).  If  a  diskette  is  either  write  protected  or  DOS  protected, 
+the  BAM  is  not  rewritten  and  the  error  light  remains  on  until  cleared.  Fortunately,  no 
+damage  has  been  done  to  the  data  on  the  diskette.  The  error  light  is  quite  distracting 
+nevertheless.  You  can  suppress  the  error  light  after  closing  a  direct-access  data  chan- 
+nel simply  by  inputting  the  error  number,  message,  track,  and  sector  via  the  command 
+channel  Qine  280). 
+
+---
+Additional information can be found by searching:
+- "block_read_example_program" which expands on the BASIC listing the explanations map to
+- "buffer_pointer_b-p_syntax" which expands on B-P is often used after U1 to set buffer pointer to specific byte

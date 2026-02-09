@@ -1,0 +1,57 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - RAMTAS: INIT SYSTEM CONSTANTS (vectored from $ff87). Clears pages 0,2 and 3 (zeroes first 256 bytes of each page), initializes tape buffer location ($033C) by setting $B2/$B3, performs memory check starting at $0400 upwards by writing test patterns #$55 and #$AA to detect ROM boundary (restores original memory contents afterwards). Finally calls FE2D to set top of memory (MEMTOP) and initializes pointers for bottom of memory ($0282) and bottom of screen ($0288).
+
+                                *** RAMTAS: INIT SYSTEM CONSTANTS
+                                The KERNAL routine RAMTAS($ff87) jumps to this routine. It
+                                clears the pages 0,2 and 3 by writing 00 into them. It
+                                also sets the start of the cassette buffer - $033c, and
+                                determins how much free RAM-memory there is. The
+                                memorycheck is performed by writing two different bytes
+                                into all memory positions, starting at $0400, till it
+                                reaches the ROM (the byte read is not the same as the one
+                                you wrote.) Note that the contents of the memory is
+                                restored afterwards. Finally, bottom of the memory, and
+                                top of screen-pointers are set.
+.,FD50 A9 00    LDA #$00
+.,FD52 A8       TAY
+.,FD53 99 02 00 STA $0002,Y     Fill pages 0,2,3 with zeros
+.,FD56 99 00 02 STA $0200,Y
+.,FD59 99 00 03 STA $0300,Y
+.,FD5C C8       INY
+.,FD5D D0 F4    BNE $FD53       all 256 bytes
+.,FD5F A2 3C    LDX #$3C
+.,FD61 A0 03    LDY #$03        Set tapebuffer to $033c
+.,FD63 86 B2    STX $B2         Variables TAPE1 is used.
+.,FD65 84 B3    STY $B3
+.,FD67 A8       TAY
+.,FD68 A9 03    LDA #$03
+.,FD6A 85 C2    STA $C2
+.,FD6C E6 C2    INC $C2
+.,FD6E B1 C1    LDA ($C1),Y     Perform memorytest. Starting at $0400 and upwards.
+.,FD70 AA       TAX             Store temporary in X-reg
+.,FD71 A9 55    LDA #$55
+.,FD73 91 C1    STA ($C1),Y     Write #$55 into memory
+.,FD75 D1 C1    CMP ($C1),Y     and compare.
+.,FD77 D0 0F    BNE $FD88       if not equal... ROM
+.,FD79 2A       ROL
+.,FD7A 91 C1    STA ($C1),Y     Write #$AA into same memory
+.,FD7C D1 C1    CMP ($C1),Y     and compare again.
+.,FD7E D0 08    BNE $FD88       if not equal... ROM
+.,FD80 8A       TXA
+.,FD81 91 C1    STA ($C1),Y     Restore stored value
+.,FD83 C8       INY
+.,FD84 D0 E8    BNE $FD6E       Next memorypos
+.,FD86 F0 E4    BEQ $FD6C       New page in memory
+.,FD88 98       TYA             The memorytest always exits when reaching a ROM
+.,FD89 AA       TAX
+.,FD8A A4 C2    LDY $C2
+.,FD8C 18       CLC
+.,FD8D 20 2D FE JSR $FE2D       Set top of memory. X and Y holds address.
+.,FD90 A9 08    LDA #$08
+.,FD92 8D 82 02 STA $0282       Set pointer to bottom of memory ($0800)
+.,FD95 A9 04    LDA #$04
+.,FD97 8D 88 02 STA $0288       Set pointer to bottom of screen ($0400)
+.,FD9A 60       RTS
+
+---
+Additional information can be found by searching:
+- "memtop_read_set_top_of_memory" which expands on FE2D called here to set top of memory

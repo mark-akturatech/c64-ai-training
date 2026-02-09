@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Hardware reset entry: setup stack (LDX #$FF, TXS), SEI, CLD, call $FD02 to scan for autostart ROM at $8000, optionally JMP indirect ($8000) if autostart present, else continue initialization: restore horizontal fine scroll $D016 from X, JSR $FDA3 (initialise SID/CIA/IRQ), JSR $FD50 (RAM test), JSR $FD15 (restore default vectors), JSR $FF5B (initialise VIC/screen editor), CLI, and JMP ($A000) to run BASIC.
+
+                                *** RESET, hardware reset starts here
+.,FCE2 A2 FF    LDX #$FF        set X for stack
+.,FCE4 78       SEI             disable the interrupts
+.,FCE5 9A       TXS             clear stack
+.,FCE6 D8       CLD             clear decimal mode
+.,FCE7 20 02 FD JSR $FD02       scan for autostart ROM at $8000
+.,FCEA D0 03    BNE $FCEF       if not there continue startup
+.,FCEC 6C 00 80 JMP ($8000)     else call ROM start code
+.,FCEF 8E 16 D0 STX $D016       read the horizontal fine scroll and control register
+.,FCF2 20 A3 FD JSR $FDA3       initialise SID, CIA and IRQ
+.,FCF5 20 50 FD JSR $FD50       RAM test and find RAM end
+.,FCF8 20 15 FD JSR $FD15       restore default I/O vectors
+.,FCFB 20 5B FF JSR $FF5B       initialise VIC and screen editor
+.,FCFE 58       CLIenable the interrupts
+.,FCFF 6C 00 A0 JMP ($A000)     execute BASIC
+
+---
+Additional information can be found by searching:
+- "scan_for_autostart_rom_and_signature" which expands on scans $8000 for autostart image
+- "initialise_sid_cia_and_irq" which expands on initialises chips and IRQs
+- "test_ram_and_find_ram_end" which expands on RAM test called during reset

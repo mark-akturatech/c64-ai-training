@@ -1,0 +1,61 @@
+# VIC-II Memory Banking and Address Configuration Guide - Screen memory positions defined by $D018 bits 7-4: 16 positions spaced $0400 (1024) bytes apart. Offset = (bits 7-4) * $0400 added to the currently selected bank base.
+Mappings:
+%0000 -> $0000
+%0001 -> $0400
+%0010 -> $0800
+... up to %1111 -> $3C00
+
+Examples:
+- In Bank 0, %0001 -> $0000 + $0400 = $0400 (default)
+- In Bank 1, %0001 -> $4000 + $0400 = $4400
+
+To change only screen bits in assembly:
+  lda $D018
+  and #%00001111    ; preserve character/bitmap bits
+  ora #%xxxx0000    ; set new screen offset in bits 7-4
+  sta $D018
+
+Screen Memory Offsets (Bits 7-4)
+---------------------------------
+
+There are 16 possible screen memory positions within a bank. Each position
+is 1024 bytes ($0400) apart. The offset is added to the bank base address.
+
+  $D018 Bits 7-4  | Offset from Bank Base
+  -----------------|------------------------------
+  %0000xxxx        | $0000  (0)
+  %0001xxxx        | $0400  (1024)
+  %0010xxxx        | $0800  (2048)
+  %0011xxxx        | $0C00  (3072)
+  %0100xxxx        | $1000  (4096)
+  %0101xxxx        | $1400  (5120)
+  %0110xxxx        | $1800  (6144)
+  %0111xxxx        | $1C00  (7168)
+  %1000xxxx        | $2000  (8192)
+  %1001xxxx        | $2400  (9216)
+  %1010xxxx        | $2800  (10240)
+  %1011xxxx        | $2C00  (11264)
+  %1100xxxx        | $3000  (12288)
+  %1101xxxx        | $3400  (13312)
+  %1110xxxx        | $3800  (14336)
+  %1111xxxx        | $3C00  (15360)
+
+Example: In Bank 0, screen offset %0001 places screen RAM at
+$0000 + $0400 = $0400 (1024) -- this is the default.
+
+Example: In Bank 1, screen offset %0001 places screen RAM at
+$4000 + $0400 = $4400 (17408).
+
+To modify only the screen memory bits:
+
+    lda $D018
+    and #%00001111       ; Preserve character/bitmap bits
+    ora #%xxxx0000       ; Set desired screen offset value
+    sta $D018
+
+
+
+---
+Additional information can be found by searching:
+- "d018_bit_layout_and_defaults" which expands on bits 7-4 meaning
+- "address_calculation_quick_reference" which expands on formula for absolute screen address

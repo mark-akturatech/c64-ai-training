@@ -1,0 +1,46 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - List of SID quirks: ADSR bug (delayed retrigger), noise LFSR lockup and recovery (write TEST then waveform), write-only register readback returns bus value, 6581 filter distortion and DC offset, combined waveform differences between 6581/8580, TEST bit behavior (oscillator reset/hold), and volume-register click exploited for digi playback on 6581.
+
+================================================================================
+15. KNOWN QUIRKS AND BUGS
+================================================================================
+
+1. ADSR BUG: See section 4.2. The internal rate counter can cause a delay
+   when retriggering a note. Music players use "hard restart" techniques
+   to mitigate this.
+
+2. NOISE LFSR LOCKUP: Selecting noise simultaneously with another waveform
+   (or switching from a combined waveform to noise) can freeze the noise
+   shift register, producing silence. Fix: write $08 (test bit) to the
+   control register, then write the desired waveform.
+
+3. WRITE-ONLY REGISTERS: Reading from write-only registers ($D400-$D418)
+   returns the last value written to ANY SID register (bus value), not the
+   register's actual contents. This is a common source of bugs.
+
+4. FILTER DISTORTION (6581): The 6581's filter has significant non-linearities
+   and can clip/distort at high resonance or when multiple voices are routed
+   through it at high volume. This is part of its characteristic sound.
+
+5. DC OFFSET (6581): The 6581 has a noticeable DC offset on its audio output
+   that varies with waveform selection and filter settings. This contributes
+   to the "click" when changing volume (used for digi playback).
+
+6. COMBINED WAVEFORM DIFFERENCES: The 6581 and 8580 produce different results
+   for combined waveforms due to die-level differences. Code relying on
+   specific combined waveform behavior may sound different on different chips.
+
+7. TEST BIT: Setting the TEST bit (bit 3 of control register) resets and
+   holds the oscillator accumulator at zero. When TEST is cleared, the
+   oscillator resumes from zero, which can be used for phase-accurate
+   oscillator reset.
+
+8. VOLUME REGISTER CLICK (6581): Any write to $D418 produces an audible
+   click proportional to the volume change. Even writing the same value
+   produces a tiny click. This is exploited for sample playback but can
+   cause unwanted noise in normal music.
+
+---
+Additional information can be found by searching:
+- "adsr_bug" which expands on ADSR retriggering issue and workarounds
+- "waveforms_noise" which expands on LFSR lockup warnings and fixes
+- "sample_playback_digi_techniques" which expands on volume click exploitation and differences across chips

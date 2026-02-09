@@ -1,0 +1,44 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RD20 / RD200 logic for load sequences: branching between waiting-for-sync and loading modes, checking block sync (SYNO) and first-byte error flags (PRP), interpreting header count char (OCHAR) to determine first/second block, setting RDFLG to data or ignore modes, calling RD300 to initialize address pointers (SAL/SAH), and setting up for actual data reads. Also handles the case for entering ignore-bytes mode for block remainder.
+
+.,FA8D 70 31    BVS $FAC0       RD20   BVS RD60        ;WE ARE LOADING
+.,FA8F D0 18    BNE $FAA9       BNE    RD200           ;WE ARE SYNCING
+                                ;
+.,FA91 A5 B5    LDA $B5         LDA    DIFF            ;DO WE HAVE BLOCK SYNC...
+.,FA93 D0 F5    BNE $FA8A       BNE    RD10            ;...YES, EXIT
+.,FA95 A5 B6    LDA $B6         LDA    PRP             ;IF FIRST BYTE HAS ERROR...
+.,FA97 D0 F1    BNE $FA8A       BNE    RD10            ;...THEN SKIP (EXIT)
+.,FA99 A5 A7    LDA $A7         LDA    SHCNL           ;MOVE FSBLK TO CARRY...
+.,FA9B 4A       LSR             LSR    A
+.,FA9C A5 BD    LDA $BD         LDA    OCHAR           ; SHOULD BE A HEADER COUNT CHAR
+.,FA9E 30 03    BMI $FAA3       BMI    RD22            ;IF NEG THEN FIRSTBLOCK DATA
+.,FAA0 90 18    BCC $FABA       BCC    RD40            ;...EXPECTING FIRSTBLOCK DATA...YES
+.,FAA2 18       CLC             CLC
+.,FAA3 B0 15    BCS $FABA       RD22   BCS RD40        ;EXPECTING SECOND BLOCK?...YES
+.,FAA5 29 0F    AND #$0F        AND    #$F             ;MASK OFF HIGH STORE HEADER COUNT...
+.,FAA7 85 AA    STA $AA         STA    RDFLG           ;...IN MODE FLAG (HAVE CORRECT BLOCK)
+.,FAA9 C6 AA    DEC $AA         RD200  DEC RDFLG       ;WAIT UNTILL WE GET REAL DATA...
+.,FAAB D0 DD    BNE $FA8A       BNE    RD10            ;...9876543210 REAL
+.,FAAD A9 40    LDA #$40        LDA    #$40            ;NEXT UP IS REAL DATA...
+.,FAAF 85 AA    STA $AA         STA    RDFLG           ;...SET DATA MODE
+.,FAB1 20 8E FB JSR $FB8E       JSR    RD300           ;GO SETUP ADDRESS POINTERS
+.,FAB4 A9 00    LDA #$00        LDA    #0              ;DEBUG CODE##################################################
+.,FAB6 85 AB    STA $AB         STA    SHCNH
+.,FAB8 F0 D0    BEQ $FA8A       BEQ    RD10            ;JMP TO CONTINUE
+.,FABA A9 80    LDA #$80        RD40   LDA #$80        ;WE WANT TO...
+.,FABC 85 AA    STA $AA         STA    RDFLG           ;IGNORE BYTES MODE
+.,FABE D0 CA    BNE $FA8A       BNE    RD10            ;JMP
+.,FAC0 A5 B5    LDA $B5         RD60   LDA DIFF        ;CHECK FOR END OF BLOCK...
+.,FAC2 F0 0A    BEQ $FACE       BEQ    RD70            ;...OKAY
+                                ;
+.,FAC4 A9 04    LDA #$04        LDA    #SBERR          ;SHORT BLOCK ERROR
+.,FAC6 20 1C FE JSR $FE1C       JSR    UDST
+.,FAC9 A9 00    LDA #$00        LDA    #0              ;FORCE RDFLG FOR AN END
+.,FACB 4C 4A FB JMP $FB4A       JMP    RD161
+.,FACE 20 D1 FC JSR $FCD1       RD70   JSR CMPSTE      ;CHECK FOR END OF STORAGE AREA
+.,FAD1 90 03    BCC $FAD6       BCC    *+5             ;NOT DONE YET
+.,FAD3 4C 48 FB JMP $FB48       JMP    RD160
+
+---
+Additional information can be found by searching:
+- "byte_handler_intro_and_mode_flags" which expands on This code is reached when RDFLG indicates entering data-load or sync processing
+- "pass_checks_and_verify_store_prep" which expands on After addresses are set up, control eventually reaches end-of-block checks and storage/verify logic

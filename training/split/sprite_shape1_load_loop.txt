@@ -1,0 +1,54 @@
+# COMMODORE 64 - Explains LINE 20 which initializes the first 63 bytes of sprite-shape data into memory addresses 12288–12350. Covers the concept of using one sprite (sprite 0) with multiple shapes by switching pointers, the FOR S1=12288 TO 12350 loop, READ Q1, POKE S1,Q1 (equivalent to POKE 12288,30 for the first value), and how NEXT advances S1 and reads the next DATA value until POKE 12350,0.
+
+~
+
+
+  LINE 20:
+
+    FORS1=12288         We are going to use ONE SPRITE (sprite 0) in this
+    TO 12350            animation, but we are going to use THREE sets of
+                        sprite data to define three separate shapes. To
+                        get our animation, we will switch the POINTERS
+                        for sprite 0 to the three places in memory where
+                        we have stored the data which defines our three
+                        different shapes. The same sprite will be rede-
+                        fined rapidly over and over again as 3 different
+                        shapes to produce the dancing mouse animation.
+                        You can define dozens of sprite shapes in DATA
+                        STATEMENTS, and rotate those shapes through
+                        one or more sprites. So you see, you don't have to
+                        limit one sprite to one shape or vice-versa. One
+                        sprite can have many different shapes, simply by
+                        changing the POINTER SETTING FOR THAT SPRITE to
+                        different places in memory where the sprite data
+                        for different shapes is stored. This line means we
+                        have put the DATA for "sprite shape 1" at memory
+                        locations 12288 to 12350.
+
+    READ Q1             Reads 63 numbers in order from the DATA state-
+                        ments which begin at line 100. Q1 is an arbitrary
+                        variable name. It could just as easily be A, Z1 or
+                        another numeric variable.
+
+    POKES1,Q1           Pokes the first number from the DATA statements
+                        (the first "Q1" is 30) into the first memory
+                        location (the first memory location is 12288). This
+                        is the same as POKE12288,30.
+
+    NEXT                This tells the computer to look BETWEEN the FOR and
+                        NEXT parts of the loop and perform those in-between
+                        commands (READQ1 and POKES1,Q1 using the NEXT
+                        numbers in order). In other words, the NEXT
+                        statement makes the computer READ the NEXT Q1 from
+                        the DATA STATEMENTS, which is 0, and also
+                        increments S1 by 1 to the next value, which is
+                        12289. The result is POKE12289,0... the NEXT
+                        command makes the loop keep going back until the
+                        last values in the series, which are POKE 12350,0.
+
+
+---
+Additional information can be found by searching:
+- "sprite_shape2_load_loop" which expands on Subsequent shape data stored immediately after this block (second shape)
+- "sprite_shape3_load_loop" which expands on Third sprite shape stored after the second group
+- "sprite_pointer_setting_p_equals_192" which expands on How pointers are used to rotate these shapes through sprite 0

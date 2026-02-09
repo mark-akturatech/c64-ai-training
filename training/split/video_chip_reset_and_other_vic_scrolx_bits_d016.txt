@@ -1,0 +1,106 @@
+# ********* - Horizontal Fine Scrolling and Control Register ($D016) bits: Bits0-2 fine horizontal scroll (0-7), Bit3 38/40 column selection, Bit4 multicolor enable, Bit5 VIC-II reset (video off when set to 1), Bits6-7 unused; default value and coarse scroll interaction; sample BASIC to illustrate smooth horizontal scroll and need for raster interrupts for partial-screen scrolling.
+
+registers (53267-8, $D013-4).
+
+Bit 2 enables the sprite-foreground collision interrupt.  This
+interrupt can occur if one of the srpte character's dots is touching
+one of the dots from the foreground display of either text character
+or bitmap graphics.
+
+Bit 3 enables the sprite-sprite collision interrupt, which can occur
+if one of the sprite character's dots is touching one of the dots of
+another sprite character.
+
+These two interrupts are useful for games, where such collisions often
+require that some action be taken immediately.  Once the interrupt
+signals that a collision has occurred, the interrupt routine can check
+the Sprite- Foreground Collision Register at 53279 ($D01F), or the
+Sprite-Sprite Collision Register at 53278 ($D01E), to see which sprite
+or sprites are involved in the collision.  See the entry for those
+locations for more details on collisions.
+
+53275         $D01B          SPBGPR
+Sprite to Foreground Display Priority Register
+
+Bit 0:  Select display priority of Sprite 0 to foreground (0=sprite
+        appears in front of foreground)
+Bit 1:  Select display priority of Sprite 1 to foreground (0=sprite
+        appears in front of foreground)
+Bit 2:  Select display priority of Sprite 2 to foreground (0=sprite
+        appears in front of foreground)
+Bit 3:  Select display priority of Sprite 3 to foreground (0=sprite
+        appears in front of foreground)
+Bit 4:  Select display priority of Sprite 4 to foreground (0=sprite
+        appears in front of foreground)
+Bit 5:  Select display priority of Sprite 5 to foreground (0=sprite
+        appears in front of foreground)
+Bit 6:  Select display priority of Sprite 6 to foreground (0=sprite
+        appears in front of foreground)
+Bit 7:  Select display priority of Sprite 7 to foreground (0=sprite
+        appears in front of foreground)
+
+If a sprite is positioned to appear at a spot on the screen that is
+already occupied by text or bitmap graphics, a conflict arises.  The
+contents of this register determines which one will be displayed in
+such a situation.  If the bit that corresponds to a particular sprite
+is set to 0, the sprite will be displayed in front of the foreground
+graphics data.  If that bit is set to 1, the foreground data will be
+displayed in front of the sprite.  The default value that this
+register is set to at power-on is 0, so all sprites start out with
+priority over foreground graphics.
+
+Note that for the purpose of priority, the 01 bit-pair of multicolor
+graphics modes is considered to display a background color, and
+therefore will be shown behind sprite graphics even if the foreground
+graphics data takes priority.  Also, between the sprites themselves
+there is a fixed priority.  Each sprite has priority over all
+higher-number sprites, so that Sprite 0 is displayed in front of all
+the others.
+
+The use of priority can aid in creating three-dimensional effects, by
+allowing some objects on the screen to pass in front of or behind
+other objects.
+
+53276         $D01C          SPMC
+Sprite Multicolor Registers
+
+Bit 0:  Select multicolor mode for Sprite 0 (1=multicolor, 0=hi-res)
+Bit 1:  Select multicolor mode for Sprite 1 (1=multicolor, 0=hi-res)
+Bit 2:  Select multicolor mode for Sprite 2 (1=multicolor, 0=hi-res)
+Bit 3:  Select multicolor mode for Sprite 3 (1=multicolor, 0=hi-res)
+Bit 4:  Select multicolor mode for Sprite 4 (1=multicolor, 0=hi-res)
+Bit 5:  Select multicolor mode for Sprite 5 (1=multicolor, 0=hi-res)
+Bit 6:  Select multicolor mode for Sprite 6 (1=multicolor, 0=hi-res)
+Bit 7:  Select multicolor mode for Sprite 7 (1=multicolor, 0=hi-res)
+
+Sprite multicolor mode is very similar to text and bitmap multicolor
+modes (see Bit 4 of 53270, $D016).  Normally, the color of each dot of
+the sprite is controlled by a single bit of sprite shape data.  When
+thi mode is enabled for a sprite, by setting the corresponding bit of
+this register to 1, the bits of sprite shape data are grouped together
+in pairs, with each pair of bits controlling a double-wide dot of the
+sprite display.  By sacrificing some of the horizontal resolution (the
+sprite, although the same size, is now only 12 dots wide), you gain
+the use of two additional colors.  The four possible combinations of
+these bit-pairs display dot colors from the following sources:
+
+00 Background Color Register 0 (transparent)
+01 Sprite Multicolor Register 0 (53285, $D025)
+10 Sprite Color Registers (53287-94, $D027-E)
+11 Sprite Multicolor Register 1 (53286, $D026)
+
+Like multicolor text characters, multicolor sprites all share two
+color registers.  While each sprite can display three foreground
+colors, only one of these colors in unique to that sprite.  The number
+of unique colors may be increated by combining more than one sprite
+into a single character.
+
+53277         $D01D          XXPAND
+Sprite Horizontal Expansion Register
+
+Bit 0:  Expand Sprite 0 horizontally (1=double-width sprite, 0=normal
+        width)
+
+---
+Additional information can be found by searching:
+- "vertical_fine_scrolling_and_control_register_$D011" which expands on Paired register controlling vertical vs horizontal fine-scrolling

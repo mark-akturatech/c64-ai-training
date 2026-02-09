@@ -1,0 +1,79 @@
+# MACHINE - The 'wicked' SOV: rules and pitfalls. Variables written starting at SOV; SAVE/LOAD behaviors; changes to BASIC move memory up/down up to SOV; if SOV is corrupted (e.g., set into cassette buffer) variables, SAVE, or editing operations can overwrite programs, cause massive unintended saves, or corrupt ROM/zero page leading to system failure.
+
+
+
+The Wicked SOV
+--------------
+
+The start-of-variables pointer can be the cause of many troubles, if it's not
+understood.  The rules covering it are as follows:
+
+  1.  Variables are written starting at the SOV.
+
+  2.  BASIC SAVEs will save from memory beginning at start-of-BASIC and
+      stopping at SOV.
+
+  3.  Direct command BASIC LOADs will bring a program into memory, relocating
+      if appropriate, and then set the SOV pointer to the location following
+      the last byte loaded.
+
+  4.  Changes to BASIC programs cause memory to be moved--up or down--
+      starting from the point where the change is made and stopping at the
+      SOV.  The SOV will then be moved the appropriate distance up or down.
+
+These seem to be innocent rules.  Rule 1 defines the purpose of the SOV.
+Rule 2 shows how the SOV controls the SAVE command so that the entire BASIC
+program is saved, but not the variables.  Rule 3 arranges that short programs
+will have a large amount of variable space available; long ones will have
+less.  Rule 4 ensures that a BASIC change makes extra room in memory or
+reclaims memory space.
+
+But if the SOV gets the wrong address, we're in trouble.  The rules work
+against us.  Variables may be written into disastrous places.  SAVEs will
+cause too much or too little to be saved.  LOADs may fix things, since SOV
+will be changed by the load action.  An attempt to change a program with a
+bad SOV may cause too little or far too much memory to be moved around.  We
+must get the SOV right.
+
+                                                                         :98:
+
+How can the SOV go bad on us?  Let's take three examples, corresponding to
+the three major places that we might put machine language programs:
+
+We have a program in the cassette buffer, and a BASIC program that goes with
+it.  We enter or load the BASIC program (the SOV is all right so far), and
+then we LOAD the machine language program; the SOV ends up disastrously
+somewhere in the cassette buffer area.
+
+We're in trouble.  The program seems to list correctly, but it's sick.  If we
+RUN, variables will start to be placed in the cassette buffer area; as more
+variables area created, they are placed in progressively higher memory
+locations.  Eventually, the variables start to write over the BASIC program.
+Everything stops.  The poor programmer says LIST to see what's happening; his
+BASIC program is gone, and all that's left is gibberish.
+
+We're in more trouble.  Alternatively, the programmer decides to save his
+BASIC program and commands SAVE.  BASIC starts to save memory beginning at
+start-of-BASIC...and keeps saving, and saving, and saving.  It won't stop
+until it reaches the SOV, but that's below where we started.  We won't get
+there until the address "wraps around" and comes back up through zero.  The
+poor programmer--if he or she waits long enough--discovers that the tiny
+five-line BASIC program has been saved as over 250 blocks on disk, or fifteen
+minutes worth of tape.  And the saved program is useless.
+
+We're in still more trouble.  Alternatively, the programmer lists the
+program, and decides to delete one character from a line of BASIC.  BASIC
+immediately starts to move memory, starting at the change point.  It won't
+stop moving memory until it reaches SOV, but that, again, is below where we
+started.  It will move everything that can be moved.  RAM will be moved
+along, which may not hurt anything; then the IA chips will be moved, which
+may scramble colors or make the display go crazy; then it will try to move
+ROM, which won't work because ROM can't be changed; then it will wrap around
+to zero-page and move everything there, which is fatal to the system.
+Eventually, it will collapse before reaching SOV since it destroys its own
+working pointers.
+
+
+---
+Additional information can be found by searching:
+- "basic_memory_pointers_and_meanings" which expands on role of SOV in SAVE and LOAD

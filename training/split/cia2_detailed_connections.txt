@@ -1,0 +1,52 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - CIA2 ($DD00-$DDFF) detailed connections: VIC-II memory bank selection via Port A bits 0-1 (active low), serial IEC bus signals on Port A (ATN OUT, CLOCK OUT, DATA OUT, CLOCK IN, DATA IN), RS-232 signals across Port A/Port B (TXD on Port A bit 2; RXD on Port B bit 0; RTS/DTR outputs; RI/DCD inputs), user port I/O, and NMI generation. CIA2 FLAG pin connects to Serial Bus SRQ; negative edge generates NMI if enabled.
+
+7. CIA 2 - DETAILED CONNECTIONS ($DD00-$DDFF)
+=============================================================
+
+CIA 2 is responsible for:
+  - VIC-II memory bank selection
+  - Serial (IEC) bus communication
+  - RS-232 communication (accent RS-232)
+  - User Port I/O
+  - NMI generation
+
+VIC-II Bank Selection:
+  CIA 2 Port A bits 0-1 ($DD00) select which 16K bank the VIC-II
+  sees for screen memory, character data, and sprites:
+
+    Bits 1-0    Bank    VIC-II Address Range
+    --------    ----    --------------------
+      %11        0      $0000-$3FFF (default)
+      %10        1      $4000-$7FFF
+      %01        2      $8000-$BFFF
+      %00        3      $C000-$FFFF
+
+  Note: The bank bits are active low (inverted).
+
+Serial (IEC) Bus:
+  Port A handles the serial bus for disk drives and printers:
+    Bit 3: ATN OUT
+    Bit 4: CLOCK OUT
+    Bit 5: DATA OUT
+    Bit 6: CLOCK IN (input)
+    Bit 7: DATA IN (input)
+
+RS-232 Communication:
+  Port A bit 2: TXD (transmit data, output)
+  Port B bit 0: RXD (receive data, input)
+  Port B bit 1: RTS (request to send, output)
+  Port B bit 2: DTR (data terminal ready, output)
+  Port B bit 3: RI  (ring indicator, input)
+  Port B bit 4: DCD (data carrier detect, input)
+
+CIA 2 FLAG pin:
+  Connected to the Serial Bus SRQ (Service Request) line.
+  A negative edge generates an NMI (if enabled).
+
+=============================================================
+
+---
+Additional information can be found by searching:
+- "port_a_data_register_pra" which expands on VIC-II bank selection bits (CIA2 Port A bits 0-1)
+- "port_b_data_register_prb" which expands on RS-232 signals on CIA2 Port B
+- "interrupt_handling" which expands on CIA2 ICR triggers NMI on the CPU

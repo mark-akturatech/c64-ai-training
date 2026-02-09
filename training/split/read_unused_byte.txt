@@ -1,0 +1,17 @@
+# Analyzing C64 tape loaders - Small step in the load state machine: reads an unused/ignored byte (example value $32) after sync and modifies the branch at $036D to proceed to header reading state. Shows continued use of self-modifying branch technique.
+
+; ********************************************
+; * Read an unused byte                      *
+; ********************************************
+0399  A9 32          LDA #$32       ; Read byte is unused.
+039B  8D 6D 03       STA $036D      ; Change the branch at $036C, to jump to $03A0
+039E  D0 D9          BNE $0379      ; (6)
+; ********************************************
+; * Read an unused byte.END                  *
+; ********************************************
+
+
+---
+Additional information can be found by searching:
+- "read_pilot_train_and_sync_byte" which expands on Executed immediately after sync detection
+- "read_header_bytes" which expands on Leads into reading header bytes

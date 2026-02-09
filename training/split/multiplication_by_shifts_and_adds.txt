@@ -1,0 +1,59 @@
+# MACHINE - Multiplication techniques using shifts and adds: multiply by two via ASL, combine ASL/ROL for multi-byte. To multiply by 4 or 8, repeat shifts. To multiply by 10: multiply by 2 twice (x4), add original (x5), then multiply by 2 again (x10). Typical use: building decimal input routines where digits are accumulated via multiply-by-ten and add.
+
+Multiplication
+--------------
+
+Multiplying by two may not seem too powerful.  We can build on this starting
+point, however, and arrange to multiply by any number we choose.
+
+                                                                         :63:
+
+                                                ASL         0
+                                               +---------+  |
+                                               |         |  |
+                                            ,---- <- <- <---'
+                                            |  |         |
+                              ROL           |  +---------+
+                             +---------+    |   LOW ORDER BYTE
+                             |         |    v
+                          ,---- <- <- <---CARRY
+                          |  |         |
+            ROL           |  +---------+
+           +----------+   |
+           |          |   v
+        ,---- <- <- <---CARRY
+        |  |          |
+        |  +----------+
+        |   HIGH ORDER BYTE
+        v
+
+   TO MULTIPLY A THREE-BYTE NUMBER BY TWO, WE SHIFT THE LOW ORDER
+   BYTE WITH ASL; THEN WE USE ROL TO ALLOW THE C FLAG TO "LINK" FROM
+   ONE BYTE TO THE NEXT.
+
+   Figure 4.4
+
+
+We won't deal with a generalized multiplication routine here, but a couple
+of specific examples can be shown.
+
+How can we multiply by four?  Multiply by two, twice.  How can we multiply by
+eight?  Multiply by two, three times.
+
+Here's an important one.  We often want to multiply by ten.  For example, if
+a decimal number is being typed in at the keyboard, the number will arrive
+one digit at a time.  The user might type 217, for example.  The program must
+then input the two and put it away; when the one arrives, the two must be
+multiplied by ten, giving twenty, and the one added; when the seven is typed,
+the twenty-one must be multiplied by ten before the seven is added.  Result:
+217 in binary.  But we must first know how to multiply by ten.
+
+To multiply by ten, you first multiply by two; then multiply by two again.
+At this point, we have the original number times four.  Now, add the original
+number, giving the original number times five.  Multiply by two one last time
+and you've got it.  We'll see an example of this in Chapter 7.
+
+
+---
+Additional information can be found by searching:
+- "left_shift_and_rol" which expands on use ASL and ROL for multi-byte multiplication

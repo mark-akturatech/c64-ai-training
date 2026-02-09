@@ -1,0 +1,44 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Entry and dispatch for tape (cassette) loads: detect cassette based on device/flags, call ZZZ to set tape pointers, CSTE1 to inform the user of button use, print 'SEARCHING', look for filename if FNLEN present via FAF, handle stop-key, end-of-tape, or 'find any header' logic (FAH). Validates header and inspects file type (BLF/PLF flags) to determine whether the file is movable, program, or other and whether a monitor (SA=0) fixed-load should be used.
+
+                                ;LOAD FROM TAPE
+                                ;
+.,F533 4A       LSR             LD100  LSR A
+.,F534 B0 03    BCS $F539       BCS    LD102           ;IF C-SET THEN IT'S CASSETTE
+                                ;
+.,F536 4C 13 F7 JMP $F713       JMP    ERROR9          ;BAD DEVICE #
+                                ;
+.,F539 20 D0 F7 JSR $F7D0       LD102  JSR ZZZ         ;SET POINTERS AT TAPE
+.,F53C B0 03    BCS $F541       BCS    LD104
+.,F53E 4C 13 F7 JMP $F713       JMP    ERROR9          ;DEALLOCATED...
+.,F541 20 17 F8 JSR $F817       LD104  JSR CSTE1       ;TELL USER ABOUT BUTTONS
+.,F544 B0 68    BCS $F5AE       BCS    LD190           ;STOP KEY PRESSED?
+.,F546 20 AF F5 JSR $F5AF       JSR    LUKING          ;TELL USER SEARCHING
+                                ;
+.,F549 A5 B7    LDA $B7         LD112  LDA FNLEN       ;IS THERE A NAME?
+.,F54B F0 09    BEQ $F556       BEQ    LD150           ;NONE...LOAD ANYTHING
+.,F54D 20 EA F7 JSR $F7EA       JSR    FAF             ;FIND A FILE ON TAPE
+.,F550 90 0B    BCC $F55D       BCC    LD170           ;GOT IT!
+.,F552 F0 5A    BEQ $F5AE       BEQ    LD190           ;STOP KEY PRESSED
+.,F554 B0 DA    BCS $F530       BCS    LD90            ;NOPE...END OF TAPE
+                                ;
+.,F556 20 2C F7 JSR $F72C       LD150  JSR FAH         ;FIND ANY HEADER
+.,F559 F0 53    BEQ $F5AE       BEQ    LD190           ;STOP KEY PRESSED
+.,F55B B0 D3    BCS $F530       BCS    LD90            ;NO HEADER
+                                ;
+.,F55D A5 90    LDA $90         LD170  LDA STATUS
+.,F55F 29 10    AND #$10        AND    #SPERR          ;MUST GOT HEADER RIGHT
+.,F561 38       SEC             SEC
+.,F562 D0 4A    BNE $F5AE       BNE    LD190           ;IS BAD
+                                ;
+.,F564 E0 01    CPX #$01        CPX    #BLF            ;IS IT A MOVABLE PROGRAM...
+.,F566 F0 11    BEQ $F579       BEQ    LD178           ;YES
+                                ;
+.,F568 E0 03    CPX #$03        CPX    #PLF            ;IS IT A PROGRAM
+.,F56A D0 DD    BNE $F549       BNE    LD112           ;NO...ITS SOMETHING ELSE
+                                ;
+
+---
+Additional information can be found by searching:
+- "nload_device_checks_and_basic_errors" which expands on Reached when device indicates tape (carry set)
+- "tape_addressing_and_block_load" which expands on After locating header and file type, compute effective start and perform block load (TRD)
+- "luking_message_subroutine" which expands on Uses the searching message routine to inform the user

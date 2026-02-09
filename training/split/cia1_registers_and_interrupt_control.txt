@@ -1,0 +1,44 @@
+# Analyzing C64 tape loaders - Lists CIA #1 timer registers addresses ($DC04-$DC07) and the Interrupt Control Register ($DC0D). Explains read semantics (clear-on-read) and write semantics (bit 7 controls set/clear) for enabling/disabling specific interrupts (Timer A/B, TOD alarm, serial shift register, FLAG line). Notes examples of POKE usage to alter interrupts.
+
+<code>
+56324 $DC04 TIMALO
+Timer A (low byte)
+
+56325 $DC05 TIMAHI
+Timer A (high byte)
+
+56326 $DC06 TIMBLO
+Timer B (low byte)
+
+56327 $DC07 TIMBHI
+Timer B (high byte)
+
+56333 $DC0D CIAICR
+Interrupt Control Register
+</code>
+
+<code>
+Bit 0: Read / did Timer A count down to 0? (1=yes)
+Write/ enable or disable Timer A interrupt (1=enable, 0=disable)
+Bit 1: Read / did Timer B count down to 0? (1=yes)
+Write/ enable or disable Timer B interrupt (1=enable, 0=disable)
+Bit 2: Read / did Time of Day Clock reach the alarm time? (1=yes)
+Write/ enable or disable TOD clock alarm interrupt (1=enable, 0=disable)
+Bit 3: Read / did the serial shift register finish a byte? (1=yes)
+Write/ enable or disable serial shift register interrupt (1=enable, 0=disable)
+Bit 4: Read / was a signal sent on the flag line? (1=yes)
+Write/ enable or disable FLAG line interrupt (1=enable, 0=disable)
+Bit 5: Not used
+Bit 6: Not used
+Bit 7: Read / did any CIA #1 source cause an interrupt? (1=yes)
+Write/ set or clear bits of this register (1=bits written with 1 will be set, 0=bits written with 1 will be cleared)
+</code>
+
+This register is used to control the five interrupt sources on the 6526 CIA chip. These sources are Timer A, Timer B, the Time of Day Clock, the Serial Register, and the FLAG line. Timers A and B cause an interrupt when they count down to 0. The Time of Day Clock generates an interrupt when it reaches the ALARM time. The Serial Shift Register interrupts when it compiles eight bits of input or output. An external signal pulling the CIA hardware line called FLAG low will also cause an interrupt (on CIA #1, this FLAG line is connected to the Cassette Read line of the Cassette Port).
+
+Even if the condition for a particular interrupt is satisfied, the interrupt must still be enabled for an IRQ actually to occur. This is done by writing to the Interrupt Control Register. What happens when you write to this register depends on the way that you set Bit 7. If you set it to 0, any other bit that was written to with a 1 will be cleared, and the corresponding interrupt will be disabled. If you set Bit 7 to 1, any bit written to with a 1 will be set, and the corresponding interrupt will be enabled. In either case, the interrupt enable flags for those bits written to with a 0 will not be affected.
+
+---
+Additional information can be found by searching:
+- "cia1_timers_and_usage" which expands on Timer registers referenced here
+- "irq_isr" which expands on Interrupt latch clearing via reading $DC0D within ISR

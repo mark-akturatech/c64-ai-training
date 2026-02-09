@@ -1,0 +1,47 @@
+# byRiclianll - Assembler directives, origin, and initial CPU/register setup. Contains .OPT directive and sets code origin (* = $0500). Initializes drive-related pointer/flag (LDA #*04; STA *31), loads and increments a pointer at *3A (LDA *3A / TAX / INX / TXA / STA *3A) performing a checksum increment, and calls the GCR conversion routines (JSR *F78F and JSR *F510) that prepare data for drive transfer.
+
+150  ; 
+
+
+131 
+
+
+CONVERT  TO 
+FIND  HEADER 
+
+WAIT  OUT  G 
+
+
+160  .OPT  P,02 
+170  ; 
+
+180  *=  $0500 
+190  ; 
+
+200  LDA  #*04 
+210  STA  *31 
+220  ; 
+
+230  LDA  *3A 
+240  TAX 
+
+250  I NX  ;  INCREMENT 
+
+CHECKSUM 
+
+260  TXA 
+
+270  STA  *3A 
+
+280  ; 
+
+290  JSR  *F78F 
+GCR 
+
+300  JSR  *F510 
+# 
+
+---
+Additional information can be found by searching:
+- "source_listing_header_and_basic_boot" which expands on BASIC bootstrap that jumps here
+- "find_header_and_wait_gap" which expands on next: waits for header/gap after GCR conversion

@@ -1,0 +1,69 @@
+# An Introduction to Programming C-64 Demos - Bitmap concepts and Koala Paint example: bitmap needs ~ $2000 bytes; Koala format layout (bitmap, screen RAM, colour RAM) requires copying data into $0400 and $D800 and setting VIC registers ($D011,$D016,$D018) to enter bitmap/multicolour or hires modes. Example code copies Koala screen/colour data from $3F40/$4328 etc. to $0400/$D800, sets $D011=$3B (bitmap mode), $D016=$18 for multicolour and $D018=$18 to point screen at $0400 and bitmap at $2000.
+
+Bitmap Graphics
+Character sets are good for a lot of things, but if you want a picture that covers the whole screen, a character set won't do, because you can't set every pixel on the screen, using only $0800 bytes. There are 320 x 200 pixels on the screen in hires mode, and 160 x 200 in colour mode, so you need about $2000 bytes to have total control of the graphics on the screen.
+
+However, if the picture you want to display is ``simple'' enough, ie. if large parts of it are empty, or if it's highly repetitive, so that it could be drawn with a single customized character set, you can of course just use a charset to display it, and you'll save yourself $1800 bytes of memory. There are tools to convert a bitmap to a character set + a screen memory, which of course requires that the information contained in the bitmap will fit into a charset.
+
+If you've understood how character graphics work, you shouldn't have any problems understanding how to display bitmap graphics. I'll describe how you can display hires graphics and multicolour graphics in the Koala Paint format.
+
+
+The Concepts of Bitmap Graphics
+When you display character graphics, you have to set $d018 to point to screen RAM and character set. If you want to display a bitmap picture, you have to do almost the same thing. You have to set the location of screen RAM (which is used for two sets of colours for each character (yes, in a way you're still using character)) and of the bitmap. The bitmap takes up almost $2000 bytes, and it has to be properly aligned, so you can't put a bitmap at eg. $2800, it has to be at $2000, $4000, $6000 etc.
+
+Before we go into the theory of how you display a bitmap, I'll give you an example, and then I'll explain what it does. The example requires that you have a Koala picture loaded at $2000. Koala pictures are usually loaded to $6000, so go into your monitor and type l ``filename'',08,2000. That will load your picture to $2000.
+
+
+           * = $0801
+
+           lda #$00
+           sta $d020
+           sta $d021    ; set border and screen colour to black
+
+           tax
+copyloop:
+           lda $3f40,x  ; copy colours to screen RAM
+           sta $0400,x
+           lda $4040,x
+           sta $0500,x
+           lda $4140,x
+           sta $0600,x
+           lda $4240,x
+           sta $0700,x
+           lda $4328,x  ; copy colours to colour RAM
+           sta $d800,x
+           lda $4428,x
+           sta $d900,x
+           lda $4528,x
+           sta $da00,x
+           lda $4628,x
+           sta $db00,x
+           dex
+           bne copyloop
+
+           lda #$3b     ; bitmap mode
+           ldx #$18     ; multi-colour mode
+           ldy #$18     ; screen at $0400, bitmap at $2000
+           sta $d011
+           stx $d016
+           sty $d018
+
+mainloop:
+           jmp mainloop ; keep going...
+As I still haven't explained everything about bitmap mode, this might not be all that clear, but it's still a very small example program and it'll display a Koala picture just fine.
+
+We start by making the border and background black. This isn't actually accurate, as the background colour is stored in the Koala format, so we really should have loaded the value from $4711 and put it in $d021, but that's not really important.
+
+Next we start copying stuff. Why do we do that. Well, we'll keep using $0400 as screen RAM, so we'll have to copy the screen RAM, which, in the Koala format, is located at $3f40, to $0400. That's easy, you've seen that one before. The same goes for colour RAM, which starts at $4328, which will have to be copied to $d800.
+
+When we have all the data in the right places, all we need to do is to tell the VIC chip what mode to go into, and where it should read data. We tell it to go into bitmap mode by setting $d011 to $3b, and by setting $d016 to $18 we turn on multi-colour mode. And then we tell it to read screen RAM at $0400 and the bitmap at $2000, by setting $d018 to $18.
+
+The last line just loops forever, so that you get a chance to watch the picture. Hopefully you've found a nice one. :-)
+
+If you don't know where to find a Koala picture, get a program like Amica Paint, Koala Paint or Color-X16, and draw your own pictures. You can of course also rip pictures from other people's productions, but please, don't use ripped graphics in your demos, that's lame.
+
+
+
+---
+Additional information can be found by searching:
+- "bitmap_screen_layout" which expands on C-64 bitmap memory layout and addressing non-linearity

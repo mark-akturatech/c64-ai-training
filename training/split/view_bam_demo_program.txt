@@ -1,0 +1,114 @@
+# ********* - Demonstration program 'VIEW BAM' (BASIC source and binary). Shows how to open the disk device, read the BAM (Block Availability Map) using device commands (e.g. 'i0', 'b-p', 'u1:') and display availability in a formatted manner for the VIC/64 display. Includes BASIC routines for fetching BAM bytes and rendering them, plus the tokenized PRG block (begin 644 VIEWBAM.PRG ... end).
+
+2. VIEW BAM
+
+start tok64 viewbam.prg
+ 100 rem********************************
+ 101 rem*  view bam for vic & 64 disk  *
+ 102 rem********************************
+ 105 open 15,8,15
+ 110 print#15,"i0":nu$="n/a n/a n/a n/a n/a":z4=1
+ 120 open 2,8,2,"#"
+ 130 y$="{home}{down*24}"
+ 140 x$="{right*23}"
+ 150 def fn s(z)=2^(s-int(s/8)*8) and (sb(int(s/8)))
+ 160 print#15,"u1:";2;0;18;0
+ 170 print#15,"b-p";2;1
+ 180 print "{clear}";
+ 190 y=22:x=1:gosub 430
+ 200 for i=0 to 20:print:print "{up*2}" right$(str$(i)+" ",3);:next
+ 210 get#2,a$
+ 220 get#2,a$
+ 230 get#2,a$
+ 240 ts=0
+ 250 for t=1 to 17:gosub 450
+ 260 y=22:x=t+4:gosub 430:gosub 540:next
+ 270 for i=1 to 2000:next:print "{clear}"
+ 280 y=22:x=1:gosub 430
+ 290 for i=0 to 20:print:print "{up*2}" right$(str$(i)+" ",3);:next
+ 300 for t=18 to 35
+ 310 gosub 450
+ 320 y=22:x=t-13:gosub 430:gosub 540:next
+ 330 for i=1 to 1000:next
+ 340 print "{clear}{down*5}"
+ 350 print#15,"b-p";2;144
+ 360 n$="":for i=1 to 20:get#2,a$:n$=n$+a$:next
+ 370 print" "n$" "ts-17;"blocks free"
+ 380 for i=1 to 4000:next
+ 390 print "{clear}"
+ 400 input "{down*3}{right*2}another diskette {right*2}n{left*3}";a$
+ 410 if a$="y" then run
+ 420 if a$<>"y" then end
+ 430 print left$(y$,y)left$(x$,x)"{left}";
+ 440 return
+ 450 get#2,sc$:sc=asc(right$(chr$(0)+sc$,1))
+ 460 ts=ts+sc
+ 470 get#2,a$:if a$="" then a$=chr$(0)
+ 480 sb(0)=asc(a$)
+ 490 get#2,a$:if a$="" then a$=chr$(0)
+ 500 sb(1)=asc(a$)
+ 510 get#2,a$:if a$="" then a$=chr$(0)
+ 520 sb(2)=asc(a$)
+ 530 return
+ 540 print "{down}{left}" right$(str$(t),1);"{left}{up*2}";
+ 550 rem  print t"   "sc"  "sb(0)" "sb(1)" "sb(2)=chr$(0)
+ 560 if t>24 and s=18 then:print mid$(nu$,z4,1);:goto 660
+ 570 for s=0 to 20
+ 580 if t<18 then 620
+ 590 if t>30 and s=17 then:print mid$(nu$,z4,1);:goto 660
+ 600 if t>24 and s=18 then:print mid$(nu$,z4,1);:goto 660
+ 610 if t>24 and s=19 then:print mid$(nu$,z4,1);:goto 660
+ 620 if t>17 and s=20 then:print mid$(nu$,z4,1);:z4=z4+1:goto 660
+ 630 print "{reverse on}";
+ 640 if fns(s)=0 then print "{";:goto 660
+ 650 print "{reverse off}{";:rem right$(str$(s),1);z4,1);:goto 72
+ 660 print "{up}{left}{reverse off}";
+ 670 next
+ 680 return
+stop tok64
+
+begin 644 VIEWBAM.PRG
+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
+%`HX`````
+`
+end
+
+
+
+---
+Additional information can be found by searching:
+- "dir_demo_program" which expands on Uses directory/BAM data similar to DIR program
+- "bam_format_1541" which expands on BAM layout and interpretation

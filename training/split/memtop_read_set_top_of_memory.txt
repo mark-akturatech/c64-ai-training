@@ -1,0 +1,17 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - MEMTOP: Read/Set top of memory (vectored from $ffa9). If carry set on entry: loads MEMTOP into X/Y from MEMSIZ ($0283/$0284). If carry clear: stores X/Y into MEMSIZ. Uses BCC/LDX/LDY/STX/STY and returns.
+
+                                *** MEMTOP: READ/SET TOP OF MEMORY
+                                The KERNAL routine MEMTOP ($ffa9) jumps to this routine.
+                                If carry is set on entry, the top of memory address will
+                                be loaded into (X/Y). If carry is clear on entry, the top
+                                of memory will be set according to the contents in (X/Y)
+.,FE25 90 06    BCC $FE2D       carry clear?
+.,FE27 AE 83 02 LDX $0283       read memtop from MEMSIZ
+.,FE2A AC 84 02 LDY $0284
+.,FE2D 8E 83 02 STX $0283       store memtop in MEMSIZ
+.,FE30 8C 84 02 STY $0284
+.,FE33 60       RTS
+
+---
+Additional information can be found by searching:
+- "ramtas_init_system_constants" which expands on RAMTAS calls FE2D/FE27 variants to set top of memory after memory test

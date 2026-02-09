@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - FLNMI (FLAG NMI) helper: set up half-bit timing when a start-edge (flag) is detected. Load the precomputed half-bit timer value from M51AJB/M51AJB+1 into D2T2L/H, enable the timer (D2CRB), toggle ENABL to disable FLAG and enable T2 (store ENABL), preset the countdown D2T2L/H to $FFFF, load BITNUM into BITCI (receive bit counter), and return (RTS). This primes the system to sample the middle of the incoming start/first data bits.
+
+                                FLNMI
+                                ;
+                                ; GET HALF BIT RATE VALUE
+                                ;
+.,FF07 AD 95 02 LDA $0295              LDA M51AJB
+.,FF0A 8D 06 DD STA $DD06              STA D2T2L
+.,FF0D AD 96 02 LDA $0296              LDA M51AJB+1
+.,FF10 8D 07 DD STA $DD07              STA D2T2H
+                                ;
+.,FF13 A9 11    LDA #$11               LDA #$11        ;ENABLE TIMER
+.,FF15 8D 0F DD STA $DD0F              STA D2CRB
+                                ;
+.,FF18 A9 12    LDA #$12               LDA #$12        ;DISABLE FLAG, ENABLE T2
+.,FF1A 4D A1 02 EOR $02A1              EOR ENABL
+.,FF1D 8D A1 02 STA $02A1              STA ENABL
+                                ;ORA #$82
+                                ;STA D2ICR
+                                ;
+.,FF20 A9 FF    LDA #$FF               LDA #$FF        ;PRESET FOR COUNT DOWN
+.,FF22 8D 06 DD STA $DD06              STA D2T2L
+.,FF25 8D 07 DD STA $DD07              STA D2T2H
+                                ;
+.,FF28 AE 98 02 LDX $0298              LDX BITNUM      ;GET #OF BITS IN
+.,FF2B 86 A8    STX $A8                STX BITCI       ;PUT IN RCVRCNT
+.,FF2D 60       RTS                    RTS
+
+---
+Additional information can be found by searching:
+- "t2nmi_subroutine_sample_and_timer_update" which expands on FLNMI primes timer and counters before T2NMI mid-bit sampling runs
+- "t2_and_flag_nmi_handlers_and_rti" which expands on FLNMI is called from the FLAG NMI path

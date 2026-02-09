@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Compare buffer pointer with end pointer and return with carry set if pointer >= end. Uses $AC (buffer low) - $AE (end low), and $AD (buffer high) - $AF (end high). SEC before subtraction and RTS.
+
+                                *** check read/write pointer
+                                return Cb = 1 if pointer >= end
+.,FCD1 38       SEC             set carry for subtract
+.,FCD2 A5 AC    LDA $AC         get buffer address low byte
+.,FCD4 E5 AE    SBC $AE         subtract buffer end low byte
+.,FCD6 A5 AD    LDA $AD         get buffer address high byte
+.,FCD8 E5 AF    SBC $AF         subtract buffer end high byte
+.,FCDA 60       RTS             
+
+---
+Additional information can be found by searching:
+- "tape_write_irq_routine" which expands on uses this routine to decide block completion

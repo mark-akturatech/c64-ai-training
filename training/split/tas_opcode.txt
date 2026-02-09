@@ -1,0 +1,81 @@
+# NMOS 6510 - TAS (XAS, SHS) undocumented opcode ($9B) abs,Y: sets SP = A & X, then stores (A & X & {H+1}) into memory. Describes operation, size, cycles, instabilities (RDY dropoff, page-cross behavior), and an equivalent (long) instruction sequence using PHP/STA/AND/TXS to emulate TAS effects. Notes that TAS does not use the stack and test-code references.
+
+; flags
+PHA
+LDA $02
+; akku
+PLP
+; restore flags
+Note: The above code does in many ways not accurately resemble how the TAS opcode works
+exactly, memory location $02-$04 would not be altered and the stack would not be used.
+- 58 -
+
+Test code:
+• general: Lorenz-2.15/shsay.prg
+• &{H+1} drop off: CPU/shs/shsabsy2.prg, CPU/shs/shsabsy3.prg,
+CPU/shs/shsabsy4.prg
+• page boundaries: CPU/shs/shsabsy1.prg, CPU/shs/shsabsy5.prg
+
+Example: SAX abs, y with SP=A & X
+
+When using $FE00 as address, the value stored would be ANDed by $FF and the TAS turns into a
+SAX, plus it moves the result of ANDing A and X into the stackpointer. This can be extremely
+powerful if you can afford trashing the stackpointer (ie saving/restoring it) in a piece of code
+where you want to compute A & X and reuse the resulting value a few times, preferably in the X
+register.
+TSX
+STX
+LDA
+LDX
+TAS
+...
+TSX
+LDY
+STY
+...
+TSX
+LDY
+STY
+...
+LDX
+TXS
+
+; save stackpointer
+temp
+GLOBALMASK
+LOCALMASK
+$FE00,Y
+; SAX $FE00,Y stores A & X & ($FE + 1)
+; also sets SP = A & X
+; get A & X
+data0,x
+bitmap+0
+; get A & X
+data1,x
+bitmap+1
+temp
+
+; restore stackpointer
+
+- 59 -
+
+'Magic Constant' group
+The two opcodes in this group are combinations of an immediate and an implied command, and
+involve a highly unstable 'magic constant', which is chip and/or temperature (and thus time!)
+dependent. The behaviour also depends on the RDY line, which needs extra caution.
+These two opcodes are the only ones that can be considered truly unstable.
+•
+
+The ‘magic constant’ must be considered to be totally random. Although often reported as
+being eg 0xee, 0xef or 0xff, you should not rely on any of this being the case. You must use
+these opcodes in a way so the ‘magic constant’ is taken out of the equation. Do not rely
+on reading the ‘magic constant’ either, as it may change with time and temperature.
+
+•
+
+The ‘magic constant’ somehow interacts with the RDY line. In particular bits 0 and 4 seem
+to be “weaker” than the other bits, and may drop to 0 when a DMA starts. It may be
+
+---
+Additional information can be found by searching:
+- "las_opcode_las_abs_y" which expands on LAS/TAS both combine AND results with SP or transfers

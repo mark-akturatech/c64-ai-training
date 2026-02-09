@@ -1,0 +1,42 @@
+# COMMODORE 64 - Screen memory relocation via VIC-II control register $D018 (53272). Upper 4 bits of register select screen memory page. POKE example: POKE 53272,(PEEK(53272) AND 15) OR A to change screen page without disturbing lower bits. Table mapping A values (0,16,32,...240) to page starting addresses (0,$0000; 16->$0400 default; up to 240->$3C00) with reminders to add VIC-II bank base and to inform KERNAL screen editor via POKE 648,page.
+
+  SCREEN MEMORY
+
+    The location of screen memory can be changed easily by a POKE to
+  control register 53272 ($D018 HEX). However, this register is also used
+  to control which character set is used, so be careful to avoid disturbing
+  that part of the control register. The UPPER 4 bits control the location
+  of screen memory. To move the screen, the following statement should be
+  used:
+
+
+  POKE53272,(PEEK(53272)AND15)OR A
+
+
+
+  102   PROGRAMMING GRAPHICS
+~
+
+
+  Where "A" has one of the following values:
+  +---------+------------+-----------------------------+
+  |         |            |         LOCATION*           |
+  |    A    |    BITS    +---------+-------------------+
+  |         |            | DECIMAL |        HEX        |
+  +---------+------------+---------+-------------------+
+  |     0   |  0000XXXX  |      0  |  $0000            |
+  |    16   |  0001XXXX  |   1024  |  $0400 (DEFAULT)  |
+  |    32   |  0010XXXX  |   2048  |  $0800            |
+  |    48   |  0011XXXX  |   3072  |  $0C00            |
+  |    64   |  0100XXXX  |   4096  |  $1000            |
+  |    80   |  0101XXXX  |   5120  |  $1400            |
+  |    96   |  0110XXXX  |   6144  |  $1800            |
+  |   112   |  0111XXXX  |   7168  |  $1C00            |
+  |   128   |  1000XXXX  |   8192  |  $2000            |
+  |   144   |  1001XXXX  |   9216  |  $2400            |
+  |   160   |  1010XXXX  |  10240  |  $2800            |
+  |   176   |  1011XXXX  |  11264  |  $2C00            |
+
+---
+Additional information can be found by searching:
+- "video_bank_selection_cia2_ports" which expands on need to add bank base when relocating screen memory

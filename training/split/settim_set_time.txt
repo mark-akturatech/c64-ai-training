@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SETTIM: Set realtime jiffy clock (vectored at $ffdb). On entry (A/X/Y) holds high/mid/low clock bytes to store into $A0/$A1/$A2. Disables interrupts (SEI) during write, then enables CLI and returns.
+
+                                *** SETTIM: SET TIME
+                                The KERNAL routine SETTIM ($ffdb) jumps to this routine.
+                                On entry, (A/X/Y) must hold the value to be stored in the
+                                clock. The format is high/mid/low, and clock resolution is
+                                1/60 second. SEI is included since part of the IRQ routine
+                                is to update the clock.
+.,F6E4 78       SEI             disable interrupt
+.,F6E5 85 A2    STA $A2         write TIME
+.,F6E7 86 A1    STX $A1
+.,F6E9 84 A0    STY $A0
+.,F6EB 58       CLI             enable interrupts
+.,F6EC 60       RTS
+
+---
+Additional information can be found by searching:
+- "rdtim_get_time" which expands on complementary get/set routines for the jiffy clock

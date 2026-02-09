@@ -1,0 +1,14 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initialise VIC and screen editor: JSR $E518 (initialise screen & keyboard), wait for raster $00 (poll $D012), read VIC interrupt flag $D019 to detect PAL/NTSC, store result at $02A6, then JMP $FDDD to continue initialisation.
+
+                                *** initialise VIC and screen editor
+.,FF5B 20 18 E5 JSR $E518       initialise the screen and keyboard
+.,FF5E AD 12 D0 LDA $D012       read the raster compare register
+.,FF61 D0 FB    BNE $FF5E       loop if not raster line $00
+.,FF63 AD 19 D0 LDA $D019       read the vic interrupt flag register
+.,FF66 29 01    AND #$01        mask the raster compare flag
+.,FF68 8D A6 02 STA $02A6       save the PAL/NTSC flag
+.,FF6B 4C DD FD JMP $FDDD       
+
+---
+Additional information can be found by searching:
+- "initialise_sid_cia_and_irq" which expands on called earlier during system reset sequence

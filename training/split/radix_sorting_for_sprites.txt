@@ -1,0 +1,70 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Two-pass radix sort to guarantee correct Y-order with near-linear execution time. First pass buckets by (Y & 15) (remainder of Y/16), second pass buckets by Y/16. Pseudocode shows clearing buckets, filling first-pass buckets, moving through them to place sprites into second-pass buckets, and then emitting final sorted list. Notes: correct ordering but complex and memory-hungry (multiple bucket arrays & counters).
+
+2.1.4 Radix sorting
+
+This ensures correct sprite order, but is complicated. Execution time, like in
+previous example, is only proportional to N but the code itself can be
+relatively slow. It follows the "bucket" idea but in two passes. First a
+sorting is done according to the remainder of Y coordinate divided by 16, then
+according to the actual result of the division.
+
+; Clear buckets for both passes.
+
+for (bucket = 0; bucket < maximum_buckets; bucket++)
+{
+  amount_in_bucket1[bucket] = 0;
+  amount_in_bucket2[bucket] = 0;
+}
+
+;Store sprites to the first pass buckets, according to remainder of
+;Y divided by 16.
+
+for (sprite = 0; sprite < maximum_buckets; sprite++)
+{
+  bucket1_number = spry[sprite] & 15;
+  bucket1[bucket1_number][amount_in_bucket1[bucket1_number]] = sprite;
+  amount_in_bucket1[bucket1_number]++;
+}
+
+;Walk through all the first pass buckets to get the first pass sorting order.
+;At the same time, put sprites to the second pass buckets according to Y
+;divided by 16.
+
+for (bucket = 0; bucket < maximum_buckets; bucket++)
+{
+  for (index = 0; index < amount_in_bucket1[bucket]; index++)
+  {
+    sprite = bucket[bucket][index];
+    bucket2_number = spry[sprite] / 16;
+    bucket2[bucket2_number][amount_in_bucket2[bucket2_number]] = sprite;
+    amount_in_bucket2[bucket2_number]++;
+  }
+}
+
+;Walk through the second pass buckets to get the final sprite order.
+;In this example, the sprites are directly copied to the sorted table.
+
+sorted_sprites = 0
+
+for (bucket = 0; bucket < maximum_buckets; bucket++)
+{
+  for (index = 0; index < amount_in_bucket2[bucket]; index++)
+  {
+    sprite = bucket2[bucket][index];
+    sortspry[sorted_sprites] = spry[sprite];
+    sortsprx[sorted_sprites] = sprx[sprite];
+    sortsprf[sorted_sprites] = sprf[sprite];
+    sortsprc[sorted_sprites] = sprc[sprite];
+    sorted_sprites++;
+  }
+}
+
+As you can see, this is complicated and involves quite a lot of memory,
+as well as at least three loops to get everything done.
+
+
+
+---
+Additional information can be found by searching:
+- "y_div_8_bucket_sort_incorrect" which expands on related bucket approach but less precise
+- "continuous_insertion_sort_ocean_algorithm" which expands on practical alternative used in several games

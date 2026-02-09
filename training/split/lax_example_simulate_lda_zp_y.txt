@@ -1,0 +1,32 @@
+# NMOS 6510 - Example: simulate 'LDA zp,y' using LAX zp,y when X can be clobbered to save one byte. Includes explanation and side-by-side code: original sequence using LDA abs,y plus saves to stack vs. the shorter sequence using LAX <ZEROPAGE_ADDRESS-1>,y and subsequent instructions. Shows how LAX can copy code to zeropage and push the old value to the stack while being one byte shorter.
+
+
+Example: simulate LDA zp, y
+
+In situations where you can afford trashing the X register, you can save one byte by using LAX
+zp,y instead of LDA abs, y. For example the following code copies some code to the
+zeropage and at the same time saves the zeropage contents on the stack:
+Instead of this:
+LDY #PAYLOAD_LENGTH
+LDA <ZEROPAGE_ ADDRESS – 1,y
+
+; LDA abs, y
+
+LDX PAYLOAD_ADDRESS - 1,y
+STX <ZEROPAGE_ ADDRESS - 1,y
+PHA
+DEY
+BNE you can do this, which is one byte shorter:
+LDY #PAYLOAD_LENGTH
+LAX <ZEROPAGE_ ADDRESS – 1,y
+LDX PAYLOAD_ADDRESS - 1,y
+STX <ZEROPAGE_ ADDRESS - 1,y
+PHA
+DEY
+BNE -
+
+
+---
+Additional information can be found by searching:
+- "lax_opcodes_and_overview" which expands on Opcode reference and operation for LAX
+- "lax_load_a_x_same_value" which expands on Another LAX usage pattern: preserving a value in both A and X

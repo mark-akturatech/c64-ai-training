@@ -1,0 +1,28 @@
+# NMOS 6510 - Example demonstrating a fast 'noise' generator (LFSR-like) using RRA: initial seed setup in zero page, restoring accumulator and carry, performing RRA on the seed, EOR and ROR to produce a 'noise' value in A while preserving A and carry where needed. Includes brief code fragments and comments showing preservation/restoration of A and carry.
+
+Example: noise LFSR
+
+If you need a fast “noise” generator, something like this could work:
+LDA
+STA
+LDA
+CLC
+
+#$e4 ; initial seed
+zp1
+#$01 ; initial seed
+
+...
+; restore accu and carry
+RRA zp1
+EOR #$01
+ROR
+; “noise” value in accu
+; preserve accu and carry
+...
+
+
+---
+Additional information can be found by searching:
+- "rra_opcodes_and_operation" which expands on RRA opcode semantics used by this example
+- "rra_as_ror_simulation_addressing_modes" which expands on related use of RRA for bit-rotation/addressing tricks

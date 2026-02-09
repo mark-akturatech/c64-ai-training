@@ -1,0 +1,63 @@
+# - C64 I/O Map (Mapping The Commodore 64) - D011 Bit 4: screen blanking (0 = blank screen to border color). Explains effect on VIC-II/6510 bus contention: blanking disables VIC fetches that delay the CPU allowing the 6510 to run full speed (useful for tape I/O compatibility). Includes BASIC timing demonstration and notes about disabling screen to cooperate with older 1540 drives.
+
+                          Bit 4.  Bit 4 of this register controls the screen blanking feature.
+                          When this bit is set to 0, no data can be displayed on the screen.
+                          Instead, the whole screen will be filled with the color of the frame
+                          (which is controlled by the Border Color Register at 53280 ($D020)).
+
+                          Screen blanking is useful because of the way in which the VIC-II chip
+                          interacts with the 6510 microprocessor.  Since the VIC-II and the 6510
+                          both have to address the same memory, they must share the system data
+                          bus.  Sharing the data bus means that they must take turns whenever
+                          they want to address memory.
+
+                          The VIC-II chip was designed so that it fetches most of the data it
+                          needs during the part of the cycle in which the 6510 is not using the
+                          data bus.  But certain operations, such as reading the 40 screen codes
+                          needed for each line of text from video memory, or fetching sprite
+                          data, require that the VIC-II chip get data at a faster rate than is
+                          possible just by using the off half of the 6510 cycle.
+
+                          Thus, the VIC-II chip must delay the 6510 for a short amount of time
+                          while it is using the data bus to gather display information for text
+                          or bitmap graphics, and must delay it a little more if sprites are
+                          also enabled.  When you set the screen blanking bit to 0, these delays
+                          are eliminated, and the 6510 processor is allowed to run at its full
+                          speed.  This speeds up any processing task a little.
+
+                          To demonstrate this, run the following short program.  As you will
+                          see, leaving the screen on makes the processor run about 7 percent
+                          slower than when you turn it off.  If you perform the same timing test
+                          on the VIC-20, you will find that it runs at the same speed with its
+                          screen on as the 64 does with its screen off.  And the same test on a
+                          PET will run substantially slower.
+
+                              10 PRINT CHR$(147);TAB(13);"TIMING TEST":PRINT:TI$="000000":GOTO 30
+                              20 FOR I=1 TO 10000:NEXT I:RETURN
+                              30 GOSUB 20:DISPLAY=TI
+                              40 POKE 53265,11:TI$="000000"
+                              50 GOSUB 20:NOSCREEN=TI:POKE 53265,27
+                              60 PRINT "THE LOOP TOOK";DISPLAY;" JIFFIES"
+                              70 PRINT "WITH NO SCREEN BLANKING":PRINT
+                              80 PRINT "THE LOOP TOOK";NOSCREEN;" JIFFIES"
+                              90 PRINT "WITH SCREEN BLANKING":PRINT
+                              100 PRINT "SCREEN BLANKING MAKE THE PROCESSOR"
+                              110 PRINT "GO";DISPLAY/NOSCREEN*100-100;"PERCENT FASTER"
+
+                          The above explanation accounts for the screen being turned off during
+                          tape read and write operations.  The timing of these operations is
+                          rather critical, and would be affected by even the relatively small
+                          delay caused by the video chip.  It also explains why the 64 has
+                          difficulty loading programs from an unmodified 1540 Disk Drive, since
+                          the 1540 was set up to transfer data from the VIC-20, which does not
+                          have to contend with these slight delays.
+
+                          If you turn off the 64 display with a POKE 53265,PEEEK(53265) AND 239,
+                          you will be able to load programs correctly from an old 1540 drive.
+                          The new 1541 drive transfers data at a slightly slower rate in the
+                          default setting, and can be set from software to transfer it at the
+                          higher rate for the VIC-20.
+
+---
+Additional information can be found by searching:
+- "d011_vertical_fine_scrolling_bits0_2_and_demo" which expands on Bit 4 is in same D011 control register

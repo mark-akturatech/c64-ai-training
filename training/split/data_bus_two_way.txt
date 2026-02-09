@@ -1,0 +1,54 @@
+# MACHINE - Describes the 8-bit two-way data bus used by the 650x: data format examples, read vs write operations, the role of control lines (timing and read/write direction) and Figure 1.2 (two-way data bus illustration).
+
+The Data Bus
+------------
+
+Once the 650x microprocessor has sent an address over the address bus and it
+has been recognized by a memory chip, data may flow between memory and 650x.
+This data is eight bits (it flows over eight wires).  It might look like
+this:
+
+  01011011
+
+The data might flow either way.  That is, the 650x might read from the memory
+chip, in which case the selected memory chip places information onto the data
+bus which is read by the microprocessor.  Alternatively, the 650x might wish
+to write to the memory chip.  In this case, the 650x places information onto
+the data bus, and the selected memory chip receives the data and stores it.
+
+
+           +------+
+           |      | -> ADDRESS BUS  ->            ->          ->
+           |      o--------o--------------o--------------o--------
+           |      o--------+o-------------+o-------------+o-------
+           |      o--------++o------------++o------------++o------
+           |      o--------+++o-----------+++o-----------+++o-----
+           |      |        ||||           ||||           ||||
+           |      |       |||||          |||||          |||||
+           | 650x |       v||||          v||||          v||||
+           |      |        ||||           ||||           ||||
+           |      |DATA BUS||||   <->     ||||    <->    |||| <->
+           |      o------o-++++---------o-++++---------o-++++-----
+           |      o-----o+-++++--------o+-++++--------o+-++++-----
+           |      o----o++-++++-------o++-++++-------o++-++++-----
+           |      o---o+++-++++------o+++-++++------o+++-++++-----
+           |      |   |||| ||||      |||| ||||      |||| ||||
+           +------+  ^|||| ||||     ^|||| ||||     ^|||| ||||
+                     ||||| ||||     ||||| ||||     ||||| ||||
+                     v|||| ||||     v|||| ||||     v|||| ||||
+                      |||| ||||      |||| ||||      |||| ||||
+                   +--oooo-oooo-+  +-oooo-oooo-+  +-oooo-oooo-+
+                   |            |  |           |  |           |
+                   |   Memory   |  |  Memory   |  |  Memory   |
+                   |    Chip    |  |   Chip    |  |   Chip    |
+                   |("Selected")|  |   (not    |  |   (not    |
+                   |            |  | selected) |  | selected) |
+                   +------------+  +-----------+  +-----------+
+
+           Figure 1.2  Two-way data bus
+
+
+---
+Additional information can be found by searching:
+- "bus_overview_650x" which expands on complements address bus selection process
+- "number_ranges" which expands on relates data bus width (8 bits) to 256 possible values per memory location

@@ -1,0 +1,47 @@
+# ********* - BLNSW ($CC), BLNCT ($CD), GDBLN ($CE), BLNON ($CF) — Cursor blink control and state. Covers BLNSW (cursor blink enable/disable: nonzero disables blink; guidance to POKE 204,0 to force blinking during programs), BLNCT (blink countdown timer that counts down from 20 every jiffy to produce ~3 blinks/sec), GDBLN (stores the normal screen code of the character under the cursor so it can be restored), and BLNON (tracks whether the cursor's current blink shows reversed or normal character: 0=reversed, 1=normal).
+
+204           $CC            BLNSW
+Cursor Blink Enable: 0=Flash Cursor
+
+When this flag is set to a nonzero value, it indicates to the routine
+that normally flashes the cursor not to do so.  The cursor blink is
+turned off when there are characters in the keyboard buffer, or when
+the program is running.
+
+You can use this location to turn the cursor on during a program (for
+a series of GET operations, for example, to show the user that input
+is expected) by using the statement POKE 204,0.
+
+205           $CD            BLNCT
+Timer: Countdown to Blink Cursor
+
+The interrupt routine that blinks the cursor uses this location to
+tell when it's time for a blink.  First the number 20 is put here, and
+every jiffy (1/60 second) the value here is decreased by one, until it
+reaches zero.  Then the cursor is blinked, the number 20 is put back
+here, and the cycle starts all over again.  Thus, under normal
+circumstances, the cursor blinks three times per second.
+
+206           $CE            GDBLN
+Character Under Cursor
+
+The cursor is formed by printing the inverse of the character that
+occupies the cursor position.  If that characters is the letter A, for
+example, the flashing cursor merely alternates between printing an A
+and a reverse-A.  This location keeps track of the normal screen code
+of the character that is located at the cursor position, so that it
+may be restored when the cursor moves on.
+
+207           $CF            BLNON
+Flag: Was Last Curson Blink on or off?
+
+This location keeps track of whether, during the current cursor blink,
+the character under the cursor was reversed, or was restored to
+normal.  This location will contain a 0 if the character is reversed,
+and a 1 if the character is restored to its nonreversed status.
+
+
+---
+Additional information can be found by searching:
+- "pnt_pointer_and_pntr_cursor_column" which expands on cursor position on screen used by blink routines
+- "rvs_reverse_print_flag" which expands on reversed-character printing concept related to cursor inversion

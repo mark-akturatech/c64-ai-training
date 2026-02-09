@@ -1,0 +1,53 @@
+# byRiclianll - INITIALIZE command: not formatting. Syntax: OPEN 15,8,15 ; PRINT#15,"I0" (or "I") ; CLOSE 15. INITIALIZE reads the disk ID and BAM into the drive's internal memory so DOS knows where to write next. Recommends initializing each time a disk is inserted (don't rely on autoinit). INITIALIZE clears the error channel and turns off flashing LED; retrieve error status before initializing if needed.
+
+The  Initialize  Command 
+
+
+Initialization  has  nothing  to  do  with  formatting.  APPLE™  owners  format  a  diskette  by 
+"initializing"  it.  This  is  NOT  TRUE  with  Commodore.  Initializing  a  diskette  forces  the 
+DOS  to  read  the  disk  ID  and  the  contents  of  the  BAM  and  store  them  in  the  drive's 
+internal  memory.  The  BAM  establishes  where  the  next  available  sector  is  for  writing. 
+Without  it  files  would  be  overwritten.  To  initialize  a  diskette  perform  the  following: 
+
+
+21 
+
+
+syntax:  open  15,  8,  15 
+PRINT#15,  "10" 
+CLOSE  15 
+
+ALTERNATE :    PR I NT# 1 5 ,    " I " 
+
+DOS  5. 1 :  >I0 
+
+>I 
+
+The  I  is  short  for  INITIALIZE.  The  drive  number  can  be  ignored  if  you  are  using  only 
+one  1541.  The  drive  motor  purrs  for  a  few  seconds  and  then  settles  down.  It's  that  sim- 
+ple. It  is  a  good  habit  to  initialize  a  diskette  each  time  you  insert  it  into  your  1541  drive. 
+This  point  cannot  be  overemphasized.  Do  it  yourself.  Do  not  rely  upon  the  "autoinit" 
+feature  of  the  drive.  Initialization  prevents  the  DOS  from  overwriting  files  in  the  event 
+that  two  diskettes  with  identical  IDs  are  swapped.  The  drive  cannot  tell  the  difference 
+between  two  diskettes  with  identical  IDs  since  it  is  the  ID  that  the  DOS  uses  to  iden- 
+tify a  diskette.  Initialization  also  assures  you  that  a  diskette  is  properly  seated  in  the 
+drive  before  use. 
+
+The  1541  drive  has  a  built  in  autoinitialization  feature.  Once  it  encounters  an  error  it 
+will  retry  a  disk  operation  several  times.  Often  it  can  recover  from  an  error  on  its  own. 
+If  it  fails,  it  gives  up.  Before  doing  so,  though,  it  will  do  a  "bump."  On  a  bump  the 
+read/write  head  is  stepped  outwards  45  tracks  (slight  overkill)  to  assure  that  it  is  on 
+track  1.  The  drive  clatters  when  a  protrusion  on  the  stepper  motor's  drive  pulley  bumps 
+up  against  a  mechanical  stop.  (It  really  isn't  a  melt  down.)  The  head  then  steps  inwards 
+to  track  18  and  the  DOS  awaits  further  instructions.  Self  initialization  avoids  this  scenario. 
+Initialize  every  time  you  insert  a  diskette  into  the  drive. 
+
+Initialization  clears  the  error  channel  and  turns  off  the  flashing  red  LED.  Unless,  of 
+course,  you  are  trying  to  initialize  an  unformatted  diskette  or  forgot  to  put  one  in  the 
+drive  to  begin  with.  Clearing  the  error  channel  destroys  the  error  status  the  DOS 
+prepared  for  you.  If  error  checking  is  important,  retrieve  the  error  message  first;  then 
+initialize  the  drive. 
+
+---
+Additional information can be found by searching:
+- "bam_sector_dump_and_overview" which expands on BAM resides on track 18 sector 0 and is read into memory by INITIALIZE

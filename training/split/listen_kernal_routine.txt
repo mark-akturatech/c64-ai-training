@@ -1,0 +1,34 @@
+# COMMODORE 64 - KERNAL routine LISTEN: purpose (command a device on the serial bus to listen), call address ($FFB1), communication register (A), description of operation (accumulator contains device number 0–31, converts to listen address and transmits on serial bus), step-by-step usage and a short example commanding device #8 to listen.
+
+  B-14. Function Name: LISTEN
+
+    Purpose: Command a device on the serial bus to listen
+    Call Address: $FFB1 (hex) 65457 (decimal)
+    Communication registers: A
+    Preparatory routines: None
+    Error returns: See READST
+    Stack requirements: None
+    Registers affected: A
+
+    Description: This routine will command a device on the serial bus to
+  receive data. The accumulator must be loaded with a device number between
+  0 and 31 before calling the routine. LISTEN will OR the number bit by bit
+  to convert to a listen address, then transmits this data as a command on
+  the serial bus. The specified device will then go into listen mode, and
+  be ready to accept information.
+
+  How to Use:
+    1) Load the accumulator with the number of the device to command
+       to LISTEN.
+    2) Call this routine using the JSR instruction.
+
+  EXAMPLE:
+    ;COMMAND DEVICE #8 TO LISTEN
+    LDA #8
+    JSR LISTEN
+                                            BASIC TO MACHINE LANGUAGE   285
+
+---
+Additional information can be found by searching:
+- "ioinit_kernal_routine" which expands on I/O initialization and related routines
+- "load_kernal_routine" which expands on other serial/file access KERNAL routines

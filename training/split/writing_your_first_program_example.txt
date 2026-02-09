@@ -1,0 +1,77 @@
+# COMMODORE 64 - Practical contrast of BASIC POKE vs machine language: CBM ASCII vs screen codes, POKE example to place 'A' on screen, then a step-by-step enter-and-assemble example using 64MON (.A assembly commands) building a tiny machine-language program (LDA #$01; STA $0400; LDA #$0E; STA $D800; BRK) and executing it with G command to display the result.
+
+  WRITING YOUR FIRST PROGRAM
+
+    If you've used the POKE statement in BASIC to put characters onto the
+  screen, you're aware that the character codes for POKEing are different
+  from CBM ASCII character values. For example, if you enter:
+
+    PRINT ASC("A") (and press <RETURN> )
+
+
+  the Commodore 64 will respond with:
+
+    65
+
+    READY.
+
+
+  However, to put an "A" onto the screen by POKEing, the code is 1, enter:
+
+    <SHIFT+CLR/HOME> to clear the screen
+
+    POKE 1024,1:POKE 55296,14 (and <RETURN> (1024 is the start of screen
+    memory)
+
+  The "P" in the POKE statement should now be an "A."
+    Now let's try this in machine language. Type the following in 64MON:
+  (Your cursor should be flashing alongside a "." right now.)
+
+    .A 1400 LDA#$01 (and press <RETURN>)
+
+
+
+
+
+  220   BASIC TO MACHINE LANGUAGE
+~
+
+
+  The Commodore 64 will prompt you with:
+
+    .A 1400 A9 01      LDA #$01
+    .A 1402
+
+  Type:
+
+    .A 1402 STA $0400
+
+
+  (The STA instruction stores the contents of the accumulator in a
+  specified memory location.)
+  The Commodore 64 will prompt you with:
+
+    .A 1405
+
+  Now type in:
+
+    .A 1405 LDA #$0E
+    .A 1407 STA $D800
+    .A 140A BRK
+
+  Clear the screen, and type:
+
+    G 1400
+
+    The G should turn into an "A" if you've done everything correctly. You
+  have now written your first machine language program. Its purpose is to
+  store one character ("A") at the first location in the screen memory.
+  Having achieved this, we must now explore some of the other instructions,
+  and principles.
+
+
+
+---
+Additional information can be found by searching:
+- "lda_immediate_absolute_and_address_representation" which expands on Uses LDA/STA and BRK explained earlier
+- "hex_notation_and_64mon_examples" which expands on 64MON usage and hex values in the example

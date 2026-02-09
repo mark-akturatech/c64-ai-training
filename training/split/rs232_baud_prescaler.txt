@@ -1,0 +1,28 @@
+# - C64 RAM Map (Mapping The Commodore 64) - $0299-$029A BAUDOF: prescaler (time required to send a bit) used by CIA #2 timers A and B to cause NMI-driven RS-232 routines. Gives CLOCK values (NTSC 1,022,730 Hz; PAL 985,250 Hz) and prescaler formula PRESCALER = ((CLOCK/BAUDRATE)/2) - 100. Mentions tables of NTSC prescaler values at $FEC2 (65218) and PAL at $E4EC (58604).
+
+$0299-$029A  BAUDOF  Time Required to Send a Bit
+                     
+                     This location holds the prescaler value used by CIA #2 timers A and B.
+                     
+                     These timers cause an NMI interrupt to drive the RS-232 receive and
+                     transmit routines CLOCK/PRESCALER times per second each, where CLOCK
+                     is the system 02 frequency of 1,022,730 Hz (985,250 if you are using
+                     the European PAL television standard rather than the American NTSC
+                     standard), and PRESCALER is the value stored at 56580-1 ($DD04-5) and
+                     56582-3 ($DD06-7), in low-byte, high-byte order.  You can use the
+                     following formula to figure the correct prescaler value for a
+                     particular RS-232 baud rate:
+                     
+                     PRESCALER=((CLOCK/BAUDRATE)/2)-100
+                     
+                     The American (NTSC standard) prescaler values for the standard RS-232
+                     baud rates which the control register at 659 ($0293) makes available
+                     are stored in a table at 65218 ($FEC2), starting with the two-byte
+                     value used for 50 baud.  The European (PAL standard) version of that
+                     table is located at 58604 ($E4EC).
+                     
+
+---
+Additional information can be found by searching:
+- "rs232_bitnum" which expands on bit padding for word length
+- "rs232_status_error_bits" which expands on when to read buffer / GET#2

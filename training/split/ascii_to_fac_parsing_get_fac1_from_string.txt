@@ -1,0 +1,94 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Convert ASCII numeric string to FAC1: full parser that processes sign, optional decimal point, digits, optional exponent ('E'/'e') with +/-, adjusts FAC1 by multiplying/dividing by 10^n as needed, performs rounding, and combines digits into FAC1 using FAC multiply/add helpers. Handles flags for negative, decimal point, exponent sign, and error cases (illegal quantity). Produces a normalized floating accumulator (FAC1).
+
+                                *** get FAC1 from string
+.,BCF3 A0 00    LDY #$00        clear Y
+.,BCF5 A2 0A    LDX #$0A        set index
+.,BCF7 94 5D    STY $5D,X       clear byte
+.,BCF9 CA       DEX             decrement index
+.,BCFA 10 FB    BPL $BCF7       loop until numexp to negnum (and FAC1) = $00
+.,BCFC 90 0F    BCC $BD0D       branch if first character is numeric
+.,BCFE C9 2D    CMP #$2D        else compare with "-"
+.,BD00 D0 04    BNE $BD06       branch if not "-"
+.,BD02 86 67    STX $67         set flag for -ve n (negnum = $FF)
+.,BD04 F0 04    BEQ $BD0A       branch always
+.,BD06 C9 2B    CMP #$2B        else compare with "+"
+.,BD08 D0 05    BNE $BD0F       branch if not "+"
+.,BD0A 20 73 00 JSR $0073       increment and scan memory
+.,BD0D 90 5B    BCC $BD6A       branch if numeric character
+.,BD0F C9 2E    CMP #$2E        else compare with "."
+.,BD11 F0 2E    BEQ $BD41       branch if "."
+.,BD13 C9 45    CMP #$45        else compare with "E"
+.,BD15 D0 30    BNE $BD47       branch if not "E"
+                                was "E" so evaluate exponential part
+.,BD17 20 73 00 JSR $0073       increment and scan memory
+.,BD1A 90 17    BCC $BD33       branch if numeric character
+.,BD1C C9 AB    CMP #$AB        else compare with token for -
+.,BD1E F0 0E    BEQ $BD2E       branch if token for -
+.,BD20 C9 2D    CMP #$2D        else compare with "-"
+.,BD22 F0 0A    BEQ $BD2E       branch if "-"
+.,BD24 C9 AA    CMP #$AA        else compare with token for +
+.,BD26 F0 08    BEQ $BD30       branch if token for +
+.,BD28 C9 2B    CMP #$2B        else compare with "+"
+.,BD2A F0 04    BEQ $BD30       branch if "+"
+.,BD2C D0 07    BNE $BD35       branch always
+.,BD2E 66 60    ROR $60         set exponent -ve flag (C, which=1, into b7)
+.,BD30 20 73 00 JSR $0073       increment and scan memory
+.,BD33 90 5C    BCC $BD91       branch if numeric character
+.,BD35 24 60    BIT $60         test exponent -ve flag
+.,BD37 10 0E    BPL $BD47       if +ve go evaluate exponent
+                                else do exponent = -exponent
+.,BD39 A9 00    LDA #$00        clear result
+.,BD3B 38       SEC             set carry for subtract
+.,BD3C E5 5E    SBC $5E         subtract exponent byte
+.,BD3E 4C 49 BD JMP $BD49       go evaluate exponent
+.,BD41 66 5F    ROR $5F         set decimal point flag
+.,BD43 24 5F    BIT $5F         test decimal point flag
+.,BD45 50 C3    BVC $BD0A       branch if only one decimal point so far
+                                evaluate exponent
+.,BD47 A5 5E    LDA $5E         get exponent count byte
+.,BD49 38       SEC             set carry for subtract
+.,BD4A E5 5D    SBC $5D         subtract numerator exponent
+.,BD4C 85 5E    STA $5E         save exponent count byte
+.,BD4E F0 12    BEQ $BD62       branch if no adjustment
+.,BD50 10 09    BPL $BD5B       else if +ve go do FAC1*10^expcnt
+                                else go do FAC1/10^(0-expcnt)
+.,BD52 20 FE BA JSR $BAFE       divide FAC1 by 10
+.,BD55 E6 5E    INC $5E         increment exponent count byte
+.,BD57 D0 F9    BNE $BD52       loop until all done
+.,BD59 F0 07    BEQ $BD62       branch always
+.,BD5B 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,BD5E C6 5E    DEC $5E         decrement exponent count byte
+.,BD60 D0 F9    BNE $BD5B       loop until all done
+.,BD62 A5 67    LDA $67         get -ve flag
+.,BD64 30 01    BMI $BD67       if -ve do - FAC1 and return
+.,BD66 60       RTS             
+
+                                *** do - FAC1 and return
+.,BD67 4C B4 BF JMP $BFB4       do - FAC1
+                                do unsigned FAC1*10+number
+.,BD6A 48       PHA             save character
+.,BD6B 24 5F    BIT $5F         test decimal point flag
+.,BD6D 10 02    BPL $BD71       skip exponent increment if not set
+.,BD6F E6 5D    INC $5D         else increment number exponent
+.,BD71 20 E2 BA JSR $BAE2       multiply FAC1 by 10
+.,BD74 68       PLA             restore character
+.,BD75 38       SEC             set carry for subtract
+.,BD76 E9 30    SBC #$30        convert to binary
+.,BD78 20 7E BD JSR $BD7E       evaluate new ASCII digit
+.,BD7B 4C 0A BD JMP $BD0A       go do next character
+                                evaluate new ASCII digit
+                                multiply FAC1 by 10 then (ABS) add in new digit
+.,BD7E 48       PHA             save digit
+.,BD7F 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BD82 68       PLA             restore digit
+.,BD83 20 3C BC JSR $BC3C       save A as integer byte
+.,BD86 A5 6E    LDA $6E         get FAC2 sign (b7)
+.,BD88 45 66    EOR $66         toggle with FAC1 sign (b7)
+.,BD8A 85 6F    STA $6F         save sign compare (FAC1 EOR FAC2)
+.,BD8C A6 61    LDX $61         get FAC1 exponent
+.,BD8E 4C 6A B8 JMP $B86A       add FAC2 to FAC1 and return
+
+---
+Additional information can be found by searching:
+- "val_string_to_fac_parsing" which expands on VAL() routine uses this parser to get FAC1 from a string
+- "multiply_divide_and_accumulator_algorithms" which expands on uses FAC multiplication/division primitives while building FAC1 from digits

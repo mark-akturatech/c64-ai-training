@@ -1,0 +1,21 @@
+# byRiclianll - Drive I/O setup and status check: OPEN 15,8,15 to the 1541, send the '10' (status) command with PRINT#15, read the drive response via INPUT#15 into EN*, EM*, ET*, ES*, test for EN* = "00" (OK) and handle/report errors, then CLOSE 15 and END if a fatal error occurs. This chunk ensures the drive is ready before destructive actions.
+
+200  0PEN15, 8, 15 
+
+210  PRINT#15, "10" 
+
+220   I NPUT# 1 5 , EN* , EM* . ET* , ES* 
+
+230  IFEN*="00"G0T0280 
+
+240  PRINT"^DOWN>"EN*", "EM*", "ET*", "ES* 
+
+250  CLOSE 15 
+
+260  END 
+
+
+---
+Additional information can be found by searching:
+- "program_header_and_input_validation" which expands on uses the track/sector selected by the user
+- "seek_operation_job_submission" which expands on next program steps after successful device status check

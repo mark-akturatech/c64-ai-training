@@ -1,0 +1,68 @@
+# NMOS 6510 - SLO operation semantics and usage examples. Explains the operation: shift left one bit in memory (leftmost bit -> carry), then OR the accumulator with that memory; notes that N and Z are set after the ORA. Includes an example usage (SLO $C010) and equivalence to ASL $C010 followed by ORA $C010. Contains two practical examples: a multibyte arithmetic left-shift sequence that replaces ASL/ROL/ROL/LDA with a shorter/faster sequence using SLO (and the requirement that A be zero), and an explanation of using SLO to simulate addressing modes for ASL (abs,y and indirect zp modes) when clobbering A/flags is acceptable.
+
+Operation: Shift left one bit in memory, then OR accumulator with memory.
+•
+•
+
+The leftmost bit is shifted into the carry flag
+N and Z are set after the ORA
+
+Example:
+SLO $C010
+
+;0F 10 C0
+
+Equivalent Instructions:
+ASL $C010
+ORA $C010
+Test code: Lorenz-2.15/asoa.prg, Lorenz-2.15/asoax.prg,
+Lorenz-2.15/asoay.prg, Lorenz-2.15/asoix.prg,
+Lorenz-2.15/asoiy.prg, Lorenz-2.15/asoz.prg, Lorenz-2.15/asozx.prg
+
+-7-
+
+Example: Multibyte arithmetic left shift and load lowest byte
+
+Instead of:
+ASL data+0
+ROL data+1
+ROL data+2
+LDA data+0
+
+; (6) lo byte
+; (6)
+; (6) hi byte
+; (4)
+
+you can write: (which is shorter, and faster)
+LDA #0
+; (2)
+; A must be zero before reaching here
+SLO data+0
+; (6) lo byte
+ROL data+1
+; (6)
+ROL data+2
+; (6) hi byte
+
+Example: simulate extra addressing modes for ASL
+
+If you can afford clobbering A and the flags (or even use the final value), SLO turns into ASL and
+makes some addressing modes available that do not exist for regular ASL:
+; 0 is shifted into the LSB
+SLO abs, y
+; like ASL abs, y
+SLO (zp), y
+; like ASL (zp), y
+SLO (zp, x)
+; like ASL (zp, x)
+; A was changed as with additional ORA
+; N,Z were set as with additional ORA
+
+-8-
+
+
+---
+Additional information can be found by searching:
+- "slo_opcodes_and_flags" which expands on opcode encodings and cycles for SLO addressing modes
+- "rla_intro_opcodes" which expands on other undocumented combined instructions (similar patterns of combining shift and logic)

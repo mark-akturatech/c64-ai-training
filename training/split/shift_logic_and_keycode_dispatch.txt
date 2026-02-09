@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - SHFLOG plus dispatch to key code tables: reads SHFLAG, detects Commodore shift combos, prevents double shift handling, toggles VIC case bit for lower/upper (D018), chooses control/shift translation tables, loads KEYTAB pointers from KEYCOD tables, and jumps to REKEY to process the key. Includes tables of key codes based on mode (MODE1/MODE2/MODE3) and the CONTROL key mapping.
+
+.,EB03 F0 08    BEQ $EB0D              BEQ RPT20       ;YES
+.,EB05 C9 1D    CMP #$1D               CMP #$1D        ;A CRSR LEFT/RIGHT ?
+.,EB07 F0 04    BEQ $EB0D              BEQ RPT20       ;YES
+.,EB09 C9 11    CMP #$11               CMP #$11        ;A CRSR UP/DWN ?
+.,EB0B D0 35    BNE $EB42              BNE SCNRTS      ;NO - EXIT
+.,EB0D AC 8C 02 LDY $028C       RPT20  LDY DELAY       ;TIME TO REPEAT ?
+.,EB10 F0 05    BEQ $EB17              BEQ RPT40       ;YES
+.,EB12 CE 8C 02 DEC $028C              DEC DELAY
+.,EB15 D0 2B    BNE $EB42              BNE SCNRTS
+.,EB17 CE 8B 02 DEC $028B       RPT40  DEC KOUNT       ;TIME FOR NEXT REPEAT ?
+.,EB1A D0 26    BNE $EB42              BNE SCNRTS      ;NO
+.,EB1C A0 04    LDY #$04               LDY #4          ;YES - RESET CTR
+.,EB1E 8C 8B 02 STY $028B              STY KOUNT
+.,EB21 A4 C6    LDY $C6                LDY NDX         ;NO REPEAT IF QUEUE FULL
+.,EB23 88       DEY                    DEY
+.,EB24 10 1C    BPL $EB42              BPL SCNRTS
+                                CKIT2
+.,EB26 A4 CB    LDY $CB                LDY SFDX        ;GET INDEX OF KEY
+.,EB28 84 C5    STY $C5                STY LSTX        ;SAVE THIS INDEX TO KEY FOUND
+.,EB2A AC 8D 02 LDY $028D              LDY SHFLAG      ;UPDATE SHIFT STATUS
+.,EB2D 8C 8E 02 STY $028E              STY LSTSHF
+.,EB30 E0 FF    CPX #$FF        CKIT3  CPX #$FF        ;A NULL KEY OR NO KEY ?
+.,EB32 F0 0E    BEQ $EB42              BEQ SCNRTS      ;BRANCH IF SO
+.,EB34 8A       TXA                    TXA             ;NEED X AS INDEX SO...
+.,EB35 A6 C6    LDX $C6                LDX NDX         ;GET # OF CHARS IN KEY QUEUE
+.,EB37 EC 89 02 CPX $0289              CPX XMAX        ;IRQ BUFFER FULL ?
+.,EB3A B0 06    BCS $EB42              BCS SCNRTS      ;YES - NO MORE INSERT
+                                PUTQUE
+.,EB3C 9D 77 02 STA $0277,X            STA KEYD,X      ;PUT RAW DATA HERE
+.,EB3F E8       INX                    INX
+.,EB40 86 C6    STX $C6                STX NDX         ;UPDATE KEY QUEUE COUNT
+.,EB42 A9 7F    LDA #$7F        SCNRTS LDA #$7F        ;SETUP PB7 FOR STOP KEY SENSE
+.,EB44 8D 00 DC STA $DC00              STA COLM
+.,EB47 60       RTS                    RTS
+                                ;
+                                ; SHIFT LOGIC
+                                ;
+                                SHFLOG
+.,EB48 AD 8D 02 LDA $028D              LDA SHFLAG
+.,EB4B C9 03    CMP #$03               CMP #$03        ;COMMODORE SHIFT COMBINATION?
+.,EB4D D0 15    BNE $EB64              BNE KEYLG2      ;BRANCH IF NOT
+.,EB4F CD 8E 02 CMP $028E              CMP LSTSHF      ;DID I DO THIS ALREADY
+.,EB52 F0 EE    BEQ $EB42              BEQ SCNRTS      ;BRANCH IF SO
+.,EB54 AD 91 02 LDA $0291              LDA MODE
+.,EB57 30 1D    BMI $EB76              BMI SHFOUT      ;DONT SHIFT IF ITS MINUS
+.,EB59 AD 18 D0 LDA $D018       SWITCH LDA VICREG+24   ;**********************************:
+.,EB5C 49 02    EOR #$02               EOR #$02        ;TURN ON OTHER CASE
+.,EB5E 8D 18 D0 STA $D018              STA VICREG+24   ;POINT THE VIC THERE
+.,EB61 4C 76 EB JMP $EB76              JMP SHFOUT
+                                ;
+                                KEYLG2
+.,EB64 0A       ASL                    ASL A
+.,EB65 C9 08    CMP #$08               CMP #$08        ;WAS IT A CONTROL KEY
+.,EB67 90 02    BCC $EB6B              BCC NCTRL       ;BRANCH IF NOT
+.,EB69 A9 06    LDA #$06               LDA #6          ;ELSE USE TABLE #4
+                                ;
+                                NCTRL
+                                NOTKAT
+.,EB6B AA       TAX                    TAX
+.,EB6C BD 79 EB LDA $EB79,X            LDA KEYCOD,X
+
+---
+Additional information can be found by searching:
+- "key_tables_mode1_2_3" which expands on KEYCOD and MODE tables used by SHFLOG

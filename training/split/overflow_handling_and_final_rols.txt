@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle overflow after final exponent test: if no overflow (BCC) just return (RTS). If overflow (C=1), increment FAC1 exponent; if increment wraps to zero, branch to overflow error/warmstart; otherwise rotate-right mantissa bytes and rounding byte to finalize normalisation and return. Includes final RTS and trailing blank lines.
+
+.,B936 90 0E    BCC $B946       exit if no overflow
+                                normalise FAC1 for C=1
+.,B938 E6 61    INC $61         increment FAC1 exponent
+.,B93A F0 42    BEQ $B97E       if zero do overflow error then warm start
+.,B93C 66 62    ROR $62         shift FAC1 mantissa 1
+.,B93E 66 63    ROR $63         shift FAC1 mantissa 2
+.,B940 66 64    ROR $64         shift FAC1 mantissa 3
+.,B942 66 65    ROR $65         shift FAC1 mantissa 4
+.,B944 66 70    ROR $70         shift FAC1 rounding byte
+.,B946 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "post_add_normalisation_shift_loop" which expands on overflow case arises from addition normalization
+- "underflow_and_exponent_adjustment" which expands on complements the underflow/exponent logic

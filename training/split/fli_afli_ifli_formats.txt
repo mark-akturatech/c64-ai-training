@@ -1,0 +1,19 @@
+# An Introduction to Programming C-64 Demos - FLI (Flexible Line Interpretation) family: FLI gives more colours per character using 8 screen RAMs and one bitmap by triggering a Bad Line each raster line and changing $D018 to point to different screen RAMs per-line (values $08,$18,...,$78). AFLI is hires variant (uses $4000 bytes). IFLI interlaces two FLI frames and alternates X-scroll for perceived higher resolution. Notes: FLI bug: first 3 chars per line unusable; AFLI will show grey, which may require sprites to mask.
+
+FLI, AFLI, IFLI etc.
+FLI is a graphics mode that gives you more colours per character than a normal multi-colour pixel. To achieve this, you need 8 different screen RAMs, with different colour values. The effect is achieved by triggering a Bad Line on every line ($d011) and changing $d018 to point to a new screen RAM (but the same bitmap) each line. You do this for 8 lines, then you start over again.
+
+A normal FLI picture starts at $3c00. The area between $3c00 and $3fff is colour RAM, which is copied to $d800 in the initialization. The area between $4000 and $5fff is taken up by the 8 different screen RAMs, and $6000 to $7fff is the bitmap. So the values you'll change between in $d018 are $08, $18, $28 and so on up to $78.
+
+AFLI is exactly the same thing except that it uses hires mode. As hires doesn't use colour RAM, an AFLI picture takes up $4000 bytes, and is laid out in the same way as a FLI picture.
+
+IFLI is just like FLI, except that you have two FLI pictures, which you switch between every frame, as well as changing X scroll by 1 pixel. This is to give it the appearance of more colours and higher resolution, by interlacing it.
+
+In all of these formats you'll see the so called FLI bug, which means that first three characters on every line are unusable. There's no way to get around this. In FLI and IFLI, you just have to set the values for these characters to 0, and they'll be black. In AFLI, they'll always be light grey, so if you want to have some other background colour, you'll have to cover these three lines with sprites.
+
+The FLI effect also has the side effect of giving you a stable raster, which is always nice, of course.
+
+
+---
+Additional information can be found by searching:
+- "stable_raster_interrupts" which expands on FLI gives stable raster as a side-effect

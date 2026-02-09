@@ -1,0 +1,17 @@
+# ********* - Read-data subroutine (label at 1990): prints 'reading data', waits for a keypress to start, loops from 1000 to 2000 reading each record from the file (INPUT# ch,j), compares the read value to the expected index and prints a 'read error' message and calls the I/O status routine (GOSUB 1850) if any mismatch occurs; after the loop calls the I/O status routine and closes the channel before returning. Used to verify file integrity after writing.
+
+ 1980 :
+ 1990 print "reading data"
+ 2000 get a$
+ 2010 for i=1000 to 2000
+ 2020 input# ch,j
+ 2030 if j<>i then print "{reverse on}read error:{reverse off}":\
+      gosub 1850
+ 2040 next
+ 2050 gosub 1850
+ 2060 close ch:return
+
+---
+Additional information can be found by searching:
+- "perftest_io_response_handler" which expands on called to display the drive's response on errors (GOSUB 1850)
+- "perftest_mechanical_file_test" which expands on invoked from the file read step (GOSUB 1990)

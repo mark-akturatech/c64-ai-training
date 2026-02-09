@@ -1,0 +1,21 @@
+# ********* - RVS ($C7) — Reverse-print flag. Describes how CHR$(18) (CTRL+RVS-ON) sets this location to $12 (18) so printed characters are displayed reversed (screen code + $80), how directly POKEing a nonzero value achieves the same effect, and that the flag resets to zero on CTRL+RVS-OFF (CHR$(146)) or on every carriage return.
+
+199           $C7            RVS
+Flag: Print Reverse Characters? 0=No
+
+When the [CTRL][RVS-ON] characters are printer (CHR$(18)), this flag
+is set to 18 ($12), and the print routines will add 128 ($80) to the
+screen code of each character which is printed, so that the caracter
+will appear on the screen with its colors reversed.
+
+POKEing this location directly with a nonzero number will achieve the
+same results.  You should remember, however, that the contents of this
+location are returned to 0 not only upon entry of a [CTRL][RVS-OFF]
+character (CHR$(146)), but also at every carriage return.  When this
+happens, characters printed thereafter appear with the normal
+comination of colors.
+
+
+---
+Additional information can be found by searching:
+- "keytab_keyboard_decode_tables" which expands on character printing and how printed character codes interact with display routines

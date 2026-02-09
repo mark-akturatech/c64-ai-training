@@ -1,0 +1,18 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Doublebuffering the sorted sprite table: allocate twice the space (e.g., for 24 sprites reserve 48) and alternate buffers—while raster IRQs display buffer A, main program sorts into buffer B. Simplifies avoiding tearing/glitches. Note: unsorted (main) sprite arrays should remain single-buffered for simplicity.
+
+2.5 Doublebuffering
+
+This too isn't too complicated. Reserve twice as much space for the sorted
+sprite arrays (for example, if you use 24 sprites, reserve space for 48). When
+the raster interrupts are displaying sprites 0-23, you can modify sprites 24-47
+and vice versa. This makes the code a bit more complicated but it isn't a
+great pain overall.
+
+To keep the main program simple, the unsorted sprite arrays shouldn't be
+doublebuffered.
+
+
+---
+Additional information can be found by searching:
+- "true_sprite_multiplexing_overview" which expands on doublebuffering is an optional optimization mentioned earlier
+- "raster_interrupt_optimizations_and_unrolled_code" which expands on raster IRQs must know which buffer (screen) to write to when doublebuffered

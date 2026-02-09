@@ -1,0 +1,52 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - Assembly (6502) examples showing KERNAL usage: opening the error channel using SETLFS/SETNAM/OPEN, reading status via CHKIN/CHRIN/CLRCHN/CLOSE, loading files using SETNAM/SETLFS/LOAD, sending a byte to a device using LISTEN/SECOND/CIOUT/UNLISTEN. Demonstrates registers and JSR vectors used.
+
+Assembly Language Patterns (6502/KickAssembler):
+
+  Reading the error channel:
+    ; OPEN 15,8,15
+    LDA #15          ; Logical file number
+    LDX #8           ; Device number
+    LDY #15          ; Secondary address (command channel)
+    JSR $FFBA        ; SETLFS
+    LDA #0           ; No filename
+    JSR $FFBD        ; SETNAM
+    JSR $FFC0        ; OPEN
+
+    ; Read status
+    LDX #15          ; Logical file number
+    JSR $FFC6        ; CHKIN - set as input
+    JSR $FFCF        ; CHRIN - read character (returned in A)
+    JSR $FFCC        ; CLRCHN - restore default channels
+
+    ; CLOSE 15
+    LDA #15
+    JSR $FFC3        ; CLOSE
+
+  Loading a file:
+    LDA #namelen     ; Length of filename
+    LDX #<name       ; Low byte of filename address
+    LDY #>name       ; High byte of filename address
+    JSR $FFBD        ; SETNAM
+
+    LDA #1           ; Logical file number
+    LDX #8           ; Device number
+    LDY #1           ; Secondary address (1 = load to address in file)
+    JSR $FFBA        ; SETLFS
+
+    LDA #0           ; 0 = LOAD (not verify)
+    JSR $FFD5        ; LOAD
+
+  Sending a byte to device:
+    LDA #device      ; Device number
+    JSR $FFB1        ; LISTEN
+    LDA #$6F         ; Secondary address 15 ($60 + $0F)
+    JSR $FF93        ; SECOND
+    LDA #data_byte   ; Byte to send
+    JSR $FFA8        ; CIOUT
+    JSR $FFAE        ; UNLISTEN
+
+
+---
+Additional information can be found by searching:
+- "kernal_low_level_calls" which expands on low-level vectors used by assembly routines
+- "high_level_channel_io" which expands on how assembly maps to high-level channel operations

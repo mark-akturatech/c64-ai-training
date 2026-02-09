@@ -1,0 +1,78 @@
+# ********* - Section 6.8: BUFFER-POINTER (PRINT#file#,"B-P:" channel; location) to set the buffer pointer inside a 256-byte block so that blocks can be subdivided into records; examples showing four records per block (64 bytes each) and sample write/read programs that set pointer, write data, and read records back.
+
+
+
+6.8 BUFFER-POINTER
+
+The buffer pointer keeps track of where the last piece of data was
+written.  It also is the pointer for where the next piece of data is
+to be read.  By changing the buffer pointer's location within the
+buffer, you can get random access to the individual bytes within a
+block.  This way, you can subdivide each block into records.
+
+For example, let's take a hypothetical mailing list.  The information
+such as name, address, etc., will take up a total of 64 characters
+maximum.  We could divide each block of the random access file into 4
+separate records, and by knowing the track, sector, and record numbers,
+we can access that individual record.
+
+FORMAT FOR BUFFER-POINTER COMMAND:
+
+   PRINT#file#, "BUFFER-POINTER:" channel; location
+
+or abbreviated as
+
+   PRINT#file#, "B-P:" channel; location
+
+EXAMPLE OF SETTING POINTER TO 64TH CHARACTER OF BUFFER:
+
+   PRINT#15, "B-P:" 5; 64
+
+Here are versions of the random access writing and reading programs
+shown above, modified to work with records within blocks:
+
+SAMPLE PROGRAM WRITING 10 RANDOM-ACCESS BLOCKS WITH 4 RECORDS EACH:
+
+ 10 OPEN 15,8,15
+ 20 OPEN 5,8,5,"#"
+ 30 OPEN 4,8,4,"@0:KEYS,S,W"
+ 40 A$="RECORD CONTENTS #"             +--------------------+
+ 50 FOR R=1 TO 10                      | SET POSITION       |
+ 60 FOR L=1 TO 4                       | TO 1, 65, 129, 193 |
+ 70 PRINT#15,"B-P:"5;(L-1)*64+1  <-----+--------------------+
+ 80 PRINT#5,A$","L
+ 90 NEXT L
+ 100 T=1:B=1                           +---------------------+
+ 110 PRINT#15,"B-A:"0;T;B  <-----------+ FIND NEXT AVAILABLE |
+ 120 INPUT#15,A,B$,C,D  <--------------+ TRACK & BLOCK       |
+ 130 IF A=65 THEN T=C:B=D:GOTO 110  <--+---------------------+
+ 140 PRINT#15,"B-W:"5;0;T;B
+ 150 PRINT#4,T","B
+ 160 NEXT R
+ 170 CLOSE 4:CLOSE 5:CLOSE 15
+
+SAMPLE PROGRAM READING BACK 10 RANDOM-ACCESS BLOCKS WITH 4 RECORDS
+EACH:
+
+ 10 OPEN 15,8,15
+ 20 OPEN 5,8,5,"#"
+ 30 OPEN 4,8,4,"KEYS,S,R"
+ 40 FOR R=1 TO 10
+ 50 INPUT#4,T,B
+ 60 PRINT#15,"B-R:"5;0;T;B
+ 70 FOR L=1 TO 4
+ 80 PRINT#15,"B-P:"5;(L-1)*64+1
+ 85 INPUT#5,A$,X
+ 90 IF A$<>"RECORD CONTENTS #" OR X<>L THEN STOP
+ 95 PRINT R;A$;L
+ 100 NEXT L
+ 110 PRINT#15,"B-F:"0;T;B
+ 120 NEXT R
+ 130 CLOSE 4:CLOSE 5
+ 140 PRINT#15,"S0:KEYS"
+ 150 CLOSE 15
+
+
+---
+Additional information can be found by searching:
+- "user1_user2_behaviour_and_usage" which expands on how USER1/USER2 commands interact with buffer pointers

@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFD2 that JMPs ($0326) to output a character to the current output channel (CHROUT). Care advised when sending to serial devices as multiple output channels may receive data.
+
+                                *** output character to channel
+                                this routine will output a character to an already opened channel. Use the OPEN
+                                routine, $FFC0, and the CHKOUT routine, $FFC9, to set up the output channel
+                                before calling this routine. If these calls are omitted, data will be sent to the
+                                default output device, device 3, the screen. The data byte to be output is loaded
+                                into the accumulator, and this routine is called. The data is then sent to the
+                                specified output device. The channel is left open after the call.
+                                NOTE: Care must be taken when using routine to send data to a serial device since
+                                data will be sent to all open output channels on the bus. Unless this is desired,
+                                all open output channels on the serial bus other than the actually intended
+                                destination channel must be closed by a call to the KERNAL close channel routine.
+.,FFD2 6C 26 03 JMP ($0326)     do output character to channel
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on CHROUT vector at $0326

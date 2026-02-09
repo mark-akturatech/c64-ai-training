@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Loop that monitors whether the IRQ vector has been restored (checks IRQTMP+1 vs CINV+1) to detect the cassette completion condition. If not complete, it polls for the STOP key via TSTOP and calls UD60 (to ignore 60Hz keyscan) in a tight loop until the cassette operation finishes.
+
+.,F8BE AD A0 02 LDA $02A0       TP40   LDA IRQTMP+1    ;CHECK FOR INTERRUPT VECTOR...
+.,F8C1 CD 15 03 CMP $0315       CMP    CINV+1          ;...POINTING AT KEY ROUTINE
+.,F8C4 18       CLC             CLC
+.,F8C5 F0 15    BEQ $F8DC       BEQ    STOP3           ;...YES RETURN
+.,F8C7 20 D0 F8 JSR $F8D0       JSR    TSTOP           ;...NO CHECK FOR STOP KEY
+                                ;
+                                ; 60 HZ KEYSCAN IGNORED
+                                ;
+.,F8CA 20 BC F6 JSR $F6BC       JSR    UD60            ; STOP KEY CHECK
+.,F8CD 4C BE F8 JMP $F8BE       JMP    TP40            ;STAY IN LOOP UNTILL TAPES ARE DONE
+
+---
+Additional information can be found by searching:
+- "motor_control_and_interrupt_enable" which expands on Enters this wait loop after motor is turned on and interrupts enabled
+- "stop_key_handler" which expands on Invoked when TSTOP detects a STOP key press during cassette operations

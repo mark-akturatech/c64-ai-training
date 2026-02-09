@@ -1,0 +1,18 @@
+# An Introduction to Programming C-64 Demos - Using more than one raster interrupt per frame: two approaches — (i) single raster IRQ and then poll $D012 for second line (bad if main loop needs time), or (ii) chain interrupts by changing $0314/$0315 and $D012 inside each interrupt to point to the next handler/line, enabling multiple IRQs per frame.
+
+Using More Than One Interrupt Per Frame
+Now, pretty often (if you're coding real demos), you'll want to have several interrupts occur each frame. Let's say you have some kind of raster bar effect, that's created by an interrupt routine that is triggered at line $20, then you have a scroller that starts at line $e0. You can do this in two ways (or more, but this is just an example): (i) just use one raster interrupt, and do the old $d012 polling to wait for $e0, or (ii) use two interrupts.
+
+There's nothing wrong with the first approach, except that you may want to do something in the main loop as well (outside of the interrupts), and in that case you don't want to sacrifice all the rastertime between the two effects by using them for polling $d012.
+
+So, we'll go for the second approach. Let's say the label for the first interrupt routine is intraster and the one for the second one is intscroll. In the interrupt setup we'll put the address of intraster in the interrupt vector ($0314) and set the value $20 in $d012 (to make the VIC generate an interrupt at line $20).
+
+That's all very well, but if we don't do anything more, the interrupt at $e0 will never happen. What we'll have to do is change the values of $0314, $0315 and $d012 in the interrupt routines. So, at the end of the first interrupt routine (intscroll) we set $0314 and $0315 to the address of intscroll and $d012 to $e0, before we return from the interrupt. And of course, in the second interrupt routine, we'll have to set the values back, so that they point to the first interrupt routine, and line $20.
+
+If this sounds confusing and you're thinking ``No, I'll just keep polling $d012 instead'', then please read the above paragraphs again. It'll make your life so much easier.
+
+It'd probably be a good idea to try to write a small program, using the ideas explained here. Write two interrupt routines that do something simple, like change the background colour, and check so that you can make them both work. To make it more interesting, change the values of $d012 each frame (by adding or subtracting one from the value). That way, you can make your rasterbars move up and down.
+
+---
+Additional information can be found by searching:
+- "stable_raster_interrupts" which expands on need for stable raster when scheduling many in-line IRQs

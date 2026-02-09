@@ -1,0 +1,17 @@
+# NMOS 6510 - Example (Fred Gray music routine): shows LDA #$40; STA $D404; INC $D404 toggles a SID control bit by using R-M-W behaviour to write two values one cycle apart. Also suggests using INC $D020 to create 'grey dots' spaced 8 pixels apart.
+
+
+- 89 -
+
+Instead of the ghostbyte, the same could be done for charset/bitmaps (but not sprites or the screen),
+for example (using precise timing) a charset-byte could could be set to $FF at the exact time it is
+read by the VIC, using the dummy-write of an INC, and then to $00 immediately after, at the
+second write-cycle, so that it is $00 next time it is rendered by the VIC (instead of LDA #$FF,
+STA $xxxx, LDA #$00, STA $xxxx).
+When repeating the 7th pixel-line of a text-line using linecrunch, for example, this could make the
+charset-byte $FF on one raster line and $00 on the next with only one INC $xxxx instruction.
+That could of course be repeated again and again, every 2nd line, so that the charset-byte alternates
+
+---
+Additional information can be found by searching:
+- "read_modify_write_dummy_write_behavior" which expands on R-M-W timing exploited to produce two writes in quick succession

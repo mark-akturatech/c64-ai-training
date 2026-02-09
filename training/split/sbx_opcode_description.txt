@@ -1,0 +1,49 @@
+# NMOS 6510 - Documentation for the undocumented SBX (also seen as AXS/SAX/XMA variants) opcode ($CB). Provides opcode, mnemonic (SBX #imm), function (X = A & X - #imm), size (2 bytes), timing and flag effects. Explains that SBX performs an AND of A and X, subtracts an immediate like CMP, stores result in X, sets N and Z according to X, affects Carry like CMP, does not affect Overflow, and is not influenced by Decimal mode (it behaves like CMP-derived subtraction). Notes use cases such as tight interrupt routines where Decimal need not be cleared.
+
+SBX (AXS, SAX, XMA)
+Type: Combination of an immediate and an implied command (Sub-instructions: CMP, DEX)
+Opc.
+$CB
+
+Mnemonic
+SBX #imm
+
+Function
+
+Size
+
+X = A & X - #{imm}
+
+2
+
+Cycles N V - B D I Z
+
+C
+
+2
+
+o
+
+o
+
+o
+
+Operation: SBX ANDs the contents of the A and X registers (leaving the contents of A intact),
+subtracts an immediate value, and then stores the result in X. ... A few points might be made about
+the action of subtracting an immediate value. It actually works just like the CMP instruction, except
+that CMP does not store the result of the subtraction it performs in any register.
+•
+•
+
+This subtract operation is not affected by the state of the Carry flag, though it does affect the
+Carry flag. It does not affect the Overflow flag. (Flags are set like with CMP, not SBC)
+N and Z are set according to the value ending up in X
+
+Another property of this opcode is that it doesn't respect the decimal mode, since it is derived from
+CMP rather than SBC. So if you need to perform table lookups and arithmetic in a tight interrupt
+routine there's no need to clear the decimal flag in case you've got some code running that operates
+in decimal mode.
+
+---
+Additional information can be found by searching:
+- "arr_opcode_flags_and_table" which expands on previous undocumented opcode coverage in the same document for related reading

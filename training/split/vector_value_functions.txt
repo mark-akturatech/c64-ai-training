@@ -1,0 +1,77 @@
+# Kick Assembler - Table of vector functions/operators: get(n), getX(), getY(), getZ(), + (vector addition), - (subtraction), * Number (scale), * Vector (dot product), / (divide by scalar), X(v) (cross product). Also introduces Matrix() creation and get/set for 4x4 matrices plus further constructors.
+
+the coordinates, to scale them, to rotate then, etc. The Matrix() operator creates an identity matrix, which is one
+that leaves the coordinates unchanged. By using the set function you can construct any matrix you like. However,
+Kick Assembler has constructor functions that create the most common transformation matrixes:
+
+Table 14.4. Matrix Value Constructors
+Function
+
+Description
+
+Matrix()
+
+Creates an identity matrix.
+
+68
+
+Special Features
+
+Function
+
+Description
+
+RotationMatrix(aX,aY,aZ)
+
+Creates a rotation matrix where aX, aY and aZ are the
+angles rotated around the x, y and z axis. The angles are
+given in radians.
+
+ScaleMatrix(sX,sY,sZ)
+
+Creates a scale matrix where the x coordinate is scaled
+by sX, the y-coordinate by sY and the z-coordinate by
+sZ.
+
+MoveMatrix(mX,mY,mZ)
+
+Creates a move matrix that moves mX along the x-axis,
+mY along the y-axis and mZ along the z-axis.
+
+PerspectiveMatrix(zProj)
+
+Creates a perspective projection where the eye-point is
+placed in (0,0,0) and coordinates are projected on the
+XY-plane where z=zProj.
+
+You can multiply the matrixes and thereby combine their transformations. The transformation is read from
+right to left, so if you want to move the space 10 along the x axis and then rotate it 45 degrees around the zaxis, you write:
+.var m = RotationMatrix(0,0,toRadians(45))*MoveMatrix(10,0,0)
+
+To transform a coordinate you multiply the matrix to transformed vector:
+.var v = m*Vector(10,0,0)
+.print "Transformed v=" + v
+
+The functions defined on matrixes are the following:
+
+Table 14.5. Matrix Value Functions
+Function/Operator
+
+Example
+
+Description
+
+get(n,m)
+
+Gets the value at n,m.
+
+set(n,m,value)
+
+Sets the value at n,m.
+
+*Vector
+
+
+---
+Additional information can be found by searching:
+- "making_3d_calculations_intro" which expands on vector basics and examples

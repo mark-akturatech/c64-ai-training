@@ -1,0 +1,59 @@
+# MACHINE - Step-by-step example of using the monitor .A assemble command at $033C: entering LDA #$48, JSR $FFD2, BRK; monitor feedback, error handling (question mark), resulting object bytes placed in memory; advice to view assembled bytes with .M display.
+
+Load your monitor or monitor extension.  Do any setup that may be needed.
+Then type the following monitor command:
+
+  .A 033C  LDA #$48
+
+                                                                         :28:
+
+We are asking the computer to assemble (.A) at address $033C (note we don't
+use the $ here) the command LDA, Load A, the immediate value of $48, which
+represents the ASCII letter H.  When you type RETURN after entering this
+line, the computer may do either of two things:
+
+  1.  It may do nothing except print a question mark somewhere on the line.
+      The question mark indicates an error in your coding.  If the question
+      mark appears directly after the letter A, your monitor does not
+      understand the .A assemble instruction; get another monitor or properly
+      set up the one you have.
+
+  2.  Or, it will correctly translate your instruction, and put the object
+      code into memory starting at the address specified.  In this case, that
+      would happen to be $A9 at address $033C and $48 at address $033D.  It
+      would then help you by printing part of the next expected instruction.
+      The computer expects that you will type a line starting with
+
+        .A 033E
+
+It places the first part of this line on the screen to save you typing.  The
+screen should now look like this:
+
+  .A 033C  LDA #$48
+  .A 033E
+
+You may now complete the instruction by typing in JSR $FFD2 and pressing
+RETURN.  Again, the computer will anticipate the next line by printing .A
+0341, which allows you to type in the final command, BRK.  The screen now
+looks like this:
+
+  .A 033C  LDA #$48
+  .A 033E  JSR $FFD2
+  .A 0341  BRK
+  .A 0342
+
+The computer is still waiting for another instruction.  We have no more
+instructions, so we press RETURN to signal that we're finished.
+
+At this point, our program is stored in memory.  The instructions have been
+assembled directly into place, and the object code is hopefully ready to go.
+
+Note that this saves us the trouble of remembering--or looking up--the op
+codes for each instruction.  And we don't need to keep track of how long each
+instruction should be; the assembler does it for us.
+
+
+---
+Additional information can be found by searching:
+- "monitor_assembler_extensions_nonsymbolic" which expands on context for the .A assembler command
+- "display_memory_and_object_bytes" which expands on viewing the assembled bytes in memory with .M

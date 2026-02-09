@@ -1,0 +1,95 @@
+# NMOS 6510 - ADC instruction opcode entries and a summary of decimal-mode flag behavior. Covers ADC (zp,X), ADC zp,X, ADC zp, ADC #imm (A = A + #{imm}), notes on how N and V are set (after low-nibble fixup, using binary-ADC logic), Z flag behavior in decimal mode (Z reflects the binary addition result), C as multi-byte carry, and references to test programs for ADC in decimal mode.
+
+$61
+
+ADC (zp, x)
+
+2
+
+6
+
+o o
+
+i
+
+o
+
+x
+
+$75
+
+ADC zp, x
+
+2
+
+4
+
+o o
+
+i
+
+o
+
+x
+
+$65
+
+ADC zp
+
+2
+
+3
+
+o o
+
+i
+
+o
+
+x
+
+$69
+
+ADC #imm
+
+2
+
+2
+
+o o
+
+i
+
+o
+
+x
+
+A = A + #{imm}
+
+Operation: add immediate value from accumulator with carry.
+Flags
+•
+
+The N and V flags are set after fixing the lower nibble but before fixing the upper one. They
+use the same logic as binary mode ADC.
+
+•
+
+Z flag is not affected by decimal mode, it will be set if the binary operation would become
+zero, regardless of the BCD result.
+
+•
+
+C flag works as a carry for multi byte operations as expected
+
+Test code: CPU/decimalmode/adc00.prg CPU/decimalmode/adc01.prg
+CPU/decimalmode/adc02.prg CPU/decimalmode/adc10.prg
+CPU/decimalmode/adc11.prg CPU/decimalmode/adc12.prg
+
+- 73 -
+
+
+---
+Additional information can be found by searching:
+- "adc_decimal_mode_pseudocode" which expands on Shows the detailed pseudocode BCD fixups and exact flag computations referenced by the flag summary
+- "adc_decimal_examples_and_compatibility" which expands on Provides worked examples (hex→ASCII, hex→BCD) and a compatibility test (NMOS vs CMOS Z flag behavior)

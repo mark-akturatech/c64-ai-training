@@ -1,0 +1,55 @@
+# NMOS 6510 - Introduces unintended memory accesses on the 6502 (every cycle is a memory access; some are dummy fetches) and covers dummy-fetch behavior for single-byte and accumulator addressing-mode instructions. Notes that single-byte instructions fetch PC+1 after the opcode and shows the accumulator-operation listing (ASL, LSR, ROL, ROR) with the associated opcode-fetch / PC+1 dummy fetch cycle diagram and the '(*) fetch after opcode' remark.
+
+
+- 80 -
+
+Unintended memory accesses
+Due to how the 6502 works internally, every execution cycle is always a memory access – either
+read or write. In some cases those accesses are “dummies” and are not related to what the
+instruction is actually supposed to do. Usually these accesses can be ignored, however they can also
+be (ab)used and sometimes they may cause unwanted side effects, eg when dealing with I/O
+registers.
+
+Dummy fetches
+Single byte instructions
+Single byte instructions will always fetch the PC+1 after the opcode fetch (like any other
+instruction).
+Akkumulator
+ASL
+
+LSR
+
+ROL
+
+Cycle
+
+ROR
+
+Address-Bus
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2 (*)
+
+PC + 1
+
+Byte after opcode
+
+R
+
+(*) fetch after opcode
+
+---
+Additional information can be found by searching:
+- "rra_ror_then_adc_instruction" which expands on Example undocumented instruction (RRA) whose behavior can be affected by internal memory fetches
+- "dummy_fetches_implied_instructions" which expands on See also: dummy fetch patterns for implied instructions (different single-byte behavior)

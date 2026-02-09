@@ -1,0 +1,46 @@
+# Multidirectional Scrolling Techniques by Cadaver - Describes the 'scroll registers centered when idle' approach and how splitting shifting across frames imposes restrictions. Shows scroll-register value sequences for right-to-left scrolling (4,2,0,6,4 ...) and for left-to-right scrolling after resetting to 3 (3,5,7,1,3 ...). Explains this method enables 8-directional but not free-directional scrolling.
+
+2.1 Splitting leads to restrictions: 8-directional scrolling
+
+This "splitting" is a good thing but it imposes some restrictions on at which
+speed you can scroll, and to what directions. Without splitting, you know that
+it's time to shift the screen data when the hardware scroll register(s) wrap.
+But with splitting?
+
+Have you taken a look at games such as Turrican or Navy Seals? You'll notice
+that they only scroll one char-length at a time, never less. They're likely
+using the "scroll registers centered when idle"-ideology. This means: when
+not scrolling, the hardware scroll register is either set to 4 or 3, centered
+on a char. Now, if scrolling happens from right to left at speed of 2 pixels/
+frame, the scrolling register will get the following values on successive
+frames:
+
+4 (initial state, first half of screen-memory shifting)
+2 (second half of screen shifting, possibly drawing new data)
+0 (shifted screen has to appear next frame, so shift color-memory now and swap
+   the doublebuffer screens)
+6 (scrolling one char finished, this frame we don't have to do anything)
+4 (if scrolling for more than one char, the loop starts again. Otherwise, stop
+   here)
+
+What if we're scrolling from left to right? If we'd be starting from 4 again
+we'd hit the "wrap point" one frame earlier and we'd not be ready yet.
+Therefore, we must first reset the scroll register to 3 (this is barely
+noticeable, so it isn't a bad thing.) The scroll register values on successive
+frames will now be:
+
+3 (initial state, first half of screen shifting)
+5 (second half of screen shifting, possibly drawing new data)
+7 (color-screen shifting, swap screens)
+1 (don't have to do anything)
+3 (loop starts again if necessary)
+
+This method gives the possibility to 8-directional scrolling, but not
+freedirectional.
+
+
+
+---
+Additional information can be found by searching:
+- "scrolling_overview_doublebuffering" which expands on why splitting frames requires doublebuffering and affects scroll timing
+- "freedirectional_scrolling_two_frame_method" which expands on contrast with freedirectional approach

@@ -1,0 +1,45 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initialise SID, CIA and IRQs: disable interrupts (LDA #$7F -> STA $DC0D/$DD0D), clear VIA registers (DRA/DDRA etc), set VIA CRA/CRB for timer single-shot ($DC0E/$DD0E/$DC0F/$DD0F), configure data direction registers ($DC03, $DD03, $DC02, $DD02), clear SID volume/filter select ($D418), set 6510 port $01 ($01) and DDR $00, detect PAL/NTSC at $02A6 and set VIA timer A values accordingly ($DC04/$DC05). Jumps to further initialisation ($FF6E/$FDF3) depending on PAL/NTSC.
+
+                                *** initialise SID, CIA and IRQ
+.,FDA3 A9 7F    LDA #$7F        disable all interrupts
+.,FDA5 8D 0D DC STA $DC0D       save VIA 1 ICR
+.,FDA8 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FDAB 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,FDAE A9 08    LDA #$08        set timer single shot
+.,FDB0 8D 0E DC STA $DC0E       save VIA 1 CRA
+.,FDB3 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,FDB6 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,FDB9 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FDBC A2 00    LDX #$00        set all inputs
+.,FDBE 8E 03 DC STX $DC03       save VIA 1 DDRB, keyboard row
+.,FDC1 8E 03 DD STX $DD03       save VIA 2 DDRB, RS232 port
+.,FDC4 8E 18 D4 STX $D418       clear the volume and filter select register
+.,FDC7 CA       DEX             set X = $FF
+.,FDC8 8E 02 DC STX $DC02       save VIA 1 DDRA, keyboard column
+.,FDCB A9 07    LDA #$07        DATA out high, CLK out high, ATN out high, RE232 Tx DATA
+                                high, video address 15 = 1, video address 14 = 1
+.,FDCD 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,FDD0 A9 3F    LDA #$3F        set serial DATA input, serial CLK input
+.,FDD2 8D 02 DD STA $DD02       save VIA 2 DDRA, serial port and video address
+.,FDD5 A9 E7    LDA #$E7        set 1110 0111, motor off, enable I/O, enable KERNAL,
+                                enable BASIC
+.,FDD7 85 01    STA $01         save the 6510 I/O port
+.,FDD9 A9 2F    LDA #$2F        set 0010 1111, 0 = input, 1 = output
+.,FDDB 85 00    STA $00         save the 6510 I/O port direction register
+.,FDDD AD A6 02 LDA $02A6       get the PAL/NTSC flag
+.,FDE0 F0 0A    BEQ $FDEC       if NTSC go set NTSC timing
+                                else set PAL timing
+.,FDE2 A9 25    LDA #$25        
+.,FDE4 8D 04 DC STA $DC04       save VIA 1 timer A low byte
+.,FDE7 A9 40    LDA #$40        
+.,FDE9 4C F3 FD JMP $FDF3       
+.,FDEC A9 95    LDA #$95        
+.,FDEE 8D 04 DC STA $DC04       save VIA 1 timer A low byte
+.,FDF1 A9 42    LDA #$42        
+.,FDF3 8D 05 DC STA $DC05       save VIA 1 timer A high byte
+.,FDF6 4C 6E FF JMP $FF6E       
+
+---
+Additional information can be found by searching:
+- "reset_hardware_startup" which expands on called during reset to initialise chips
+- "initialise_vic_and_screen_editor" which expands on subsequent initialisation performed after this

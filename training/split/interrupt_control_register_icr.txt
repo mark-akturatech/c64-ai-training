@@ -1,0 +1,51 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Interrupt Control Register (ICR) at offset $0D. Read returns interrupt STATUS: bits indicate TA (Timer A), TB (Timer B), ALRM (TOD alarm), SP (shift register transfer), FLG (FLAG pin negative edge), and bit 7 IR = logical OR of enabled sources. Reading ICR clears all interrupt flags and de-asserts the IRQ/NMI line. Writing ICR acts as an interrupt MASK with Set/Clear bit (bit 7 = SC): when SC=1 bits written as 1 enable sources; when SC=0 bits written as 1 disable sources. Examples provided for enabling/disabling Timer A interrupt. CIA1 ICR drives CPU /IRQ, CIA2 ICR drives /NMI.
+
+-------------------------------------------------------------
+5.8  Interrupt Control Register (ICR) - Offset $0D
+-------------------------------------------------------------
+
+This register has different behaviour for reads and writes.
+
+READING ICR (Interrupt Status):
+  Bit 0: TA    - Timer A underflow occurred
+  Bit 1: TB    - Timer B underflow occurred
+  Bit 2: ALRM  - TOD alarm match occurred
+  Bit 3: SP    - Shift register full/empty (8 bits transferred)
+  Bit 4: FLG   - Negative edge detected on FLAG pin
+  Bits 5-6:    - Always 0
+  Bit 7: IR    - An interrupt has occurred (logical OR of bits 0-4
+                 ANDed with their enable masks)
+
+  Reading the ICR clears ALL interrupt flags and the IRQ line.
+
+WRITING ICR (Interrupt Mask):
+  Bit 0: TA    - Timer A underflow enable
+  Bit 1: TB    - Timer B underflow enable
+  Bit 2: ALRM  - TOD alarm enable
+  Bit 3: SP    - Shift register enable
+  Bit 4: FLG   - FLAG pin enable
+  Bits 5-6:    - Not used
+  Bit 7: SC    - Set/Clear control bit
+                 1 = SET:   bits written as 1 enable the
+                            corresponding interrupt source
+                 0 = CLEAR: bits written as 1 disable the
+                            corresponding interrupt source
+
+  Example: To enable Timer A interrupt:
+    LDA #$81      ; Set/Clear=1, bit 0 (TA)=1
+    STA $DC0D     ; Enable Timer A IRQ on CIA 1
+
+  Example: To disable Timer A interrupt:
+    LDA #$01      ; Set/Clear=0, bit 0 (TA)=1
+    STA $DC0D     ; Disable Timer A IRQ on CIA 1
+
+  CIA 1 ICR controls IRQ (directly to CPU /IRQ line).
+  CIA 2 ICR controls NMI (directly to CPU /NMI line).
+
+
+---
+Additional information can be found by searching:
+- "interrupt_handling" which expands on how ICR clearing interacts with IRQ/NMI lines and handlers
+- "timer_a_16bit" which expands on Timer A underflow sets ICR TA flag
+- "timer_b_16bit" which expands on Timer B underflow sets ICR TB flag
+- "serial_data_register_sdr" which expands on SDR transfer sets ICR SP flag

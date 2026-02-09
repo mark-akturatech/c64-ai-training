@@ -1,0 +1,37 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - High-level logic for taking input from the RS-232 buffer: save input device number, examine pseudo-6551 command register for handshake/duplex configuration, handle 3-line vs full-duplex paths, check DSR/RTS/DTR lines via VIA 2 DRB and serial interrupt-enable flags, set/clear FLAG interrupt (VIA ICR) as needed and return with appropriate status.
+
+                                *** input from RS232 buffer
+.,F04D 85 99    STA $99         save the input device number
+.,F04F AD 94 02 LDA $0294       get pseudo 6551 command register
+.,F052 4A       LSR             shift the handshake bit to Cb
+.,F053 90 28    BCC $F07D       if 3 line interface go ??
+.,F055 29 08    AND #$08        mask the duplex bit, pseudo 6551 command is >> 1
+.,F057 F0 24    BEQ $F07D       if full duplex go ??
+.,F059 A9 02    LDA #$02        mask 0000 00x0, RTS out
+.,F05B 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,F05E 10 AD    BPL $F00D       if DSR = 0 set no DSR and exit
+.,F060 F0 22    BEQ $F084       if RTS = 0 just exit
+.,F062 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F065 4A       LSR             shift the timer A interrupt enable bit to Cb
+.,F066 B0 FA    BCS $F062       loop while the timer A interrupt is enabled
+.,F068 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,F06B 29 FD    AND #$FD        mask xxxx xx0x, clear RTS out
+.,F06D 8D 01 DD STA $DD01       save VIA 2 DRB, RS232 port
+.,F070 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,F073 29 04    AND #$04        mask xxxx x1xx, DTR in
+.,F075 F0 F9    BEQ $F070       loop while DTR low
+.,F077 A9 90    LDA #$90        enable the FLAG interrupt
+.,F079 18       CLC             flag ok
+.,F07A 4C 3B EF JMP $EF3B       set VIA 2 ICR from A and return
+.,F07D AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,F080 29 12    AND #$12        mask 000x 00x0
+.,F082 F0 F3    BEQ $F077       if FLAG or timer B bits set go enable the FLAG inetrrupt
+.,F084 18       CLC             flag ok
+.,F085 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_get_byte_from_rx_buffer" which expands on fetch a byte from the Rx buffer when conditions allow
+- "rs232_check_bus_idle_and_interrupt_clear" which expands on bus-idle checks and clearing RS-232 interrupt enables
+- "rs232_tx_timer_setup_and_start" which expands on timer-driven transmit setup (related transmit control)

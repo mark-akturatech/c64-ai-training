@@ -1,0 +1,68 @@
+# Kick Assembler - Appendix A.5 — Value types. Lists types recognizable by Kick Assembler scripting: 65xxArgument (mnemonic argument like ($10),y), BinaryFile (LoadBinary), Boolean, Char, Hashtable, List, Matrix (4x4), Null, Number (floating point), OutputFile (createFile), Picture (LoadPicture), SidFile (LoadSid), String, Struct (user-defined), Vector (3D vector). Examples provided for each type.
+
+
+Type
+
+Example
+
+Description
+
+Vector
+
+Vector(1,2,3)
+
+A 3d vector value.
+
+94
+
+Appendix B. Technical Details
+In Kick Assembler 3 some rather advanced techniques have been implemented to make the assembling more
+flexible and correct. I'll describe some of the main points here. YOU DON'T NEED TO KNOW THIS, but if you
+are curious about technical details then read on.
+
+B.1. The flexible Parse Algorithm
+Kick Assembler 3 uses a flexible pass algorithm, which parses each assembler command or directive as much
+as possible in each pass. Some commands can be finished in first pass, such as lda #10 or sta $1000. But if a
+command depends on information not yet given, like ‘jmp routine’ where the routine label hasn't been defined yet,
+an extra pass is required. Kick Assembler keeps executing passes until the assembling is finished or no progress
+has been made. You can write programs that only need one pass, but most programs will need two or more. This
+approach is more flexible and gives advantages over normal fixed pass assembling. All directives don't have to be
+in the same phase of assembling, which gives some nice possibilities for future directives.
+
+B.2. Recording of Side Effects
+Side effects of directives are now recorded and replayed the subsequent passes. Consider the following eval
+directive: .eval a=[5+8/2+1]*10.In the first pass the calculation [5+8/2 + 1]*10 will be executed and find the result
+100, which will be assigned to a. In the next pass no calculation is done, only the side effect (a=100) is executed.
+This speeds up programs with heavy scripting, since the script only has to execute once.
+
+B.3. Function Mode and Asm Mode
+Kick assembler has two modes for executing directives. ‘Function Mode’ is used when the directive is placed
+inside a function or .define directive, otherwise ‘Asm Mode’ is used. ‘Function Mode’ is executed fast but is
+restricted to script commands only (.var, .const, .for, etc.), while ‘Asm Mode’ can handle all directives and records
+the side effects as described in previous section. All evaluation starts in ‘Asm Mode’ and enters ‘Function Mode’
+if you get inside the body a function or .define directive. This means that at some point there is always a directive
+that records the result of the evaluation.
+
+B.4. Invalid Value Calculations
+Invalid values occur when the information used to calculate a value that isn't available yet. Usually this starts
+with an unresolved label value, which is defined later in the source code. Normally you would stop assembling
+the current directive once you reach an invalid value, but that might leave out some side effects you did intend
+to happen, so instead of stopping, the assembler now carries on operating on the invalid values. So an unresolved
+label is just an unresolved Number value. If you add two number values and one of them is invalid then the result
+will be another invalid number value. If you compare two invalid numbers then you get an invalid boolean and
+so forth. This helps to track down which values to invalidate. If for example you use an invalid number as index
+in a set function on a list, you must invalidate the whole list since you don't know which element is overwritten.
+Some examples of invalid value calculations:
+4+InvalidNumber -> InvalidNumber
+InvalidNumber != 5 -> InvalidBoolean
+myList.set(3, InvalidNumber) -> [?,?,InvalidNumber]
+myList.set(InvalidNumber, “Hello”) -> InvalidList
+myList.set(4+4*InvalidNumber, “Hello”) -> InvalidList
+
+95
+
+
+---
+Additional information can be found by searching:
+- "ivalue_interface_methods_and_representations" which expands on IValue represents many of these script-level types
+- "assembler_directives_a4_part4" which expands on directives accept these types as arguments

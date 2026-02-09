@@ -1,0 +1,22 @@
+# NMOS 6510 - Notes on using RRA to simulate extra addressing modes of ROR when clobbering the A register and flags is acceptable: shows that RRA abs,y, RRA (zp),y and RRA (zp,x) behave like ROR with those addressing modes except A and flags are modified due to the subsequent ADC. Mentions that C is shifted into MSB and lists consequences (A changed, N/V/Z/C set by ADC).
+
+Example: simulate extra addressing modes for ROR
+
+If you can afford clobbering A and the flags (or even use the final value), RRA turns into ROR and
+makes some addressing modes available that do not exist for regular ROR:
+; C is shifted into the MSB
+RRA abs, y
+; like ROR abs, y
+RRA (zp), y
+; like ROR (zp), y
+RRA (zp, x)
+; like ROR (zp, x)
+; A was changed as with additional ADC
+; N,V,Z,C were set as with additional ADC
+
+
+---
+Additional information can be found by searching:
+- "rra_opcodes_and_operation" which expands on base semantics of RRA (ROR then ADC)
+- "noise_lfsr_example_of_rra" which expands on another practical use of RRA's rotation behavior
+- "ignored_page_15" which expands on page footer after this section

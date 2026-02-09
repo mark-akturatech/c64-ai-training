@@ -1,0 +1,25 @@
+# C64 PAL/NTSC Raster Timing Reference - Software detection of PAL vs NTSC using the raster counter. Method: read $D012 (and bit 7 of $D011 for the 9th bit) and wait for the raster counter to reach its maximum. Maximum raster lines: PAL = 311 ($137), NTSC (6567R8) = 262 ($106), NTSC (6567R56A) = 261 ($105). Explains why detection is important: adjusting music/player speed (50 vs 60 Hz), adapting raster effects and scroll routines, and setting correct timer values for CIA-based timing.
+
+=============================================================================
+SECTION 10: DETECTING PAL VS NTSC IN SOFTWARE
+=============================================================================
+
+Since PAL and NTSC have different raster line counts, software can detect
+the system type by monitoring the raster counter:
+
+  - Read $D012 (and bit 7 of $D011 for the 9th bit)
+  - Wait for the raster counter to reach its maximum value
+  - PAL: maximum raster line = 311 ($137)
+  - NTSC (6567R8): maximum raster line = 262 ($106)
+  - NTSC (6567R56A): maximum raster line = 261 ($105)
+
+This detection is important for:
+  - Adjusting music player speed (50 Hz vs 60 Hz)
+  - Adapting raster effects to the correct line counts
+  - Ensuring scroll routines work on both systems
+  - Setting correct timer values for CIA-based timing
+
+---
+Additional information can be found by searching:
+- "frame_timing_comparison" which expands on expected maximum raster counts and frame rates per system
+- "display_window_coordinates" which expands on how visible area and blanking differ between PAL and NTSC

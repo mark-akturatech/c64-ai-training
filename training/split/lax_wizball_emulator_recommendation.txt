@@ -1,0 +1,18 @@
+# NMOS 6510 - Empirical notes from testing Wizball binaries in emulation: specific magic-constant immediate values that cause game crashes ($63, $64, $67, $68, $69, $6A, $D1, $D2, $EF). Concludes $EF likely didn't occur on real C64s. Recommends emulators use $EE (not $EF) for the undocumented LAX magic constant in both normal and RDY cycles. Notes that one known program ('Blackmail FLI') uses LAX #imm and may break but was historically flaky.
+
+Some different Wizball binaries have been tested (in Emulation) with all possible “magic
+constants”, and the following values result in misbehaviour (crash) of the game: $63, $64, $67,
+$68, $69, $6A, $D1, $D2, $EF – So we can assume these ($EF in particular) did not occur on
+real C64s - at least no horror stories from the 80s about Wizball not working (randomly) are known
+to exist.
+Emulation
+
+Due to the above, emulators are advised to use $EE (not $EF) for the “magic constant” in both
+normal and RDY cycles. This will break at least one other program that is known to use LAX #imm
+– the “Blackmail FLI” mentioned in the appendix – however, that program was known to be flaky
+even back in the days, and the use of LAX #imm might very well be the reason for that.
+
+---
+Additional information can be found by searching:
+- "lax_opcode_example_lax_ff" which expands on example showing LAX #$FF and resulting magic-constant behaviour
+- "lax_safe_usage_examples_and_magic_constant_detection" which expands on examples and guidance for safe LAX immediate usage

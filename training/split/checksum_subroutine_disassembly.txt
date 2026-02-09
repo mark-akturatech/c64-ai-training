@@ -1,0 +1,25 @@
+# Analyzing C64 tape loaders - Disassembly: simple checksum comparison subroutine. Loads $01 with #$07, compares computed checksum in $05 with expected in $06, returns if equal, otherwise jumps to $FCE2 to soft-reset the C64.
+
+
+; ********************************************
+; * Checksum check subroutine                *
+; * Description: Compares calculated and     *
+; *              read checksum to detect a   *
+; *              load error.                 *
+; ********************************************
+
+02D7  A9 07          LDA #$07
+02D9  85 01          STA $01
+02DB  A5 05          LDA $05
+02DD  C5 06          CMP $06
+02DF  D0 01          BNE $02E2
+02E1  60             RTS
+
+02E2  4C E2 FC       JMP $FCE2      ; On checksum error, reset C64
+; ********************************************
+; * Checksum check subroutine.END            *
+; ********************************************
+
+---
+Additional information can be found by searching:
+- "nonirq_cbm_header_block_listing" which expands on Other checksum logic in non-IRQ loader header (XOR checksum)

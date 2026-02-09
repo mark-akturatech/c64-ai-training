@@ -1,0 +1,74 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Definition of the fixed, centered display window and the surrounding border; explanation of the display column concept (vertical extension of the window), division of border into upper/lower and left/right parts, blanking intervals where the beam is off, and an ASCII diagram illustrating visible pixels per line, vertical blanking, upper/lower borders, and display column. Includes the reference point for X coordinate 0 at the left edge of the display column.
+
+The graphics are displayed in an unmovable window in the middle of the
+visible screen area, the "display window". The area outside the display
+window is covered by the screen border and is displayed in the border color
+(EC, register $d020). You can also turn off the border partially or
+completely with some little tweaking; then you see that the display window
+is part of a "display column" that is made up by the linear extension of
+the display window to the top and bottom. With that you can divide the
+border in an upper/lower border and a left/right border. The visible screen
+area is surrounded by blanking intervals in which the video signal is
+turned off and in which the raster beam returns to the start of the next
+line or the start of the frame, respectively.
+
+The following figure (not in scale) illustrates the last paragraph:
+
+
+                Visible pixels/line
+     ____________________|___________________
+    /                                        \
+
++------------------------------------------------+  <- Raster line 0 (6569)
+|       .                                .       |
+|       .   Vertical blanking interval   .       |
+|       .                                .       |
++---+---+--------------------------------+---+---+  \
+|   |   |                                |   |   |  |
+| H |   |          Upper border          |   | H |  |
+| o |   |                                |   | o |  |
+| r |   +--------------------------------+   | r |  |
+| i |   |                                |   | i |  |
+| z |   |                                |   | z |  |
+| o |   |                                |   | o |  |
+| n |   |                                |   | n |  |
+| t |   |                                |   | t |  |
+| a |   |                                | r | a |  |
+| l | l |                                | i | l |  |
+|   | e |                                | g |   |  |
+| b | f |                                | h | b |  |
+| l | t |                                | t | l |  |
+| a |   |         Display window         |   | a |  |- Visible lines
+| n | b |                                | b | n |  |
+| k | o |                                | o | k |  |
+| i | r |                                | r | i |  |
+| n | d |                                | d | n |  |
+| g | e |                                | e | g |  |
+|   | r |                                | r |   |  |
+| i |   |                                |   | i |  |
+| n |   |                                |   | n |  |
+| t |   |                                |   | t |  |
+| e |   |                                |   | e |  |
+| r |   |                                |   | r |  |
+| v |   +--------------------------------+   | v |  |
+| a |   |                                |   | a |  |
+| l |   |          Lower border          |   | l |  | <- Raster line 0 (6567)
+|   |   |                                |   |   |  |
++---+---+--------------------------------+---+---+  /
+|       .                                .       |
+|       .   Vertical blanking interval   .       |
+|       .                                .       |
++------------------------------------------------+
+ 
+      ^ \________________________________/
+      |                 |
+      |           Display column
+      |
+ X coordinate 0
+
+
+
+---
+Additional information can be found by searching:
+- "frame_building_and_coordinate_system" which expands on raster/Y and sprite-based X coordinate system used to specify positions and timings
+- "rsel_csel_display_window_sizes" which expands on how the display window size and border placement are modified by RSEL and CSEL

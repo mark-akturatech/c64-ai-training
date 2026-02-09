@@ -1,0 +1,68 @@
+# Contents - Commodore 64 address space: 16-bit (65536 bytes). Discussion of bank switching to swap ROM/RAM and I/O into the 64K window (e.g., swapping out BASIC or KERNAL ROM to gain RAM). Warning to disable interrupts before switching KERNAL because interrupt vectors ($FFFA-$FFFF) reside in KERNAL ROM and must be placed in RAM after switching.
+
+COMMODORE 64 ADDRESS SPACE 
+
+As you know, inside the Commodore 64 is a 
+6510 microprocessor, which controls the machine. 
+
+
+
+21 
+
+
+
+It uses a 16 bit address bus allowing it to access 
+2 46 or 65536 bytes of memory. This is all the 
+memory that can be accessed at one time. For- 
+tunately, as mentioned briefly before, through a 
+technique called bank switching, different types of 
+memory can be switched into or out of this address 
+space. Through the use of bank switching, the 8K 
+BASIC ROM can be accessed instead of 8K of 
+RAM. The Commodore 64 switches other sections 
+of RAM with ROM, and also switches an area of 
+RAM with some hardware registers, such as the 
+VIC II chip. 
+
+When choosing the appropriate memory map 
+for your program, you must decide which of the 
+functions provided by the Commodore 64 you will 
+be using. For instance, if you do not need BASIC, 
+you can switch the BASIC ROM out of the memory 
+space. Doing so will give you 8K of RAM that you 
+would not otherwise be able to use. 
+
+Some of the memory maps available to you will 
+allow you to switch the 4K I/O space at $D000 with 
+4K of RAM. What this means is that you will no 
+longer have access to the hardware registers at these 
+locations. When it becomes necessary to change any 
+of the values in one of these registers, you will need 
+to switch the I/O space back into the RAM space. 
+This is generally more trouble than it is worth, 
+unless you desperately need the extra memory. 
+
+You also have the option of switching out the 
+8K KERNAL ROM. In most cases, you will not be 
+using any of the KERNAL routines. If this is the 
+case, there is no reason to keep it in memory. 8K 
+of RAM can be switched into the space where the 
+KERNAL ROM was. 
+
+Caution: All interrupts in the system should be 
+shut down before the KERNAL ROM is switched 
+out of memory. The six bytes of memory from 
+$FFFA to $FFFF in the KERNAL contain the vec- 
+tors for the interrupts. After the KERNAL has been 
+switched out, new interrupt vectors need to be 
+stored in RAM. 
+
+
+
+MEMORY CONTROL AND MAPPING 
+
+
+---
+Additional information can be found by searching:
+- "memory_control_and_mapping" which expands on control lines used to select memory maps ($0001 hardware port)
+- "using_an_assembler_pseudo_opcodes" which expands on loader relocation options for different target addresses

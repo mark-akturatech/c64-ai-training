@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - LDAD1 - Compute and store start/end addresses for header blocks: calls ZZZ to get the cassette pointer, saves the low start byte (STAL), computes the end-pointer by adding BUFSZ (ADC #$C0) to the start low byte and stores EAL, saves the high start byte (STAH) and computes/stores EAH (handles carry from the low-byte ADC). Leaves pointer bytes in STAL/STAH and EAL/EAH for header writing.
+
+.,F7D7 20 D0 F7 JSR $F7D0       LDAD1  JSR ZZZ         ;GET PTR TO CASSETTE
+.,F7DA 8A       TXA             TXA
+.,F7DB 85 C1    STA $C1         STA    STAL            ;SAVE START LOW
+.,F7DD 18       CLC             CLC
+.,F7DE 69 C0    ADC #$C0        ADC    #BUFSZ          ;COMPUTE POINTER TO END
+.,F7E0 85 AE    STA $AE         STA    EAL             ;SAVE END LOW
+.,F7E2 98       TYA             TYA
+.,F7E3 85 C2    STA $C2         STA    STAH            ;SAVE START HIGH
+.,F7E5 69 00    ADC #$00        ADC    #0              ;COMPUTE POINTER TO END
+.,F7E7 85 AF    STA $AF         STA    EAH             ;SAVE END HIGH
+.,F7E9 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "zzz_get_tape_buffer_pointer" which expands on uses ZZZ to obtain tape buffer pointer
+- "tape_header_write_tapeh" which expands on TAPEH calls LDAD1 to set header start/end addresses prior to writing

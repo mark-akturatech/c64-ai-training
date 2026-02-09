@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - BASIC OPEN and CLOSE entry points: both routines call the parameter parser for OPEN/CLOSE and then call the KERNAL open ($FFC0) or close ($FFC3) routines. They branch to BASIC I/O error handling on failure and RTS on success. (Includes JSR $E219 to get parameters, JSR $FFC0 to open, JSR $FFC3 to close, and branching to error or returning.)
+
+                                *** perform OPEN
+.,E1BE 20 19 E2 JSR $E219       get parameters for OPEN/CLOSE
+.,E1C1 20 C0 FF JSR $FFC0       open a logical file
+.,E1C4 B0 0B    BCS $E1D1       branch if error
+.,E1C6 60       RTS             
+
+                                *** perform CLOSE
+.,E1C7 20 19 E2 JSR $E219       get parameters for OPEN/CLOSE
+.,E1CA A5 49    LDA $49         get logical file number
+.,E1CC 20 C3 FF JSR $FFC3       close a specified logical file
+.,E1CF 90 C3    BCC $E194       exit if no error
+.,E1D1 4C F9 E0 JMP $E0F9       go handle BASIC I/O error
+
+
+---
+Additional information can be found by searching:
+- "get_params_for_open_close" which expands on OPEN/CLOSE parameter parsing and defaults
+- "get_params_for_load_save" which expands on shared patterns for parsing device/filename parameters

@@ -1,0 +1,17 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - PRINT 'SAVING': If MSGFLG ($9D) indicates direct mode, prints the 'SAVING' message from the kernel I/O message table (offset $51) and then prints the filename via the print filename routine ($F5C1).
+
+                                *** PRINT 'SAVING'
+                                MSGFLG is checked, and if direct mode is on, then the
+                                message 'SAVING' is flagged and printed from the KERNAL
+                                I/O message table.
+.,F68F A5 9D    LDA $9D         MSGFLG
+.,F691 10 FB    BPL $F68E       not in direct mode, exit
+.,F693 A0 51    LDY #$51        offset to message in table
+.,F695 20 2F F1 JSR $F12F       output 'SAVING'
+.,F698 4C C1 F5 JMP $F5C1       output filename
+
+
+---
+Additional information can be found by searching:
+- "save_to_serial_bus" which expands on message printed before saving to serial device
+- "print_filename" which expands on used to print the filename after 'SAVING'

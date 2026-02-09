@@ -1,0 +1,41 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Finalize the directory write, compute XOR checksum and perform cleanup: calls $FCDB to send the buffer to the device and handles non-acknowledge paths. Sets $AA and disables interrupts (SEI), saves X to $DC0D, adjusts $BE and $A7 counters, and calls $FC93/$FB8E as part of device protocol. Then reads bytes back from ($AC),Y XORs them with $AB to compute a simple checksum and calls $FCDB/$FCD1 to complete the transfer. Depending on results it may call $FE1C (device handshake) and finally jumps to the central exit at $FEBC.
+
+.,FB43 20 DB FC JSR $FCDB
+.,FB46 D0 43    BNE $FB8B
+.,FB48 A9 80    LDA #$80
+.,FB4A 85 AA    STA $AA
+.,FB4C 78       SEI
+.,FB4D A2 01    LDX #$01
+.,FB4F 8E 0D DC STX $DC0D
+.,FB52 AE 0D DC LDX $DC0D
+.,FB55 A6 BE    LDX $BE
+.,FB57 CA       DEX
+.,FB58 30 02    BMI $FB5C
+.,FB5A 86 BE    STX $BE
+.,FB5C C6 A7    DEC $A7
+.,FB5E F0 08    BEQ $FB68
+.,FB60 A5 9E    LDA $9E
+.,FB62 D0 27    BNE $FB8B
+.,FB64 85 BE    STA $BE
+.,FB66 F0 23    BEQ $FB8B
+.,FB68 20 93 FC JSR $FC93
+.,FB6B 20 8E FB JSR $FB8E
+.,FB6E A0 00    LDY #$00
+.,FB70 84 AB    STY $AB
+.,FB72 B1 AC    LDA ($AC),Y
+.,FB74 45 AB    EOR $AB
+.,FB76 85 AB    STA $AB
+.,FB78 20 DB FC JSR $FCDB
+.,FB7B 20 D1 FC JSR $FCD1
+.,FB7E 90 F2    BCC $FB72
+.,FB80 A5 AB    LDA $AB
+.,FB82 45 BD    EOR $BD
+.,FB84 F0 05    BEQ $FB8B
+.,FB86 A9 20    LDA #$20
+.,FB88 20 1C FE JSR $FE1C
+.,FB8B 4C BC FE JMP $FEBC
+
+---
+Additional information can be found by searching:
+- "check_for_duplicate_entries_and_write_buffer_to_device" which expands on continues after the JSR $FCDB found there were no immediate errors
+- "initial_device_setup_and_flag_tests" which expands on shares the same central exit ($FEBC) used when early abort conditions occur

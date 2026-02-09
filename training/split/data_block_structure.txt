@@ -1,0 +1,24 @@
+# Datassette Encoding - Layout of a tape data block: 192-byte payload recorded twice (for redundancy); synchronization leader of short pulses (10 seconds for first block, 2 seconds for subsequent blocks) used to compute speed correction; countdown byte sequences ($89-$81 for first copy, $09-$01 for second); one-byte checksum (XOR of $00 and all payload bytes); inter-record gaps made of a long pulse followed by 60 short pulses.
+
+Data Block Structure
+--------------------
+
+Each block contains:
+
+  - 192-byte payload (recorded twice for error detection)
+  - Synchronization leader: 10 seconds for first block,
+    2 seconds for subsequent blocks
+  - Countdown byte sequence: $89-$81 (first copy), $09-$01 (second copy)
+  - One-byte checksum: XOR of $00 and all payload bytes
+  - Inter-record gaps: Long pulse + 60 short pulses
+
+The leader consists of short pulses. During this time, the Kernal calculates
+a speed correction factor, since tape speed might vary for different motors.
+
+
+
+---
+Additional information can be found by searching:
+- "byte_encoding_and_parity" which expands on how bytes within the payload are encoded
+- "header_block" which expands on header block is a special 192-byte block layout
+- "checksum_calculation" which expands on how the block checksum is computed

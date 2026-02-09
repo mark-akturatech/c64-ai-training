@@ -1,0 +1,33 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - 6502 implementation of unsigned multiplication for two-byte operands producing a four-byte result. Key instructions: initializing RESULT hi words, LDX #16 for 16 bits, shifting bits out of NUM2 with LSR/ ROR NUM2+1/NUM2, conditional add sequence using TAY, CLC, LDA NUM1, ADC RESULT+2, STA RESULT+2, TYA, ADC NUM1+1; then the 'stairstep' shifts ROR A and ROR RESULT+2/RESULT+1/RESULT, and loop control DEX/BNE. Explains generalization to wider numbers.
+
+The method is easily extendable to wider numbers.  Here's a routine
+for multiplying two-byte numbers, giving a four-byte result:
+
+
+LDA #0       ;Initialize RESULT to 0
+        STA RESULT+2
+        LDX #16      ;There are 16 bits in NUM2
+L1      LSR NUM2+1   ;Get low bit of NUM2
+        ROR NUM2
+        BCC L2       ;0 or 1?
+        TAY          ;If 1, add NUM1 (hi byte of RESULT is in A)
+        CLC
+        LDA NUM1
+        ADC RESULT+2
+        STA RESULT+2
+        TYA
+        ADC NUM1+1
+L2      ROR A        ;"Stairstep" shift
+        ROR RESULT+2
+        ROR RESULT+1
+        ROR RESULT
+        DEX
+        BNE L1
+        STA RESULT+3
+
+
+
+---
+Additional information can be found by searching:
+- "one_byte_multiplication_routine" which expands on same algorithm on a larger width
+- "extending_multiplication_to_wider_numbers" which expands on how to generalize further

@@ -1,0 +1,66 @@
+# byRiclianll - Section 4.6 heading and introduction to sequential file storage: explains sector structure for sequential files (bytes 0-1 = forward pointer, bytes 2-255 = 254 bytes of data). Describes the special last block format (byte 0 = $00, byte 1 = position of last byte N, bytes 2..N are valid).
+
+4.6  Sequential  File  Storage 
+
+The  format  of  a  sequential  file  is  very  straightforward.  All  the  sectors,  except  the  last 
+one,  look  like  this: 
+
+
+TRACK 
+
+SECTOR 
+
+254  BYTES  OF  OATA 
+
+UNK 
+
+LINK 
+
+Byte  Purpose 
+
+
+0  Track  of  the  next  block  in  this  file 
+
+1  Sector  of  the  next  block  in  this  file 
+
+2-255  254  bytes  of  data 
+
+The  last  block  in  a  sequential  file  is  special  for  two  reasons: 
+
+1.  It  is  the  last  sector. 
+
+2.  It  is  usually  only  partially  full. 
+
+To  signal  the  DOS  that  this  is  the  last  block,  the  first  byte  is  set  to  $00.  The  first  byte 
+is  normally  the  track  link.  Since  there  is  no  track  0,  the  DOS  knows  that  this  is  the 
+last  sector  in  the  file.  The  second  byte  indicates  the  position  of  the  last  byte  in  the  file. 
+Any  bytes  beyond  this  position  are  garbage. 
+
+Diagrammatically,  the  last  sector  in  the  file  looks  like  this: 
+
+
+NULL 
+
+LAST 
+
+THE  FINAL  OATA  BYTES  IN 
+
+GARBAGE 
+
+SOO 
+
+BYTE 
+
+YOUR  SEQUENTIAL  FILE 
+
+Byte  Purpose 
+
+
+0  Null  byte  to  indicate  this  is  the  last  sector 
+
+1  Position  of  the  last  byte  in  the  file  (N) 
+
+
+---
+Additional information can be found by searching:
+- "program_file_following_sectors_and_last_sector_layout" which expands on contrast between PRG and sequential last-block handling

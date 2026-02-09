@@ -1,0 +1,59 @@
+# ca65 Users Guide - Pseudo-functions for address and bank: .ADDRSIZE(symbol) returns internal address size (useful in macros), .BANK(symbol) returns bank attribute for banked memory (evaluated at link stage only) with examples showing using .BANK to populate bank bytes in tables, and .BANKBYTE (.BANK byte alias '^') behavior.
+
+10. Pseudo functions
+Pseudo functions expect their arguments in parentheses, and they have a result, either a string or an expression value.
+
+10.1 .ADDRSIZE
+The .ADDRSIZE function is used to return the internal address size associated with a symbol. This can be helpful in macros when knowing the address size of a symbol can help with custom instructions.
+
+Example:
+
+
+        .macro myLDA foo
+                .if .ADDRSIZE(foo) = 1
+                        ;do custom command based on zeropage addressing:
+                        .byte 0A5h, foo
+                .elseif .ADDRSIZE(foo) = 2
+                        ;do custom command based on absolute addressing:
+                        .byte 0ADh
+                        .word foo
+                .elseif .ADDRSIZE(foo) = 0
+                        ; no address size defined for this symbol:
+                        .out .sprintf("Error, address size unknown for symbol %s", .string(foo))
+                .endif
+        .endmacro
+  
+10.2 .BANK
+The .BANK function is used to support systems with banked memory. The argument is an expression with exactly one segment reference -- usually a label. The function result is the value of the bank attribute assigned to the run memory area of the segment. Please see the linker documentation for more information about memory areas and their attributes.
+
+The value of .BANK can be used to switch memory so that a memory bank containing specific data is available.
+
+The bank attribute is a 32-bit integer, and so is the result of the .BANK function. You will have to use .LOBYTE or similar functions to address just part of it.
+
+Please note that .BANK always will get evaluated in the link stage, so an expression containing .BANK never can be used where a constant, known result is expected (for example, with .RES).
+
+Example:
+
+
+        .segment "BANK1"
+        .proc   banked_func_1
+                ...
+        .endproc
+
+        .segment "BANK2"
+        .proc   banked_func_2
+                ...
+        .endproc
+
+        .proc   bank_table
+                .addr   banked_func_1
+                .byte   <.BANK (banked_func_1)
+
+                .addr   banked_func_2
+                .byte   <.BANK (banked_func_2)
+        .endproc
+
+---
+Additional information can be found by searching:
+- "address_sizes_and_memory_models" which expands on address size semantics
+- "pseudo_functions_misc" which expands on other pseudo-functions (.LOBYTE, .HIBYTE, .SIZEOF, etc.)

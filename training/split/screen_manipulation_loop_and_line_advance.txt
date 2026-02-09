@@ -1,0 +1,100 @@
+# MACHINE - Detailed loop: for each line, set Y to starting column offset (e.g., #$04), use LDA ($BB),Y to read screen character, CMP #$20 and BEQ to skip spaces, EOR #$80 to flip high bit, STA ($BB),Y to write back. Increment Y, CPY #$12 (end column), BCC back. After finishing line, CLC, add line length to indirect pointer low byte (ADC $03A0), store back to $BB and handle carry with ADC #$00 to high byte, INX to count lines and BNE to next line. RTS when finished.
+
+Now we're ready to do a screen line.  Later, we'll adjust the indirect
+address and come back here to do another line.  We should make a note to
+ourselves:  "Come back to $034C for the next screen line."
+
+The indirect address is pointing at the start of the line.  We want to start
+work in column 5.  That means that Y should start with an offset of 4 (the
+start of the line plus 4).  Let's do it:
+
+  .A 034C  LDY #$04
+
+We're going to walk Y up, and loop back to this point for the next character
+on the line.  We might note:  "Come back to $034E for the next character."
+
+We're ready to go.  Let's dig out the character that's currently on the
+screen:
+
+  .A 034E  LDA ($BB),Y
+
+This is worth a review.  Locations $BB and $BC contain the address of the
+start of screen memory; on the PET/CBM, for example, this would be $8000.  To
+this, we add the contents of Y (value 4) to create an effective address of
+$8004; and from location $8004 we get the screen character.
+
+We decide that we will leave spaces alone.  The space character shows on the
+screen as a value of decimal 32, hex 20.  Let's skip the next operation if
+it's a space:
+
+                                                                         :87:
+
+  .A 0350  CMP #$20
+  .A 0352  BEQ $0356
+
+We have to guess at the address to which we will skip ahead, since we haven't
+gotten there yet.  Make a note:  "This address may need correction."
+
+  .A 0354  EOR #$80
+
+This is where we manipulate the character.  The EOR is a "flip-over" command;
+we're flipping the high bit of the screen value.  You may look up screen
+codes to see what this does, or you may wait and see what happens.  At this
+point, our code from $0352 joins up.  As it happens, we were lucky again:
+the address is exactly right to rejoin at $0356.  But if it were not, you
+know how to fix it, don't you?  Exit the assembler, then go back and type
+over.
+
+Now we put the modified character back to the screen:
+
+  .A 0356  STA ($BB),Y
+
+We have done one character.  Let's move along the line to the next character,
+and if we have passed column 18 (Y=17) we should quite and go to the next
+line.
+
+  .A 0358  INY
+  .A 0359  CPY #$12
+  .A 035B  BCC $034E
+
+Y moves along to the next character position:  five, then six the next time
+around, and so on.  So long as Y is less than 18 (hex 12) we'll go back,
+since BCC means "branch less than."  If we get past this point, we have
+completed the line and must move to the next one.
+
+We move to the next line by adding to the indirect address.  We must add 22,
+or 40, or 80; the value is in address $03A0 (you may remember that we stored
+it with the instruction at $0341).  We must remember to clear the carry flag
+before starting the addition, and to add starting at the low byte of the
+address (at $BB).
+
+  .A 035D  CLC
+  .A 035E  LDA $BB
+  .A 0360  ADC $03A0
+  .A 0363  STA $BB
+  .A 0365  LDA $BC
+  .A 0367  ADC #$00
+  .A 0369  STA $BC
+
+                                                                         :88:
+
+The last three instructions seem odd.  Why would we add zero to the contents
+of $BC?  Surely that changes nothing.  The answer is obvious after a little
+thought:  there might be a carry from the previous addition.
+
+Now we're ready to count the lines:  we had decided to use X as a counter.
+Let's add one to X, and test to see whether we have done the 14 lines:
+
+  .A 036B  INX
+  .A 036C  CPX #$0E
+  .A 036E  BNE $034C
+
+If we've done the required number of lines, we have nothing more to do other
+than return to BASIC:
+
+  .A 0370  RTS
+
+
+---
+Additional information can be found by searching:
+- "indirect_indexed_addressing" which expands on practical use of LDA ($BB),Y and STA ($BB),Y to modify screen memory

@@ -1,0 +1,46 @@
+# MACHINE - VIC-20 zero-page guidance: available areas ($FC-$FF, $22-$2A, $4E-$53, $57-$60) and a list of zero-page locations to avoid modifying. Begins VIC-20 memory map with zero-page entries ($0000-$003E etc.), CHRGET subroutine locations ($0073-$008A), RND seed values, and ST at $0090, plus SYS register save locations at $030C-$030F and vectors at $0314-$032F.
+
+
+                                                                        :175:
+
+VIC-20
+======
+
+
+The Great Zero-Page Hunt
+------------------------
+
+Locations $FC to $FF are available.  Locations $22 to $2A, $4E to $53, and
+$57 to $60 are work areas available for temporary use.
+
+Most zero-page locations may be copied to another part of memory so that
+their original contents can be restored after use.  However, the programmer
+should take great care in modifying the following locations, which are
+critical within the operating system or BASIC:  $13, $16 to $18, $2B to $38,
+$3A, $53 to $54, $68, $73 to $8A, $90 to $9A, $A0 to $A2, $B8 to $BA, $C5 to
+$F4.
+
+                                                                        :176:
+
+Memory Map
+----------
+
+Hex         Decimal       Description
+-------------------------------------------------------------------
+0000-0002       0-2       USR jump
+0003-0004       3-4       Float-fixed vector
+0005-0006       5-6       Fixed-float vector
+0007            7         Search character
+0008            8         Scan-quotes flag
+0009            9         TAB column save
+000A           10         0 = LOAD; 1 = VERIFY
+000B           11         Input buffer pointer; number of subscripts
+000C           12         Default DIM flag
+000D           13         Type:  FF = string; 00 = numeric
+000E           14         Type:  80 = integer; 00 = floating point
+000F           15         DATA scan; LIST quote; memory flag
+0010           16         Subscript/FNx flag
+
+---
+Additional information can be found by searching:
+- "vic20_memory_map_continued" which expands on Full VIC-20 memory map with cassette buffer and ROM areas

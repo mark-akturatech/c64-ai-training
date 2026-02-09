@@ -1,0 +1,58 @@
+# NMOS 6510 - Chapter 'Unintended bugs and quirks'. Contains: explanation that indexed-zeropage addressing modes wrap within page and cannot cross into the next page (examples with LDX/LDA and indirect forms), indirect JMP page-wrap behaviour (JMP ($C0FF) example), note that interrupts push status but do not modify the decimal flag (handlers must manage decimal flag explicitly), and the behaviour of the Break (B) flag (always set in status byte during normal execution; distinguishing BRK vs hardware interrupts requires inspecting the pushed status on the stack).
+
+- 93 -
+
+Unintended bugs and quirks
+This chapter covers the remaining rest of weird and/or possibly undocumented and unintended
+things left.
+
+Zeropage addressing modes & page wraps
+If you use an indexed-zeropage addressing mode, either direct or indirect, it is not able to leave the
+zeropage on page-wraps.
+Examples:
+LDX #$01
+LDA $FF,X
+will fetch from adress $0000 and not $0100.
+LDA ($FF),Y
+LDX #$00
+LDA ($FF,X)
+LDX #$FF
+LDA ($00,X)
+will all fetch the low-byte from $00FF and the high-byte from $0000.
+
+Indirect addressing mode & page wraps
+If you use the indirect addressing mode, PCH will not be incremented on page wraps. Example:
+JMP ($C0FF)
+will fetch the low-byte from $C0FF and the high-byte from $C000.
+
+Interrupts do not affect Flags
+When an interrupt fires, the CPU will push the status register to the stack, so the interrupt handler
+can modify these and restore them later to continue the main program. However, the CPU does no
+further preparations – in particular it will not set up the decimal flag. That means if the main
+program changes the decimal flag, and the interrupt handler uses instructions that may be affected
+by decimal mode, the interrupt handler must make sure to clear (or perhaps set) the decimal flag as
+needed.
+
+- 94 -
+
+The Break Flag is always set
+During normal program execution, the B flag is always set – even in an interrupt handler it can not
+be used directly to determine whether an interrupt was caused by the BRK instruction or not. Ie the
+obvious PHP/PLA sequence can not be used for this, it will always read the B flag as 1. The reason
+for this is, that the B flag doesn’t actually exist in the CPU – it’s just the current state of the internal
+interrupt line, and as soon as the CPU is done handling an external interrupt, it goes inactive again.
+This is also the reason for why neither PLP nor RTI would restore the flag to 0.
+The only case when this is not the case, ie the flag in the status byte is 0, is when a BRK instruction
+is executed, and while that happens the current status register is pushed to the stack by the CPU.
+This pushed value may contain a cleared B flag, and examining this pushed value on the stack is the
+only way to distinguish a software interrupt (BRK) and a hardware interrupt (IRQ or NMI).
+A simple rule for this is: any hardware interrupt (IRQ or NMI) pushes the B flag as 0, while any
+CPU instruction (BRK or PHP) pushes the B flag as 1.
+
+- 95 -
+
+
+---
+Additional information can be found by searching:
+- "zp_indirect_y_rmw_cycle_timeline" which expands on Related cycle behaviour for R-M-W opcodes which can be affected by addressing quirks
+- "opcode_naming_in_different_assemblers_matrix" which expands on Reference: opcode names and usage elsewhere in the appendix

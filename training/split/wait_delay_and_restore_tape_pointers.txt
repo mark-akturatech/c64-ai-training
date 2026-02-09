@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - End-of-wait routine: restores processor status (PLP), conditionally performs a two-level delay loop (nested X/Y loops), clears the keyboard buffer index ($C6), reads the cursor row ($D6), then restores the tape buffer pointers ($AC-$AF) from the stack (PLA/STA) and returns (RTS).
+
+.,E948 28       PLP             restore status
+.,E949 D0 0B    BNE $E956       skip delay if ??
+                                first time round the inner loop X will be $16
+.,E94B A0 00    LDY #$00        clear delay outer loop count, do this 256 times
+.,E94D EA       NOP             waste cycles
+.,E94E CA       DEX             decrement inner loop count
+.,E94F D0 FC    BNE $E94D       loop if not all done
+.,E951 88       DEY             decrement outer loop count
+.,E952 D0 F9    BNE $E94D       loop if not all done
+.,E954 84 C6    STY $C6         clear the keyboard buffer index
+.,E956 A6 D6    LDX $D6         get the cursor row
+                                restore the tape buffer pointers and exit
+.,E958 68       PLA             pull tape buffer end pointer
+.,E959 85 AF    STA $AF         restore it
+.,E95B 68       PLA             pull tape buffer end pointer
+.,E95C 85 AE    STA $AE         restore it
+.,E95E 68       PLA             pull tape buffer pointer
+.,E95F 85 AD    STA $AD         restore it
+.,E961 68       PLA             pull tape buffer pointer
+.,E962 85 AC    STA $AC         restore it
+.,E964 60       RTS             
+
+---
+Additional information can be found by searching:
+- "open_up_space_on_screen" which expands on Uses the cursor row ($D6) and is followed by the open-up-space routine

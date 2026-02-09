@@ -1,0 +1,67 @@
+# 6502 Instruction Set - ORA (inclusive OR) opcodes across addressing modes. Stack instructions PHA, PHP (push SR has break bit set and bit 5 set to 1), PLA, PLP behaviors (PLP ignores break flag and bit 5). Opcodes and cycle counts for PHA/PHP/PLA/PLP and notes about SR/pushed values. ROL instruction details (rotate left) opcodes and cycle counts begin at end of chunk.
+
+              absolute        ROL oper      2E       3      6
+              absolute,X      ROL oper,X    3E       3      7
+          ROR Rotate One Bit Right (Memory or Accumulator)
+              C -> [76543210] -> C                 N Z C I D V
+                                                   + + + - - -
+              addressing      assembler     opc   bytes cycles
+              accumulator     ROR A         6A       1      2
+              zeropage        ROR oper      66       2      5
+              zeropage,X      ROR oper,X    76       2      6
+              absolute        ROR oper      6E       3      6
+              absolute,X      ROR oper,X    7E       3      7
+          RTI Return from Interrupt
+              The status register is pulled with the break flag
+              and bit 5 ignored. Then PC is pulled from the stack.
+              pull SR, pull PC                     N Z C I D V
+                                                    from stack
+              addressing      assembler     opc   bytes cycles
+              implied         RTI           40       1      6
+          RTS Return from Subroutine
+              pull PC, PC+1 -> PC                  N Z C I D V
+                                                   - - - - - -
+              addressing      assembler     opc   bytes cycles
+              implied         RTS           60       1      6
+          SBC Subtract Memory from Accumulator with Borrow
+              A - M - C̅ -> A                      N Z C I D V
+                                                   + + + - - +
+              addressing      assembler     opc   bytes cycles
+              immediate       SBC #oper     E9       2      2
+              zeropage        SBC oper      E5       2      3
+              zeropage,X      SBC oper,X    F5       2      4
+              absolute        SBC oper      ED       3      4
+              absolute,X      SBC oper,X    FD       3      4*
+              absolute,Y      SBC oper,Y    F9       3      4*
+              (indirect,X)    SBC (oper,X)  E1       2      6
+              (indirect),Y    SBC (oper),Y  F1       2      5*
+          SEC Set Carry Flag
+                                              6502 Instruction Set
+              1 -> C                               N Z C I D V
+                                                   - - 1 - - -
+              addressing    assembler       opc   bytes cycles
+              implied       SEC             38      1      2
+          SED Set Decimal Flag
+              1 -> D                               N Z C I D V
+                                                   - - - - 1 -
+              addressing    assembler       opc   bytes cycles
+              implied       SED             F8      1      2
+          SEI Set Interrupt Disable Status
+              1 -> I                               N Z C I D V
+                                                   - - - 1 - -
+              addressing    assembler       opc   bytes cycles
+              implied       SEI             78      1      2
+          STA Store Accumulator in Memory
+              A -> M                               N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              zeropage      STA oper        85      2      3
+              zeropage,X    STA oper,X      95      2      4
+              absolute      STA oper        8D      3      4
+              absolute,X    STA oper,X      9D      3      5
+              absolute,Y    STA oper,Y      99      3      5
+
+---
+Additional information can be found by searching:
+- "pha_php_pla_plp_examples" which expands on example usage patterns for pushing/pulling registers
+- "rol_ror_rotate_instructions" which expands on ROL and ROR relation and opcodes

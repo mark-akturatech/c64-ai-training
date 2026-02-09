@@ -1,0 +1,82 @@
+# MACHINE - Upgrade ROM and BASIC 4.0 zero-page guidance: lists available temporary zero-page areas (e.g., $1F-$27, $4B-$50, $54-$5D) and critical locations to avoid modifying. Introduces differences shown by asterisk in the full memory map that follows and provides the beginning of the detailed Upgrade ROM/4.0 memory map layout.
+
+0400-7FFF    1024-32767   Available RAM including expansion
+8000-83E7   32768-33767   Screen RAM
+C000-E7F8   49152-59384   BASIC ROM; part of kernal ROM
+E810-E813   59408-59411   PIA 1 (6520):  keyboard interface
+E820-E823   59424-59427   PIA 2 (6520):  IEEE interface
+E840-E84F   59456-59471   VIA (6522):  miscellaneous interface, timers
+F000-FFFF   61440-65535   Kernal ROM routines
+
+PIA and VIA charts are the same as shown for Upgrade/4.0 units.
+
+
+Upgrade ROM and BASIC 4.0 Systems
+=================================
+
+
+The Great Zero-Page Hunt
+------------------------
+
+Zero-page locations are tough to find in these areas.  Locations $1F to $27,
+$4B to $50, and $54 to $5D are work areas available for temporary use.  If
+tape is not being read or written, addresses $B1 to $C3 are available.
+
+                                                                        :167:
+
+Most zero-page locations may be copied to another part of memory so that
+their original contents can be restored after use.  The programmer should
+take great care, however, in modifying the following locations, which are
+critical within the operating system or BASIC:  $10, $13 to $15, $28 to $35,
+$37, $50 to $51, $65, $70 to $87, $8D to $B0, $C4 to $FA.
+
+
+Memory Map
+----------
+
+Where Upgrade ROM differs from 4.0, an asterisk (*) is shown and the 4.0
+value is given.  There are some differences in usage between the 40- and
+80-column machines.
+
+
+Hex         Decimal       Description
+-------------------------------------------------------------------
+0000-0002       0-2       USR jump
+0003            3         Search character
+0004            4         Scan-between-quotes flag
+0005            5         Input buffer pointer; number of subscripts
+0006            6         Default DIM flag
+0007            7         Type:  FF = string; 00 = numeric
+0008            8         Type:  80 = integer; 00 = floating point
+0009            9         Flag:  DATA scan; LIST quote; memory
+000A           10         Subscript flag; FNx flag
+000B           11         0 = INPUT; $40 = GET; $98 = READ
+000C           12         ATN sign; Comparison evaluation flag
+000D-000F      13-15      * Disk status DS$ descriptor
+0010           16         * Current I/O device for prompt-suppress
+0011-0012      17-18      Integer value (for SYS, GOTO, and so on)
+0013-0015      19-21      Pointers for descriptor stack
+0016-001E      22-30      Descriptor stack (temporary strings)
+001F-0022      31-34      Utility pointer area
+0023-0027      35-39      Product area for multiplication
+0028-0029      40-41      Pointer:  start-of-BASIC
+002A-002B      42-43      Pointer:  start-of-variables
+002C-002D      44-45      Pointer:  start-of-arrays
+
+                                                                        :168:
+
+002E-002F      46-47      Pointer:  end-of-arrays
+0030-0031      48-49      Pointer:  string-storage (moving down)
+0032-0033      50-51      Utility string pointer
+0034-0035      52-53      Pointer:  limit-of-memory
+0036-0037      54-55      Current BASIC line number
+0038-0039      56-57      Previous BASIC line number
+003A-003B      58-59      Pointer:  BASIC statement for CONT
+003C-003D      60-61      Current DATA line number
+003E-003F      62-63      Current DATA address
+0040-0041      64-65      Input vector
+0042-0043      66-67      Current variable name
+
+---
+Additional information can be found by searching:
+- "upgrade_ROM_memory_map_part1" which expands on Detailed Upgrade ROM memory map entries

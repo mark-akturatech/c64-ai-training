@@ -1,0 +1,28 @@
+# byRiclianll - Describes typical workflow: a block-read (U1) is usually issued before M-R to load disk data into one of four 256-byte RAM pages called buffers. Explains that OPEN 2,8,2,"#" lets DOS select a buffer arbitrarily for the channel, and shows how to explicitly select a buffer in the OPEN statement using OPEN file#, device#, channel#, "#buffer#" (example: OPEN 2,8,2,"#0"). Notes buffer# ranges 0 to 3.
+
+Typically  a  block-read  command  (Ul)  is  issued  prior  to  a  memory-read  command.  A  block- 
+read  command  (Ul)  transfers  the  data  that  is  recorded  on  a  given  track  and  sector  to 
+one  of  four  pages  (256  bytes)  of  RAM.  A  page  of  RAM  is  called  a  buffer.  When  you  open 
+a  direct-access  data  channel  to  the  1541  with  OPEN  2,8,2,"#",  the  DOS  arbitrarily  selects 
+one  buffer  as  a  workspace  for  that  channel.  As  long  as  you  use  the  GET#  file#  command 
+or  the  PRINT#  file#  command  from  the  associated  OPEN  statement  you  do  not  need 
+to  know  which  buffer  the  DOS  is  using.  The  buffer  in  use  is  only  important  when  you 
+issue  a  memory-read  command.  You  may  tell  the  DOS  which  buffer  area  to  use  in  the 
+direct-access  OPEN  statement  itself.  The  format  for  selecting  a  buffer  is: 
+
+SYNTAX : 
+
+OPEN  file#,   device#,   channel #,    "#  buffer#" 
+
+EXAMPLE: 
+
+OPEN  2,8,2, "#0" 
+
+where 
+
+buffer#         =  0  to  3 
+
+---
+Additional information can be found by searching:
+- "buffer_address_map_1541" which expands on gives the actual memory address ranges for each buffer and reserved regions
+- "memory_read_parameters_and_defaults" which expands on explains the M-R parameters which are used to read from the selected buffer or other memory areas

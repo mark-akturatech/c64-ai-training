@@ -1,0 +1,40 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - File I/O error reporting: defines common file error codes ('too many files', 'file already open', 'file not open', 'file not found', 'device not present', 'not input file', 'not output file', 'missing file name', 'illegal device number'), pushes the error, closes channels, tests message-mode and displays the 'I/O ERROR #' message (JSR $F12F) if enabled, converts the error number to ASCII, outputs it (JSR $FFD2), and sets the carry to signal an error on return.
+
+
+                                *** file error messages
+.,F6FB A9 01    LDA #$01        'too many files' error
+.:F6FD 2C       .BYTE $2C       makes next line BIT $02A9
+.,F6FE A9 02    LDA #$02        'file already open' error
+.:F700 2C       .BYTE $2C       makes next line BIT $03A9
+.,F701 A9 03    LDA #$03        'file not open' error
+.:F703 2C       .BYTE $2C       makes next line BIT $04A9
+.,F704 A9 04    LDA #$04        'file not found' error
+.:F706 2C       .BYTE $2C       makes next line BIT $05A9
+.,F707 A9 05    LDA #$05        'device not present' error
+.:F709 2C       .BYTE $2C       makes next line BIT $06A9
+.,F70A A9 06    LDA #$06        'not input file' error
+.:F70C 2C       .BYTE $2C       makes next line BIT $07A9
+.,F70D A9 07    LDA #$07        'not output file' error
+.:F70F 2C       .BYTE $2C       makes next line BIT $08A9
+.,F710 A9 08    LDA #$08        'missing file name' error
+.:F712 2C       .BYTE $2C       makes next line BIT $09A9
+.,F713 A9 09    LDA #$09        do 'illegal device number'
+.,F715 48       PHA             save the error #
+.,F716 20 CC FF JSR $FFCC       close input and output channels
+.,F719 A0 00    LDY #$00
+                                index to "I/O ERROR #"
+.,F71B 24 9D    BIT $9D         test message mode flag
+.,F71D 50 0A    BVC $F729       exit if kernal messages off
+.,F71F 20 2F F1 JSR $F12F       display kernel I/O message
+.,F722 68       PLA             restore error #
+.,F723 48       PHA             copy error #
+.,F724 09 30    ORA #$30        convert to ASCII
+.,F726 20 D2 FF JSR $FFD2       output character to channel
+.,F729 68       PLA             pull error number
+.,F72A 38       SEC             flag error
+.,F72B 60       RTS             
+
+---
+Additional information can be found by searching:
+- "scan_stop_key_and_handle_stop" which expands on both may call JSR $FFCC to close channels
+- "tape_save_entry_and_device_checks" which expands on uses this error handling for illegal device and tape errors

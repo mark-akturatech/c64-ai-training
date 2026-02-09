@@ -1,0 +1,14 @@
+# ca65 Users Guide - Notes and cautions about anonymous structures: anonymous structs don't need a member name because their members become part of the enclosing structure; beware of redundant offsets (example: cost and price share offset).
+
+      ; Be careful not to use a named nested structure without also adding the
+      ; offset to the nested structure itself.
+      lda    O + Object::Point::ycoord                   ; Incorrect!
+      lda    O + Object::target + Object::Point::ycoord  ; Correct
+In this example, the first nested structure is named "Point", and its member offsets begin at 0. On the other hand, the two anonymous structures simply continue to add members to the enclosing "Object" structure.
+
+Note that an anonymous structure does not need a member name, since all of its members become part of the enclosing structure. The "cost" member in the example is redundantly the same offset as its first member "price".
+
+
+---
+Additional information can be found by searching:
+- "nested_structs_anonymous_named_examples" which expands on examples showing anonymous vs named nested structs

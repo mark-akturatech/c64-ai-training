@@ -1,0 +1,73 @@
+# An Introduction to Programming C-64 Demos - Step-by-step raster IRQ setup example: SEI, disable CIA interrupts ($DC0D,$DD0D), enable raster interrupts ($D01A bit0), initialize VIC registers ($D011,$D016,$D018), write IRQ vector to $0314/$0315 (low/high byte of handler), set $D012 to raster line, ACK CIAs and VIC ($DC0D,$DD0D, ASL $D019), CLI. Interrupt handler example flashes border (INC $D020), ACK via ASL $D019, restore registers from stack and RTI. Discusses why SEI/CLI, ACK sequence, alternative of jumping to ROM handler $EA31/$EA81, and testing by RTS / JMP $EA31 to remain at BASIC prompt.
+
+How to Implement Interrupts
+Yeah, so how do you set up a raster interrupt? It's actually very easy, so I'll just give you some example code, and then explain it.
+
+
+           * = $1000
+
+           sei          ; turn off interrupts
+           lda #$7f
+           ldx #$01
+           sta $dc0d    ; Turn off CIA 1 interrupts
+           sta $dd0d    ; Turn off CIA 2 interrupts
+           stx $d01a    ; Turn on raster interrupts
+
+           lda #$1b
+           ldx #$08
+           ldy #$14
+           sta $d011    ; Clear high bit of $d012, set text mode
+           stx $d016    ; single-colour
+           sty $d018    ; screen at $0400, charset at $2000
+
+           lda #<int    ; low part of address of interrupt handler code
+           ldx #>int    ; high part of address of interrupt handler code
+           ldy #$80     ; line to trigger interrupt
+           sta $0314    ; store in interrupt vector
+           stx $0315
+           sty $d012
+
+           lda $dc0d    ; ACK CIA 1 interrupts
+           lda $dd0d    ; ACK CIA 2 interrupts
+           asl $d019    ; ACK VIC interrupts
+           cli
+
+loop:
+           jmp loop     ; infinite loop
+
+int:
+           inc $d020    ; flash border
+
+           asl $d019    ; ACK interrupt (to re-enable it)
+           pla
+           tay
+           pla
+           tax
+           pla
+           rti          ; return from interrupt
+Now, if you're not used to using interrupts, that might look a bit weird. It works, though, and I'm now going to tell you how. (Well, I'll try, anyway. :-)
+
+We start by turning off all interrupts, with an SEI instruction. The reason why we do this is because if we get an interrupt in the middle of setting up interrupts, things can get messed up and the program can crash. These things happen. Ever had a demo crash unpredictably? Sometimes it works, sometimes it doesn't? The interrupt setup might be screwed up. Or there can be some other reason. Read the code and see if you can find it. :-)
+
+So, anyway, after the SEI, the action begins. We start by turning off all CIA interrupts. We do this by poking $7f into $dc0d and $dd0d. To find out what the value $7f means, read some reference. At a later stage, you might be interested in finding out what the individual bits of those registers do. We then turn on raster interrupts, by setting the lowest bit of $d01a.
+
+The next thing we do is to setup $d011, $d016 and $d018. You should recognize those by now. We always have to initialize them, and I usually do it at the same time as the interrupt setup. The only bit that's relevant in this context (interrupts) is bit 7 of $d011, which is the 8th bit of $d012 (as we have more than 256 raster lines, but I've already talked about that above).
+
+So, let's move on to the next chunk of instructions, which includes $d012. We set a new address in the interrupt vector, $0314. This address simply specifies where the processor should keep executing code when an interrupt occurs. We point it to our interrupt routine, int.
+
+In the interrupt handler code, we don't do much. First we flash the border, by INC-inc $d020 (and of course, this happens once every frame), then we ACK the interrupt (set bit 0 of $d019, which I usually do with ASL $d019, for some reason (probably because that's how it was done in the example that I learnt about interrupts from). If we forget to do this, the interrupt will be triggered again, right after we return from this interrupt code. So we have to tell the VIC that we've handled this interrupt, so that it is cleared.
+
+Then we have to restore the register contents from the stack (these are stored there when the interrupt occurs), and then execute the instruction RTI, which returns from the interrupt. Quite often you won't see exactly this code, but instead of the last six lines you'll see a JMP to $ea31 or $ea81. $ea31 is the default interrupt handler, which does this and that that you'll want if you're in BASIC, but you won't need that crap when you're coding demos, so skip it. $ea81 just contains the same code as the last six lines in our program, so exactly the same thing happens, except that we waste three clock cycles (for the JMP) and that we save 3 bytes of memory. So it's a trade-off, kind of, but it's not often 3 clock-cycles or 3 bytes will bother you very much, so who cares?
+
+Of course you can't jump to ROM routines if you've switched out kernal ROM, so it's a good idea to use the code above anyway.
+
+There's a modification you can do to the code above, which might be nice to try, and give you some further insight into how interrupts work. Instead of JMPing around in the infinite loop (JMP loop), do RTS. And add JMP $ea31 instead of the last 6 lines. If you start the program from BASIC, you'll see that your interrupt routine starts executing, but you're still at the BASIC prompt, and can type in BASIC commands. Cool, huh?
+
+In the rest of the text, I will be a bit more restrictive with explaining details. If you've come this far and understand most of it, and have tried typing in the programs and changing them a bit, as well as making your own routines, you should be able to cope with a bit less detailed explanations. If there's something you don't quite understand, consult your references, write some code and see what happens etc. And send me an email, telling me what you don't understand.
+
+
+
+---
+Additional information can be found by searching:
+- "d012_raster_register" which expands on writing $d012 to select raster line
+- "stable_raster_interrupts" which expands on techniques to reduce jitter in raster interrupts

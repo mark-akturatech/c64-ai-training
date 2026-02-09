@@ -1,0 +1,106 @@
+# ********* - Intro to VIC-II registers ($D000-$D02E), VIC-II independent 16K video addressing (selectable 16K banks), Video Matrix and Character Dot-Data base selection ($D018), background and border color registers ($D021 and $D020), and basic text/graphics modes.
+
+Multicolor text mode offers four colors, three of which will be common
+to all characters, and one of which can be selected individually.
+Multicolor bitmap mode offers a choice of four colors, three of which
+can be individually selected within an 8 by 8 dot area.
+
+The 64 also contains an entirely separate graphics system, whose
+character shapes, colors, and positions are derived and displayed
+without any reference to the Video Matrix and Character Dot-Data
+addresses.  Best of all, these characters may be moved quickly and
+easily to any position on the screen, greatly facilitating games and
+animated graphics of all types.  This system is known as sprite
+graphics.
+
+Sprite graphics takes its name from the graphics characters it
+displays, each of which is called a sprite.  There are eight sprites,
+known as Sprites 0-7.  Each sprite character is 24 dots wide by 21
+dots high.  This is about eight times as large as a regular text
+character, which is only 8 dots wide by 8 dots high.
+
+A sprite takes its shape from 63 bytes of data in one of the 256 data
+blocks, each 64 bytes long, that can fit into the 16K space which the
+VIC-II chip can address.  The block currently assigned to any given
+sprite is determined by the Sprite Data Pointers, which are located at
+the last eight bytes of the screen memory area (the default locations
+are 2040-2047, $7F8-$7FF).
+
+The first Sprite Data Pointer determines the data block used for the
+shape of Sprite 0, the second for the shape of Sprite 1, etc.  The
+number in the pointer times 64 equals the address of the first byte of
+the data block within the VIC-II addressing range.
+
+For example, using the default values for VIC-II addressing area and
+screen memory, a value of 11 in location 2040 ($7F8) would mean that
+the shape of Sprite0 is determined by the data in the 63-byte block
+starting at location 704 (11*64).  It should be noted that it is
+possible for more than one sprite to take its shape data from the same
+block, so that only 64 bytes of data are required to create eight
+sprites, each having the same shape.
+
+The dot patterns of each sprite correspond to the bit patterns of the
+sprite shape data.  Each byte of shape data in memory consists of a
+number from 0 to 255.  This number can be represented by eight binary
+digits of 0 or 1.
+
+Each binary digit has a bit value that is two times greater than the
+last.  If the digit in the zero bit place is a 1, it has a value of 1
+(we count bit places from 0 to 7).  A 1 in the first bit place has a
+value of 2, the second bit has a value of 4, the third has a value of
+8, the fourth has a vlue of 16, the fifth a value of 32, the sixth a
+value of 64, and the seventh a value of 128.
+
+By making all of the possible combinations of 0's and 1's in all eight
+bit places, and adding the bit values of every bit place that contains
+a 1, we can represent every number from 0 to 255 as a series of 1's
+and 0's.
+
+If you think of every 0 as a dot having the same color as the
+background, and every 1 as a dot which is the color of the sprite, you
+can see how a series of bytes could be used to represent the sprite
+shape.
+
+Since each line of the sprite is 24 dots wide, it takes 3 bytes of
+memory (24 bits) per line to portray its shape.  Let's take a look at
+a couple of sample sprite lines.
+
+00000000 01111110 00000000 = 0, 126, 0
+
+As you can see, the first and last bytes are all 0's, so nothing will
+be displayed there.  The middle byte has six 1's, so it will be
+displayed as a line six dots long.  By adding the values of these dix
+bits (64+32+16+8+4+2), we get a byte value of 126.  Let's try another
+line.
+
+00011111 11111111 11111000 = 21, 255, 248
+
+The first byte has five bits set to 1, having values of 16, 8, 4, 2,
+and 1, for a total of 31.  The second byte has all bits set to 1, so
+it has the maximum value of 255.  The third byte also has five bits
+set to 1, having values of 128, 64, 32, 16, and 8, for a total of 248.
+The result is that this line of sprite data will display a line that
+is 18 dots long.
+
+We can put these two kinds of lines together to show how a large cross
+might be drawn using bytes of sprite data.
+
+000000000000000000000000 = 0, 0, 0
+000000000000000000000000 = 0, 0, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000111111111111111111000 = 21, 255, 248
+000111111111111111111000 = 21, 255, 248
+000111111111111111111000 = 21, 255, 248
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+000000000111111000000000 = 0, 126, 0
+
+---
+Additional information can be found by searching:
+- "character_generator_rom_and_vic_memory_setup" which expands on Character Generator ROM (alternate entry at $C000)

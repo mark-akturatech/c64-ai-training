@@ -1,0 +1,29 @@
+# - C64 I/O Map (Mapping The Commodore 64) - BASIC sample to demonstrate hi-res plotting with an array of power-of-two values (BI) and a loop that computes BY and uses POKE to set bits, including initialization to bitmap mode and color map setup.
+
+                          The exponentiation function takes a lot of time.  To speed things up,
+                          an array can be created, each of whose elements corresponds to a power
+                          of two.
+
+                              FOR I=0 TO 7:BIT(I)=2^1:NEXT
+
+                          After this is done, the expression 2^(I) can be replaced by BI(I).
+
+                          The following sample program illustrates the bit-graphics concepts
+                          explained above, and serves as a summary of that information.
+
+                              10 FOR I=0 TO 7:BI(I)=2^I:NEXT: REM SET UP ARRAY OF POWERS OF 2 (BIT VALUE)
+                              20 BASE=2*4096:POKE53272,PEEK(53272)OR8:REM PUT BIT MAP AT 8192
+                              30 POKE53265,PEEK(53265)OR32:REM ENTER BIT MAP MODE
+                              40 A$="":FOR I=1 TO 37:A$=A$+"C":NEXT:PRINT CHR$(19);
+                              50 FOR I=1 TO 27:PRINTA$;:NEXT:POKE2023,PEEK(2022): REM SET COLOR MAP
+                              60 A$="":FOR I=1 TO 27:A$=A$+"@":NEXT:FOR I=32 TO 63 STEP 2
+                              70 POKE648,I:PRINT CHR$(19);A$;A$;A$;A$:NEXT:POKE648,4:REM CLEAR HI-RES      SCREEN
+                              80 FORY=0TO199STEP.5:REM FROM THE TOP OF THE SCREEN TO THE BOTTOM
+                              90 X=INT(160+40*SIN(Y/10)): REM SINE WAVE SHAPE
+                              100 BY=BASE+40*(Y AND 248)+(Y AND 7)+(X AND 504): REM FIND HI-RES BYTE
+                              110 POKEBY,PEEK(BY)OR(BI(NOT X AND 7)):NEXT Y:REM POKE IN BIT VALUE
+                              120 GOTO 120: REM LET IT STAY ON SCREEN
+
+---
+Additional information can be found by searching:
+- "bitmap_addressing_and_plotting" which expands on Uses BY formula and BI array

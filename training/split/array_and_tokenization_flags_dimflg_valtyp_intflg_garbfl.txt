@@ -1,0 +1,48 @@
+# ********* - Flags for array-handling and tokenization: DIMFLG ($0C) indicates array-related conditions (in array, DIMensioned, or use default dimensions); VALTYP ($0D) marks data type (255=$FF for string, 0 for numeric); INTFLG ($0E) marks numeric subtype (128=$80 for integer, 0 for floating point); GARBFL ($0F) used by LIST (to detect quoted strings), by garbage collection (to indicate GC already attempted), and as a work byte during tokenization.
+
+12            $C             DIMFLG
+Flags for the Routines That Locate or Build an Array
+
+This location is used as a flag by the routines that build an array or
+reference an existing array.  It is used to determine whether a
+variable is in an array, whether the array has already been
+DIMensioned, and whether a new array should assume the default
+dimensions.
+
+13            $D             VALTYP
+Flag: Type of Data (String or Numeric)
+
+This flag is used internally to indicate whether data being operated
+upon is string or numeric.  A value of 255 ($FF) in this location
+indicates string data, while a 0 indicates numeric data.  This
+determination is made every time a variable is located or created.
+
+14            $E             INTFLG
+Flat: Type of Numeric Data (Integer or Floating Point)
+
+If data which BASIC is using is determined to be numeric, it is
+further classified here as either a floating point number or as an
+integer.  A 128 ($80) in this location identifies the number as an
+integer, and a 0 indicates a floating point number.
+
+15            $F             GARBFL
+Flag for LIST, Garbage Collection, and Program Tokenization
+
+The LIST routine uses this byte as a flag to let it know when it has
+come to a character string in quotes.  It will then print the string,
+rather than search it for BASIC keyword tokens.
+
+The garbage collection routine uses this location as a flag to
+indicate that garbage collection has already been tried before adding
+a new string.  If there is still not enough memory, an OUT OF MEMORY
+message will result.
+
+This location is also used as a work byte for the process of
+converting a line of text in the BASIC input buffer (512, $200) into a
+linked program line of BASIC keyword tokens.
+
+
+---
+Additional information can be found by searching:
+- "verck_load_verify_and_count" which expands on previous I/O/indexing flag context
+- "subflg_subscript_and_fn_handling" which expands on next flag used when parsing variable names and function calls

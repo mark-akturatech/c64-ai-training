@@ -1,0 +1,52 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - KERNAL patches and small utility routines: patch to preserve (A) across CHKOUT call ($E4AD-$E4B6) to fix early PRINT#/CMD bug, padding bytes at $E4B7-$E4CF, RS232 input parity patch ($E4D3-$E4D9), reset character colour patch ($E4DA-$E4DF), tape-file pause loop ($E4E0-$E4EB). These are small fixes/patches for KERNAL v3 and JiffyDOS variants.
+
+                                *** PATCH FOR BASIC CHKOUT CALL
+                                This is a short patch added for the KERNAL ROM to preserve
+                                (A) when there was no error returned from BASIC calling
+                                the CHKOUT routine. This corrects a bug in the early
+                                versions of PRINT# and CMD.
+.,E4AD 48       PHA             temp store (A)
+.,E4AE 20 C9 FF JSR $FFC9       CHKOUT
+.,E4B1 AA       TAX
+.,E4B2 68       PLA             retrieve (A)
+.,E4B3 90 01    BCC $E4B6
+.,E4B5 8A       TXA
+.,E4B6 60       RTS
+
+.:E4B7 AA AA AA AA AA AA AA AA
+.:E4BF AA AA AA AA AA AA AA AA
+.:E4C7 AA AA AA AA AA AA AA AA
+.:E4CF AA AA AA AA AA
+
+                                *** RS232 PATCH
+                                This patch has been added to the RS232 input routine in
+                                KERNAL v.3. It initialises the RS232 parity byte, RIPRTY,
+                                on reception of a start bit.
+.,E4D3 85 A9    STA $A9         RINONE, check for start bit
+.,E4D5 A9 01    LDA #$01
+.,E4D7 85 AB    STA $AB         RIPRTY, RS232 input parity
+.,E4D9 60       RTS
+
+                                *** RESET CHARACTER COLOUR
+                                This routine is a patch in KERNAL version 3 to fix a bug
+                                with the colour code. The routine is called by 'clear a
+                                screen line', and sets the character colour to COLOR.
+.,E4DA AD 86 02 LDA $0286       get COLOR
+.,E4DD 91 F3    STA ($F3),Y     and store in current screen position
+.,E4DF 60       RTS
+
+                                *** PAUSE AFTER FINDING TAPE FILE
+                                This routine continues tape loading without pressing C=
+                                when a file was found.
+.,E4E0 69 02    ADC #$02
+.,E4E2 A4 91    LDY $91
+.,E4E4 C8       INY
+.,E4E5 D0 04    BNE $E4EB
+.,E4E7 C5 A1    CMP $A1
+.,E4E9 D0 F7    BNE $E4E2
+.,E4EB 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "serial_bus_protocol_and_io" which expands on RS232 parity and NMI behavior

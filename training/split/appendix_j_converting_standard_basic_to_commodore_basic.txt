@@ -1,0 +1,52 @@
+# COMMODORE 64 - APPENDIX J: Converting BASIC programs from other BASIC dialects to Commodore 64 BASIC. Guidelines: remove explicit string length DIMs (use DIM A$(J) rather than DIM A$(I,J)), use '+' for string concatenation, convert string substring forms (A$(I) or A$(I,J)) to LEFT$/MID$ forms (examples provided), convert multiple assignment forms (LET B=C=0 -> C=0:B=0), replace backslash statement separators with colon (:), and rewrite MAT functions using FOR...NEXT loops.
+
+  APPENDIX J
+
+
+  CONVERTING STANDARD
+  BASIC PROGRAMS TO
+  COMMODORE 64 BASIC
+
+    If you have programs written in a BASIC other than Commodore BASIC,
+  some minor adjustments may be necessary before running them on the
+  Commodore-64. We've included some hints to make the conversion easier.
+
+
+  String Dimensions
+
+    Delete all statements that are used to declare the length of strings.
+  A statement such as DIM A$(I,J), which dimensions a string array for J
+  elements of length I, should be converted to the Commodore BASIC
+  statement DIM A$(J).
+    Some BASICs use a comma or an ampersand for string concatenation. Each
+  of these must be changed to a plus sign, which is the Commodore BASIC
+  operator for string concatenation.
+    In Commodore-64 BASIC, the MID$, RIGHT$, and LEFT$ functions are used
+  to take substrings of strings. Forms such as A$(I) to access the Ith
+  character in A$, or A$(I,J) to take a substring of A$ from position I to
+  J, must be changed as follows:
+
+  Other BASIC     Commodore 64 BASIC
+
+  A$(I)=X$        A$=LEFT$(A$,I-1)+X$+MID$(A$,I+1)
+  A$(I,J)=X$      A$=LEFT$(A$,I-1)+X$+MID$(A$,J+1)
+
+  Multiple Assignments
+
+    To set B and C equal to zero, some BASICs allow statements of the form:
+
+  10 LET B=C=0
+
+
+
+
+
+
+
+  398   APPENDIX J
+~
+
+
+---
+Additional information can be found by searching:
+- "appendix_a_basic_abbreviations" which expands on Use of abbreviated BASIC keywords when editing converted programs

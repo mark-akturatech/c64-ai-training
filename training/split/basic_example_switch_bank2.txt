@@ -1,0 +1,34 @@
+# VIC-II Memory Banking and Address Configuration Guide - BASIC example that selects VIC bank 2 and points $D018 and KERNAL to new screen/charset locations:
+10 POKE 56578, PEEK(56578) OR 3        ; ensure direction bits are outputs
+20 POKE 56576, (PEEK(56576) AND 252) OR 1   ; select VIC bank 2 ($8000-$BFFF)
+30 POKE 53272, 4                       ; set $D018 so charset points to ROM shadow at $9000-$9FFF
+40 POKE 648, 128                       ; tell KERNAL new text screen page (128 = $8000/256)
+
+Notes: After execution the displayed characters may be garbled (RAM shown as characters). BASIC/KERNAL I/O must use the updated screen pointer (e.g. POKE 32768,42 to write at new screen).
+
+BASIC Example: Switching to Bank 2
+-----------------------------------
+
+  10 POKE 56578, PEEK(56578) OR 3
+  20 POKE 56576, (PEEK(56576) AND 252) OR 1
+  30 POKE 53272, 4
+  40 POKE 648, 128
+
+  Line 10: Ensures CIA-2 direction bits are set as outputs.
+  Line 20: Selects VIC bank 2 ($8000-$BFFF).
+  Line 30: Configures $D018 so the charset points to the ROM shadow at
+           $9000-$9FFF.
+  Line 40: Tells KERNAL the new text screen page (128 = $8000/256),
+           so KERNAL I/O routines write to the correct screen location.
+
+After execution, the screen shows garbled characters (random RAM contents)
+but the READY prompt and cursor work normally. POKE 1024,42 will NOT place
+an asterisk at the top-left because 1024 is the old screen address.
+POKE 32768,42 correctly targets the new screen location.
+
+
+
+---
+Additional information can be found by searching:
+- "bank_selection_registers_and_rw" which expands on safe $DD00 modification
+- "d018_vmcsb_overview" which expands on $D018 configuration referenced in line 30

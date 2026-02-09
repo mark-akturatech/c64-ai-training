@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - TNIF/TNIQ/STKY sequence: library routine to clean up after cassette write activity. Saves flags (PHP/SEI), unlocks VIC display (VICREG $D011), clears tape timer interrupts (D1ICR), restores keyboard IRQ/setup (IOKEYS and IRQTMP -> CINV), turns off motor (TNOF), restores interrupt flags (PLP) and returns. Also includes STKY entry which calls TNIF when invoked by cassette IRQ and returns to WRTBK if appropriate.
+
+                                ;
+.,FC93 08       PHP             TNIF   PHP             ;CLEAN UP INTERRUPTS AND RESTORE PIA'S
+.,FC94 78       SEI             SEI
+.,FC95 AD 11 D0 LDA $D011       LDA    VICREG+17       ;UNLOCK VIC
+.,FC98 09 10    ORA #$10        ORA    #$10            ;ENABLE DISPLAY
+.,FC9A 8D 11 D0 STA $D011       STA    VICREG+17
+.,FC9D 20 CA FC JSR $FCCA       JSR    TNOF            ;TURN OFF MOTOR
+.,FCA0 A9 7F    LDA #$7F        LDA    #$7F            ;CLEAR INTERRUPTS
+.,FCA2 8D 0D DC STA $DC0D       STA    D1ICR
+.,FCA5 20 DD FD JSR $FDDD       JSR    IOKEYS          ;RESTORE KEYBOARD IRQ FROM TIMMER1
+.,FCA8 AD A0 02 LDA $02A0       LDA    IRQTMP+1        ;RESTORE KEYBOARD INTERRUPT VECTOR
+.,FCAB F0 09    BEQ $FCB6       BEQ    TNIQ            ;NO IRQ (IRQ VECTOR CANNOT BE Z-PAGE)
+.,FCAD 8D 15 03 STA $0315       STA    CINV+1
+.,FCB0 AD 9F 02 LDA $029F       LDA    IRQTMP
+.,FCB3 8D 14 03 STA $0314       STA    CINV
+.,FCB6 28       PLP             TNIQ   PLP
+.,FCB7 60       RTS             RTS
+                                ;
+.,FCB8 20 93 FC JSR $FC93       STKY   JSR TNIF        ;GO RESTORE SYSTEM INTERRUPTS
+.,FCBB F0 97    BEQ $FC54       BEQ    WRTBK           ;CAME FOR CASSETTE IRQ SO RTI
+                                ;
+
+---
+Additional information can be found by searching:
+- "turn_off_cassette_motor_tnof" which expands on called here to turn off the cassette motor
+- "bsiv_change_irq_vectors" which expands on STKY/restore are used when BSIV switched IRQs for tape operations

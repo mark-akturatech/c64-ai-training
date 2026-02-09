@@ -1,0 +1,62 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=0, BMM=0, MCM=0 standard text mode. c-access address layout: VM13-VM10 + VC bits (VC0-VC9) selects 12-bit matrix address; c-data layout: bits 0-7 character pointer, bits 8-11 color nybble (upper 4 = color for '1' pixels). g-access address: CB13..CB11 + character byte D7..D0 + RC2..RC0 selects character row within char generator; g-data: 8 pixels (1 bit/pixel) where 0=background color0 ($D021), 1=color from bits 8-11 of c-data.
+
+3.7.3.1. Standard text mode (ECM/BMM/MCM=0/0/0)
+-----------------------------------------------
+
+In this mode (as in all text modes), the VIC reads 8 bit character pointers
+from the video matrix that specify the address of the dot matrix of the
+character in the character generator. A character set of 256 characters is
+available, each consisting of 8�8 pixels which are stored in 8 successive
+bytes in the character generator. Video matrix and character generator can
+be moved in memory with the bits VM10-VM13 and CB11-CB13 of register $d018.
+
+In standard text mode, every bit in the character generator directly
+corresponds to one pixel on the screen. The foreground color is given by
+the color nybble from the video matrix for each character, the background
+color is set globally with register $d021.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |      Color of     | D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 |
+ |     "1" pixels    |    |    |    |    |    |    |    |    |
+ +-------------------+----+----+----+----+----+----+----+----+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13|CB12|CB11| D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 | RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       |
+ | "0": Background color 0 ($d021)       |
+ | "1": Color from bits 8-11 of c-data   |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "vc_and_rc" which expands on VC/RC select c/g addresses and RC selects character row
+- "color_palette" which expands on palette indices used for foreground/background

@@ -1,0 +1,46 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - CIA1 ($DC00-$DCFF) detailed connections and responsibilities on the C64: keyboard scanning (Port A drives columns, Port B reads rows), Joystick ports (Joystick 2 on Port A $DC00, Joystick 1 on Port B $DC01; bits active low), paddles/datasette control, and IRQ generation. Keyboard scanning procedure: write 0 to desired Port A column bit and read Port B; 0 indicates a pressed key. FLAG pin is connected to Cassette Read; negative edge on FLAG can generate IRQ if enabled.
+
+=============================================================
+6. CIA 1 - DETAILED CONNECTIONS ($DC00-$DCFF)
+=============================================================
+
+CIA 1 is responsible for:
+  - Keyboard scanning (matrix of 8 columns x 8 rows)
+  - Joystick port 1 and 2 input
+  - Paddle (analog) controllers
+  - Datasette control
+  - IRQ generation
+
+Keyboard Matrix:
+  Port A ($DC00) drives columns (active low, output)
+  Port B ($DC01) reads rows (active low, input)
+
+  To scan: Write a 0 to the desired column bit in Port A,
+  then read Port B. A 0 bit indicates the key at that
+  row/column intersection is pressed.
+
+  To scan all keys, each column is selected one at a time
+  (bits 0-7 of Port A cleared individually) and Port B is read.
+
+Joystick Reading:
+  Joystick 2 is directly readable at $DC00 (Port A):
+    Bit 0 = Up, Bit 1 = Down, Bit 2 = Left,
+    Bit 3 = Right, Bit 4 = Fire (active low)
+
+  Joystick 1 is directly readable at $DC01 (Port B):
+    Bit 0 = Up, Bit 1 = Down, Bit 2 = Left,
+    Bit 3 = Right, Bit 4 = Fire (active low)
+
+  Note: Joystick bits are active low (0 = active/pressed).
+
+CIA 1 FLAG pin:
+  Connected to the Cassette Read line. A negative edge on the
+  FLAG pin can generate an IRQ (if enabled).
+
+=============================================================
+
+---
+Additional information can be found by searching:
+- "port_a_data_register_pra" which expands on Port A drives keyboard columns and joystick 2
+- "port_b_data_register_prb" which expands on Port B reads keyboard rows and joystick 1
+- "interrupt_handling" which expands on FLAG pin can generate IRQ (ICR FLG enable)

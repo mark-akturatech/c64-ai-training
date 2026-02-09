@@ -1,0 +1,21 @@
+# Contents - How the demo's interrupt flow works: after system setup the main program loops while interrupts perform all changes. A first RAST triggers at mid-screen, changes background color, sets a RAST for the bottom of the screen, and updates the IRQ vector to the second ISR. The second ISR mirrors the first and points back to the first ISR, letting two ISRs alternate to perform different actions on each half of the screen.
+
+After setting up the system, the main program 
+just loops through itself. The only way that any 
+changes can occur is through interrupts. The first 
+interrupt is generated at the mid point in the screen, 
+as specified by the first RAST macro. After chang- 
+ing the screen color to blue, this interrupt uses the 
+RAST command to set an interrupt to occur at the 
+bottom of the screen. Next, the address of the 
+second interrupt is placed in the interrupt vector. 
+The second interrupt (INT1) works in the same 
+manner as the first, only it points to the first inter- 
+rupt when it is done. By using two interrupt ser- 
+vice routines in this manner, different things can be 
+done on each half of the screen. 
+
+---
+Additional information can be found by searching:
+- "raster_interrupts_overview" which expands on Using raster interrupts to control timing on the screen
+- "raster_timing_and_color_smear" which expands on Timing artifacts visible at the color change boundary

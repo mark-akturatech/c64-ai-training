@@ -1,0 +1,59 @@
+# ********* - TBUFFER (locations 828-1019 / $33C-$3FB): 192-byte cassette I/O buffer used for reading/writing tape device (device 1). Describes block structure stored here: block type identifier byte, header blocks (relocatable or nonrelocatable program headers), data header blocks for file I/O, and data storage blocks. Notes on how relocatable vs nonrelocatable files behave, and which bytes are used for buffering vs direct RAM transfer. Also notes that when unused it is commonly used by programmers for short ML routines or VIC-II graphics blocks.
+
+828-1019      $33C-$3FB      TBUFFER
+Cassette I/O Buffer
+
+This 192-byte buffer area is used to temporarily hold data that is
+read from or written to the tape device (device number 1).
+
+When not being used for tape I/O, the cassette buffer has long been a
+favorite place for Commodore programmers to place short machine
+language routines (although the 64 has 4K of unused RAM above the
+BASIC ROM at 49152 ($C000) that would probably better serve the
+purpose).
+
+Of more practical interest to the 64 programmer is the possible use of
+this area for VIC-II chip graphics memory (for example, sprite shape
+data or text character dot data).  If the VIC-II chip is banked to the
+lowest 16K of memory (as is the default selection), there is very
+little memory space which can be used for such things as sprite shape
+data without conflict.  If the tape is not in use, locations 832-895
+($340-$37F) can be used as sprite data block number 13, and locations
+896-959 ($380-$3BF) can be used as sprite data block number 14.
+
+The types of tape blocks that can be stored here are program header
+blocks, data header blocks, and data storage blocks.
+
+The first byte of any kind of block (which is stored at location 828
+($33C)) identifies the block type.  Header blocks follow this
+identifier byte with the two-byte starting RAM address of the tape
+data, the two-byte ending RAM address, and the filename, padded with
+blanks so that the total length of the name portion equals 187 bytes.
+Data storage blocks have 191 bytes of data following the identifier
+byte.  The meanings of the various identifier blocks are as follows:
+
+A value of 1 signifies that the block is the header for a relocatable
+program file, while a value of 3 indicates that the block is the
+header for a nonrelocatable program file.
+
+A relocatable file is created when a program is SAVEd with a secondary
+address of 0 (or any even number), while a nonrelocatable program file
+is created if the secondary SAVE address is 1 (or any odd number).
+The difference between the two types of files is that a nonrelocatable
+program will always load at the address specified in the header.  A
+relocatable program will load at the current start of BASIC address
+unless the LOAD statement uses a secondary address of 1, in which case
+it will also be loaded at the addrss specified in the header.
+
+You should note that a program file uses the cassette buffer only to
+store the header block.  Actual program data is transferred directly
+to or from RAM, without first being buffered.
+
+An identifier value of 4 means that the block is a data file header.
+Such a header block is stored in the cassette buffer whenever a BASIC
+program OPENs a tape data file for reading or writing.  Subsequent
+data blocks start with an identifier byte of 2.  These blocks contain
+
+---
+Additional information can be found by searching:
+- "rs232_fifo_buffer_indices" which expands on Contrast between cassette buffering (TBUFFER) and RS-232 FIFO buffers

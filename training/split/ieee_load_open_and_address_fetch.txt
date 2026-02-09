@@ -1,0 +1,44 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Load-from-CBM-IEEE-device setup: ensure file name present (FNLEN), save SA in X, print 'SEARCHING' (LUKING), set special load command in SA, JSR OPENI to open file, establish TALK on device channel (TALK/TKSA), and use ACPTR to receive first 2 bytes (file's load address). Handles file-not-found status check and supports alternate start address if SA=0 by reading MEMUSS into EAL/EAH. Finally calls LODING to announce load to user.
+
+                                ;
+                                ;LOAD FROM CBM IEEE DEVICE
+                                ;
+.,F4B8 A4 B7    LDY $B7         LDY    FNLEN           ;MUST HAVE FILE NAME
+.,F4BA D0 03    BNE $F4BF       BNE    LD25            ;YES...OK
+                                ;
+.,F4BC 4C 10 F7 JMP $F710       JMP    ERROR8          ;MISSING FILE NAME
+                                ;
+.,F4BF A6 B9    LDX $B9         LD25   LDX SA          ;SAVE SA IN .X
+.,F4C1 20 AF F5 JSR $F5AF       JSR    LUKING          ;TELL USER LOOKING
+.,F4C4 A9 60    LDA #$60        LDA    #$60            ;SPECIAL LOAD COMMAND
+.,F4C6 85 B9    STA $B9         STA    SA
+.,F4C8 20 D5 F3 JSR $F3D5       JSR    OPENI           ;OPEN THE FILE
+                                ;
+.,F4CB A5 BA    LDA $BA         LDA    FA
+.,F4CD 20 09 ED JSR $ED09       JSR    TALK            ;ESTABLISH THE CHANNEL
+.,F4D0 A5 B9    LDA $B9         LDA    SA
+.,F4D2 20 C7 ED JSR $EDC7       JSR    TKSA            ;TELL IT TO LOAD
+                                ;
+.,F4D5 20 13 EE JSR $EE13       JSR    ACPTR           ;GET FIRST BYTE
+.,F4D8 85 AE    STA $AE         STA    EAL
+                                ;
+.,F4DA A5 90    LDA $90         LDA    STATUS          ;TEST STATUS FOR ERROR
+.,F4DC 4A       LSR             LSR    A
+.,F4DD 4A       LSR             LSR    A
+.,F4DE B0 50    BCS $F530       BCS    LD90            ;FILE NOT FOUND...
+.,F4E0 20 13 EE JSR $EE13       JSR    ACPTR
+.,F4E3 85 AF    STA $AF         STA    EAH
+                                ;
+.,F4E5 8A       TXA             TXA                    ;FIND OUT OLD SA
+.,F4E6 D0 08    BNE $F4F0       BNE    LD30            ;SA<>0 USE DISK ADDRESS
+.,F4E8 A5 C3    LDA $C3         LDA    MEMUSS          ;ELSE LOAD WHERE USER WANTS
+.,F4EA 85 AE    STA $AE         STA    EAL
+.,F4EC A5 C4    LDA $C4         LDA    MEMUSS+1
+.,F4EE 85 AF    STA $AF         STA    EAH
+.,F4F0 20 D2 F5 JSR $F5D2       LD30   JSR LODING      ;TELL USER LOADING
+
+---
+Additional information can be found by searching:
+- "nload_device_checks_and_basic_errors" which expands on Reached when device is an IEEE device
+- "ieee_receive_and_store_loop" which expands on After opening and fetching the load address, the loop retrieves file data bytes and stores/verifies them
+- "load_header_and_entry_points" which expands on Monitor entry behavior and alternate start semantics

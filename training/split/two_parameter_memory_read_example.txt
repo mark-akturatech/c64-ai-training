@@ -1,0 +1,32 @@
+# byRiclianll - Two-parameter memory-read example: selects buffer #0 ($0300-$03FF) via OPEN 2,8,2,"#0", performs PRINT#15,"U1";2;0;18;0 to read track 18 sector 0 into that buffer, then loops 0-255 issuing PRINT#15,"M-R" CHR$(i) CHR$(3) to retrieve bytes indexed into the buffer; uses GET#15 to transfer each byte to C64 (command channel), converts nulls to CHR$(0), and prints ASCII values/characters within printable range. Demonstrates indexed memory-read and using GET# on the command channel for memory-read responses.
+
+
+Line  Range  Description 
+
+
+150  Opens  logical  file  number  2  to  device  8  with  a  secondary 
+
+address  of  2  assigning  buffer  number  0  ($0300  -  $03FF) 
+as  a  workspace. 
+
+160  Reads  the  block  from  drive  0,  track  18,  sector  0  into 
+
+channel  2  buffer  area  ($0300  -  $03FF). 
+
+190  Begin  loop  to  read  256  bytes  ($0300  -  $03FF). 
+
+200  Indexed  memory-read  command  ($0300  -  $03FF). 
+
+210  Transfer  a  byte  from  channel  2  buffer  area  to  C64 
+
+memory  via  the  command  channel  (GET#15,). 
+
+
+83 
+
+
+
+---
+Additional information can be found by searching:
+- "memory_read_m-r_syntax" which expands on buffer selection and addressing for M-R
+- "three_parameter_memory_read_example" which expands on example that uses all three M-R parameters to read disk name bytes

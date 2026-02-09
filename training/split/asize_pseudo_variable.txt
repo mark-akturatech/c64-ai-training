@@ -1,0 +1,31 @@
+# ca65 Users Guide - .ASIZE: returns the current Accumulator size in bits. For the 65816 instruction set it returns 8 or 16 depending on the current accumulator operand size; for other CPU instruction sets it always returns 8. Includes an example macro (rsb) that branches on .ASIZE to select appropriate immediate operand sizes. See also .ISIZE.
+
+9.2 .ASIZE
+Reading this pseudo variable will return the current size of the Accumulator in bits.
+
+For the 65816 instruction set .ASIZE will return either 8 or 16, depending on the current size of the operand in immediate accu addressing mode.
+
+For all other CPU instruction sets, .ASIZE will always return 8.
+
+Example:
+
+
+        ; Reverse Subtract with Accumulator
+        ; A = memory - A
+        .macro rsb param
+                .if .asize = 8
+                        eor     #$ff
+                .else
+                        eor     #$ffff
+                .endif
+                sec
+                adc     param
+        .endmacro
+  
+See also: .ISIZE
+
+
+---
+Additional information can be found by searching:
+- "isize_pseudo_variable" which expands on Index size (.ISIZE) — related register size pseudo variable
+- "pseudo_variables_overview" which expands on General pseudo variables introduction

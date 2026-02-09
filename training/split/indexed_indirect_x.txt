@@ -1,0 +1,19 @@
+# 6502 ADDRESSING MODES - Indexed Indirect (format (aa,X)): zero page based indirect mode using X. Operation: take 1-byte zero-page operand aa, add X to it (wraps in zero page), read two bytes at that resulting zero-page location which form a 16-bit effective address, then access data at that address. Example: LDX #$11; LDA ($36,X) -> uses $36+$11 = $47; if $0047 contains $49 and $0048 contains $A3, the effective address is $A349 and its contents load A. Commonly used for tables of addresses stored on the zero page.
+
+Indexed Indirect	(aa, X)
+
+This is a mixture of indexed addressing and indirect addressing, which can only be used with the X register.  It can be summarised as ‘Add the offset and then find the address’.
+
+The operand is a 1 byte zero page address.  The contents of the X register are added to it, and the resulting location will contain the least significant byte of a 2 byte address, which contains the data.  For example:
+
+LDX	#$11
+LDA	($36, X)
+
+will mean that the resulting zero page address is $47 ($36 + $11).  If location $0047 contains $49, and location $0048 contains $A3, then the target address is $A349.  The contents of location $A349 will be loaded into the accumulator.
+
+This mode is often used to access a table of addresses held on the zero page, where the base address of the table is supplied as the operand, and the offset within the table is held in the index register X.
+
+---
+Additional information can be found by searching:
+- "zero_page_indexed_addressing" which expands on zero page addressing and indexing
+- "indirect_indexed_y" which expands on contrast 'add then fetch' vs 'fetch then add' behavior

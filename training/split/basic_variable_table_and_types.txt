@@ -1,0 +1,103 @@
+# MACHINE - BASIC variable table layout: each variable occupies 7 bytes (2-byte name + 5-byte value area). High bits over name bytes encode type: integer (high bit set on both), string (high bit set on second char), function (high bit set on first char). String descriptor uses 3 bytes (length + 2-byte address). Floating variables use 5 bytes; integers use first 2 bytes storing value directly (little-endian). Examples show floating and integer variable encodings.
+
+
+                                                                        :103:
+
+BASIC Variables
+---------------
+
+There are four types of entry in the BASIC variable table.  All variables,
+regardless of type, occupy seven bytes; the first two bytes are the name, and
+the remaining five bytes (not always fully used) contain the value or
+definition.  The variable type is signaled as part of the name:  high bits
+are set over one or both letters of the name to signal a specific type.
+
+
+    SOV                                                               SOA
+     |                                                                 |
+     v                                                                 v
+  --+----------+----------+----------+----------+----------+----------+----
+    |          |          |          |          |          |          |
+  --+----------+----------+----------+----------+----------+----------+----
+
+  EACH VARIABLE IS EXACTLY 7 BYTES LONG.
+  VARIABLES APPEAR IN THE ORDER IN WHICH
+  THEY ARE USED.
+
+  Figure 6.5
+
+
+For example, if a floating point variable had a name AB, the name would be
+stored in the two bytes as $41, $42--the ASCII codes for A and B.  The same
+would be true if the variable were named ABACUS, since only the first two
+letters of the name are kept.  In contrast, if the variable were named AB%,
+meaning that it was an integer variable, the name would be stored as $C1,
+$C2.  The ASCII codes are the same, but the high bit has been set over them.
+To complete the picture, a string variable named AB$ would be coded with the
+name $41, $C2--the high bit is set over the second character only.
+
+
+    ,-----------> HIGH BIT SET FOR INTEGER VARIABLES AND FUNCTIONS
+    |
+    |   ,-------> HIGH BIT SET FOR INTEGER AND STRING VARIABLES
+    |   |
+  +-------+-------------------+
+  | NAME  |       VALUE       |
+  |       |                   |
+  |2 BYTES|      5 BYTES      |
+  |       |                   |
+  |   |   |   |   |   |   |   |
+  +---+---+---+---+---+---+---+
+
+  Figure 6.6
+
+
+There's a fourth type of entry that can go into the variable table, but it's
+not a variable:  it's a function definition.  If we give the variable command
+DEF FNA(... an entry will be made in this table.  It will be distinguished by
+the high bit being set over the first character only.
+
+String variables use only three of the five bytes provided; the first byte
+signals the length of the string, and the next two bytes give the string's
+address.  This group of three bytes is called a descriptor.
+
+                                                                        :104:
+
+There are two types of numeric variables:  floating point and integer.
+Floating point variables use all five bytes; integer variables use the first
+two bytes only.  It's possible to extract the value from a floating point
+variable and put it to work, but it's not a simple procedure.  A description
+of how to do this is given in Appendix F.  In contrast, it's quite easy to
+take the value from an integer variable and use it.
+
+Let's try an example.  Type NEW, followed by A=5:B%=5.  This creates two
+different variables:  A and B%.  Now go to the machine language monitor.  The
+variables should be near the start-of-BASIC, but if you wish you can find
+their exact address by examining the SOV pointer ($2A/$2B on PET/CBM, or $2D/
+$2E on VIC, Commodore 64 or PLUS/4).  On the Commodore 64, we might find that
+the variables start at $0803; to display both of them, we type .M 0803 0810.
+We see the floating point variable, A:
+
+  41 00 83 20 00 00 00
+
+The first two bytes are the name--41 is ASCII for A, and the zero signifies
+no second letter--but where's the 5?  Embedded within the 83 20 00 00 00,
+that's where; and it's a good deal of work to extract the 5 for further
+processing.
+
+Behind this variable, we can see the integer variable, B%:
+
+  C2 80 00 05 00 00 00
+
+Hex C2 is the ASCII for the letter B (42) with the high bit set.  80 is zero
+with the high bit set--again, there's no second letter.  The value is in the
+next two bytes, and it's easy to read.  The last three bytes are not used.
+
+Which is easier for machine language to interface with?  Obviously the
+integer variable.  It's often quite suitable for the program work at hand:
+counting characters, setting pointers, and similar tasks.
+
+
+---
+Additional information can be found by searching:
+- "data_exchange_methods_between_basic_and_machine_language" which expands on ML can read variables by scanning variable table starting at SOV

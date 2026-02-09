@@ -1,0 +1,77 @@
+# NMOS 6510 - Continuation describing how the block is repeated every 8 lines of the graphics area, and the alternate full assembly listing for the second variant which starts with A=$20. Includes the per-instruction comments, cycle counts, effective accumulator changes for the alternate pass, and the final note restoring initial values and page footer.
+
+This block is repeated for every 8 lines of the graphics area, with every second block using $20 as a
+start value for the accumulator like this:
+; A=$20 $d018=$1f $dd02=$36
+STA $D011
+
+;4 20 (20)
+
+SRE $DD02
+
+;6 1b (03) A:20 -> 3B
+
+STY $D011
+
+;4 21 (21)
+
+ASL $D018
+
+;6 3f (38)
+
+SAX $D011
+
+;4 32 (22)
+
+STY $DD02
+
+;4 21 (01)
+
+STA $D011
+
+;4 3B (23)
+
+SRE $D018
+
+;6 1f (18) A:3B -> 24
+
+STA $D011
+
+;4 24 (24)
+
+RRA $DD02
+
+;6 90 (00) A:24 -> B5
+
+STA $D011
+
+;4 B5 (25)
+
+SLO $D018
+
+;6 3f (38) A:B5 -> BF
+
+STX $D011
+
+;4 36 (26)
+
+STX $DD02
+
+;4 36 (02)
+
+STA $D011
+
+;4 BF (27)
+
+SRE $D018
+
+;6 1f (18) A:BF -> A0
+
+; A=$A0 $d018=$1f $dd02=$36
+
+- 100 -
+
+
+---
+Additional information can be found by searching:
+- "six_sprites_over_fli_initial_variant" which expands on contains the original variant starting with A=$A0 and the core explanation of using undocumented RMW opcodes for side-effects

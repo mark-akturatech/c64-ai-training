@@ -1,0 +1,66 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=0, BMM=0, MCM=1 multicolor text mode. Allows four-colored characters with halved horizontal resolution: when c-data bit11=0, character behaves like standard text mode (colors 0-7); if bit11=1, two adjacent bits form one pixel (2 bits/pixel). c-data encodes MC flag and color for '11' pixels; g-access address same as text; g-data interpretation: if MC flag=0, 8 pixels 1bpp like standard; if MC flag=1, 4 pixels 2bpp where '00'=background0 ($D021), '01'=background1 ($D022), '10'=background2 ($D023), '11'=color from c-data bits 8-10. Note: '01' treated as background for sprite priority/collision.
+
+3.7.3.2. Multicolor text mode (ECM/BMM/MCM=0/0/1)
+-------------------------------------------------
+
+This mode allows for displaying four-colored characters at the cost of
+horizontal resolution. If bit 11 of the c-data is zero, the character is
+displayed as in standard text mode with only the colors 0-7 available for
+the foreground. If bit 11 is set, each two adjacent bits of the dot matrix
+form one pixel. By this means, the resolution of a character of reduced to
+4�8 (the pixels are twice as wide, so the total width of the characters
+doesn't change).
+
+It is interesting that not only the bit combination "00" but also "01" is
+regarded as "background" for the sprite priority and collision detection.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | MC |   Color of   | D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 |
+ |flag|  "11" pixels |    |    |    |    |    |    |    |    |
+ +----+--------------+----+----+----+----+----+----+----+----+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13|CB12|CB11| D7 | D6 | D5 | D4 | D3 | D2 | D1 | D0 | RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       | MC flag = 0
+ | "0": Background color 0 ($d021)       |
+ | "1": Color from bits 8-10 of c-data   |
+ +---------------------------------------+
+ |         4 pixels (2 bits/pixel)       |
+ |                                       |
+ | "00": Background color 0 ($d021)      | MC flag = 1
+ | "01": Background color 1 ($d022)      |
+ | "10": Background color 2 ($d023)      |
+ | "11": Color from bits 8-10 of c-data  |
+ +---------------------------------------+
+
+---
+Additional information can be found by searching:
+- "sprite_priority_and_collision" which expands on treatment of '01' as background affects sprite collision/priority

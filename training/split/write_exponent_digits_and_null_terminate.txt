@@ -1,0 +1,30 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Format and append the exponent to the output string: handle negative exponent sign (convert stored negative count to positive and place '-'), store exponent sign ('+'/'-') and the letter 'E' into the buffer, convert the exponent count to ASCII by subtracting tens repeatedly (loop that extracts tens and ones), store the two exponent digits and then a null terminator. Branching is used to exit to finalization after storing these bytes.
+
+                                exponent isn't zero so write exponent
+.,BED9 10 08    BPL $BEE3       branch if exponent count +ve
+.,BEDB A9 00    LDA #$00        clear A
+.,BEDD 38       SEC             set carry for subtract
+.,BEDE E5 5E    SBC $5E         subtract exponent count adjust (convert -ve to +ve)
+.,BEE0 AA       TAX             copy exponent count to X
+.,BEE1 A9 2D    LDA #$2D        character "-"
+.,BEE3 99 01 01 STA $0101,Y     save to output string
+.,BEE6 A9 45    LDA #$45        character "E"
+.,BEE8 99 00 01 STA $0100,Y     save exponent sign to output string
+.,BEEB 8A       TXA             get exponent count back
+.,BEEC A2 2F    LDX #$2F        one less than "0" character
+.,BEEE 38       SEC             set carry for subtract
+.,BEEF E8       INX             increment 10's character
+.,BEF0 E9 0A    SBC #$0A        subtract 10 from exponent count
+.,BEF2 B0 FB    BCS $BEEF       loop while still >= 0
+.,BEF4 69 3A    ADC #$3A        add character ":" ($30+$0A, result is 10 less that value)
+.,BEF6 99 03 01 STA $0103,Y     save to output string
+.,BEF9 8A       TXA             copy 10's character
+.,BEFA 99 02 01 STA $0102,Y     save to output string
+.,BEFD A9 00    LDA #$00        set null terminator
+.,BEFF 99 04 01 STA $0104,Y     save to output string
+.,BF02 F0 08    BEQ $BF0C       go set string pointer (AY) and exit, branch always
+
+---
+Additional information can be found by searching:
+- "trim_trailing_zeroes_and_prepare_exponent" which expands on continues from trimming and exponent count loading
+- "finalize_string_pointer_and_return" which expands on final step sets the (AY) pointer to the result and returns

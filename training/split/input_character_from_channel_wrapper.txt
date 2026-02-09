@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFCF that JMPs ($0324) to input a character from the current input channel (CHRIN). For keyboard input it handles line editing and buffering into BASIC input buffer; returns character in A.
+
+                                *** input character from channel
+                                this routine will get a byte of data from the channel already set up as the input
+                                channel by the CHKIN routine, $FFC6.
+                                
+                                If CHKIN, $FFC6, has not been used to define another input channel the data is
+                                expected to be from the keyboard. the data byte is returned in the accumulator. the
+                                channel remains open after the call.
+                                
+                                input from the keyboard is handled in a special way. first, the cursor is turned on
+                                and it will blink until a carriage return is typed on the keyboard. all characters
+                                on the logical line, up to 80 characters, will be stored in the BASIC input buffer.
+                                then the characters can be returned one at a time by calling this routine once for
+                                each character. when the carriage return is returned the entire line has been
+                                processed. the next time this routine is called the whole process begins again.
+.,FFCF 6C 24 03 JMP ($0324)     do input character from channel
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on CHRIN vector at $0324

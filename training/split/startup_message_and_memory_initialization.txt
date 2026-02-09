@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Print startup message and initialize memory pointers: compute bytes free (end - start addresses), print '**** COMMODORE 64 BASIC V2 ****' followed by 'BYTES FREE', then branch to NEW/CLEAR/RESTORE entry. Validates available memory for BASIC and calls the routines to clear and prepare BASIC program area.
+
+                                *** print the start up message and initialise the memory pointers
+.,E422 A5 2B    LDA $2B         get the start of memory low byte
+.,E424 A4 2C    LDY $2C         get the start of memory high byte
+.,E426 20 08 A4 JSR $A408       check available memory, do out of memory error if no room
+.,E429 A9 73    LDA #$73        set "**** COMMODORE 64 BASIC V2 ****" pointer low byte
+.,E42B A0 E4    LDY #$E4        set "**** COMMODORE 64 BASIC V2 ****" pointer high byte
+.,E42D 20 1E AB JSR $AB1E       print a null terminated string
+.,E430 A5 37    LDA $37         get the end of memory low byte
+.,E432 38       SEC             set carry for subtract
+.,E433 E5 2B    SBC $2B         subtract the start of memory low byte
+.,E435 AA       TAX             copy the result to X
+.,E436 A5 38    LDA $38         get the end of memory high byte
+.,E438 E5 2C    SBC $2C         subtract the start of memory high byte
+.,E43A 20 CD BD JSR $BDCD       print XA as unsigned integer
+.,E43D A9 60    LDA #$60        set " BYTES FREE" pointer low byte
+.,E43F A0 E4    LDY #$E4        set " BYTES FREE" pointer high byte
+.,E441 20 1E AB JSR $AB1E       print a null terminated string
+.,E444 4C 44 A6 JMP $A644       do NEW, CLEAR, RESTORE and return
+
+
+---
+Additional information can be found by searching:
+- "basic_warm_and_cold_start_initialisation" which expands on invoked during cold start to present the banner & memory info

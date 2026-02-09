@@ -1,0 +1,36 @@
+# ********* - ARYTAB ($2F-$30) pointer to the start of the BASIC array storage area (address immediately after nonarray variable storage). Format for arrays: two-byte name (same high-bit/type patterns as nonarray variables except no FN), two-byte low-byte-first offset to the next array, one-byte dimension count, then pairs of bytes holding each dimension+1 (DIM makes space for index 0). After the dimension descriptors come the array element values themselves; each element uses storage appropriate to its type (5 bytes for floating point, 2 for integer, 3 for string descriptor). Notes that actual string text for string elements is stored elsewhere (FREETOP area).
+
+47-48          $2F-$30       ARYTAB
+Pointer to the Start of the BASIC Array Storage Area
+
+This location points to the address of the end of nonarray variable
+storage, and the beginning of array variable storage.  The format for
+array storage is as follows:
+
+The first two bytes hold the array name.  The format and high-bit
+patterns are the same as for nonarray variables (see 45 ($2D) above),
+except that there is no equivalent to the function definition.
+
+Next comes a two-byte offset to the start of the next array, low byte
+first.  Then there is a one-byte value for the number of array
+dimensions (e.g., 2 for a two-dimensional array like A(x,y)).  That
+byte is followed by pairs of bytes which hold the value of each array
+dimension+1 (DIMensioning an array always makes space for 0, so A(0)
+can be used).
+
+Finally come the values of the variables themselves.  The format for
+these values is the same as with nonarray values, but each value only
+takes up the space required; that is, floating point variables use
+five bytes each, integers two bytes, and string descriptors three
+bytes each.
+
+Remember that as with nonarray string, the actual string text is
+stored elsewhere, in the area which starts at the location pointed to
+in 51-52 ($33- $34).
+
+
+---
+Additional information can be found by searching:
+- "vartab_variable_storage_pointer_and_variable_format" which expands on variable name encoding and high-bit type flags same as nonarray variables
+- "strend_array_free_ram" which expands on STREND marks the end of array storage and start of free RAM
+- "freetop_string_text_pointer" which expands on string element text is stored in the string text area pointed to by FREETOP

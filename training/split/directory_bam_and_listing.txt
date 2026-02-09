@@ -1,0 +1,73 @@
+# ********* - Section 3.3: Explanation of the BAM (Block Availability Map) and directory layout on disk, how DOS manages blocks and directory entries, why files must be CLOSED to update the BAM, and instructions to LOAD "$",8 to read the directory into memory and print or LIST it (including printing via CMD on a printer).
+
+
+
+3.3 DIRECTORY OF DISKETTE
+
+The DATASSETTE-tm tape deck is a sequential device.  It can only read
+from the beginning of the tape to the end, without skipping around the
+tape and without the capability of going backward or recording over
+old data.
+
+Your disk drive is a random access device.  The read/write head of the
+disk can go to any spot on the disk and access a single block of data
+which holds up to 256 bytes of information.  There are a total of 683
+blocks on a single diskette.
+
+Fortunately, you don't really have to worry about individual blocks of
+data. There is a progrmn in the disk drive called the Disk Operating
+System, or the DOS. This program keeps track of the blocks for you. It
+organizes them into a Block Availability Map, or BAM, and a directory.
+
+The Block Availability Map is simply a checklist of all 683 blocks on
+the disk.  It is stored in the middle of the diskette, halfway between
+the center hub and the outer rim. Every time a program is SAVED or a
+data file is CLOSED, the BAM is updated with the list of blocks used
+up.
+
+The directory is a list of all programs and other files stored on the
+disk.  It is physically located right next to the BAM.  There are 144
+entries available in the directory, consisting of information like
+file name and type, a list of blocks used, and the starting block.
+The directory is automatically updated every time a program is SAVEd
+or a file is OPENed for writing.  BEWARE: the BAM isn't updated until
+the file is CLOSED, even though the directory changes right away.  If
+a file isn't CLOSED properly, all data in that file will probably be
+lost.
+
+The directory can be LOADed into your memory just like a BASIC program.
+Place the diskette in the drive, and type the following command:
+
+ LOAD "$", 8
+
+The computer responds with:
+
+ SEARCHING FOR $
+
+ FOUND $
+
+ LOADING
+
+ READY.
+
+Now the directory is in your computer's memory.  Type LIST, and you'll
+see the directory displayed on the screen.  To print the directory on
+your printer, type the following command line (in this example your
+printer is plugged in as device# 4):
+
+   OPEN 4, 4: CMD 4: LIST
+
+NOTE: When using CMD, the file must be closed using the command
+PRINT#4: CLOSE 4. See the VIC 1525/1515 printer manual for detailed
+explanation.
+
+To read the directory without LOADing it into your memory, see the
+section later in this chapter on the DOS Support Program.  In addition,
+to examine the directory from inside a BASIC program, see the section
+in chapter 5 that deals with the GET# statement.
+
+
+---
+Additional information can be found by searching:
+- "bAm_directory_and_file_format_tables" which expands on low-level BAM and directory header/table formats in Appendix/Tables
+- "dos_support_wedge_and_shortcuts" which expands on alternative ways to view the directory without LOAD via DOS support program

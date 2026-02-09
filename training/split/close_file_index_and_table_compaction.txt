@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Close file index X and compact the logical-file tables. Copies the file index to X (TAX), decrements the open file count ($98), compares the index with the new count and if not the last entry, copies the last table entry (logical file number, device number, secondary address) over the closing file's table slots (tables at $0259, $0263, $026D). Flags OK and returns. Also clears and sets relevant status flags used by file management.
+
+                                *** close file index X
+.,F2F2 AA       TAX             copy index to file to close
+.,F2F3 C6 98    DEC $98         decrement the open file count
+.,F2F5 E4 98    CPX $98         compare the index with the open file count
+.,F2F7 F0 14    BEQ $F30D       exit if equal, last entry was closing file
+                                else entry was not last in list so copy last table entry
+                                file details over the details of the closing one
+.,F2F9 A4 98    LDY $98         get the open file count as index
+.,F2FB B9 59 02 LDA $0259,Y     get last+1 logical file number from logical file table
+.,F2FE 9D 59 02 STA $0259,X     save logical file number over closed file
+.,F301 B9 63 02 LDA $0263,Y     get last+1 device number from device number table
+.,F304 9D 63 02 STA $0263,X     save device number over closed file
+.,F307 B9 6D 02 LDA $026D,Y     get last+1 secondary address from secondary address table
+.,F30A 9D 6D 02 STA $026D,X     save secondary address over closed file
+.,F30D 18       CLC             flag ok
+.,F30E 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "close_specified_logical_file" which expands on called after device-specific close operations to finalize the close
+- "find_file_and_find_file_A" which expands on uses the open-file count/index obtained from the find routine

@@ -1,0 +1,43 @@
+# MACHINE - Example routine that ANDs contents of 100 locations ($17E0-$1844) and a detailed cycle-by-cycle breakdown: instruction counts for LDX, LDA immediate, AND (with page-cross penalties), INX, CPX, BCC, RTS, totaling 1171 cycles (~1.17 ms) and suggestion to add 10% for interrupts and extra cycles for being a subroutine (JSR).
+
+Let's take a simple routine and estimate its timing.  The following program
+logically ANDs the contents of 100 locations from $17E0 to $1844:
+
+  033C  LDX #$00
+  033E  LDA #$00
+  0340  AND $17E0,X
+  0343  INX
+  0345  CPX #$64
+  0347  BCC $0340
+  0349  RTS
+
+                                                                        :133:
+
+We may work out timing as follows:
+
+  LDX #$00--executed once:               2
+
+  LDA #$00--executed once:               2
+
+  AND $17E0,X:  32 times at 4 cycles:  128
+    68 times at 5 cycles (page cross): 340
+
+  INX--100 times at 2 cycles:          200
+
+  CPX #$64--100 times at 2 cycles:     200
+
+  BCC--99 times at 3 cycles:           297
+    1 time at 2 cycles (no branch):      2
+
+  RTS--6 cycles:                         6
+
+Total time:  1171 cycles, or slightly over one thousandth of a second.  We
+might add 10 percent to allow for the effects of interrupt; and since this is
+a subroutine, we could also add the extra six cycles needed to perform the
+JSR.
+
+Where timing is critical, the interrupt could be locked out with SEI.  Be
+
+---
+Additional information can be found by searching:
+- "timing_rules_and_memory_cycles" which expands on Applies the timing rules to a concrete example

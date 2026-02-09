@@ -1,0 +1,68 @@
+# byRiclianll - Explains why four 8-bit data bytes are converted together (four 10-bit GCR values = 40 bits) and subdivided into five 8-bit GCR bytes for storage. Provides a detailed worked example converting the four data bytes $08 $10 $00 $12 through binary, nybble separation, nybble→GCR lookup, concatenation of four 10-bit GCR words, subdivision into five 8-bit bytes, and final hexadecimal results ($52 $56 $A5 $29 $72).
+
+
+Four  8-bit  data  bytes  are  converted  to  four  10-bit  GCR  bytes  at  a  time  by  the  1541  DOS. 
+RAM  is  only  an  8-bit  storage  device  though.  This  hardware  limitation  prevents  a  10-bit 
+GCR  byte  from  being  stored  in  a  single  memory  location.  Four  10-bit  GCR  bytes  total 
+40  bits  —  a  number  evenly  divisible  by  our  overriding  8-bit  constraint.  Commodore  sub- 
+divides the  40  GCR  bits  into  five  8-bit  bytes  to  solve  this  dilemma.  This  explains  why 
+four  8-bit  data  bytes  are  converted  to  GCR  form  at  a  time.  The  following  step  by  step 
+example  demonstrates  how  this  bit  manipulation  is  performed  by  the  DOS. 
+
+STEP  1.  Four  8-bit  Data  Bytes 
+
+$08      $10      $00  $12 
+
+
+115 
+
+
+STEP  2.  Hexadecimal  to  Binary  Conversion 
+1.  Binary  Equivalents 
+
+$08         $10         $00  $12 
+00001000  00010000  00000000  00010010 
+
+STEP  3.  Binary  to  GCR  Conversion 
+
+1.  Four  8-bit  Data  Bytes 
+
+00001000  00010000  00000000  00010010 
+
+2.  High  and  Low  Nybbles 
+
+0000  1000  0001  0000  0000  0000  0001  0010 
+
+3.  High  and  Low  Nybble  GCR  Equivalents 
+
+01010  01001  01011  01010  01010  01010  01011  10010 
+
+4.  Four  10-bit  GCR  Bytes 
+
+0101001001  0101101010  0101001010  0101110010 
+
+STEP  4.  10-bit  GCR  to  8-bit  GCR  Conversion 
+
+1.  Concatenate  Four  10-bit  GCR  Bytes 
+
+0101001001010110101001010010100101110010 
+
+2.  Five  8-bit  Subdivisions 
+
+01010010  01010110  10100101  00101001  01110010 
+
+STEP  5.  Binary  to  Hexadecimal  Conversion 
+1.  Hexadecimal  Equivalents 
+
+01010010  01010110  10100101  00101001  01110010 
+$52         $56         $A5        $29  $72 
+
+STEP  6.  Four  8-bit  Data  Bytes  are  Recorded  as  Five  8-bit  GCR  Bytes 
+
+$08      $10      $00      $12      are  recorded  as      $52      $56      $A5      $29  $72 
+
+---
+Additional information can be found by searching:
+- "gcr_lookup_table_mapping_nybbles_to_5bit_codes" which expands on Used for the high/low nybble lookups in the example
+- "gcr_sync_mark_and_ff_write_behavior" which expands on Contrasts normal GCR conversion with sync-mode $FF writes
+- "gcr_conversion_storage_considerations_and_recorded_byte_formula" which expands on Explains implications for on-disk recorded byte counts

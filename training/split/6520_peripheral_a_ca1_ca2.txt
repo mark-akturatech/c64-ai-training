@@ -1,0 +1,51 @@
+# MACHINE - 6520 Peripheral A control lines CA1 and CA2. CA1 is input-only and sets CRA bit 7 on active transition (polarity selected via CRA bit 1). CA2 can be input interrupt or peripheral control output: as input (CRA bit 5=0) it sets CRA bit 6 on selected active transition; as output CA2 can be a pulse generated when the processor reads Port A (configured via CRA bits) or act as handshake signal together with CA1 for controlled data transfers, or be used as a simple output set by CRA bits.
+
+Peripheral A Interrupt Input/Peripheral Control Lines (CA1, CA2)
+----------------------------------------------------------------
+
+CA1 is an interrupt input only.  An active transition of the signal on this
+input will set bit 7 of the Control Register A to a logic 1.  The active
+transition can be programmed by the microprocessor by setting a "0" in bit 1
+of the CRA if the interrupt flag (bit 7 of CRA) is to be set on a negative
+transition of the CA1 signal or a "1" if it is to be set on a positive
+transition.
+
+                                                                        :250:
+
+Setting the interrupt flag will interrupt the processor through /IRQA if bit
+0 of CRA is a 1 as described previously.
+
+CA2 can act as a totally independent interrupt input or as a peripheral
+control output.  As an input (CRA, bit 5=0) it acts to set the interrupt
+flag, bit 6 of CRA, to a logic 1 on the active transition selected by bit 4
+of CRA.
+
+These control register bits and interrupt inputs serve the same basic
+function as that described above for CA1.  The input signal sets the
+interrupt flag which serves as the link between the peripheral device and the
+processor interrupt structure.  The interrupt disable bit allows the
+processor to exercise control over the system interrupts.
+
+In the Output mode (CRA, bit 51), CA2 can operate independently to generate a
+simple pulse each time the microprocessor reads the data on the Peripheral A
+I/O port.  This mode is selected by setting CRA, bit 4 to a "0" and CRA, bit
+3 to a "1".  This pulse output can be used to control the counters, shift
+registers, etc. which make sequential data available on the Peripheral input
+lines.
+
+A second output mode allows CA2 to be used in conjunction with CA1 to
+"handshake" between the processor and the peripheral device.  On the A side,
+this technique allows positive control of data transfers from the peripheral
+device into the microprocessor.  The CA1 input signals the processor that
+data is available by interrupting the processor.  The processor reads the
+data and sets CA2 low.  This signals the peripheral device that it can make
+new data available.
+
+The final output mode can be selected by setting bit 4 of CRA to a 1.  In
+this mode, CA2 is a simple peripheral control output which can be set high or
+low by setting bit 3 of CRA to a 1 or a 0 respectively.
+
+
+---
+Additional information can be found by searching:
+- "control_of_irqa" which expands on CRA bit interactions and how reads clear flags

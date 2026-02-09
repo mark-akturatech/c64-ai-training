@@ -1,0 +1,22 @@
+# A 256 Byte Autostart Fast Loader for the Commodore 64 - C64 receive routine using reads from $DD00 and shifts/XORs to assemble a byte from four 2-bit transfers. The snippet shows lda $DD00, repeated lsr and eor sequences; total reception costs ~28 cycles enabling ~20,000 bytes/sec theoretically.
+
+Receiving Code (C64 side):
+
+    lda $DD00       ; get bits 6-7
+    lsr
+    lsr             ; move to bits 4-5
+    eor $DD00       ; XOR next 2 bits
+    lsr
+    lsr             ; shift down
+    eor $DD00       ; get more bits
+    lsr
+    lsr
+    eor $DD00       ; final 2 bits
+
+This achieves byte reception in 28 cycles total, enabling approximately
+20,000 bytes per second theoretically.
+
+---
+Additional information can be found by searching:
+- "serial_protocol_overview" which expands on two-bits-per-cycle protocol concept
+- "badline_avoidance" which expands on timing constraints due to VIC-II DMA that affect this routine

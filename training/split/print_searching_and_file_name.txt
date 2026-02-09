@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routines to print user-facing messages when searching for a file: print the 'Searching...' message and optionally 'FOR ' and then print the filename bytes to the current output channel. Implements message-mode check, message indices, filename length/index handling and character output via channel output routine. Covers $F5AF..$F5D1.
+
+
+                                *** print "Searching..."
+.,F5AF A5 9D    LDA $9D         get message mode flag
+.,F5B1 10 1E    BPL $F5D1       exit if control messages off
+.,F5B3 A0 0C    LDY #$0C        
+                                index to "SEARCHING "
+.,F5B5 20 2F F1 JSR $F12F       display kernel I/O message
+.,F5B8 A5 B7    LDA $B7         get file name length
+.,F5BA F0 15    BEQ $F5D1       exit if null name
+.,F5BC A0 17    LDY #$17        
+                                else index to "FOR "
+.,F5BE 20 2F F1 JSR $F12F       display kernel I/O message
+
+                                *** print file name
+.,F5C1 A4 B7    LDY $B7         get file name length
+.,F5C3 F0 0C    BEQ $F5D1       exit if null file name
+.,F5C5 A0 00    LDY #$00        clear index
+.,F5C7 B1 BB    LDA ($BB),Y     get file name byte
+.,F5C9 20 D2 FF JSR $FFD2       output character to channel
+.,F5CC C8       INY             increment index
+.,F5CD C4 B7    CPY $B7         compare with file name length
+.,F5CF D0 F6    BNE $F5C7       loop if more to do
+.,F5D1 60       RTS             
+
+---
+Additional information can be found by searching:
+- "serial_bus_load_and_receive" which expands on invoked to show status during serial-bus loads
+- "tape_load_sequence" which expands on invoked to show status during tape searches
+- "display_loading_or_verifying" which expands on follow-up status message after 'Searching...'

@@ -1,0 +1,71 @@
+# byRiclianll - Annotated, line-range-by-line-range explanation of the BASIC listing. Explains the function of each labeled line or range: opening/closing the channel, drive initialization, track/sector setup, SEEK and READ job submissions, error queries, the 256-byte loop transferring from buffer 0 via GET#, byte conversion/printing, and the subroutine's TRY counter, header/job table writes, polling loop, and return with the FDC error code.
+
+
+Line  Range  Description 
+
+
+Main  Program 
+
+110  Open  the  command  channel. 
+
+120-140  Initialize  drive. 
+
+160  Initialize  track  to  18. 
+
+170  Initialize  sector  to  0. 
+
+180-190  SEEK  track  18. 
+
+200  Query  FDC  error  code. 
+
+220-230  READ  sector  0  on  track  18  into  buffer  number  0 
+
+($0300-$03FF). 
+
+240  Query  FDC  error  code. 
+
+250  Begin  loop  to  read  256  bytes  ($0300-$03FF). 
+
+260  Two  parameter  memory-read. 
+
+270  Transfer  a  byte  from  buffer  number  0  to  C64  memory 
+
+by  way  of  the  command  channel  (GET#15,). 
+
+280  Test  for  equality  with  the  null  string  "". 
+
+290  ASCII  conversion  of  a  byte. 
+
+300  Print  the  status  variable  (ST),  our  loop  counter,  and  the 
+
+ASCII  value  of  the  byte. 
+
+310  Print  the  byte  if  it's  within  printable  ASCII  range. 
+
+320  Terminate  comma  tabulation. 
+
+330  Increment  loop  counter. 
+
+340  Close  the  command  channel. 
+
+350  End. 
+
+Subroutine 
+
+370  Initialize  try  counter. 
+
+380  Stuff  the  track  and  sector  numbers  into  buffer  number 
+
+O's  header  table  ($0006-$0007). 
+390  Stuff  job  code  number  into  buffer  number  O's  job  queue 
+
+table  ($0000). 
+
+400-460  Wait  for  FDC  to  complete  the  job. 
+
+470  Return  with  FDC  error  code  in  hand. 
+
+---
+Additional information can be found by searching:
+- "basic_job_queue_read_program_listing" which expands on See the actual BASIC code lines that these descriptions correspond to
+- "job_queue_mechanism_and_job_code_bit7" which expands on Details about which buffer/header/job addresses are used and the job-completion bit semantics

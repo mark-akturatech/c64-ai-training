@@ -1,0 +1,30 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Newline (line-feed) and carriage-return handling. Implements the newline routine: shifts the input cursor row, increments the cursor row, checks for last row and calls the screen-scroll routine if necessary, finds the start-of-logical-line pointer for the new row and sets screen pointers (JSR $E56C). Also implements CR output: clears insert count, reverse flag and quote-flag, resets cursor column and calls the newline routine, then restores registers and exits.
+
+                                to lower case
+
+                                *** do newline
+.,E87C 46 C9    LSR $C9         shift >> input cursor row
+.,E87E A6 D6    LDX $D6         get the cursor row
+.,E880 E8       INX             increment the row
+.,E881 E0 19    CPX #$19        compare it with last row + 1
+.,E883 D0 03    BNE $E888       if not last row + 1 skip the screen scroll
+.,E885 20 EA E8 JSR $E8EA       else scroll the screen
+.,E888 B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E88A 10 F4    BPL $E880       loop if not start of logical line
+.,E88C 86 D6    STX $D6         save the cursor row
+.,E88E 4C 6C E5 JMP $E56C       set the screen pointers for cursor row, column and return
+
+                                *** output [CR]
+.,E891 A2 00    LDX #$00        clear X
+.,E893 86 D8    STX $D8         clear the insert count
+.,E895 86 C7    STX $C7         clear the reverse flag
+.,E897 86 D4    STX $D4         clear the cursor quote flag, $xx = quote, $00 = no quote
+.,E899 86 D3    STX $D3         save the cursor column
+.,E89B 20 7C E8 JSR $E87C       do newline
+.,E89E 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+
+---
+Additional information can be found by searching:
+- "scroll_screen_and_adjust_line_pointers" which expands on scrolls the screen when newline reaches bottom
+- "test_for_line_decrement" which expands on used when moving left across line boundaries
+- "test_for_line_increment_and_end_of_line" which expands on used when moving right/end-of-line logic is required

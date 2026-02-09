@@ -1,0 +1,76 @@
+# MACHINE - ASL (arithmetic shift left) multiplies a byte by two: bits shift left, bit shifted out goes to C, zero injected into low bit. For multi-byte shifts, use ROL (rotate left) which shifts bits left and pushes previous carry into low bit—linking across bytes by starting at low-order byte with ASL then ROL on higher bytes. Descriptions and diagrams illustrating carry movement and usage.
+
+
+
+Left Shift:  Multiplication by Two
+----------------------------------
+
+If we write the decimal numbers 100 and 200 in binary, we see an interesting
+pattern:
+
+  100:  %01100100
+  200:  %11001000
+
+To double the number, each bit has moved one position to the left.  This
+makes sense, since each bit has twice the numeric "weight" of the bit to its
+right.
+
+The command to multiply a byte by two is ASL (arithmetic shift left).  A zero
+bit is pushed into the low (or "right") side of the byte; all bits move left
+one position; and the bit that "falls out" of the byte--in this case, a zero
+bit--moves into the carry.  It can be diagrammed like this:
+
+                                                                         :62:
+
+              +-----+----+----+----+----+----+----+-----+
+              |     |    |    |    |    |    |    |     |
+    CARRY   <---- <--- <--- <--- <--- <--- <--- <---  <---- 0
+   (C FLAG)   |     |    |    |    |    |    |    |     |
+              +-----+----+----+----+----+----+----+-----+
+                                  ASL
+
+   IN AN ASL (ARITHMETIC SHIFT LEFT), EACH BIT MOVES ONE POSITION LEFT.
+   A ZERO MOVES INTO THE LOW-ORDER BIT.
+
+   Figure 4.2
+
+
+That's good for doubling the value of a single byte.  If a "one" bit falls
+into the carry flag, we can treat that as an overflow.  What about multiple
+bytes?
+
+It would be ideal if we had another instruction that would work just like
+ASL.  Instead of pushing a zero bit into the right hand site of the byte,
+however, it would push the carry bit, that is, the bit that "fell out" of the
+last operation.  We have such an instruction:  ROL.
+
+ROL (rotate left) works exactly like ASL except that the carry bit is pushed
+into the next byte.  We can diagram it as follows:
+
+
+                                                           CARRY
+              +-----+----+----+----+----+----+----+-----+  |
+              |     |    |    |    |    |    |    |     |  |
+           ,----- <--- <--- <--- <--- <--- <--- <---  <----'
+           |  |     |    |    |    |    |    |    |     |
+           |  +-----+----+----+----+----+----+----+-----+
+           v                      ROL
+         CARRY
+
+   IN A ROL (ROTATE LEFT), THE CARRY MOVES INTO THE LOW ORDER BIT; EACH
+   BIT MOVES LEFT; AND THE HIGH ORDER BIT BECOMES THE NEW CARRY.
+
+   Figure 4.3
+
+
+Thus, we can hook to or more bytes together.  If they hold a single
+multi-byte number, we can double that number by starting at the low-order
+end.  We ASL the first value and ROL the remainder.  As the bits fall out of
+each byte, they will be picked up in the next.
+
+
+
+---
+Additional information can be found by searching:
+- "addition_and_multi_byte_addition" which expands on ASL/ROL produce carries which behave like overflow bits
+- "multiplication_by_shifts_and_adds" which expands on use shifts and adds to build multiplications

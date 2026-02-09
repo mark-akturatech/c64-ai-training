@@ -1,0 +1,59 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SCNKEY - keyboard scanning routine entered from KERNAL ($FF9F). Clears the shift-flag (SHFLAG $028D), initialises keyboard scan variables (loads $CB with #$40), writes to CIA keyboard port ($DC00) and reads from CIA data-in ($DC01). Implements an 8x8 matrix scan: sets the row mask ($DC00), loops 8 rows (LDX #$08), debounces reads by waiting for stable $DC01, tests bits (LSR/ROL) to detect a pressed key (0 bit = pressed), uses the KEYTAB vector (stored to $F5/$F6 pointing at $EB81) to translate matrix position to a key number/value, sets SHFLAG on special keys, stores the pressed key number in SFDX/$CB, counts up to 64 keys (CPY #$41) and iterates rows/columns accordingly. After scanning completes it cleans up stack and returns to PROCESS KEY IMAGE via the KEYLOG vector jump.
+
+                                *** SCNKEY: SCAN KEYBOARD
+                                The KERNAL routine SCNKEY ($ff9f) jumps to this routine.
+                                First, the shift-flag, SHFLAG, is cleared, and the
+                                keyboard tested for nokey. The keyboard is set up as a
+                                8 * 8 matrix, and is read one row at a time. $ff indicates
+                                that no key has been pressed, and a zerobit, that one key
+                                has been pressed.
+.,EA87 A9 00    LDA #$00
+.,EA89 8D 8D 02 STA $028D       clear SHFLAG
+.,EA8C A0 40    LDY #$40
+.,EA8E 84 CB    STY $CB
+.,EA90 8D 00 DC STA $DC00       store in keyboard write register
+.,EA93 AE 01 DC LDX $DC01       keyboard read register
+.,EA96 E0 FF    CPX #$FF        no key pressed
+.,EA98 F0 61    BEQ $EAFB       skip
+.,EA9A A8       TAY
+.,EA9B A9 81    LDA #$81        point KEYTAB vector to $eb81
+.,EA9D 85 F5    STA $F5
+.,EA9F A9 EB    LDA #$EB
+.,EAA1 85 F6    STA $F6
+.,EAA3 A9 FE    LDA #$FE        bit0 = 0
+.,EAA5 8D 00 DC STA $DC00       will test first row in matrix
+.,EAA8 A2 08    LDX #$08        scan 8 rows in matrix
+.,EAAA 48       PHA             temp store
+.,EAAB AD 01 DC LDA $DC01       read
+.,EAAE CD 01 DC CMP $DC01       wait for value to settle (key bouncing)
+.,EAB1 D0 F8    BNE $EAAB
+.,EAB3 4A       LSR             test bit0
+.,EAB4 B0 16    BCS $EACC       no key pressed
+.,EAB6 48       PHA
+.,EAB7 B1 F5    LDA ($F5),Y     get key from KEYTAB
+.,EAB9 C9 05    CMP #$05        value less than 5
+.,EABB B0 0C    BCS $EAC9       nope
+.,EABD C9 03    CMP #$03        value = 3
+.,EABF F0 08    BEQ $EAC9       nope
+.,EAC1 0D 8D 02 ORA $028D
+.,EAC4 8D 8D 02 STA $028D       store in SHFLAG
+.,EAC7 10 02    BPL $EACB
+.,EAC9 84 CB    STY $CB         store keynumber we pressed in SFDX
+.,EACB 68       PLA
+.,EACC C8       INY             key counter
+.,EACD C0 41    CPY #$41        all 64 keys (8*8)
+.,EACF B0 0B    BCS $EADC       jump if ready
+.,EAD1 CA       DEX             next key in row
+.,EAD2 D0 DF    BNE $EAB3       row ready
+.,EAD4 38       SEC             prepare for rol
+.,EAD5 68       PLA
+.,EAD6 2A       ROL             next row
+.,EAD7 8D 00 DC STA $DC00       store bit
+.,EADA D0 CC    BNE $EAA8       always jump
+.,EADC 68       PLA             clean up
+
+
+---
+Additional information can be found by searching:
+- "main_irq_entry" which expands on called from IRQ to scan the keyboard
+- "process_key_image_decode_and_buffer" which expands on next stage: decode the scanned key and handle repeat/buffering

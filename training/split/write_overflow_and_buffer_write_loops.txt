@@ -1,0 +1,36 @@
+# byRiclianll - The destructive write sequence that writes the sector's GCR bytes to the drive. First writes the overflow-area bytes starting at $0100,Y (label OVERFLOW) with a WAITl loop that polls the drive status (BVC/CLV/STA *1C01/INY/BNE). After the overflow area is exhausted it writes the main 256-byte buffer at $0400,Y (label BUFFER) using WAIT2 and a final WAIT3 synchronization loop. After all bytes are clocked out it calls a drive-routine (JSR *FEOO). This chunk includes the 'ENABLE WRI' heading and the two loops implementing the actual byte-by-byte output to the drive.
+
+
+
+ENABLE  WRI 
+
+
+132 
+
+
+600  BUFFER  LDA  *0400, Y 
+BUFFER 
+
+610  WAIT2  BVC  WAIT2 
+
+620  CLV 
+
+630  STA  *1C01 
+
+640  I NY 
+
+650  BNE  BUFFER 
+
+660  WAIT3  BVC  WAIT3 
+
+670  ; 
+
+680  JSR  *FEOO 
+D 
+
+690  ; 
+
+---
+Additional information can be found by searching:
+- "drive_register_setup_and_write_sync" which expands on uses the registers and sync established there to perform writes
+- "finalize_registers_and_jump_to_error_handler" which expands on finalizes registers and then jumps to an error handler

@@ -1,0 +1,84 @@
+# MACHINE - VIC-20 6522 (VIA) usage at $9110-$911F and $9120-$912F: mapping of RS-232 or parallel port signals (DSR, CTS, DCD, RI, DTR, RTS), data direction registers, timers for tape RS232 timing, timer latches, shift register (often unused), control registers for CB1/CB2/CA1/CA2 and their interrupt/status bits. Figures C.7 and C.8 show pin functions and usage for serial/tape/joystick/keyboard.
+
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900A |ON/OFF |               Voice 1 Frequency                       | 36874
+      |       |                                                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900B |ON/OFF |               Voice 2 Frequency                       | 36875
+      |       |                                                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900C |ON/OFF |               Voice 3 Frequency                       | 36876
+      |       |                                                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900D |ON/OFF |                Noise Frequency                        | 36877
+      |       |                                                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900E |          Multicolor           |             Sound             | 36878
+      |           Mode (=0)           |           Amplitude           |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$900F |       Screen Background       |Foregd/|         Frame         | 36879
+      |             Color             |Backgd |         Color         |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+Figure C.6
+
+                                                                        :183:
+
+VIC-20 6522 Usage
+-----------------
+
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9110 |DSR In |CTS In |       |DCD* In|RI* In |DTR Out|RTS Out|Data In| 37136
+      |            RS-232 Interface, or Parallel User Port            |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9111 |                      Unused (See $911F)                       | 37137
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9112 |             Data Direction Register B (for $9110)             | 37138
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9113 |             Data Direction Register A (for $911F)             | 37139
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9114 |                                                               | 37140
+      |                           Timer 1:                            |
+      +- - - - - -                                         - - - - - -+
+$9115 |            RS-232 Send Speed, or Tape Write Timing            | 37141
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9116 |                                                               | 37142
+      |                                                               |
+      +- - - - - - - - - - - -  Timer 1 Latch  - - - - - - - - - - - -+
+$9117 |                                                               | 37143
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$9118 |                                                               | 37144
+      |                           Timer 2:                            |
+      +- - - - - - - - - - -                     - - - - - - - - - - -+
+$9119 |                      RS-232 Input Timing                      | 37145
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911A |                   Shift Register (*unused)                    | 37146
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911B |  T1 Control   |  T2   |    Shift Register     |Latch Controls | 37147
+      |               |Control|        Control        |  PB      PA   |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911C |   CB2:  RS-232 Send   |CB1 Ctl|      CA2 Control      |CA1 Ctl| 37148
+      |                       |RS232In|  Tape Motor Control   |RESTORE|
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911D |  NMI  |Timer 1|Timer 2|CB1 Int|       |       |CA1 Int|       | 37149
+      |Status:|  Int  |  Int  |RS232In|       |       |RESTORE|       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911E |  NMI  |Timer 1|Timer 2|CB1 Int|       |  SR   |CA1 Int|       | 37150
+      |Enable:|  Int  |  Int  |RS232In|       |Unused |RESTORE|       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$911F |  ATN  | Tape  |           Joysticks           |Serial |Serial | 37151
+      |  Out  | Sense |Button | Left  | Down  |  Up   |Data In|Clk In |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+
+---
+Additional information can be found by searching:
+- "vic_6560_register_map_and_sound_paddle_bits" which expands on VIC chip registers relate to VIA interrupt/timer inputs

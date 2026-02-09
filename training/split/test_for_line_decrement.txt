@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine that tests whether the cursor should move to the previous line when decrementing. Compares provided column with the cursor column and, if at line start, decrements the cursor row. Otherwise performs two iterations of adding one line length (ADC #$28) to test crossing line boundaries and returns.
+
+
+                                *** test for line decrement
+.,E8A1 A2 02    LDX #$02        set the count
+.,E8A3 A9 00    LDA #$00        set the column
+.,E8A5 C5 D3    CMP $D3         compare the column with the cursor column
+.,E8A7 F0 07    BEQ $E8B0       if at the start of the line go decrement the cursor row
+                                and exit
+.,E8A9 18       CLC             else clear carry for add
+.,E8AA 69 28    ADC #$28        increment to next line
+.,E8AC CA       DEX             decrement loop count
+.,E8AD D0 F6    BNE $E8A5       loop if more to test
+.,E8AF 60       RTS             
+
+---
+Additional information can be found by searching:
+- "newline_and_carriage_return_handling" which expands on called when cursor-left reaches start-of-line to move up a line
+- "test_for_line_increment_and_end_of_line" which expands on counterpart routine for testing line increment when moving right

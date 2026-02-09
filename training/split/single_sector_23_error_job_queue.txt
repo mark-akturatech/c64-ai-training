@@ -1,0 +1,38 @@
+# byRiclianll - BASIC subroutine labelled 'JOB QUEUE' (lines beginning at 540): implements drive job submission and polling (PRINT#15 'M-W' / 'M-R' commands), retry logic, GET#15 reading of response bytes, simple error handling and eventual CLOSE/END paths. This routine is the I/O job queue helper invoked by the main BASIC driver.
+
+540  REM  JOB  QUEUE 
+550  TRY=0 
+
+560  PRINT#15, "M-W"CHR* (8) CHR$ (O) CHR$ (4) C 
+
+HR* (T) CHR*  <S) CHR* (T) CHR* (S) 
+
+570  PR  I  NT#  1 5 ,  "  M-W  "  CHR$  ( 1 )  CHR*  ( O )  CHR*  (DC 
+
+HR*(JOB) 
+
+580  TRY=TRY+1 
+
+590  PRINT#15. "M-R"CHR*(1)CHR*(0) 
+
+600  GET#15,E* 
+
+610  IFE*=""THENE*=CHR$(0) 
+
+620  E=ASC(E*) 
+
+630  IFTRY=500G0T0660 
+
+640  IFEM27G0T0580 
+
+650  RETURN 
+
+660  CLOSE 15 
+
+670  PRINT" <DOWN>  <RVS3  FAILED<ROFF> " 
+680  END 
+
+---
+Additional information can be found by searching:
+- "single_sector_23_error_basic_program" which expands on invoked via GOSUB 550 from the main BASIC driver for SEEK/READ operations
+- "single_sector_23_error_machine_code_data" which expands on used to transfer the embedded machine code via drive I/O

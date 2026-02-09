@@ -1,0 +1,104 @@
+# byRiclianll - Documentation and the main BASIC driver (user-facing code) for creating multiple '23' errors across a full track on a 1541. Includes the section header ('How to Create 23 Errors on a Full Track'), limitations and parameters, prompts and confirmations for the user, opening the drive channel, validating responses, seeking and looping logic for processing sectors on a track, and the top-level flow that triggers the destructive WRITE sequence. This chunk covers the BASIC program lines from program start through the main END that completes the high-level driver.
+
+7.10  How  to  Create  23  Errors  on  a  Full  Track 
+
+Limitations:  None. 
+Parameters:  Track  number. 
+FULL  TRACK  23  ERROR 
+
+100  REM  23M  ERROR  -  1541 
+110  DIMD*(11) 
+
+120  PRINT" tCLRJ MULTIPLE  23  ERROR  -  1541" 
+
+130  PRINT" tDOWNJ INSERT  CLONE   IN  DRIVE" 
+140   INPUT" tDOWNJ DESTROY  TRACK"; T 
+1 50   I FT< 1 ORT  >35THENEND 
+
+160   INPUT" tDOWN> ARE  YOU  SURE     YtLEFT  3> " 
+
+170  IFQ*<>"Y"THENEND 
+
+180  0PEN15,8, 15 
+
+190  PRINT#15, " 10" 
+
+200  INPUT#15,EN*,EM*,ET*,ES* 
+
+210  IFEN*="00"G0T0260 
+
+220  PRINT" tDOWN> "EN*",    "EM*" , "ET*" , "ES* 
+
+230  CLOSE 15 
+
+240  END 
+
+250  REM  SEEK 
+
+260  J0B=176 
+
+270  G0SUB580 
+
+280  NS=20+2*  ( T  >  1 7 )  +  ( T  .>24  >  +  ( T  >30 ) 
+290  FORS=OTONS 
+300  REM  READ 
+310  J0B=128 
+
+
+137 
+
+
+320  G0SUB5S0 
+330  IFS>0G0T0460 
+340  F0RJ=0T011 
+350  F0RI=0T07 
+360  READD 
+
+370  D*(J)=D*(J)-«-CHR*(D) 
+
+380  NEXT I 
+
+390  NEXTJ 
+
+400  1=0 
+
+410  F0RJ=OTail 
+
+420  PRINT#15,  "M-WCHR*  ( I )  CHR*  (5)  CHR*  (8)  D 
+*(J> 
+
+430  1=1+8 
+440  NEXTJ 
+450  REM  EXECUTE 
+
+460  PRINT" <HOME> tDOWN  8> {RVSJDESTROYINGt 
+ROFF>   TRACK" T"-  SECTOR "S 
+
+470  PRINT#15, "M-W"CHR*(2)CHR*(0)CHR*(1)C 
+HR*(224) 
+
+480  PRINT#15, "M-R"CHR*(2)CHR*(0) 
+
+490  GET#15,E* 
+
+500  IFE*=""THENE*=CHR*(0) 
+
+510  E=ASC(E*) 
+
+520  IFE>127G0T0480 
+
+530  NEXTS 
+
+540  CLOSE 15 
+
+550  PRINT" CHOMEItDOWN  SJDONE! 
+
+II 
+
+560  END 
+
+
+---
+Additional information can be found by searching:
+- "full_track_23_error_basic_job_queue_and_data" which expands on JOB QUEUE subroutine and embedded machine-code DATA used by this BASIC driver
+- "full_track_23m_assembly_source" which expands on Assembly-level driver that the DATA block encodes and that is ultimately executed

@@ -1,0 +1,33 @@
+# Kick Assembler - Explains detection of overlaps when assembling segments. By default overlaps give errors; can allow with 'allowOverlap' parameter (useful for patching). Example shows .file [name="patched.prg", segments="Base,Patch", allowOverlap] with .segmentdef Base [prgFiles="data/base.prg"] and .segment Patch [] using *= to insert jumps/ldas. Explains how overlapping blocks are resolved by priority (latest added wins).
+
+BasicUpstart
+
+_start
+
+Adds a memory block with a basic upstart program that points to the
+given start address.
+
+10.14. Intermediate segments
+When segments are used in other directives than the .segment and .segmentdef directive its often done using
+an intermediate segment. Memory blocks are passed on through an implicit created segment which gives you a lot
+of the functionality explained in this chapter simply by using the same parameters.
+E.g. This means that you can use the file directive like this:
+.file [name="myfile.prg", segments="Code,Data", sidFiles="music.sid"]
+
+The only parameter that is special for the file directive is 'name'. The rest is standard parameters for directives
+using intermediate segments. For a complete list of intermediate parameters see the 'List of segment parameters'
+section placed last in this chapter.
+
+10.15. The .segmentout directive
+The .segmentout directive places the bytes of an intermediate segment in the current memory block. This can be
+used for reallocating code or data like with the .pseudopc directive. It is also good for outputting data in alternative
+formats as shown in the 'quick examples' section.
+Here is an example that execute some code in the zeropage:
+
+start:
+loop:
+
+
+---
+Additional information can be found by searching:
+- "segment_patch_example" which expands on patch mechanism using allowOverlap

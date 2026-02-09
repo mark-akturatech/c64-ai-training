@@ -1,0 +1,22 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - ENABLE TIMER: Initialize and start CIA#1 timer A according to PAL/NTSC ($02A6 flag). Loads timer low/high bytes for PAL ($#4025) or NTSC (#4295) setups into CIA#1 timer registers $DC04/$DC05 and then jumps to start timer ($FF6E / $FF6E -> $FF6E eventually starting).
+
+                                *** ENABLE TIMER
+                                This routine inits and starts the CIA#1 timer A according
+                                to the PAL/NTSC flag. Different system clocks rates are
+                                used in PAL/NTSC systems.
+.,FDDD AD A6 02 LDA $02A6       PAL/NTSC flag
+.,FDE0 F0 0A    BEQ $FDEC       NTSC setup
+.,FDE2 A9 25    LDA #$25
+.,FDE4 8D 04 DC STA $DC04       CIA#1 timer A - lowbyte
+.,FDE7 A9 40    LDA #$40        PAL-setup #4025
+.,FDE9 4C F3 FD JMP $FDF3
+.,FDEC A9 95    LDA #$95
+.,FDEE 8D 04 DC STA $DC04       CIA#1 timer A - lowbyte
+.,FDF1 A9 42    LDA #$42        NTSC-setup #4295
+.,FDF3 8D 05 DC STA $DC05       CIA#1 timer A - highbyte
+.,FDF6 4C 6E FF JMP $FF6E       start timer
+
+---
+Additional information can be found by searching:
+- "power_reset_entry_point" which expands on ENABLE TIMER is used during reset sequence
+- "start_timer" which expands on starts CIA#1 timer and continues to serial clock handler

@@ -1,0 +1,26 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - How the VIC constructs the video frame line-by-line; character-based graphics (8x8 pixels per character), text and bitmap resolutions (40x25 text, 320x200 or 160x200 bitmap); use of raster line number (RASTER, $D011/$D012) as Y coordinate and the sprite-based X coordinate (8 pixels per CPU cycle), including the relation between cycle numbers and sprite X precision.
+
+3.4. Display generation and display window dimensions
+-----------------------------------------------------
+
+As usual for controlling CRTs, the VIC builds the video frame line by line.
+The line number and the number of clock cycles per line are constant for
+every VIC type. The VIC works character-based, every character consists of
+a matrix of 8�8 pixels, so a text line is made up of 8 pixel lines. 40�25
+text characters are displayed in the text based modes, 320�200 or 160�200
+pixels in the bitmap modes.
+
+In this article, the specification of a position on the screen is done with
+the raster line number as the Y coordinate (RASTER, register $d011/$d012)
+and a X coordinate that corresponds to the sprite coordinate system. When
+specifying the time of a VIC memory access or an internal operation in the
+VIC, the raster line number is used as Y coordinate and the number of the
+clock cycle within the line as X coordinate. As previously mentioned, 8
+pixels make a clock cycle, so the specification of a sprite X coordinate is
+eight times more precise than that of a cycle number.
+
+
+---
+Additional information can be found by searching:
+- "display_window_and_border" which expands on visual placement of the display window, border and blanking intervals
+- "rsel_csel_display_window_sizes" which expands on how RSEL/CSEL change the display window start/end positions and reported dimensions

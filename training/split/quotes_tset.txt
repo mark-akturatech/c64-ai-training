@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - QUOTES TSET: tests A for ASCII quote (" $22). If so, toggles the QTSW flag ($D4) and restores A to the quote character. Used to track whether an open quote is active for INPUT/editing behavior. (Code: $E684..$E690).
+
+                                *** QUOTES TSET
+                                On entry, (A) holds the character to be tested. If (A)
+                                holds ASCII quotes, then the quotes flag is toggled.
+.,E684 C9 22    CMP #$22        ASCII quotes (")
+.,E686 D0 08    BNE $E690       nope, return
+.,E688 A5 D4    LDA $D4         QTSW, quotes mode flag
+.,E68A 49 01    EOR #$01        toggle on/off
+.,E68C 85 D4    STA $D4         store
+.,E68E A9 22    LDA #$22        restore (A) to #$22
+.,E690 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "input_from_screen_or_keyboard" which expands on invokes this routine when reading screen characters to update quotes state
+- "output_to_screen_unshifted_and_control_codes" which expands on output path calls QUOTES TSET before printing characters to determine quotes mode

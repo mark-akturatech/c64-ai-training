@@ -1,0 +1,24 @@
+# MACHINE - Explains TXTPTR (text pointer) — address of instruction at CHRGOT pointing to the BASIC command being executed. On VIC-20/C64 a vector at $0308/$0309 provides control immediately before each BASIC command, allowing wedges to examine BASIC text (via indirect indexed addressing) and leave TXTPTR positioned correctly on return.
+
+                                                                        :125:
+
+The address of the instruction at CHRGOT is often referred to as TXTPTR, the
+text pointer.  This address always points to the BASIC command being executed
+at the moment.  If we want to participate in reading BASIC, we must learn to
+use TXTPTR to get information--usually by means of indirect, indexed
+addressing--and to leave this address pointing at a suitable place when we
+return control back to the normal BASIC handling programs.
+
+
+Project:  Adding a Command
+--------------------------
+
+Let's add a simple command to the VIC and Commodore 64 by using the $0308
+vector.  The ampersand (&) character isn't used in most BASIC programs, so
+we'll make it mean this:  whenever you see the code "&", print ten asterisk
+(*) characters to the computer screen, followed by a carriage return.
+
+
+---
+Additional information can be found by searching:
+- "breaking_into_basic_wedge_constraints" which expands on Why $0308 vector simplifies wedge insertion

@@ -1,0 +1,31 @@
+# MACHINE - IP = 1 example B: handling of a lower-priority interrupt (I1) that is followed by a higher-priority interrupt (I2). Sequence: I1 is latched and serviced; during service I2 arrives, A2 is set and A1 cleared, /IRQ pulls low; the processor's state is stacked automatically; processor reads AIR to identify I2 and services it; writing AIR clears A2 and the processor resumes I1 service; internal circuitry prevents a lower-priority interrupt from interrupting the resumed higher-priority processing.
+
+B.  The second case occurs when an interrupt has been received and a higher
+    priority interrupt occurs.  (See Note)
+
+    1.  Interrupt I1 is received.
+    2.  Bit I1 is set high on the Interrupt Latch Register.
+    3.  /IRQ is pulled low and A1 is set high.
+    4.  Processor recognizes /IRQ and reads AIR to determine which interrupt
+        occurred.
+    5.  Bit I1 is reset and /IRQ is reset high.
+    6.  Processor begins servicing I1 interrupt and the I2 interrupt is
+        received.
+    7.  A2 is set, A1 is reset low and /IRQ is pulled low.
+    8.  Processor has not yet completed servicing I1 interrupt so this
+        routine will be automatically stacked in 650x stack queue when new
+        /IRQ for I2 of interrupt is received.
+    9.  Processor reads AIR to determine I2 interrupt occurrence and bit I2
+        of interrupt latch is reset.
+   10.  Processor services I2 interrupt, clears A2 by writing AIR and returns
+        from interrupt.  Returning from interrupt causes 650x processor to
+        resume servicing I1 interrupt.
+   11.  Upon clearing A2 bit in AIR, the A1 bit will not be restored to a
+        one.  Internal circuitry will prevent a lower priority interrupt from
+        interrupting the resumed I1.
+
+
+---
+Additional information can be found by searching:
+- "6525_interrupt_stack_note" which expands on interrupt stack pushes on AIR read and pops on AIR write
+- "6525_IP1_example_single_interrupt" which expands on contrast with single-interrupt behavior

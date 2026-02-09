@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine header and handling of the very first start-bit half-cycle. Describes the overall purpose of the tape write IRQ, checks the '$A8' first-cycle-done flag, sets the first start-cycle time constant (LD A #$10, LDX #$01 and JSR $FBB1), toggles the start-cycle flag (INC $A8) and checks for block-complete via the buffer high byte ($B6 BPL). If the block is complete, jumps to the block-complete tape routine (JMP $FC57).
+
+                                *** tape write IRQ routine
+                                this is the routine that writes the bits to the tape. it is called each time VIA 2 T2
+                                times out and checks if the start bit is done, if so checks if the data bits are done,
+                                if so it checks if the byte is done, if so it checks if the synchronisation bytes are
+                                done, if so it checks if the data bytes are done, if so it checks if the checksum byte
+                                is done, if so it checks if both the load and verify copies have been done, if so it
+                                stops the tape
+.,FBCD A5 A8    LDA $A8         get start bit first cycle done flag
+.,FBCF D0 12    BNE $FBE3       if first cycle done go do rest of byte
+                                each byte sent starts with two half cycles of $0110 ststem clocks and the whole block
+                                ends with two more such half cycles
+.,FBD1 A9 10    LDA #$10        set first start cycle time constant low byte
+.,FBD3 A2 01    LDX #$01        set first start cycle time constant high byte
+.,FBD5 20 B1 FB JSR $FBB1       write time constant and toggle tape
+.,FBD8 D0 2F    BNE $FC09       if first half cycle go restore registers and exit
+                                interrupt
+.,FBDA E6 A8    INC $A8         set start bit first start cycle done flag
+.,FBDC A5 B6    LDA $B6         get buffer address high byte
+.,FBDE 10 29    BPL $FC09       if block not complete go restore registers and exit
+                                interrupt. the end of a block is indicated by the tape
+                                buffer high byte b7 being set to 1
+.,FBE0 4C 57 FC JMP $FC57       else do tape routine, block complete exit
+
+---
+Additional information can be found by searching:
+- "tape_write_start_bit_and_bit_send_phase" which expands on continues processing after the first start-cycle to finish the start bit and begin sending data bits
+- "tape_write_block_complete_and_leader_setup" which expands on handles the block-complete path when buffer high byte indicates end-of-block

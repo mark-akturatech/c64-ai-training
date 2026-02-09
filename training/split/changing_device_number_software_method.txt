@@ -1,0 +1,34 @@
+# ********* - Section 9.1: Software method to change the disk drive device number by writing new number into controller RAM via a MEMORY-WRITE sequence; includes example to change device number from 8 to 9 and notes about avoiding address conflicts when multiple drives are attached.
+
+
+
+
+9. CHANGING THE DISK DRIVE DEVICE NUM[BER
+
+9.1 SOFTWARE METHOD
+
+The device number is selected by the drive by looking at a hardware
+jumper on the board and writing the number based on that jumper in a
+section of its RAM.  Once operation is underway, it is easy to write
+over the previous device number with a new one.
+
+FORMAT FOR CHANGING DEVICE NUMBER:
+
+    PRINT#file#,"M-W:" CHR$(119) CHR$(0) CHR$(2) CHR$(address+32)
+    CHR$(address+64)
+
+EXAMPLE OF CHANGING DEVICE NUMBER (FROM 8 TO 9):
+
+ 10 OPEN 15, 8, 15
+ 20 PRINT# 15, "M-W" CHR$(119) CHR$(0) CHR$(2) CHR$(9+32)
+    CHR$(9+64)
+
+If you have more than one drive, it's sensible to change the address
+through hardware (see below). If you must, the procedure is easy. Just
+plug in the drives one at a time, and change their number to the
+desired new values.  That way you won't have any conflicts.
+
+
+---
+Additional information can be found by searching:
+- "changing_device_number_hardware_method_and_jumper_table" which expands on hardware method is recommended for permanent multi-drive setups

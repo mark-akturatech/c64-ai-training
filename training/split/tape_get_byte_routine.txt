@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Read the next byte from the tape buffer: bump the tape pointer, if buffer not yet exhausted return the next byte; if end reached, call the tape read initiation routine ($F841), handle read errors, clear the tape buffer index ($A6) and loop until a byte is available. Returns with carry clear on success, set on error.
+
+                                *** get byte from tape
+.,F199 20 0D F8 JSR $F80D       bump tape pointer
+.,F19C D0 0B    BNE $F1A9       if not end get next byte and exit
+.,F19E 20 41 F8 JSR $F841       initiate tape read
+.,F1A1 B0 11    BCS $F1B4       exit if error flagged
+.,F1A3 A9 00    LDA #$00        clear A
+.,F1A5 85 A6    STA $A6         clear tape buffer index
+.,F1A7 F0 F0    BEQ $F199       loop, branch always
+.,F1A9 B1 B2    LDA ($B2),Y     get next byte from buffer
+.,F1AB 18       CLC             flag no error
+.,F1AC 60       RTS             
+
+---
+Additional information can be found by searching:
+- "input_character_from_channel_device_dispatch" which expands on invokes this to obtain bytes from tape devices

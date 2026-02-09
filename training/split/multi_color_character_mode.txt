@@ -1,0 +1,40 @@
+# COMMODORE 64 - Multi-color character mode (MCM = 1, BMM = ECM = 0): how enabling MCM changes interpretation of character dot data to use 2-bit color pairs, allowing up to four colors per character with halved horizontal resolution. Describes conditional behavior when the MSB of the color nybble = 0 (character behaves as in standard mode, lower 8 colors only) and when MSB = 1 (MCM interpretation). Includes the CHARACTER BIT-PAIR to COLOR mapping: 00 = Background #0, 01 = Background #1 (register 34), 10 = Background #2 (register 35), 11 = color from 3 LSBs of color nybble. Notes that dots are doubled horizontally producing a 4*8 matrix and mentions MOB priority implication.
+
+
+  MULTI-COLOR CHARACTER MODE (MCM = 1, BMM = ECM = 0 )
+
+    Multi-color mode provides additional color flexibility allowing up to
+  four colors within each character but with reduced resolution. The multi-
+  color mode is selected by setting the MCM bit in register 22 ($16) to
+  "1," which causes the dot data stored in the character base to be
+  interpreted in a different manner. If the MSB of the color nybble is a
+  "0," the character will be displayed as described in standard character
+  mode, allowing the two modes to be inter-mixed (however, only the lower
+  order 8 colors are available). When the MSB of the color nybble is a "1"
+  (if MCM:MSB(CM) = 1) the character bits are interpreted in the multi-
+  color mode:
+
+                | CHARACTER  |
+     FUNCTION   |  BIT PAIR  |               COLOR DISPLAYED
+  --------------+------------+---------------------------------------------
+    Background  |     00     |  Background #0 Color
+                |            |  (register 33 ($21))
+    Background  |     01     |  Background #1 Color
+                |            |  (register 34 ($22)
+    Foreground  |     10     |  Background #2 Color
+                |            |  (register 35 ($23)
+    Foreground  |     11     |  Color specified by 3 LSB
+                |            |  of color nybble
+
+  Since two bits are required to specify one dot color, the character is
+  now displayed as a 4*8 matrix with each dot twice the horizontal size as
+  in standard mode. Note, however, that each character region can now
+  contain 4 different colors, two as foreground and two as background (see
+  MOB priority).
+
+
+
+---
+Additional information can be found by searching:
+- "standard_character_mode_behavior" which expands on Standard mode behavior for comparison and mixed-mode cases
+- "extended_color_mode_and_constraints" which expands on Note that ECM and MCM should not be enabled simultaneously

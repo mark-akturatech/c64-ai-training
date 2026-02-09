@@ -1,0 +1,66 @@
+# 6502 Instruction Set - W65C02 added instructions: BBR (Branch on Bit Reset family BBR0..BBR7), BBS (Branch on Bit Set), BRA (Branch Always), PHX/PHY/PLX/PLY (push/pull X and Y registers), RMB (Reset Memory Bit family RMB0..RMB7), SMB (Set Memory Bit family SMB0..SMB7) with opcodes and cycles. STP (Stop mode), STZ (Store Zero) in various modes, TRB (Test and Reset Bits) and TSB (Test and Set Bits) semantics and opcodes. WAI and STP low-power/wait instructions. Notes about G65SC02 omissions and early W65C02 differences.
+
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     EOR (oper)       52   2      5
+                 INC  Increment by One (Accumulator)
+                      A + 1 -> A                          N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      accumulator    INC A            1A   1      2
+                 JMP  Jump to New Location
+                      N Z C I D V
+                                                                  6502 Instruction Set
+                      (operand + X) 1st byte -> PCL       - - - - - -
+                      (operand + X) 2nd byte -> PCH
+                      addressing     assembler       opc bytes cycles
+                      (absolute,X)   JMP (oper,X)     7C   3      6
+                      Note: The 2004 datasheet lists this (erroneously)
+                      with 5 cycles (and also as implemented on the
+                      original NMOS 6502).
+                 LDA  Load Accumulator with Memory
+                      (ZPG) -> A                          N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     LDA (oper)       B2   2      5
+                 ORA  OR Memory with Accumulator
+                      A OR (ZPG) -> A                     N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     ORA (oper)       12   2      5
+                 SBC  Subtract Memory from Accumulator with Borrow
+                      A - (ZPG) - C̅ -> A                 N Z C I D V
+                                                          + + + - - +
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     SBC (oper)       F2   2      5
+                 STA  Store Accumulator in Memory
+                      A -> (ZPG)                          N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      (zeropage)     SBC (oper)       92   2      5
+                  *   add 1 to cycles if page boundary is crossed
+                 Additional Instructions (W65C02)
+                 Note: The bit manipulating instructions BBR, BBS, RMB and SMB were
+                 "grandfathered" in from the Rockwell R6500/11/12/15 instruction set.
+                 They are present on the W65C02S, but are missing in early versions
+                 of the W65C02.
+                                                     6502 Instruction Set
+                 BBR  Branch on Bit Reset***
+                      This branch instruction tests a given bit of
+                      the accumulator and branches, if this bit is
+                      not set. This is an entire family of eight
+                      instructions in total, testing one of bits #0
+                      to #7, each. Individual mnemonics designate the
+                      tested bit, as in BBRn, where n = 0..7.
+                      As with all branch instructions, the address
+                      mode is relative, taking a signed single-byte
+                      offset as operand.
+                      branch on An = 0                    N Z C I D V
+                                                          - - - - - -
+                      bit tested     assembler       opc bytes cycles
+                      0 [-------0]   BBR0 oper        0F   2      5**
+                      1 [------0-]   BBR1 oper        1F   2      5**
+
+---
+Additional information can be found by searching:
+- "w65c02_nops_and_behavioral_changes" which expands on W65C02 NOP variants, cycle changes, and behavioral differences vs NMOS

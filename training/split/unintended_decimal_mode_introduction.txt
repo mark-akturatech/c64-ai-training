@@ -1,0 +1,34 @@
+# NMOS 6510 - Introduction to the 6502 decimal (BCD) mode: overview of how ADC/SBC and undocumented instructions derived from them behave when the D flag is set. Notes this applies specifically to NMOS 6502/6510 behaviour (65C02/65816 differ) and references test programs.
+
+using A to F. For example:
+$00+$1F=$25 ("ok" since 10 + $0F = 25)
+$10+$1F=$35 ("ok")
+$05+$1F=$2A (a non-BCD result, "ok" since 5 + 10 + $0F = 20 + $0A)
+$0F+$0A=$1F ("ok", since $0F + $0A = $0F + 10)
+$0F+$0B=$10 (?!)
+… refer to the pseudocode below for details
+
+- 72 -
+
+affected instructions
+Surprisingly, only two instructions actually depend on the decimal mode flag: ADC and SBC.
+However, all undocumented instructions derived from them are also affected: ARR, RRA, ISC (and
+the undocumented $EB SBC).
+Test code: CPU/decimalmode/scanner.prg
+
+ADC
+Opc.
+
+Mnemonic
+
+Function
+
+Size
+
+A = A + {addr}
+
+---
+Additional information can be found by searching:
+- "adc_instruction_decimal_mode" which expands on detailed ADC behaviour in decimal mode
+- "sbc_instruction_decimal_mode" which expands on detailed SBC behaviour in decimal mode
+- "arr_decimal_mode" which expands on ARR undocumented instruction (decimal specifics)

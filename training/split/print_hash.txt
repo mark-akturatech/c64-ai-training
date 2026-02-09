@@ -1,0 +1,86 @@
+# COMMODORE 64 - PRINT# file-number, items: writes data items to a logical file opened by OPEN. Output punctuation rules differ for tape files (comma behaves like semicolon); numeric items have leading and trailing spaces as on screen. Default termination behavior: if no punctuation ends list, CR+LF written; terminating comma/semicolon suppresses CR+LF. Examples include writing variables with CHR$(13) separators and constructing tape/disk output lines; demonstrates interplay with INPUT# for reading back.
+
+
+  74   BASIC LANGUAGE VOCABULARY
+~
+
+
+    The <SHIFT+RETURN> will work in the LISTing as well as PRINTing, so
+  editing will be almost impossible if this character is used. The LISTing
+  will also look very strange.
+
+
+  PRINT#
+
+  TYPE: I/O Statement
+  FORMAT: PRINT#<file-number>[<variable>][<,/;><variable>]...
+
+    Actions: The PRINT# statement is used to write data items to a logical
+  file. It must use the same number used to OPEN the file. Output goes to
+  the device-number used in the OPEN statement. The <variable> expressions
+  in the output-list can be of any type. The punctuation characters between
+  items are the same as with the PRINT statement and they can be used in
+  the same ways. The effects of punctuation are different in two
+  significant respects.
+    When PRINT# is used with tape files, the comma, instead of spacing
+  by print zones, has the same effect as a semicolon. Therefore, whether
+  blanks, commas, semicolons or no punctuation characters are used between
+  data items, the effect on spacing is the same. The data items are written
+  as a continuous stream of characters. Numeric items are followed by a
+  space and, if positive, are preceded by a space.
+    If no punctuation finishes the list, a carriage-return and a line-feed
+  are written at the end of the data. If a comma or semicolon terminates
+  the output-list, the carriage-return and line-feed are suppressed. Re-
+  gardless of the punctuation, the next PRINT# statement begins output in
+  the next available character position. The line-feed will act as a stop
+  when using the INPUT# statement, leaving an empty variable when the next
+  INPUT# is executed. The line-feed can be suppressed or compensated for as
+  shown in the examples below.
+    The easiest way to write more than one variable to a file on tape or
+  disk is to set a string variable to CHR$(13), and use that string in be-
+  tween all the other variables when writing the file.
+
+
+
+
+
+
+
+
+
+                                             BASIC LANGUAGE VOCABULARY   75
+~
+
+
+  EXAMPLES of PRINT# Statement:
+
+
+  1)
+
+    10 OPEN 1,1,1,"TAPE FILE"
+    20 R$=CHR$(13)                      (By Changing the CHR$(13) to
+    30 PRINT#1,1;R$;2;R$;3;R$;4;R$;5     CHR$(44) you put a "," between
+    40 PRINT#1,6                         each variable. CHR$(59) would
+    50 PRINT# 1,7                        put a ";" between each variable.)
+
+
+  2)
+
+    10 CO$=CHR$(44):CR$=CHR$(13)
+    20 PRINT#1,"AAA"CO$"BBB",           AAA,BBB     CCCDDDEEE
+       "CCC";"DDD";"EEE"CR$             (carriage return)
+       "FFF"CR$;                        FFF(carriage return)
+    30 INPUT#1,A$,BCDE$,F$
+
+  3)
+
+     5 CR$=CHR$(13)
+    10 PRINT#2,"AAA";CR$;"BBB"          (10 blanks) AAA
+    20 PRINT#2,"CCC";                   BBB
+                                        (10 blanks)CCC
+    30 INPUT#2,A$,B$,DUMMY$,C$
+
+---
+Additional information can be found by searching:
+- "open_statement_and_file_device_management" which expands on OPEN is required before PRINT#
+- "input_hash_statement" which expands on INPUT# reads data written by PRINT#

@@ -1,0 +1,48 @@
+# MACHINE - Switching input: CHKIN ($FFC6) selects a logical input file (LDX #file; JSR $FFC6). CLRCHN ($FFCC) restores keyboard/screen default. CHKIN and CLRCHN change A and X and may set carry on error. Notes differences between file GETIN ($FFE4) behavior vs keyboard: a binary zero from file is a real CHR$(0) versus keyboard 'no key pressed'. Use ST ($90 on VIC/C64, $96 on PET/CBM) to detect end-of-file or errors.
+
+
+Switching Input
+---------------
+
+We use subroutine CHKIN at address $FFC6 to switch input so as to draw data
+from a logical file.  When we want to restore input from the keyboard, we
+call subroutine CLRCHN at $FFCC.  Again, this is not the same as OPEN and
+CLOSE--we simply connect the file and disconnect, and we can do this as many
+times as we want.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   CHKIN                                                       |
+| Address:      $FFC6                                                       |
+| Action:       Switches the input path (used by GETIN, $FFE4) so that      |
+|               input is taken from the logical file specified in the X     |
+|               register.  The logical file must previously have been       |
+|               opened.                                                     |
+|                                                                           |
+| The character subsequently obtained by $FFE4 into the A register is       |
+| usually ASCII (or PET ASCII).  A binary zero received from a file usually |
+| represents exactly that:  an input character whose value is CHR$(0); this |
+| is different from keyboard GETIN where a binary zero means "no key        |
+| pressed."  When accessing a file, ST (address $90 for VIC and Commodore   |
+| 64, $96 for most PET/CBM) is used for its usual functions of signaling    |
+| end-of-file or error.  Similarly, disk status information can be received |
+| over secondary address 15 if desired; a logical "command channel" file    |
+| must be previously opened.                                                |
+|                                                                           |
+| Registers:  Registers A and X will be changed during the CHKIN call.  Be  |
+| sure to save any sensitive data in these registers before calling CHKIN.  |
+|                                                                           |
+| Status:  Status flags may be changed.  In VIC and Commodore 64, the C     |
+| (carry) flag indicates some type of problem with connecting to the input  |
+| channel.                                                                  |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+                                                                        :137:
+
+To switch input to logical file 1, we would need to follow these steps:
+
+
+---
+Additional information can be found by searching:
+- "input_example_read_sequential_file" which expands on Example reading a sequential file using CHKIN/GETIN and CLRCHN

@@ -1,0 +1,25 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Loop that calls $F72C and then compares bytes from two indirect pointers ($BB) and ($B2) using Y, increments index bytes $9E/$9F and loops until mismatch or exhaustion. Implements an indirect buffer/filename comparison routine.
+
+.,F7EA 20 2C F7 JSR $F72C
+.,F7ED B0 1D    BCS $F80C
+.,F7EF A0 05    LDY #$05
+.,F7F1 84 9F    STY $9F
+.,F7F3 A0 00    LDY #$00
+.,F7F5 84 9E    STY $9E
+.,F7F7 C4 B7    CPY $B7
+.,F7F9 F0 10    BEQ $F80B
+.,F7FB B1 BB    LDA ($BB),Y
+.,F7FD A4 9F    LDY $9F
+.,F7FF D1 B2    CMP ($B2),Y
+.,F801 D0 E7    BNE $F7EA
+.,F803 E6 9E    INC $9E
+.,F805 E6 9F    INC $9F
+.,F807 A4 9E    LDY $9E
+.,F809 D0 EC    BNE $F7F7
+.,F80B 18       CLC
+.,F80C 60       RTS
+
+---
+Additional information can be found by searching:
+- "prepare_channel_registers" which expands on prepares registers/pointers used by this compare
+- "increment_a6_and_check_limit" which expands on used in calling sequences after comparisons

@@ -1,0 +1,26 @@
+# Kick Assembler - Shows .assert supporting code blocks to compare assembled byte sequences. Example comparing assembled lda $1000 vs ldx $1000 and unrolled sta $0400+i vs explicit stores. Output shows assembled bytes and whether test passed.
+
+MacroDefinition getDefinition();
+byte[] execute(IValue[] parameters, IEngine engine);
+}
+
+The interface has two methods, one that gets parameters that defines the macro, and one executes it. This is
+the basic structure of nearly all the plugins. The MacroDefinition class is really simple. It consist of a getter and
+setters for the defining properties. Since the only defining property of a macro is its name, it looks like this:
+public class MacroDefinition {
+// Properties
+private String name;
+// Getters/setters for properties, in this case getName() and setName(name)
+....
+}
+
+A simple example of a macro implementation that prints ‘Hello World from MyMacro!’ and returns zero bytes
+looks like this:
+package test.plugins.macros;
+import kickass.plugins.interf.general.IEngine;
+import kickass.plugins.interf.general.IValue;
+import kickass.plugins.interf.macro.IMacro;
+import kickass.plugins.interf.macro.MacroDefinition;
+public class MyMacro implements IMacro {
+MacroDefinition definition;
+public MyMacro() {

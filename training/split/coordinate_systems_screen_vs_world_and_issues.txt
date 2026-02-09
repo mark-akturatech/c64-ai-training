@@ -1,0 +1,25 @@
+# Multidirectional Scrolling Techniques by Cadaver - Discussion of coordinate systems: using screen (sprite) coordinates is fastest but can cause incorrect behavior near screen edges (example: Turrican enemies acting erratically). Recommends using a world-coordinate system and checking collisions against map & block data rather than relying solely on on-screen data.
+
+3. Coordinate systems
+
+How do you represent the location of the objects onscreen? If you really care
+only about things on the screen, you could use the screen-coordinate system
+that the sprites use. This method is obviously best for speed, but has its
+drawbacks.
+
+Look at Turrican, when the "walker" enemies move near the boundaries of the
+visible screen. They sometimes behave very erratically. Turrican is a master-
+piece otherwise so this can be forgiven, but I wouldn't tolerate this in my own
+programs...
+
+Why are they behaving so? Because they're only using the screen coordinate
+system, and checking only the characters on screen for background collisions.
+In some cases checking outside the screen would happen and the collision
+routine probably has a hardcoded response of either "obstacle" or "free space"
+in that case. This is fast, but honestly, incorrect.
+
+
+---
+Additional information can be found by searching:
+- "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy" which expands on efficient world-coordinate representation and subpixel accuracy
+- "object_activation_actor_leveldata_and_spawning" which expands on how world coordinates simplify deciding which objects are active/on-screen

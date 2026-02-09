@@ -1,0 +1,82 @@
+# ********* - Section 5.4: How the disk directory can be opened as a sequential file (OPEN ... "$") and read using GET#; includes a sample BASIC program (READDIR.PRG) and notes on directory format (line numbers as file sizes, names in quotes).
+
+
+
+
+5.4 READING THE DIRECTORY
+
+The directory of the diskette may be read just fike a sequential file.
+Just use $ for the file name, and OPEN 5, 8, 5, "$".  Now the GET#
+statement works to examine the directory.  The format here is
+identical to the format of a program file: the file sizes are the line
+numbers, and names are stored as characters within quote marks.
+
+Here's a program that lets you read the directory of the diskette:
+
+start tok64 readdir.prg
+ 10 open 1,8,2,"$"
+ 20 for x=1 to 141:get#1,a$:next:rem skip over bam
+ 30 t$(0)="del":t$(1)="seq":t$(2)="prg":t$(3)="usr":t$(4)="rel"
+ 40 j=17:gosub 500:rem disk name
+ 50 n$=b$
+ 60 j=2:rem set length of id string
+ 70 gosub 500
+ 80 i$=b$
+ 85 get#1,a$
+ 90 j=2:rem set length of operating system string
+ 100 gosub 500
+ 110 o$=b$
+ 120 for l=1 to 88
+ 130 get#1,a$:rem get rest of block
+ 140 next
+ 160 print chr$(147) "disk name:"n$,"id:"i$,"os:"o$
+ 161 print "length","type","name"
+ 165 for p=1 to 8
+ 170 get#1,t$,a$,a$:rem file type
+ 180 if t$="" then t$ = chr$(128)
+ 190 j=15:rem set length of file name string
+ 200 gosub 500
+ 210 n$=b$
+ 220 get#1,a$,a$,a$,a$,a$,a$,a$,a$,a$,l$,h$:rem low & high bytes \
+     of file length
+ 225 l=asc(l$+chr$(0))+256*asc(h$+chr$(0)):if l=0 then 260
+ 227 if st then close 1:end
+ 230 print l,t$(asc(t$)-128),n$
+ 250 if p < 8 then get#1,a$,a$
+ 260 next p:goto 165
+ 500 b$="":rem string building routine
+ 510 for l=0 to j
+ 520 get#1,a$
+ 530 if a$<>chr$(96) then if a$<>chr$(160) then b$=b$ + a$
+ 540 next
+ 550 return
+stop tok64
+
+begin 644 READDIR.PRG
+M`0@1"`H`GR`Q+#@L,BPB)"(`.@@4`($@6+(Q(*0@,30Q.J$C,2Q!)#J".H\@
+M4TM)4"!/5D52($)!30!Z"!X`5"0H,"FR(D1%3"(Z5"0H,2FR(E-%42(Z5"0H
+M,BFR(E!21R(Z5"0H,RFR(E534B(Z5"0H-"FR(E)%3"(`E0@H`$JR,3<ZC2`U
+M,#`ZCR!$25-+($Y!344`GP@R`$XDLD(D`,$(/`!*LC(ZCR!3150@3$5.1U1(
+M($]&($E$(%-44DE.1P#+"$8`C2`U,#``U0A0`$DDLD(D`.`(50"A(S$L020`
+M$`E:`$JR,CJ/(%-%5"!,14Y'5$@@3T8@3U!%4D%424Y'(%-94U1%32!35%))
+M3D<`&@ED`(T@-3`P`"0);@!/)+)")``S"7@`@2!,LC$@I"`X.`!2"8(`H2,Q
+M+$$D.H\@1T54(%)%4U0@3T8@0DQ/0TL`6`F,`((`A`F@`)D@QR@Q-#<I(")$
+M25-+($Y!344Z(DXD+"))1#HB220L(D]3.B)/)`"A":$`F2`B3$5.1U1((BPB
+M5%E012(L(DY!344B`*\)I0"!(%"R,2"D(#@`S`FJ`*$C,2Q4)"Q!)"Q!)#J/
+M($9)3$4@5%E010#F";0`BR!4)+(B(B"G(%0D(+(@QR@Q,C@I`!`*O@!*LC$U
+M.H\@4T54($Q%3D=42"!/1B!&24Q%($Y!344@4U1224Y'`!H*R`"-(#4P,``D
+M"M(`3B2R0B0`;@K<`*$C,2Q!)"Q!)"Q!)"Q!)"Q!)"Q!)"Q!)"Q!)"Q!)"Q,
+M)"Q()#J/($Q/5R`F($A)1T@@0EE415,@3T9&24Q%($Q%3D=42`":"N$`3++&
+M*$PDJL<H,"DIJC(U-JS&*$@DJL<H,"DI.HL@3+(P(*<@,C8P`*L*XP"+(%-4
+M(*<@H"`Q.H``Q`KF`)D@3"Q4)"C&*%0D*:LQ,C@I+$XD`-P*^@"+(%`@LR`X
+M(*<@H2,Q+$$D+$$D`.H*!`&"(%`ZB2`Q-C4`#@OT`4(DLB(B.H\@4U1224Y'
+M($)524Q$24Y'(%)/551)3D4`'`O^`8$@3+(P(*0@2@`G"P@"H2,Q+$$D`%,+
+M$@*+($$DL[''*#DV*2"G((L@022SL<<H,38P*2"G($(DLD(D(*H@020`60L<
++`H(`7PLF`HX`````
+`
+end
+
+
+---
+Additional information can be found by searching:
+- "bAm_directory_and_file_format_tables" which expands on detailed BAM and directory header/table formats for track 18

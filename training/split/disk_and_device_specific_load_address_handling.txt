@@ -1,0 +1,66 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Alternate device branch and device-specific load-address handling. Covers code reached when the initial device test branches here (starts at $F533). Includes device validation and error handling calls, device setup JSRs, and logic to obtain or compute relocated load address from file header/buffer pointers. Reads data through indirect indexed addressing (($B2),Y), stores MEMUSS ($C3/$C4) or computes adjusted load address into $AE/$AF via SBC/ADC arithmetic, preserves originals into $C1/$C2, and calls post-setup routines (including $F5D2 and $F84A) before returning. This chunk implements the device-specific path (e.g., disk/CBM) for load-address extraction and relocation adjustments.
+
+.,F533 4A       LSR
+.,F534 B0 03    BCS $F539
+.,F536 4C 13 F7 JMP $F713
+.,F539 20 D0 F7 JSR $F7D0
+.,F53C B0 03    BCS $F541
+.,F53E 4C 13 F7 JMP $F713
+.,F541 20 17 F8 JSR $F817
+.,F544 B0 68    BCS $F5AE
+.,F546 20 AF F5 JSR $F5AF
+.,F549 A5 B7    LDA $B7
+.,F54B F0 09    BEQ $F556
+.,F54D 20 EA F7 JSR $F7EA
+.,F550 90 0B    BCC $F55D
+.,F552 F0 5A    BEQ $F5AE
+.,F554 B0 DA    BCS $F530
+.,F556 20 2C F7 JSR $F72C
+.,F559 F0 53    BEQ $F5AE
+.,F55B B0 D3    BCS $F530
+.,F55D A5 90    LDA $90
+.,F55F 29 10    AND #$10
+.,F561 38       SEC
+.,F562 D0 4A    BNE $F5AE
+.,F564 E0 01    CPX #$01
+.,F566 F0 11    BEQ $F579
+.,F568 E0 03    CPX #$03
+.,F56A D0 DD    BNE $F549
+.,F56C A0 01    LDY #$01
+.,F56E B1 B2    LDA ($B2),Y
+.,F570 85 C3    STA $C3
+.,F572 C8       INY
+.,F573 B1 B2    LDA ($B2),Y
+.,F575 85 C4    STA $C4
+.,F577 B0 04    BCS $F57D
+.,F579 A5 B9    LDA $B9
+.,F57B D0 EF    BNE $F56C
+.,F57D A0 03    LDY #$03
+.,F57F B1 B2    LDA ($B2),Y
+.,F581 A0 01    LDY #$01
+.,F583 F1 B2    SBC ($B2),Y
+.,F585 AA       TAX
+.,F586 A0 04    LDY #$04
+.,F588 B1 B2    LDA ($B2),Y
+.,F58A A0 02    LDY #$02
+.,F58C F1 B2    SBC ($B2),Y
+.,F58E A8       TAY
+.,F58F 18       CLC
+.,F590 8A       TXA
+.,F591 65 C3    ADC $C3
+.,F593 85 AE    STA $AE
+.,F595 98       TYA
+.,F596 65 C4    ADC $C4
+.,F598 85 AF    STA $AF
+.,F59A A5 C3    LDA $C3
+.,F59C 85 C1    STA $C1
+.,F59E A5 C4    LDA $C4
+.,F5A0 85 C2    STA $C2
+.,F5A2 20 D2 F5 JSR $F5D2
+.,F5A5 20 4A F8 JSR $F84A
+.:F5A8 24       .BYTE $24
+
+
+---
+Additional information can be found by searching:
+- "serial_bus_load_tape_rs232_receive_loop" which expands on Main serial/tape receive loop, TALK/UNTALK, ACPTR receive and verify/store logic

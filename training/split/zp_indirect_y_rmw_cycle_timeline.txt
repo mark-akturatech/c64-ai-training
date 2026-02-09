@@ -1,0 +1,77 @@
+# NMOS 6510 - Cycle-by-cycle read/write timeline for a Zeropage Indirect,Y read-modify-write sequence. Covers the data-bus read/write columns, program counter fetches, direct offset fetch, dummy read before index addition, DO+X low/high address fetches, reads of old data and the dummy/unmodified write-back of old data. Includes the simulation link and the two footnotes explaining the dummy read and write-back behaviour.
+
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Op Code Fetch
+
+R
+
+2
+
+PC + 1
+
+Direct Offset
+
+R
+
+3 (*1) DO
+
+Byte at direct offset
+
+R
+
+4
+
+DO + X
+
+Absolute Address Low
+
+R
+
+5
+
+DO + X + 1
+
+Absolute Address High
+
+R
+
+6
+
+AA
+
+Old Data
+
+R
+
+7 (*2) AA
+
+Old Data
+
+W
+
+8
+
+New Data
+
+W
+
+AA
+
+Simulation Link: http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=22&d=a2d0c310eaeaeaeaeaeaeaeaeaeaeaea1280
+(*1) Dummy read from direct offset before index was added
+(*2) Unmodified data is written back to the target address
+
+
+---
+Additional information can be found by searching:
+- "unintended_bugs_and_quirks_zeropage_indirect_interrupts" which expands on Context: follows the 'Unintended bugs and quirks' chapter which discusses related addressing and interrupt behaviours
+- "opcode_naming_in_different_assemblers_matrix" which expands on Related: many of the R-M-W undocumented opcodes listed in the opcode matrix use this cycle behaviour

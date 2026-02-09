@@ -1,0 +1,106 @@
+# ********* - Detailed explanation of VMCSB ($D018) upper and lower nybbles: lower 3 bits select character dot-data area offset in 1K even multiples, upper 4 bits select Video Matrix start 1K boundary (0-15). Notes about relocating screen: need to set BASIC's screen page at location 648 when moving Video Matrix, and examples of calculating actual address depending on VIC bank choice.
+
+VIC-II Color Register
+
+Although these color registers are used for various purposes, all of
+them have one thing in common.  Like the Color RAM Nybbles, only the
+lower four bits are connected.  Therefore, when reading these
+registers, you must mask out the upper four bits (that is,
+BORDERCOLOR=PEEK(53280)AND15) in order to get a true reading.
+
+53280         $D020          EXTCOL
+Border Color Register
+
+The color value here determines the color of the border or frame
+around the central display area.  The entire screen is set to this
+color when the blanking feature of Bit 4 of 53265 ($D011) is enabled.
+The default color value is 14 (light blue).
+
+53281         $D021          BGCOL0
+Background Color 0
+
+This register sets the background color for all text modes, sprite
+graphics, and multicolor bitmap graphics.  The default color value is
+6 (blue).
+
+53282         $D022          BGCOL1
+Background Color 1
+
+This register sets the color for the 01 bit-pair of multicolor
+character graphics, and the background color for characters having
+screen codes 64-127 in extended background color text mode.  The
+default color value is 1 (white).
+
+53283         $D023          BGCOL2
+Background Color 2
+
+This register sets the color for the 10 bit-pair of multicolor
+character graphics, and the background color for characters habing
+screen codes 128-191 in extended background color text mode.  The
+default color value is 2 (red).
+
+53285         $D024          BGCOL3
+Background Color 3
+
+This register sets the background color for characters having screen
+codes between 192 and 255 in extended background color text mode.  The
+default color value is 3 (cyan).
+
+53285         $D025          SPMC0
+Sprite Multicolor Register 0
+
+This register sets the color that is displayed by the 01 bit-pair in
+multicolor sprite graphics.  The default color value is 4 (purple).
+
+53286         $D026          SPMC1
+Sprite Multicolor Register 1
+
+This register sets the color that is displayed by the 11 bit-pair in
+multicolor sprite graphics.  The default color value is 0 (black).
+
+Location Range: 53287-53294 ($D027-$D02E)
+Sprite Color Registers
+
+These registers are used to set the color to be displayed by bits of
+hi-res sprite data having a value of 1, and by bit-pairs of multicolor
+sprite data having a value of 10.  The color of each sprite is
+determined by its own individual color register.
+
+53287         $D027          SP0COL
+Sprite 0 Color Register (the default color value is 1, white)
+
+53288         $D028          SP1COL
+Sprite 1 Color Register (the default color value is 2, red)
+
+53289         $D029          SP2COL
+Sprite 2 Color Register (the default color value is 3, cyan)
+
+53290         $D01A          SP3COL
+Sprite 3 Color Register (the default color value is 4, purple)
+
+53291         $D01B          SP4COL
+Sprite 4 Color Register (the default color value is 5, green)
+
+53292         $D01C          SP5COL
+Sprite 5 Color Register (the default color value is 6, blue)
+
+53293         $D01D          SP6COL
+Sprite 6 Color Register (the default color value is 7, yellow)
+
+53294         $D01E          SP7COL
+Sprite 7 Color Register (the default color value is 12, medium gray)
+
+Location Range: 53295-53311 ($D02F-$D03F)
+Not Connected
+
+The VIC-II chip has only 47 registers for 64 bytes of possible address
+space.  Therefore, the remaining 17 addresses do not access any
+memory.  When read, they will always give a value of 255 ($FF).  This
+value will not change after writing to them.
+
+Location Range: 53312-54271 ($D040-$D3FF)
+VIC-II Register Images
+
+---
+Additional information can be found by searching:
+- "bitmap_mode_selection_and_memory_control_$D018" which expands on Bitmap placement constraints when using VMCSB

@@ -1,0 +1,61 @@
+# MACHINE - Changing IRQ vector in RAM (e.g., $0090 on PET, $0314 on VIC/C64) allows directing interrupts to ML routines. Must SEI (disable IRQ) before changing vector and CLI after to avoid partial update race. Alternative: disable interrupt source via IA chips by POKEs (machine-specific addresses) to prevent interrupts during vector update. Warnings: changing IRQ vector may disrupt keyboard, tape, and system services; restore original vector before load/save.
+
+
+Interrupts:  NMI, IRQ, and BRK
+------------------------------
+
+We have mentioned the mechanical aspects of interrupt.  Now let's look at how
+to use the interrupt for simple jobs.
+
+The IRQ connects through a vector in RAM; if we change the address within the
+vector, we will change the address to which the interrupt goes.  The
+interrupt vector is located as follows:
+
+  Most PET/CBM:  0090-0091 (decimal 144-145)
+
+  VIC/Commodore 64:  0314-0315 (decimal 788-789)
+
+Before we change this vector, we should realize something quite important:
+the interrupt does a lot of work sixty times a second.  It updates the clock,
+checks the RUN/STOP key, gives service to the cassette motors, flashes the
+cursor, and handles keyboard input.  If you thoughtlessly change the IRQ
+vector, it will stop doing these things, and it's hard to handle a computer
+when it has a dead keyboard.  You could try to program all these functions
+yourself; but there's an easier way.
+
+                                                                        :118:
+
+Suppose we use the vector to temporarily divert to our own program, and at
+the end of our program we allow the interrupt to continue with whatever it
+was going to do anyway.  That way, our program would get service sixty times
+a second, and the usually interrupted jobs would still get done.
+
+It's not hard to do, and we can achieve many interesting effects by diverting
+the interrupt.  Remember that the interrupt runs all the time, even when no
+BASIC program is running.  By playing with the interrupt, we can make a
+permanent computer system change that is in effect even when no programs are
+in place.
+
+Care must be taken in changing an interrupt vector.  Suppose we are beginning
+to change the two-byte address; we have changed the first byte, and suddenly,
+the interrupt strikes.  It will use an address that's neither fish nor fowl:
+half is the old address, and half is the new.  In such a case, it's likely
+that the interrupt will become confused; and f the interrupt is confused, the
+whole computer is in trouble.  We must find a way to prevent interrupt from
+striking when we change the vector.
+
+We could do this in machine language:  before a routine to change the IRQ
+vector, we could give the instruction SEI (set interrupt disable).  After
+this instruction is given, the IRQ cannot interrupt us.  We may set the
+vector and then re-enable the interrupt with the instruction CLI (clear
+interrupt disable).  Be sure that you do this, since the interrupt routine
+performs many vital functions.  We may say that we have masked off the
+interrupt in the time period between execution of SEI and CLI.  The NMI
+interrupt, however, is non-maskable, and SEI will have no effect on it.
+
+There's a second way of turning off the interrupt--that is, by shutting off
+
+---
+Additional information can be found by searching:
+- "interrupt_project_c64_example" which expands on example of saving original vector and replacing with custom ISR
+- "ia_chips_pia_via_cia_and_interrupt_latching" which expands on IA chips control interrupt gating and event latching

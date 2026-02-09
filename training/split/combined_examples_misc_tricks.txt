@@ -1,0 +1,88 @@
+# NMOS 6510 - Combined examples and small tricks using undocumented opcodes. Includes: negating a 16-bit number using LAX/SBX/SBC, a 'smart addition' trick using LAX/SBX to save cycles, a fast method to multiply an 8-bit index by 8 (using LAX/AND/SAX stores) to compute 16-bit offsets, and a sequence to read and clear the rightmost set bit in memory (using LAX/DEX/SAX/EOR).
+
+- 96 -
+
+JAM
+
+Combined Examples
+negating a 16bit number
+Another trick that makes use of the SBX command is the negation of a 16 bit number:
+LAX #$00
+
+;should be safe, as #$00 is loaded
+
+SBX #lo
+
+;sets carry automatically for upcoming sbc
+
+SBC #hi
+; negated value is in A/X
+One might also think of extending this trick to negate two 8 bit numbers (A, X) at a time.
+
+a smart addition
+A second case in which to use SBX is in combination with LAX, for example when doing:
+LDA $02
+CLC
+ADC #$08
+TAX
+that can be easily substituted by:
+LAX $02
+
+;A = X = M [$02]
+
+SBX #$f8
+
+;X = (A & X) - -8
+
+So we saved 4 cycles here, as the state of the carry is of no interest for the subtract done by SBX,
+which is one of its big advantages. Thus we could also fake an ADD or SUB with that command. The
+and-operation is not needed here, but does not harm. If there's use for it, just let A or X be loaded
+with the right value for the and-mask.
+
+- 97 -
+
+Multiply 8bit * 2 ^ n with 16bit result
+If you want to set up a reference into a table of 8-byte objects use:
+LAX Index,y
+
+; 4 A,X = (index+Y)
+
+AND #%00000111
+
+; 2
+
+STA AddressHi
+
+; 3 store A & %00000111
+
+LDA #%11111000
+
+; 2
+
+SAX AddressLo
+
+; 3 store X & %11111000
+; = 14 cycles
+
+Which is a hell of a lot faster than multiplying by 8, and just means storing the values in the index
+in a funny bit order (43210765)
+
+Read rightmost set bit, and set it to 0
+; Set the rightmost set bit to zero:
+; A = *addr;
+; *addr &= *addr - 1
+LAX addr ; A = X = *addr;
+DEX
+; X--;
+SAX addr ; *addr = A & X
+; Retrieve said bit:
+; A = A ^ *addr
+EOR addr
+
+- 98 -
+
+
+---
+Additional information can be found by searching:
+- "opcode_naming_in_different_assemblers_matrix" which expands on Uses mnemonics such as LAX and SBX from the opcode matrix
+- "six_sprites_over_fli_routines" which expands on The 6-sprites FLI routine (next) uses similar undocumented R-M-W opcodes and side-effects

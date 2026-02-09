@@ -1,0 +1,33 @@
+# ********* - How CIA #1 timers are used on the C64: Timer A generates the IRQ used for keyboard scanning and software clock updates; both timers are used for tape timing. Typical Timer A latch for IRQ is low=149, high=66 (total 17045) for ~1/60 second intervals (NTSC). Tape routines take over IRQ vectors for tape I/O and use CIA #1 Timers A and B for timing.
+
+In the 64, CIA #1 Timer A is used to generate the interrupt which
+drives the routine for reading the keyboard and updating the software
+clock.  Both Timers A and B are also used for the timing of the
+routines that read and write tape data.  Normally, Timer A is set for
+continuous operation, and latched with a value of 149 in the low byte
+and 66 in the high byte, for a total Latch Value of 17045.  This means
+that it is set to count to 0 every 17045/1022730 seconds, or
+approximately 1/60 second.
+
+For tape reads and writes, the tape routines take over the IRQ
+vectors.  Even though the tape write routines use the on-chip I/O port
+at location 1 for the actual data output to the cassette, reading and
+writing to the cassette uses both CIA #1 Timer A and Timer B for
+timing the I/O routines.
+
+56324         $DC04          TIMALO
+Timer A (low byte)
+
+56325         $DC05          TIMAHI
+Timer A (high byte)
+
+56326         $DC06          TIMBLO
+Timer B (low byte)
+
+56327         $DC07          TIMBHI
+Timer B (high byte)
+
+---
+Additional information can be found by searching:
+- "cia_timers_register_behavior_and_timing" which expands on timer latch and timing formula
+- "irq_handler_and_keyscan" which expands on IRQ driven keyboard scanning and software clock update

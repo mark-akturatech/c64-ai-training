@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - RS232 transmit NMI handler: check RS232 bit count ($B4), handle stop bits, shift output byte buffer ($B6), set working bit value, update RS232 parity byte ($BD) via EOR, decrement bit count, handle parity bit processing when bit count reaches zero, save next data bit to $B5 and return. Begins parity handling by testing pseudo 6551 command register.
+
+                                *** RS232 Tx NMI routine
+.,EEBB A5 B4    LDA $B4         get RS232 bit count
+.,EEBD F0 47    BEQ $EF06       if zero go setup next RS232 Tx byte and return
+.,EEBF 30 3F    BMI $EF00       if -ve go do stop bit(s)
+                                else bit count is non zero and +ve
+.,EEC1 46 B6    LSR $B6         shift RS232 output byte buffer
+.,EEC3 A2 00    LDX #$00        set $00 for bit = 0
+.,EEC5 90 01    BCC $EEC8       branch if bit was 0
+.,EEC7 CA       DEX             set $FF for bit = 1
+.,EEC8 8A       TXA             copy bit to A
+.,EEC9 45 BD    EOR $BD         EOR with RS232 parity byte
+.,EECB 85 BD    STA $BD         save RS232 parity byte
+.,EECD C6 B4    DEC $B4         decrement RS232 bit count
+.,EECF F0 06    BEQ $EED7       if RS232 bit count now zero go do parity bit
+                                save bit and exit
+.,EED1 8A       TXA             copy bit to A
+.,EED2 29 04    AND #$04        mask 0000 0x00, RS232 Tx DATA bit
+.,EED4 85 B5    STA $B5         save the next RS232 data bit to send
+.,EED6 60       RTS             
+
+                                *** do RS232 parity bit, enters with RS232 bit count = 0
+.,EED7 A9 20    LDA #$20        mask 00x0 0000, parity enable bit
+.,EED9 2C 94 02 BIT $0294       test the pseudo 6551 command register
+
+---
+Additional information can be found by searching:
+- "serial_pin_control_and_1ms_delay" which expands on timing and line manipulation helpers (indirectly related for serial I/O)

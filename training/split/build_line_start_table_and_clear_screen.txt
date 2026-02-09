@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Constructs the start-of-line table for the 25 logical lines (marks line starts with high bit set), computes line pointers by adding the line length, writes an end-of-table marker, then loops to clear each screen line by calling the clear-screen-line routine 25 times.
+
+
+                                *** clear the screen
+.,E544 AD 88 02 LDA $0288       get the screen memory page
+.,E547 09 80    ORA #$80        set the high bit, flag every line is a logical line start
+.,E549 A8       TAY             copy to Y
+.,E54A A9 00    LDA #$00        clear the line start low byte
+.,E54C AA       TAX             clear the index
+.,E54D 94 D9    STY $D9,X       save the start of line X pointer high byte
+.,E54F 18       CLC             clear carry for add
+.,E550 69 28    ADC #$28        add the line length to the low byte
+.,E552 90 01    BCC $E555       if no rollover skip the high byte increment
+.,E554 C8       INY             else increment the high byte
+.,E555 E8       INX             increment the line index
+.,E556 E0 1A    CPX #$1A        compare it with the number of lines + 1
+.,E558 D0 F3    BNE $E54D       loop if not all done
+.,E55A A9 FF    LDA #$FF        set the end of table marker
+.,E55C 95 D9    STA $D9,X       mark the end of the table
+.,E55E A2 18    LDX #$18        set the line count, 25 lines to do, 0 to 24
+.,E560 20 FF E9 JSR $E9FF       clear screen line X
+.,E563 CA       DEX             decrement the count
+.,E564 10 FA    BPL $E560       loop if more to do
+
+---
+Additional information can be found by searching:
+- "initialise_screen_and_keyboard_defaults" which expands on prior keyboard/screen defaults
+- "home_cursor_and_compute_line_pointers" which expands on after clearing, home cursor and set pointers for cursor row/column

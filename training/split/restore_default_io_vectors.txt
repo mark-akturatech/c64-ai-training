@@ -1,0 +1,42 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Restore default I/O vectors: sets pointer to vector table at $0314 (LDX #$30, LDY #$FD), then reads or writes 31 bytes between $0314,Y and (XY) depending on carry. Contains alternate version in comments that avoids writing to ROM by writing extra copy to RAM. Ends with RTS.
+
+                                *** restore default I/O vectors
+.,FD15 A2 30    LDX #$30        pointer to vector table low byte
+.,FD17 A0 FD    LDY #$FD        pointer to vector table high byte
+.,FD19 18       CLC             flag set vectors
+
+                                *** set/read vectored I/O from (XY), Cb = 1 to read, Cb = 0 to set
+.,FD1A 86 C3    STX $C3         save pointer low byte
+.,FD1C 84 C4    STY $C4         save pointer high byte
+.,FD1E A0 1F    LDY #$1F        set byte count
+.,FD20 B9 14 03 LDA $0314,Y     read vector byte from vectors
+.,FD23 B0 02    BCS $FD27       branch if read vectors
+.,FD25 B1 C3    LDA ($C3),Y     read vector byte from (XY)
+.,FD27 91 C3    STA ($C3),Y     save byte to (XY)
+.,FD29 99 14 03 STA $0314,Y     save byte to vector
+.,FD2C 88       DEY             decrement index
+.,FD2D 10 F1    BPL $FD20       loop if more to do
+.,FD2F 60       RTS             
+                                 The above code works but it tries to write to the ROM. while this is usually harmless
+                                 systems that use flash ROM may suffer. Here is a version that makes the extra write
+                                 to RAM instead but is otherwise identical in function. ##
+                                
+                                 set/read vectored I/O from (XY), Cb = 1 to read, Cb = 0 to set
+                                
+                                STX $C3         ; save pointer low byte
+                                STY $C4         ; save pointer high byte
+                                LDY #$1F        ; set byte count
+                                LDA ($C3),Y     ; read vector byte from (XY)
+                                BCC $FD29       ; branch if set vectors
+                                
+                                LDA $0314,Y     ; else read vector byte from vectors
+                                STA ($C3),Y     ; save byte to (XY)
+                                STA $0314,Y     ; save byte to vector
+                                DEY             ; decrement index
+                                BPL $FD20       ; loop if more to do
+                                
+                                RTS
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on uses the vector table at $0314-$0332

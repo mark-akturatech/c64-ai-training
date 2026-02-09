@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Sets the start of the specified screen line then fills it with ASCII spaces ($20). Also clears the corresponding colour RAM line by calling the colour-reset routine (sets colour to COLOR). Includes a free NOP byte after the routine.
+
+                                *** CLEAR SCREEN LINE
+                                The start of line is set and the screen line is cleared by
+                                filling it with ASCII spaces. The corresponding line of
+                                colour RAM is also cleared to the value held in COLOR.
+.,E9FF A0 27    LDY #$27
+.,EA01 20 F0 E9 JSR $E9F0       set start of line
+.,EA04 20 24 EA JSR $EA24       synchronise colour pointer
+.,EA07 20 DA E4 JSR $E4DA       reset character colour, to COLOR
+.,EA0A A9 20    LDA #$20        ASCII space
+.,EA0C 91 D1    STA ($D1),Y     store character on screen
+.,EA0E 88       DEY             next
+.,EA0F 10 F6    BPL $EA07       till hole line is done
+.,EA11 60       RTS
+
+.,EA12 EA       NOP             free byte
+
+
+---
+Additional information can be found by searching:
+- "set_start_of_line" which expands on computes the address to start clearing from
+- "synchronise_colour_pointer" which expands on used to position the colour RAM pointer before clearing colours
+- "print_to_screen" which expands on both routines write to screen and colour RAM at computed pointers

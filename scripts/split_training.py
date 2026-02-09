@@ -123,15 +123,14 @@ def split_file(config_path: Path, raw_dir: Path, split_dir: Path, verbose: bool 
         start = split['start']
         end = min(split['end'], total_lines)
 
-        if split.get('ignore', False):
+        name = split.get('name', f'chunk_{chunks_created + 1}')
+        if split.get('ignore', False) or 'ignored' in name.lower():
             reason = split.get('reason', 'no reason given')
             line_count = end - start + 1
             lines_ignored += line_count
             if verbose:
                 print(f"  Ignored lines {start}-{end} ({line_count} lines): {reason}")
             continue
-
-        name = split.get('name', f'chunk_{chunks_created + 1}')
         description = split.get('description', name)
         references = split.get('references', [])
 

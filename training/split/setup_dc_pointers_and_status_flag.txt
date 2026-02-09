@@ -1,0 +1,23 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Sets up DC06/DC07 zero page pointers and $DC0F, writes initial X to $DC06/$DC07, toggles status bit $01 EOR #$08 and returns. Prepares the $DC table pointers and a status flag used by device routines.
+
+.,FBA6 A5 BD    LDA $BD
+.,FBA8 4A       LSR
+.,FBA9 A9 60    LDA #$60
+.,FBAB 90 02    BCC $FBAF
+.,FBAD A9 B0    LDA #$B0
+.,FBAF A2 00    LDX #$00
+.,FBB1 8D 06 DC STA $DC06
+.,FBB4 8E 07 DC STX $DC07
+.,FBB7 AD 0D DC LDA $DC0D
+.,FBBA A9 19    LDA #$19
+.,FBBC 8D 0F DC STA $DC0F
+.,FBBF A5 01    LDA $01
+.,FBC1 49 08    EOR #$08
+.,FBC3 85 01    STA $01
+.,FBC5 29 08    AND #$08
+.,FBC7 60       RTS
+
+---
+Additional information can be found by searching:
+- "init_filename_state" which expands on called after initializing filename/state variables
+- "device_packet_assembly_and_control" which expands on status flags influence packet assembly

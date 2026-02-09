@@ -1,0 +1,42 @@
+# COMMODORE 64 - Explains that color registers are indirect references used by many screen positions. Changing a background or indirect color register changes all dots using that register. Includes BASIC example (page118.prg) that alternates colors by poking 53282 with random values and demonstrates user control via color keys.
+
+
+    The screen color is white, the character color is black, one color
+  register is cyan (greenish blue), the other is orange. You're not really
+  putting color codes in the space for character color, you're actually
+  using references to the registers associated with those colors. This
+  conserves memory, since 2 bits can be used to pick 16 colors (background)
+  or 8 colors (character). This also makes some neat tricks possible.
+  Simply changing one of the indirect registers will change every dot drawn
+  in that color. Therefore everything drawn in the screen and background
+
+
+
+
+
+                                                 PROGRAMMING GRAPHICS   117
+~
+
+
+  colors can be changed on the whole screen instantly. Here is an example
+  of changing background color register #1:
+
+start tok64 page118.prg
+  100 poke53270,peek(53270)or16: rem turn on multicolor mode
+  110 print chr$(147)chr$(18);
+  120 print"{orange*2}";: rem type c= & 1 for orange or multicolor black bg
+  130 forl=1to22:printchr$(65);:next
+  135 fort=1to500:next
+  140 print"{blue*2}";: rem type ctrl & 7 for blue color change
+  145 fort=1to500:next
+  150 print"{black}hit a key"
+  160 get a$:if a$=""then160
+  170 x=int(rnd(1)*16)
+  180 poke 53282,x
+  190 goto 160
+stop tok64
+
+
+---
+Additional information can be found by searching:
+- "multi_color_demo_program" which expands on example background register settings

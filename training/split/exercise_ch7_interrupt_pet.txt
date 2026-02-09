@@ -1,0 +1,48 @@
+# MACHINE - Appendix E, From Chapter 7 — An Interrupt Project (PET/CBM variant). Similar interrupt demo adapted for PET/CBM: stores a byte from $009B to $8000, sets up $03A0 with current IRQ link ($0090/$0091), shows firing up the program by writing new vector bytes to $0090/$0091 and enabling interrupts (SEI, LDA #$3C -> STA $0090, LDA #$03 -> STA $0091, CLI), and how to restore original vectors. Notes SYS 836 to invoke, SYS 861 to turn off; no color on PET so characters always visible.
+
+PET/CBM Version
+---------------
+
+This version is not for original ROM machines, which have the IRQ vector
+located at address $0219/A:
+
+  .A 033C  LDA $9B
+  .A 033E  STA $8000
+  .A 0341  JMP ($03A0)
+
+To place the link address into $03A0/1:
+
+  .A 0344  LDA $0090
+  .A 0347  STA $03A0
+  .A 034A  LDA $0091
+  .A 034D  STA $03A1
+
+To fire up the program:
+
+  .A 0350  SEI
+  .A 0351  LDA #$3C
+  .A 0353  STA $0090
+  .A 0356  LDA #$03
+  .A 0358  STA $0091
+  .A 035B  CLI
+  .A 035C  RTS
+
+To restore the original interrupt:
+
+  .A 035D  SEI
+  .A 035E  LDA $03A0
+  .A 0361  STA $0090
+  .A 0364  LDA $03A1
+  .A 0367  STA $0091
+  .A 036A  CLI
+  .A 036B  RTS
+
+SYS 836 will invoke the new interrupt code; SYS 861 will turn it off.  Since
+the PET/CBM does not have colors, the characters will always show.
+
+                                                                        :230:
+
+
+---
+Additional information can be found by searching:
+- "exercise_ch7_interrupt_vic20" which expands on VIC-20 interrupt project for comparison

@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Prepare parameters for SAVE: store end address (XY) into $AE/$AF, copy index (A) into start pointer, load I/O start addresses from the start pointer into $C1/$C2, then JMP through the indirect vector at $0332 to the actual save implementation (usually $F685). Covers $F5DD..$F5EA.
+
+
+                                *** save RAM to device, A = index to start address, XY = end address low/high
+.,F5DD 86 AE    STX $AE         save end address low byte
+.,F5DF 84 AF    STY $AF         save end address high byte
+.,F5E1 AA       TAX             copy index to start pointer
+.,F5E2 B5 00    LDA $00,X       get start address low byte
+.,F5E4 85 C1    STA $C1         set I/O start addresses low byte
+.,F5E6 B5 01    LDA $01,X       get start address high byte
+.,F5E8 85 C2    STA $C2         set I/O start addresses high byte
+.,F5EA 6C 32 03 JMP ($0332)     go save, usually points to $F685
+
+---
+Additional information can be found by searching:
+- "save_dispatch_and_serial_bus_output" which expands on continues into device-specific SAVE dispatch and serial-bus save implementation

@@ -1,0 +1,30 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wait for serial data line to be pulled low using VIA timer B (approx 1 ms), read VIA ICR, check timer A interrupt for timeout, get serial data status, enable interrupts and return. Error handling for device not present ($80) and serial bus timeout ($03) and branching to set serial status.
+
+                                received by pulling the serial data low. this should be done within one milisecond
+.,ED92 A9 04    LDA #$04        wait for up to about 1ms
+.,ED94 8D 07 DC STA $DC07       save VIA 1 timer B high byte
+.,ED97 A9 19    LDA #$19        load timer B, timer B single shot, start timer B
+.,ED99 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,ED9C AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,ED9F AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,EDA2 29 02    AND #$02        mask 0000 00x0, timer A interrupt
+.,EDA4 D0 0A    BNE $EDB0       if timer A interrupt go do serial bus timeout
+.,EDA6 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,EDA9 B0 F4    BCS $ED9F       if the serial data is high go wait some more
+.,EDAB 58       CLI             enable the interrupts
+.,EDAC 60       RTS             
+                                device not present
+.,EDAD A9 80    LDA #$80        error $80, device not present
+.:EDAF 2C       .BYTE $2C       makes next line BIT $03A9
+                                timeout on serial bus
+.,EDB0 A9 03    LDA #$03        error $03, read timeout, write timeout
+.,EDB2 20 1C FE JSR $FE1C       OR into the serial status byte
+.,EDB5 58       CLI             enable the interrupts
+.,EDB6 18       CLC             clear for branch
+.,EDB7 90 4A    BCC $EE03       ATN high, delay, clock high then data high, branch always
+
+
+---
+Additional information can be found by searching:
+- "serial_pin_control_and_1ms_delay" which expands on uses VIA timer B and 1ms delay helper
+- "input_byte_from_serial_bus" which expands on related timeout and EOI handling code

@@ -1,0 +1,15 @@
+# ********* - Screen 'continue' prompt subroutine (called at mid-page). Prints a formatted 'continue(y/n)' prompt, reads z$ and loops until valid input. If 'n' it returns to caller (causing display loops to abort); if 'y' it clears the screen and prints the current track and sector header and returns to continue printing.
+
+ 710 rem******************************
+ 720 rem* screen continue message    *
+ 730 rem******************************
+ 740 print "{down}{right*4}continue(y/n)"
+ 750 get z$:if z$="" then 750
+ 760 if z$="n" then return
+ 770 if z$<>"y" then 750
+ 780 print "{clear}track" t " sector" s "{home}":return
+
+---
+Additional information can be found by searching:
+- "read_and_crt_display" which expands on invoked at half-page during screen-mode display
+- "printer_display_loop_reading_disk_buffer" which expands on printer-mode logic also checks z$ to abort

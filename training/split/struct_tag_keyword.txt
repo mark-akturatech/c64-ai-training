@@ -1,0 +1,26 @@
+# ca65 Users Guide - The .TAG keyword: reserve space for an already defined struct or union within another struct (e.g., .tag Point inside Circle). Explains that .TAG allocates space but does not allow initialization and nested .TAG-ed structs are not accessible via '::' operator. Shows how to access fields using offsets added to the base address: lda C + Circle::Radius and lda C + Circle::Origin + Point::ycoord.
+
+15.5 The .TAG keyword
+By using the .TAG keyword, it is possible to reserve space for an already defined struct or union within another struct:
+
+      .struct Point
+              xcoord  .word
+              ycoord  .word
+      .endstruct
+
+      .struct Circle
+              Origin  .tag    Point
+              Radius  .byte
+      .endstruct
+Actual space for a struct or union may be allocated by using the .TAG directive.
+
+C:      .tag    Circle
+Members are just offsets from the start of the struct or union. To access a field of a struct, the member offset must be added to the address of the struct variable itself:
+
+        lda    C + Circle::Radius                    ; Load circle radius
+        lda    C + Circle::Origin + Point::ycoord    ; Load circle origin.ycoord
+Nested structures or unions are treated differently depending on whether they are anonymous. If named, a new structure definition is created within the enclosing scope, with its offsets beginning at 0. If anonymous, the members of the new structure are added to the enclosing scope instead, with offsets continuing through that scope. Example:
+
+---
+Additional information can be found by searching:
+- "structs_and_unions_overview_and_declaration" which expands on basic struct/union definitions and member offsets

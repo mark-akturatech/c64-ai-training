@@ -1,0 +1,15 @@
+# An Introduction to Programming C-64 Demos - FLD (Flexible Line Distance): delays display of next character line by manipulating Bad Line triggering via $D011. Method: read $D012, add desired delay, mask to low 3 bits (AND #$07), OR proper upper bits for text mode (ORA #$18), and STA $D011 repeatedly to postpone the next Bad Line, enabling vertical scrolling effects and removal of Bad Line artifacts.
+
+FLD
+FLD stands for Flexible Line Distance, and was first introduced in the Think Twice demo by The Judges, in 1986, I think. With this routine, you can delay the display of the next character line for an arbitrary amount of lines. Everything that is to be displayed below is delayed, so you can scroll the whole screen down.
+
+What you have to do is to delay the next Bad Line. A Bad Line is triggered when the three lowest bits of $d011 match the three lowest bits of $d012. So what you do is that you take the value from $d012, add a value to it, eg. 2, set the upper five bits to 0 (by using AND #$07), set the upper bits appropriately (ORA #$18 for text mode) and STA $d011.
+
+This means that $d012 and $d011 won't match on the next line. On the next line, you do the same thing again. And then you keep going until you think it's time to display the next text line. Of course you use a loop for this, and if you vary the number or times you go through the loop each frame, you can make text lines scroll up and down really easily. Combine it with a scroll text, and you'll have a scroll text that moves up and down. Nice, eh?
+
+And of course, you can use this routine just to get rid of Bad Lines, which can be handy if you want to do eg. colour bars on the main screen. Just do an FLD and change $d020 and $d021 every frame, and you don't have to worry about Bad Lines.
+
+
+---
+Additional information can be found by searching:
+- "bitmap_graphics_koala_example" which expands on use FLD to avoid Bad Lines when updating bitmap areas

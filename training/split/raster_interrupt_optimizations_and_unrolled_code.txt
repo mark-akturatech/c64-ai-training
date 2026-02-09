@@ -1,0 +1,53 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Optimizations and alternate raster IRQ structure: suggestions include writing a separate code block per physical sprite, precalculating $D010 values to minimize IRQ time, and writing frame data to the active doublebuffer only. Example shows unrolled per-sprite code blocks (sprite0, frame0, sprite1, frame1, ...) that directly STA to the appropriate hardware registers ($D000-$D027, $D010, $C3F8-$C3FF) and branch based on endspr. Notes: must jump to correct entry point depending which sprite to start updating and adjust for active screen buffer.
+
+What can be done to optimize this process?
+
+- Write a separate piece of code for each physical sprite
+- Precalculate $d010 values (of course, time doing this is lost elsewhere, but
+  faster raster interrupt code gives less significant graphical errors with
+  tight sprite formations)
+- Write frame to only one screen at a time; the raster interrupt code can be
+  modified according to the screen currently in use
+
+Now consider this second example (again, virtual spritenumber is in Y)
+
+sprite0:        lda sortspry,y
+                sta $d001
+                lda sortsprx,y
+                sta $d000
+                lda sortsprd010,y
+                sta $d010
+                lda sortsprf,y
+frame0:         sta $c3f8
+                lda sortsprc,y
+                sta $d027
+                iny
+                cpy endspr
+                bcs done
+
+sprite1:        lda sortspry,y
+                sta $d003
+                lda sortsprx,y
+                sta $d002
+                lda sortsprd00,y
+                sta $d010
+                lda sortsprf,y
+frame1:         sta $c3f9
+                lda sortsprc,y
+                sta $d028
+                iny
+                cpy endspr
+                bcs done
+                ...
+
+Looks a bit faster, doesn't it? We would modify the highbyte of the frame-
+write STA instructions according to what side of the doublebuffered screen is
+in use. Of course we also have to jump to the correct place in this code
+according to what sprite will be written first, so using this approach isn't
+that simple...
+
+
+---
+Additional information can be found by searching:
+- "doublebuffering_sorted_sprite_tables" which expands on optimization must be adapted to the currently-active screen buffer
+- "write_registers_just_before_new_sprite" which expands on precalculation of interrupts complements per-sprite unrolled code

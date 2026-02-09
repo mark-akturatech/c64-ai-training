@@ -1,0 +1,36 @@
+# VIC-II Memory Banking and Address Configuration Guide - 6502 assembly example: switch to VIC Bank 2 ($8000-$BFFF) and configure screen/charset offsets.
+Assembly sequence:
+  ; Select bank 2
+  lda $DD00
+  and #%11111100
+  ora #%00000001    ; Bank 2 = %01
+  sta $DD00
+
+  ; Configure screen at offset $0400 (bits 7-4 = %0001) and charset at offset $2000 (bits 3-1 = %100)
+  lda #%00011000    ; $18
+  sta $D018
+
+Full Bank Switch in Assembly (6502)
+-------------------------------------
+
+; Switch to VIC Bank 2 ($8000-$BFFF)
+; Place screen at $8400, charset at $A000
+
+    ; Select bank 2
+    lda $DD00
+    and #%11111100
+    ora #%00000001       ; Bank 2 = %01
+    sta $DD00
+
+    ; Configure screen at offset $0400, charset at offset $2000
+    ; Screen: %0001 in bits 7-4 = $0400 offset
+    ; Charset: %100 in bits 3-1 = $2000 offset
+    lda #%00011000       ; $18
+    sta $D018
+
+
+
+---
+Additional information can be found by searching:
+- "bank_selection_registers_and_rw" which expands on safe read-modify-write for $DD00
+- "d018_vmcsb_overview" which expands on $D018 setup for screen and charset

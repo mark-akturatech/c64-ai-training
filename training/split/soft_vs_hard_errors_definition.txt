@@ -1,0 +1,40 @@
+# byRiclianll - Definition and differences between soft and hard read/write DOS errors: hard errors occur in header blocks (never rewritten) and are unrecoverable; soft errors occur in data blocks and can sometimes be recovered. Provides a short table indicating which reported error numbers are soft vs hard (examples: 22/20 read errors, 23/21 read errors, other codes listed). Also introduces two recovery utilities in Appendix C (RECOVER TRACK & SECTOR and LAZARUS) and explains their roles: RECOVER TRACK & SECTOR tries to rewrite a damaged sector; LAZARUS attempts to resurrect an entire diskette and reports read/write error counts.
+
+8.2  Recovering  a  Soft  Error 
+
+In  Chapter  7  we  described  in  detail  the  read/write  DOS  errors.  We  did  not,  however, 
+categorize  these  errors  by  type.  Read/write  errors  fall  into  two  categories:  "hard"  er- 
+rors and  "soft"  errors.  A  hard  error  is  one  that  cannot  be  recovered,  period.  Hard  er- 
+rors are  errors  that  occur  in  a  header  block.  Recall  that  a  header  block  is  never  rewrit- 
+ten after  initial  formatting.  Since  a  header  block  cannot  be  rewritten,  the  data  in  a  sec- 
+tor containing  a  hard  error  is  unrecoverable.  (Unfortunately,  this  also  means  that  the 
+forward  pointer  has  been  lost  and,  for  all  intents  and  purposes,  the  remainder  of  the 
+file  as  well.)  Soft  errors  are  errors  that  occur  in  a  data  block.  Since  data  blocks  can  be 
+rewritten,  soft  errors  can  sometimes  be  recovered  if  the  diskette  itself  is  not  flawed 
+or  physically  damaged.  The  table  below  indicates  whether  a  read/write  error  is  a  hard 
+or  soft  error. 
+
+Soft  Errors  Hard  Errors 
+
+
+22  Read  Error  20  Read  Error 
+
+23  Read  Error  21  Read  Error 
+
+27  Read  Error 
+29  Read  Error 
+
+Appendix  C  contains  two  programs  that  are  useful  in  trying  to  recover  a  sector  that 
+has  a  soft  error.  However,  recovery  cannot  be  guaranteed  in  all  cases.  These  two  pro- 
+grams are  RECOVER  TRACK  &  SECTOR  and  LAZARUS.  The  first  program  attempts 
+to  rewrite  a  damaged  sector.  LAZARUS  will  attempt  to  resurrect  an  entire  diskette. 
+The  latter  program  returns  a  status  report  of  the  number  of  read  errors  encountered. 
+It  also  reports  the  number  of  write  errors  that  occurred.  A  write  error  indicates  that 
+a  soft  error  encountered  along  the  way  was  actually  a  hard  error  in  disguise.  Sorry  about 
+that. 
+
+
+---
+Additional information can be found by searching:
+- "recovering_hard_error" which expands on If an error is identified as a hard error, follow the hard-error recovery procedure
+- "recovering_soft_error" which expands on If an error is soft, use RECOVER TRACK & SECTOR or LAZARUS (Appendix C) to attempt recovery

@@ -1,0 +1,106 @@
+# ********* - How sprite shape bytes map to 24-dot lines (3 bytes per line): bit significance (bits 0-7 values), examples of byte patterns and their decimal equivalents, building multi-line sprites (example cross with 63 bytes and their layout).
+
+have to contend with these slight delays.
+
+If you turn off the 64 display with a POKE 53265,PEEEK(53265) AND 239,
+you will be able to load programs correctly from an old 1540 drive.
+The new 1541 drive transfers data at a slightly slower rate in the
+default setting, and can be set from software to transfer it at the
+higher rate for the VIC-20.
+
+Bit 5.  Setting Bit 5 of this register to 1 enables the bitmap
+graphics mode.  In this mode, the screen area is broken down into
+64,000 separate dots of light, 320 dots across by 200 dots high.  Each
+dot corresponds to one bit of display memory.  If the bit is set to 1,
+the dot will be displayed in the foreground color.  If the bit is
+reset to 0, it will be displayed in the background color.  This allows
+the display of high-resolution graphics images for games, charts, and
+graphs, etc.
+
+Bitmapping is a common technique for implementing high-resolution
+graphics on a microcomputer.  There are some features of the Commodore
+system which are unusual, however.
+
+Most systems display screen memory sequentially; that is, the first
+byte controls the display of the first eight dots in the upper-left
+corner of the screen, the second byte controls the eight dots to the
+right of that, etc.  In the Commodore system, display memory is laid
+out more along the lines of how character graphics dot-data is
+arranged.
+
+The first byte controls the row of eight dots in the top-left corner
+of the screen, but the next byte controls the eight dots below that,
+and so on until the ninth byte.  The ninth byte controls the eight
+dots directly to the right of those controlled by the first byte of
+display memory.  It is exactly the same as if the screen were filled
+with 1000 programmable characters, with display memory taking the
+place of the character dot-data.
+
+The 64's bitmap graphics mode also resembles character graphics in
+that the foreground color of the dots is set by a color map (although
+it does not use the Color RAM for this purpose).  Four bits of each
+byte of this color memory control the foreground color of one of these
+eight-byte groups of display memory (which form an 8 by 8 grid of 64
+dots).  Unlike character graphics, however, the other four bits
+control the background color that will be seen in the eight-byte
+display group where a bit has a value of 0.
+
+Setting up a bitmap graphics screen is somewhat more complicated than
+just setting this register bit to 1.  You must first choose a location
+for the display memory area, and for the color memory area.  The
+display memory area will be 8192 bytes long (8000 of which are
+actually used for the display) and can occupy only the first or the
+second half of the 16K space which the VIC-II chip can address.
+
+Each byte of bitmap graphics color memory uses four bits for the
+background color as well as four bits for the foreground color.
+Therefore, the Color RAM nybbles at 55296 ($D800), which are wired for
+four bits only, cannot be used.  Another RAM location must therefore
+be found for color memory.
+
+This color memory area will take up 1K (1000 bytes of which are
+actually used to control the foreground and background colors of the
+dots), and must be in the opposite half of VIC-II memory as the
+display data.  Since bitmap graphics require so much memory for the
+display, you may want to select a different 16K bank for VIC-II memory
+(see the discussion of things to consider in selecting a VIC-II memory
+bank at location 56576 ($DD00)).
+
+To keep things simple, however, let's assume that you have selected to
+use the default bank of VIC-II memory, which is the first 16K.  You
+would have to select locations 8192-16383 ($2000-$3FFF) for screen
+memory, because the VIC-II chip sees an image of the character ROM in
+the first half of the 16K block (at locations 4096-8192
+($1000-$1FFF)).  Color memory could be placed at the default location
+of text display memory, at 1024-2047 ($400-$7FF).  Placement of bitmap
+display and color memory is controlled by the VIC Memory Control
+Register at 53272 ($D018).
+
+When in bitmap mode, the lower four bits of this register, which
+normally control the base address of character dot-data, now control
+the location of the 8K bitmap.  Only Bit 3 is significant.  If it is
+set to 1, the graphics display memory will be in the second 8K of
+VIC-II memory (in this case, starting at 8192 ($2000)).  If that bit
+contains a 0, the first 8K will be used for the bitmap.  The upper
+four bits of this register, which normally control the location of the
+Video Display Matrix, are used in bitmap mode to establish the
+location of the color map within the VIC-II address space.  These four
+bits can hold a number from 0 to 15, which indicates on which 1K
+boundary the color map begins.  For example, if color memory began at
+1024 (1K), the value of these four bits would be 0001.
+
+Once the bitmap mode has been selected, and the screen and color
+memory areas set up, you must establish a method for turning each
+individual dot on and off.  The conventional method for identifying
+each dot is to assign it to a horizontal (X) position coordinate and a
+vertical (Y) coordinate.
+
+Horizontal position values will range from 0 to 319, where dot 0 is at
+the extreme left-hand side of the screen, and dot 319 at the extreme
+right.  Vertical positions will range from 0 to 199, where dot 0 is on
+the top line, and dot 199 is on the bottom line.
+
+
+---
+Additional information can be found by searching:
+- "sprite_graphics_introduction_and_data_pointers" which expands on Pointers map to these 63-byte blocks

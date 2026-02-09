@@ -1,0 +1,37 @@
+# ********* - Section 6.3: BLOCK-READ command format (PRINT#file#,"B-R:" channel; drive; track; block or "B-R:" abbreviation) to move one 256-byte block from disk into the selected data channel. Includes a sample BASIC program to read a block into B$ byte-by-byte.
+
+6.3 BLOCK-READ
+
+FORMAT FOR BLOCK-READ COMMAND:
+
+    PRINT#file#, "BLOCK-READ:" channel; drive; track; block
+
+or abbreviated as
+
+    PRINT#file#, "B-R:" channel; drive; track; block
+
+This command will move one block of data from the diskette into the
+selected channel.  Once this operation has been performed, the INPUT#
+and GET# statements can read the information.
+
+SAMPLE PROGRAM TO READ BLOCK 2 FROM TRACK 18: (stores contents in B$)
+
+	  +---------+ +-------+  +-------+
+	  | CHANNEL | | DRIVE |  | TRACK |
+	  +---------+ +-------+  +-------+
+		    | |          |
+		    | |  +-------+
+ 10 OPEN 15,8,15    | |  |           +-------+
+ 20 OPEN 5,8,5,"#"  | |  |           | BLOCK |
+ 30 PRINT#15,"B-R:" 5;0;18;2 <-------+-------+
+ 40 B$=""
+ 50 FOR L=0 TO 255                  +----------------+
+ 60 GET#5,A$                        | COLLECT ENTIRE |
+ 70 IF ST = 0 THEN B$=B$+A$:NEXT L  | BLOCK: BYTE    |
+ 80 PRINT "FINISHED"     |          | BY BYTE        |
+ 90 CLOSE 5:CLOSE 15     +----------+----------------+
+
+
+---
+Additional information can be found by searching:
+- "get_statement_and_file_examination_example" which expands on GET# used to extract bytes from the random-access buffer after BLOCK-READ

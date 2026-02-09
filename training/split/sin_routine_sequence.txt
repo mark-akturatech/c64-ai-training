@@ -1,0 +1,42 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Complete SIN routine implementation entry sequence used by BASIC: prepares and invokes the floating-point sine evaluation. Includes several JSRs to support routines ($BC0C, $BB07, $BCCC, $BFB4, $B853, $B850, $B849, $B867), register setups (loading indices and flags), stack operations and branch logic, and finally jumps to a floating-point result handling routine at $E043. This sequence references the SIN series constants and counters stored in the PI2 table.
+
+                                *** SIN: PERFORM SIN
+.,E26B 20 0C BC JSR $BC0C
+.,E26E A9 E5    LDA #$E5
+.,E270 A0 E2    LDY #$E2
+.,E272 A6 6E    LDX $6E
+.,E274 20 07 BB JSR $BB07
+.,E277 20 0C BC JSR $BC0C
+.,E27A 20 CC BC JSR $BCCC
+.,E27D A9 00    LDA #$00
+.,E27F 85 6F    STA $6F
+.,E281 20 53 B8 JSR $B853
+.,E284 A9 EA    LDA #$EA
+.,E286 A0 E2    LDY #$E2
+.,E288 20 50 B8 JSR $B850
+.,E28B A5 66    LDA $66
+.,E28D 48       PHA
+.,E28E 10 0D    BPL $E29D
+.,E290 20 49 B8 JSR $B849
+.,E293 A5 66    LDA $66
+.,E295 30 09    BMI $E2A0
+.,E297 A5 12    LDA $12
+.,E299 49 FF    EOR #$FF
+.,E29B 85 12    STA $12
+.,E29D 20 B4 BF JSR $BFB4
+.,E2A0 A9 EA    LDA #$EA
+.,E2A2 A0 E2    LDY #$E2
+.,E2A4 20 67 B8 JSR $B867
+.,E2A7 68       PLA
+.,E2A8 10 03    BPL $E2AD
+.,E2AA 20 B4 BF JSR $BFB4
+.,E2AD A9 EF    LDA #$EF
+.,E2AF A0 E2    LDY #$E2
+.,E2B1 4C 43 E0 JMP $E043
+
+
+---
+Additional information can be found by searching:
+- "cos_via_sin" which expands on COS uses this SIN implementation after adding pi/2
+- "pi2_trig_constants_table" which expands on holds SIN series constants and counters referenced by this routine
+- "tan_routine" which expands on TAN calls SIN to compute sine as part of tangent evaluation

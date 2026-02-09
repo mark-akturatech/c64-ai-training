@@ -1,0 +1,165 @@
+{
+  "source_file": "Datassette_Encoding.txt",
+  "context": "Datassette Encoding",
+  "splits": [
+    {
+      "start": 1,
+      "end": 2,
+      "ignore": true,
+      "reason": "Title and source metadata (non-technical)"
+    },
+    {
+      "start": 3,
+      "end": 11,
+      "name": "overview",
+      "description": "High-level explanation of Commodore Datassette encoding: uses pulse-length encoding (each pulse is one full HIGH+LOW cycle) rather than FSK; pulses represent magnetic tape waveform cycles.",
+      "references": [
+        {
+          "chunk": "pulse_types",
+          "topic": "the defined short/medium/long pulse durations"
+        },
+        {
+          "chunk": "tap_file_format",
+          "topic": "digital representation of tape pulses in TAP files"
+        }
+      ]
+    },
+    {
+      "start": 12,
+      "end": 22,
+      "name": "pulse_types",
+      "description": "Defines the three pulse length categories and their nominal durations for NTSC and PAL: Short (NTSC 176 µs, PAL 182.7 µs), Medium (NTSC 256 µs, PAL 265.7 µs), Long (NTSC 336 µs, PAL 348.8 µs).",
+      "references": [
+        {
+          "chunk": "bit_encoding",
+          "topic": "how short/medium/long pulses are combined to form bits and markers"
+        },
+        {
+          "chunk": "tap_file_format",
+          "topic": "TAP numeric values for standard pulses"
+        }
+      ]
+    },
+    {
+      "start": 23,
+      "end": 36,
+      "name": "bit_encoding",
+      "description": "How data bits and special markers are encoded using pairs of pulses: Bit 0 = short + medium, Bit 1 = medium + short. Additional markers: Byte marker = long + medium, End-of-data = long + short.",
+      "references": [
+        {
+          "chunk": "byte_encoding",
+          "topic": "byte marker, LSB-first bit order, parity and byte timing"
+        },
+        {
+          "chunk": "data_block_structure",
+          "topic": "use of byte markers inside recorded blocks"
+        }
+      ]
+    },
+    {
+      "start": 37,
+      "end": 53,
+      "name": "byte_encoding_and_parity",
+      "description": "Complete byte format and parity: a byte begins with the byte marker (long+medium), followed by 8 bits recorded LSB first, then an odd parity bit (parity = XOR of all 8 data bits XOR 1 yields 1 for odd parity). Each recorded byte takes ~8.96 ms. Compact representation: L/M (marker), S/M bit0, S/M bit1, ..., S/M bit7, M/S parity.",
+      "references": [
+        {
+          "chunk": "bit_encoding",
+          "topic": "bit-level pulse pairs used to encode each bit"
+        },
+        {
+          "chunk": "checksum_calculation",
+          "topic": "checksum is computed over payload bytes"
+        }
+      ]
+    },
+    {
+      "start": 54,
+      "end": 69,
+      "name": "data_block_structure",
+      "description": "Layout of a tape data block: 192-byte payload recorded twice (for redundancy); synchronization leader of short pulses (10 seconds for first block, 2 seconds for subsequent blocks) used to compute speed correction; countdown byte sequences ($89-$81 for first copy, $09-$01 for second); one-byte checksum (XOR of $00 and all payload bytes); inter-record gaps made of a long pulse followed by 60 short pulses.",
+      "references": [
+        {
+          "chunk": "byte_encoding_and_parity",
+          "topic": "how bytes within the payload are encoded"
+        },
+        {
+          "chunk": "header_block",
+          "topic": "header block is a special 192-byte block layout"
+        },
+        {
+          "chunk": "checksum_calculation",
+          "topic": "how the block checksum is computed"
+        }
+      ]
+    },
+    {
+      "start": 70,
+      "end": 90,
+      "name": "header_block",
+      "description": "Format of the 192-byte header block (fields and header types): Byte 1 = Header Type; Bytes 2-3 = Start address (low/high); Bytes 4-5 = End address (low/high); Bytes 6-21 = 16-byte filename (displayed); Bytes 22-192 = 171 bytes of filename area not displayed (padded with spaces $20). Header type values: $01 relocatable BASIC; $02 data block for sequential ASCII file; $03 non-relocatable program (machine language); $04 ASCII file header; $05 End-of-tape marker (EOT). Filenames shorter than 16 characters are space-padded (ASCII $20).",
+      "references": [
+        {
+          "chunk": "data_block_structure",
+          "topic": "header block is one type of 192-byte block"
+        }
+      ]
+    },
+    {
+      "start": 91,
+      "end": 99,
+      "name": "pal_ntsc_compatibility",
+      "description": "Compatibility note between PAL and NTSC systems: despite different clock frequencies (PAL 985,248 Hz vs NTSC 1,022,727 Hz ≈ 3.8% difference), the synchronization algorithm and variable motor speed compensation allow tapes to be swapped between systems without issues.",
+      "references": [
+        {
+          "chunk": "pulse_types",
+          "topic": "PAL vs NTSC pulse duration differences"
+        },
+        {
+          "chunk": "data_block_structure",
+          "topic": "leader used to compute speed correction for motor/tape speed differences"
+        }
+      ]
+    },
+    {
+      "start": 100,
+      "end": 108,
+      "name": "checksum_calculation",
+      "description": "Checksum algorithm used for a 192-byte payload: initialize checksum = $00, then sequentially XOR each payload byte into checksum. Formula: checksum = $00 XOR byte1 XOR byte2 XOR ... XOR byte192. This helps detect tape dropouts and corruption.",
+      "references": [
+        {
+          "chunk": "data_block_structure",
+          "topic": "one-byte checksum included per block copy"
+        }
+      ]
+    },
+    {
+      "start": 109,
+      "end": 119,
+      "name": "read_vs_write_signal_and_triggering",
+      "description": "Behavior of read vs write signals and how the C64 senses tape pulses: the read signal is the inverse of the write signal; pulse width measurements use rising edges for write and falling edges for read. The C64 monitors zero-crossings (high-to-low transitions) on the cassette read line connected to CIA #1 FLAG; each trigger generates an interrupt request.",
+      "references": [
+        {
+          "chunk": "byte_encoding_and_parity",
+          "topic": "pulse edge timing is relevant to measuring encoded byte pulses"
+        }
+      ]
+    },
+    {
+      "start": 120,
+      "end": 133,
+      "name": "tap_file_format",
+      "description": "TAP file format (Per Hakan Sundell, 1997): TAP digitally stores single-pulse time lengths. Each nonzero TAP byte encodes pulse length as Pulse length (microseconds) * C64 PAL frequency / 8, equivalently Pulse length (µs) * 0.123156. Standard CBM pulse TAP values (using PAL-based reference): Short ≈ 43 ($2B), Medium ≈ 63 ($3F), Long ≈ 83 ($53).",
+      "references": [
+        {
+          "chunk": "pulse_types",
+          "topic": "numeric TAP equivalents for the short/medium/long pulses"
+        },
+        {
+          "chunk": "overview",
+          "topic": "TAP is a digital representation of the tape pulse-based encoding described"
+        }
+      ]
+    }
+  ],
+  "source_md5": "97c420fe62fca7efe68b984f876c806e"
+}

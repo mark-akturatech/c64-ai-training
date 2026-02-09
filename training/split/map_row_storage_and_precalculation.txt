@@ -1,0 +1,21 @@
+# Multidirectional Scrolling Techniques by Cadaver - How map data is organized in memory: horizontal rows stored sequentially from top to bottom. Store row length in a 'map header' and precalculate starting address of each map row and each block (maptbllo/hi and blktbllo/hi tables) to avoid multiplications.
+
+In the terms of this rant, map data consists of 8-bit block numbers, so
+there can be 256 different blocks maximum. I've never used multiple levels of
+blocks (blocks constructed of even smaller blocks like seen in Faery Tale
+Adventure) so I'm not going into such things, however they would allow
+scrolling *huge* maps around.
+
+The way I organize map-data in memory is that each horizontal row is stored
+in the memory sequentially, starting from the top of map and ending to the
+bottom. To make any sense of the map-data, the length of a row in blocks is
+very significant to know, so I store it in a "map header" before the map
+data itself. To avoid any multiplication operations, I precalculate the
+starting address of each map row into an array, from which it can be
+easily accessed. Similarly, I also precalculate the starting address of
+each block (maptbllo/hi and blktbllo/hi tables.)
+
+---
+Additional information can be found by searching:
+- "map_data_block_data_overview" which expands on concept of 8-bit block numbers
+- "block_size_choice_and_character_codes" which expands on block size choice affects indexing and addressing

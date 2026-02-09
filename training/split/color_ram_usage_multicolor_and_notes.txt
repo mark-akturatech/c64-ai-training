@@ -1,0 +1,45 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Color RAM usage in different graphics modes: for text it holds per-character foreground color; in multicolor text character values >7 enable multicolor mode (low 3 bits used); in hi-res bitmap Color RAM not used (bitmap uses separate color map); in multicolor bitmap and multicolor text behavior differs. Notes about OS behavior in newer C64s setting Color RAM to background color on screen clear, and using color mapping to hide/reveal text.
+
+                          Color mapping affords a convenient method of changing the color of the
+                          text display without changing the letters.  By POKEing the appropriate
+                          section of Color RAM, you can change the color of a whole section of
+                          text on the screen without affecting the content of the text.  You can
+                          even use this method to make letters disappear by changing their
+                          foreground colors to match the background (or by changing the
+                          background to match the foreground), and later make them reappear by
+                          changing them back, or by changing the background to a contrasting
+                          color.  An interesting example program which changes Color RAM quickly
+                          in BASIC can be found under the entry for 648 ($288).
+
+                          A change in the Operating System causes newer 64s to set all of the
+                          Color RAM locations to the same value as the current background color
+                          whenever the screen is cleared.  Therefore, POKEing character codes to
+                          the Screen RAM area will not appear to have any effect, because the
+                          letters will be the same color as the background.  This can easily be
+                          turned to your advantage, however, because it means that all you have
+                          to do to set all of Color RAM to a particular value is to set the
+                          background color to that value (using the register at 53281 ($D021)),
+                          clear the screen, and return the background color in the desired
+                          value.
+
+                          The various graphics modes use this area differently than does the
+                          regular text mode.  In high-resolution bitmap mode, this area is not
+                          used at all, but in multicolor bitmap mode it is used to determine the
+                          color of the 11 bit-pair for a given 8 by 8 dot area.
+
+                          In multicolor text mode, only the lowest three bits are used, so only
+                          colors 0-7 may be selected.  The fourth bit is used to determine
+                          whether a character will be displayed in regular text or multicolor
+                          text.  Characters with a color value over 7 are displayed as
+                          multicolor characters, with the color of the 11 bit-pair determined by
+                          the color value minus 8.  Characters with a color value under 8 are
+                          displayed normally.
+
+                          It should be noted that unlike the Screen RAM area, which can be moved
+                          to any RAM location, the Color RAM area is fixed, and will function
+                          normally regardless of where screen memory is located.
+
+
+---
+Additional information can be found by searching:
+- "bitmap_multicolor_plotting_and_sample" which expands on Color RAM usage in multicolor bitmap mode

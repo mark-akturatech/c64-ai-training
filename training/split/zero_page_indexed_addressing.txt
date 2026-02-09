@@ -1,0 +1,59 @@
+# MACHINE - Zero-page indexed addressing (e.g., LDA $E0,X) adds the index to a zero-page base and wraps within page 0. All of zero page can be reached by indexing; allows negative indexing representation (e.g., X=$FF as -1). Mostly uses X for addressing; LDX/STX can use Y in some cases.
+
+                                                                         :78:
+
+The "reach" of absolute, indexed instruction allows it to handle information
+in buffers (such as the input buffer, keyboard buffer, cassette buffer);
+tables (such as the active file table); and short messages (such as HELLO or
+error messages).  It's not big enough, however, to reach all parts of screen
+memory, all parts of a BASIC program, or all of RAM.  For that, we'll use
+indirect, indexed addressing, which will be described later.
+
+
+All of Zero Page:  Zero-Page, Indexed
+-------------------------------------
+
+Zero-page, indexed addressing seems at first glance to be similar to
+absolute, indexed mode.  The address given (this time in zero-page) has the
+contents of the selected index added to it.  But there's a difference:  in
+this case, the effective address can never leave zero page.
+
+This mode usually uses the X register; only two instructions, LDX and STX,
+use the Y register for zero-page, indexed addressing.  In either case, the
+index is added to the zero-page address; if the total goes beyond zero page,
+the address "wraps around."  As an example, if an instruction is coded LDA
+#$E0,X and the X register contains 50 at the time of execution, the effective
+address will be $0030.  The total ($E0 + $50 or $130) will be trimmed back to
+zero page.
+
+
+
+   $00     $FF $100
+  +-----------+----------------------------------------------------------+
+  |           |                     MEMORY                               |
+  +-----------+----------------------------------------------------------+
+    ^     ^ ^
+    |     | |
+    |     +-'
+  |-'     +---|
+          |
+        BASE
+       ADDRESS
+
+  Figure 5.4
+
+
+Thus, any zero page address can be indexed to reach any other place in zero
+page; the reach of 256 locations represents the whole of zero page.  This
+creates a new possibility:  with zero-page, indexed addressing, we can
+achieve negative indexing.  For this address mode only, we can index in a
+downward direction by using index register values such as $FF for -1, $FE for
+-2, and so on.
+
+On Commodore machines, zero page is fairly well occupied.  There is limited
+opportunity to use zero-page, indexed addressing.
+
+
+---
+Additional information can be found by searching:
+- "zero_page_addressing" which expands on advantages and costs of using zero page

@@ -1,0 +1,81 @@
+# Kick Assembler - Section 3.5: The '*' directive to set the program counter (.pc alias supported), naming memory blocks for -showmem memory map, virtual memory blocks (virtual option), overlapping virtual blocks, .align directive for page-aligning, and .pseudopc to assemble as if code located at a different address.
+
+3.5. Memory Directives
+The * directive is used to set the program counter. A program should always start with a * directive to tell the
+assembler where to put the output. Here are some examples of use:
+
+!loop:
+
+*=$1000 "Program"
+ldx #10
+dex
+bne !looprts
+*=$4000 "Data"
+.byte 1,0,2,0,3,0,4,0
+*=$5000 "More data"
+.text "Hello"
+
+Note: The old notation ('.pc=$1000') from Kick Assembler 2.x and 3.x is still supported.
+The last argument is optional and is used to name the memory block created by the directive. When using the
+‘-showmem’ option when running the assembler a memory map will be generated that displays the memory usage
+and block names. The map of the above program looks like this:
+Memory Map
+---------$1000-$1005 Program
+$4000-$4007 Data
+$5000-$5004 More data
+
+7
+
+Basic Assembler Functionality
+
+By using the virtual option on the .pc directive you can declare a memory block that is not saved in the resulting
+file.
+*=$0400 "Data Tables 1" virtual
+table1: .fill $100,0
+table2: .fill $100,0
+*=$0400 "Data Tables 2" virtual
+table3: .fill $150,0
+table4: .fill $100,0
+*=$1000 "Program"
+ldx #0
+lda table1,x
+…
+
+Note that virtual memory blocks can overlap other memory blocks. They are marked with an asterisk in the
+memory map.
+Memory Map
+---------*$0400-$05ff Data Tables 1
+*$0400-$064f Data Tables 2
+$1000-$1005 Program
+
+Since virtual memory blocks aren’t saved, the above example will only save the memory from $1000 to $1005.
+With the .align directive, you can align the program counter to a given interval. This is useful for optimizing
+your code as crossing a memory page boundary yields a penalty of one cycle for memory referring commands.
+To avoid this, use the .align command to align your tables:
+*=$1000 "Program"
+ldx #1
+lda data,x
+rts
+
+data:
+
+*=$10ff
+//Bad place for the data
+.align $100
+//Alignment to the nearest page boundary saves a cycle
+.byte 1,2,3,4,5,6,7,8
+
+In case you want your code placed at position $1000 in the memory but want it assembled like it was placed
+at $2000, you can use the .pseudopc directive:
+*=$1000 "Program to be relocated at $2000"
+.pseudopc $2000 {
+loop:
+inc $d020
+jmp loop // Will produce jmp $2000 instead of jmp $1000
+}
+
+
+---
+Additional information can be found by searching:
+- "labels_argument_labels_and_multi_labels" which expands on labels, '*' usage and memory positioning
+- "prg_files_and_d64_disks_overview" which expands on how memory blocks map to output files and disk images (see Chapter 11 - referenced in TOC)

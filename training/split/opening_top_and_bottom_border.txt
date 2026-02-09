@@ -1,0 +1,13 @@
+# An Introduction to Programming C-64 Demos - Open top and bottom border trick: set screen to 25 lines (bit 3 of $D011), then on the last visible text line (raster $F8/$F9/$FA) clear that bit so VIC doesn't re-enable border — effectively opens upper/lower border. Must set the bit back after a few lines to reset for next frame. Sprites can be shown in border; normal graphics cannot.
+
+Opening the Top and Bottom Border
+This is a simple trick, but it can be pretty cool to be able to put stuff in the upper and lower border. Of course it's even more cool to open the side borders, and conceptually that's equally simple, but it requires good timing.
+
+To open the upper and lower border, you have the screen set up to display 25 lines of text (by setting bit 3 of $d011). Then, on the last line of the screen (on raster line $f8, $f9 or $fa), turn off that bit. The VIC will be fooled into not checking where to turn on the border, as it ``thinks'' it's already on, and it won't turn it on. You have to set the bit again, so that the VIC will be fooled again the next frame, but you'll have to wait a couple of lines first, or you'll fool yourself instead. :-)
+
+You can display sprites in the upper and lower border, but not normal graphics. The same goes for the side border. However, the last address in the VIC page ($3fff in the default case, otherwise $7fff, $bfff and $ffff) will also be displayed, in black. So if you have another background colour than black, and the value in this address is not 0, you'll see a garbage pattern in the border area. You can actually use this for some effects... Use your imagination.
+
+
+---
+Additional information can be found by searching:
+- "opening_side_border" which expands on side border opening uses similar concepts but needs per-line timing

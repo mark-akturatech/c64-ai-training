@@ -1,0 +1,63 @@
+# MACHINE - Description of the GETIN system subroutine at $FFE4 for keyboard input: behavior similar to BASIC GET (reads keyboard buffer, non-blocking, returns immediately), return values (ASCII in A or zero if no key), X/Y likely clobbered, special keys detected. Includes boxed subroutine documentation with registers and status notes. Recommends following GETIN with CHROUT to echo input to screen.
+
+Input:  The GETIN Subroutine
+----------------------------
+
+We have seen how we can use CHROUT at $FFD2 to produce output to the screen.
+Now we'll look at the input side--how to use the GETIN subroutine at $FFE4 to
+get characters from the keyboard buffer.
+
+                                                                         :51:
+
+You may be familiar with the GET statement in BASIC.  If so, you'll find the
+same characteristics in GETIN:
+
+  o Input is taken from the keyboard buffer, not the screen.
+
+  o If a key is held down, it will still be detected once only.
+
+  o The subroutine returns immediately.
+
+  o If no key is found, a binary zero is returned in A.
+
+  o If a key is found, its ASCII value will be in A.
+
+  o Special keys, such as RETURN, RVS, or color codes, will be detected.
+
+To call for a key from the keyboard, code JSR $FFE4.  Values in X and Y are
+not guaranteed to be preserved, so if you have important information in
+either register, put it away into memory.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   GETIN                                                       |
+| Address:      $FFE4                                                       |
+| Action:       Takes a character from the input channel and places it into |
+|               the A register.  The input channel is the keyboard input    |
+|               buffer unless arrangements have been made to switch it.     |
+|                                                                           |
+| The character received is usually ASCII (or PET ASCII).  When read from   |
+| the keyboard, the action is similar to a BASIC GET statement:  one        |
+| character will be taken from the buffer; it will not be shown on the      |
+| screen.  If no character is available from the keyboard input buffer, a   |
+| value of binary zero will be put into the A register.  The subroutine     |
+| will not wait for a key to be pressed but will always return immediately. |
+|                                                                           |
+| Registers:  The A register will or course always be affected.  X and Y    |
+| are likely to be changed; do not have data in these when calling GETIN.   |
+|                                                                           |
+| Status:  Status flags may be changed.  In the VIC and Commodore 64, the C |
+| (carry) flag indicates some type of problem with output.                  |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+If we want keyboard input to appear on the screen, we should follow a call to
+GETIN, $FFE4, with a call to CHROUT, $FFD2, so that the received character is
+printed.
+
+
+
+---
+Additional information can be found by searching:
+- "stop_subroutine_runstop_key" which expands on STOP subroutine checks RUN/STOP key (another input-related system call)
+- "numeric_key_waiting_subroutine_project" which expands on Example program using GETIN to read numeric keys

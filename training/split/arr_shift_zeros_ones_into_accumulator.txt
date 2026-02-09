@@ -1,0 +1,42 @@
+# NMOS 6510 - Shows how repeated ARR #$FF (with SEC) or ARR #$FF (with CLC and A initialized appropriately) can be used to shift zeros or ones into the accumulator. Includes sequences demonstrating progressive accumulation of ones (A = $c0 -> $e0 -> $f0 -> ...) and zeros (starting with A = $7F and using CLC to produce $3F -> $1F -> $0F ...). Explains the role of the Carry resembling bit 7 after ARR.
+
+Example: shift zeros or ones into accumulator
+
+Due to the fact that the carry resembles the state of bit 7 after ARR is executed, one can
+continuously shift in zeroes or ones into a byte:
+LDA #$80
+SEC
+ARR #$ff
+
+; -> A = $c0 -> sec
+
+ARR #$ff
+
+; -> A = $e0 -> sec
+
+ARR #$ff
+
+; -> A = $f0 -> sec
+
+...
+LDA #$7f
+CLC
+ARR #$ff
+
+; -> A = $3f -> clc
+
+ARR #$ff
+
+; -> A = $1f -> clc
+
+ARR #$ff
+
+; -> A = $0f -> clc
+
+- 34 -
+
+
+---
+Additional information can be found by searching:
+- "arr_opcode_flags_and_table" which expands on explains the flag behavior behind why repeated ARR changes bits predictably
+- "arr_load_register_depending_on_carry" which expands on related trick that uses ARR to move carry state into a register

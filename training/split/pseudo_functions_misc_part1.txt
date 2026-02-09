@@ -1,0 +1,85 @@
+# ca65 Users Guide - Pseudo-functions: .BANKBYTE (bank byte extraction '^'), .BLANK (tests presence of argument tokens), .CAP/.CAPABILITY (check target/CPU capabilities like CPU_HAS_BITIMM, CPU_HAS_BRA8, CPU_HAS_PUSHXY, CPU_HAS_ZPIND, CPU_HAS_STZ), usage notes and examples, .CONCAT (string concatenation), .CONST (is constant?), .DEF/.DEFINED (is identifier defined?), .DEFINEDMACRO (is macro defined?).
+
+10.3 .BANKBYTE
+The function returns the bank byte (that is, bits 16-23) of its argument. It works identical to the '^' operator.
+
+See: .HIBYTE, .LOBYTE
+
+10.4 .BLANK
+Builtin function. The function evaluates its argument in parentheses and yields "false" if the argument is non blank (there is an argument), and "true" if there is no argument. The token list that makes up the function argument may optionally be enclosed in curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right parenthesis). The curly braces are not considered part of the list, a list just consisting of curly braces is considered to be empty.
+
+As an example, the .IFBLANK statement may be replaced by
+
+
+        .if     .blank({arg})
+  
+10.5 .CAP, .CAPABILITY
+Builtin function. The function allows to check for capabilities of the currently selected CPU or target system. It must be called with a comma separated list of identifiers and returns non zero if all of the given capabilities are available. Otherwise it returns zero.
+
+Existing capabilities are:
+
+
+CPU_HAS_BITIMM
+Checks for the availability of the "bit #imm" instruction.
+
+CPU_HAS_BRA8
+Checks for the availability of a short (8 bit) branch.
+
+CPU_HAS_INA
+Checks for the availability of accu inc/dec instructions.
+
+CPU_HAS_PUSHXY
+Checks for the capability to push and pop the X and Y registers.
+
+CPU_HAS_ZPIND
+Checks for the availability of the "zeropage indirect" addressing mode as it is implemented in the 65SC02 CPU.
+
+CPU_HAS_STZ
+Checks for the availability of the "store zero" instruction as it is implemented in the 65SC02 CPU.
+
+Case is ignored when checking the identifiers. The .cap function is easier to use than checking .cpu and requires no intimate knowledge of all instruction sets. For more detailed checking .cpu is still available.
+
+Example:
+
+
+        .if     .cap(CPU_HAS_BRA, CPU_HAS_PUSHXY)
+                phx
+                bra     L1
+        .else
+                txa
+                pha
+                jmp     L1
+        .endif
+  
+See also: .CPU
+
+10.6 .CONCAT
+Builtin string function. The function allows to concatenate a list of string constants separated by commas. The result is a string constant that is the concatenation of all arguments. This function is most useful in macros and when used together with the .STRING builtin function. The function may be used in any case where a string constant is expected.
+
+Example:
+
+
+        .include        .concat ("myheader", ".", "inc")
+  
+This is the same as the command
+
+
+        .include        "myheader.inc"
+  
+10.7 .CONST
+Builtin function. The function evaluates its argument in parentheses and yields "true" if the argument is a constant expression (that is, an expression that yields a constant value at assembly time) and "false" otherwise. As an example, the .IFCONST statement may be replaced by
+
+
+        .if     .const(a + 3)
+  
+10.8 .DEF, .DEFINED
+Builtin function. The function expects an identifier as argument in parentheses. The argument is evaluated, and the function yields "true" if the identifier is a symbol that already is defined somewhere in the source file up to the current position. Otherwise, the function yields false. As an example, the .IFDEF statement may be replaced by
+
+
+        .if     .defined(a)
+  
+
+---
+Additional information can be found by searching:
+- "pseudo_functions_addrsize_and_bank" which expands on bank-related functions
+- "macros_overview" which expands on using .DEFINEDMACRO in macro-aware code

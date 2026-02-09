@@ -1,0 +1,55 @@
+# byRiclianll - Read, assemble and transfer buffer to the drive, then execute: REM READ section sets JOB=128 and GOSUB 570 to read the sector(s), nested FOR loops collect bytes into buffer variables (D*(J) ...), then a sequence of PRINT#15 'M-W' commands streams the assembled data to the drive memory (block writes), followed by the execute sequence (M-W to write the execute vector and M-R to request execution), GET#15 to read execution response, checks on response bytes (including ASC/E checks), CLOSE 15, and final program DONE/END. This chunk performs the data upload of the destructive routine and triggers its execution on the drive.
+
+320  REM  READ 
+
+330  J0B=128 
+
+340  G0SUB570 
+
+350  F0RJ=0T07 
+
+360  F0RI=0T07 
+
+370  READD 
+
+380  D*(J)=D*(J)+CHR*(D) 
+
+390  NEXTI 
+
+400  NEXTJ 
+
+410  I=0 
+
+420  F0RJ=0T07 
+
+430  PRINT#15, "M-W"CHR* ( I ) CHR* (5) CHR* (8) D 
+*(J) 
+
+440  1=1+8 
+450  NEXTJ 
+460  REM  EXECUTE 
+
+470  PRINT»15, "M-W"CHR*(2)CHR*<0)CHR*(1)C 
+HR*(224) 
+
+480  PR  I  NT4t  1 5 ,  "  M-R  "  CHR*  <  2 )  CHR*  ( 0 ) 
+
+490  GET#15,E* 
+
+500  IFE*=""THENE*=CHR*(0) 
+
+510  E=ASC(E*) 
+
+520  IFE>127G0T0480 
+
+530  CLOSE 15 
+
+540  PRINT"  ^ DOWN}- DONE  !  " 
+550  END 
+
+
+---
+Additional information can be found by searching:
+- "seek_operation_job_submission" which expands on the read phase follows a successful seek
+- "job_queue_handling_subroutine" which expands on used to submit and poll read/write jobs to the drive
+- "embedded_destroy_routine_data" which expands on the machine-code bytes uploaded and executed are defined here

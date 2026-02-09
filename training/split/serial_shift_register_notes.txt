@@ -1,0 +1,28 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Practical notes for the CIA serial (shift) register: synchronous serial port behavior. Output mode (CRA bit 6 = 1): write to SDR ($0C), Timer A provides shift clock, data shifted MSB-first on SP, CNT outputs the shift clock at half Timer A rate; interrupt on byte completion; maximum baud ~PHI2/4 (~250 kbit/s). Input mode (CRA bit 6 = 0): external clock on CNT shifts data in on SP, interrupt after 8 bits, read byte from SDR.
+
+=============================================================
+11. SERIAL SHIFT REGISTER NOTES
+=============================================================
+
+The 8-bit shift register provides a synchronous serial port.
+
+Output Mode (CRA bit 6 = 1):
+  - Write data byte to SDR ($0C)
+  - Timer A provides the shift clock
+  - Data is shifted out MSB first on SP pin
+  - CNT pin outputs the shift clock at half the Timer A rate
+  - Interrupt generated when byte is complete
+  - Maximum baud rate = PHI2/4 (approximately 250 kbit/s)
+
+Input Mode (CRA bit 6 = 0):
+  - External device provides clock on CNT pin
+  - Data is shifted in on SP pin
+  - Interrupt generated after 8 bits received
+  - Read received byte from SDR ($0C)
+
+
+---
+Additional information can be found by searching:
+- "serial_data_register_sdr" which expands on SDR operation details and SP/CNT usage
+- "control_register_a" which expands on CRA bit 6 selects serial mode and links Timer A to SDR
+- "interrupt_control_register_icr" which expands on SDR transfer completion sets ICR SP flag

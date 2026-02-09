@@ -1,0 +1,29 @@
+# byRiclianll - Introduces direct-access programming for the 1541 FDC, explains that a successful job request returns (00, OK, 00, 00) and that the sector contents can be retrieved from buffer $0300-$03FF via GET#. Presents the motivation for bypassing the drive parser to work the FDC directly and describes the example's goal: read track 18 sector 0 into buffer 0 ($0300-$03FF) and print it to the screen (a modification of an earlier example).
+
+
+
+104 
+
+
+number,  and  the  sector  number  to  the  C64  side.  If  the  job  request  was  successful  (00, 
+OK,00,00),  the  contents  of  the  track  and  sector  could  then  be  retrieved  from  the  buffer 
+at  $0300  -  $03FF  using  a  GET#  command  as  described  in  the  previous  chapter. 
+
+What  happens,  though,  if  we  bypass  the  drive's  parser  routine  and  attempt  to  work 
+the  FDC  directly  ourselves?  We  thought  you'd  never  ask.  Grand  and  glorious  schemes 
+become  possibilities,  and  that's  what  intermediate  direct-access  programming  is  all  about. 
+Armed  with  a  lookup  table  of  job  codes,  a  map  of  the  154rs  buffer  areas,  a  track,  a 
+sector,  and  a  lookup  table  of  error  codes,  the  FDC  is  at  your  beck  and  call.  Tired  of 
+those  horrendous  grating  noises  when  your  drive  errs  out?  Well  wish  no  more.  The 
+drive  does  not  do  a  bump  (the  root  of  all  evil)  to  reinitialize  when  you  are  working  the 
+job  queue  directly.  What  more  could  you  ask  for?  We  know.  The  code,  right? 
+
+The  following  program  works  the  job  queue  directly  to  read  the  block  from  track  18, 
+sector  0  into  buffer  number  0  ($0300  -  $03FF)  and  prints  the  contents  to  the  screen. 
+Sound  vaguely  familiar?  It  should.  It's  a  modification  of  the  first  program  we  wrote  under 
+beginning  direct-access  programming. 
+
+---
+Additional information can be found by searching:
+- "basic_job_queue_read_program_listing" which expands on BASIC program that implements the described direct-access read
+- "job_queue_mechanism_and_job_code_bit7" which expands on How jobs are written to the job/header tables and how completion is detected

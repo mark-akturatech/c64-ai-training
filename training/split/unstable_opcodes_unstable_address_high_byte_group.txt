@@ -1,0 +1,60 @@
+# NMOS 6510 - Start of the 'Unstable Opcodes' section: overview of seven opcodes classed as unstable (two truly unpredictable, five predictable under conditions). Introduces the 'unstable address high byte' subgroup (five opcodes) that do not affect A, X, Y, or P but have two failure modes to guard against: (1) if index-based addressing crosses a page boundary the high byte may be incremented and ANDed with the stored value (causing an unexpected store address), and (2) when RDY is used to stop the CPU (e.g., bad line or sprite DMA starting late) the AND-with-<addrhi+1> step may be skipped, causing the raw value to be written (examples when this does or does not occur are described). Advises avoiding page crossings or DMA during these instructions and choosing target addresses appropriately (e.g., $FE00 or values tolerant to AND). Lists the related opcodes and addressing modes: SHA (zp),Y; TAS ABS,Y; SHY ABS,X; SHX ABS,Y; SHA ABS,Y with their opcode bytes ($93, $9B, $9C, $9E, $93 as shown).
+
+Unstable Opcodes
+Out of all opcodes, just seven fall into the so called 'unstable' category. This is where in earlier
+documents often the half esoteric black magic started, and what took most time and effort to update
+and fix for the current state of this version of the truth: Only two of those seven opcodes are
+actually unstable in the sense that they may produce a truly unpredictable result. The other
+five opcodes actually produce predictable results – but the conditions under which they do that and
+the produced results are a bit unexpected. All seven opcodes can be used safely when certain
+preconditions are met.
+
+'unstable address high byte' group
+There are five opcodes in this group. None of these opcodes affect the accumulator, the X register,
+the Y register, or the processor status register. They have two ‘instabilities’ which have to be
+'disarmed' by careful programming.
+•
+
+If the target address crosses a page boundary because of indexing, the instruction may not
+store at the intended address. Instead the high byte of the target address will get
+incremented as expected, and then ANDed with the value stored. For this reason you
+should generally keep your index in a range that page boundaries are not crossed.
+
+•
+
+Sometimes the actual value is stored in memory and the AND with <addrhi+1> part drops
+off (ex. SHY becomes true STY). This happens when the RDY line is used to stop the CPU
+(pulled low), i.e. either a 'bad line' or sprite DMA starts in the second last cycle of the
+instruction. 'For example, it never seems to occur if either the screen is blanked or C128
+2MHz mode is enabled.' For this reason you will have to choose a suitable target address
+based on what kind of values you want to store. 'For $fe00 there's no problem, since
+anding with $ff is the same as not anding. And if your values don't mind whether they are
+anded, e.g. if they are all $00-$7f for shy $7e00,x, there is also no difference whether the
+and works or not.' If you make sure no DMA starts when any of these opcodes
+executes, the value written is always ANDed with the highbyte of the target address,
+plus one.
+
+SHA (zp), y
+
+TAS abs, y
+
+SHY abs, x
+
+SHX abs, y
+
+SHA abs,y
+
+Opcode
+
+$93
+
+$9b
+
+$9c
+
+$9e
+
+
+---
+Additional information can be found by searching:
+- "jam_opcodes_cpu_lockup" which expands on previous section covering JAM/KIL opcodes that lock the CPU

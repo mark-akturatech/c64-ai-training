@@ -1,0 +1,40 @@
+# byRiclianll - Procedure and arithmetic for finding a particular relative record given record number and fixed record length. Example: to find record 4 with 150-byte records: compute previous bytes (3*150 = 450), divide by 254 (sector payload) to get pointer set (1.7716...), INT() handling to index pointer sets and side sectors, compute byte offset within sector using fractional remainder multiplied by 254, and locate track/sector via directory pointer bytes.
+
+We  vdll  close  our  section  on  relative  file  structure  by  taking  a  brief  look  at  how  the 
+computer,  or  you,  can  locate  a  particular  relative  record.  Pick  a  number,  any  number. 
+Record  number  4  you  say.  No  problem  if  you  know  the  record  length. 
+
+First  we  find  the  appropriate  side  sector. 
+4-1  =  3  previous  records 
+
+3  *  150  fixed  length  =  450th  starting  byte  (i.e.,  0  -  449  previous  bytes) 
+
+450  /  254  =  1.7716535 
+
+INT  (1.7716535)  -i-  1  =  pointer  set  2 
+
+
+68 
+
+
+Pointer  set  2  /  120  sets  of  pointers  in  a  side  sector  =  0.01666667 
+
+INT  (0.01666667)  =  side  sector  0 
+Where  in  side  sector  0  is  it?  Easy. 
+
+Byte  14  +  (pointer  set  2  *  2  bytes  in  a  pointer)  =  byte  18 
+
+Bytes  18  and  19  will  contain  the  track  and  sector  of  our  record. 
+Where  in  the  actual  data  block  is  it?  A  piece  of  cake. 
+
+1.7716535  -  INT(1.7716535)  =  remainder  .7716535 
+
+2  (skip  over  bytes  0  and  1)  +  (.7716535  *  254  bytes  of  data)  =  byte  198 
+
+Still  a  disbeliever?  Check  it  out  yourself  in  the  preceding  hex  dumps  of  track  17,  sector 
+13  and  track  17,  sector  14. 
+
+
+---
+Additional information can be found by searching:
+- "relative_record_padding_analysis" which expands on example sectors used to validate the location algorithm

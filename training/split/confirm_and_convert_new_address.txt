@@ -1,0 +1,21 @@
+# byRiclianll - Ask the user to confirm the new load address, then split the entered 4-character hex string into its high and low two-character halves. For each half (HD*), calls the hex->decimal subroutine (GOSUB 1060) to convert the two-character hex string into a numeric byte (assigning to LOW and HIGH). Checks a TME flag set by the converter to detect invalid hex digits and aborts if necessary.
+
+
+690  INPUT"  <:D0WN>  ARE  YOU  SURE  (Y/N)  Y<LE 
+FT  3>";Q* 
+
+700  IFQ*<>"Y"G0T0960 
+710  HD*=RIGHT*(NLA*,2) 
+720  G0SUB1060 
+730  IFTME=1G0T0960 
+740  L0W=D 
+
+750  HD*=LEFT*(NLA*,2) 
+760  G0SUB1060 
+770  IFTME=1G0T0960 
+
+---
+Additional information can be found by searching:
+- "compute_and_display_old_load_address_and_prompt_new" which expands on takes the user-entered hex string and confirms it
+- "conversion_subroutines_decimal_to_hex_and_hex_to_decimal" which expands on calls the hex->decimal routine to convert hex pairs to numeric bytes
+- "write_modified_bytes_back_and_commit" which expands on on success, proceeds to write the converted bytes back into the buffer

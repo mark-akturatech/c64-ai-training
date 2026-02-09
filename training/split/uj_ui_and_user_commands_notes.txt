@@ -1,0 +1,87 @@
+# byRiclianll - Explains UJ (warm reset) and UI- (VIC-20 speed) anomalies: UJ is intended as a warm reset for the 1541 but may hang the drive; U: can be used instead of UJ. UI- was implemented to set 1541 to VIC-20 speed. Discusses USER commands (U3–U9) which jump to predefined RAM addresses, and notes that U3–U8 jump into $0500 page (buffer #2) and U9 jumps to $FFA (alternate reset bypassing power-on diagnostics).
+
+
+120  PRINT#15, "M-W"CHR*(0>CHR*(5)CHR*(1)C 
+HR*(96) 
+
+130  PRINT#15, "U3" 
+140  CLOSE 15 
+150  END 
+
+
+One  should  be  able  to  discern  that  any  of  the  first  six  USER  commands,  U3  -  U8,  could 
+double  for  a  memory-execute  command.  It  is  very  difficult  to  understand  why  Commodore 
+included  six  jumps  to  the  $0500  page  (buffer  number  2).  Moreover,  the  U9  command 
+jumps  to  $FFA  which  is  a  word  table  pointing  to  the  NMI  vector.  U9  is  an  alternate 
+reset  that  bypasses  the  power-on  diagonstics. 
+
+
+U3  -  U9 
+
+
+User  Number 
+
+
+Jump  Address 
+
+
+U3  (UC) 
+U4  (UD) 
+U5  (UE) 
+U6  (UF) 
+U7  (UG) 
+U8  (UH) 
+U9  (UI) 
+
+
+$0500 
+$0503 
+$0506 
+$0509 
+$050C 
+$050F 
+$FFFA 
+
+
+101 
+
+
+I 
+
+
+CHAPTER  6 
+
+
+INTERMEDIATE 
+DIRECT-ACCESS  PROGRAMMING 
+
+
+NOTE:  This  chapter  is  not  intended  for  beginners.  The  reader  is  assumed  to  be  relatively 
+familiar  with  the  direct-access  programming  commands  described  in  Chapter  5. 
+
+The  intermediate  level  of  direct-access  programming  involves  passing  requests  directly 
+to  the  Floppy  Disk  Controller  (FDC)  via  the  job  queue.  Normally  a  1541  command  is 
+initiated  on  the  C64  side  (e.g.,  SAVE,  a  block-read  (Ul),  etc.).  The  command  is  inter- 
+preted by  the  154rs  6502  Interface  Processor  (IP)  as  a  set  of  simple  operations  called 
+jobs.  (This  is  analogous  to  the  way  the  BASIC  interpreter  works  inside  the  C64.)  These 
+jobs  are  poked  into  an  area  of  1541  RAM  called  the  job  queue.  Every  10  milliseconds 
+the  job  queue  is  scanned  by  the  Floppy  Disk  Controller  (FDC).  If  a  job  request  is  found 
+the  FDC  executes  it.  The  complete  set  of  jobs  that  the  FDC  can  perform  are  as  follows: 
+
+1.  Read  a  sector. 
+
+2.  Write  a  sector. 
+
+3.  Verify  a  sector. 
+
+4.  Seek  a  track. 
+
+5.  Bump  the  head  to  track  number  1. 
+
+6.  Jump  to  a  machine  language  routine  in  a  buffer. 
+
+7.  Execute  a  machine  language  routine  in  a  buffer. 
+
+---
+Additional information can be found by searching:
+- "memory_execute_command" which expands on U3-U8 operate similarly to memory-execute by jumping into buffer areas

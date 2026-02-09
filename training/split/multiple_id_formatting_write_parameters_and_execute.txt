@@ -1,0 +1,109 @@
+# byRiclianll - Clearing and writing format parameter phase of the MULTIPLE ID FORMATTING program: prompts user to insert a blank disk, reads a data table (READ D) to build D$(J) sequences, composes and sends M-W sector/image parameter packets (including per-track L$() and H$() values), prepares and executes the 1541 FORMAT sequence by sending M-E and M-W drive commands, monitors/inputs the drive's EN, EM, ET, ES status bytes, toggles J0B between 176/128/144 for seek/read/write phases, sends format control packets (including CHR*(18), CHR*(1), CHR*(65) etc), performs multiple passes (S flag changes), closes and reopens device 15 to send the 'NO: 1541 FORMAT' sequence, and prints completion message. This chunk contains the main format-parameter construction and the execute phase up to program END.
+
+380  PRINT" CCLRD FORMAT  A  DISKETTE  -  1541" 
+
+390  PRINT"  { DO WN>  INSERT   <:RVS3  BLANK <:R0FF> 
+
+IN  DRIVE" 
+
+400  G0SUB910 
+
+410  0PEN15,8, 15 
+
+420  F0RJ=0T06 
+
+430  F0RI=0T07 
+
+440  READD 
+
+450  D*(J)=D*(J)+CHR*(D) 
+
+460  NEXT I 
+
+470  NEXTJ 
+
+480  I=0 
+
+490  F0RJ=0T06 
+
+500  PRINT#15, "M-W"CHR$(I)CHR$(4)CHR*(a)D 
+$(J) 
+
+510  1=1+8 
+520  NEXTJ 
+530  F0RI=1T035 
+
+540  PRINT#15, "M-W"CHR* (49+1) CHR$ (4) CHR* ( 
+1)L$(I) 
+
+550  PR I NT# 1 5 . " M-W " CHR* (84+1) CHR$ ( 4 ) CHR* ( 
+
+1 ) H$ ( I ) 
+
+560  NEXT I 
+
+570  REM  EXECUTE 
+
+580  PRINT" CD0WN3 iRVS3FDRMATTINGtR0FF>  01 
+SKETTE" 
+
+590  PRINT#15, "M-E"CHR* (O) CHR* (4) 
+600  INPUT#15,EN*,EM*,ET*,ES* 
+610  T=18 
+620  S=0 
+630  J0B=176 
+640  G0SUB970 
+650  J0B=128 
+660  G0SUB970 
+
+670  PRINT#15, "M-W"CHR*(0)CHR*(4)CHR*(3)C 
+
+HR* (18) CHR* ( 1 ) CHR* (65) 
+
+680  J0B=144 
+
+690  60SUB970 
+
+700  S=l 
+
+710  J0B=128 
+
+720  60SUB970 
+
+730  PRINT#15, "M-W"CHR*(0)CHR*(4)CHR$(2)C 
+HR*(0>CHR*(255) 
+740  J0B=144 
+750  G0SUB970 
+
+
+159 
+
+
+760  CLOSE 15 
+770  0PEN15,8, 15 
+
+780  PR I NT# 15, "NO: 1541  FORMAT" 
+790  INPUT#15,EN*,EM*,ET$,ES* 
+800  S=0 
+810  J0B=128 
+820  G0SUB970 
+
+830  PRINT#15, "M-W"CHR*<162)CHR*(4)CHR*(2 
+)CHR*(50)CHR*(54) 
+840  J0B=144 
+850  G0SUB970 
+
+860  PRINT#15, "M-W"CHR*<162)CHR*(7)CHR*<2 
+
+)CHR*(50)CHR*(54) 
+
+870  CLOSE 15 
+
+880  PRINT" {DOWN>DONE ! " 
+
+890  END 
+
+---
+Additional information can be found by searching:
+- "multiple_id_formatting_read_master_ids" which expands on Source of H$() and L$() per-track IDs used to build the write packets
+- "multiple_id_formatting_subroutines_delay_and_job_queue" which expands on Uses the delay prompt and job-queue subroutines for drive command sequencing and retries

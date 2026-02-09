@@ -1,0 +1,27 @@
+# ********* - Main IRQ/BRK entry at $FF48 (65352); hardware IRQ/BRK vector at $FFFE (65534) points here. Saves A/X/Y on stack, tests BRK bit of status (.P) to determine BRK vs IRQ. If BRK, exits through RAM BRK vector at $0316 (790). Otherwise exits through RAM IRQ vector at $0314 (788), typically to keyboard-scan handler at $EA31 (59953). When installing custom handlers into these vectors, ensure saved registers are pulled from stack before returning.
+
+65352         $FF48
+Main IRQ/BRK Interrupt Entry Point
+
+The 6510 hardware IRQ/BRK vector at 65534 ($FFFE) points to this
+address.
+
+Anytime the BRK instruction is encountered or an IRQ interrupt occurs,
+this routine will be executed.  The routine first saves the .A, .X,
+and .Y registers on the stack, and then tests the BRK bit of the
+status register (.P) to see if a BRK was executed.  If it was, the
+routine exits through the RAM BRK vector at 790 ($316), where it will
+usually be directed to the BRK routine at 65126 ($FE66).  If not, the
+routine exits through the RAM IRQ vector at 788 ($314), where it will
+usually be directed to the handler that scans the keyboard at 59953
+($EA31).
+
+If you plan to change either of these vectors to your own routine,
+remember to pull the stored register values off the stack before
+finishing.
+
+
+---
+Additional information can be found by searching:
+- "irq_vector_table_overview" which expands on system IRQ vector table references standard IRQ routines
+- "scnkey_scan_keyboard" which expands on IRQ usually vectored to keyboard scan routine

@@ -1,0 +1,35 @@
+# byRiclianll - Locked-file mechanism (undocumented): locked files cannot be scratched until unlocked. DOS doesn't provide lock/unlock; you must edit the file-type byte in the directory to set lock bit (bit 6). Table of normal vs locked byte values: DEL $80 -> DEL < $C0, SEQ $81 -> SEQ < $C1, PRG $82 -> PRG < $C2, USR $83 -> USR < $C3, REL $84 -> REL < $C4. DOS checks bit 6 of file-type to determine locked state; files may still be renamed or copied when locked.
+
+4.10  Locked  Files 
+
+Earlier  in  this  chapter  you  may  have  been  surprised  to  see  locked  files  of  various  form 
+in  the  table  of  legal  file  types.  Locked  file  types  are  once  again  an  undocumented  feature 
+of  Commodore  disk  drives.  A  locked  file  cannot  be  scratched  unless  it  is  first  unlocked. 
+Unfortunately,  the  DOS  does  not  support  the  locking  or  unlocking  of  a  file.  You  have 
+to  do-it-yourself  by  editing  the  file-type  byte  in  the  directory  entry  for  that  file.  The 
+program  EDIT  TRACK  &  SECTOR  listed  in  Appendix  C  allows  you  to  do  this.  We 
+will  not  describe  the  technique  here.  See  the  section  on  Unscratching  a  File  in  Chapter 
+8  for  instructions  on  how  to  edit  the  file-type  byte.  Use  the  values  from  the  table  below, 
+rather  than  those  listed  in  Chapter  8,  when  locking  or  unlocking  a  file. 
+
+
+File  Type   Normal  Locked 
+
+Deleted  DEL  $80      DEL  <  $C0 
+
+Sequential  SEQ  $81      SEQ  <  $C1 
+
+Program  PRG  $82      PRG  <  $C2 
+
+User  USR  $83      USR  <  $C3 
+
+Relative  REL  $84      REL  <  $C4 
+
+The  DOS  determines  whether  or  not  a  file  is  locked  by  checking  bit  6  of  the  file-type 
+byte.  If  it  is  set  (1),  the  file  is  locked.  Even  if  a  file  has  been  locked,  it  may  be  renamed 
+or  copied  using  normal  disk  commands. 
+
+---
+Additional information can be found by searching:
+- "deleted_file_del" which expands on DEL file type specifics
+- "chapter5_intro" which expands on tools for editing track/sector or directory entries (direct-access programming)

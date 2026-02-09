@@ -1,0 +1,12 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Start of character output to a channel: push the character to the stack, read the output device number ($9A) and compare with the screen device code. This entry covers the device-selection and dispatch start of the kernel CHROUT/OUTPUT routine (device routing), saving state in preparation for device-specific output.
+
+                                *** output character to channel
+.,F1CA 48       PHA             save the character to output
+.,F1CB A5 9A    LDA $9A         get the output device number
+.,F1CD C9 03    CMP #$03        compare the output device with the screen
+.,F1CF D0 04    BNE $F1D5       if not the screen go ??
+
+---
+Additional information can be found by searching:
+- "display_control_io_message_if_direct_mode" which expands on uses the same CHROUT vector to output kernel messages
+- "rs232_tx_timer_setup_and_start" which expands on transmit timer setup used for serial device output

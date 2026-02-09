@@ -1,0 +1,50 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - STT1/STT2/STT3/STT4 timeout-watch routines: STT1 initializes a timeout constant (STX TEMP) and adjusts a long-byte count based on CMP0 (scaling and sign handling). It then waits for safe timing relative to D1T2L/D1T2H to avoid rollover before calculating and storing adjusted timer counts into D1T1L/D1T1H and enabling timers (D1CRA). STUPID is set to indicate a pending T1 IRQ, old T1 IRQ flags are checked and if present a simulated IRQ return address is pushed to the stack and the code jumps to SIMIRQ; otherwise the routine clears and returns (STT4). This block handles precise timing, rollover avoidance, and optionally simulates an IRQ to handle an already-set flag.
+
+                                ;
+                                ; STT1 - SET UP TIMEOUT WATCH FOR NEXT DIPOLE
+                                ;
+.,F8E2 86 B1    STX $B1         STT1   STX TEMP        ;.X HAS CONSTANT FOR TIMEOUT
+.,F8E4 A5 B0    LDA $B0         LDA    CMP0            ;CMP0*5
+.,F8E6 0A       ASL             ASL    A
+.,F8E7 0A       ASL             ASL    A
+.,F8E8 18       CLC             CLC
+.,F8E9 65 B0    ADC $B0         ADC    CMP0
+.,F8EB 18       CLC             CLC
+.,F8EC 65 B1    ADC $B1         ADC    TEMP            ;ADJUST LONG BYTE COUNT
+.,F8EE 85 B1    STA $B1         STA    TEMP
+.,F8F0 A9 00    LDA #$00        LDA    #0
+.,F8F2 24 B0    BIT $B0         BIT    CMP0            ;CHECK CMP0 ...
+.,F8F4 30 01    BMI $F8F7       BMI    STT2            ;...MINUS, NO ADJUST
+.,F8F6 2A       ROL             ROL    A               ;...PLUS SO ADJUST POS
+.,F8F7 06 B1    ASL $B1         STT2   ASL TEMP        ;MULTIPLY CORRECTED VALUE BY 4
+.,F8F9 2A       ROL             ROL    A
+.,F8FA 06 B1    ASL $B1         ASL    TEMP
+.,F8FC 2A       ROL             ROL    A
+.,F8FD AA       TAX             TAX
+.,F8FE AD 06 DC LDA $DC06       STT3   LDA D1T2L       ;WATCH OUT FOR D1T2H ROLLOVER...
+.,F901 C9 16    CMP #$16        CMP    #22             ;...TIME FOR ROUTINE...!!!...
+.,F903 90 F9    BCC $F8FE       BCC    STT3            ;...TOO CLOSE SO WAIT UNTILL PAST
+.,F905 65 B1    ADC $B1         ADC    TEMP            ;CALCULATE AND...
+.,F907 8D 04 DC STA $DC04       STA    D1T1L           ;...STORE ADUSTED TIME COUNT
+.,F90A 8A       TXA             TXA
+.,F90B 6D 07 DC ADC $DC07       ADC    D1T2H           ;ADJUST FOR HIGH TIME COUNT
+.,F90E 8D 05 DC STA $DC05       STA    D1T1H
+.,F911 AD A2 02 LDA $02A2       LDA    CASTON          ;ENABLE TIMERS
+.,F914 8D 0E DC STA $DC0E       STA    D1CRA
+.,F917 8D A4 02 STA $02A4       STA    STUPID          ;NON-ZERO MEANS AN T1 IRQ HAS NOT OCCURED YET
+.,F91A AD 0D DC LDA $DC0D       LDA    D1ICR           ;CLEAR OLD T1 INTERRUPT
+.,F91D 29 10    AND #$10        AND    #$10            ;CHECK FOR OLD-FLAG IRQ
+.,F91F F0 09    BEQ $F92A       BEQ    STT4            ;NO...NORMAL EXIT
+.,F921 A9 F9    LDA #$F9        LDA    #>STT4          ;PUSH SIMULATED RETURN ADDRESS ON STACK
+.,F923 48       PHA             PHA
+.,F924 A9 2A    LDA #$2A        LDA    #<STT4
+.,F926 48       PHA             PHA
+.,F927 4C 43 FF JMP $FF43       JMP    SIMIRQ
+.,F92A 58       CLI             STT4   CLI             ;ALLOW FOR RE-ENTRY CODE
+.,F92B 60       RTS             RTS
+                                .END
+
+---
+Additional information can be found by searching:
+- "tape_operation_timer_and_irq_setup" which expands on Enables timers that STT1 adjusts and prepares for
+- "motor_control_and_interrupt_enable" which expands on Interacts with timer enabling/state flags set earlier

@@ -1,0 +1,63 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - INITCZ: Initialize BASIC RAM and key zero-page structures. Actions performed include: write JMP opcode (#$4C) into JMPER and store USR JMP instruction at $0310/$0311 (USRPOK/USRADD), set ADRAY1 and ADRAY2 zero-page vectors ($03/$04 and $05/$06), copy the CHRGET routine and RNDSED data from ROM ($E3A2 onward) into RAM at $0073 (loop using LDX/DEX/BPL), initialize runtime variables (FOUR6 $53 = #3, BITS $68 = 0, input prompt flag $13 = 0, LASTPT $18 = 0), set stack pointers $01FD/$01FC, set TEMPPT $16, call KERNAL $FF9C/$FF99 (with carry set) to read MEMBOT/MEMTOP and store TXTTAB ($2B/$2C), MEMSIZ ($37/$38) and copy MEMTOP to FRETOP ($33/$34), write a zero at the start of BASIC via indirect STA ($2B),Y and increment TXTTAB (including carry into $2C) before returning with RTS.
+
+                                *** INITCZ: INITIALISE BASIC RAM
+                                This routine sets the USR jump instruction to point to
+                                ?ILLEGAL QUANTITY error, sets ADRAY1 and ADRAY2, copies
+                                CHRGET and RNDSED to zeropage, sets up the start and end
+                                locations for BASIC text and sets the first text byte to
+                                zero.
+.,E3BF A9 4C    LDA #$4C        ; opcode for JMP
+.,E3C1 85 54    STA $54         ; store in JMPER
+.,E3C3 8D 10 03 STA $0310       ; USRPOK, set USR JMP instruction
+.,E3C6 A9 48    LDA #$48
+.,E3C8 A0 B2    LDY #$B2        ; vector to $b248, ?ILLEGAL QUANTITY
+.,E3CA 8D 11 03 STA $0311
+.,E3CD 8C 12 03 STY $0312       ; store in USRADD
+.,E3D0 A9 91    LDA #$91
+.,E3D2 A0 B3    LDY #$B3        ; vector to $b391
+.,E3D4 85 05    STA $05
+.,E3D6 84 06    STY $06         ; store in ADRAY2
+.,E3D8 A9 AA    LDA #$AA
+.,E3DA A0 B1    LDY #$B1        ; vector to $b1aa
+.,E3DC 85 03    STA $03
+.,E3DE 84 04    STY $04         ; store in ADRAY1
+.,E3E0 A2 1C    LDX #$1C        ; copy the CHRGET routine and RNDSED to RAM
+.,E3E2 BD A2 E3 LDA $E3A2,X     ; source address
+.,E3E5 95 73    STA $73,X       ; destination address
+.,E3E7 CA       DEX             ; next byte
+.,E3E8 10 F8    BPL $E3E2       ; till ready
+.,E3EA A9 03    LDA #$03
+.,E3EC 85 53    STA $53         ; store #3 in FOUR6, garbage collection
+.,E3EE A9 00    LDA #$00
+.,E3F0 85 68    STA $68         ; init BITS, fac#1 overflow
+.,E3F2 85 13    STA $13         ; init input prompt flag
+.,E3F4 85 18    STA $18         ; init LASTPT
+.,E3F6 A2 01    LDX #$01
+.,E3F8 8E FD 01 STX $01FD
+.,E3FB 8E FC 01 STX $01FC
+.,E3FE A2 19    LDX #$19
+.,E400 86 16    STX $16         ; TEMPPT, pointer to descriptor stack
+.,E402 38       SEC             ; set carry to indicate read mode
+.,E403 20 9C FF JSR $FF9C       ; read MEMBOT
+.,E406 86 2B    STX $2B         ; set TXTTAB, bottom of RAM
+.,E408 84 2C    STY $2C
+.,E40A 38       SEC             ; set carry to indicate read mode
+.,E40B 20 99 FF JSR $FF99       ; read MEMTOP
+.,E40E 86 37    STX $37         ; set MEMSIZ, top of RAM
+.,E410 84 38    STY $38
+.,E412 86 33    STX $33         ; set FRETOP = MEMTOP
+.,E414 84 34    STY $34
+.,E416 A0 00    LDY #$00
+.,E418 98       TYA
+.,E419 91 2B    STA ($2B),Y     ; store zero at start of BASIC
+.,E41B E6 2B    INC $2B         ; increment TXTTAB to next memory position
+.,E41D D0 02    BNE $E421       ; skip msb
+.,E41F E6 2C    INC $2C
+.,E421 60       RTS             ; return
+
+
+---
+Additional information can be found by searching:
+- "initat_chrget_for_zeropage" which expands on source CHRGET routine that is copied into RAM here
+- "rndsed_random_seed" which expands on random seed data copied into RAM during this initialization
+- "initms_output_powerup_message" which expands on startup message output and BASIC bytes-free calculation that use TXTTAB/MEMSIZ set here

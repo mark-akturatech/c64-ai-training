@@ -1,0 +1,43 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine to open a channel for input. Calls file lookup (JSR $F30F), verifies the file is open, sets file details (JSR $F31F), reads the device number ($BA) and handles special devices (keyboard and screen). Distinguishes serial bus devices vs RS232 vs other devices, branches to RS232 input handler if appropriate, or reports 'file not open' / 'not input file' errors. Includes checks of the secondary address and serial bus device presence via the serial status byte.
+
+                                *** open channel for input
+.,F20E 20 0F F3 JSR $F30F       find a file
+.,F211 F0 03    BEQ $F216       if the file is open continue
+.,F213 4C 01 F7 JMP $F701       else do 'file not open' error and return
+.,F216 20 1F F3 JSR $F31F       set file details from table,X
+.,F219 A5 BA    LDA $BA         get the device number
+.,F21B F0 16    BEQ $F233       if the device was the keyboard save the device #, flag
+                                ok and exit
+.,F21D C9 03    CMP #$03        compare the device number with the screen
+.,F21F F0 12    BEQ $F233       if the device was the screen save the device #, flag ok
+                                and exit
+.,F221 B0 14    BCS $F237       if the device was a serial bus device go ??
+.,F223 C9 02    CMP #$02        else compare the device with the RS232 device
+.,F225 D0 03    BNE $F22A       if not the RS232 device continue
+.,F227 4C 4D F0 JMP $F04D       else go get input from the RS232 buffer and return
+.,F22A A6 B9    LDX $B9         get the secondary address
+.,F22C E0 60    CPX #$60        
+.,F22E F0 03    BEQ $F233       
+.,F230 4C 0A F7 JMP $F70A       go do 'not input file' error and return
+.,F233 85 99    STA $99         save the input device number
+.,F235 18       CLC             flag ok
+.,F236 60       RTS             
+                                the device was a serial bus device
+.,F237 AA       TAX             copy device number to X
+.,F238 20 09 ED JSR $ED09       command serial bus device to TALK
+.,F23B A5 B9    LDA $B9         get the secondary address
+.,F23D 10 06    BPL $F245       
+.,F23F 20 CC ED JSR $EDCC       wait for the serial bus end after send
+.,F242 4C 48 F2 JMP $F248       
+.,F245 20 C7 ED JSR $EDC7       send secondary address after TALK
+.,F248 8A       TXA             copy device back to A
+.,F249 24 90    BIT $90         test the serial status byte
+.,F24B 10 E6    BPL $F233       if device present save device number and exit
+.,F24D 4C 07 F7 JMP $F707       do 'device not present' error and return
+
+
+---
+Additional information can be found by searching:
+- "find_file_and_find_file_A" which expands on file lookup used to verify the logical file
+- "set_file_details_from_table" which expands on loads file/device details from tables
+- "open_channel_for_output_and_serial_bus" which expands on shares serial bus device selection logic

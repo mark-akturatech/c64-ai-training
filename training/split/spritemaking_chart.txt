@@ -1,0 +1,54 @@
+# COMMODORE 64 - Easy Sprite-Making Chart: VIC register offsets and how to control sprites 0–7. Contains: V+21 enable bits for individual sprites, sprite pointer registers (2040–2047) and their pointer values (192–199) corresponding to sprite memory blocks (12288..12798), color registers (V+39..V+46), left X regs (V+0,V+2,...), right-side X control (V+16 bits), Y position regs (V+1,V+3,...), expansion controls (V+23, V+29), multicolor mode (V+28) and multicolor registers (V+37,V+38). Also shows sprite-sprite collision (V+30) and sprite-background collision (V+31) usage: IF PEEK(V+30) AND X = X THEN action.
+
+                                                 PROGRAMMING GRAPHICS   175
+~
+
+
+  EASY SPRITEMAKING CHART
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |          |SPRT 0|SPRT 1|SPRT 2|SPRT 3|SPRT 4 |SPRT 5 |SPRT 6 | SPRT 7 |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Turn on   |V+21,1|V+21,2|V+21,4|V+21,8|V+21,16|V+21,32|V+21,64|V+21,128|
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Put in mem| 2040,| 2041,| 2042,| 2043,| 2044, | 2045, | 2046, | 2047,  |
+  |set point.|  192 |  193 |  194 |  195 |  196  |  197  |  198  |  199   |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Locations | 12288| 12352| 12416| 12480| 12544 | 12608 | 12672 | 12736  |
+  |for Sprite|  to  |  to  |  to  |  to  |  to   |  to   |  to   |  to    |
+  |Pixel     | 12350| 12414| 12478| 12542| 12606 | 12670 | 12734 | 12798  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Color     |V+39,C|V+40,C|V+41,C|V+42,C|V+43,C |V+44,C |V+45,C |V+46,C  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Set LEFT X| V+0,X| V+2,X| V+4,X| V+6,X| V+8,X |V+10,X |V+12,X |V+14,X  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Set RIGHT |V+16,1|V+16,2|V+16,4|V+16,8|V+16,16|V+16,32|V+16,64|V+16,128|
+  |X position| V+0,X| V+2,X| V+4,X| V+6,X| V+8,X |V+10,X |V+12,X |V+14,X  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Set Y pos.| V+1,Y| V+3,Y| V+5,Y| V+7,Y| V+9,Y |V+11,Y |V+13,Y |V+15,Y  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Exp. Horiz|V+29,1|V+29,2|V+29,4|V+29,8|V+29,16|V+29,32|V+29,64|V+29,128|
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Exp. Vert.|V+23,1|V+23,2|V+23,4|V+23,8|V+23,16|V+23,32|V+23,64|V+23,128|
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Multi-Col.|V+28,1|V+28,2|V+28,4|V+28,8|V+28,16|V+28,32|V+28,64|V+28,128|
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |M-Color 1 |V+37,C|V+37,C|V+37,C|V+37,C|V+37,C |V+37,C |V+37,C |V+37,C  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |M-Color 2 |V+38,C|V+38,C|V+38,C|V+38,C|V+38,C |V+38,C |V+38,C |V+38,C  |
+  +----------+------+------+------+------+-------+-------+-------+--------+
+  |Priority  | The rule is that lower numbered sprites always have display|
+  |of sprites| priority over higher numbered sprites. For example, sprite |
+  |          | 0 has priority over ALL other sprites, sprite 7 has last   |
+  |          | priority. This means lower numbered sprites always appear  |
+  |          | to move IN FRONT OF or ON TOP OF higher numbered sprites.  |
+  +----------+------------------------------------------------------------+
+  |S-S Collis| V+30   IF PEEK(V+30)ANDX=X THEN [action]                   |
+  +----------+------------------------------------------------------------+
+  |S-B Collis| V+31   IF PEEK(V+31)ANDX=X THEN [action]                   |
+  +----------+------------------------------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "spritemaking_notes" which expands on alternative pointer locations and more on memory reservation
+- "dancing_mouse_line_explanations" which expands on practical example using pointers V+21, 2040, V+39, V+16

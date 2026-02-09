@@ -1,0 +1,43 @@
+# - C64 I/O Map (Mapping The Commodore 64) - How to address and set bit-pairs in multicolor bitmap: BY=BASE+(Y AND 248)*40+(Y AND 7)+(2*X AND 504). Array for bit masks CA(0..3) = {1,4,16,64}. Example BASIC program and plotting loop for drawing multicolor sine waves; discussion of color selection (CO=0..3) and POKE formula.
+
+                          hi-res bitmap mode.
+
+                          Given that the horizontal position (0-159) of the dot is stored in the
+                          variable X, its vertical position is in the variable Y, and the base
+                          address of the bitmap area is in the variable BASE, you can find the
+                          desired byte with the formula:
+
+                          BY=BASE+(Y AND 248)*40+(Y AND 7)+(2*X AND 504)
+
+                          Setting the desired bit-pair will depend on what color you chose.
+                          First, you must set up an array of bit masks.
+
+                          CA(0)=1:CA(1)=4:CA(2)=16:CA(3)=64
+
+                          To turn on the desired dot, select a color CO from 0 to 3
+                          (representing the color selected by the corresponding bit pattern) and
+                          execute the following statement:
+
+                          BI=(NOT X AND 3):POKE BY,PEEK(BY) AND (NOT 3*CA(BI)) OR (CO*CA(BI))
+
+                          The following program will demonstrate this technique:
+
+                              10 CA(0)=1:CA(1)=4:CA(2)=16:CA(3)=64:REM ARRAY FOR BIT PAIRS
+                              20 BASE=2*4096:POKE53272,PEEK(53272)OR8:REM PUT BIT MAP AT 8192
+                              30 POKE53265,PEEK(53265)OR32:POKE53270,PEEK(53270)OR16:REM MULTI-COLOR BIT      MAP
+                              40 A$="":FOR I=1 TO 37:A$=A$+"C":NEXT:PRINT CHR$(19);
+                              50 FOR I=1 TO 27:PRINT A$;:NEXT:POKE 2023,PEEK(2022): REM SET COLOR MAP
+                              60 A$="":FOR I=1 TO 128:A$=A$+"@":NEXT:FOR I=32 TO 63 STEP 2
+                              70 POKE648,I:PRINTCHR$(19);A$;A$;A$;A$:NEXT:POKE648,4:REM CLR HI-RES SCREEN
+                              80 FOR CO=1TO3:FOR Y=0TO199STEP.5:REM FROM THE TOP OF THE SCREEN TO THE      BOTTOM
+                              90 X=INT(10*CO+15*SIN(CO*45+Y/10)): REM SINE WAVE SHAPE
+                              100 BY=BASE+40*(Y AND 248)+(Y AND 7)+(X*2 AND 504): REM FIND HI-RES BYTE
+                              110 BI=(NOT X AND 3):POKE BY,PEEK(BY) AND (NOT 3*CA(BI)) OR(CO*CA(BI))
+                              120 NEXT Y,CO
+                              130 GOTO 130: REM LET IT STAY ON SCREEN
+
+
+---
+Additional information can be found by searching:
+- "d016_bit4_multicolor_mode_text_and_bitmap" which expands on Color sources & plotting rules for multicolor bitmap
+- "bitmap_basic_sample_program" which expands on Hi-res plotting example for comparison

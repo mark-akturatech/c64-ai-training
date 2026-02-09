@@ -1,0 +1,65 @@
+# MACHINE - NOP (opcode $EA) does nothing but is useful for replacing or reserving bytes (testing, leaving space, removing BRK). Examples: replacing removed bytes with NOPs to keep code alignment. Using BRK between modules for debug then replacing BRK ($00) with NOPs for release.
+
+
+
+The Do-Nothing Instruction:  NOP
+--------------------------------
+
+NOP (no operation) is an instruction that does nothing.  It affects no data
+registers or flags.  When a NOP instruction is given, nothing happens and the
+processor continues to the next instruction.  It seems inappropriate to me
+that we say that NOP has an implied address.  It doesn't do anything; it
+doesn't have an address at all.  On the other hand, I suppose that logicians
+might say, "Yes, but it does nothing to the X register."
+
+                                                                         :73:
+
+The NOP instruction, whose op code is #EA, is surprisingly useful.  It's not
+simply that if you're a contract programmer getting paid by the byte you
+might be tempted to put a large number of NOP instructions into your
+program.  NOP can serve two important program testing functions:  taking out
+unwanted instructions, or leaving space for extra instructions.
+
+It's not as easy to change a machine language program as it is to change a
+BASIC program.  As you have seen, the instructions are placed in specific
+locations.  If we wish to eliminate an instruction, we must either move all
+the following instructions down or fill in the space with NOP instructions.
+If we move the instructions, we may need to correct some of the addresses.
+
+Examine the following code:
+
+  0350  LDA #$00
+  0352  STA $1234
+  0355  ORA $3456
+
+If we decide to eliminate the instruction at 0352 (STA $1234), we must remove
+all three bytes.  So we place code $EA in locations 0352, 0353, and 0354.
+
+Suppose we are testing a moderately large program.  Most programs will break
+into distinct "modules," each of which does a specific job.  One module might
+clear a portion of memory to zero, another might do a calculation, and so on.
+When we are checking out this program, it might be wise to look at each
+module as it runs.
+
+In this case, we might deliberately code a BRK (break) command between each
+program module.  The program will start to run, and then it will break to the
+machine language monitor.  Within the monitor, we can examine memory to
+ensure that this module has done the job as we planned it.  When we are
+satisfied, we can start the next module using the .G command.  In this way,
+we can have tight testing control over our program.
+
+That's all very well, but when we have finished testing our program and are
+satisfied that it runs correctly, we don't want the BRK instructions there.
+That's easy to fix.  We replace the BRK codes ($00) with NOP's ($EA), and the
+program will run through to the end.
+
+If we are writing a program and suspect that we may need to insert one or two
+extra instructions within a certain area of the code, we can put a number of
+NOP instructions there.  The space will be available for use when we need it.
+
+                                                                         :74:
+
+
+---
+Additional information can be found by searching:
+- "implied_address_mode" which expands on NOP as a no-op implied instruction

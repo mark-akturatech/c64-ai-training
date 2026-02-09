@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Prepare for servicing NMIs and handle T1 (transmit) NMI: comments about disabling NMIs until ready and saving on stack; restore Y (TYA), mask ENABL to show only enabled sources, save mask in X (TAX). T1 NMI check: test ENABL bit for T1, read D2PRA, mask/merge with NXTBIT to produce next output bit, write back to D2PRA to transmit, then restore D2ICR (NMI enables). Also notes about 6526 ICR structure requiring nested handling of another NMI.
+
+                                ; DISABLE NMI'S UNTILL READY
+                                ;  SAVE ON STACK
+                                ;
+.,FE72 98       TYA             NNMI20 TYA             ;.Y SAVED THROUGH RESTORE
+.,FE73 2D A1 02 AND $02A1              AND ENABL       ;SHOW ONLY ENABLES
+.,FE76 AA       TAX                    TAX             ;SAVE IN .X FOR LATTER
+                                ;
+                                ; T1 NMI CHECK - TRANSMITT A BIT
+                                ;
+.,FE77 29 01    AND #$01               AND #$01        ;CHECK FOR T1
+.,FE79 F0 28    BEQ $FEA3              BEQ NNMI30      ;NO...
+                                ;
+.,FE7B AD 00 DD LDA $DD00              LDA D2PRA
+.,FE7E 29 FB    AND #$FB               AND #$FF-$04    ;FIX FOR CURRENT I/O
+.,FE80 05 B5    ORA $B5                ORA NXTBIT      ;LOAD DATA AND...
+.,FE82 8D 00 DD STA $DD00              STA D2PRA       ;...SEND IT
+                                ;
+.,FE85 AD A1 02 LDA $02A1              LDA ENABL       ;RESTORE NMI'S
+.,FE88 8D 0D DD STA $DD0D              STA D2ICR       ;READY FOR NEXT...
+                                ;
+
+---
+Additional information can be found by searching:
+- "rs232_nmi_entry_and_rom_check" which expands on entry/setup that leads here
+- "nested_nmi_dispatch_and_rstrab" which expands on after transmit, code checks for nested NMIs (T2/FLAG)
+- "popen_patch_and_baudof_calculation_and_end" which expands on NXTBIT and BAUD timing values established by POPEN/BAUD table

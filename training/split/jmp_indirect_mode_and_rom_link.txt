@@ -1,0 +1,82 @@
+# MACHINE - JMP indirect mode (JMP ($1234)) fetches a two-byte target address from the supplied address (low byte first) and jumps there. Useful in ROM to allow variable jumps: ROM code uses indirect jumps via RAM-stored vectors (e.g., interrupt vectors) allowing system behavior to be changed by modifying RAM pointers.
+
+                                                                         :80:
+
+Advocates of programming style make the following argument.  All programs
+should be written into neat small modules.  Logic block should be broken into
+subroutines, and the subroutines into even smaller subroutines; this way,
+everything is neat and testable.  If you should find a branch that won't
+reach, ask yourself whether it's time to break your program into smaller
+chunks before the logic gets too messy.  By the liberal use of subroutines,
+you can arrange your code so that all branches are short and easily within
+reach.  If you do break up the program structure, the branches will then
+always reach.  It's up to you to choose your coding style, but you might give
+the question some thought.
+
+An interesting aspect of relative addressing is that code containing branches
+is easy to relocate.  A piece of code containing a branch to six locations
+ahead will work perfectly if the whole code is moves to a different location.
+This is not true of jumps and subroutine calls, or any code using absolute
+addressing--if the location changes, the address must be changed.
+
+
+The ROM Link--Jumps in Indirect Mode
+------------------------------------
+
+We have mentioned the JMP instruction that will take the program to any
+specified address.  JMP has another address mode:  indirect addressing.
+
+Indirect addressing is signaled by the use of parentheses around the address.
+It works this way.  An address is supplied, but it's not the one we will
+eventually use.  We take this address, and at the location it specifies,
+we'll find the effective address, or indirect address.  The indirect address
+is two bytes long, of course, and is stored in the usual 650x manner of low
+byte first.
+
+An example will help to make things clear.  Suppose that at address $033C we
+have the instruction JMP ($1234).  The parentheses tell us that indirect
+addressing is involved.  The machine code is hex 6C 34 12; as always, the
+address is "turned around."  Now suppose that at addresses $1234 and $1235 we
+have stored values $24 and $68.  The jump instruction would behave as
+follows:  it would go to $1234 and $1235, get the contents, and the program
+would transfer to address $6824.
+
+
+  +-------+---+----------------------------------------------------------+
+  |       |   |                     MEMORY                               |
+  +-------+---+----------------------------------------------------------+
+           ^ |            ^
+           | |            |
+           | `------------'
+      INDIRECT
+      ADDRESS
+
+  Figure 5.6
+
+                                                                         :81:
+
+The JMP indirect has a somewhat specialized use.  Normally, if we want to
+transfer control to some location, we just JMP there; no need for the
+indirect step.  But there's one quite important case where indirect jumps
+serve an important function.
+
+Within ROM, there are a large amount of permanent instructions that the
+computer uses to perform tasks.  Since it's in ROM, we can never change this
+code.  If the various programs were linked only be means of JMP and JSR
+statements, they could not be changed, and we would not be able to modify
+behavior of the machine.
+
+Built into the ROM program, there are a series of carefully planned indirect
+jumps.  Instead of the ROM leaping from one instruction directly to another,
+it jumps indirectly via an address stored in RAM.  We can change the contents
+of RAM; and if we change the address stored in RAM, we can modify the
+behavior of the system.  The best-known indirect address is that associated
+with the interrupt sequence:  it's at $0090 in PET/CBM and $0314 in VIC, 64,
+and PLUS/4.
+
+You might not code many indirect jumps, but you'll be glad that they are
+there in ROM.
+
+---
+Additional information can be found by searching:
+- "using_irq_vector_and_masking_interrupts" which expands on interrupt vectors stored in RAM and used via indirect jump

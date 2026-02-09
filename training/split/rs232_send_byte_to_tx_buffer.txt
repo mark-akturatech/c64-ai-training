@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Place a byte into the RS-232 transmit circular buffer. Calls setup_for_transmit (JSR $F028), then updates the Tx buffer end pointer ($029E/$029D), checks for full buffer, and stores the byte at the buffer slot via indirect indexed addressing.
+
+                                *** send byte to the RS232 buffer
+.,F014 20 28 F0 JSR $F028       setup for RS232 transmit
+                                send byte to the RS232 buffer, no setup
+.,F017 AC 9E 02 LDY $029E       get index to Tx buffer end
+.,F01A C8       INY             + 1
+.,F01B CC 9D 02 CPY $029D       compare with index to Tx buffer start
+.,F01E F0 F4    BEQ $F014       loop while buffer full
+.,F020 8C 9E 02 STY $029E       set index to Tx buffer end
+.,F023 88       DEY             index to available buffer byte
+.,F024 A5 9E    LDA $9E         read the RS232 character buffer
+.,F026 91 F9    STA ($F9),Y     save the byte to the buffer
+
+
+---
+Additional information can be found by searching:
+- "rs232_setup_for_transmit" which expands on ensures transmit machinery/timer/interrupts are started before queuing bytes
+- "rs232_setup_next_tx_byte" which expands on consumes bytes from the Tx buffer to build the serial bitstream

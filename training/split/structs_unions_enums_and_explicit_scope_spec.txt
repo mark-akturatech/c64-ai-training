@@ -1,0 +1,30 @@
+# ca65 Users Guide - Structs, unions, enums open scopes if named; unnamed declarations add members to enclosing scope. Explicit scope specification uses namespace token '::' to access symbols in named scopes (example shows foo::bar and use of :: to access global scope).
+
+7.5 Structs, unions and enums
+Structs, unions and enums are explained in a separate section, I do only cover them here, because if they are declared with a name, they open a nested scope, similar to .SCOPE. However, when no name is specified, the behaviour is different: In this case, no new scope will be opened, symbols declared within a struct, union, or enum declaration will then be added to the enclosing scope instead.
+
+7.6 Explicit scope specification
+Accessing symbols from other scopes is possible by using an explicit scope specification, provided that the scope where the symbol lives in has a name. The namespace token (::) is used to access other scopes:
+
+
+        .scope  foo
+        bar:    .word   0
+        .endscope
+
+                ...
+                lda     #foo::bar        ; Access bar in scope foo
+The only way to deny access to a scope from the outside is to declare a scope without a name (using the .SCOPE command).
+
+A special syntax is used to specify the global scope: If a symbol or scope is preceded by the namespace token, the global scope is searched:
+
+
+        bar     = 3
+
+        .scope  foo
+                bar     = 2
+                lda     #::bar  ; Access the global bar (which is 3)
+        .endscope
+
+---
+Additional information can be found by searching:
+- "scopes_generic_and_nested_scopes" which expands on scope naming and lookup

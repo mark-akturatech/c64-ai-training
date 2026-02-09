@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Start of RS232TRANS library: description header and variables used by RS232 transmitter routines — BITTS, NXTBIT, ROPRTY, RODATA, RODBS, RODBE, ROBUF, RSSTAT, BITNUM, BAUDOF and notes about timing. RSTRAB checks BITTS and routes flow if done or performing stop/parity bits, shifting RODATA etc.
+
+                                ;
+                                ;   RSR - 8/18/80
+                                ;
+                                ; VARIABLES USED
+                                ;   BITTS - # OF BITS TO BE SENT (<>0 NOT DONE)
+                                ;   NXTBIT - BYTE CONTAINS NEXT BIT TO BE SENT
+                                ;   ROPRTY - BYTE CONTAINS PARITY BIT CALCULATED
+                                ;   RODATA - STORES DATA BYTE CURRENTLY BEING TRANSMITTED
+                                ;   RODBS - OUTPUT BUFFER INDEX START
+                                ;   RODBE - OUTPUT BUFFER INDEX END
+                                ;   IF RODBS=RODBE THEN BUFFER EMPTY
+                                ;   ROBUF - INDIRECT POINTER TO DATA BUFFER
+                                ;   RSSTAT - RS-232 STATUS BYTE
+                                ;
+                                ;   XXX US - NORMAL BIT PATH
+                                ;   XXX US - WORST CASE PARITY BIT PATH
+                                ;   XXX US - STOP BIT PATH
+                                ;   XXX US - START BIT PATH
+                                ;
+.,EEBB A5 B4    LDA $B4         RSTRAB LDA BITTS       ;CHECK FOR PLACE IN BYTE...
+.,EEBD F0 47    BEQ $EF06              BEQ RSTBGN      ;...DONE, =0 START NEXT
+                                ;
+.,EEBF 30 3F    BMI $EF00              BMI RST050      ;...DOING STOP BITS
+                                ;
+.,EEC1 46 B6    LSR $B6                LSR RODATA      ;SHIFT DATA INTO CARRY
+.,EEC3 A2 00    LDX #$00               LDX #00         ;PREPARE FOR A ZERO
+.,EEC5 90 01    BCC $EEC8              BCC RST005      ;YES...A ZERO
+.,EEC7 CA       DEX                    DEX             ;NO...MAKE AN $FF
+.,EEC8 8A       TXA             RST005 TXA             ;READY TO SEND
+                                ;
+.,EEC9 45 BD    EOR $BD                EOR ROPRTY      ;CALC INTO PARITY
+.,EECB 85 BD    STA $BD                STA ROPRTY
+                                ;
+.,EECD C6 B4    DEC $B4                DEC BITTS       ;BIT COUNT DOWN
+.,EECF F0 06    BEQ $EED7              BEQ RST010      ;WANT A PARITY INSTEAD
+                                ;
+.,EED1 8A       TXA             RSTEXT TXA             ;CALC BIT WHOLE TO SEND
+.,EED2 29 04    AND #$04               AND #$04        ;GOES OUT D2PA2
+.,EED4 85 B5    STA $B5                STA NXTBIT
+.,EED6 60       RTS                    RTS
+                                ; CALCULATE PARITY
+                                ;  NXTBIT =0 UPON ENTRY
+                                ;
+.,EED7 A9 20    LDA #$20        RST010 LDA #$20        ;CHECK 6551 REG BITS
+.,EED9 2C 94 02 BIT $0294              BIT M51CDR
+.,EEDC F0 14    BEQ $EEF2              BEQ RSPNO       ;...NO PARITY, SEND A STOP
+.,EEDE 30 1C    BMI $EEFC              BMI RST040      ;...NOT REAL PARITY
+.,EEE0 70 14    BVS $EEF6              BVS RST030      ;...EVEN PARITY
+                                ;
+.,EEE2 A5 BD    LDA $BD                LDA ROPRTY      ;CALC ODD PARITY
+.,EEE4 D0 01    BNE $EEE7              BNE RSPEXT      ;CORRECT GUESS
+                                ;
+.,EEE6 CA       DEX             RSWEXT DEX             ;WRONG GUESS...ITS A ONE
+                                ;
+.,EEE7 C6 B4    DEC $B4         RSPEXT DEC BITTS       ;ONE STOP BIT ALWAYS
+.,EEE9 AD 93 02 LDA $0293              LDA M51CTR      ;CHECK # OF STOP BITS
+.,EEEC 10 E3    BPL $EED1              BPL RSTEXT      ;...ONE
+.,EEEE C6 B4    DEC $B4                DEC BITTS       ;...TWO
+.,EEF0 D0 DF    BNE $EED1              BNE RSTEXT      ;JUMP
+                                ;
+
+---
+Additional information can be found by searching:
+- "rs232trans_parity_and_bgn" which expands on parity calculation and start-of-byte setup

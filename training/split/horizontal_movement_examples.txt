@@ -1,0 +1,46 @@
+# COMMODORE 64 - Two BASIC examples demonstrating horizontal movement of a sprite across the screen. Example 1 (p142_1.prg) loops J from 0..347 computing HX=INT(J/256) and LX = J-256*HX then POKE V,LX and POKE V+16,HX to move sprite across the full 0..347 range. Example 2 shows handling expanded sprites starting offscreen and wrapping values, toggling MSB when crossing 255.
+
+  sprite must be 0 (turned OFF). Bits 0 to 7 of the X MSB register
+  correspond to sprites 0 to 7, respectively.
+    The following program moves a sprite across the screen:
+
+  EXAMPLE:
+
+start tok64 p142_1.prg
+  10 print"{clear}"
+  20 poke2040,13
+  30 fori=0to62:poke832+i,129:next
+  40 v=53248
+  50 pokev+21,1
+  60 pokev+39,1
+  70 pokev+1,100
+  80 forj=0to347
+  90 hx=int(j/256):lx=j-256*hx
+  100 pokev,lx:pokev+16,hx:next
+stop tok64
+
+    When moving expanded sprites onto the left side of the screen in the
+  X direction, you have to start the sprite OFF SCREEN on the RIGHT SIDE.
+  This is because an expanded sprite is larger than the amount of space
+  available on the left side of the screen.
+
+  EXAMPLE:
+
+start tok64 p142_2.prg
+  10 print"{clear}"
+  20 poke2040,13
+  30 fori=0to62:poke832+i,129:next
+  40 v=53248
+  50 pokev+21,1
+  60 pokev+39,1:pokev+23,1:pokev+29,1
+  70 pokev+1,100
+  80 j=488
+  90 hx=int(j/256):lx=j-256*hx
+  100 pokev,lx:pokev+16,hx
+  110 j=j+1:ifj>511thenj=0
+  120 ifj>488orj<348goto90
+stop tok64
+
+---
+Additional information can be found by searching:
+- "sprite_horizontal_positioning_and_X_MSB_explanation" which expands on how examples use MSB and low byte poke sequence

@@ -1,0 +1,50 @@
+# ca65 Users Guide - Handling local symbols inside macros to avoid duplicate-symbol conflicts when a macro is expanded multiple times. Demonstrates the problem with reusable labels (Skip) and shows solutions: .LOCAL to make symbol names unique per expansion, and using a new lexical block (.proc/.endproc) inside the macro to hide labels. Uses the inc16 macro as an illustrative example.
+
+12.6 Local symbols inside macros
+Now, with recursive macros, .IFBLANK and .PARAMCOUNT, what else do you need? Have a look at the inc16 macro above. Here is it again:
+
+
+.macro  inc16   addr
+        clc
+        lda     addr
+        adc     #<$0001
+        sta     addr
+        lda     addr+1
+        adc     #>$0001
+        sta     addr+1
+.endmacro
+If you have a closer look at the code, you will notice, that it could be written more efficiently, like this:
+
+
+.macro  inc16   addr
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:
+.endmacro
+But imagine what happens, if you use this macro twice? Since the label "Skip" has the same name both times, you get a "duplicate symbol" error. Without a way to circumvent this problem, macros are not as useful, as they could be. One possible solution is the command .LOCAL. It declares one or more symbols as local to the macro expansion. The names of local variables are replaced by a unique name in each separate macro expansion. So we can solve the problem above by using .LOCAL:
+
+
+.macro  inc16   addr
+        .local  Skip            ; Make Skip a local symbol
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:                           ; Not visible outside
+.endmacro
+Another solution is of course to start a new lexical block inside the macro that hides any labels:
+
+
+.macro  inc16   addr
+.proc
+        inc     addr
+        bne     Skip
+        inc     addr+1
+Skip:
+.endproc
+.endmacro
+
+---
+Additional information can be found by searching:
+- "recursive_macros_and_exitmacro" which expands on Combining recursion with local labels to create reusable macros
+- "c_style_define_macros" which expands on Contrast classic macros with .DEFINE style macros that behave differently

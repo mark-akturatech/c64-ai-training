@@ -1,0 +1,25 @@
+# ********* - Screen-mode loop to read the remainder of the disk buffer and display it on the CRT. Initializes k and nb(1) from a$(0), then iterates j=0..63 (64 lines of 4 bytes) with special handling at j=32 to call the screen-continue subroutine (gosub 710) and handle 'n' to abort. For each 4-byte group it GET#s from channel 2 into a$(i), constructs hex address/a$ and ASCII representation/b$ via gosubs (790, 850), and prints formatted hex/ASCII lines to the screen.
+
+ 432 rem* read & crt display         *
+ 433 rem* rest of the disk buffer    *
+ 434 rem******************************
+ 436 k=1:nb(1)=asc(a$(0))
+ 438 for j=0 to 63:if j=32 then gosub 710:if z$="n" then j=80:\
+     goto 458
+ 440 for i=k to 3
+ 442 get#2,a$(i):if a$(i)="" then a$(i)=nl$
+ 444 if k=1 and i<2 then nb(2)=asc(a$(i))
+ 446 next i:k=0
+ 448 a$="":b$=":":n=j*4:gosub 790:a$=a$+":"
+ 450 for i=0 to 3:n=asc(a$(i)):gosub 790
+ 452 c$=a$(i):gosub 850:b$=b$+c$
+ 454 next i:if jj$="s" then print a$b$
+ 458 next j:goto 571
+
+---
+Additional information can be found by searching:
+- "read_byte0_and_m_r_commands" which expands on uses a$(0) read from drive before entering this loop
+- "screen_continue_subroutine" which expands on calls Gosub 710 at mid-page to prompt user continue
+- "byte_to_hex_subroutine" which expands on Gosub 790 formats hex for printing
+- "byte_to_ascii_subroutine" which expands on Gosub 850 converts bytes to displayable characters
+- "next_track_sector_prompt_and_loop" which expands on after display, control flows to prompt for next track/sector

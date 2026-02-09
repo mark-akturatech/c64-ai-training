@@ -1,0 +1,36 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Simple I/O utility routines: IOBASE ($FFF3) returns VIC base $DC00 in (X/Y) at $E500; SCREEN ($FFED) returns screen size (40 columns in X = $28, 25 rows in Y = $19) at $E505; PLOT ($FFF0) get/put row and column depending on carry — reads/writes PNTR/TBLX pointers and sets screen pointers via $E56C.
+
+                                *** IOBASE: GET I/O ADDRESS
+                                The KERNAL routine IOBASE ($fff3) jumps to this routine.
+                                It returns the base address $dc00 in (X/Y)
+.,E500 A2 00    LDX #$00        set (X/Y) to $dc00
+.,E502 A0 DC    LDY #$DC
+.,E504 60       RTS
+
+                                *** SCREEN: GET SCREEN SIZE
+                                The KERNAL routine SCREEN ($ffed) jumps to this routine.
+                                It returns the screen size; columns in (X) and rows in
+                                (Y).
+.,E505 A2 28    LDX #$28        40 columns
+.,E507 A0 19    LDY #$19        25 rows
+.,E509 60       RTS
+
+                                *** PLOT: PUT/GET ROW AND COLUMN
+                                The KERNAL routine PLOT ($fff0) jumps to this routine. The
+                                option taken depends on the state of carry on entry. If it
+                                is set, the column is placed in (Y) and the row placed in
+                                (X). If carry is clear, the cursor position is read from
+                                (X/Y) and the screen pointers are set.
+.,E50A B0 07    BCS $E513       if carry set, jump
+.,E50C 86 D6    STX $D6         store TBLX, current row
+.,E50E 84 D3    STY $D3         store PNTR, current column
+.,E510 20 6C E5 JSR $E56C       set screen pointers
+.,E513 A6 D6    LDX $D6         read TBLX
+.,E515 A4 D3    LDY $D3         read PNTR
+.,E517 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "screen_initialization_and_io_defaults" which expands on initial VIC register setup and I/O defaults at startup
+- "synchronise_colour_pointer" which expands on screen pointers and color RAM mapping used later

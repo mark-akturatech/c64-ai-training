@@ -1,0 +1,22 @@
+# NMOS 6510 - Explanation of why STA ABX has a fix-up (always takes 5 cycles) while some undocumented store opcodes (SHX/SHY/etc.) lack the fix-up leading to collisions between value and high address byte computation when a page-cross occurs. Explains buffered reads and write timing causing the instability.
+
+• When adding Y to the target address causes a page boundary crossing, the highbyte of the
+target address is incremented by one (as expected), and then ANDed with (A & X).
+Example:
+SHA $7133,Y
+
+;9F 33 71
+
+Equivalent Instructions:
+PHP
+PHA
+STX $02
+AND $02
+AND #$72
+STA $7133,Y
+LDX $02
+PLA
+
+---
+Additional information can be found by searching:
+- "unstable_address_high_byte_group" which expands on applies to SHX/SHY/SHA/TAS

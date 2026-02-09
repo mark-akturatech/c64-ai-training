@@ -1,0 +1,31 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Behavior of the CIA Time-of-Day (TOD) write mode and latch: $DC0F bit controls whether writing TOD registers sets alarm or clock; writing hours latches/stops updates until tenths of seconds are written. Notes on BASIC RND using TOD seconds/tenths as seed and TOD's advantages over software clocks and IRQ-based timers (survives RESET, more accurate).
+
+                          $DC0F).  If that bit is set to 1, writing to the Time of Day registers
+                          sets the alarm.  If the bit is set to 0, writing to the Time of Day
+                          registers sets the Time of Day clock.  In either case, as with reading
+                          the registers, there is a latch function.  This function stops the
+                          clock from updating when you write to the hours register.  The clock
+                          will not start again until you write to the tenths of seconds
+                          registers.
+
+                          The only apparent use of the Time of Day Clock by the 64's Operating
+                          System is in the BASIC RND statement.  There, the seconds and tenths
+                          of seconds registers are read and their values used as part of the
+                          seed value for the RND(0) command.
+
+                          Nonetheless, this clock can be an invaluable resource for the 64 user.
+                          It will keep time more accurately than the software clock maintained
+                          at locations 60-162 ($A0-$A2) by the Timer A interrupt routine.  And
+                          unlike that software clock, the Time of Day Clock will not be
+                          disturbed when I/O operations disrupt the Timer A IRQ, or when the IRQ
+                          vector is diverted elsewhere.  Not even a cold start RESET will
+                          disrupt the time.  For game timers, just set the time for 00:00:00:0
+                          and it will keep track of elapsed time in hours, minutes, seconds and
+                          tenths of seconds format.
+
+
+---
+Additional information can be found by searching:
+- "dc0f_control_register_b_cia1" which expands on Control of TOD write/select via CIACRB ($DC0F)
+- "dc08_dc0b_time_of_day_registers" which expands on Individual TOD registers (tenths, seconds, minutes, hours)
+- "basic_tod_clock_example" which expands on BASIC example that reads/writes TOD registers

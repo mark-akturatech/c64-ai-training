@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OPEN and CHKIN logic: OPEN creates logical file table entries (LAT/FAT/SAT) using LOOKUP and JZ100/JZ101/GETTOP. CHKIN opens a logical file for input (checks DFLTN), special-cases keyboard/screen/serial devices, handles RS232 talk/listen commands (TALK/LISTN) and validates that requested device supports read operations. Uses JZ100/JZ101 to extract table info.
+
+                                ;* CHKIN -- OPEN CHANNEL FOR INPUT     *
+                                ;*                                     *
+                                ;* THE NUMBER OF THE LOGICAL FILE TO BE*
+                                ;* OPENED FOR INPUT IS PASSED IN .X.   *
+                                ;* CHKIN SEARCHES THE LOGICAL FILE     *
+                                ;* TO LOOK UP DEVICE AND COMMAND INFO. *
+                                ;* ERRORS ARE REPORTED IF THE DEVICE   *
+                                ;* WAS NOT OPENED FOR INPUT ,(E.G.     *
+                                ;* CASSETTE WRITE FILE), OR THE LOGICAL*
+                                ;* FILE HAS NO REFERENCE IN THE TABLES.*
+                                ;* DEVICE 0, (KEYBOARD), AND DEVICE 3  *
+                                ;* (SCREEN), REQUIRE NO TABLE ENTRIES  *
+                                ;* AND ARE HANDLED SEPARATE.           *
+                                ;***************************************
+                                ;
+.,F20E 20 0F F3 JSR $F30F       NCHKIN JSR LOOKUP      ;SEE IF FILE KNOWN
+.,F211 F0 03    BEQ $F216       BEQ    JX310           ;YUP...
+                                ;
+.,F213 4C 01 F7 JMP $F701       JMP    ERROR3          ;NO...FILE NOT OPEN
+                                ;
+.,F216 20 1F F3 JSR $F31F       JX310  JSR JZ100       ;EXTRACT FILE INFO
+                                ;
+.,F219 A5 BA    LDA $BA         LDA    FA
+.,F21B F0 16    BEQ $F233       BEQ    JX320           ;IS KEYBOARD...DONE.
+                                ;
+                                ;COULD BE SCREEN, KEYBOARD, OR SERIAL
+                                ;
+.,F21D C9 03    CMP #$03        CMP    #3
+.,F21F F0 12    BEQ $F233       BEQ    JX320           ;IS SCREEN...DONE.
+.,F221 B0 14    BCS $F237       BCS    JX330           ;IS SERIAL...ADDRESS IT
+.,F223 C9 02    CMP #$02        CMP    #2              ;RS232?
+.,F225 D0 03    BNE $F22A       BNE    JX315           ;NO...
+                                ;
+.,F227 4C 4D F0 JMP $F04D       JMP    CKI232
+                                ;
+                                ;SOME EXTRA CHECKS FOR TAPE
+                                ;
+.,F22A A6 B9    LDX $B9         JX315  LDX SA
+.,F22C E0 60    CPX #$60        CPX    #$60            ;IS COMMAND A READ?
+.,F22E F0 03    BEQ $F233       BEQ    JX320           ;YES...O.K....DONE
+                                ;
+.,F230 4C 0A F7 JMP $F70A       JMP    ERROR6          ;NOT INPUT FILE
+                                ;
+.,F233 85 99    STA $99         JX320  STA DFLTN       ;ALL INPUT COME FROM HERE
+                                ;
+.,F235 18       CLC             CLC                    ;GOOD EXIT
+.,F236 60       RTS             RTS
+                                ;
+                                ;AN SERIAL DEVICE HAS TO BE A TALKER
+                                ;
+.,F237 AA       TAX             JX330  TAX             ;DEVICE # FOR DFLTO
+.,F238 20 09 ED JSR $ED09       JSR    TALK            ;TELL HIM TO TALK
+                                ;
+.,F23B A5 B9    LDA $B9         LDA    SA              ;A SECOND?
+.,F23D 10 06    BPL $F245       BPL    JX340           ;YES...SEND IT
+.,F23F 20 CC ED JSR $EDCC       JSR    TKATN           ;NO...LET GO
+.,F242 4C 48 F2 JMP $F248       JMP    JX350
+                                ;
+.,F245 20 C7 ED JSR $EDC7       JX340  JSR TKSA        ;SEND SECOND
+                                ;
+
+---
+Additional information can be found by searching:
+- "lookup_and_clall" which expands on LOOKUP/JZ100 routines used to find table entries

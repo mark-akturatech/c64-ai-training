@@ -1,0 +1,19 @@
+# byRiclianll - Write the modified LOW and HIGH bytes back into the drive buffer with a DOS memory-write (M-W) to the correct buffer offsets, then issue the DOS 'U2' command to write the buffer back to disk. Prints/requests the M-W sequence (including CHR$ wrappers), sends the U2 command, reads the drive status via INPUT#15,EN*,EM*,ET*,ES*, and branches on success or failure.
+
+780  HIGH=D 
+
+790  PRINT#15, "M-W"CHR*(2)CHR*(5)CHR*(2)C 
+HR*  <L0W) CHR* (HIGH) 
+
+800  print#15, "U2";2;o; t;s 
+
+810  INPUT#15,EN*,EM*,ET*,ES* 
+820  IFEN*="00"G0T0840 
+830  G0T0940 
+840  CL0SE2 
+
+---
+Additional information can be found by searching:
+- "confirm_and_convert_new_address" which expands on uses the LOW and HIGH numeric bytes obtained from conversion
+- "finalize_success" which expands on on successful write, closes channels and reports DONE
+- "error_and_close_handlers" which expands on on failure, jumps to error/close routines

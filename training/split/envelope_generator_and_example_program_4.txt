@@ -1,0 +1,72 @@
+# COMMODORE 64 - The ADSR envelope generator: definitions of Attack, Decay, Sustain, Release phases and how they shape amplitude over time. Shows example modifications (EXAMPLE PROGRAM 4) to set SDSR via registers 5 and 6 for voice 1. Explains that register 5 high nibble = ATTACK (0–15), low nibble = DECAY (0–15); register 6 high nibble = SUSTAIN (0–15), low nibble = RELEASE (0–15). Includes example program lines setting POKES+5,88:POKES+6,195 and modified waveform control.
+
+  THE ENVELOPE GENERATOR
+
+    The volume of a musical tone changes from the moment you first hear it,
+  all the way through until it dies out and you can't hear it anymore. When
+  a note is first struck, it rises from zero volume to its peak volume. The
+  rate at which this happens is called the ATTACK. Then, it fails from the
+  peak to some middle-ranged volume. The rate at which the fall of the note
+  occurs is called the DECAY. The mid-ranged volume itself is called the
+  SUSTAIN level. And finally, when the note stops playing, it fails from
+  the SUSTAIN level to zero volume. The rate at which it fails is called
+  the RELEASE. Here is a sketch of the four phases of a note:
+
+                              +
+                             / \
+                            /   \
+                           /     \
+         SUSTAIN LEVEL . ./. . . .+--------+
+                         /                  \
+                        /                    \
+                       /                      \
+
+                       |      |   |        |   |
+                       |   A  | D |    S   | R |
+
+
+    Each of the items mentioned above give certain qualities and restric-
+  tions to a note. The bounds are called parameters.
+    The parameters ATTACK/DECAY/SUSTAIN/RELEASE and collectively called
+  ADSR, can be controlled by your use of another set of locations in the
+  sound generator chip. LOAD your first example program again. RUN it again
+  and remember how it sounds. Then, changing line 20 so the program is like
+  this:
+
+
+
+
+
+  196   PROGRAMMING SOUND AND MUSIC
+~
+
+
+  EXAMPLE PRO6RAM 4 (EXAMPLE 1 MODIFIED):
+
+start tok64 page197.prg
+  5 s=54272
+  10 forl=stos+24:pokel,0:next
+  20 pokes+5,88:pokes+6,195
+  30 pokes+24,15
+  40 readhf,lf,dr
+  50 ifhf<0thenend
+  60 pokes+1,hf:pokes,lf
+  70 pokes+4,33
+  80 fort=1todr:next
+  90 pokes+4,32:fort=1to50:next
+  100 goto40
+  110 data25,177,250,28,214,250
+  120 data25,177,250,25,177,250
+  130 data25,177,125,28,214,125
+  140 data32,94,750,25,177,250
+  150 data28,214,250,19,63,250
+  160 data19,63,250,19,63,250
+  170 data21,154,63,24,63,63
+  180 data25,177,250,24,63,125
+  190 data19,63,250,-1,-1,-1
+stop tok64
+
+---
+Additional information can be found by searching:
+- "adsr_table_and_examples" which expands on attack/decay/release numeric table and example settings
+- "example_program_1_code_and_explanation" which expands on base program where ADSR changes are applied

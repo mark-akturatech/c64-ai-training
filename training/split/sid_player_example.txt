@@ -1,0 +1,76 @@
+# Kick Assembler - A complete example building a SID player using .var music = LoadSid("Nightshift.sid"), BasicUpstart2(start), calls to music.init and music.play, setting up IRQ vector to irq1 which calls music.play, and placing SID data with .fill music.size, music.getData(i). Also prints SID metadata while assembling (location, init, play, songs, name, author, flags, etc.).
+
+.print "flags="+toBinaryString(music.flags)
+.print "speed="+toBinaryString(music.speed)
+.print "startpage="+music.startpage
+.print "pagelength="+music.pagelength
+
+Assembling the above code will create a musicplayer for the given sidfile and print the information in the music
+file while assembling:
+SID Data
+-------location=$1000
+init=$1d70
+play=$1003
+songs=1.0
+startSong=1.0
+size=$d78
+name=Nightshift
+author=Ari Yliaho (Agemixer)
+copyright=2001 Scallop
+Additional tech data
+-------------------header=PSID
+
+61
+
+Import and Export
+
+header version=2.0
+flags=100100
+speed=0
+startpage=0.0
+
+TIP: If you use the –libdir option to point to your HVSC main directory, you don’t have to write long filenames.
+For example:
+.var music = LoadSid("C:/c64/HVSC_44-all-of-them/C64Music/Tel_Jeroen/
+Closing_In.sid")
+
+will be
+.var music = LoadSid("Tel_Jeroen/Closing_In.sid")
+
+12.4. Converting Graphics
+Kick Assembler makes it easy to convert graphics from gif and jpg files to the basic C64 formats. A picture
+can be loaded into a picture value by the LoadPicture function. The picture value can then be accessed by various
+functions depending on which format you want. The following will place a single color logo in a standard 32x8
+char matrix charset placed at $2000.
+*=$2000
+.var logo = LoadPicture("CML_32x8.gif")
+.fill $800, logo.getSinglecolorByte((i>>3)&$1f, (i&7) | (i>>8)<<3)
+
+If you don't like the compact form of the .fill command you can use a for loop instead. The following will
+produce the same data:
+*=$2000
+.var logo = LoadPicture("CML_32x8.gif")
+.for (var y=0; y<8; y++)
+.for (var x=0;x<32; x++)
+.for(var charPosY=0; charPosY<8; charPosY++)
+.byte logo.getSinglecolorByte(x,charPosY+y*8)
+
+The LoadPicture can take a color table as the second argument. This is used to decide which bit pattern is
+produced by a pixel. In single color mode there are two bit patters (%0 and %1) and multi color mode has four
+(%00, %01, %10 and %11). If you don’t specify a color table, a default table is created based on the colors in the
+picture. However, normally you wish to control which color is mapped to a bit pattern. The following shows how
+to convert a picture to a 16x16 multi color char matrix charset:
+*=$2800 “Logo”
+.var picture = LoadPicture("Picture_16x16.gif",
+List().add($444444, $6c6c6c,$959595,$000000))
+.fill $800, picture.getMulticolorByte(i>>7,i&$7f)
+
+The four colors added to the list are the RGB values for the colors that are mapped to each bit pattern.
+Finally the picture value contains a getPixel function from which you can get the RGB color of a pixel. This
+comes in handy when you want to make your own format for some special purpose.
+Attributes and functions available on picture values:
+
+
+---
+Additional information can be found by searching:
+- "sid_file_properties_and_usage" which expands on properties used in player example

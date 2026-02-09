@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Small handlers that set RS-232 DSR or CTS as 'signal not present' in the status register. Implements loading appropriate bit masks into A and OR/STA into the RS-232 status register ($0297). Contains assembler annotation bytes used by the disassembly.
+
+                                *** set DSR signal not present
+.,EF2E A9 40    LDA #$40        set DSR signal not present
+.:EF30 2C       .BYTE $2C       makes next line BIT $10A9
+
+                                *** set CTS signal not present
+.,EF31 A9 10    LDA #$10        set CTS signal not present
+.,EF33 0D 97 02 ORA $0297       OR it with the RS232 status register
+.,EF36 8D 97 02 STA $0297       save the RS232 status register
+
+
+---
+Additional information can be found by searching:
+- "rs232_setup_next_tx_byte" which expands on this routine sets these flags when DSR/CTS are not present during Tx setup
+- "rs232_open_channel_for_output" which expands on DSR/CTS status is also relevant when opening the RS-232 channel for output

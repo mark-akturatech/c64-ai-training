@@ -1,0 +1,24 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Vibrato via Voice 3 oscillator read ($D41B): set Voice3 low frequency (4-7Hz), triangle waveform, mute Voice3 (bit7 $D418), read $D41B each frame and add a scaled value to target voice's frequency registers to produce pitch oscillation. Depth controlled by scaling/division.
+
+10.1 VIBRATO (Frequency Modulation)
+--------------------------------------------------------------------------------
+
+Vibrato (rapid frequency variation) is achieved by reading the oscillator 3
+output ($D41B) and adding it to another voice's frequency register.
+
+Implementation:
+  1. Set Voice 3 to a low frequency (the vibrato rate, typically 4-7 Hz)
+  2. Select triangle waveform on Voice 3 (smooth modulation)
+  3. Mute Voice 3 audio (bit 7 of $D418 = 1)
+  4. In the playback loop, read $D41B
+  5. Add (scaled) value to the target voice's frequency registers
+  6. The target voice's pitch will oscillate smoothly
+
+The depth of vibrato depends on how much of the modulation value is added.
+Dividing the read value reduces the vibrato depth.
+
+
+---
+Additional information can be found by searching:
+- "voice3_modulation_intro" which expands on muting Voice 3 and reading $D41B/$D41C
+- "frequency_calculation" which expands on how added modulation affects Fn and Fout

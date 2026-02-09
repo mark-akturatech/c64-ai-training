@@ -1,0 +1,67 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - DSPP/DSPP2/SCOLOR/KEY routines: DSPP places a char on screen and DSPP2 restores color & displays (used by blinking). SCOLOR builds the color RAM pointer in USER/USER+1 from PNT/PNT+1 and VIC color RAM base. Also includes KEY (clock/jiffy update) which handles blinking cursor timing, CASSETTE switch checks, and calls SCNKEY to scan keyboard if necessary.
+
+.,E9D8 B1 AE    LDA ($AE),Y            LDA (EAL)Y
+.,E9DA 91 F3    STA ($F3),Y            STA (USER)Y
+.,E9DC 88       DEY                    DEY
+.,E9DD 10 F5    BPL $E9D4              BPL SCD20
+.,E9DF 60       RTS                    RTS
+                                ;
+                                ; DO COLOR TO AND FROM ADDRESSES
+                                ; FROM CHARACTER TO AND FROM ADRS
+                                ;
+                                TOFROM
+.,E9E0 20 24 EA JSR $EA24              JSR SCOLOR
+.,E9E3 A5 AC    LDA $AC                LDA SAL         ;CHARACTER FROM
+.,E9E5 85 AE    STA $AE                STA EAL         ;MAKE COLOR FROM
+.,E9E7 A5 AD    LDA $AD                LDA SAL+1
+.,E9E9 29 03    AND #$03               AND #$03
+.,E9EB 09 D8    ORA #$D8               ORA #>VICCOL
+.,E9ED 85 AF    STA $AF                STA EAL+1
+.,E9EF 60       RTS                    RTS
+                                ;
+                                ; SET UP PNT AND Y
+                                ; FROM .X
+                                ;
+.,E9F0 BD F0 EC LDA $ECF0,X     SETPNT LDA LDTB2,X
+.,E9F3 85 D1    STA $D1                STA PNT
+.,E9F5 B5 D9    LDA $D9,X              LDA LDTB1,X
+.,E9F7 29 03    AND #$03               AND #$03
+.,E9F9 0D 88 02 ORA $0288              ORA HIBASE
+.,E9FC 85 D2    STA $D2                STA PNT+1
+.,E9FE 60       RTS                    RTS
+                                ;
+                                ; CLEAR THE LINE POINTED TO BY .X
+                                ;
+.,E9FF A0 27    LDY #$27        CLRLN  LDY #LLEN-1
+.,EA01 20 F0 E9 JSR $E9F0              JSR SETPNT
+.,EA04 20 24 EA JSR $EA24              JSR SCOLOR
+.,EA07 20 DA E4 JSR $E4DA       CLR10  JSR CPATCH      ;REVERSED ORDER FROM 901227-02
+.,EA0A A9 20    LDA #$20               LDA #$20        ;STORE A SPACE
+.,EA0C 91 D1    STA ($D1),Y            STA (PNT)Y     ;TO DISPLAY
+.,EA0E 88       DEY                    DEY
+.,EA0F 10 F6    BPL $EA07              BPL CLR10
+.,EA11 60       RTS                    RTS
+.,EA12 EA       NOP                    NOP
+                                ;
+                                ;PUT A CHAR ON THE SCREEN
+                                ;
+.,EA13 A8       TAY             DSPP   TAY             ;SAVE CHAR
+.,EA14 A9 02    LDA #$02        LDA    #2
+.,EA16 85 CD    STA $CD         STA    BLNCT           ;BLINK CURSOR
+.,EA18 20 24 EA JSR $EA24       JSR    SCOLOR          ;SET COLOR PTR
+.,EA1B 98       TYA             TYA                    ;RESTORE COLOR
+.,EA1C A4 D3    LDY $D3         DSPP2  LDY PNTR        ;GET COLUMN
+.,EA1E 91 D1    STA ($D1),Y     STA    (PNT)Y          ;CHAR TO SCREEN
+.,EA20 8A       TXA             TXA
+.,EA21 91 F3    STA ($F3),Y     STA    (USER)Y         ;COLOR TO SCREEN
+.,EA23 60       RTS             RTS
+.,EA24 A5 D1    LDA $D1         SCOLOR LDA PNT         ;GENERATE COLOR PTR
+.,EA26 85 F3    STA $F3         STA    USER
+.,EA28 A5 D2    LDA $D2         LDA    PNT+1
+.,EA2A 29 03    AND #$03        AND    #$03
+.,EA2C 09 D8    ORA #$D8        ORA    #>VICCOL        ;VIC COLOR RAM
+
+---
+Additional information can be found by searching:
+- "keyboard_scan_and_irq" which expands on KEY calls SCNKEY to scan keyboard
+- "tofrom_setup_pnt" which expands on SCOLOR and TOFROM coordinate to copy colors

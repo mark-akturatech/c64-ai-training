@@ -1,0 +1,34 @@
+# Kick Assembler - Section 3.8: Using the preprocessor (#import, #importif) to include other source files, search path order (current dir then -libdir entries), #importonce usage to prevent multiple inclusion, and note about old .import source directives (v3.x support vs. recommended preprocessor).
+
+3.8. Importing source code
+Use the preprocessor to import other source files.
+// Import the file "mylibrary.asm"
+#import "MyLibrary.asm"
+// Only import "UpstartCode.asm" if STAND_ALONE is defined
+#importif STAND_ALONE "UpstartCode.asm"
+
+Note that preprocessor commands starts with #. Refer to the chapter on the preprocessor for a detailed description.
+When Kick Assembler searches for a file, it first look in the current directory. Afterwards it looks in the directories supplied by the ‘-libdir’ parameter when running the assembler. This enables you to create standard libraries
+for files you use in several different sources. A command line could look like this:
+java –jar kickass.jar myProgram.asm –libdir ..\music –libdir c:\code\stdlib
+
+If you build source code libraries you might want to ensure that the library is only included once in your code.
+This can be done by placing a #importonce directive in the top of the library file:
+File1.asm:
+#importonce
+.print "This will only be printed once!"
+File2.asm:
+#import "File1.asm" // This will import File1
+#import "File1.asm" // This will not import anything
+
+NOTE! The v3.x directives for importing source files using the import directive (.import source "myfile.asm"
+and .importonce), not the preprocessor, is still supported. But its recommended to use the preprocessor directives,
+since they will give a more natural order of evaluation. Using the preprocessor will import the source at once while
+using the old import directive will first parse the entire file, and then import external files during evaluation.
+
+3.9. Importing data
+
+---
+Additional information can be found by searching:
+- "preprocessor_intro_and_symbol_definitions" which expands on detailed preprocessor directives and symbol handling (Chapter 8)
+- "importing_data" which expands on data import (.import) is separate from source import

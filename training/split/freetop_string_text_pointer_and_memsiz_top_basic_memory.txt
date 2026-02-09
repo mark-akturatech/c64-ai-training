@@ -1,0 +1,37 @@
+# ********* - FREETOP ($33-$34) pointer to the bottom of the string text storage area (the current end of string text and the top of free RAM). Describes that strings are built downward, the pointer is lowered when adding strings, and garbage collection raises it. Power-on sets FREETOP to the top of RAM; CLR sets FREETOP to the end of BASIC memory as indicated by MEMSIZ to allow reserving a safe area. MEMSIZ ($37-$38) is the pointer to the highest address usable by BASIC; on power-up it is set to the highest consecutive RAM byte before BASIC ROM (40959 / $9FFF). Explains users may lower MEMSIZ to reserve RAM (example: POKE 56,PEEK(56)-4:CLR) and why CLR is necessary, suggested uses for the reserved area (machine code, sprites, char sets), and VIC-II 16K addressing range considerations (you must lower MEMSIZ below $3FFF if not switching banks and you want sprite/char data within VIC-II addressable range).
+
+55-56         $37-$38        MEMSIZ
+Pointer to the Highest Address Used by BASIC
+
+The power-on/reset routine tests each byte of RAM until it comes to
+the BASIC ROM, and sets this pointer to the adress of the highest byte
+of consecutive RAM found (40959, $9FFF).
+
+There are two circumstances under which this pointer may be changed
+after power-up to reflect an address lower than the actual top of
+consecutive RAM:
+
+1.  Users may wish to lower this pointer themselves, in order to set
+aside an area of free RAM that will not be disturbed by BASIC.  For
+example, to set aside a 1K area at the top of BASIC, start your
+program with the line:
+
+POKE 56,PEEK(56)-4:CLR
+
+The CLR is necessary to insure that the string text will start below
+your safe area.
+
+You may wish to store machine language programs, sprites, or alternate
+character sets in such an area.  For the latter two applications,
+however, keep in mind the 16K addressing range limitation of the
+VIC-II chip.  If you do not assign the VIC-II to a bank other than the
+default memory bank of 0-16383 ($0-$3FFF), you must lower the top of
+memory below 16383 ($3FFF) if you wish your sprite or character data
+area to be within its addressing range.
+
+
+---
+Additional information can be found by searching:
+- "strend_array_free_ram" which expands on FREETOP and STREND define the string text and free RAM boundaries; FRE interacts with STREND during garbage collection
+- "vartab_variable_storage_pointer_and_variable_format" which expands on CLR resets variable/string pointers relative to MEMSIZ; freeing or reserving memory affects variable/storage pointers
+- "frespc_temporary_string_pointer" which expands on FRESPC is used as a working pointer while modifying the string area whose limits are FREETOP and MEMSIZ

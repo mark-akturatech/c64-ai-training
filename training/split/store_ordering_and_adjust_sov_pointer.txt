@@ -1,0 +1,20 @@
+# MACHINE - Notes on storing the bytes back into the variable and the byte-order convention for Commodore integer variables (high-order byte first, low-order byte second — opposite of 6502 address order). Instructs changing the start-of-variables (SOV) pointer at $2D/$2E to point above the ML program (example: set to $08C8) and shows the .M display format for $2D/$2E.
+
+
+The numbers go back exactly the same way we drew them out.  We must be
+careful to keep the high and low bytes correct.  Integer variables have the
+high-order byte first, followed by the low-order byte; this is exactly the
+reverse way of the way we use 650x addresses.
+
+We must perform one more task before wrapping up the program.  We must change
+the start-of-variables pointer to a location above the machine language
+program.  That would be $08C8, and so we display the SOV pointer with .M 002D
+002E and change the pointer to
+
+  .:002D C8 08 .. .. .. .. .. ..
+
+
+---
+Additional information can be found by searching:
+- "double_to_make_times_ten_and_store_back" which expands on code that writes the high/low bytes back into V%
+- "disassemble_list_save_and_run_instructions" which expands on checking, disassembling, and returning to BASIC after adjusting SOV

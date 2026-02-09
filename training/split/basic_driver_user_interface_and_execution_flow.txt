@@ -1,0 +1,104 @@
+# byRiclianll - BASIC driver program for generating full-track 20 errors on a 1541. Includes program header and limits, user prompts and input validation (insert clone, select track, confirm), drive open/close and status printout, envelope of the SEEK/READ/WRITE flow (NS calculation, S and JOB setup, calls to subroutines such as GDSUB5a0 and G0SUB580), building the write buffer (M-W writes), main execute sequence, looping over sectors, and final CLOSE/Done/END of the BASIC program.
+
+
+Limitations:  None. 
+Parameters:  Track  number. 
+FULL  TRACK  20  ERROR 
+
+100  REM  20M  ERROR  -  1541 
+110  DIMD*(24) 
+
+120  PRINT" ^CLR}MULTIPLE  20  ERROR  -  1541" 
+
+130  PRINT" £DOWN> INSERT  CLONE   IN  DRIVE" 
+140   INPUT" £DOWN>DESTROY  TRACK" ;T 
+1 50   I FT< 1 ORT  >35THENEND 
+
+160   INPUT" £ DO WN> ARE  YOU  SURE     YCLEFT  3> " 
+
+
+144 
+
+
+170  IFQ*<>"Y"THENEND 
+
+180  DPEN15,a, 15 
+
+190  PRINT#15, "10" 
+
+200  INPUT#15,EN*,EM4,ET«,ES* 
+
+210  IFEN*="00"GDT0260 
+
+220  PR  I  NT  "  {:D0WN>  "  EN«  "  ,    "  EM«  "  ,  "  ET«  "  ,  "  ES« 
+
+230  CL0SE15 
+
+240  END 
+
+250  REM  SEEK 
+
+260  NS=20+2*  <  T  > 1 7 )  +  ( T  >24 )  +  <  T  >30 ) 
+
+270  S=NS 
+
+280  JOB=176 
+
+290  GDSUB5a0 
+
+300  FaRI=0T023 
+
+310  READD 
+
+320  D$=D$+CHR* (D) 
+
+330   I*=I«+CHR« <0) 
+
+340  NEXT I 
+
+350  PRINT#15, "M-W"CHR$<0)CHR*(6)CHR*<24) 
+D$ 
+
+360  REM  EXECUTE 
+
+370  PRINT" CDOWN><RVS>DESTROYING<ROFFJ  TR 
+
+ACK";T 
+
+330  J0B=224 
+
+390  G0SUB580 
+
+400  PRINT#15, "M-W"CHR*  <0) CHR*  <6) CHR«  <24) 
+1$ 
+
+410  FORJ=OTG24 
+420  F0RI=0T07 
+430  READD 
+
+440  D*<J)=D«<J)+CHR«<D) 
+450  NEXTI 
+460  NEXTJ 
+470  I=0 
+
+480  FORJ=OT024 
+
+490  PRINT#15, "M-W"CHR«<I)CHR«(4)CHR«<8)D 
+*<J) 
+
+500  1=1+8 
+510  NEXTJ 
+520  REM  EXECUTE 
+
+530  PRINT#15, "M-E"CHR*  <0) CHR« (4) 
+
+540  CLOSE 15 
+
+550  PRINT" tDOWN> DONE ! " 
+
+560  END 
+
+---
+Additional information can be found by searching:
+- "job_queue_and_communication_subroutines" which expands on Job-queue and low-level drive communication routines called by the BASIC program
+- "embedded_machine_language_data_blocks_21_and_20m" which expands on Embedded DATA blocks (machine-code) written by this BASIC driver

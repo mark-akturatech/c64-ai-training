@@ -1,0 +1,123 @@
+# Contents - Block-diagram level description of the 6510 microprocessor: program counter (high/low bytes), accumulator (A), index registers X and Y, stack pointer (stack at $0100-$01FF, initialized to $FF), and status register flags (carry, zero, IRQ disable, decimal, break, overflow, negative). Notes about memory-mapped hardware access appearing as memory locations.
+
+6510 ARCHITECTURE 
+
+In order to program in assembly language, you 
+must understand the internal functions of the 
+microprocessor. Figure 3-1 is a block diagram of the 
+6510. The value of the program counter is output on 
+the address lines of the microprocessor whenever a 
+data access is to be performed on the systems 
+memory. In the Commodore 64, all of the hardware 
+registers appear to be memory locations to the 
+microprocessor, so accesses to hardware registers 
+and memory appear identical. 
+
+The accumulator is the most important register 
+in the computer. Almost all of the data that passes 
+through the system goes through the accumulator. 
+Every arithmetic function, other than incrementing 
+and decrementing, is performed in the accumulator. 
+Data can be read into the accumulator from memory, 
+modified, and stored back into memory. 
+
+The X and Y registers are very similar. They 
+move data in a manner similar to the accumulator. 
+They can also be used as an index to an array of 
+data. It should be noted that while these two 
+registers are similar, their functions are not iden- 
+tical. Some instructions require the use of the X 
+register while others use the Y register. 
+
+
+
+11 
+
+
+
+MSB 
+
+
+
+LSB 
+
+
+
+7 
+
+^ACCUMULATOR 1 
+
+7 
+
+HXREGISTER I 
+
+7 
+
+J Y REGISTER I 
+
+7 HIGH BYTE 7 LOT BYTE 
+J 'PROGRAM! COUNTER f 
+
+8 7 
+
+
+
+IllSTACK POINTER 
+
+
+
+7 
+
+NiVl IBIDIIIZTCI STATUS REGISTER 
+
+
+
+CARRY 
+
+ZERO 
+
+IRQ DISABLE 
+
+DECIMAL MODE 
+
+BRK COMMAND 
+
+OVERFLOW 
+
+NEGATIVE 
+
+
+
+Fig. 3-1. Block diagram of the 6510 microprocessor. 
+
+Each of the bits in the status register correspond 
+to one of the conditions in the microprocessor. Some 
+of these bits can be changed under software control. 
+
+In the Commodore 64, the stack (a temporary 
+data storage area between $0100 to $01FF) is con- 
+trolled by the stack pointer. This register contains 
+the address of the next empty space on the stack. 
+
+
+
+At the start of a program the stack pointer is usually 
+initialized to $FF, which corresponds to the top of 
+the stack. The microprocessor defines the stack to 
+start at $0100. The stack pointer is used as an in- 
+dex from the bottom of the stack. 
+
+With these concepts in mind, it is time to look 
+at the language. 
+
+
+
+12 
+
+
+
+
+---
+Additional information can be found by searching:
+- "assembly_syntax_labels_comments" which expands on how registers are used by instructions
+- "interrupts_overview_purpose" which expands on status register flags and interrupts (IRQ/NMI)

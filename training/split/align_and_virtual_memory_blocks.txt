@@ -1,0 +1,29 @@
+# Kick Assembler - Shows using 'align' parameter with startAfter to align default memory block, and 'virtual' flag to make memory blocks virtual (thrown away). Example: .segmentdef Virtual100 [startAfter="Code", align=$100, virtual] and usage with .segment Virtual100 "Table" table: .fill $100,0. Memory map shows Virtual100 start aligned to $100 boundary.
+
+A segment can be included in multiple other segment as seen by the 'Code' and 'Data' segment in the above
+example.
+This can be combined freely with adding code from other sources or directly using commands (lda, sta) inside
+the segment.
+
+10.9. Including .prg files
+A prg-file contains a start address (the two first bytes) and some data. Prg files can be imported as memory
+blocks using the prgFiles parameter when defining the segment:
+// Importing prg files when defining segment
+.segmentdef Misc1 [prgFiles="data/Music.prg, data/Charset2x2.prg"]
+
+// Another way of producing the same result
+.segment Misc2 []
+*=$1000 // Here we have to place the block manually
+.import c64 "data/Music.prg"
+*=$2000 // Here we have to place the block manually
+.import c64 "data/Charset2x2.prg"
+
+Again, this can freely be combined with other ways of adding blocks to the segment.
+
+10.10. Including sid files
+Sid music files are imported as memory blocks using the 'sidFiles' parameter. Here is an example that plays
+a sid tune:
+
+---
+Additional information can be found by searching:
+- "default_memory_block_and_startAfter_usage" which expands on startAfter and alignment use cases

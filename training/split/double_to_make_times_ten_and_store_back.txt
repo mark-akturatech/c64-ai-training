@@ -1,0 +1,23 @@
+# MACHINE - Final ASL/ROL pair to double the times-five value into times-ten (ASL $033D; ROL $033C). Then code to write the resulting high and low bytes back into the integer variable V% using indirect Y addressing: LDY #$02; LDA $033C; STA ($2D),Y; LDY #$03; LDA $033D; STA ($2D),Y; RTS.
+
+Now locations $033C/$033D contain the original number times five.  If we
+double the number one last time, we'll have the value times ten.
+
+  .A 08B3  ASL $033D
+  .A 08B6  ROL $033C
+
+We have multiplied the number by ten.  Now let's put it back into the
+variable
+
+  .A 08B9  LDY #$02
+  .A 08BB  LDA $033C
+  .A 08BE  STA ($2D),Y
+  .A 08C0  LDY #$03
+  .A 08C2  LDA $033D
+  .A 08C5  STA ($2D),Y
+  .A 08C7  RTS
+
+---
+Additional information can be found by searching:
+- "adding_x4_to_original_to_get_x5" which expands on x5 value that is doubled here
+- "store_ordering_and_adjust_sov_pointer" which expands on importance of byte order and adjusting the SOV pointer after embedding ML

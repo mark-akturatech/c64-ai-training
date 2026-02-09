@@ -1,0 +1,46 @@
+# COMMODORE 64 - IOBASE: set up base pointers (X=low byte, Y=high byte) to the memory page where memory-mapped I/O devices are located. Includes purpose, call address ($FFF3 / 65523), registers returned (X,Y), no preparatory routines, compatibility rationale (keeps code portable across C64, VIC-20, future models), usage steps (JSR IOBASE; STX/STY to store base; then load Y with offset to access specific I/O register), and example showing storing base registers and preparing to access the User Port data direction register (JSR IOBASE; STX POINT; STY POINT+1; LDY #2).
+
+  B-12. Function Name: IOBASE
+
+    Purpose: Define I/O memory page
+    Call address: $FFF3 (hex) 65523 (decimal)
+    Communication registers: X, Y
+    Preparatory routines: None
+    Error returns:
+    Stack requirements: 2
+    Registers affected: X, Y
+
+
+    Description: This routine sets the X and Y registers to the address of
+  the memory section where the memory mapped 110 devices are located. This
+  address can then be used with an offset to access the memory mapped I/O
+  devices in the Commodore 64. The offset is the number of locations from
+  the beginning of the page on which the I/O register you want is located.
+  The X register contains the low order address byte, while the Y register
+  contains the high order address byte.
+    This routine exists to provide compatibility between the Commodore 64,
+  VIC-20, and future models of the Commodore 64. If the J/0 locations for
+  a machine language program are set by a call to this routine, they should
+  still remain compatible with future versions of the Commodore 64, the
+  KERNAL and BASIC.
+
+
+  How to Use:
+
+    1) Call this routine by using the JSR instruction.
+    2) Store the X and the Y registers in consecutive locations.
+    3) Load the Y register with the offset.
+    4) Access that I/O location.
+
+  EXAMPLE:
+
+    ;SET THE DATA DIRECTION REGISTER OF THE USER PORT TO 0 (INPUT)
+    JSR IOBASE
+    STX POINT       ;SET BASE REGISTERS
+    STY POINT+1
+    LDY #2
+
+---
+Additional information can be found by searching:
+- "cint_initialize_screen_editor_and_video" which expands on after initializing video hardware, use IOBASE to locate video-related I/O registers
+- "ciout_transmit_byte_over_serial_bus" which expands on IOBASE helps locate memory-mapped I/O pages (complementary to KERNAL bus routines which operate via calls)

@@ -1,0 +1,88 @@
+# NMOS 6510 - Related legal mode: Zeropage Indirect Y Indexed addressing (2 bytes, 5+1 cycles). Lists legal opcodes (b3,93 etc) for ADC/STA/AND/CMP/EOR/LDA/ORA/SBC/LAX/SHA and shows the per-cycle behaviour including the extra cycle on page-cross or write and the dummy read timing.
+
+Data
+
+R/W
+
+(*) Add 1 cycle for indexing across page boundaries, or when writing to memory.
+
+- 69 -
+
+Unintended decimal mode
+The decimal mode (or “BCD mode”) of the 6502 family is an often ignored artefact of the
+instruction set. Since it turned out not to be very useful in many practical situations, many
+programmers never use it, which contributes to the state of it being ignored :)
+The decimal mode is described here because
+•
+
+The behaviour of operations on invalid BCD values is officially undocumented. The
+following exactly describes the behaviour for all values, valid BCD or not, by giving exact
+pseudocode for each instruction.
+
+•
+
+Some undocumented instructions inherit dependency on decimal mode from ADC or SBC.
+The main part of this document refers to binary mode, the following exactly describes how
+these instructions work in decimal mode.
+
+•
+
+Last not least because decimal mode is ignored by so many programmers
+
+Like the rest of the document, the following applies specifically to the 6510 MOS chips. 65C02 or
+65816 as well as other derivates behave totally different when it comes to details such as flag
+behaviour and invalid BCD values.
+Test code: CPU/Acid800/cpu_decimal.prg CPU/bclark/decimalmode.prg
+CPU/asap/cpu_decimal.prg CPU/64doc/dsbc-cmp-flags.prg
+CPU/64doc/dsbc.prg CPU/64doc/dadc.prg
+
+- 70 -
+
+Decimal mode in a nutshell
+The decimal mode is meant to aid in making calculations with BCD encoded values (“packaged”
+BCD, one digit per nibble). A BCD encoded value is a hex number with both its upper and lower
+nibble equal to 0-9. All other values are invalid BCD values.
+When the D flag is set, only (!) the ADC and SBC instructions (and undocumented instructions
+derived from them) will work differently than in binary mode.
+1. The ALU works differently than in binary mode:
+The low and high nibble of the Akku will be treated as a BCD value, and when performing
+operations on it intermediate values will be BCD fixed and carry will be generated on BCD
+overflows.
+When decimal-correcting a nibble for addition, following rules apply:
+if ((nibble > 0x9) | (C’ == 1)) { nibble += 6 }
+if ((nibble > 0xF) { C’’ = 1 } else { C’’ = C’ }
+When decimal-correcting a nibble for subtraction, following rules apply:
+if (C’ == 0) { nibble -= 6 }
+if (nibble < 6) { C’’ = 1 } else { C’’ = C’ }
+Thus, $F + $F in decimal mode is $14, not $24. Also, decimal correction can result in
+nibbles ranging from $A-$F. For example, $C + $D results in $19 before correction, $1F
+after.
+The Processor Flags work differently than in binary mode:
+•
+
+C will work as a carry for multi-byte operations as expected (for valid BCD values, for other
+values see the rules above)
+
+•
+
+N and V are set after the high-order nibble is added or subtracted but before it is decimalcorrected, according to binary rules (see the respective instruction below).
+◦ N will be equal to bit 7 of some intermediate result
+◦ V will use the same logic as in binary mode, but some intermediate results will be used
+
+•
+
+Z is always set according to binary mode. So it will be set when the non-BCD operation,
+before the BCD fixup, would have resulted in $00 - no matter what value the result of the
+BCD operation is.
+
+- 71 -
+
+example:
+SED
+CLC
+LDA #$80
+ADC #$80
+
+---
+Additional information can be found by searching:
+- "zeropage_indirect_y_indexed_rmw_unintended" which expands on unintended R-M-W variants using same addressing

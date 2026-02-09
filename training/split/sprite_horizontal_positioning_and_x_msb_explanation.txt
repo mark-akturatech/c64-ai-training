@@ -1,0 +1,119 @@
+# COMMODORE 64 - Horizontal (X) positioning explanation: sprites can be placed in 512 X positions (0..511) using an 8-bit position register plus one MSB bit in register $D010 (53264). Visible X ranges on screen depend on modes; typically only values 24..343 are visible for standard 40x25 mode. If X>255, set the corresponding bit in X MSB (bits 0..7 correspond to sprites 0..7) to 1. Discusses interactions with 38-column/24-row modes and shows diagrams (textual) illustrating limits.
+
+  HORIZONTAL POSITIONING
+
+    Positioning in the horizontal direction is more complicated because
+  there are more than, 256 positions. This means that an extra bit, or 9th
+  bit is used to control the X position. By adding the extra bit when
+  necessary a sprite now has 512 possible positions in the left/right, X,
+  direction. This makes more possible combinations than can be seen on the
+  visible part of the screen. Each sprite can have a position from 0 to
+  511. However, only those values between 24 and 343 are visible on the
+  screen. If the X position of a sprite is greater than 255 (on the right
+  side of the screen), the bit in the X MOST SIGNIFICANT BIT POSITION
+
+                                                 PROGRAMMING GRAPHICS   139
+~
+
+
+        0 ($00)  24 ($18)                     296 ($128)    344 ($158)
+                                                       |    |
+              |  |
+              |  |                                     +----+ 8 ($08)
+              |                                        |    |
+     29 ($1D) |  +--+                                  |    |
+              |  |  |                                  |    |
+                 |  |                                  |    |
+     50 ($32) +--+-------------------------------------+----+----+ 50 ($32)
+              |  |  |                                  |    |    |
+              |  |  |                                  |    |    |
+              +--+--+                                  |    |    |
+                 |                                     |    |    |
+                 |                                     +----+----+
+                 |                                          |
+                 |           VISIBLE VIEWING AREA           |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |               NTSC*                      |
+                 |               40 COLUMNS                 |
+                 |               25 ROWS                    |
+  208 ($D0) +----+----+                                     |
+            |    |    |                                     |
+            |    |    |                                  +--+--+ 299 ($E5)
+            |    |    |                                  |  |  |
+            |    |    |                                  |  |  |
+  250 ($FA) +----+----+----------------------------------+--+--+ 250 ($FA)
+                 |    |                                  |  |
+            |    |    |                                  |  |
+            |    |    |                                  +--+
+            |    |    |
+                 +----+                                  |  |
+    488 ($1E8)
+                 |                              320 ($140)  344 ($158)
+                 24 ($18)
+
+    *North American television transmission standards for your home TV.
+
+  140   PROGRAMMING GRAPHICS
+~
+
+
+        7 ($07)  31 ($1F)                     287 ($11F)    335 ($14F)
+                                                       |    |
+              |  |
+              |  |                                     +----+ 12 ($0C)
+              |                                        |    |
+     33 ($21) |  +--+                                  |    |
+              |  |  |                                  |    |
+                 |  |                                  |    |
+     54 ($36) +--+-------------------------------------+----+----+ 54 ($36)
+              |  |  |                                  |    |    |
+              |  |  |                                  |    |    |
+              +--+--+                                  |    |    |
+                 |                                     |    |    |
+                 |                                     +----+----+
+                 |                                          |
+                 |           VISIBLE VIEWING AREA           |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |                                          |
+                 |               NTSC*                      |
+                 |               38 COLUMNS                 |
+                 |               24 ROWS                    |
+  204 ($CC) +----+----+                                     |
+            |    |    |                                     |
+            |    |    |                                  +--+--+ 225 ($E1)
+            |    |    |                                  |  |  |
+            |    |    |                                  |  |  |
+  246 ($F6) +----+----+----------------------------------+--+--+ 246 ($F6)
+                 |    |                                  |  |
+            |    |    |                                  |  |
+            |    |    |                                  +--+
+            |    |    |
+                 +----+                                  |  |
+    480 ($1E0)
+                 |                              311 ($137)  335 ($14F)
+                 31 ($1F)
+
+    *North American television transmission standards for your home TV.
+
+                                                 PROGRAMMING GRAPHICS   141
+~
+
+
+  register must be set to a 1 (turned ON). If the X position of a sprite is
+  less than 256 (on the left side of the screen), then the X MSB of that
+
+---
+Additional information can be found by searching:
+- "sprite_positioning_summary" which expands on summary of visible ranges
+- "horizontal_movement_examples" which expands on example code moving a sprite across X positions using MSB handling

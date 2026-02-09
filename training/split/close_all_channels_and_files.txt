@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Kernal routine to close all channels and files: clears the open file count and resets input/output channel assignments to the screen and keyboard. If the active input/output devices are not the screen, issues UNLISTEN/UNTALK to the serial bus as needed. (Clears $98, compares device numbers and calls serial bus commands.)
+
+                                *** close all channels and files
+.,F32F A9 00    LDA #$00        clear A
+.,F331 85 98    STA $98         clear the open file count
+
+                                *** close input and output channels
+.,F333 A2 03    LDX #$03        set the screen device
+.,F335 E4 9A    CPX $9A         compare the screen with the output device number
+.,F337 B0 03    BCS $F33C       if <= screen skip the serial bus unlisten
+.,F339 20 FE ED JSR $EDFE       else command the serial bus to UNLISTEN
+.,F33C E4 99    CPX $99         compare the screen with the input device number
+.,F33E B0 03    BCS $F343       if <= screen skip the serial bus untalk
+.,F340 20 EF ED JSR $EDEF       else command the serial bus to UNTALK
+.,F343 86 9A    STX $9A         save the screen as the output device number
+.,F345 A9 00    LDA #$00        set the keyboard as the input device
+.,F347 85 99    STA $99         save the input device number
+.,F349 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "open_logical_file" which expands on Open logic increments/decrements the same open-file counters that this routine clears

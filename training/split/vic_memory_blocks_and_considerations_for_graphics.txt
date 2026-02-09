@@ -1,0 +1,77 @@
+# ********* - Detailed descriptions of the four 16K memory blocks (Block 0..3) for VIC-II use: Block 0 (system variables, BASIC text, character ROM visible at $1000-$1FFF limiting graphics), Block 1 (BASIC program storage - available for graphics but lacks character ROM), Block 2 (8K RAM under BASIC ROM and 8K BASIC ROM area — VIC sees RAM under ROM for display but BASIC can't read it), Block 3 (RAM under Kernal ROM and I/O - good for graphics but may conflict with DOS). Includes considerations: copying character ROM, limits for bitmap/screen usage, and conflicts with OS/DOS at specific addresses.
+
+reserve memory after the end of BASIC text by lowering the end of
+BASIC pointer at 56 ($38), or raise the start of BASIC pointer at 44
+($2C).  See the entries for these pointers for more details.
+
+Block 1.  Block 1 is normally used for BASIC program storage.  When
+using this bank, the VIC-II does not have access to the character
+generator ROM.  Providing that you lower the top of memory so that
+BASIC programs do not interfere, this area is wide open for sprite
+shapes, character graphics, and bitmap graphics.
+
+The drawbacks to useing this bank are the unavailability of the
+character ROM and the limitation on BASIC program space (as little as
+14K).  The absence of the character ROM is a relatively minor
+nuisance, because you can always switch in the ROM and copy any or all
+of the characters to RAM (see the entries for location 1 and the
+alternate entry for 53248 ($D000), the Character ROM, for details).
+This block may be a good alternate choice to avoid potential conflicts
+with other applications that use higher memory.
+
+Block 2.  The third block (Block 2) consists of 8K of RAM, half of
+which is seen by the VIC-II chip as character ROM, and the 8K BASIC
+interpreter ROM.  The BASIC ROM area is available for graphics.  This
+is possible because of the 64's special addressing.  The VIC-II chip
+reads only from RAM, and thus sees the RAM underneath the BASIC ROM,
+even if the 6510 has ROM switched in.  The 6510, on the other hand,
+always writes to RAM, even when dealing with memory it reads as ROM.
+Whatever is written to the RAM underlying the BASIC ROM is displayed
+normally by the VIC-II chip.  This opens up an extra 8K are for
+sprites and character data under the BASIC ROM.
+
+You should keep in mind that while you can write to this area, you
+cannot read it from BASIC.  This may not be a serious problem when it
+comes to character sets and sprite data, but it's more of a drawback
+if you want to use this RAM for screen memory.
+
+For example, the Operating System has to read the text screen to move
+the cursor properly, and if it reads the ROM value instead of the RAM
+screen data, it gets hopelessly confused, making it impossible to type
+in any commands.
+
+Likewise, you would not be able to read the high-resolution screen if
+it were placed here, without some machine language trickery.  With
+locations 36863-40959 ousted by the character ROM, only 4K of true RAM
+remains for use as screen memory, not enough for a complete
+high-resolution screen.  Therefore, this block is not recommended for
+use in bitmap mode if your program needs to check the screen.
+Otherwise, this is a good place for graphics memory, particularly if
+you need to emulate the screen configuration of the PET.
+
+Block 3.  Normally Block 3 contains 4K of RAM that is completely
+unused by the system, 4K if I/O registers, and the 8K Operating System
+Kernal ROM.  It is very convenient to use when you need a lot of
+memory space for both graphics and a BASIC program.  Although the
+character ROM is not available, it can be copied to RAM.  The area
+under the Kernal ROM can be used as explained above.  One possible
+conflict that you should be aware of is that the current version of
+the DOS support program is written to reside at 52224 ($CC00).  It
+would be safest to avoid using 52224-53247 for graphics if you plan to
+use DOS support.
+
+Changing banks.  Once you have selected a bank of 16K to use, the
+procedure for making the change from BASIC is as follows:
+
+1.  Set the Data Direction Register if necessary.  In order to use
+Bits 0 and 1 of Port A to change banks, these bits must be set as
+outputs in Data Direction Register A.  Since this is the default
+condition on powering-up, this step normally will not be needed.
+
+2.  Select a bank.  Banks 0-3 can be chosen by entering the following
+lines:
+
+---
+Additional information can be found by searching:
+- "vic_ii_memory_banking_bits_in_cia2_porta" which expands on bank bit patterns and selection
+- "changing_vic_memory_banks_from_basic" which expands on how to change banks and set VIC-II pointers

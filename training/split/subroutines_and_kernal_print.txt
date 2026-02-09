@@ -1,0 +1,54 @@
+# COMMODORE 64 - Subroutine calls in machine language: JSR (jump to subroutine) and JMP (jump absolute). Introduction to the KERNAL jump table and the built-in KERNAL routine at $FFD2 for printing a character (expects CBM ASCII code in A). Example machine-code sequence to print "Hi" using LDA #$48 / JSR $FFD2 / LDA #$49 / JSR $FFD2 / LDA #$0D / JSR $FFD2 / BRK. Notes on KERNAL jump table addresses and purpose.
+
+  SUBROUTINES
+
+    In machine language (in the same way as using BASIC), you can call
+  subroutines. The instruction to call a subroutine is JSR (Jump to Sub-
+  Routine), followed by the specified absolute address.
+    Incorporated in the operating system, there is a machine language
+  subroutine that will PRINT a character to the screen. The CBM ASCII code
+  of the character should be in the accumulator before calling the
+  subroutine. The address of this subroutine is $FFD2.
+    Therefore, to print "Hi" to the screen, the following program should be
+  entered:
+
+
+
+    .A 1400 LDA #$48     - load the CBM ASCII code of "H"
+    .A 1402 JSR $FFD2    -  print it
+    .A 1405 LDA #$49     - load the CBM ASCII code of "I"
+    .A 1407 JSR $FFD2    -  print that too
+    .A 140A LDA #$0D     - print a carriage return as well
+    .A 140C JSR $FFD2
+    .A 140F BRK          - return to 64MON
+    .G 1400              - will print "HI" and return to 64MON
+
+
+
+    The "PRINT a character" routine we have just used is part of the KERNAL
+  jump table. The instruction similar to GOTO in BASIC is JMP, which means
+  JUMP to the specified absolute address. The KERNAL is a long list of
+  "standardized" subroutines that control ALL input and output of the
+  Commodore 64. Each entry in the KERNAL JMPs to a subroutine in the
+  operating system. This "jump table" is found between memory locations
+  $FF84 to $FFF5 in the operating system. A full explanation of the KERNAL
+  is available in the "KERNAL Reference Section" of this manual. However,
+  certain routines are used here to show how easy and effective the KERNAL
+  is.
+    Let's now use the new principles you've just learned in another pro-
+  gram. It will help you to put the instructions into context:
+
+
+
+
+
+
+  228   BASIC TO MACHINE LANGUAGE
+~
+
+
+
+---
+Additional information can be found by searching:
+- "branches_and_testing" which expands on Subroutines are used in program control flow; branches lead to subroutine calls or loops
+- "alphabet_program_example" which expands on Uses the KERNAL print routine inside a loop to print the alphabet

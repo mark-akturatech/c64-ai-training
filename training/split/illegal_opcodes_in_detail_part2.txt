@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Continuation of undocumented ops: DCP (decrement memory + CMP), ISC/ISB/INS (INC + SBC), LAS/LAR (LDA/TSX combined), LAX (LDA + LDX combined), LXA immediate (highly unstable), RLA (ROL + AND), RRA (ROR + ADC), SAX (A AND X -> M), SBX (AXS) immediate, SHA/SHX/SHY store-with-high-byte-plus-one behavior and instability notes. Opcode tables included for various addressing modes.
+
+                      zeropage,X     RLA oper,X       37   2      6
+                      absolute       RLA oper         2F   3      6
+                      absolute,X     RLA oper,X       3F   3      7
+                      absolute,Y     RLA oper,Y       3B   3      7
+                      (indirect,X)   RLA (oper,X)     23   2      8
+                      (indirect),Y   RLA (oper),Y     33   2      8
+                 RRA
+                      ROR oper + ADC oper
+                      M = C -> [76543210] -> C, A + M + C -> A, C
+                                                         N Z C I D V
+                                                         + + + - - +
+                                                               6502 Instruction Set
+                      addressing     assembler       opc bytes cycles
+                      zeropage       RRA oper         67   2      5
+                      zeropage,X     RRA oper,X       77   2      6
+                      absolute       RRA oper         6F   3      6
+                      absolute,X     RRA oper,X       7F   3      7
+                      absolute,Y     RRA oper,Y       7B   3      7
+                      (indirect,X)   RRA (oper,X)     63   2      8
+                      (indirect),Y   RRA (oper),Y     73   2      8
+                 SAX (AXS, AAX)
+                      A and X are put on the bus at the same time (resulting
+                      effectively in an AND operation) and stored in M
+                      A AND X -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       SAX oper         87   2      3
+                      zeropage,Y     SAX oper,Y       97   2      4
+                      absolute       SAX oper         8F   3      4
+                      (indirect,X)   SAX (oper,X)     83   2      6
+                 SBX (AXS, SAX)
+                      CMP and DEX at once, sets flags like CMP
+                      (A AND X) - oper -> X
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      immediate      SBX #oper        CB   2      2
+                 SHA (AHX, AXA)
+                      Stores A AND X AND (high-byte of addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                      used as the high-byte of the address)
+                      A AND X AND (H+1) -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      absolute,Y     SHA oper,Y       9F   3      5   †
+                      (indirect),Y   SHA (oper),Y     93   2      6   †
+                 SHX (A11, SXA, XAS)
+                      Stores X AND (high-byte of addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                                                               6502 Instruction Set
+                      used as the high-byte of the address)
+                      X AND (H+1) -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      absolute,Y     SHX oper,Y       9E   3      5   †
+
+---
+Additional information can be found by searching:
+- "illegal_opcodes_in_detail_part3" which expands on remaining undocumented opcodes including SLO/SRE/TAS/USBC/NOPs/JAM

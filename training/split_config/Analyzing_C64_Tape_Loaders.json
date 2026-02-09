@@ -1,0 +1,705 @@
+{
+  "source_file": "Analyzing_C64_Tape_Loaders.txt",
+  "context": "Analyzing C64 tape loaders",
+  "splits": [
+    {
+      "start": 1,
+      "end": 6,
+      "ignore": true,
+      "reason": "Title and author header / document metadata"
+    },
+    {
+      "start": 7,
+      "end": 12,
+      "ignore": true,
+      "reason": "Preface / non-technical introduction"
+    },
+    {
+      "start": 13,
+      "end": 27,
+      "name": "data_encoding_overview_and_reference",
+      "description": "Overview of the document's intent and references to external reading (Nick Hampshire book). Introduces data encoding context for C64 tape loaders and motivates need to understand C64 I/O hardware before Tap format.",
+      "references": [
+        {
+          "chunk": "data_encoding_pulses",
+          "topic": "CBM pulse types and pulse-based bit encoding"
+        },
+        {
+          "chunk": "tap_format_conversion",
+          "topic": "Tap file representation depends on C64 timing"
+        }
+      ]
+    },
+    {
+      "start": 28,
+      "end": 46,
+      "name": "data_encoding_pulses",
+      "description": "Explains that C64 cassette data is encoded as square-wave pulses. Defines three standard CBM pulse periods/frequencies: long (≈672µs, 1488Hz), medium (≈512µs, 1953Hz), short (≈352µs, 2840Hz). Notes that data bits are encoded using medium+short pulses and explains that pulse names refer to the period.",
+      "references": [
+        {
+          "chunk": "pulse_sample_and_edge_detection",
+          "topic": "How pulses appear on the C2N READ pin and edge detection"
+        },
+        {
+          "chunk": "turbo_loader_pulses",
+          "topic": "Contrast with Turbo Loader using two pulse lengths"
+        }
+      ]
+    },
+    {
+      "start": 47,
+      "end": 53,
+      "name": "turbo_loader_pulses",
+      "description": "Describes Turbo Loader encoding: many turbo loaders use two pulses (short and long), with chosen frequencies; each pulse length alone can represent a bit (1 or 0). Turbo loaders typically rely on pulse-length thresholds rather than the CBM medium/short pair scheme.",
+      "references": [
+        {
+          "chunk": "data_encoding_pulses",
+          "topic": "Standard CBM three-pulse encoding vs turbo two-pulse encoding"
+        },
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "How to compute threshold values for turbo loaders using timers"
+        }
+      ]
+    },
+    {
+      "start": 54,
+      "end": 74,
+      "name": "pulse_sample_and_edge_detection",
+      "description": "Illustrates a sample waveform from the C2N READ pin during CBM file reading and explains that the C64 detects pulse lengths on falling (negative) edges. Shows how a short/medium/short sequence appears and explains why SAVE and LOAD signals are inverted relative to each other (flag, transistor inverter note).",
+      "references": [
+        {
+          "chunk": "data_encoding_pulses",
+          "topic": "Pulse types and their durations"
+        }
+      ]
+    },
+    {
+      "start": 75,
+      "end": 86,
+      "name": "tap_format_introduction",
+      "description": "Introduces the Tap file format and points to CCS64/Computerbrains documentation. Explains purpose: to duplicate data stored on a C64 cassette tape pulse-by-pulse rather than waveform sampling.",
+      "references": [
+        {
+          "chunk": "tap_format_conversion",
+          "topic": "Numeric conversion from pulse length to TAP byte values"
+        }
+      ]
+    },
+    {
+      "start": 87,
+      "end": 113,
+      "name": "tap_format_conversion",
+      "description": "Describes TAP format details: each nonzero TAP byte encodes a single pulse length. Gives conversion formula: Tap Data Byte = Pulse length (s) * C64 PAL Frequency / 8 (PAL freq=985248Hz), equivalent Tap Data Byte = Pulse length (µs) * 0.123156. Provides example values for CBM pulses (short=$2B, medium=$3F, long=$53) and notes quantization/variance and leader synchronization.",
+      "references": [
+        {
+          "chunk": "data_encoding_pulses",
+          "topic": "Pulse durations used in the conversion examples"
+        }
+      ]
+    },
+    {
+      "start": 114,
+      "end": 121,
+      "name": "turbo_loaders_intro",
+      "description": "Introduces Turbo Loaders in general: almost every commercial C64 tape title used some turbo loader, which is stored initially as a standard CBM-encoded boot file and may autostart to replace the standard LOAD routine.",
+      "references": [
+        {
+          "chunk": "turbo_loader_pulses",
+          "topic": "Pulse encoding method used by turbo loaders"
+        },
+        {
+          "chunk": "nonirq_loader_autostart_i_main",
+          "topic": "Example of autostart via IMAIN vector modification"
+        }
+      ]
+    },
+    {
+      "start": 122,
+      "end": 135,
+      "name": "turbo_loaders_encoding_method",
+      "description": "Explains how a Turbo Loader achieves faster data rates: shorter pulses -> higher density. Describes a common timing scheme: disable interrupts, start a timer between short and long lengths (threshold), check interrupt flag before/after timer to classify pulse as short or long. Bits are rotated into a byte storage MSb-first or LSb-first. Sync uses repeated pilot bytes (e.g. $40) to align bit/byte boundaries.",
+      "references": [
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "How thresholds are chosen and measured with CIA timers"
+        }
+      ]
+    },
+    {
+      "start": 136,
+      "end": 144,
+      "name": "nonirq_loader_intro",
+      "description": "Introduction to a 'non-IRQ based' turbo loader walkthrough (CHR Loader T1-T3 example). States prerequisite knowledge: CIA timers and Commodore 64 Programmer's Reference. Mentions that some CIA extracts are included in appendices.",
+      "references": [
+        {
+          "chunk": "nonirq_cbm_data_block_listing",
+          "topic": "CBM Data block example for the non-IRQ loader"
+        },
+        {
+          "chunk": "nonirq_cbm_header_block_listing",
+          "topic": "CBM Header block and loader core listing"
+        }
+      ]
+    },
+    {
+      "start": 145,
+      "end": 156,
+      "name": "nonirq_loader_autostart_i_main",
+      "description": "Details how the Cauldron non-IRQ turbo loader autostarts by modifying the IMAIN vector at $0302-$0303 to point to the turbo loader code ($02AE). Explains that parts of the turbo loader are included in the CBM header and data blocks, and that the CBM loader can be used to overwrite vectors (e.g. $0326/$0327) so the kernel executes the turbo loader after a standard LOAD.",
+      "references": [
+        {
+          "chunk": "nonirq_cbm_data_block_listing",
+          "topic": "Assembly that sets vectors and inits loader variables"
+        }
+      ]
+    },
+    {
+      "start": 157,
+      "end": 239,
+      "name": "nonirq_cbm_data_block_listing",
+      "description": "CBM Data block assembly listing for a non-IRQ turbo loader (addresses $02A7-$0303 etc). Includes boot sequence: SEI/CLI usage, vector modification (Kernal STOP), initialization of zeroed locations, blanking screen via $D011, setting interrupt disable, a Read Bit subroutine using Timer B countdown at $DD07/$DD0F, a return-to-prompt routine that restores CHRGET and prints READY. Also shows table data and IMAIN autostart bytes at $0302.",
+      "references": [
+        {
+          "chunk": "nonirq_cbm_header_block_listing",
+          "topic": "CBM Header block contains remaining loader core"
+        },
+        {
+          "chunk": "nonirq_loader_autostart_i_main",
+          "topic": "Autostart via IMAIN vector ($0302-$0303)"
+        }
+      ]
+    },
+    {
+      "start": 240,
+      "end": 246,
+      "name": "cbm_header_block_intro",
+      "description": "Header and brief file-detail note for the CBM Header block. Contains the opening <code> tag, the 'CBM Header block' title and a pointer to file details (033C-0350).",
+      "references": [
+        {
+          "chunk": "loader_core_leader_sync_and_header_read",
+          "topic": "Loader's Core starts immediately after this header and reads leader/sync/header bytes"
+        }
+      ]
+    },
+    {
+      "start": 247,
+      "end": 284,
+      "name": "loader_core_leader_sync_and_header_read",
+      "description": "Loader core entry and bit-alignment/leader-sync/header acquisition. Covers: SEI; setting threshold via STA $DD06 (Timer B latch); initial X register setup; alignment loop calling JSR $02D4, ROL $F7/LDA $F7/CMP #$63 to find the lead-in byte; LDY #$64 and loops using JSR $03E7 to read the leader and sync train; check for post-sync check byte and reload if $00; the loop that reads and stores the 10-byte header into $002B,Y and $00F9,Y and comments describing header contents (load address, end address, exec address and flag bytes).",
+      "references": [
+        {
+          "chunk": "load_loop_store_and_checksum",
+          "topic": "After header read the code initialises checksum locations and enters the Load Loop"
+        },
+        {
+          "chunk": "read_byte_subroutine",
+          "topic": "Uses the Read Byte subroutine at $03E7 to fetch bits/bytes during leader/sync/header reads"
+        }
+      ]
+    },
+    {
+      "start": 285,
+      "end": 307,
+      "name": "load_loop_store_and_checksum",
+      "description": "Initialization and main Load Loop for receiving file data. Covers: clearing checksum storage (LDY #$00; STY $90 and $02); the Load Loop which JSR $03E7 to read a new byte; STA ($F9),Y to store data using the load-address pointer; computing an XOR checksum (EOR $02; STA $02); incrementing the 16-bit destination pointer (INC $F9/conditional INC $FA); comparing the 16-bit destination pointer to the End Address ($2D/$2E) and branching back to continue until finished.",
+      "references": [
+        {
+          "chunk": "post_load_cleanup_and_irq_restore",
+          "topic": "When the load loop finishes the code reads the closing checksum and performs cleanup/IRQ restore"
+        },
+        {
+          "chunk": "read_byte_subroutine",
+          "topic": "Each byte read inside this loop is obtained by calling the Read Byte subroutine at $03E7"
+        }
+      ]
+    },
+    {
+      "start": 308,
+      "end": 335,
+      "name": "post_load_cleanup_and_irq_restore",
+      "description": "Actions taken immediately after the load finishes. Covers: reading the closing checksum byte (JSR $03E7); INY and STY $C0 to set a motor-control flag; restoring interrupts and processor state (CLI, CLC); clearing $02A0; JSR $FC93 to restore the default IRQ routine (turn screen on and stop cassette motor); and JSR $E453 which copies a table of BASIC vectors to RAM (prevents the turbo loader from re-executing if control returns to BASIC).",
+      "references": [
+        {
+          "chunk": "checksum_validation_autostart_and_relink",
+          "topic": "After restoring IRQ and copying vectors the code checks checksum and decides autostart behavior"
+        },
+        {
+          "chunk": "read_byte_subroutine",
+          "topic": "The closing checksum byte was read using the Read Byte subroutine at $03E7"
+        }
+      ]
+    },
+    {
+      "start": 336,
+      "end": 365,
+      "name": "checksum_validation_autostart_and_relink",
+      "description": "Checksum verification and post-load control flow (autostart / chain / return to BASIC). Covers: checksum check (LDA $F7; EOR $02; ORA $90) and soft-reset on mismatch (JMP $FCE2); first flag byte ($31) deciding whether other files need loading (branch to $02B9); second flag byte ($32) deciding whether to jump to the executed address (JMP ($002F)) or to give control back to BASIC by relinking (JSR $A533); relinking routine and keyboard-buffer injection of 'R', 'SHIFT+U', 'RETURN' via copies into $0276,X and final JMP $02E9 to resume BASIC flow.",
+      "references": [
+        {
+          "chunk": "post_load_cleanup_and_irq_restore",
+          "topic": "This follows the IRQ restore and vector copy performed earlier"
+        },
+        {
+          "chunk": "loader_core_leader_sync_and_header_read",
+          "topic": "Uses flag bytes that were read into the header area earlier to decide autostart/chain behavior"
+        }
+      ]
+    },
+    {
+      "start": 366,
+      "end": 383,
+      "name": "read_byte_subroutine",
+      "description": "The Read Byte subroutine used throughout the loader to gather bits/bytes from tape. Covers: comment header; LDA #$07 and STA $F8 to set bit counter; JSR $02D4 to align/read bits; ROL $F7 to collect bits into the MSb-first buffer (carry retrieved from the bit-read handler at $02E1); border flashing via INC $D020; loop decrement of $F8 and BPL back to JSR $02D4 until 8 bits read; final LDA $F7 and RTS; trailing separator and two zero bytes then closing </code> tag.",
+      "references": [
+        {
+          "chunk": "loader_core_leader_sync_and_header_read",
+          "topic": "Called from the loader core to read leader, sync, and header bytes"
+        },
+        {
+          "chunk": "load_loop_store_and_checksum",
+          "topic": "Called from the Load Loop to read each data byte that is stored and checksummed"
+        }
+      ]
+    },
+    {
+      "start": 384,
+      "end": 393,
+      "ignore": true,
+      "reason": "Bibliography / list of other books (non-technical references)"
+    },
+    {
+      "start": 394,
+      "end": 406,
+      "name": "irq_loader_intro",
+      "description": "Introduces IRQ-based loaders (example: Terminator 2 loader study). Assumes reader familiarity with hardware interrupts and ISRs. Suggests comparing datasette framing to data-link layer protocols and mentions the plan to present an IRQ-based loader implementation and disassembly.",
+      "references": [
+        {
+          "chunk": "writing_irq_loader_summary",
+          "topic": "Checklist for writing an IRQ-based loader"
+        },
+        {
+          "chunk": "irq_loader_setup_part1_disassembly",
+          "topic": "Concrete disassembly example of an IRQ loader"
+        }
+      ]
+    },
+    {
+      "start": 407,
+      "end": 423,
+      "name": "writing_irq_loader_summary",
+      "description": "Step-by-step summary for writing an IRQ-based loader: disable interrupts (SEI), clear/disable CIA interrupt mask ($DC0D), clear interrupt latch (read $DC0D), set timer latch ($DC04/$DC05 for CIA#1 Timer A), enable FLAG-line interrupt, set IRQ vector ($FFFE/$FFFF) to ISR, enable interrupts (CLI), then align on pilot byte and read header to determine RAM store location.",
+      "references": [
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "How to extract threshold/timer values from code"
+        },
+        {
+          "chunk": "irq_isr",
+          "topic": "ISR implementation that classifies pulses using the timer"
+        }
+      ]
+    },
+    {
+      "start": 424,
+      "end": 480,
+      "name": "irq_loader_setup_part1_disassembly",
+      "description": "Disassembly: Loader Setup Part 1. Shows instructions that disable interrupts, switch memory ($01), clear CIA#1 mask ($DC0D), clear interrupt latch (read $DC0D), set CIA#1 Timer A latch ($DC04/$DC05) to a threshold ($027C in example), enable only FLAG-line interrupt ($DC0D=$90), write IRQ vector ($FFFE/$FFFF) to point at the loader ISR ($0351), and initialize loop and buffer variables ($02,$03). Ends with jump to Part 2.",
+      "references": [
+        {
+          "chunk": "irq_loader_setup_part2_disassembly",
+          "topic": "Continues hardware setup (NMI vector, CIA#2 timers)"
+        },
+        {
+          "chunk": "irq_isr",
+          "topic": "ISR referenced by the IRQ vector set here ($0351)"
+        }
+      ]
+    },
+    {
+      "start": 481,
+      "end": 499,
+      "name": "checksum_subroutine_disassembly",
+      "description": "Disassembly: simple checksum comparison subroutine. Loads $01 with #$07, compares computed checksum in $05 with expected in $06, returns if equal, otherwise jumps to $FCE2 to soft-reset the C64.",
+      "references": [
+        {
+          "chunk": "nonirq_cbm_header_block_listing",
+          "topic": "Other checksum logic in non-IRQ loader header (XOR checksum)"
+        }
+      ]
+    },
+    {
+      "start": 500,
+      "end": 535,
+      "name": "irq_loader_setup_part2_disassembly",
+      "description": "Disassembly: Loader Setup Part 2. Sets NMI vector ($FFFA/$FFFB) to point to load loop ($03E7) and configures CIA#2 Timer A latch and control ($DD05, $DD0D, $DD0E) to generate an NMI (used to enter the read loop). Demonstrates starting CIA#2 Timer A in one-shot forced-latch mode to produce an immediate NMI and rendezvous into the load loop.",
+      "references": [
+        {
+          "chunk": "nmi_isr",
+          "topic": "NMI handler (load loop entry) used by this setup"
+        }
+      ]
+    },
+    {
+      "start": 536,
+      "end": 551,
+      "name": "basic_ram_vector_area",
+      "description": "Shows BASIC RAM vector area modified by the loader: notes that several BASIC routines are vectored through RAM and the loader changes those vectors to autostart when CBM file fully loads. Contains example bytes and comments about autostart.",
+      "references": [
+        {
+          "chunk": "nonirq_cbm_header_block_listing",
+          "topic": "Copying vectors to RAM to prevent re-execution after load"
+        }
+      ]
+    },
+    {
+      "start": 552,
+      "end": 641,
+      "name": "irq_isr",
+      "description": "Full IRQ Interrupt Service Routine (ISR) for FLAG-line (cassette read) interrupts. Saves A/Y on stack, toggles border color for debugging, reads CIA Timer A current value ($DC05), restarts Timer A for the next pulse ($DC0E), adjusts timer value by XOR/EOR and logical shifts to determine if pulse > threshold (subtracts $200 cycles), uses ROL $03 to assemble bits MSb-first, uses self-modifying branch trick to change state for pilot/sync/header/data reading, clears CIA interrupt latch ($DC0D), restores registers, and RTI. Comments explain carry usage, branch modification and pilot/sync alignment phases.",
+      "references": [
+        {
+          "chunk": "read_pilot_train_and_sync_byte",
+          "topic": "ISR transitions into pilot/sync reading logic (self-modified branch addresses)"
+        },
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "How the ISR comparison yields the threshold value"
+        }
+      ]
+    },
+    {
+      "start": 642,
+      "end": 661,
+      "name": "read_pilot_train_and_sync_byte",
+      "description": "Disassembly of the phase that reads the pilot byte train and the sync byte. Compares incoming assembled bytes to pilot ($40) and sync ($5A), loops until sync found, sets branch behavior by writing into the code at $036D (self-modifying branch), initializes checksum storage, and prepares to read header bytes. Shows how the loader detects pilot vs sync and switches state.",
+      "references": [
+        {
+          "chunk": "irq_isr",
+          "topic": "ISR constructs bytes that this routine consumes to find pilot/sync"
+        },
+        {
+          "chunk": "read_unused_byte",
+          "topic": "Next phase reads an unused byte before header"
+        }
+      ]
+    },
+    {
+      "start": 662,
+      "end": 671,
+      "name": "read_unused_byte",
+      "description": "Small step in the load state machine: reads an unused/ignored byte (example value $32) after sync and modifies the branch at $036D to proceed to header reading state. Shows continued use of self-modifying branch technique.",
+      "references": [
+        {
+          "chunk": "read_pilot_train_and_sync_byte",
+          "topic": "Executed immediately after sync detection"
+        },
+        {
+          "chunk": "read_header_bytes",
+          "topic": "Leads into reading header bytes"
+        }
+      ]
+    },
+    {
+      "start": 672,
+      "end": 686,
+      "name": "read_header_bytes",
+      "description": "Reads header bytes into $07..$0A: one unused byte, two bytes load address (LSB, MSB), two bytes end address+1 (LSB, MSB). Performs sanity checks for expected header length and modifies branch at $036D to proceed to data-reading state. Uses INC/LDA/STA instructions to record addresses and check header validity.",
+      "references": [
+        {
+          "chunk": "read_data_bytes",
+          "topic": "Header provides load and end addresses used by the data reader"
+        }
+      ]
+    },
+    {
+      "start": 687,
+      "end": 711,
+      "name": "read_data_bytes",
+      "description": "Primary data load loop: uses indirect store STA ($07),Y to write incoming bytes to memory at the load address pointer, computes XOR checksum in $05, increments address pointer ($07/$08), updates screen border flash ($D020) and checks if destination pointer reached end address (16-bit compare using $07/$08 vs $09/$0A). When done, changes branch to checksum stage.",
+      "references": [
+        {
+          "chunk": "read_checksum_byte",
+          "topic": "After data loop completes, loader reads and compares checksum"
+        },
+        {
+          "chunk": "loader_structure",
+          "topic": "Maps this read loop to the loader's data layout"
+        }
+      ]
+    },
+    {
+      "start": 712,
+      "end": 729,
+      "name": "read_checksum_byte",
+      "description": "Reads checksum byte and stores it into $06, sets loop_break variable ($02) to indicate completion, updates stored vector for next header ($03A1), and resets branch at $036D to seek the first pilot byte for next file. Prepares post-load actions (execute or return to BASIC).",
+      "references": [
+        {
+          "chunk": "checksum_subroutine_disassembly",
+          "topic": "Checksum verification and reset on error"
+        }
+      ]
+    },
+    {
+      "start": 730,
+      "end": 761,
+      "name": "nmi_isr",
+      "description": "NMI-based load-loop entry routine at $03E7: enables interrupts (CLI) to allow FLAG-line IRQs to be serviced, patches code ($02D3) to skip Part 2 of setup on subsequent blocks, shows screen by setting $D011, then enters a CPU loop (polling $02) where execution halts until either FLAG interrupts occur (handled by IRQ ISR) or loop_break is set; on completion it jumps to $0407 to finish.",
+      "references": [
+        {
+          "chunk": "irq_isr",
+          "topic": "The IRQ ISR (FLAG-line) services individual pulses while NMI keeps CPU in wait loop"
+        },
+        {
+          "chunk": "irq_loader_setup_part2_disassembly",
+          "topic": "This NMI routine was pointed to by the NMI vector during setup"
+        }
+      ]
+    },
+    {
+      "start": 762,
+      "end": 772,
+      "name": "post_disassembly_notes",
+      "description": "Brief transition section after disassembly; marks start of loader-structure summary and references loader-timings image. Contains small notes and blank lines.",
+      "references": [
+        {
+          "chunk": "loader_structure",
+          "topic": "High-level description of the loader components"
+        },
+        {
+          "chunk": "loader_timings_and_image",
+          "topic": "Timing diagram referenced"
+        }
+      ]
+    },
+    {
+      "start": 773,
+      "end": 795,
+      "name": "loader_structure",
+      "description": "Compact summary of the IRQ loader structure: Threshold $027C clock cycles (TAP $50), Endianess MSbF, Pilot Byte $40, Sync/Start payload byte $5A. Header layout: 1 unused, 2-byte load address (LSB first), 2-byte end address+1 (LSB first). Data includes 1-byte XOR checksum. Also notes code mapping for bit0/bit1.",
+      "references": [
+        {
+          "chunk": "read_header_bytes",
+          "topic": "Header field meanings and addresses used"
+        },
+        {
+          "chunk": "read_data_bytes",
+          "topic": "How header addresses are used during data write"
+        }
+      ]
+    },
+    {
+      "start": 796,
+      "end": 804,
+      "name": "loader_code_bit_mapping",
+      "description": "Reports mapping of bit-0 and bit-1 waveform byte values observed in TAP file: Bit 0 byte = $36, Bit 1 byte = $65 (example from the analyzed TAP). Also mentions possible presence of trailer pulses in TAP file.",
+      "references": [
+        {
+          "chunk": "tap_format_conversion",
+          "topic": "TAP encoding of pulse lengths to numeric values"
+        },
+        {
+          "chunk": "loader_structure",
+          "topic": "Bit/byte format used by this loader"
+        }
+      ]
+    },
+    {
+      "start": 805,
+      "end": 823,
+      "name": "loader_timings_and_image",
+      "description": "Pointer to an image (terminator2loader.png) that shows timing details for the IRQ loader. Mentions loader timings are illustrated graphically (pulse widths, thresholds, etc).",
+      "references": [
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "Calculating threshold from timer/countdown values"
+        }
+      ]
+    },
+    {
+      "start": 824,
+      "end": 880,
+      "name": "figuring_out_threshold_value",
+      "description": "Explains how to deduce the loader's threshold value from code using CIA timers. Example: before setting IRQ vector, loader writes $1F to $DC0D to disable interrupts, sets Timer B latch via $DC06/$DC07 (example $03A0 countdown), and ISR compares current Timer B counter with $0200 to see if pulse was shorter than threshold. Threshold in clock cycles = latch - $0200; convert to TAP byte via TapDataByte = Threshold(µs)*0.123156. Explains why the code subtracts $0200 via EOR/LSR rather than using SBC and documents the meaning of CIA FLAG line.",
+      "references": [
+        {
+          "chunk": "irq_loader_setup_part1_disassembly",
+          "topic": "Shows the writes to CIA timer latch and interrupt control registers used to set threshold"
+        },
+        {
+          "chunk": "tap_format_conversion",
+          "topic": "How to convert threshold in clock cycles to TAP byte value"
+        }
+      ]
+    },
+    {
+      "start": 881,
+      "end": 896,
+      "name": "appendix_a_cia1_intro",
+      "description": "Appendix A header introducing CIA #1 register range ($DC00-$DC0F): describes CIA purpose (timers, data ports, keyboard, joysticks), interrupt line wired to 6510 IRQ, and general uses such as keyboard scanning and tape timing functions.",
+      "references": [
+        {
+          "chunk": "cia1_timers_and_usage",
+          "topic": "Detailed description of Timer registers and timing math"
+        },
+        {
+          "chunk": "cia1_registers_and_interrupt_control",
+          "topic": "Interrupt Control Register ($DC0D) and its bit meanings"
+        }
+      ]
+    },
+    {
+      "start": 897,
+      "end": 926,
+      "name": "cia1_timers_and_usage",
+      "description": "Details CIA #1 timers: Data ports, Timer A/B low/high byte registers ($DC04-$DC07), difference between read (counter) and write (latch) behavior. Explains timer count rate equals CPU cycles (≈1,022,730 NTSC or 985,250 PAL), TIME = LATCH/CLOCK_SPEED. Describes Timer A/B behavior at underflow: set bits in interrupt control register, optional port B output on bits 6/7, one-shot vs continuous modes, and linking timers to form a 32-bit timer.",
+      "references": [
+        {
+          "chunk": "figuring_out_threshold_value",
+          "topic": "Using timers to measure pulse widths and thresholds"
+        },
+        {
+          "chunk": "cia1_control_register_a",
+          "topic": "Control register bits used to start/force-load timers"
+        }
+      ]
+    },
+    {
+      "start": 927,
+      "end": 963,
+      "name": "cia1_registers_and_interrupt_control",
+      "description": "Lists CIA #1 timer registers addresses ($DC04-$DC07) and the Interrupt Control Register ($DC0D). Explains read semantics (clear-on-read) and write semantics (bit 7 controls set/clear) for enabling/disabling specific interrupts (Timer A/B, TOD alarm, serial shift register, FLAG line). Notes examples of POKE usage to alter interrupts.",
+      "references": [
+        {
+          "chunk": "cia1_timers_and_usage",
+          "topic": "Timer registers referenced here"
+        },
+        {
+          "chunk": "irq_isr",
+          "topic": "Interrupt latch clearing via reading $DC0D within ISR"
+        }
+      ]
+    },
+    {
+      "start": 964,
+      "end": 970,
+      "name": "ciaicr_usage_examples",
+      "description": "Practical examples and notes about using the CIA Interrupt Control Register: how reading the register shows pending interrupt sources and why reads clear the register. Example POKE use-cases for disabling and enabling interrupts in BASIC.",
+      "references": [
+        {
+          "chunk": "cia1_registers_and_interrupt_control",
+          "topic": "Bit meanings and mask behavior of $DC0D"
+        }
+      ]
+    },
+    {
+      "start": 971,
+      "end": 999,
+      "name": "cia_control_register_a",
+      "description": "Definition of CIA Control Register A ($DC0E): bits 0..7 meanings. Bit 0 = start Timer A, Bit 1 = select Timer A output on Port B (bit6), Bit 2 = output mode (toggle/pulse), Bit 3 = one-shot/continuous, Bit 4 = force load latch-to-counter, Bit 5 = input mode (count CPU cycles or CNT line), Bit 6 = serial port direction, Bit 7 = TOD frequency select. Explains one-shot vs continuous and use of force-load bit.",
+      "references": [
+        {
+          "chunk": "cia1_timers_and_usage",
+          "topic": "How control bits affect timer behavior in tape routines"
+        }
+      ]
+    },
+    {
+      "start": 1000,
+      "end": 1014,
+      "name": "cia_control_register_b",
+      "description": "Definition of CIA Control Register B ($DC0F): bits 0..7 meanings for Timer B. Bit 0=Start Timer B, Bit 1=select Timer B output on Port B (bit7), Bit 2=output mode toggle/pulse, Bit 3=one-shot/continuous, Bit 4=force load latch-to-counter, Bits 5-6 select Timer B input mode (00=CPU cycles, 01=CNT line, 10=count Timer A underflows, 11=Timer A+CNT), Bit 7 selects TOD write mode.",
+      "references": [
+        {
+          "chunk": "cia1_timers_and_usage",
+          "topic": "Implications of Timer B input modes for threshold schemes"
+        }
+      ]
+    },
+    {
+      "start": 1015,
+      "end": 1023,
+      "name": "cia_control_additional_notes",
+      "description": "Additional explanatory notes about Control Register A/B bits: reiterates bits 0-3 function for timers, bit 4 as force-load, bit 5 selection between CPU cycles and CNT line, and bit 7's role for TOD frequency and writing behavior.",
+      "references": [
+        {
+          "chunk": "cia_control_register_a",
+          "topic": "Cross-reference for bits that affect timer load and start"
+        },
+        {
+          "chunk": "cia_control_register_b",
+          "topic": "Cross-reference for Timer B modes and bit meanings"
+        }
+      ]
+    },
+    {
+      "start": 1024,
+      "end": 1031,
+      "name": "appendix_b_cia2",
+      "description": "Appendix B: CIA #2 overview ($DD00-$DD0F). Notes CIA#2 is functionally identical to CIA#1 but its interrupt line is wired to the 6510 NMI (non-maskable) instead of IRQ, so NMIs cannot be masked by SEI; they must be disabled via CIA mask. Advises using the NMI vector when setting up routines using CIA#2 interrupts.",
+      "references": [
+        {
+          "chunk": "nmi_isr",
+          "topic": "NMI handler used in the IRQ-based loader example"
+        },
+        {
+          "chunk": "irq_loader_setup_part2_disassembly",
+          "topic": "Example configuration of CIA#2 to generate an NMI"
+        }
+      ]
+    },
+    {
+      "start": 1032,
+      "end": 1049,
+      "name": "appendix_c_vectors_nmi",
+      "description": "Appendix C: Vector descriptions. Describes Non-Maskable Interrupt vector ($0318-$0319 / $318-$319) and its use. Explains two possible NMI sources (RESTORE key or CIA#2) and how NMI handling control flow works. Mentions that changing the vector can disable STOP/RESTORE and gives an example.",
+      "references": [
+        {
+          "chunk": "disable_restore_vector_example",
+          "topic": "Code example changing NMI vector to RTI"
+        }
+      ]
+    },
+    {
+      "start": 1050,
+      "end": 1062,
+      "name": "disable_restore_vector_example",
+      "description": "Practical example showing how to modify the NMI vector in RAM to change RESTORE behavior. Example writes LDA #$C1 / STA $0318 to disable NMI/RESTORE actions and shows how to restore the original vector (LDA #$47 / STA $0318). Notes this affects all NMIs (e.g. RS-232 I/O).",
+      "references": [
+        {
+          "chunk": "appendix_c_vectors_nmi",
+          "topic": "Context and effects of changing the NMI vector"
+        }
+      ]
+    },
+    {
+      "start": 1063,
+      "end": 1070,
+      "name": "hardware_vectors_intro",
+      "description": "Introduces the 6510 hardware vectors area ($FFFA-$FFFF) and their purpose: NMI vector ($FFFA), RESET vector ($FFFC), and IRQ/BRK vector ($FFFE). Explains these are used by the CPU to jump to handlers on events like NMI/RESET/IRQ.",
+      "references": [
+        {
+          "chunk": "hardware_vectors_details",
+          "topic": "Addresses and default routines pointed to by these vectors"
+        }
+      ]
+    },
+    {
+      "start": 1071,
+      "end": 1090,
+      "name": "hardware_vectors_details",
+      "description": "Detailed hardware vectors mapping: $FFFA (Non-Maskable Interrupt Hardware Vector) points to ROM NMI routine; $FFFC (System Reset/RES vector) points to power-on routine $FCE2; $FFFE (Maskable IRQ/BRK vector) points to main IRQ handler $FF48. Explains their roles in handling RES/IRQ/NMI.",
+      "references": [
+        {
+          "chunk": "irq_loader_setup_part1_disassembly",
+          "topic": "Example of writing to $FFFE/$FFFF to redirect IRQ to loader ISR"
+        },
+        {
+          "chunk": "irq_loader_setup_part2_disassembly",
+          "topic": "Example of writing to $FFFA/$FFFB to redirect NMI to loader entry"
+        }
+      ]
+    }
+  ],
+  "source_md5": "1490603f6c68ef871e26af1670591190"
+}

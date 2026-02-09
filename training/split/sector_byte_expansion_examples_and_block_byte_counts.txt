@@ -1,0 +1,29 @@
+# byRiclianll - Applies GCR expansion to sector components: header block (8 data bytes → 10 GCR bytes), data block (260 data bytes → 325 GCR bytes), sync characters (five $FF bytes each), and the constant 8-byte header gap ($55) which is not GCR-converted. Shows that an entire sector is recorded as ~353 bytes (not 256) when excluding the inter-sector tail gap. Includes a small table of Data Bytes→GCR Bytes for sync/header/header gap/data.
+
+
+Similarly,  a  data  block  consisting  of  260  8-bit  bytes  is  written  to  disk  as  325  8-bit  GCR 
+bytes.  Lest  we  forget,  each  sync  mark  is  five  8-bit  bytes.  We  must  also  remember  to 
+add  in  the  header  gap  which  is  held  constant  at  eight  bytes.  (Header  gap  bytes  ($55) 
+are  not  converted  to  GCR  form  and  serve  only  to  separate  the  header  block  from  the 
+data  block.)  An  entire  sector  is  recorded  as  353  bytes  not  256  data  bytes. 
+
+
+Data  Bytes  GCR  Bytes 
+
+Sync  Character  ($FF)  5  *  5 
+
+Header  Block  8  10 
+
+Header  Gap  ($55)  8  *  8 
+
+Sync  Character  ($FF)  5  *  5 
+
+Data  Block  260  325 
+
+
+*  No  binary  to  GCR  conversion. 
+
+---
+Additional information can be found by searching:
+- "gcr_conversion_storage_considerations_and_recorded_byte_formula" which expands on Uses the 4→5 conversion formula to compute recorded sizes
+- "tail_gap_calculation_and_formatting_algorithm_with_zone_table" which expands on Explains why tail gaps are handled separately and not included in the sector byte counts

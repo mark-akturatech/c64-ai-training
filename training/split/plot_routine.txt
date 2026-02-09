@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - PLOT routine entry at $E50A/$E513: reads/plots cursor position. Handles branching between PLOT and PLOT10 (BCS) and stores X/Y into TBLX/PNTR then calls STUPT when appropriate, returning via RTS.
+
+                                ;READ/PLOT CURSOR POSITION
+                                ;
+.,E50A B0 07    BCS $E513       PLOT   BCS PLOT10
+.,E50C 86 D6    STX $D6         STX    TBLX
+.,E50E 84 D3    STY $D3         STY    PNTR
+.,E510 20 6C E5 JSR $E56C       JSR    STUPT
+.,E513 A6 D6    LDX $D6         PLOT10 LDX TBLX
+.,E515 A4 D3    LDY $D3         LDY    PNTR
+.,E517 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "screen_dimensions_routine" which expands on uses LLEN/NLINES for cursor position logic

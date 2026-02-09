@@ -1,0 +1,57 @@
+# MACHINE - Appendix F: Commodore floating-point representation. Packed format: 5 bytes (Exponent byte eeeeeeee, followed by 4-byte mantissa smmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm — high bit of mantissa represents sign in packed representation). Unpacked format: 6 bytes (Exponent, then 1mmmmmmm mmmmmmmm mmmmmmmm mmmmmmmm, and a sign byte sxxxxxxx with sign in high-order bit only). Rules: exponent 0 means value 0; exponent > $80 means integer part with decimal point set to the right; exponent <= $80 means fraction < 1. Example: represent +27 (exponent $85, mantissa $D8 00 00 00) and packed as 85 D8 00 00 00.
+
+                                                         Appendix F
+
+                                                           Floating
+                                                              Point
+                                                     Representation
+
+
+
+                                                                        :232:
+
+Packed:  5 bytes (as found in variable or array)
+
++--------+   +--------+--------+--------+--------+
+|eeeeeeee|   |smmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|
++--------+   +--------+--------+--------+--------+
+
+Zero Flag/           Mantissa (value)
+Exponent                  4 bytes
+             High bit represents sign of mantissa
+
+
+Unpacked:  6 bytes (as found in floating point accumulators)
+
++--------+   +--------+--------+--------+--------+   +--------+
+|eeeeeeee|   |1mmmmmmm|mmmmmmmm|mmmmmmmm|mmmmmmmm|   |sxxxxxxx|
++--------+   +--------+--------+--------+--------+   +--------+
+
+Zero Flag/           Mantissa (value)                Sign (High
+Exponent                  4 bytes                    Order Bit
+             High bit represents sign of mantissa      Only)
+
+
+- If exponent = 0, the whole number = 0
+- If exponent > $80, the decimal point is to be set as many places to the
+  right as the exponent exceeds $80.
+- Example:  Exponent:  $83, mantissa:  11000000... binary.  Set the point
+  three positions over:  110.000... to give a value of 6.
+- If exponent <= $80, the number is a fraction less than 1.
+
+
+Exercise:  Represent +27 in Floating Point
+
+27 decimal = 11011 binary; mantissa = 11011000... the point is to be
+positioned 5 places in (11011.000...) so we get:
+
+  Exponent:  $85
+  Mantissa:  %11011000 00000000 00000000 00000000
+             $D8 00 00 00
+
+To pack, we replace the first bit of the mantissa with a sign bit (0 for
+positive) and arrive at:
+
+  85 58 00 00 00
+
+                                                                        :233:

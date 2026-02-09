@@ -1,0 +1,67 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RS232 IN/OUT helpers and buffer management (RS232INOUT): routines to start/stop RS232 (CKO232/CKI232 checks for DSR/RTS/CTS handling), BSO232/BSI232 buffer handlers for output/input (RODBS/RODBE/ROBUF/RIBUF pointers), RSP232 routine to protect serial/cassette from RS232 NMI's by toggling ENABL and D2ICR to disable/enable NMIs while critical operations occur.
+
+                                ;
+                                ; BSO232 - OUTPUT A CHAR RS232
+                                ;   DATA PASSED IN T1 FROM BSOUT
+                                ;
+                                ; HANG LOOP FOR BUFFER FULL
+                                ;
+.,F014 20 28 F0 JSR $F028       BSOBAD JSR BSO100      ;KEEP TRYING TO START SYSTEM...
+                                ;
+                                ; BUFFER HANDLER
+                                ;
+.,F017 AC 9E 02 LDY $029E       BSO232 LDY RODBE
+.,F01A C8       INY                    INY
+.,F01B CC 9D 02 CPY $029D              CPY RODBS       ;CHECK FOR BUFFER FULL
+.,F01E F0 F4    BEQ $F014              BEQ BSOBAD      ;HANG IF SO...TRYING TO RESTART
+.,F020 8C 9E 02 STY $029E              STY RODBE       ;INDICATE NEW START
+.,F023 88       DEY                    DEY
+.,F024 A5 9E    LDA $9E                LDA T1          ;GET DATA...
+.,F026 91 F9    STA ($F9),Y            STA (ROBUF)Y    ;STORE DATA
+                                ;
+                                ; SET UP IF NECESSARY TO OUTPUT
+                                ;
+.,F028 AD A1 02 LDA $02A1       BSO100 LDA ENABL       ;CHECK FOR A T1 NMI ENABLE
+.,F02B 4A       LSR                    LSR A           ;BIT 0
+.,F02C B0 1E    BCS $F04C              BCS BSO120      ;RUNNING....SO EXIT
+                                ;
+                                ; SET UP T1 NMI'S
+                                ;
+.,F02E A9 10    LDA #$10        BSO110 LDA #$10        ;TURN OFF TIMER TO PREVENT FALSE START...
+.,F030 8D 0E DD STA $DD0E              STA D2CRA
+.,F033 AD 99 02 LDA $0299              LDA BAUDOF      ;SET UP TIMER1
+.,F036 8D 04 DD STA $DD04              STA D2T1L
+.,F039 AD 9A 02 LDA $029A              LDA BAUDOF+1
+.,F03C 8D 05 DD STA $DD05              STA D2T1H
+.,F03F A9 81    LDA #$81               LDA #$81
+.,F041 20 3B EF JSR $EF3B              JSR OENABL
+.,F044 20 06 EF JSR $EF06              JSR RSTBGN      ;SET UP TO SEND (WILL STOP ON CTS OR DSR ERROR)
+.,F047 A9 11    LDA #$11               LDA #$11        ;TURN ON TIMER
+.,F049 8D 0E DD STA $DD0E              STA D2CRA
+.,F04C 60       RTS             BSO120 RTS
+                                ; INPUT A FILE OVER USER PORT
+                                ;  USING RS232
+                                ;
+.,F04D 85 99    STA $99         CKI232 STA DFLTN       ;SET DEFAULT INPUT
+                                ;
+.,F04F AD 94 02 LDA $0294              LDA M51CDR      ;CHECK FOR 3/X LINE
+.,F052 4A       LSR                    LSR A
+.,F053 90 28    BCC $F07D              BCC CKI100      ;3 LINE...NO HANDSHAKE
+                                ;
+.,F055 29 08    AND #$08               AND #$08        ;FULL/HALF CHECK (BYTE SHIFTED ABOVE)
+.,F057 F0 24    BEQ $F07D              BEQ CKI100      ;FULL...NO HANDSHAKE
+                                ;
+                                ;*TURN AROUND LOGIC
+                                ;
+                                ; CHECK IF DSR AND NOT RTS
+                                ;
+.,F059 A9 02    LDA #$02               LDA #$02        ;BIT RTS IS ON
+.,F05B 2C 01 DD BIT $DD01              BIT D2PRB
+.,F05E 10 AD    BPL $F00D              BPL CKDSRX      ;NO DSR...ERROR
+.,F060 F0 22    BEQ $F084              BEQ CKI110      ;RTS LOW...IN CORRECT MODE
+                                ;
+
+---
+Additional information can be found by searching:
+- "rs232trans_parity_and_bgn" which expands on BSO232 uses RSTBGN to start transmissions
+- "rs232rcvr_overview_and_variables" which expands on BSI232 returns input bytes from RIBUF described earlier

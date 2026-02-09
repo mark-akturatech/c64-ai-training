@@ -1,0 +1,24 @@
+# C64 KERNAL API (Lee Davison) - $FFCF — Input character from channel. Returns a byte from the currently opened input channel (set by CHKIN $FFC6). If the keyboard is the input, special handling occurs: cursor is shown and the logical line is buffered into BASIC input buffer (up to 80 chars) until carriage return; successive calls return characters one at a time. Channel remains open after call.
+
+$FFCF          input character from channel
+               
+               This routine will get a byte of data from the channel already set up as the input
+               channel by the CHKIN routine, $FFC6.
+               
+               If CHKIN, $FFC6, has not been used to define another input channel the data is
+               expected to be from the keyboard. the data byte is returned in the accumulator. the
+               channel remains open after the call.
+               
+               Input from the keyboard is handled in a special way. first, the cursor is turned on
+               and it will blink until a carriage return is typed on the keyboard. all characters
+               on the logical line, up to 80 characters, will be stored in the BASIC input buffer.
+               then the characters can be returned one at a time by calling this routine once for
+               each character. when the carriage return is returned the entire line has been
+               processed. the next time this routine is called the whole process begins again.
+               
+               
+
+---
+Additional information can be found by searching:
+- "ffe4_get_character_from_input_device" which expands on alternative input routine that depends on IRQ
+- "ff9f_scan_the_keyboard" which expands on keyboard scanning used by IRQ filling the buffer

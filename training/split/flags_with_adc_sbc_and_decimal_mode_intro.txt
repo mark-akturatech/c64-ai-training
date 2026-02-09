@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Which flags ADC and SBC set/clear: zero (Z), negative (N), overflow (V), carry (C). Explanation of overflow flag as signed overflow indicator (when operands same sign but result sign differs). Example showing overflow when adding $40 + $40 -> $80 and how flags NV change. Transition into Decimal Mode (BCD): 6502 supports BCD where each nibble is a decimal digit 0..9. Decimal flag (D) controls BCD; affects ADC and SBC only, not INC/DEC. WDC/65C02 differences noted later.
+
+                      4 [---1----]   SMB4 zpg         C7   2      5
+                      5 [--1-----]   SMB5 zpg         D7   2      5
+                      6 [-1------]   SMB6 zpg         E7   2      5
+                      7 [1-------]   SMB7 zpg         F7   2      5
+                  *   add 1 to cycles if page boundary is crossed
+                  **  add 1 to cycles if branch occurs on same page
+                      add 2 to cycles if branch occurs to different page
+          Pragmatics of Comparisons and the BIT Instruction
+          Compare Instructions
+          The 6502 MPU features three basic compare instructions in various address modes:
+           Instruction     Comparison
+           CMP             Accumulator and operand
+           CPX             X register and operand
+                                                                  6502 Instruction Set
+           Instruction    Comparison
+           CPY            Y register and operand
+          The various compare instructions subtract the operand from the respective register
+          (as if the carry was set) without setting the result in the accumulator (rather,
+          leaving its content unchanged) and adjust the N, Z, and C flags as with any ordinary
+          subtraction.
+          Flags will be set as follows:
+           Relation                 Z      C     N
+           register < operand       0      0     sign-bit of result
+           register = operand       1      1     0
+           register > operand       0      1     sign-bit of result
+          Meaning, we may dertermine the derivative relation "greater than or equal" (gte) by
+          checking just the carry flag (using instruction BCS):
+           Relation                 Z      C     N
+           register ≥ operand       x      1     sign-bit of result
+          (For why the carry flag is set this way, see the notes on subtraction, below.)
+          Mind that the negative flag is not significant and all conditions may be evaluated
+          by checking the carry and/or zero flag(s).
+          The BIT Instruction
+          The BIT instruction may be the most obscure instruction of the 6502:
+          While other instruction serve a very clear purpose, like transferring values or
+          performing basic arithmetic or logical operations, this one serves a rather
+          specialized purpose, but it does so in a very general way.
+          This purpose is bit testing.
+          Generally, testing of a particular bit is achieved by masking (isolating) this
+          bit (or multiple bits) by an AND operation and then checking the zero flag (Z) by
+          a BNE or BEQ instruction. This, however, destroys the contents of the accumulator.
+          This is, where the BIT instruction comes in: much like the comparisons perform a
+          subtraction without setting the result, the BIT instruction performs a logical AND
+          without setting the result, but still reflects the result in the state of the zero
+          flag (Z). Which allows for the same checks using the BNE or BEQ instructions,
+          without affecting the contents of the accumulator.
+          Since the sign-bit is often used as a flag, testing this is also covered by the BIT
+          instruction, which additionally to setting the zero flag also transfers bits 7 and 6
+          of the operand into the corresponding bits of the status register — which happen to
+                                                                    6502 Instruction Set
+          be the negative (N) and overflow (V) flags. Therefore, bits 7 and 6 of the operand
+          may be tested independently using the BMI/BPL and BVS/BVC instructions.
+            accumulator         operand
+            [76543210] AND     [76543210]    == 0 ?
+                                ↓↓            ↓
+                                NV            Z
+          An interesting use of the BIT instruction may be observed in MS/Commodore BASIC:
+                        ;a condition has been previously evaluated
+                        ;by setting the carry, now set a flag…
+                        BCS SETFLAG       ;set a flag in location "FLAG"
+
+---
+Additional information can be found by searching:
+- "decimal_mode_bcd" which expands on full BCD examples and flag semantics

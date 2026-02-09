@@ -1,0 +1,82 @@
+# byRiclianll - Explains alternate format for B-A, notes why OPEN/CLOSE of a direct-access channel is important (BAM rewrite to disk on close), and discusses that the BAM is updated on-the-fly but erratically — recommends open/close discipline. Also explains odd behavior of errors when saving to a full disk and how allocated blocks are freed only by validation; allocated directory sectors are never deallocated by DOS automatically.
+
+Line  Range  Description 
+
+
+150  Open  a  direct-access  channel. 
+
+160  Initialize  track  to  1. 
+
+170  Initialize  sector  to  0. 
+
+180  Block-allocate  command. 
+
+190  Query  error  channel. 
+
+200  The  track  and  sector  were  not  allocated. 
+
+210  Something  is  amiss  so  bail  out. 
+
+220  Counter  representing  the  number  of  sectors  allocated  in 
+
+line  170. 
+
+230  Print  track,  sector,  counter. 
+
+240  The  sector  just  allocated  already  was  but  the  DOS 
+
+returns  the  next  available  track  in  the  error  message  (65, 
+
+NO  BLOCK,  track,  sector). 
+250  If  the  next  available  track  is  zero  then  all  683  blocks  on 
+
+the  diskette  have  been  allocated. 
+260  Don't  allocate  the  directory. 
+
+270  The  DOS  returns  the  next  available  sector  in  the  error 
+
+message  (65,  NO  BLOCK,  track,  sector). 
+280  Allocate  the  next  available  track  and  sector. 
+
+290  Close  the  direct-access  channel. 
+
+330-370  Error  handler. 
+
+
+The  alternate  format  of  the  block-allocate  command  in  line  180  is: 
+PRINT#15, "B-a: " ; O; T; s 
+
+The  opening  of  a  direct-access  channel  Qine  150)  is  standard  form.  Why?  Because  the 
+BAM  is  rewritten  to  a  diskette  when  a  direct-access  data  channel  is  closed  fline  290). 
+
+
+90 
+
+
+In  reality,  though,  the  BAM  is  updated  on  the  fly  but  very  erratically.  Thus,  opening 
+and  closing  a  direct-access  data  channel  is  a  good  habit  to  get  into.  An  ounce  of 
+prevention  .  .  . 
+
+By  the  way,  what  happens  when  you  try  to  save  to  a  full  disk?  Error  72,  DISK  FULL 
+right?  Would  you  believe  error  67,  ILLEGAL  TRACK  OR  SECTOR,36,01?  Track  36? 
+That's  right.  An  error  72  only  occurs  during  normal  viTite  mode  (i.e.,  not  a  direct-access 
+write)  where  at  least  1  free  block  exists  at  the  outset  or  the  directory  is  at  its  physical 
+limit,  i.e.,  144  active  file  entries. 
+
+A  block  remains  allocated  until  a  diskette  is  validated.  Unless  a  given  track  and  sector 
+somehow  chains  to  a  directory  entry  its  bit  will  be  freed  (1)  during  validation.  (See  the 
+validate  command  in  Chapter  2.)  Caution  must  be  taken  to  ensure  that  the  block-allocate 
+command  does  not  allocate  an  unused  sector  in  the  directory.  See  line  260  above.  Once 
+a  sector  has  been  allocated  in  the  directory,  it  is  never  deallocated  by  the  DOS,  even 
+during  a  validate.  An  allocated  directory  sector  can  only  be  freed  under  software  control. 
+
+The  following  program  makes  use  of  the  block-allocate  command  to  certify  a  formatted 
+diskette.  A  worst-case  binary  pattern  is  written  to  any  sector  not  currently  in  use.  Bad 
+sectors,  if  any,  are  allocated  in  the  BAM.  However,  these  bad  sectors  will  be  deallocated 
+if  the  diskette  is  ever  validated.  (Sorry,  but  that's  the  nature  of  the  beast.) 
+
+
+---
+Additional information can be found by searching:
+- "block_allocate_program" which expands on why the program opens/closes the direct-access channel repeatedly
+- "bam_and_bam_handling_notes" which expands on further detail about persistence of allocated directory sectors and validation

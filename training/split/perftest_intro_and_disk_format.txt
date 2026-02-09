@@ -1,0 +1,45 @@
+# ********* - Program header and startup: 'PERFORMANCE TEST' title and tok64 start; BASIC comments identifying target systems; initial device opens and variable initialization (lt, lt$, nt); user prompts to insert a scratch disk and wait for Return; waiting loop for keystroke; initialization of ti$ and tt; issue of the disk-new command (PRINT#1 "n0:test disk,00"); construction of user messages (c1$, c2$, cc$) and calling the I/O response routine (GOSUB 1840); test of response timing and early failure handling (IF ti<nt ... and GOSUB 1880).
+
+5. PERFORMANCE TEST
+
+start tok64 perftest.prg
+ 1000 rem  performance test  2.0
+ 1010 :
+ 1020 rem  vic-20 and commodore 64
+ 1030 rem  single floppy drive
+ 1040 :
+ 1050 open 1,8,15:open 15,8,15
+ 1060 lt=35
+ 1070 lt$=str$(lt)
+ 1080 nt=30
+ 1090 print "{clear}{down}{175*22}"
+ 1100 print "   performance test"
+ 1110 print "{183*22}"
+ 1120 print
+ 1130 print "  insert scratch"
+ 1140 print
+ 1150 print "    diskette in drive"
+ 1160 print
+ 1170 print "{down}   press {reverse on}return{reverse off}"
+ 1180 print
+ 1190 print "          when ready{down}"
+ 1200 for i=0 to 50:get a$:next
+ 1210 get a$:if a$<>chr$(13) then 1210
+ 1220 :
+ 1230 :
+ 1240 ti$="000000"
+ 1250 tt=18
+ 1260 print#1,"n0:test disk,00"
+ 1270 c1$="   disk new command   "+chr$(13)
+ 1280 c2$="{down} wait about 80 seconds"
+ 1290 cc$=c1$+c2$:gosub 1840
+ 1300 if ti<nt then 1370
+ 1310 print "{down}system is"
+ 1320 print "{down}        not responding"
+ 1330 print "correctly to commands"
+ 1340 gosub 1880
+
+---
+Additional information can be found by searching:
+- "perftest_io_response_handler" which expands on handles device reply to commands sent here (GOSUB 1840/1880)
+- "perftest_mechanical_file_test" which expands on next test stage when disk-new succeeds (mechanical/file tests)

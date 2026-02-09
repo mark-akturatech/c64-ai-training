@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initialises VIC-II: sets input/output devices (screen as output, keyboard as input) and writes a table of initialisation values into VIC-II registers via a loop that copies from a ROM table into the chip's registers.
+
+                                *** initialise the vic chip
+.,E5A0 A9 03    LDA #$03        set the screen as the output device
+.,E5A2 85 9A    STA $9A         save the output device number
+.,E5A4 A9 00    LDA #$00        set the keyboard as the input device
+.,E5A6 85 99    STA $99         save the input device number
+.,E5A8 A2 2F    LDX #$2F        set the count/index
+.,E5AA BD B8 EC LDA $ECB8,X     get a vic ii chip initialisation value
+.,E5AD 9D FF CF STA $CFFF,X     save it to the vic ii chip
+.,E5B0 CA       DEX             decrement the count/index
+.,E5B1 D0 F7    BNE $E5AA       loop if more to do
+.,E5B3 60       RTS             
+
+---
+Additional information can be found by searching:
+- "initialise_screen_and_keyboard_defaults" which expands on called from overall initialisation
+- "orphan_bytes_and_reinitialise_sequence" which expands on entry path that calls this routine

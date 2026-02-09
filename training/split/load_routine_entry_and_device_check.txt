@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Start of the LOAD implementation: saves the load/verify flag, clears the serial status byte, fetches the device number ($BA) and rejects the keyboard (device #$03) as an illegal device for LOAD (branches to the 'illegal device number' error). Continues beyond to dispatch device-specific LOAD behavior.
+
+                                *** load
+.,F4A5 85 93    STA $93         save load/verify flag
+.,F4A7 A9 00    LDA #$00        clear A
+.,F4A9 85 90    STA $90         clear the serial status byte
+.,F4AB A5 BA    LDA $BA         get the device number
+.,F4AD D0 03    BNE $F4B2       if not the keyboard continue
+                                do 'illegal device number'
+.,F4AF 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F4B2 C9 03    CMP #$03        
+
+---
+Additional information can be found by searching:
+- "load_ram_from_device_vector" which expands on This routine is the target of the LOAD vector invoked just before entering the ROM load logic

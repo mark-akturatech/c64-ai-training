@@ -1,0 +1,47 @@
+# Kick Assembler - Example loading a Koala Paint picture into memory with LoadBinary and placing it on screen: .var picture = LoadBinary("picture.prg", KOALA_TEMPLATE) and code showing BasicUpstart, copying color/bitmap/screenram using .fill picture.getScreenRamSize(), picture.getScreenRam(i) etc. Demonstrates reallocation of screen and color RAM using *= and .fill directives.
+
+
+Bitmap,ScreenRam,ColorRam,BackgroundColor
+Files from Koala Paint
+
+BF_FLI
+
+ColorRam,ScreenRam,Bitmap
+
+Files from Blackmails FLI editor.
+
+BF_DOODLE
+
+ColorRam,Bitmap
+
+Files from Doodle
+
+So if you want to load a FLI picture, just write
+.var fliPicture = LoadBinary("GreatPicture", BF_FLI)
+
+The formats were chosen so they cover the outputs of Timanthes (NB. Timanthes doesn’t save the background
+color in koala format, so if you use that you will get an overflow error).
+TIP: If you want to know how data is placed in the above formats, just print the constant to the console while
+assembling. Example:
+.print "Koala format="+BF_KOALA
+
+12.3. Import of SID Files
+The script language knows the format of SID files. This means that you can import files directly from the HVSC
+(High Voltage Sid Collection) which uses this format. To do this you use the LoadSid function which returns a
+value that represents the sidfile.
+
+59
+
+Import and Export
+
+.var music = LoadSid("C:/c64/HVSC_44-all-of-them/C64Music/Tel_Jeroen/
+Closing_In.sid")
+
+From this you can extract data such as the init address, the play address, info about the music and the song data.
+
+Table 12.2. SIDFileValue Properties
+Attribute/Function
+
+---
+Additional information can be found by searching:
+- "binary_file_constants" which expands on use constants for formats like BF_KOALA

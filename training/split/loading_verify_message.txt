@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - LODING subroutine: prints either 'LOADING' or 'VERIFYING' depending on the verify flag (VERCK). Loads a message index into Y and jumps to SPMSG to print the proper message, then returns to caller.
+
+                                ;SUBROUTINE TO PRINT:
+                                ;
+                                ;LOADING/VERIFING
+                                ;
+.,F5D2 A0 49    LDY #$49        LODING LDY #MS10-MS1   ;ASSUME 'LOADING'
+.,F5D4 A5 93    LDA $93         LDA    VERCK           ;CHECK FLAG
+.,F5D6 F0 02    BEQ $F5DA       BEQ    LD410           ;ARE DOING LOAD
+.,F5D8 A0 59    LDY #$59        LDY    #MS21-MS1       ;ARE 'VERIFYING'
+.,F5DA 4C 2B F1 JMP $F12B       LD410  JMP SPMSG
+                                .END
+
+---
+Additional information can be found by searching:
+- "ieee_load_open_and_address_fetch" which expands on Called before starting IEEE byte transfer to inform the user
+- "tape_addressing_and_block_load" which expands on Called before TRD tape block load to announce the load
+- "ieee_receive_and_store_loop" which expands on Used to indicate the beginning of the receive/store loop

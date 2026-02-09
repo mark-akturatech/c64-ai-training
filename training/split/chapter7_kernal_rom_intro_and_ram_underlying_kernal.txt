@@ -1,0 +1,58 @@
+# ********* - Start of Chapter 7: overview of 8K Operating System (Kernal ROM). Advises this is a guide and disassembly may be needed for full details. Notes 8K of RAM under Kernal ROM that can be used by switching out the ROM and that VIC-II may access RAM under Kernal when using top 16K bank. Mentions Kernal version differences/patches (locations 58541-58623 and 65371-67407) and changes like Color RAM initialization behavior on newer Kernal versions.
+
+::::::::::::::::
+:: Chapter 7  ::
+::            ::
+::8K Operating::
+::   System   ::
+:: Kernal ROM ::
+::::::::::::::::
+
+As with the section on the BASIC ROM, this section is not meant to be
+a complete explanation of the Kernal ROM, but rather a guidepost for
+further exploration.  Where the exact instructions the Kernal ROM
+routines use are important to your programming, it will be necessary
+for you to obtain a disassembly listing of those routines and look at
+the code itself.
+
+Keep in mind that there is 8K of RAM underlying the Kernal ROM that
+can be used by turning off interrupts and switching out the Kernal ROM
+temporarily.  Even without switching out the Kernal ROM, this RAM may
+be read by the VIC-II chip if it is banked to use the top 16K of
+memory, and may be used for graphics data.  The Kernal and BASIC ROMs
+may be copied to RAM, and the RAM versions modified to change existing
+features or add new ones.
+
+There are some differences between the version of the Kernal found on
+the first few Commodore 64s and those found on the majority of newer
+models.  Those differences are discussed in the entries for the
+sections on later Kernal additions (patches) at 58541-58623
+($E4AD-$E4FF) an 65371-67407 ($FF5B-$FF7F).
+
+The most obvious change causes the Color RAM at 55296 ($D800) to be
+initialized to the background color when the screen is cleared on
+newer models, instead of white as on the original models.  Other
+changes allow the new Kernal software to be used by either U.S. or
+European 64s.  Keep in mind that the Kernal is always subject to
+change, and that the following discussion, while accurate at the time
+written (mid-1983), may not pertain to later models.  If future
+changes are like past ones, however, they are likely to be minor ones.
+The first place to look for these changes would be in the patch
+sections identified above.
+
+57344         $E000
+Continuation of EXP Routine
+
+This routine is split, with part on the BASIC ROM and the other part
+here.  Since the two ROMs do not occupy contiguous memory as on most
+Commodore machines, the BASIC ROM ends with a JMP $E000 instruction.
+Thus, while the BASIC interpreter on the 64 is for the most part the
+same as on the VIC, the addresses for routines in this ROM are
+displaced by three bytes from their location on the VIC.
+
+57411         $E043          POLY1
+
+---
+Additional information can be found by searching:
+- "kernal_routines_list" which expands on table of Kernal routines and vector entries in the following sections
+- "kernal_patches_and_iobase_functions" which expands on later Kernal patches and IOBASE routine summary

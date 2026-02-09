@@ -1,0 +1,47 @@
+# - C64 I/O Map (Mapping The Commodore 64) - $D012 (53266) RASTE — Raster compare register: read returns current raster scan line (0-261 NTSC, 0-311 PAL). Useful for timing changes to display; includes BASIC/machine examples and a sample program demonstrating dividing the screen to show all combinations of text foreground/background colors by reading the raster.
+
+$D012        RASTE        Read Current Raster Scan Line/Write Line to Compare for Raster IRQ
+
+                          The Raster Compare register has two different functions, depending on
+                          whether you are reading from it or writing to it.  When this register
+                          is read, it tells which screen line the electron beam is currently
+                          scanning.
+
+                          There are 262 horizontal lines which make up the American (NTSC)
+                          standard display screen (312 lines in the European or PAL standard
+                          screen).  Every one of these lines is scanned and updated 60 times per
+                          second.  Only 200 of these lines (numbers 50-249) are part of the
+                          visible display.
+
+                          It is sometimes helpful to know just what line is being scanned,
+                          because changing screen graphics on a particular line while that line
+                          is being scanned may cause a slight disruption on the screen.  By
+                          reading this register, it is possible for a machine language program
+                          to wait until the scan is off the bottom of the screen before changing
+                          the graphics display.
+
+                          It is even possible for a machine language program to read this
+                          register, and change the screen display when a certain scan line is
+                          reached.  The program below uses this technique to change the
+                          background color in midscreen, in order to show all 256 combinations
+                          of foreground and background text colors at once.
+
+                              40 FOR I=49152 TO 49188:READ A:POKE I,A:NEXT:POKE 53280,11
+                              50 PRINT CHR$(147):FOR I=1024 TO I+1000:POKE I,160:POKE I+54272,11:NEXT I
+                              60 FOR I=0 TO 15:FOR J=0 TO 15
+                              70 P=1196+(48*I)+J:POKE P,J+I:POKE P+54272,J:NEXT J,I
+                              80 PRINT TAB(15)CHR$(5)"COLOR CHART":FOR I=1 TO 19:PRINT:NEXT
+                              85 PRINT "THIS CHART SHOWS ALL COMBINATIONS OF   "
+                              86 PRINT "FOREGROUND AND BACKGROUND COLORS.      "
+                              87 PRINT "FOREGROUND INCREASES FROM LEFT TO RIGHT"
+                              88 PRINT "BACKGROUND INCREASES FROM TOP TO BOTTOM"
+                              90 SYS 12*4096
+                              100 DATA 169,90,133,251,169,0,141,33,208,162,15,120,173,17,208,48
+                              105 DATA 251,173,18,208
+                              110 DATA 197,251,208,249,238,33,208,24,105,8,133,251,202,16,233,48,219
+
+
+---
+Additional information can be found by searching:
+- "d011_bit7_raster_compare_high_bit_and_blank_waiting" which expands on D011 bit 7 is high-order bit for the Raster Compare
+- "d01a_irqmask_and_raster_interrupts" which expands on Raster Compare can be used as an interrupt source (mask at $D01A)

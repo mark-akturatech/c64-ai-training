@@ -1,0 +1,85 @@
+# ********* - Program 'CHECK DISK' (ver 1.4). BASIC source for scanning disk blocks, writing randomized test patterns, attempting block allocation (B-A), noting bad track/sector combinations, and reporting results. Includes error handling and a small routine to read drive responses. Also includes its tokenized PRG representation (begin 644 CHEKDISK.PRG ... end).
+
+
+4. CHECK DISK
+
+start tok64 chekdisk.prg
+ 1 rem check disk -- ver 1.4
+ 2 dn=8:rem floppy device number
+ 5 dim t(100):dim s(100):rem bad track, sector array
+ 9 print "{clear}{down*3}{175*21}"
+ 10 print " check disk program"
+ 12 print "{183*21}"
+ 20 d$="0"
+ 30 open 15,dn,15
+ 35 print#15,"v"d$
+ 45 n%=rnd(ti)*255
+ 50 a$="":for i=1 to 255:a$=a$+chr$(255 and (i+n%)):next
+ 60 gosub 900
+ 70 open 2,dn,2,"#"
+ 80 print:print#2,a$;
+ 85 t=1:s=0
+ 90 print#15,"b-a:"d$;t;s
+ 100 input#15,en,em$,et,es
+ 110 if en=0 then 130
+ 115 if et=0 then 200:rem end
+ 120 print#15,"b-a:"d$;et;es:t=et:s=es
+ 130 print#15,"u2:2,"d$;t;s
+ 134 nb=nb+1:print" checked  blocks"nb
+ 135 print " track    {left*4}" t;" sector    {left*4}" s "{up*2}"
+ 140 input#15,en,em$,et,es
+ 150 if en=0 then 85
+ 160 t(j)=t:s(j)=s:j=j+1
+ 165 print "{down*2}bad block:{left*2}",t;s""
+ 170 goto 85
+ 200 print#15,"i" d$
+ 210 gosub 900
+ 212 close 2
+ 215 if j=0 then print "{down*3}{right*3}no bad blocks!":end
+ 217 open 2,dn,2,"#"
+ 218 print "{down*2}bad blocks","track","sector"
+ 220 for i=0 to j-1
+ 230 print#15,"b-a:";d$,t(i);s(i)
+ 240 print,,t(i),s(i)
+ 250 next
+ 260 print "{down}" j "bad blocks have been allocated"
+ 270 close 2:end
+ 900 input#15,en,em$,et,es
+ 910 if en=0 then return
+ 920 print "{down*2}error #"en,em$;et;es""
+ 930 print#15,"i" d$
+stop tok64
+
+begin 644 CHEKDISK.PRG
+M`0@="`$`CR!#2$5#2R!$25-+("TM(%9%4B`Q+C0`/0@"`$1.LC@ZCR!&3$]0
+M4%D@1$5624-%($Y534)%4@!M"`4`AB!4*#$P,"DZAB!3*#$P,"DZCR!"040@
+M5%)!0TLL(%-%0U1/4B!!4E)!60"/"`D`F2`BDQ$1$:^OKZ^OKZ^OKZ^OKZ^O
+MKZ^OKZ^OKR(`JP@*`)D@(B!#2$5#2R!$25-+(%!23T=204TB`,D(#`"9("*W
+MM[>WM[>WM[>WM[>WM[>WM[>WM[<B`-0(%`!$)+(B,"(`XP@>`)\@,34L1$XL
+M,34`\0@C`)@Q-2PB5B)$)``""2T`3B6RNRA422FL,C4U`#`),@!!)+(B(CJ!
+M($FR,2"D(#(U-3I!)+)!)*K'*#(U-2"O("A)JDXE*2DZ@@`Z"3P`C2`Y,#``
+M2PE&`)\@,BQ$3BPR+"(C(@!8"5``F3J8,BQ!)#L`9`E5`%2R,3I3LC``>0E:
+M`)@Q-2PB0BU!.B)$)#M4.U,`C@ED`(0Q-2Q%3BQ%320L150L15,`GPEN`(L@
+M14ZR,""G(#$S,`"V"7,`BR!%5+(P(*<@,C`P.H\@14Y$`-<)>`"8,34L(D(M
+M03HB1"0[150[15,Z5+)%5#I3LD53`.T)@@"8,34L(E4R.C(L(D0D.U0[4P`/
+M"H8`3D*R3D*J,3J9(B!#2$5#2T5$("!"3$]#2U,B3D(`00J'`)D@(B!44D%#
+M2R`@(""=G9V=(B!4.R(@4T5#5$]2("`@()V=G9TB(%,@(I&1(@!6"HP`A#$U
+M+$5.+$5-)"Q%5"Q%4P!F"I8`BR!%3K(P(*<@.#4`?@J@`%0H2BFR5#I3*$HI
+MLE,Z2K)*JC$`FPJE`)D@(A$10D%$($),3T-+.IV=(BQ4.U,B(@"D"JH`B2`X
+M-0"S"L@`F#$U+"))(B!$)`"]"M(`C2`Y,#``Q0K4`*`@,@#L"M<`BR!*LC`@
+MIR"9("(1$1$='1U.3R!"040@0DQ/0TM3(2(Z@`#]"MD`GR`R+$1.+#(L(B,B
+M`",+V@"9("(1$4)!1"!"3$]#2U,B+")44D%#2R(L(E-%0U1/4B(`,PO<`($@
+M2;(P(*0@2JLQ`$\+Y@"8,34L(D(M03HB.T0D+%0H22D[4RA)*0!@"_``F2PL
+M5"A)*2Q3*$DI`&8+^@""`),+!`&9("(1(B!*(")"040@0DQ/0TM3($A!5D4@
+M0D5%3B!!3$Q/0T%4140B`)T+#@&@(#(Z@`"R"X0#A#$U+$5.+$5-)"Q%5"Q%
+M4P#!"XX#BR!%3K(P(*<@C@#A"Y@#F2`B$1%%4E)/4B`C(D5.+$5-)#M%5#M%
+54R(B`/`+H@.8,34L(DDB($0D````
+`
+end
+
+
+
+---
+Additional information can be found by searching:
+- "performance_test_program" which expands on Both are disk diagnostic programs
+- "bam_format_1541" which expands on Bad-block allocation and BAM interactions

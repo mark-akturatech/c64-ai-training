@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Set up the next transmit byte for RS-232. Reads the pseudo 6551 command register ($0294), handles handshake/3-line vs. 2-line interface, tests VIA2 DRB ($DD01) for modem signals (DSR/CTS), clears parity state and next-bit register, loads the RS-232 bit count, and fetches a byte from the transmit buffer into the RS232 output byte buffer. Disables Timer A interrupt and returns when no bytes remain.
+
+                                *** setup next RS232 Tx byte
+.,EF06 AD 94 02 LDA $0294       read the 6551 pseudo command register
+.,EF09 4A       LSR             handshake bit inot Cb
+.,EF0A 90 07    BCC $EF13       if 3 line interface go ??
+.,EF0C 2C 01 DD BIT $DD01       test VIA 2 DRB, RS232 port
+.,EF0F 10 1D    BPL $EF2E       if DSR = 0 set DSR signal not present and exit
+.,EF11 50 1E    BVC $EF31       if CTS = 0 set CTS signal not present and exit
+                                was 3 line interface
+.,EF13 A9 00    LDA #$00        clear A
+.,EF15 85 BD    STA $BD         clear the RS232 parity byte
+.,EF17 85 B5    STA $B5         clear the RS232 next bit to send
+.,EF19 AE 98 02 LDX $0298       get the number of bits to be sent/received
+.,EF1C 86 B4    STX $B4         set the RS232 bit count
+.,EF1E AC 9D 02 LDY $029D       get the index to the Tx buffer start
+.,EF21 CC 9E 02 CPY $029E       compare it with the index to the Tx buffer end
+.,EF24 F0 13    BEQ $EF39       if all done go disable T?? interrupt and return
+.,EF26 B1 F9    LDA ($F9),Y     else get a byte from the buffer
+.,EF28 85 B6    STA $B6         save it to the RS232 output byte buffer
+.,EF2A EE 9D 02 INC $029D       increment the index to the Tx buffer start
+.,EF2D 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_transmit_parity_and_stop_bits" which expands on parity/stop-bit decisions applied to the byte being transmitted
+- "rs232_disable_timerA_set_via2_icr" which expands on disables Timer A interrupt and programs VIA2 ICR when transmit queue empty
+- "rs232_send_byte_to_tx_buffer" which expands on how bytes are placed into the Tx buffer that this routine consumes

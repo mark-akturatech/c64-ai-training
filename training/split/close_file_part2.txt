@@ -1,0 +1,22 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CLOSE file routine (second part). Handles serial device UNLISTEN/UNTALK via $F642 and stack adjustments. Updates LDTND ($98), moves last table entry into closed-file slot (LAT $0259, FAT $0263, SAT $026D) and clears status before returning. Instructions: PLA, TAX, DEC/CPX on $98, LDY/STA with indexed indirect addressing.
+
+                                *** CLOSE: CLOSE FILE, PART 2
+.,F2EE 20 42 F6 JSR $F642       UNTALK/UNLISTEN serial device
+.,F2F1 68       PLA
+.,F2F2 AA       TAX
+.,F2F3 C6 98    DEC $98         decrement LDTND, number of open files
+.,F2F5 E4 98    CPX $98         compare LDTND to (X)
+.,F2F7 F0 14    BEQ $F30D       equal, closed file = last file in table
+.,F2F9 A4 98    LDY $98         else, move last entry to position of closed entry
+.,F2FB B9 59 02 LDA $0259,Y     LAT, active file numbers
+.,F2FE 9D 59 02 STA $0259,X
+.,F301 B9 63 02 LDA $0263,Y     FAT, active device numbers
+.,F304 9D 63 02 STA $0263,X
+.,F307 B9 6D 02 LDA $026D,Y     SAT, active secondary addresses
+.,F30A 9D 6D 02 STA $026D,X
+.,F30D 18       CLC
+.,F30E 60       RTS             return
+
+---
+Additional information can be found by searching:
+- "close_file_part1" which expands on complements close operations and updates file tables

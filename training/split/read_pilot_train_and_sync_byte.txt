@@ -1,0 +1,27 @@
+# Analyzing C64 tape loaders - Disassembly of the phase that reads the pilot byte train and the sync byte. Compares incoming assembled bytes to pilot ($40) and sync ($5A), loops until sync found, sets branch behavior by writing into the code at $036D (self-modifying branch), initializes checksum storage, and prepares to read header bytes. Shows how the loader detects pilot vs sync and switches state.
+
+; ********************************************
+; * Read Pilot train and Sync byte           *
+; ********************************************
+0384  C9 40          CMP #$40       ; Read in the whole Pilot Byte sequence
+0386  F0 F1          BEQ $0379      ; and stop when we read a different byte,
+0388  C9 5A          CMP #$5A       ; checking if it is the Sync Byte
+038A  F0 02          BEQ $038E
+
+038C  D0 52          BNE $03E0      ; If the Sync Byte doesn't match, retry
+                                    ; alignment (seek the FIRST Pilot Byte again).
+
+038E  A9 2B          LDA #$2B
+0390  8D 6D 03       STA $036D      ; Change the branch at $036C, to jump to $0399
+0393  A9 00          LDA #$00
+0395  85 05          STA $05
+0397  F0 E0          BEQ $0379      ; (6)
+; ********************************************
+; * Read Pilot train and Sync byte.END       *
+; ********************************************
+
+
+---
+Additional information can be found by searching:
+- "irq_isr" which expands on ISR constructs bytes that this routine consumes to find pilot/sync
+- "read_unused_byte" which expands on Next phase reads an unused byte before header

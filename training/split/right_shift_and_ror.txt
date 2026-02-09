@@ -1,0 +1,83 @@
+# MACHINE - Divide-by-two operations: LSR (logical shift right) shifts bits right, injects zero into high bit, low bit goes into carry (C holds remainder). ROR (rotate right) moves carry into high bit and shifts everything right, passing the low bit into carry. For multi-byte division start at high-order byte with LSR and use ROR on lower bytes to propagate bits. Diagrams and multi-byte example provided.
+
+
+Right Shift and Rotate:  Dividing by Two
+----------------------------------------
+
+If we can multiply by two by shifting (and rotating) left, we can divide by
+two by moving the bits the other way.  If we have a multi-byte number, we
+must start at the high end.
+
+LSR (logical shift right) puts a zero into the left (high-order) bit, moves
+all the bits over to the right, and drops the leftover bit into the carry.
+ROR (rotate right) puts the carry into the left bit, moves everything right,
+and drops the leftover bit into the carry once again.  At the end of a right-
+shifting sequence, the final carry bit might be considered a remainder after
+dividing by two.
+
+                                                                         :64:
+
+                                  LSR
+              +-----+----+----+----+----+----+----+-----+
+              |     |    |    |    |    |    |    |     |
+          0 -----> ---> ---> ---> ---> ---> ---> ---> ---->  CARRY
+              |     |    |    |    |    |    |    |     |   (C FLAG)
+              +-----+----+----+----+----+----+----+-----+
+
+   IN AN LSR, ZERO MOVES INTO THE HIGH BIT, AND ALL BITS MOVE RIGHT ONE
+   POSITION; THE LOWEST BITS BECOME THE CARRY.
+
+
+
+         CARRY                    ROL                    
+           |  +-----+----+----+----+----+----+----+-----+   
+           |  |     |    |    |    |    |    |    |     |   
+           `-----> ---> ---> ---> ---> ---> ---> ---> -----.
+              |     |    |    |    |    |    |    |     |  |
+              +-----+----+----+----+----+----+----+-----+  |
+                                                           v
+                                                         CARRY
+
+   IN A ROL (ROTATE LEFT), THE CARRY MOVES INTO THE LOW ORDER BIT; EACH
+   BIT MOVES LEFT; AND THE HIGH ORDER BIT BECOMES THE NEW CARRY.
+
+
+
+        0      LSR
+        |  +----------+
+        |  |          |
+        `---> -> -> ----.
+           |          | |
+           +----------+ |        ROR
+                        |    +---------+
+                        v    |         |
+                      CARRY---> -> -> ----.
+                             |         |  |
+                             +---------+  |        ROR
+                                          |    +---------+
+                                          v    |         |
+                                        CARRY---> -> -> ----.
+                                               |         |  |
+                                               +---------+  |
+                                                            |
+                                                            v
+
+   TO DIVIDE A THREE-BYTE NUMBER BY TWO, WE SHIFT THE HIGH-ORDER BYTE
+   WITH LSR; THEN WE USE ROR TO ALLOW THE C FLAG TO "LINK" FROM BYTE
+   TO BYTE.
+
+   Figure 4.5
+
+
+Comments on Shift and Rotate
+----------------------------
+
+As you might expect of arithmetic instructions, the shift and rotate
+instructions normally operate in the A register.  But there's an extra bonus:
+these instructions also can operate directly on memory.  In other words, the
+computer can go to any address in memory and shift the bits at that address
+directly, without loading the data into a register.
+
+---
+Additional information can be found by searching:
+- "left_shift_and_rol" which expands on mirror operations for division vs multiplication (LSR/ROR vs ASL/ROL)

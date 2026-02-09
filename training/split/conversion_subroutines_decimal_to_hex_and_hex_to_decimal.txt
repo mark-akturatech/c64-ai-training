@@ -1,0 +1,49 @@
+# byRiclianll - Two subroutines: decimal-to-hex (REM DECIMAL TO HEXADECIMAL) and hex-to-decimal (REM HEXADECIMAL TO DECIMAL). The decimal->hex routine computes high and low nybbles (H = INT(D/16); L = D - H*16) and assembles a two-character hex string HD* from a lookup (MID$ on the H* string). The hex->decimal routine scans hex characters to find their numeric values, sets a TME error flag on invalid input, computes the numeric byte D = H*16 + L and returns. These routines are called elsewhere to convert between numeric bytes and two-character hex representations for display and disk-writing.
+
+1000  REM  DECIMAL  TO  HEXADECIMAL 
+1010  H=INT(D/16) 
+
+
+87 
+
+
+1020  L=D-(H*16) 
+
+1030  HD*=MID*(H*,H+1, 1 ) +MID* (H«, L+1 , 1) 
+1040  RETURN 
+
+1050  REM  HEXADECIMAL  TO  DECIMAL 
+
+1060  TME=0 
+
+1070  H=0 
+
+1080  F0RI=1T016 
+
+1090  IFLEFT«(HD«, 1)=MID*(H*, I, 1)THENH=I: 
+1  =  16 
+
+1100  NEXTI 
+
+1110  IFH=0THENTME=1:G0TD1200 
+
+1120  H=H-1 
+
+1130  L=0 
+
+1140  F0RI=1T016 
+
+1 150  IFRIGHT* (HD*, 1 ) =MID* (H*, 1,1) THENL=I 
+:  1  =  16 
+
+1160  NEXTI 
+
+1170  IFL=OTHENTME=l: GOTO 1200 
+1180  L=L-1 
+1190  D=H«16+L 
+1200  RETURN 
+
+---
+Additional information can be found by searching:
+- "compute_and_display_old_load_address_and_prompt_new" which expands on used to format the existing LOW/HIGH bytes as a printable hex address
+- "confirm_and_convert_new_address" which expands on used to convert the user's hex input into numeric LOW/HIGH bytes

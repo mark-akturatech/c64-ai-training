@@ -1,0 +1,106 @@
+# NMOS 6510 - Examples of using undocumented NOPs: acknowledge IRQ by performing a read (NOP abs), skip instructions without altering flags/registers (use DOP/DOP variants instead of BIT), disable instructions by replacing opcodes (JMP vs TOP), and interleaving code and data using NOP #imm bytes to save memory at the cost of cycles.
+
+better for this than other instructions. It may also be an advantage that some instructions only
+differ by one bit – eg JMP ($4C) and TOP ($0C)
+→
+
+JMP function
+TOP function
+
+;enabled ($4c)
+;disabled ($0c)
+
+- 45 -
+
+Example: interleave code and data
+
+Sometimes code uses tables that have “holes” in them, ie only certain offsets in the table will
+actually be used. In such cases you might be able to use less memory overall by interleaving such
+tables with code, at the cost of 2 cycles per data value that must be skipped.
+
+; non performance critical code start
+something:
+LDX foo
+LDA coltable1,x
+STA $D020
+.byte $80
+; NOP #IMM (DOP)
+; data values at offset $00,$08,$10 interleaved
+; into the code
+sometable:
+.byte $55
+LDA coltable2, x
+STA $D021
+.byte $80
+; NOP #IMM (DOP)
+.byte $aa
+LDA coltable3, x
+STA $D022
+.byte $80
+; NOP #IMM (DOP)
+.byte $ff
+...
+otherthing:
+...
+; X contains $00, $08, $10...
+LDA sometable, x
+...
+
+- 46 -
+
+JAM (KIL, HLT, CIM, CRP)
+Type: lock-up
+Opc.
+
+Mnemonic
+
+Function
+
+Size
+
+Cycles N V - B D I Z C
+
+$02
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$12
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$22
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$32
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+
+---
+Additional information can be found by searching:
+- "nop_variants" which expands on which NOP opcode to use for each technique

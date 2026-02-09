@@ -1,0 +1,32 @@
+# ********* - Section 4.9: How to read the disk error channel from BASIC (sample routine using OPEN 15, INPUT# 15 to read up to 4 variables: error number, message text, track, and block). Notes on meaning of variables and common error locations (e.g., track 18 for BAM/directory).
+
+
+4.9 READING THE ERROR CHANNEL
+
+Without the DOS Support Program, there is no way to read the disk
+error channel without a program, since you need to use the INPUT#
+command which won't work outside a program.  Here is a simple BASIC
+routine to read the error channel:
+
+ 10 OPEN 15, 8, 15
+ 20 INPUT# 15, A$, B$, C$, D$
+ 30 PRINT A$, B$, C$, D$
+
+Whenever you perform an INPUT# operation from the command channel, you
+read up to 4 variables that describe the error condition.  The first,
+third, and fourth variables come in as numbers, and can be INPUT into
+numeric variables if you like. The first variable describes the
+error#$, where 0 is no error.  The second variable is the error
+description. The third variable is the track number on which the error
+occurred, and the fourth and final is the block number inside that
+track. (A block is also known as a sector)
+
+Errors on track 18 have to do with the BAM and directory.  For example,
+a READ ERROR on track 18 block 0 may indicate that the disk was never
+formatted.
+
+
+---
+Additional information can be found by searching:
+- "dos_support_wedge_and_shortcuts" which expands on DOS Support program automates reading the error channel
+- "appendix_b_detailed_error_descriptions_part1" which expands on lookup of error numbers and detailed explanations

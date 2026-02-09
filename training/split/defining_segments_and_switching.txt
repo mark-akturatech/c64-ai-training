@@ -1,0 +1,42 @@
+# Kick Assembler - Shows defining segments with .segmentdef and selecting segments with .segment. Examples: .segmentdef MySegment1 .segmentdef MySegment2 [start=$1000] then .segment MySegment1 *=$4000 ldx #30 ... .segment MySegment2 inc $d021 jmp *-3. Explains you can switch back to a segment anytime and continue adding to its current memory block.
+
+go? The answer is nowhere - we defined segments but didn't direct their content anywhere. However we can still see
+their content using the -bytedump option on the command line when running KickAsssembler. That will generate
+the file 'ByteDump.txt' with the bytes of the segments. The example from the previous section looks like this:
+******************************* Segment: Default *******************************
+***************************** Segment: MySegment1 ******************************
+[Unnamed]
+4000: a2 1e
+- ldx #30
+4002: ee 21 d0 - inc $d021
+4005: ca
+- dex
+4006: d0 fa
+- bne l1
+4008: ee 20 d0 - inc $d020
+400b: 4c 08 40 - jmp *-3
+***************************** Segment: MySegment2 ******************************
+[MySegment2]
+1000: ee 21 d0 - inc $d021
+1003: 4c 00 10 - jmp *-3
+
+The simplest way of getting the code to a program file is to specify a 'outPrg' parameter:
+.segment Code [outPrg="colors.prg"]
+*=$1000
+inc $d020
+jmp *-3
+
+If you use the 'outBin' parameter instead a binary file will be output. In the output chapter you can see more
+options for outputting segments to files or disks images.
+
+10.5. The Default segment
+If you don't want to use segments you don't have to. If you don't switch segment using the .segment directive
+the code is placed on the 'Default' segment which is connected to the the standard output file. In the byte dump in
+the previous sections you can see the 'Default' segment is empty.
+If you want to return the default segment after adding code to another segment simply write:
+.segment Default
+
+
+---
+Additional information can be found by searching:
+- "memory_blocks_and_default_block_examples" which expands on memory blocks form segments

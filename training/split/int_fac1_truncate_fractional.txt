@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - INT() implementation for FAC1: check exponent against max-integer ($A0); if number already integer or too large return, otherwise convert floating to fixed, save rounding and sign bytes, toggle sign for two's-complement handling, rotate sign into carry, set exponent to $A0, save mantissa4 for power function usage, and jump to ABS+normalise.
+
+                                *** perform INT()
+.,BCCC A5 61    LDA $61         get FAC1 exponent
+.,BCCE C9 A0    CMP #$A0        compare with max int
+.,BCD0 B0 20    BCS $BCF2       exit if >= (allready int, too big for fractional part!)
+.,BCD2 20 9B BC JSR $BC9B       convert FAC1 floating to fixed
+.,BCD5 84 70    STY $70         save FAC1 rounding byte
+.,BCD7 A5 66    LDA $66         get FAC1 sign (b7)
+.,BCD9 84 66    STY $66         save FAC1 sign (b7)
+.,BCDB 49 80    EOR #$80        toggle FAC1 sign
+.,BCDD 2A       ROL             shift into carry
+.,BCDE A9 A0    LDA #$A0        set new exponent
+.,BCE0 85 61    STA $61         save FAC1 exponent
+.,BCE2 A5 65    LDA $65         get FAC1 mantissa 4
+.,BCE4 85 07    STA $07         save FAC1 mantissa 4 for power function
+.,BCE6 4C D2 B8 JMP $B8D2       do ABS and normalise FAC1
+
+
+---
+Additional information can be found by searching:
+- "convert_fac1_floating_to_fixed" which expands on used to obtain integer representation when truncating fractional part
+- "abs_fac1" which expands on INT() finishes by doing ABS and normalising FAC1

@@ -1,0 +1,58 @@
+# byRiclianll - Implementation of the job-queue subroutine (GOSUB 660) and its error handler. Covers: TRY counter initialization; issuing M-W commands to write the header table (track T and sector S) and job-queue entry (JOB) into the drive's memory via PRINT#15 M-W sequences; polling loop that increments TRY, issues an M-R to read status (E*), normalizes empty responses to zero and converts E* to numeric E; timeout handling (TRY=500) and loop continuation while status indicates 'in progress' (E>127 case); detecting successful completion (E=1 then RETURN); and a comprehensive error handler that formats track (ET*) and sector (ES*) strings, maps FDC error codes to EN*/EM* messages (including WRITE/READ errors and timeout), prints a formatted error report, closes the channel and ends the program. This subroutine is used by SEEK, READ and WRITE operations elsewhere in the listing.
+
+650  REM  JOB  QUEUE 
+660  TRY=0 
+
+670  PRINT#15, "M-W"CHR*<10)CHR*<0)CHR*<2) 
+CHR*(T)CHR*<S) 
+
+680  PRINT#15, "M-W"CHR*<2)CHR*(0)CHR*<1)C 
+
+HR* (JOB) 
+
+690  TRY=TRY+1 
+
+700  PRINT#15, "M-R"CHR*<2)CHR*<0) 
+710  GET#15,Ei 
+
+720   IF  E*=""THEN  E*=CHR*(0) 
+
+730  E=ASC<E*> 
+
+740   IF  TRY=500  GOTO  780 
+
+750   IF  E>127  GOTO  690 
+
+760   IF  E=l   THEN  RETURN 
+
+770  REM  ERROR  HANDLER 
+
+780  ETt=RIGHT*<STR*<T> ,LEN<STR*<T) )-l) 
+
+790   IF  T<10  THEN  ET*="0"+ET* 
+
+800  ESt=R I GHT*  <  STR* ( S ) , LEN  <  STR*  <  S ) ) - 1 ) 
+
+810   IF  S<10  THEN  ES*="0"+ES* 
+
+820   IF  E>1   AND  E<12  THEN  EN*=RIGHT* (STR* 
+
+(E+18) ,2) :GOTO  840 
+
+830  EN*="02":EM*="?TIME  OUT": GOTO  860 
+840   IF  E=7  OR  E=8  THEN  EM*=" WRITE  ERROR" 
+:G0T0  860 
+
+850  EM*="READ  ERROR" 
+
+860  PRINT" tDOWNJ "EN*" ,    "EM*" , "ET*" , "ES* 
+870  PR I NT " t DOWN >tRVS>FAI LED t ROFF > " 
+880  CLOSE  15 
+890  END 
+
+
+---
+Additional information can be found by searching:
+- "seek_read_review_and_buffer_addresses" which expands on Explains the job order and memory addresses the subroutine manipulates
+- "write_new_disk_name_and_finalize" which expands on Called (GOSUB 660) to perform the WRITE job and poll for completion
+- "seek_read_and_disk_name_fetch_and_edit_input" which expands on Called (GOSUB 660) to perform SEEK and READ jobs used to fetch the disk name

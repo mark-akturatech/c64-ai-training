@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Transmit a byte onto the IEC serial bus with deferred-character handling. Tests deferred flag, shifts and stores deferred character, pushes/pulls stack to call Tx routine (ED40), saves deferred Tx byte, clears/sets flags and returns.
+
+                                *** output a byte to the serial bus
+.,EDDD 24 94    BIT $94         test the deferred character flag
+.,EDDF 30 05    BMI $EDE6       if there is a defered character go send it
+.,EDE1 38       SEC             set carry
+.,EDE2 66 94    ROR $94         shift into the deferred character flag
+.,EDE4 D0 05    BNE $EDEB       save the byte and exit, branch always
+.,EDE6 48       PHA             save the byte
+.,EDE7 20 40 ED JSR $ED40       Tx byte on serial bus
+.,EDEA 68       PLA             restore the byte
+.,EDEB 85 95    STA $95         save the defered Tx byte
+.,EDED 18       CLC             flag ok
+.,EDEE 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "send_secondary_address_after_listen_and_talk_set_atn" which expands on stores deferred Tx byte used by LISTEN/TALK secondary sends
+- "wait_for_serial_bus_end_after_send" which expands on may be followed by waiting for bus end

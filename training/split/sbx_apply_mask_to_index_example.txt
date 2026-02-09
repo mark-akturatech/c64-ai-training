@@ -1,0 +1,51 @@
+# NMOS 6510 - Example: use SBX to apply a mask to derive an index from a value without clobbering A. Demonstrates LDX #$03 (mask), LDA val1, SBX #$00 to mask lower 2 bits into X, two LSRs to shift the value while preserving A, and then LDA colours,x to fetch from a table. Compares this to the conventional AND/TAX approach which clobbers A and requires extra cycles. Notes this is useful to decode 4 multicolour pixel pairs by deriving an index from the lowest two bits.
+
+- 37 -
+
+Example: apply a mask to an index
+
+Furthermore, the SBX command can also be used to apply a mask to an index easily:
+LDX #$03
+
+;mask
+
+LDA val1
+
+;load value
+
+SBX #$00
+
+;mask out lower 2 bits -> X
+
+LSR
+
+;A is untouched, so we can continue
+;doing stuff with A
+
+LSR
+STA val1
+LDA colours,x
+
+;fetch colour from table
+
+instead of (which takes 3 cycles more):
+LDA val1
+AND #$03
+TAX
+
+;set up index
+
+LSR val1
+
+;A is clobbered, so shift direct
+
+LSR val1
+LDA colours,x
+The described case makes it easy to decode 4 multicolour pixel pairs by always setting up an
+index from the lowest two bits and fetching the appropriate colour from a previously set up table.
+
+
+---
+Additional information can be found by searching:
+- "sbx_decrement_nibbles_example" which expands on Another use of SBX for nibble/bit manipulation and branch detection
+- "sbx_toggle_bit_with_carry_example" which expands on Shows SBX behaviour with flags useful in tight bit-manipulation loops

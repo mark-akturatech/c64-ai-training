@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - BAUDO table and CBIT constant: the BAUDO table contains 16-bit words used to compute timing for half-bit or mid-bit sampling for various standard baud rates (50 through 2400). The comments indicate the stored values (e.g., 10000-CBIT, 6667-CBIT, etc.). CBIT is defined as an adjustment (100 cycles) approximating the time to service a CB1 NMI and is used to tune mid-bit sampling times.
+
+                                ; BAUDO TABLE CONTAINS VALUES
+                                ;  FOR 1E6/BAUD RATE/2
+                                ;
+.:FEC2 C1 27                    BAUDO  .WOR 10000-CBIT ; 50 BAUD
+.:FEC4 3E 1A                           .WOR 6667-CBIT  ;   75   BAUD
+.:FEC6 C5 11                           .WOR 4545-CBIT  ;  110   BAUD
+.:FEC8 74 0E                           .WOR 3715-CBIT  ;  134.6 BAUD
+.:FECA ED 0C                           .WOR 3333-CBIT  ;  150   BAUD
+.:FECC 45 06                           .WOR 1667-CBIT  ;  300   BAUD
+.:FECE F0 02                           .WOR 833-CBIT   ;  600   BAUD
+.:FED0 46 01                           .WOR 417-CBIT   ; 1200   BAUD
+.:FED2 B8 00                           .WOR 278-CBIT   ; 1800   BAUD
+.:FED4 71 00                           .WOR 208-CBIT   ; 2400   BAUD
+                                ;
+                                ; CBIT - AN ADJUSTMENT TO MAKE NEXT T2 HIT NEAR CENTER
+                                ;   OF THE NEXT BIT.
+                                ;   APROX THE TIME TO SERVICE A CB1 NMI
+                                CBIT   =100            ;CYCLES
+
+---
+Additional information can be found by searching:
+- "t2nmi_subroutine_sample_and_timer_update" which expands on BAUDOF values from BAUDO are used to compute the mid-bit timer adjustments
+- "popen_patch_and_baudof_calculation_and_end" which expands on POpen computes BAUDOF derived from M51AJB and CBIT

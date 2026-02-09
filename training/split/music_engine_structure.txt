@@ -1,0 +1,70 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Example music engine structure (KickAssembler syntax): program counter, frequency table of 16-bit values, initialization clearing SID and setting volume/ADSR, play routine called per frame that reads frequency table, writes $D400/$D401, gates voice, checks end marker and loops. Includes pseudocode for note advancement.
+
+11.4 MUSIC ENGINE STRUCTURE (Assembly)
+--------------------------------------------------------------------------------
+
+A basic SID music engine follows this structure (KickAssembler syntax):
+
+  .pc = $0810 "Music Player"
+
+  // Music data: table of 16-bit frequency values
+  freq_table:
+    .word $1cd6      // Note 1
+    .word $2145      // Note 2
+    .word $0000      // End marker / loop
+
+  init:
+    // Clear SID
+    lda #$00
+    ldx #$18
+  !loop:
+    sta $d400,x
+    dex
+    bpl !loop-
+
+    // Set volume, disable filter
+    lda #$0f
+    sta $d418
+
+    // Set ADSR
+    lda #$00         // A=0, D=0 (instant attack/decay)
+    sta $d405
+    lda #$f9         // S=15, R=9
+    sta $d406
+
+    rts
+
+  play:
+    // Called once per frame (via raster interrupt)
+    // Read next note from table
+    ldx note_index
+    lda freq_table,x
+    sta $d400         // Freq lo
+    lda freq_table+1,x
+    sta $d401         // Freq hi
+
+    // Check for end marker
+    ora freq_table,x
+    beq loop_song
+
+    // Gate on + sawtooth
+    lda #$21
+    sta $d404
+
+    // Advance to next note (after duration counter expires)
+    // ... timing logic here ...
+    rts
+
+  loop_song:
+    ldx #$00
+    stx note_index
+    rts
+
+  note_index:
+    .byte 0
+
+
+---
+Additional information can be found by searching:
+- "raster_synchronized_playback" which expands on calling play per frame via raster IRQ
+- "note_frequency_table_pal" which expands on example frequency table values

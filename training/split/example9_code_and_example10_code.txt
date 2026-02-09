@@ -1,0 +1,48 @@
+# COMMODORE 64 - EXAMPLE PROGRAM 9 (synchronization 'mosquito'): sets up voices, ADSR, sets voice 1 to triangle waveform with sync enabled (bits 0,1,4 set in register 4), plays for a duration and stops. EXAMPLE PROGRAM 10 (ring modulation clock chime): demonstrates ring modulation by setting bit 3 in register 4 for voice 1; loops to create multiple 'chimes' with gating and timing loops. Both examples include POKEs that set frequencies, ADSR values, and waveform-control sequences.
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 9:
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                     Description                             |
+  +---------+-------------------------------------------------------------+
+  |   10    | Set S to start of sound chip.                               |
+  |   20    | Clear sound chip registers.                                 |
+  |   30    | Set high frequency voice 1.                                 |
+  |   40    | Set Attack/Decay for voice 1 (A=13, D=11).                  |
+  |   50    | Set high frequency voice 3.                                 |
+  |   60    | Set volume 15.                                              |
+  |   70    | Set start triangle, sync waveform control for voice 1.      |
+  |   80    | Timing loop.                                                |
+  |   90    | Set stop triangle, sync waveform control for voice 1.       |
+  |  100    | Wait, then turn off volume.                                 |
+  +-----------------------------------------------------------------------+
+    The synchronization feature is enabled (turned on) in line 70, where
+  bits 0, 1, and 4 of register 4 are set. Bit 1 enables the syncing
+  function between voice 1 and voice 3. Bits 0 and 4 have their usual
+  functions of gating voice 1 and setting the triangular waveform.
+
+                                          PROGRAMMING SOUND AND MUSIC   207
+~
+
+
+    Ring modulation (accomplished for voice 1 by setting bit 3 of register
+  4 in line 70 of the program below) replaces the triangular output of
+  oscillator I with a "ring modulated" combination of oscillators 1 and 3.
+  This produces non-harmonic overtone structures for use in mimicking bell
+  or gong sounds. This program produces a clock chime imitation:
+
+  EXAMPLE PROGRAM 10:
+start tok64 page208.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+1,130
+  40 pokes+5,9
+  50 pokes+15,30
+  60 pokes+24,15
+  70 forl=1to12:pokes+4,21
+  80 fort=1to1000:next:pokes+4,20
+  90 fort=1to1000:next:next
+stop tok64
+
+---
+Additional information can be found by searching:
+- "synchronization_and_ring_modulation_overview" which expands on which control bits enable sync/ring-mod and how they are used

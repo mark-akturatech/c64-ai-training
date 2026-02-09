@@ -1,0 +1,107 @@
+# byRiclianll - BASIC program example that reads track 18 sector 0 into buffer #1 by direct job-queue operations: SEEK (job 176), then READ (job 128) into buffer #1, then uses three-parameter M-R to read bytes 144-159 ($0490-$049F) and assembles the disk name by fetching 16 bytes, normalizing nonprintable characters and quotes to '?'. Shows the job-queue subroutine that writes track/sector into header table and job code into job queue, with a TRY loop to poll for completion and reading job response via GET#.
+
+107 
+
+
+3.  You  should  always  monitor  the  job  yourself.  The  try  counter  in  line  450  is  a 
+stopgap  measure.  Five  hundred  wait  cycles  seems  like  an  exaggerated  figure 
+here.  However,  you  must  give  the  drive  adequate  time  to  find  a  desired  track 
+and  settle  down  before  performing  a  job.  If  for  some  reason  it  cannot  complete 
+the  job,  it  usually  aborts  and  returns  an  error  code  on  its  own.  If  it  doesn't, 
+something  is  amiss  and  a  try  counter  may  trap  it.  (You  might  have  to  power 
+off  the  drive  to  restore  the  status  quo.)  A  try  counter  is  a  little  like  workman's 
+compensation.  Don't  work  the  job  queue  without  it. 
+
+Now,  read  these  three  paragraphs  a  second  time. 
+
+The  following  program  works  the  job  queue  directly  to  read  track  18,  sector  0  into  buf- 
+fer number  1  ($0400-$04FF).  The  disk  name  is  returned  with  a  three  parameter  memory- 
+read  of  bytes  144-159  ($0490-$049F).  It's  another  oldie  but  goodie. 
+
+100  REM  JOB  QUEUE  READ  -  DISK  NAME 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GQTO  360 
+
+150  REM  SEEK 
+
+160  T=ia 
+
+170  S=0 
+
+ISO  J0B=176 
+
+190  GOSUB  390 
+
+200   IF  EOl   GOTO  360 
+
+210  REM  READ 
+
+220  JOB=12a 
+
+230  GOSUB  390 
+
+240   IF  EOl   GOTO  360 
+
+250  PRINT#15, "M-R"CHR*(144)CHR*(4)CHR*(1 
+6) 
+
+260  FOR   1=1   TO  16 
+270  GET#15,B* 
+
+280   IF  B*=""THEN  B*=CHR*(0) 
+
+290  A=ASC(B*) 
+
+30O   IF  A;>127  then  A=A-128 
+
+310   IF  A<32  OR  A>95  THEN  A=63 
+
+320   IF  A=34  THEN  A=63 
+
+330  DN*=DN*-t-CHR*(A) 
+
+340  NEXT  I 
+
+350  PRINT"  {:D0WN> DISK  NAME:    "  ;  DN* 
+360  CLOSE  15 
+370  END 
+
+380  REM  JOB  QUEUE 
+390  TRY=0 
+
+400  PR I NT# 15," M-W " CHR* ( 8 ) CHR* ( O ) CHR* ( 2 ) C 
+HR*(T)CHR*(S) 
+
+410  PRINT#15, "M-W"CHR*(1)CHR*(0)CHR*(1)C 
+
+
+108 
+
+
+HR*(JOB) 
+
+420  TRY=TRY+1 
+
+430  PR I NT# 15," M-R " CHR* ( 1 ) CHR* ( O ) 
+440  GET#15,E* 
+
+450   IF  E*=""THEN  E*=CHR*(0) 
+
+460  E=ASC(E*) 
+
+470   IF  TRY=500  GOTO  490 
+
+480   IF  E>127  GOTO  420 
+
+490  RETURN 
+
+
+---
+Additional information can be found by searching:
+- "job_queue_buffer_mapping_and_read_example" which expands on uses buffer #1 mapping ($0400-$04FF => job $0001, header $0008/$0009)

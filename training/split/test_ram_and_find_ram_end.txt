@@ -1,0 +1,48 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - RAM test and memory top detection: clears page zero and other pages, sets tape buffer pointer ($B2/$B3), iterates to write/test patterns (0x55, rotated patterns) to detect RAM top, adjusts $C2 pointer, then calls $FE2D to set top of memory. Stores OS start ($0282) and screen page ($0288). RTS.
+
+                                *** test RAM and find RAM end
+.,FD50 A9 00    LDA #$00        clear A
+.,FD52 A8       TAY             clear index
+.,FD53 99 02 00 STA $0002,Y     clear page 0, don't do $0000 or $0001
+.,FD56 99 00 02 STA $0200,Y     clear page 2
+.,FD59 99 00 03 STA $0300,Y     clear page 3
+.,FD5C C8       INY             increment index
+.,FD5D D0 F4    BNE $FD53       loop if more to do
+.,FD5F A2 3C    LDX #$3C        set cassette buffer pointer low byte
+.,FD61 A0 03    LDY #$03        set cassette buffer pointer high byte
+.,FD63 86 B2    STX $B2         save tape buffer start pointer low byte
+.,FD65 84 B3    STY $B3         save tape buffer start pointer high byte
+.,FD67 A8       TAY             clear Y
+.,FD68 A9 03    LDA #$03        set RAM test pointer high byte
+.,FD6A 85 C2    STA $C2         save RAM test pointer high byte
+.,FD6C E6 C2    INC $C2         increment RAM test pointer high byte
+.,FD6E B1 C1    LDA ($C1),Y     
+.,FD70 AA       TAX             
+.,FD71 A9 55    LDA #$55        
+.,FD73 91 C1    STA ($C1),Y     
+.,FD75 D1 C1    CMP ($C1),Y     
+.,FD77 D0 0F    BNE $FD88       
+.,FD79 2A       ROL             
+.,FD7A 91 C1    STA ($C1),Y     
+.,FD7C D1 C1    CMP ($C1),Y     
+.,FD7E D0 08    BNE $FD88       
+.,FD80 8A       TXA             
+.,FD81 91 C1    STA ($C1),Y     
+.,FD83 C8       INY             
+.,FD84 D0 E8    BNE $FD6E       
+.,FD86 F0 E4    BEQ $FD6C       
+.,FD88 98       TYA             
+.,FD89 AA       TAX             
+.,FD8A A4 C2    LDY $C2         
+.,FD8C 18       CLC             
+.,FD8D 20 2D FE JSR $FE2D       set the top of memory
+.,FD90 A9 08    LDA #$08        
+.,FD92 8D 82 02 STA $0282       save the OS start of memory high byte
+.,FD95 A9 04    LDA #$04        
+.,FD97 8D 88 02 STA $0288       save the screen memory page
+.,FD9A 60       RTS             
+
+---
+Additional information can be found by searching:
+- "reset_hardware_startup" which expands on called during reset to locate RAM end
+- "read_set_top_of_memory" which expands on writes memory top via $FE2D

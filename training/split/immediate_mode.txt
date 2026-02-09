@@ -1,0 +1,44 @@
+# MACHINE - Immediate addressing (e.g., LDA #$34) embeds a value in the instruction (two bytes). Use immediate for constants but beware of overusing it (hard-coded values make porting harder). Some instructions like STA cannot use immediate mode.
+
+
+
+Not Quite an Address:  Immediate Mode
+-------------------------------------
+
+Coding such as LDA #$34 does not reference a memory address.  Instead, it
+designates a specific value (in this case, $34).  An instruction with
+immediate addressing takes up two bytes:  one for the op code and the second
+for the immediate value.
+
+We have used immediate addressing several times.  It has a "natural" feel,
+and it's fast and convenient.  There is one potential pitfall:  immediate
+addressing is so easy that it may be abused.  Each time you code an immediate
+address, ask yourself, "Could this value ever change?"  By writing a value
+into a program, rather than a variable, you may be freezing that value
+forever.
+
+An example:  a program is written for a VIC-20, which has 22 columns on the
+screen.  At various places in the program, values are compared to 22 (hex
+16), and 22 is added or subtracted to various screen addresses.  In each
+case, immediate mode addressing is used to provide the value of 22.  Some
+time later, the programmer decides to convert to the Commodore 64, which has
+40 columns on the screen.  The programmer must change each immediate mode
+reference from 22 to 40 (hex 28).
+
+                                                                         :75:
+
+If the value 22 had been stored in a memory location so as to be used as a
+variable, all this recoding would not be needed.  The moral is clear:
+excessive use of immediate mode can call for extra programming work at a
+later time.
+
+There are certain instructions for which immediate addressing is not
+possible.  For example, we can LDA #$00, that is, bring in the actual value
+zero rather than the contents of an address, but we cannot STA immediate--we
+must store the information somewhere in memory.
+
+
+
+---
+Additional information can be found by searching:
+- "addition_program_using_subroutine" which expands on immediate ASCII constants for printing characters

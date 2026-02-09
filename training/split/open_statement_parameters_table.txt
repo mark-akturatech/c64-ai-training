@@ -1,0 +1,46 @@
+# COMMODORE 64 - Table of OPEN statement parameters format: OPEN file#, device#, number, string. Lists device numbers and meanings for cassette(1), modem(2), screen(3), printer(4/5), disk(8-11). Explains number field variations and string usage.
+
+    1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25
+    D O G                 C  A  T                       T  R  E  E  RETURN
+
+    The INPUT# statement works like the regular INPUT statement. When
+  typing data into the INPUT statement, the data items are separated,
+  either by hitting the <RETURN> key or using commas to separate them. The
+  PRINT# statement puts a RETURN at the end of a line just like the PRINT
+  statement. A$ fills up with all three values because there's no separator
+  on the tape between them, only after all three.
+    A proper separator would be a comma (,) or a RETURN on the tape. The
+  RETURN code is automatically put at the end of a PRINT or PRINT#
+  statement. One way to put the RETURN code between each item is to us only
+  one item per PRINT# statement. A better way is to set a variable to the
+  RETURN CHR$ code, which is CHR$(13), or use a comma. The statement for
+  this is R$=",":PRINT#1, A$ R$ B$ R$ C$. Don't use commas or any other
+  punctuation between the variable names, since the Commodore 64 can tell
+  them apart and they'll only use up space in your program.
+    A proper tape file looks like this:
+
+    1 2 3 4 5 6 7 8 9 10 11 12 13
+
+    D O G , C A T , T  R  E  E  RETURN
+
+    The GET# statement will pick data from the tape one character at a
+  time. It will receive each character, including the RETURN code and other
+  punctuation. The CHR$(0) code is received as an empty string, not as a
+  one character string with a code of 0. If you try to use the ASC function
+  on an empty string, you get the error message ILLEGAL QUANTITY ERROR.
+
+
+                                                   INPUT/OUTPUT GUIDE   341
+~
+
+
+    The line GET# 1, A$: A= ASC(A$) is commonly used in programs to examine
+  tape data. To avoid error messages, the line should be modified to
+  GET#1, A$: A=ASC(A$+CHR$(0)). The CHR$(0) at the end acts as insurance
+  against empty strings, but doesn't affect the ASC function when there are
+  other characters in A$.
+
+
+---
+Additional information can be found by searching:
+- "save_kernal_routine" which expands on Saving to device via SAVE requires SETLFS/SETNAM

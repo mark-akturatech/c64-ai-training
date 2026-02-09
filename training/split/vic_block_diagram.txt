@@ -1,0 +1,87 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Block diagram overview of VIC internal units: clock generator, refresh counter, raster counter (X/Y), VC/RC logic, 40x12 video matrix/color line buffer, 8x24 sprite data buffers, sprite sequencers, graphics data sequencer, priority MUX including sprite priorities and collision detection, sync and color generation, border unit, lightpen unit. Describes separation of memory access unit and display unit (buffers), and the central role of the raster counter.
+
+3. Description of the VIC
+-------------------------
+
+This chapter is about the single function units in the VIC, their way of
+working and their unspecified behavior, and the insights into the internal
+functions of the VIC that can be gained by that.
+
+3.1. Block diagram
+------------------
+
+The following block diagram gives an overview over the internal structure
+of the VIC and the independently working function units:
+
+
+ IRQ <---------------------------------+
+                                       |
+            +---------------+ +-----------------+
+            |Refresh counter| | Interrupt logic |<----------------------+
+            +---------------+ +-----------------+                       |
+        +-+    |               ^                                        |
+  A     |M|    v               |                                        |
+  d     |e|   +-+    +--------------+  +-------+                        |
+  d     |m|   |A|    |Raster counter|->| VC/RC |                        |
+  r     |o|   |d| +->|      X/Y     |  +-------+                        |
+  . <==>|r|   |d| |  +--------------+      |                            |
+  +     |y|   |r| |     | | |              |                            |
+  d     | |   |.|<--------+----------------+ +------------------------+ |
+  a     |i|   |g|===========================>|40�12 bit video matrix-/| |
+  t     |n|<=>|e| |     |   |                |       color line       | |
+  a     |t|   |n| |     |   |                +------------------------+ |
+        |e|   |e| |     |   |                            ||             |
+        |r|   |r| |     |   | +----------------+         ||             |
+ BA  <--|f|   |a|============>|8�24 bit sprite |         ||             |
+        |a|   |t|<----+ |   | |  data buffers  |         ||             |
+ AEC <--|c|   |o| |   | v   | +----------------+         ||             |
+        |e|   |r| | +-----+ |         ||                 ||             |
+        +-+   +-+ | |MC0-7| |         \/                 \/             |
+                  | +-----+ |  +--------------+   +--------------+      |
+                  |         |  | Sprite data  |   |Graphics data |      |
+        +---------------+   |  |  sequencer   |   |  sequencer   |      |
+ RAS <--|               |   |  +--------------+   +--------------+      |
+ CAS <--|Clock generator|   |              |         |                  |
+ �0  <--|               |   |              v         v                  |
+        +---------------+   |       +-----------------------+           |
+                ^           |       |          MUX          |           |
+                |           |       | Sprite priorities and |-----------+
+ �IN -----------+           |       |  collision detection  |
+                            |       +-----------------------+
+   VC: Video Matrix Counter |                   |
+                            |                   v
+   RC: Row Counter          |            +-------------+
+                            +----------->| Border unit |
+   MC: MOB Data Counter     |            +-------------+
+                            |                   |
+                            v                   v
+                    +----------------+  +----------------+
+                    |Sync generation |  |Color generation|<-------- �COLOR
+                    +----------------+  +----------------+
+                                   |      |
+                                   v      v
+                                 Video output
+                               (S/LUM and COLOR)
+
+
+The lightpen unit is not shown.
+
+As you can see, the "Raster counter X/Y" plays a central role. This is no
+surprise as the complete screen display and all bus accesses are
+synchronized by it.
+
+It is important to note that the units for display and for the needed
+memory accesses are separate from each other for the sprites as well as for
+the graphics. There is a data buffer between the two units that holds the
+read graphics data and buffers it for the display circuits. In the normal
+operation of the VIC, the functions of the two units are so closely tied to
+each other that they appear like a single function block. By appropriate
+programming, however, you can decouple the circuits and e.g. display
+graphics without previously having read data (in this case, the data which
+are still in the buffer are displayed).
+
+
+---
+Additional information can be found by searching:
+- "vic_registers_table" which expands on registers controlling VC/RC and sprite pointers ($D018, $D011-$D012)
+- "sprite_memory_access_and_display" which expands on sprite data buffers, MC/MCBASE and s/p-access scheme

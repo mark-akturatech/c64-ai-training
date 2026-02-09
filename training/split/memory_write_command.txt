@@ -1,0 +1,57 @@
+# byRiclianll - Defines the memory-write (M-W) command: syntax PRINT# file#, "M-W" CHR$(lo-byte) CHR$(hi-byte) CHR$(# of bytes) data (alternate with colon). Example usage and notes: up to 34 data bytes per M-W, data may be a string or CHR$ repetition, typical sizes are 8/16/32 for buffer-aligned writes. Mentions that M-W can be used to poke machine code into 1541 RAM for later execution.
+
+5.7  Memory- Write  Command  (A/l-W) 
+
+The  memory- write  command  is  the  opposite  of  the  memory-read  command.  Data  is  writ- 
+ten to  a  DOS  buffer  via  the  command  channel.  The  format  of  a  memory-write  command  is: 
+
+SYNTAX : 
+
+PRINT#  file#,    "M-W"  CHR* ( 1 o-byte)  CHR*(hi- 
+byte)   CHR*(#  of  bytes)  data 
+
+ALTERNATE: 
+
+PRINT#  file#,    "M-W:"  CHR* ( 1 o-byte)   CHR* (hi - 
+byte)   CHR*(#  o-F  bytes)  data 
+
+EXAMPLE: 
+
+PR I NT# 1 5 , " M-W " CHR* ( 2 ) CHR* ( 5 ) CHR* ( 2 ) CHR* ( 1 ) 
+CHR* (8) 
+
+PR I NT# 1 5 , " M-W " CHR* ( 2 ) CHR* ( 5 ) CHR* ( 2 ) CHR* ( 1 ) D* 
+
+where 
+
+file#  =  the  logical  file  number  of  the  command  channel 
+
+lo-byte  =  lo-byte  of  the  memory  address 
+hi-byte  =  hi-byte  of  the  memory  address 
+#  of  bytes     =  1  to  34 
+
+data  =  a  sti'iiig  variable  or  a  CHR$  iteration 
+
+A  total  of  34  data  bytes  may  be  written  with  each  issuance  of  a  memory- write  command. 
+Typically  only  8,  16,  or  32  data  bytes  are  sent  out  at  one  time  in  a  loop  as  our  buffer 
+size  (256  bytes)  is  evenly  divisible  by  these  factors.  At  the  most  sophisticated  level  of 
+disk  programming,  machine  language  programs  can  be  poked  into  RAM  inside  the  1541 
+with  a  memory-write  command  and  then  executed.  (See  Chapter  7  for  actual  programs 
+of  this  nature.)  In  practice,  however,  one  encounters  limited  use  of  the  memory-write 
+command. 
+
+The  following  example  demonstrates  the  use  of  the  memory-write  command.  It  allows 
+you  to  change  the  load  address  of  a  program  file.  A  routine  of  this  nature  would  be  used 
+to  aid  in  the  disassembly  of  a  program  that  normally  loads  into  high  memory  (e.g., 
+$8000-$BFFF)  and  is  already  occupied  by  a  machine  language  monitor  program 
+(SUPERMON64)  or  ROM. 
+
+
+85 
+
+
+
+---
+Additional information can be found by searching:
+- "memory_execute_command" which expands on M-W can be used to write code that M-E can execute
+- "edit_load_address_program" which expands on example that uses M-W to change a file's load address in the directory block

@@ -1,0 +1,29 @@
+# NMOS 6510 - SHA examples showing when SHA reduces to SAX (SAX = A & X store) for addresses where (H+1) yields $FF (e.g., $FE00), and SAX-like behavior for indirect,Y forms when high byte masking is effectively $FF.
+
+PHP
+PHA
+TXA
+AND #$65
+STA $6430,Y
+PLA
+PLP
+
+; save flags and accumulator
+; High byte of Address + 1
+; restore flags and accumulator
+
+Note: The SHX opcode would not use the stack.
+Test code:
+• general: CPU/asap/cpu_shx.prg, Lorenz-2.15/shxay.prg
+• &{H+1} drop off: CPU/shxy/shxy2.prg, CPU/shxy/shxy3.prg,
+CPU/shxy/shxy4.prg, CPU/shxy/shx-t2.prg, CPU/shxy/shxtest.prg
+• page boundaries: CPU/shxy/shxy1.prg, CPU/shxy/shxy5.prg
+Simulation links:
+• &{H+1} drop off:
+http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=20&d=a27fa0f39e0211&logmore=rdy&rdy0=15&rdy1=16
+• page boundary crossing anomaly:
+
+---
+Additional information can be found by searching:
+- "sha_opcode" which expands on basic SHA behavior and &{H+1} masking

@@ -1,0 +1,104 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - TAPEH - Write Tape Header: writes a header block into the cassette buffer and requests writing it to tape. Checks that the cassette buffer is allocated (JSR ZZZ; BCC indicates de-allocated). Preserves current start/end addresses (STAL/STAH/EAL/EAH) on the stack, fills the tape buffer with blanks (BUFSZ), writes block type (T1), start and end load addresses (STAL/STAH and EAL/EAH) into the header, copies the file name into the header from FNADR up to FNLEN, calls LDAD1 to set header start/end pointers, sets leader timing (SHCNH), and calls TWRT2 to write the header block. Restores the original start/end addresses and returns with the previous error code preserved in Y.
+
+                                ;TAPEH--WRITE TAPE HEADER
+                                ;ERROR IF TAPE BUFFER DE-ALLOCATED
+                                ;CARRY CLEAR IF O.K.
+                                ;
+.,F76A 85 9E    STA $9E         TAPEH  STA T1
+                                ;
+                                ;DETERMINE ADDRESS OF BUFFER
+                                ;
+.,F76C 20 D0 F7 JSR $F7D0       JSR    ZZZ
+.,F76F 90 5E    BCC $F7CF       BCC    TH40            ;BUFFER WAS DE-ALLOCATED
+                                ;
+                                ;PRESERVE START AND END ADDRESSES
+                                ;FOR CASE OF HEADER FOR LOAD FILE
+                                ;
+.,F771 A5 C2    LDA $C2         LDA    STAH
+.,F773 48       PHA             PHA
+.,F774 A5 C1    LDA $C1         LDA    STAL
+.,F776 48       PHA             PHA
+.,F777 A5 AF    LDA $AF         LDA    EAH
+.,F779 48       PHA             PHA
+.,F77A A5 AE    LDA $AE         LDA    EAL
+.,F77C 48       PHA             PHA
+                                ;
+                                ;PUT BLANKS IN TAPE BUFFER
+                                ;
+.,F77D A0 BF    LDY #$BF        LDY    #BUFSZ-1
+.,F77F A9 20    LDA #$20        LDA    #'
+.,F781 91 B2    STA ($B2),Y     BLNK2  STA (TAPE1)Y
+.,F783 88       DEY             DEY
+.,F784 D0 FB    BNE $F781       BNE    BLNK2
+                                ;
+                                ;PUT BLOCK TYPE IN HEADER
+                                ;
+.,F786 A5 9E    LDA $9E         LDA    T1
+.,F788 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+                                ;
+                                ;PUT START LOAD ADDRESS IN HEADER
+                                ;
+.,F78A C8       INY             INY
+.,F78B A5 C1    LDA $C1         LDA    STAL
+.,F78D 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+.,F78F C8       INY             INY
+.,F790 A5 C2    LDA $C2         LDA    STAH
+.,F792 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+                                ;
+                                ;PUT END LOAD ADDRESS IN HEADER
+                                ;
+.,F794 C8       INY             INY
+.,F795 A5 AE    LDA $AE         LDA    EAL
+.,F797 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+.,F799 C8       INY             INY
+.,F79A A5 AF    LDA $AF         LDA    EAH
+.,F79C 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+                                ;
+                                ;PUT FILE NAME IN HEADER
+                                ;
+.,F79E C8       INY             INY
+.,F79F 84 9F    STY $9F         STY    T2
+.,F7A1 A0 00    LDY #$00        LDY    #0
+.,F7A3 84 9E    STY $9E         STY    T1
+.,F7A5 A4 9E    LDY $9E         TH20   LDY T1
+.,F7A7 C4 B7    CPY $B7         CPY    FNLEN
+.,F7A9 F0 0C    BEQ $F7B7       BEQ    TH30
+.,F7AB B1 BB    LDA ($BB),Y     LDA    (FNADR)Y
+.,F7AD A4 9F    LDY $9F         LDY    T2
+.,F7AF 91 B2    STA ($B2),Y     STA    (TAPE1)Y
+.,F7B1 E6 9E    INC $9E         INC    T1
+.,F7B3 E6 9F    INC $9F         INC    T2
+.,F7B5 D0 EE    BNE $F7A5       BNE    TH20
+                                ;
+                                ;SET UP START AND END ADDRESS OF HEADER
+                                ;
+.,F7B7 20 D7 F7 JSR $F7D7       TH30   JSR LDAD1
+                                ;
+                                ;SET UP TIME FOR LEADER
+                                ;
+.,F7BA A9 69    LDA #$69        LDA    #$69
+.,F7BC 85 AB    STA $AB         STA    SHCNH
+                                ;
+.,F7BE 20 6B F8 JSR $F86B       JSR    TWRT2           ;WRITE HEADER ON TAPE
+                                ;
+                                ;RESTORE START AND END ADDRESS OF
+                                ;LOAD FILE.
+                                ;
+.,F7C1 A8       TAY             TAY                    ;SAVE ERROR CODE IN .Y
+.,F7C2 68       PLA             PLA
+.,F7C3 85 AE    STA $AE         STA    EAL
+.,F7C5 68       PLA             PLA
+.,F7C6 85 AF    STA $AF         STA    EAH
+.,F7C8 68       PLA             PLA
+.,F7C9 85 C1    STA $C1         STA    STAL
+.,F7CB 68       PLA             PLA
+.,F7CC 85 C2    STA $C2         STA    STAH
+.,F7CE 98       TYA             TYA                    ;RESTORE ERROR CODE FOR RETURN
+                                ;
+.,F7CF 60       RTS             TH40   RTS
+
+---
+Additional information can be found by searching:
+- "zzz_get_tape_buffer_pointer" which expands on verifies and returns the cassette buffer pointer used by TAPEH
+- "ldad1_compute_start_end_addresses" which expands on computes and stores start/end header addresses (called by TAPEH)
+- "find_any_header_fah" which expands on searches tape for headers; TAPEH produces headers that FAH can find

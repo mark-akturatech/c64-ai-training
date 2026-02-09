@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handle input when the device is the serial bus: check the serial status byte ($90); if no errors, continue to serial input routine; otherwise return CR (0x0D) as [EOL] with carry clear. On success, jumps to the serial input bit-level handler (at $EE13).
+
+                                input device was serial bus
+.,F1AD A5 90    LDA $90         get the serial status byte
+.,F1AF F0 04    BEQ $F1B5       if no errors flagged go input byte and return
+.,F1B1 A9 0D    LDA #$0D        else return [EOL]
+.,F1B3 18       CLC             flag no error
+.,F1B4 60       RTS             
+.,F1B5 4C 13 EE JMP $EE13       input byte from serial bus and return
+                                input device was RS232 device
+
+---
+Additional information can be found by searching:
+- "input_character_from_channel_device_dispatch" which expands on handles 'serial bus' case within device dispatch
+- "rs232_input_highlevel_handshake_and_interrupt_control" which expands on related handshake and interrupt management for serial lines

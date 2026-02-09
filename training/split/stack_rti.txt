@@ -1,0 +1,78 @@
+# NMOS 6510 - RTI (return from interrupt) cycle sequence: opcode fetch, dummy fetch from PC+1, read status and PC low/high from stack, with notes on dummy reads from PC+1 and S+0 and an example of acknowledging CIA interrupts by executing RTI at a CIA vector.
+
+R
+
+2 (*2)
+
+PC + 1
+
+Byte at PC + 1
+
+R
+
+3 (*3)
+
+S – 0
+
+Program counter High
+
+W
+
+4 (*3)
+
+S - 1
+
+Program counter low
+
+W
+
+5 (*3)
+
+S - 2
+
+Status register
+
+W
+
+6
+
+VA
+
+vector address low
+
+R
+
+7
+
+VA + 1
+
+vector address high
+
+R
+
+(*1) Dummy fetch from PC
+(*2) Dummy fetch from PC + 1
+(*3) R/W remains high during reset, ie reset does not write to the stack
+Simulation Link: http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=38&a=fffe&d=2000&a=20&d=40&a=0&d=58eaea&logmore=Execute,irq
+&irq0=5&irq1=6
+
+Indexed instructions
+Indexed instructions read from the target address before the highbyte was incremented, if the
+indexing causes a page boundary crossing.
+
+Absolute indexed
+ADC abs, x
+SBC abs, x
+
+AND abs, x
+SHY abs, x
+
+CMP abs, x
+STA abs, x
+
+EOR abs, x
+
+---
+Additional information can be found by searching:
+- "stack_software_interrupts_brk" which expands on BRK stack behaviour for comparison

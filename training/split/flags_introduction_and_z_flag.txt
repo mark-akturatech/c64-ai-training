@@ -1,0 +1,105 @@
+# MACHINE - Introduces the concept of flags (status bits that link instructions across interrupts). Detailed description of the Z (zero/equals) flag: which instructions affect it (loads, increments, arithmetic, compares), which do not (stores, branches), examples showing how successive instructions change Z and how BEQ/BNE use Z.
+
+Flags
+-----
+
+Near the end of Chapter 2, we coded a program that had the seemingly natural
+sequence
+
+  CPX #$06
+  BNE $....
+
+It made sense:  compare X for a value of 6, and if not equal, branch back.
+Yet it implies something extraordinary; the two instructions are somehow
+linked.
+
+Let's flash forward for a moment.  Even when you have a machine language
+program running, the computer "freezes" sixty times a second.  The computer
+undertakes a special activity, called interrupt processing.  It stops
+whatever it was doing, and switches to a new set of programs that do several
+tasks:  flashing the cursor, checking the keyboard, keeping the clock up to
+date, and checking to see whether the cassette motor needs power.  When it's
+finished, it "unfreezes" the main program and lets it continue where it left
+off.
+
+This interrupt might take place between the two instructions shown above,
+that is, after the CPX and before the BNE.  Hundreds of interrupt
+instructions might be executed between the two, yet nothing is harmed.  The
+two instructions work together perfectly to achieve the desired effect.  How
+can the computer do this?
+
+The two instructions are linked by means of a flag--a part of the 650x that
+records that something has happened.  The CPX instruction tests X and turns a
+special flag on or off to signal how the comparison turned out:  equal or
+unequal.  The BNE instruction tests that flag.  If it's on (meaning equal),
+no branch will take place and the program will continue with the next
+instruction; if it's off (meaning not equal), a branch will take place.
+
+In other words, some instructions leave a "trail" of status information;
+other instructions can check this information.  The status information is
+called "flags."  There are four flags that may be tested:  Z, C, N, and V.
+They are discussed below.
+
+
+Z Flag
+------
+
+The Z (zero) flag is probably misnamed, and should have been called the E
+flag (for "equals").  After any comparison (CPX to compare X, CPY to compare
+Y, or CMP to compare A), the Z flag will be set to "on" if the compared
+values are equal; otherwise it will be reset to "off."
+
+                                                                         :41:
+
+Sometimes the X flag checks for equal to zero, hence its name, Z for zero.
+This happens for every activity that may change one of the three data
+registers.  Thus, any load command will affect the Z flag status.  The same
+is true of increment and decrement instructions, which obviously change
+registers.  And later, when we meet other operations such as addition and
+subtraction, they too will affect the Z flag.
+
+There are many instructions that don't affect the Z flag (or any flag, for
+that matter).  Store instructions (STA, STX, STY), never change a flag.
+Branch instructions test flags but don't change them.
+
+An example will help illustrate the way that some instructions change flags
+and others do not.  Examine the following coding:
+
+  LDA #$23   (Load 23 to A)
+  LDX #$00   (Load zero to X)
+  STA $1234  (store 23 to address $1234)
+  BEQ $....
+
+Will the branch (BEQ) be taken, or will the 650x continue with the next
+instruction?  Let's analyze the Z flag's activity step by step.  The first
+instruction (LDA #$23) resets the Z flag, since 23 is not equal to zero.  The
+second instruction (LDX #$00) sets the Z flag because of the zero value.  The
+third instruction (STA $1234) does not affect the Z flag; in fact, store
+instructions do not affect any flags.  Thus, by the time we reach the BEQ
+instruction, the Z flag is set "on" and the branch will be taken.
+
+650x reference manuals show the specific flags that are affected by each
+instruction.  In case of doubt, they are easy to check.
+
+The Z flag is quite busy--it clicks on and off very often since many
+instructions affect it.  It's an important flag.
+
+If the Z flag is set "on," the BEQ (branch equals) instruction will branch to
+the specified address; otherwise it will be ignored and the next instruction
+in sequence will be executed.  If the Z flag is reset "off," the BNE (branch
+not equals) instruction will branch.
+
+We can see in more detail how our program from Chapter 2 worked.  CPX #$06
+causes the Z flag to be set "on" if X contains the value 6; otherwise it
+causes the Z flag to be reset "off."  BNE tests this flag, and branches back
+to the loop if the Z flag is off--in other words, only if the contents of X
+is not equal to six.
+
+                                                                         :42:
+
+
+---
+Additional information can be found by searching:
+- "chapter_overview_flags_logic_input" which expands on Chapter overview
+- "c_flag_description" which expands on Other testable flags (C)
+- "comparison_instructions_and_branch_usage" which expands on How CPX/CMP set Z for branches

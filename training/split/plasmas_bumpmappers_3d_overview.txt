@@ -1,0 +1,16 @@
+# An Introduction to Programming C-64 Demos - Overview of higher-level effects (plasmas, bumpmappers, 3D): not C-64-specific algorithms, often implemented as character/bitmap-based approximations (8x8 or 4x4 chunking, half-FLI to force Bad Line every 4th raster for 80x50 effect), or vector plotters on bitmap requiring optimized line-drawing and plotting code.
+
+Plasmas, Bumpmappers, 3d effects
+As you might have noticed, I haven't explained stuff that's seen in many modern demos, like plasmas, bumpmappers, 3d effects etc. I'm not very much into this type of effects, although they can look nice sometimes. Not if they're displayed in 4x4 or 8x8, though! (At least very seldom...) These aren't specific to the C-64, and you can find information about them in lots of places. If you can do a plasma on some other platform, you can do a plasma on the C-64.
+
+The easiest (and ugliest) way to display it is to use 8x8, ie. a normal text screen, where you change the colours of the characters. Another way you can do is to fill a bitmap with a pattern of the values $55 and $aa, so that you get a mixture of two colours in each 8x8 block.
+
+4x4 is often used, and it uses a graphics mode called half-FLI, which forces a Bad Line each 4th raster line. Combined with the right char data and two screen RAMs, this gives you a screen with 80x50 resolution. It doesn't look very nice, but it can be a nice programming exercise... And it's popular, although chunky graphics modes seem to be going out of fashion. It's about time.
+
+To do 3d effects with vector graphics, all you really need to know is how to put a pixel on a bitmap screen and draw a line. Once you've done that, you just need to optimize your code to make it smooth and nice.
+
+A trick that is often used, to optimize all sorts of plotter routines, is to use a 16x16 chars area, where the first column has the chars 0, 1, 2, 3 etc. up to 15, the second column has 16, 17, 18 etc. In this way, you get linearly indexable Y coordinates (0 to 127). The reason for using a 16x16 chars area is that it all fits into one character set. You can make the area larger by shifting charsets in the middle, but that'll make the plotter routine a bit more complicated.
+
+---
+Additional information can be found by searching:
+- "bitmap_screen_layout" which expands on bitmap layout considerations for plotters

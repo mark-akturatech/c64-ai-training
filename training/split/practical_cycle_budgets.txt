@@ -1,0 +1,36 @@
+# C64 PAL/NTSC Raster Timing Reference - Approximate CPU cycle budgets per frame for PAL (6569) and NTSC (6567R8). PAL (19,656 cycles/frame) breakdown for a 200-line visible area: normal lines (175 x 63 cycles = 11,025), bad lines (25 x 23 cycles = 575), border/vblank (112 x 63 = 7,056), TOTAL available ~18,656 (no sprites; some lost to VIC-II refresh). NTSC (17,095 cycles/frame) breakdown: normal lines (175 x 65 = 11,375), bad lines (25 x 23 = 575), border/vblank (63 x 65 = 4,095), TOTAL available ~16,045 (no sprites). Key observations: PAL has ~2,600 more cycles/frame, more vertical blank time (112 vs 63 lines), NTSC has 2 more cycles per raster line (65 vs 63), extra PAL VBlank is useful for screen updates and music.
+
+=============================================================================
+SECTION 8: PRACTICAL CYCLE BUDGETS
+=============================================================================
+
+These are approximate CPU cycles available per frame for program logic:
+
+PAL (6569) - 19,656 total cycles per frame:
+  Visible area: 200 lines
+    Normal lines (175 lines x 63 cycles):       11,025
+    Bad lines (25 lines x 23 cycles):              575
+  Border/VBlank area (112 lines x 63 cycles):    7,056
+  TOTAL available (no sprites):                 ~18,656
+  (Some cycles lost to VIC-II refresh accesses)
+
+NTSC (6567R8) - 17,095 total cycles per frame:
+  Visible area: 200 lines
+    Normal lines (175 lines x 65 cycles):       11,375
+    Bad lines (25 lines x 23 cycles):              575
+  Border/VBlank area (63 lines x 65 cycles):     4,095
+  TOTAL available (no sprites):                 ~16,045
+
+Key observations:
+  - PAL has ~2,600 more cycles per frame than NTSC
+  - PAL has significantly more vertical blank time (112 vs 63 lines)
+  - NTSC has 2 more cycles per raster line (65 vs 63)
+  - The extra VBlank time on PAL is valuable for screen updates, music
+    players, and other per-frame processing
+
+
+
+---
+Additional information can be found by searching:
+- "frame_timing_comparison" which expands on source numbers for cycles per frame and lines
+- "bad_lines" which expands on how bad lines reduce available cycles in visible area

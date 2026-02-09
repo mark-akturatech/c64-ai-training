@@ -1,0 +1,34 @@
+# NMOS 6510 - Detailed pseudocode implementing ADC in decimal (BCD) mode. Shows step-by-step lower-nibble addition and BCD fixup, conditional carry into the upper nibble, setting of Z (based on binary result), N and V flags (set after lower-nibble fixup using binary logic), high-nibble BCD fixup, final carry computation, and assignment of the accumulator.
+
+pseudocode
+/* A = value in Akku, imm = immediate argument, C = carry */
+/* Calculate the lower nibble. */
+tmp = (A & 0x0f) + (imm & 0x0f) + C;
+/* BCD fixup for lower nibble. */
+if (tmp > 9) { tmp += 6; }
+if (tmp <= 15) {
+tmp = (tmp & 0x0f) + (A & 0xf0) + (imm & 0xf0);
+}else{
+tmp = (tmp & 0x0f) + (A & 0xf0) + (imm & 0xf0) + 0x10;
+}
+/* Zero flag is set just like in Binary mode. */
+Z = ((A + imm + C) & 0xff) ? 0 : 1;
+/* Negative and Overflow flags are set with the same logic than in
+Binary mode, but after fixing the lower nibble. */
+N = (tmp & 0x80) >> 7;
+V = ((A ^ tmp) & 0x80) && !((A ^ imm) & 0x80);
+/* BCD fixup for higher nibble. */
+if ((tmp & 0x1f0) > 0x90) {
+tmp += 0x60;
+}
+/* Carry is the only flag set after fixing the result. */
+C = (tmp & 0xff0) > 0xf0;
+A = tmp;
+
+- 74 -
+
+
+---
+Additional information can be found by searching:
+- "adc_opcode_table_and_decimal_flags" which expands on High-level ADC decimal-mode flag behavior and opcode contexts referenced by the pseudocode
+- "adc_decimal_examples_and_compatibility" which expands on Example usage patterns that rely on decimal-mode ADC behavior and the pseudocode's results

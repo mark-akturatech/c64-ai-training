@@ -1,0 +1,43 @@
+# ca65 Users Guide - Documentation for the .MATCH builtin function: syntax (.MATCH(<token list #1>, <token list #2>)), allowed token list contents (cannot contain terminator tokens or end-of-line/file unless enclosed in curly braces), typical use within macros, behavior (compares tokens but not token attributes), and a complete example showing usage in an ASR macro including the macro definition and error handling for invalid arguments.
+
+10.17 .MATCH
+Builtin function. Matches two token lists against each other. This is most useful within macros, since macros are not stored as strings, but as lists of tokens.
+
+The syntax is
+
+
+        .MATCH(<token list #1>, <token list #2>)
+  
+Both token list may contain arbitrary tokens with the exception of the terminator token (comma resp. right parenthesis) and
+
+
+end-of-line
+end-of-file
+The token lists may optionally be enclosed into curly braces. This allows the inclusion of tokens that would otherwise terminate the list (the closing right paren in the given case). Often a macro parameter is used for any of the token lists.
+
+Please note that the function does only compare tokens, not token attributes. So any number is equal to any other number, regardless of the actual value. The same is true for strings. If you need to compare tokens and token attributes, use the .XMATCH function.
+
+Example:
+
+Assume the macro ASR, that will shift right the accumulator by one, while honoring the sign bit. The builtin processor instructions will allow an optional "A" for accu addressing for instructions like ROL and ROR. We will use the .MATCH function to check for this and print and error for invalid calls.
+
+
+        .macro  asr     arg
+
+                .if (.not .blank(arg)) .and (.not .match ({arg}, a))
+                .error "Syntax error"
+                .endif
+
+                cmp     #$80            ; Bit 7 into carry
+                lsr     a               ; Shift carry into bit 7
+
+        .endmacro
+  
+The macro will only accept no arguments, or one argument that must be the reserved keyword "A".
+
+See: .XMATCH
+
+
+---
+Additional information can be found by searching:
+- "xmatch_token_and_attributes" which expands on related function that compares token values and attributes (.XMATCH) — referenced by original documentation

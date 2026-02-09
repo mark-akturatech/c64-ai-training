@@ -1,0 +1,27 @@
+# NMOS 6510 - Technique to load a register (example uses Y) depending on a comparison result without branches: compare (CMP), execute ARR #$00 to capture the comparison result into the Carry/Accumulator, then TAY to transfer the result into Y. Includes example showing how this replaces a branch and two loads with a shorter sequence.
+
+Example: load register depending on carry
+
+If you need to load a register depending on some branch, you might be able to save some cycles.
+Imagine you have the following to load Y depending on the state of the carry:
+CMP $1000
+BCS +
+LDY #$00
+BEQ ++
+
+; jump always
+
++
+LDY #$80
+++
+This can be solved in less cycles and less memory:
+CMP $1000
+ARR #$00
+TAY
+
+
+---
+Additional information can be found by searching:
+- "arr_opcode_flags_and_table" which expands on background on ARR's flag behavior necessary to understand why this trick works
+- "arr_rotate_16bit_example" which expands on another ARR usage pattern for manipulating multi-byte values
+- "arr_shift_zeros_ones_into_accumulator" which expands on demonstrates other ways to derive data patterns in A using ARR and Carry

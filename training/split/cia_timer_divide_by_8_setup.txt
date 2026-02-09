@@ -1,0 +1,20 @@
+# A Minimal C64 Datasette Program Loader - 6502 assembly to configure CIA timers for pulse measurement: writes to $DD04/$DD05 to set Timer B start, $DD0E to start Timer A, and $DD06/$DD07 to always start Timer B from $FFFF. Registers used: $dd04, $dd05, $dd0e, $dd06, $dd07.
+
+The code configures timer A to count down from 7 to 0, with timer B counting
+underruns of timer A. This effectively divides the clock by 8:
+
+    lda #7          ;divide timer b by 8
+    ldx #0
+    sta $dd04
+    stx $dd05
+    lda #%00010001
+    sta $dd0e       ;start timer a
+    dex ; $ff
+    stx $dd06       ;always start timer b
+    stx $dd07       ;from $ffff
+
+
+---
+Additional information can be found by searching:
+- "pulse_length_values" which expands on pulse lengths expressed in timer units
+- "get_pulse_routine" which expands on routine that reads the configured timers

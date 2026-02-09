@@ -1,0 +1,45 @@
+# COMMODORE 64 - Describes the ACPTR routine to read one byte from a device on the serial bus using full handshaking. Covers behavior (returns byte in A), preparatory calls required (TALK, TKSA if a secondary address is needed), error reporting via the status word (READST used to read status), a short usage sequence, and a short example showing JSR ACPTR and STA DATA.
+
+
+
+
+    Description: This is the routine to use when you want to get informa-
+  tion from a device on the serial bus, like a disk. This routine gets a
+  byte of data off the serial bus using full handshaking. The data is
+  returned in the accumulator. To prepare for this routine the TALK routine
+  must be called first to command the device on the serial bus to send data
+  through the bus. If the input device needs a secondary command, it must
+  be sent by using the TKSA KERNAL routine before calling this routine.
+  Errors are returned in the status word. The READST routine is used to
+  read the status word.
+
+
+  How to Use:
+
+    0) Command a device on the serial bus to prepare to send data to
+       the Commodore 64. (Use the TALK and TKSA KERNAL routines.)
+    1) Call this routine (using JSR).
+    2) Store or otherwise use the data.
+
+
+  EXAMPLE:
+
+    ;GET A BYTE FROM THE BUS
+    JSR ACPTR
+    STA DATA
+
+
+
+
+
+
+
+  274   BASIC TO MACHINE LANGUAGE
+~
+
+
+
+---
+Additional information can be found by searching:
+- "chkin_open_input_channel" which expands on input-channel setup for devices that can later send data (uses TALK/TKSA when used on serial bus)
+- "ciout_transmit_byte_over_serial_bus" which expands on complementary routine for sending bytes to serial devices (LISTEN/SECOND preparatory calls)

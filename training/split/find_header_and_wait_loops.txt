@@ -1,0 +1,36 @@
+# byRiclianll - Initial low-level sequences: JSR *F510 (FIND HEADER) and JSR *F556 (FIND SYNC), followed by 'WAIT OUT DATA' code consisting of two GCR-wait loops (READ1 and READ2) implemented with LDX, BVC loops, CLV, DEX and BNE to time-wait through incoming bytes.
+
+200  JSR  *F510  ;   FIND  HEADER 
+210  JSR  *F556  ;   FIND  SYNC 
+220  ; 
+
+230  ;«  WAIT  OUT  DATA  * 
+240  ; 
+
+250  LDX  #«00 
+
+260  READl   BVC  READl 
+
+270  CLV 
+
+280  DEX 
+
+290  BNE  READl 
+
+300  ; 
+
+310  LDX  #«45 
+
+320  READ2  BVC  READ2 
+
+330  CLV 
+
+340  DEX 
+
+350  BNE  READ2 
+
+
+---
+Additional information can be found by searching:
+- "assembler_directives_and_origin" which expands on origin and directives used for assembling these routines
+- "write_mode_data_and_write_loops" which expands on subsequent code that switches data direction and emits overwrite bytes after the wait loops

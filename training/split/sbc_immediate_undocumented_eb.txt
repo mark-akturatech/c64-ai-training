@@ -1,0 +1,38 @@
+# NMOS 6510 - SBC immediate undocumented opcode ($EB): subtract immediate from accumulator with carry, same behavior as standard SBC #imm. Opcode, size (2 bytes), cycles, and flags. Test code reference.
+
+
+Function
+
+Size
+
+A,X,SP = {addr} & SP
+
+3
+
+Cycles N V - B D I Z C
+4 (+1)
+
+o
+
+o
+
+Operation: AND memory with stack pointer, transfer result to accumulator, X register and stack
+pointer.
+•
+
+N and Z are set as expected by a load instruction
+
+Example:
+LAS $C000, Y
+
+;BB AA
+
+Equivalent Instructions:
+TSX
+TXA
+AND $C000, Y
+TAX
+TXS
+
+Test code: CPU/asap/cpu_las.prg, Lorenz-2.15/lasay.prg
+Note: LAS is called as 'probably unreliable' in one source - this does not seem to be the case though

@@ -1,0 +1,117 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - I/O and screen initialization: CINT1 (I/O defaults, disable SHIFT+CBM, set cursor off, keyboard table vector, keyboard buffer length etc.), CLEAR SCREEN (sets up LDTB1 screen line link table and clears screen lines), HOME CURSOR and SET SCREEN POINTERS. Also includes SET I/O DEFAULTS (DFLTO/DFLTN), VIC register setup via table $ECB8.. and copying to $CFFF etc. Uses $0286 COLOR, $0289 XMAX, $028B KOUNT and more screen-related zero page variables.
+
+                                *** CINT1: INITIALISE I/O
+                                This routine is part of the KERNAL CINT init routine. I/O
+                                default values are set, <shift+cbm> keys are disabled, and
+                                cursor is switched off. The vector to the keyboard table
+                                is set up, and the length of the keyboard buffer is set to
+                                10 characters. The cursor color is set to lightblue, and
+                                the key-repeat parameters are set up.
+.,E518 20 A0 E5 JSR $E5A0       set I/O defaults
+.,E51B A9 00    LDA #$00
+.,E51D 8D 91 02 STA $0291       disable <SHIFT + CBM> by writing zero into MODE
+.,E520 85 CF    STA $CF         the cursor blink flag, set BLNON on
+.,E522 A9 48    LDA #$48
+.,E524 8D 8F 02 STA $028F
+.,E527 A9 EB    LDA #$EB        set the KEYLOG vector to point at $eb48
+.,E529 8D 90 02 STA $0290
+.,E52C A9 0A    LDA #$0A        set max number of character is keyboard buffer to 10
+.,E52E 8D 89 02 STA $0289       XMAX
+.,E531 8D 8C 02 STA $028C       How many 1/60 of a second to wait before key is repeated.
+                                Used together with $028b
+.,E534 A9 0E    LDA #$0E        set character colour to light blue
+.,E536 8D 86 02 STA $0286       COLOR
+.,E539 A9 04    LDA #$04        How many $028c before a new entry is
+.,E53B 8D 8B 02 STA $028B       put in the keyboard buffer, KOUNT
+.,E53E A9 0C    LDA #$0C
+.,E540 85 CD    STA $CD         store in BLCNT, cursor toggle timer
+.,E542 85 CC    STA $CC         store in BLNSW, cursor enable
+
+                                *** CLEAR SCREEN
+                                This routine sets up the screen line link table ($d9 -
+                                $f2), LDTB1, which is used to point out the address to the
+                                screen. The later part of the routine performs the screen
+                                clear, line by line, starting at the bottom line. It
+                                continues to the next routine which is used to home the
+                                cursor.
+.,E544 AD 88 02 LDA $0288       get HIBASE, top of screen memory
+.,E547 09 80    ORA #$80        fool around
+.,E549 A8       TAY
+.,E54A A9 00    LDA #$00
+.,E54C AA       TAX
+.,E54D 94 D9    STY $D9,X       store in screen line link table, LDTB1
+.,E54F 18       CLC
+.,E550 69 28    ADC #$28        add #40 to next line
+.,E552 90 01    BCC $E555
+.,E554 C8       INY             inc page number
+.,E555 E8       INX             next
+.,E556 E0 1A    CPX #$1A        till all 26?? is done
+.,E558 D0 F3    BNE $E54D
+.,E55A A9 FF    LDA #$FF
+.,E55C 95 D9    STA $D9,X       last pointer is $ff
+.,E55E A2 18    LDX #$18        start clear screen with line $18 (bottom line)
+.,E560 20 FF E9 JSR $E9FF       erase line (X)
+.,E563 CA       DEX             next
+.,E564 10 FA    BPL $E560       till screen is empty
+
+                                *** HOME CURSOR
+                                This routine puts the cursor in the top left corner by
+                                writing its column and line to zero.
+.,E566 A0 00    LDY #$00
+.,E568 84 D3    STY $D3         write to PNTR, cursor column
+.,E56A 84 D6    STY $D6         write to TBLX, line number
+
+                                *** SET SCREEN POINTERS
+                                This routine positions the cursor on the screen and sets
+                                up the screen pointers. On entry, TBLX must hold the line
+                                number, and PNTR the column number of the cursor position.
+.,E56C A6 D6    LDX $D6         read TBLX
+.,E56E A5 D3    LDA $D3         read PNTR
+.,E570 B4 D9    LDY $D9,X       read value from screen line link table, LDTB1
+.,E572 30 08    BMI $E57C       heavy calculations??? jump when ready
+.,E574 18       CLC
+.,E575 69 28    ADC #$28
+.,E577 85 D3    STA $D3         PNTR
+.,E579 CA       DEX
+.,E57A 10 F4    BPL $E570
+.,E57C 20 F0 E9 JSR $E9F0       set start of line (X)
+.,E57F A9 27    LDA #$27
+.,E581 E8       INX
+.,E582 B4 D9    LDY $D9,X       LDTB1
+.,E584 30 06    BMI $E58C
+.,E586 18       CLC
+.,E587 69 28    ADC #$28
+.,E589 E8       INX
+.,E58A 10 F6    BPL $E582
+.,E58C 85 D5    STA $D5         store in LMNX, physical screen line length
+.,E58E 4C 24 EA JMP $EA24       sync color pointer
+.,E591 E4 C9    CPX $C9         read LXSP, check cursor at start of input
+.,E593 F0 03    BEQ $E598
+.,E595 4C ED E6 JMP $E6ED       retreat cursor
+.,E598 60       RTS
+
+.,E599 EA       NOP             A free byte!!!
+
+                                *** SET I/O DEFAULTS
+                                The default output device is set to 3 (screen), and the
+                                default input device is set to 0 (keyboard). The VIC chip
+                                registers are set from the video chip setup table. The
+                                cursor is then set to the home position.
+.,E59A 20 A0 E5 JSR $E5A0       set I/O defaults
+.,E59D 4C 66 E5 JMP $E566       home cursor and exit routine
+.,E5A0 A9 03    LDA #$03
+.,E5A2 85 9A    STA $9A         DFLTO, default output device - screen
+.,E5A4 A9 00    LDA #$00
+.,E5A6 85 99    STA $99         DFLTN, default input device - keyboard
+.,E5A8 A2 2F    LDX #$2F
+.,E5AA BD B8 EC LDA $ECB8,X     VIC chip setup table
+.,E5AD 9D FF CF STA $CFFF,X     VIC chip I/O registers
+.,E5B0 CA       DEX             next
+.,E5B1 D0 F7    BNE $E5AA       till ready
+.,E5B3 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "video_chip_setup" which expands on VIC register initial values copied during I/O defaults
+- "keyboard_input_and_screen_output" which expands on keyboard buffer length and input handling initialized here

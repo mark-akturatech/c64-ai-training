@@ -1,0 +1,47 @@
+# NMOS 6510 - Practical examples and techniques using ISC: an incrementing loop-counter idiom that saves cycles by combining INC+LDA+CMP into LDA #endvalue; SEC; ISC counter; BNE nooverflow; STA counter (benefit: A ends up zero), an indexed increment-and-load example using ISC buffer,x plus EOR #$ff (saves a byte and can be faster), and using ISC to simulate addressing modes not provided by INC (e.g., ISC abs,y, ISC (zp),y, ISC (zp,x)) when A is known to be zero and C cleared. Includes brief notes on conditions required for these substitutions.
+
+Example: incrementing loop counter
+
+Instead of:
+INC counter
+LDA counter
+CMP #ENDVALUE
+BNE nooverflow
+you can write: (which saves a cycle when counter is in zero-page)
+LDA #ENDVALUE
+SEC
+ISC counter
+BNE nooverflow
+STA counter
+
+; Bonus: A is always 0 here
+
+Example: increment indexed and load value
+
+Instead of:
+; A is zero and C=0 before reaching here
+INC buffer, x
+LDA buffer, x
+you can write: (which saves a byte if buffer is in regular memory, and is faster)
+; A is zero and C=0 before reaching here
+ISC buffer, x
+EOR #$ff
+Example: simulate extra addressing modes for INC
+
+If you can make sure that A is 0 and C is cleared, ISC turns into INC and makes some addressing
+modes available that do not exist for regular INC:
+; A is zero and C=0 before reaching here
+ISC abs, y
+; like INC abs, y
+ISC (zp), y
+; like INC (zp), y
+ISC (zp, x)
+; like INC (zp, x)
+
+- 27 -
+
+
+---
+Additional information can be found by searching:
+- "isc_opcode_variants_and_addressing_modes" which expands on which ISC addressing modes/opcodes allow the described examples
+- "isc_operation_equivalents_and_tests" which expands on semantics (INC then SBC) and decimal-mode caveats to be aware of when using the examples

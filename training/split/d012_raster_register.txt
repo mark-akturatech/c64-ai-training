@@ -1,0 +1,50 @@
+# An Introduction to Programming C-64 Demos - Detailed explanation of $D012: reading it returns current raster line; writing it sets next raster interrupt line. On PAL machines there are 318 raster lines; bit 7 of $D011 extends $D012 (provides the 8th bit). Example code shows polling $D012 to synchronize actions (border flash, music play JSR at $1003) and demonstrates using $D012 for timing graphics and music.
+
+$d012
+Cryptic header, right? $d012 might be the most important address of them all, when it comes to demo programming on the C-64. $d012 has two different functions:
+
+
+When read, it returns the number of the current raster line.
+When written, it is used to set the number of the line where the next raster interrupt will occur.
+We'll get back to raster interrupts later. You need to know about $d012 to understand them, so pay attention to the stuff in this section! The first item above is interesting, but it may not be obvious why it is interesting.
+
+The current raster line is the line that is currently being redrawn on your screen. The whole screen is redrawn 50 times per second6. Each time it is redrawn from top to bottom, from the left to the right. So, if you want something to happen 50 times per second, all you have to do is to check the current value of $d012, and when it reaches a certain value, call the routine that performs the desired task. When finished, go back to checking $d012.
+
+Now, there are 318 raster lines on a PAL machine, and one register can only store values between 0 and 255, so you need another bit to represent all 318 lines. That bit is bit 7 of $d011. So, bit 7 of $d011 is really bit 8 of $d012. Does that sound confusing? In that case, read this paragraph a couple of more times. So, if bit 7 on $d011 is set, $d012 represents raster lines greater than 255 ($ff), otherwise the lines between 0 and 255.
+
+If you want to take the easy way out, and you don't need to synchronize to some specific part of the screen, use a $d012 value greater than $40, because $ff + $40 = $13f = 319. So you'll never get a value greater than $3f if bit 7 of $d011 is set. I'll show how you can use $d012 with an example:
+
+
+           * = $0801
+
+           lda #$00
+           tax
+           tay
+           jsr $1000 ; initialize music
+
+mainloop:  lda $d012    ; load $d012
+           cmp #$80     ; is it equal to #$80?
+           bne mainloop ; if not, keep checking
+
+           inc $d020    ; inc border colour
+           jsr $1003    ; jump to music play routine
+           dec $d020    ; dec border colour
+           jmp mainloop ; keep looping
+Now, before you try this program out, you'll need to have a tune loaded into memory at $1000. Most tunes used in demos, intros and what have you are located at $1000, so you just need to rip a tune, or get it some other way. The code before the mainloop just initializes the tune, ie. sets all registers to 0, and then jumps to the initialization routine. You don't have to know what the music routine does, but what it actually does is that it resets the registers of the SID chip.
+
+After the initialization we move directly into the main loop. What the main loop does is that it loads the value from $d012, compares it to $80 (128 decimal, somewhere in the middle of the screen), and if it's not $80, it jumps back to where it began, ie. to loading the value from $d012.
+
+Now, as soon as the raster beam reaches line $80, the inner loop is exited, and we end up at the line that says inc $d020. What we do is that we increment the border colour, jump to the music play routine, which executes and returns, and then we decrement the border colour and jump back to the main loop. Why do we change the border colour? Because it's a way to visualize how much time the music player routine takes. You'll actually not only see how much time it takes (in raster lines), but also where on the screen you're playing it, ie. where the raster beam is when you're in the music player routine.
+
+In this example we've learned two things:
+
+
+how to use $d012 to synchronize things with the screen refresh, and
+how to play music.
+We will later show that this music player routine is in no way perfect, but it's a good illustration of some concepts, and it works pretty well. You should now be able to figure out for yourself how to do raster bars. The trick is that you wait for a certain raster line, then change the background colour (if you're on the normal screen, you have to change both $d020 and $d021, if you're in the upper or lower border, you only have to change $d020). You need pretty good timing to do that, but with a hardcoded delay between the colour changes, it should work well with code similar to the above example.
+
+
+---
+Additional information can be found by searching:
+- "how_to_implement_interrupts_example" which expands on using raster interrupts (vectors and $d012 writes)
+- "raster_bars_timing" which expands on making raster bars by changing $d020/$d021 at specific lines

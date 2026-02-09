@@ -1,0 +1,62 @@
+# MACHINE - Timing advice: interrupts affect timing (add ~10%); count loops multiplicatively; clock/memory cycle ~1 microsecond varies by model; most instructions timing equals memory cycles fetched (minimum two cycles); indexed accesses, page-cross penalties, branch timing differences; special-case exceptions like shifts, INC/DEC, JSR/RTS.
+
+
+            o Review of instructions
+
+            o Debugging
+
+            o Symbolic assemblers
+
+            o Where to go from here
+
+
+                                                                        :132:
+
+Timing
+------
+
+For many applications, machine language programs seem to run instantaneously.
+The speed of the 650x is much greater than that of other devices, including
+the human user.  The machine language program usually ends up waiting for
+something:  waiting for the keyboard, waiting for the printer, waiting for
+the disk, or waiting for the human to read and react to the information
+presented on the screen.
+
+Occasionally, it may be important to get fairly precise timing for a machine
+language program.  If so, the following rules of thumb may be kept in mind:
+
+  - All timing estimates are crude if the interrupt routines are still
+    active.  The effect of interrupt on timing can be crudely estimated by
+    adding 10 percent to the running time.
+
+  - Remember to allow for loops.  If an instruction within a loop is repeated
+    ten times, its timing will need to be counted ten times.
+
+  - The "clock speed," or memory cycle speed, of most Commodore machines is
+    roughly 1 microsecond--one millionth of a second.  The precise number
+    varies from one machine to another, and also varies between North America
+    and other regions.
+
+  - Most instructions run at the fastest imaginable speed.  Count the memory
+    cycles, and that's how fast the instruction will execute.  For example,
+    LDA #$0D will need two memory cycles just to get the instruction--and
+    that's how fast it runs.  LDA $0500,X will usually take four memory
+    cycles:  three to get the instruction, and one to fetch the data from page
+    5.  Exceptions:  no instruction runs in less than two cycles; and shift/
+    rotate instructions, INC/DEC, and JSR/RTS take longer than you might
+    expect by this rule.
+
+  - Branches time differently, depending on whether the branch is taken
+    (three cycles) or not taken (two cycles).
+
+  - When a page boundary is crossed, the computer needs an extra cycle to do
+    the arithmetic.  If the program branches from $0FE4 to $1023, there will
+    be an extra cycle; if we LDA $24E7,Y, there will be an extra cycle if Y
+    contains a value of $19 or greater.
+
+Detailed timing values can be obtained from most tables of instructions.
+
+
+---
+Additional information can be found by searching:
+- "timing_example_and_cycle_counting" which expands on Worked example counting cycles

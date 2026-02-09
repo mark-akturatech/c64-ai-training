@@ -1,0 +1,26 @@
+# byRiclianll - Converts the assembled data block into GCR (Group Code Recording) encoding by calling ROM routines. Initializes pointers/zero page ($30/$31), calls JSR *FE30, restores registers (PLA/TAY/DEY) and calls additional ROM routines (*FDE5, *FDF5, *F5E9, *F78F). Stores conversion results into zero-page locations like *3A.
+
+880  ;*  CONVERT  TO  GCR  * 
+890  ; 
+
+900  LDA  #*00 
+910  STA  *30 
+920  LDA  4**03 
+930  STA  *31 
+940  JSR  *FE30 
+950  PLA 
+960  TAY 
+970  DEY 
+980  JSR  *FDE5 
+990  JSR  *FDF5 
+lOOO  LDA  4**05 
+lOlO  STA  *31 
+1020  JSR  *F5E9 
+1030  STA  *3A 
+1040  JSR  *F78F 
+1050  ; 
+
+---
+Additional information can be found by searching:
+- "create_data_block_1541_format" which expands on provides the data that is converted to GCR
+- "build_jump_loader_code_in_buffer" which expands on after GCR conversion, a jump/loader sequence is assembled

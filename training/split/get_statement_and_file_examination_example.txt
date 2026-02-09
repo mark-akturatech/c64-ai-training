@@ -1,0 +1,80 @@
+# ********* - Section 5.3: GET# statement to retrieve raw bytes from a file (GET# file#, variable list), guidance to prefer string variables, examples, and a sample BASIC program to examine arbitrary files on disk (including encoded program listing).
+
+Here is a picture of the file after the statement PRINT# 5, 1; 3; 5; 7
+is performed:
+
+      |   | 1 |-->|   | 3 |-->|   | 5 |-->|   | 7 |-->| CR|eof|   |
+ -----+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+ char | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15|
+
+Appendix B contains a program demonstrating the use of a sequential
+disk file.
+
+
+
+5.3 GET#
+
+The GET# retrieves data from the disk, one character at a time.
+
+FORMAT FOR THE GET# STATEMENT:
+
+   GET# file#, variable list
+
+Data comes in byte by byte, including the CR, comma, and other
+separating characters.  It is much safer to use string variables when
+using the GET# statement.  You will get a BASIC error message if
+string data is received where a number was requested, but not vice-
+versa.
+
+EXAMPLES OF GET# STATEMENT:
+
+   GET# 5, A$
+   GET# A, B$, C$, D$
+	   |   |   |
+           +---+---+--- You can get more than 1 character at a time
+   GET# 5, A
+
+The GET# statement is extremely useful when examining files with
+unknown contents, like a file that may have been damaged by an
+experimental program.  It is safer than INPUT# because there is a
+limit to the number of characters allowed between separators of INPUT
+variables.  With GET#, you receive every character, and you can
+examine separators as well as other data.
+
+Here is a sample program that will allow you to examine any file on
+the disk:
+
+start tok64 examfile.prg
+ 10 input "file name";f$
+ 20 input "file type";t$
+ 30 t$ = left$ (t$,1)
+ 40 if t$<>"s" then if t$<>"p" then if t$<>"u" then 20
+ 45 open 15,8,15
+ 50 open 5,8,5,"0:" + f$ + "," + t$ + ",r"
+ 60 gosub 200
+ 70 get#5, a$
+ 80 if st=0 then 90
+ 85 if st=64 then close 5,15:end
+ 87 print st:stop
+ 90 print asc(a$ + chr$(0))
+ 100 goto 70
+ 200 input#15,a$,b$,c$,d$
+ 210 if val(a$)> 0 then printa$,b$,c$,d$:stop
+ 220 return
+stop tok64
+
+begin 644 EXAMFILE.PRG
+M`0@6"`H`A2`B1DE,12!.04U%(CM&)``K"!0`A2`B1DE,12!465!%(CM4)``]
+M"!X`5"0@LB#(("A4)"PQ*0!H""@`BR!4)+.Q(E,B(*<@BR!4)+.Q(E`B(*<@
+MBR!4)+.Q(E4B(*<@,C``=@@M`)\@,34L."PQ-0">"#(`GR`U+#@L-2PB,#HB
+M(*H@1B0@JB`B+"(@JB!4)""J("(L4B(`J`@\`(T@,C`P`+0(1@"A(S4L($$D
+M`,0(4`"+(%-4LC`@IR`Y,`#;"%4`BR!35+(V-""G(*`@-2PQ-3J``.8(5P"9
+M(%-4.I``^0A:`)D@QBA!)""J(,<H,"DI``()9`")(#<P`!8)R`"$,34L020L
+M0B0L0R0L1"0`-@G2`(L@Q2A!)"FQ(#`@IR"9020L0B0L0R0L1"0ZD``\"=P`
+$C@``````
+`
+end
+
+---
+Additional information can be found by searching:
+- "reading_directory_program_and_description" which expands on using GET# to read the directory when opened as a sequential file

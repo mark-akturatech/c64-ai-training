@@ -1,0 +1,27 @@
+# ********* - Locations 677-678 ($2A5-$2A6): temporary index to next 40-column line for screen scrolling (677) and PAL/NTSC flag (678). PAL/NTSC flag set by test on power-on using raster interrupt on line 311; 0 = NTSC, 1 = PAL. Used for adjusting IRQ timer prescaler so IRQ occurs every 1/60 second for both standards.
+
+677           $2A5
+Temporary Index to the Next 40-Column Line for Screen Scrolling
+
+678           $2A6
+PAL/NTSC Flag
+
+At power-on, a test is performed to see if the monitor uses the NTSC
+(North American) or PAL (European) television standard.
+
+This test is accomplished by setting a raster interrupt for scan line
+311, and testing if the interrupt occurs.  Since NTSC monitors have
+only 262 raster scan lines per screen, the interrupt will occur only
+if a PAL monitor is used.  The results of that test are stored here,
+with a 0 indicating an NTSC system in use, and one signifying a PAL
+system.
+
+This information is used by the routines which set the prescaler
+values for the system IRQ timer, so that the IRQ occurs every 1/60
+second.  Since the PAL system 02 clock runs a bit slower than the NTSC
+version, this prescaler value must be adjusted accordingly.
+
+
+---
+Additional information can be found by searching:
+- "baudoftime_prescaler" which expands on PAL/NTSC affects system clock and prescaler values for timing

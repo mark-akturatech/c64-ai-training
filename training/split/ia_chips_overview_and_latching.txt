@@ -1,0 +1,71 @@
+# MACHINE - Overview of IA (interface adapter) chips: PIA (Peripheral IA), VIA (Versatile IA), CIA (Complex IA). Main functions listed: event latching & interrupt control. Explains latching: event flags hold briefly-occurring signals until CPU clears them; interrupt enable register links flags to IRQ line; IFR (interrupt flag register) is used to read/clear flags and logical operations (AND/ORA/EOR) extract bits.
+
+give their main functions.
+
+PIA stands for peripheral interface adapter, VIA for versatile interface
+adapter, and CIA for complex interface adapter.  There is speculation among
+Commodore owners that the next interface chip will be called "FBI."
+
+The functions performed by an interface adapter are:
+
+  1.  Event latching and interrupt control.  We have noted that these chips
+      can be manipulated to block the interrupt signal.  In fact, they do
+      more than "gating" the signal--allowing it through to the processor's
+      IRQ trigger or alternatively blocking it.  They also often latch a
+      signal into an event flag, sometimes called an interrupt flag.
+
+                                                                        :121:
+
+      Latching is important.  A triggering event may be brief; so short, in
+      fact, that the original signal causing interrupt might go away before
+      the processor can look at it.  An IA event flag locks in the signal and
+      holds it until the program turns it off.
+
+
+        NEAR "THE IA CHIPS..."
+
+                            ON +-------+ OFF
+       INTERRUPTING----------->| LATCH |<-------------.
+       EVENT                   +-------+              |
+                                   |                  |
+                                   v              COMPUTER
+                                 EVENT         ACKNOWLEDGEMENT
+                                 FLAG
+
+       Figure 7.2
+
+
+      If an event has time importance--that is, if the event's timing must be
+      accurately measured, or if the event flag must be cleared quickly so as
+      to allow for the detection of a  new event--we may link the event flag
+      to the interrupt line.  If we do so, the occurrence of the event will
+      cause the processor to be interrupted.  We must write coding linked to
+      the interrupt routines to detect this event, clear the flag, and do
+      whatever processing is needed.  We set up this link to the interrupt
+      line by means of a register usually called the interrupt enable
+      register.
+
+      On the other hand, the event might not be particularly time critical.
+      In this case, you can simply check the appropriate event flag from time
+      to time.  When the event occurs, you may then clear the flag and handle
+      it.  No interrupt is needed.  Even when an event flag is not connected
+      to the interrupt, it may be called an interrupt flag; don't let the
+      terminology confuse you.
+
+      Whether or not you handle these events through interrupt sequences,
+      it's important to know that it's your job to turn the event flag off.
+      The flag will hold the signal until it's turned off--and it usually
+      won't turn off unless your program takes some action to do this.
+
+      The various flags are triggered by timers or external signals.  You can
+      read a flag's state by checking the interrupt flag register.  Several
+      flags will be packed together in this register; as always, you will use
+      the logical operators--AND, ORA, and EOR--to extract or modify the
+      particular flags in which you are interested.  You may also use the IFR
+      (interrupt flag register) to clear the flags.
+
+
+---
+Additional information can be found by searching:
+- "ia_chip_timers_io" which expands on IA chip timers and I/O functions
+- "interrupt_project_example" which expands on Practical use of IA flags with IRQ

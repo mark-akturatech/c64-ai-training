@@ -1,0 +1,59 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Handler for dipole halves and assembly of bits: check for byte sync (SNSW1), handle timer1 IRQ interactions (KIKA26/STUPID) to detect first/second half (FIRT), update PCNTR and parity (PRTY), shift bits into MYCH, detect consecutive equal halves (error SRER), count zero dipoles (REZ) and detect block sync (SYNO). Calls STT1 for timeouts and returns via PREND when a full byte plus parity is ready.
+
+.,F9AC A5 B4    LDA $B4         RDBK   LDA SNSW1       ;IF NO BYTE START...
+.,F9AE F0 22    BEQ $F9D2       BEQ    RADBK           ;...THEN RETURN
+.,F9B0 AD A3 02 LDA $02A3       LDA    KIKA26          ;CHECK TO SEE IF TIMER1 IRQD US...
+.,F9B3 29 01    AND #$01        AND    #$01
+.,F9B5 D0 05    BNE $F9BC       BNE    RADKX           ;...YES
+.,F9B7 AD A4 02 LDA $02A4       LDA    STUPID          ;CHECK FOR OLD T1IRQ
+.,F9BA D0 16    BNE $F9D2       BNE    RADBK           ;NO...SO EXIT
+                                ;
+.,F9BC A9 00    LDA #$00        RADKX  LDA #0          ;...YES, SET DIPOLE FLAG FOR FIRST HALF
+.,F9BE 85 A4    STA $A4         STA    FIRT
+.,F9C0 8D A4 02 STA $02A4       STA    STUPID          ;SET T1IRQ FLAG
+.,F9C3 A5 A3    LDA $A3         LDA    PCNTR           ;CHECK WHERE WE ARE IN BYTE...
+.,F9C5 10 30    BPL $F9F7       BPL    RAD4            ;...DOING DATA
+.,F9C7 30 BF    BMI $F988       BMI    JRAD2           ;...PROCESS PARITY
+.,F9C9 A2 A6    LDX #$A6        RADP   LDX #166        ;SET UP FOR LONGLONG TIMEOUT
+.,F9CB 20 E2 F8 JSR $F8E2       JSR    STT1
+.,F9CE A5 9B    LDA $9B         LDA    PRTY            ;IF PARITY NOT EVEN...
+.,F9D0 D0 B9    BNE $F98B       BNE    SRER            ;...THEN GO SET ERROR
+.,F9D2 4C BC FE JMP $FEBC       RADBK  JMP PREND       ;GO RESTORE REGS AND RTI
+.,F9D5 A5 92    LDA $92         RAD3   LDA SVXT        ;ADJUST THE SOFTWARE SERVO (CMP0)
+.,F9D7 F0 07    BEQ $F9E0       BEQ    ROUT1           ;NO ADJUST
+.,F9D9 30 03    BMI $F9DE       BMI    ROUT2           ;ADJUST FOR MORE BASE TIME
+.,F9DB C6 B0    DEC $B0         DEC    CMP0            ;ADJUST FOR LESS BASE TIME
+.:F9DD 2C       .BYTE $2C       .BYT   $2C             ;SKIP TWO BYTES
+.,F9DE E6 B0    INC $B0         ROUT2  INC CMP0
+.,F9E0 A9 00    LDA #$00        ROUT1  LDA #0          ;CLEAR DIFFERENCE VALUE
+.,F9E2 85 92    STA $92         STA    SVXT
+                                ;CHECK FOR CONSECUTIVE LIKE VALUES IN DIPOLE...
+.,F9E4 E4 D7    CPX $D7         CPX    DATA
+.,F9E6 D0 0F    BNE $F9F7       BNE    RAD4            ;...NO, GO PROCESS INFO
+.,F9E8 8A       TXA             TXA                    ;...YES SO CHECK THE VALUES...
+.,F9E9 D0 A0    BNE $F98B       BNE    SRER            ;IF THEY WERE ONES THEN  ERROR
+                                ; CONSECUTIVE ZEROS
+.,F9EB A5 A9    LDA $A9         LDA    REZ             ;...CHECK HOW MANY ZEROS HAVE HAPPENED
+.,F9ED 30 BD    BMI $F9AC       BMI    RDBK            ;...IF MANY DON'T CHECK
+.,F9EF C9 10    CMP #$10        CMP    #16             ;... DO WE HAVE 16 YET?...
+.,F9F1 90 B9    BCC $F9AC       BCC    RDBK            ;....NO SO CONTINUE
+.,F9F3 85 96    STA $96         STA    SYNO            ;....YES SO FLAG SYNO (BETWEEN BLOCKS)
+.,F9F5 B0 B5    BCS $F9AC       BCS    RDBK            ;JMP
+.,F9F7 8A       TXA             RAD4   TXA             ;MOVE READ DATA TO .A
+.,F9F8 45 9B    EOR $9B         EOR    PRTY            ;CALCULATE PARITY
+.,F9FA 85 9B    STA $9B         STA    PRTY
+.,F9FC A5 B4    LDA $B4         LDA    SNSW1           ;REAL DATA?...
+.,F9FE F0 D2    BEQ $F9D2       BEQ    RADBK           ;...NO SO FORGET BY EXITING
+.,FA00 C6 A3    DEC $A3         DEC    PCNTR           ;DEC BIT COUNT
+.,FA02 30 C5    BMI $F9C9       BMI    RADP            ;IF MINUS THEN  TIME FOR PARITY
+.,FA04 46 D7    LSR $D7         LSR    DATA            ;SHIFT BIT FROM DATA...
+.,FA06 66 BF    ROR $BF         ROR    MYCH            ;...INTO BYTE STORAGE (MYCH) BUFFER
+.,FA08 A2 DA    LDX #$DA        LDX    #218            ;SET UP FOR NEXT DIPOLE
+.,FA0A 20 E2 F8 JSR $F8E2       JSR    STT1
+.,FA0D 4C BC FE JMP $FEBC       JMP    PREND           ;RESTORE REGS AND RTI
+
+---
+Additional information can be found by searching:
+- "read_timer_capture_and_noise_reject" which expands on Continues after initial timing capture and noise rejection
+- "long_pulse_handler_rad2" which expands on Jumps to RAD2 when a longlong pulse is detected
+- "finish_byte_and_newchar_call" which expands on When a byte is complete it jumps to PREND which restores regs and returns to caller

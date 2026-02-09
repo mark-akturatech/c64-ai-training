@@ -1,0 +1,23 @@
+# ********* - RAMTAS routine (RAM Test and Set Pointers): clears zero page and pages 2 and 3, sets tape buffer pointer to $33C, performs nondestructive RAM test from $0400 upwards to determine top of RAM (stores in top-of-RAM pointer), sets bottom-of-RAM pointer to $0800 (start of BASIC program text), and sets the screen memory pointer used by the OS.
+
+64848         $FD50          RAMTAS
+Perform RAM Test and Set Pointers to the Top and Bottom of RAM
+
+This documented Kernal routine, which can be entered through location
+65415 ($FF87) of the jump table, performs a number of initialization
+tasks.
+
+First, it clears Pages 0, 2, and 3 of memory to zeros.  Next, it sets
+the tape buffer pointer to address 828 ($33C), and performs a
+nondestructive test of RAM from 1024 ($400) up.  When it reaches a
+non-RAM address (presumably the BASIC ROM at 40960 ($A000)), that
+address is placed in the top of memory pointer at 643-4 ($283-4).  The
+bottom of memory pointer at 641-2 ($281-2) is set to point to address
+2048 ($800), which is the beginning of BASIC program text.  Finally,
+the pointer to screen memory at 648 ($288) is set to 4, which lets the
+Operating System know that screen memory starts at 1024 ($400).
+
+---
+Additional information can be found by searching:
+- "power_on_reset_routine" which expands on RAMTAS is called during system RESET
+- "tape_motor_and_pointer_routines" which expands on tape buffer pointer initialized here

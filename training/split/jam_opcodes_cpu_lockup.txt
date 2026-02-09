@@ -1,0 +1,107 @@
+# NMOS 6510 - Documentation of the JAM (also known as KIL/HLT/CIM/CRP) group of opcodes that lock up the 6502 CPU. Lists individual opcode bytes ($42, $52, $62, $72, $92, $B2, $D2, $F2) and states their effect: on execution the following byte is fetched, data and address buses are driven to $FF, program execution ceases, interrupts do not run, and only a reset can restart the CPU. Notes that these opcodes leave no register or flag trace. Provides a test-code reference (CPU/cpujam/cpujamXX.prg), a minimal example use-case to stop execution in tight demos (example assembly snippet: LDA #0 / STA $D418 / JAM / ;02), and a simulation link to the visual6502 JSSim. Includes page footer.
+
+$42
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$52
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$62
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$72
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$92
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$B2
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$D2
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+$F2
+
+JAM
+
+CPU lock-up
+
+1
+
+-
+
+Operation: When one of these opcodes is executed, the byte following the opcode will be fetched,
+data- and address bus will be set to $ff (all 1s) and program execution ceases. No hardware
+interrupts will execute either. Only a reset will restart execution. This opcode leaves no trace of any
+operation performed! No registers or flags affected.
+Test code: CPU/cpujam/cpujamXX.prg
+Example: stop execution
+
+Sometimes in a very memory constrained situation (like a 4k demo), you may want to stop
+execution of whatever is running with least effort – this can be achieved by using one of the JAM
+opcodes. Keep in mind though that only the CPU will stop.
+LDA #0
+STA $D418
+JAM
+
+;02
+
+Simulation link:
+http://visual6502.org/JSSim/expert.html?graphics=f&a=0&steps=12&d=027fff00&loglevel=4
+
+- 47 -
+
+
+---
+Additional information can be found by searching:
+- "unstable_opcodes_unstable_address_high_byte_group" which expands on continues with the next section 'Unstable Opcodes' describing other classes of undocumented opcodes

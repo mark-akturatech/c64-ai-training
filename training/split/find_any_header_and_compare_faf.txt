@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - FAF - Find Any Header wrapper that compares file names: calls FAH to locate the next header. On success, compares the file name stored in the tape header (offset 5) with the supplied filename at FNADR for FNLEN characters. If any character mismatches, branches back to FAH to find the next header (loop). On full match sets carry clear (success) and returns. If FAH failed, returns with carry set. Uses T1/T2 as temporary offsets into the tape header and name buffer.
+
+.,F7EA 20 2C F7 JSR $F72C       FAF    JSR FAH         ;FIND ANY HEADER
+.,F7ED B0 1D    BCS $F80C       BCS    FAF40           ;FAILED
+                                ;
+                                ;SUCCESS...SEE IF RIGHT NAME
+                                ;
+.,F7EF A0 05    LDY #$05        LDY    #5              ;OFFSET INTO TAPE HEADER
+.,F7F1 84 9F    STY $9F         STY    T2
+.,F7F3 A0 00    LDY #$00        LDY    #0              ;OFFSET INTO FILE NAME
+.,F7F5 84 9E    STY $9E         STY    T1
+.,F7F7 C4 B7    CPY $B7         FAF20  CPY FNLEN       ;COMPARE THIS MANY
+.,F7F9 F0 10    BEQ $F80B       BEQ    FAF30           ;DONE
+                                ;
+.,F7FB B1 BB    LDA ($BB),Y     LDA    (FNADR)Y
+.,F7FD A4 9F    LDY $9F         LDY    T2
+.,F7FF D1 B2    CMP ($B2),Y     CMP    (TAPE1)Y
+.,F801 D0 E7    BNE $F7EA       BNE    FAF             ;MISMATCH--TRY NEXT HEADER
+.,F803 E6 9E    INC $9E         INC    T1
+.,F805 E6 9F    INC $9F         INC    T2
+.,F807 A4 9E    LDY $9E         LDY    T1
+.,F809 D0 EC    BNE $F7F7       BNE    FAF20           ;BRANCH ALWAYS
+                                ;
+.,F80B 18       CLC             FAF30  CLC             ;SUCCESS FLAG
+.,F80C 60       RTS             FAF40  RTS
+                                .END
+
+---
+Additional information can be found by searching:
+- "find_any_header_fah" which expands on FAF invokes FAH to find headers on tape
+- "tape_header_write_tapeh" which expands on TAPEH constructs headers that FAF/FAH will find and compare

@@ -1,0 +1,34 @@
+# MACHINE - Placing ML after end-of-BASIC and moving SOV upward creates a single unit (BASIC+ML) that saves/loads together. Caution: after marrying ML and BASIC, don't change BASIC (lines added/removed will relocate ML and break SYS addresses). Use LOAD/SAVE to preserve unit integrity.
+
+
+After End-of-BASIC--Harmony
+---------------------------
+
+Suppose we place the machine language program behind the end-of-BASIC--that's
+the three zeros in memory--and move up the SOV so that variables don't
+disturb this program.  How will everything work now?
+
+Things will work very well indeed.  This time, we need to load our BASIC
+program first; the SOV will go immediately behind BASIC.  Then we may load
+our machine language program, and the SOV moves right behind it.  The SOV is
+in exactly the right place, assuming we load in the right order.  (If we
+don't, the variables will destroy our machine language program.)
+
+Once our two programs are together, and we say SAVE, the combination
+program--BASIC and machine language together--will be saved.  A little
+thought will reveal that memory from start-of-BASIC to just before start-of-
+variables contains everything we need.  A subsequent load will bring
+everything back in, and position SOV to exactly the right place.  We now have
+a "unit" program--BASIC and machine language working together, loading and
+saving as one program.
+
+There's one small problem in this arrangement.  once we have married the
+BASIC and machine language programs, we must not change the BASIC program.
+If we added to or subtracted from this program, the machine language program
+would move up or down--the relocation of memory goes right up to SOV.  The
+program might not be able to work in the new place, and, of course, our SYS
+commands would be wrong.
+
+---
+Additional information can be found by searching:
+- "basic_variable_table_and_types" which expands on SOV must be adjusted so variables don't overwrite ML placed after EOB

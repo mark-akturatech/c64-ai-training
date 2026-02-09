@@ -1,0 +1,87 @@
+# COMMODORE 64 - Commodore 64 fundamental memory map (ASCII diagram of RAM/ROM/I/O regions), I/O area breakdown (addresses and devices: VIC, SID, Color RAM, CIA1/2, open I/O slots), notes on expansion cartridge auto-start signature (required vectors and 'CBM' signature bytes), and the introduction to the various C64 memory configurations and control-line columns (leads into the memory-maps table).
+
+
+
+
+
+                                            BASIC TO MACHINE LANGUAGE   261
+~
+
+
+  COMMODORE 64 FUNDAMENTAL MEMORY MAP
+
+
+                                 +----------------------------+
+                                 |       8K KERNAL ROM        |
+                      E000-FFFF  |           OR RAM           |
+                                 +----------------------------+
+                      D000-DFFF  | 4K I/O OR RAM OR CHAR. ROM |
+                                 +----------------------------+
+                      C000-CFFF  |           4K RAM           |
+                                 +----------------------------+
+                                 |    8K BASIC ROM OR RAM     |
+                      A000-BFFF  |       OR ROM PLUG-IN       |
+                                 +----------------------------+
+                                 |            8K RAM          |
+                      8000-9FFF  |       OR ROM PLUG-IN       |
+                                 +----------------------------+
+                                 |                            |
+                                 |                            |
+                                 |          16 K RAM          |
+                      4000-7FFF  |                            |
+                                 +----------------------------+
+                                 |                            |
+                                 |                            |
+                                 |          16 K RAM          |
+                      0000-3FFF  |                            |
+                                 +----------------------------+
+
+
+
+  I/O BREAKDOWN
+
+    D000-D3FF   VIC (Video Controller)                     1 K Bytes
+    D400-D7FF   SID (Sound Synthesizer)                    1 K Bytes
+    D800-DBFF   Color RAM                                  1 K Nybbles
+    DC00-DCFF   CIA1 (Keyboard)                            256 Bytes
+    DD00-DDFF   CIA2 (Serial Bus, User Port/RS-232)        256 Bytes
+    DE00-DEFF   Open I/O slot #l (CP/M Enable)             256 Bytes
+    DF00-DFFF   Open I/O slot #2 (Disk)                    256 Bytes
+
+
+
+
+  262   BASIC TO MACHINE LANGUAGE
+~
+
+
+    The two open I/O slots are for general purpose user I/O, special pur-
+  pose I/O cartridges (such as IEEE), and have been tentatively designated
+  for enabling the Z-80 cartridge (CP/M option) and for interfacing to a
+  low-cost high-speed disk system.
+    The system provides for "auto-start" of the program in a Commodore 64
+  Expansion Cartridge. The cartridge program is started if the first nine
+  bytes of the cartridge ROM starting at location 32768 ($8000) contain
+  specific data. The first two bytes must hold the Cold Start vector to be
+  used by the cartridge program. The next two bytes at 32770 ($8002) must
+  be the Warm Start vector used by the cartridge program. The next three
+  bytes must be the letters, CBM, with bit 7 set in each letter. The last
+  two bytes must be the digits "80" in PET ASCII.
+
+
+  COMMODORE 64 MEMORY MAPS
+
+    The following table lists the various memory configurations available
+  on the COMMODORE 64, the states of the control lines which select each
+  memory map, and the intended use of each map.
+    The leftmost column of the table contains addresses in hexadecimal
+  notation. The columns aside it introduce all possible memory
+  configurations. The default mode is on the left, and the absolutely most
+  rarely used Ultimax game console configuration is on the right. Each
+  memory configuration column has one or more four-digit binary numbers as
+  a title. The bits, from left to right, represent the state of the /LORAM,
+  /HIRAM, /GAME and /EXROM lines, respectively. The bits whose state does
+
+---
+Additional information can be found by searching:
+- "6510_io_port_control_and_memory_banking" which expands on describes the port bits (/LORAM, /HIRAM, /CHAREN) whose states select the memory configurations listed here

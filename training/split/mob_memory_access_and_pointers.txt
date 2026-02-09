@@ -1,0 +1,31 @@
+# COMMODORE 64 - Explains MOB data storage (63 consecutive bytes per MOB) and MOB pointer placement at the end of the video matrix. Notes that normal video matrix uses 1000 bytes, leaving locations 1016–1023 (VM base + $3F8 to +$3FF) for MOB pointers 0–7. Describes how the 8-bit MOB pointer (MP7–MP0 from the video matrix) combined with 6 internally generated MOB counter bits (MC5–MC0) form a 14-bit address (A13–A00) to access the 63 bytes. Explains that MOB pointers are read at the end of each raster line; when a MOB's Y position matches the raster line, MOB data fetches begin and internal counters step through 63 bytes, displaying three bytes per raster line.
+
+  MOB MEMORY ACCESS
+
+    The data for each MOB is Stored in 63 consecutive bytes of memory. Each
+  block of MOB data is defined by a MOB pointer, located at the end of the
+  VIDEO MATRIX. Only 1000 bytes of the video matrix are used in the normal
+  display modes, allowing the video matrix locations 1016-1023 (VM base+
+  $3F8 to VM base+$3FF) to be used for MOB pointers 0-7, respectively. The
+  eight-bit MOB pointer from the video matrix together with the six bits
+  from the MOB byte counter (to address 63 bytes) define the entire 14-bit
+  address field:
+
+
+     A13| A12| A11| A10| A09| A08| A07| A06| A05| A04| A03| A02| A01| A00
+  ------+----+----+----+----+----+----+----+----+----+----+----+----+------
+     MP7| MP6| MP5| MP4| MP3| MP2| MP1| MP0| MC5| MC4| MC3| MC2| MC1| MC0
+
+  Where MPx are the MOB pointer bits from the video matrix and MCx are the
+  internally generated MOB counter bits. The MOB pointers are read from the
+  video matrix at the end of every raster line. When the Y position
+  register of a MOB matches the current raster line count, the actual
+  fetches of MOB data begin. Internal counters automatically step through
+  the 63 bytes of MOB data, displaying three bytes on each raster line.
+
+
+
+---
+Additional information can be found by searching:
+- "movable_object_block_overview_and_layout" which expands on The 63-byte MOB block layout and how it maps to on-screen 24×21 pixels
+- "mob_enable_and_positioning" which expands on Y position matching to start MOB data fetches on the raster

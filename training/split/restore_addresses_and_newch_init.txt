@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RD300 and NEWCH small utility routines: RD300 restores starting address pointers (STAH->SAH, STAL->SAL) and returns (RTS). NEWCH initializes PCNTR (8 bits+parity), clears dipole counters (FIRT), error flag (RER), parity accumulator (PRTY) and zero count (REZ) then returns. Ends with .END marker.
+
+.,FB8E A5 C2    LDA $C2         RD300  LDA STAH        ; RESTORE STARTING ADDRESS...
+.,FB90 85 AD    STA $AD         STA    SAH             ;...POINTERS (SAH & SAL)
+.,FB92 A5 C1    LDA $C1         LDA    STAL
+.,FB94 85 AC    STA $AC         STA    SAL
+.,FB96 60       RTS             RTS
+.,FB97 A9 08    LDA #$08        NEWCH  LDA #8          ;SET UP FOR 8 BITS+PARITY
+.,FB99 85 A3    STA $A3         STA    PCNTR
+.,FB9B A9 00    LDA #$00        LDA    #0              ;INITILIZE...
+.,FB9D 85 A4    STA $A4         STA    FIRT            ;..DIPOLE COUNTER
+.,FB9F 85 A8    STA $A8         STA    RER             ;..ERROR FLAG
+.,FBA1 85 9B    STA $9B         STA    PRTY            ;..PARITY BIT
+.,FBA3 85 A9    STA $A9         STA    REZ             ;..ZERO COUNT
+.,FBA5 60       RTS             RTS                    ;.A=0 ON RETURN
+                                .END
+
+---
+Additional information can be found by searching:
+- "load_sync_and_block_start_handling" which expands on RD300 is used to restore SAL/SAH when preparing to read block data
+- "finish_byte_and_newchar_call" which expands on NEWCH is called by RADJ to initialize state for the next assembled byte

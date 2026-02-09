@@ -1,0 +1,65 @@
+# NMOS 6510 - SAX undocumented opcode (also called AXS/AAX) addressing-mode summary and core behavior. Includes opcode bytes and size/cycle info for zero-page,Y, (zp,X) and absolute modes; the formal operation (store A & X into memory without changing A/X or flags); a small usage example (SAX $FE); an equivalent sequence of legal instructions that mimics the effect; test program filenames; a note that abs,Y and (zp),Y modes are missing and can be simulated with SHA; and a hardware-level explanation of why SAX stores the bitwise AND of A and X (internal bus/output-enable behaviour).
+
+SAX zp, y
+
+2
+
+4
+
+$83
+
+SAX (zp, x)
+
+2
+
+6
+
+$8F
+
+SAX abs
+
+3
+
+4
+
+Operation: AND the contents of the A and X registers (without changing the contents of either
+register) and stores the result in memory.
+Example:
+SAX $FE
+
+;87 FE
+
+Equivalent Instructions:
+PHP
+PHA
+STX $FE
+AND $FE
+STA $FE
+PLA
+PLP
+
+; save flags and accumulator
+
+; restore flags and accumulator
+
+Note that SAX does not affect any flags in the processor status register, and does not modify A/X.
+It would also not actually use the stack, which is only needed to mimic the behaviour with legal
+opcodes in this example.
+Test code: Lorenz-2.15/axsa.prg, Lorenz-2.15/axsix.prg,
+Lorenz-2.15/axsz.prg, Lorenz-2.15/axszy.prg
+Note that two addressing modes that SAX is missing, absolute Y indexed and indirect Y indexed,
+can be simulated by using the SHA instruction, see SHA (AXA, AHX, TEA).
+'The SAX instruction decodes to two instructions (STA and STX) whose behaviour is identical
+except that one hits the output-enable signal for the accumulator, and the other hits the outputenable signal for the X register. Although it would seem that this would cause ambiguous
+behaviour, it turns out that during one half of each cycle the internal operand-output bus is set to
+all '1's, and the read-enable signals for the accumulator and X register (and Y register, stack
+pointer, etc.) only allow those registers to set the internal operand-output bus bits to '0'. Thus, if a
+bit is zero in either the accumulator or the X register, it will be stored as zero; if it's set to '1' in
+both, then nothing will pull down the bus so it will output '1'.'
+
+
+---
+Additional information can be found by searching:
+- "sax_examples_mask_and_sprite_primary" which expands on practical examples using SAX (masking, sprite pointer setup)
+- "sax_alternative_sprite_method" which expands on alternate sprite-pointer technique swapping A/X
+- "lax_overview" which expands on other undocumented combined-load opcode (LAX)

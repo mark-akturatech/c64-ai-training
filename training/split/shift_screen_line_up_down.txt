@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Copies a whole 40-column screen line from a source (next/previous) to the current line: masks the line page (AND #$03), composes the source high byte (ORA $0288), saves source pointer high byte ($AD), calls a colour-pointer helper (JSR $E9E0) to set up colour RAM pointers, then loops 40 bytes (LDY #$27 down to 0) performing LDA ($AC),Y -> STA ($D1),Y for characters and LDA ($AE),Y -> STA ($F3),Y for colours. Returns (RTS).
+
+                                *** shift screen line up/down
+.,E9C8 29 03    AND #$03        mask 0000 00xx, line memory page
+.,E9CA 0D 88 02 ORA $0288       OR with screen memory page
+.,E9CD 85 AD    STA $AD         save next/previous line pointer high byte
+.,E9CF 20 E0 E9 JSR $E9E0       calculate pointers to screen lines colour RAM
+.,E9D2 A0 27    LDY #$27        set the column count
+.,E9D4 B1 AC    LDA ($AC),Y     get character from next/previous screen line
+.,E9D6 91 D1    STA ($D1),Y     save character to current screen line
+.,E9D8 B1 AE    LDA ($AE),Y     get colour from next/previous screen line colour RAM
+.,E9DA 91 F3    STA ($F3),Y     save colour to current screen line colour RAM
+.,E9DC 88       DEY             decrement column index/count
+.,E9DD 10 F5    BPL $E9D4       loop if more to do
+.,E9DF 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "calc_screen_line_colour_pointers_e9e0" which expands on Computes the colour-RAM pointers for the source line (JSR $E9E0)
+- "fetch_screen_address" which expands on Uses and updates indirect pointers ($AC/$AE / $D1/$D2) that are fetched elsewhere

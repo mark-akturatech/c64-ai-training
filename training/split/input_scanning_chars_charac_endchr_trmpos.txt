@@ -1,0 +1,36 @@
+# ********* - BASIC input/text scanning variables: CHARAC ($07) stores ASCII values of characters significant to the scanner (quotes, comma, colon, end-of-line); ENDCHR ($08) used as a work byte during tokenization (often 0 or 34); TRMPOS ($09) holds the cursor column position prior to the last TAB or SPC (logical line position 0–79) and is used to compute tab/spaces behavior.
+
+7             $7             CHARAC
+Search Character for Scanning BASIC Text Input
+
+This location and the next are used heavily by the BASIC routines that
+scan the text that comes into the buffer at 512 ($200), in order to
+detect significant characters such as quotes, comma, the colon which
+separates BASIC statements, and end-of-line.  The ASCII values of such
+special characters are usually stored here.
+
+This location is also used as a work area by other BASIC routines that
+do not involve scanning text.
+
+8             $8             ENDCHR
+Search Character for Statement Termination or Quote
+
+Like location 7, this location is used as a work byte during the
+tokenization of a BASIC statement.  Most of the time, its value is 0
+or 34.
+
+9             $9             TRMPOS
+Column position of the Cursor before the Last TAB or SPC
+
+TRMPOS is used by TAB and SPC.  The cursor column position prior to
+the TAB or SPC is moved here from 211 ($D3), and is used to calculate
+where the cursor ends up after one of these functions is invoked.
+Note that the value contained here shows the position of the cursor on
+a logical line.  Since one logical line can be up to two physical
+lines long, the value stored here can range from 0 to 79.
+
+
+---
+Additional information can be found by searching:
+- "adray2_int_to_float_vector" which expands on previous zero-page vector entries
+- "verck_load_verify_and_count" which expands on next group: I/O and input-buffer indexing flags

@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Additional mode tables, CONTRL table and color mapping table (COLTAB): includes CONTROL mapping for color/special functions, and TVIC/BAUD/TVIC data bytes. Also defines LINZ table base addresses and LDTB2 low-byte table entries for screen line base addresses. This section includes PET/KATAKANA mode comments and other mapping tables.
+
+.:EBFA 21 5F 04 22 A0 02 D1 83  .BYT   $21,$5F,$04,$22,$A0,$02,$D1,$83
+.:EC02 FF                       .BYT   $FF             ;END OF TABLE NULL
+                                ;
+                                MODE3                  ;LEFT WINDOW GRAHPICS
+                                ;INS,C10,C12,C14,9,+,POUND SIGN,C8
+.:EC03 94 8D 9D 8C 89 8A 8B 91  .BYT   $94,$8D,$9D,$8C,$89,$8A,$8B,$91
+                                ;RETURN,W,R,Y,I,P,*,LFT.ARROW
+.:EC0B 96 B3 B0 97 AD AE B1 01  .BYT   $96,$B3,$B0,$97,$AD,$AE,$B1,$01
+                                ;LF.CRSR,A,D,G,J,L,;,CTRL
+.:EC13 98 B2 AC 99 BC BB A3 BD  .BYT   $98,$B2,$AC,$99,$BC,$BB,$A3,$BD
+                                ;F8,C11,C13,C15,0,-,HOME,C9
+.:EC1B 9A B7 A5 9B BF B4 B8 BE  .BYT   $9A,$B7,$A5,$9B,$BF,$B4,$B8,$BE
+                                ;F2,Z,C,B,M,.,R.SHIFT,SPACE
+.:EC23 29 A2 B5 30 A7 A1 B9 AA  .BYT   $29,$A2,$B5,$30,$A7,$A1,$B9,$AA
+                                ;F4,S,F,H,K,:,=,COM.KEY
+.:EC2B A6 AF B6 DC 3E 5B A4 3C  .BYT   $A6,$AF,$B6,$DC,$3E,$5B,$A4,$3C
+                                ;F6,E,T,U,O,@,PI,Q
+.:EC33 A8 DF 5D 93 01 3D DE 3F  .BYT   $A8,$DF,$5D,$93,$01,$3D,$DE,$3F
+                                ;CRSR.UP,L.SHIFT,X,V,N,,,/,STOP
+.:EC3B 81 5F 04 95 A0 02 AB 83  .BYT   $81,$5F,$04,$95,$A0,$02,$AB,$83
+.:EC43 FF                       .BYT   $FF             ;END OF TABLE NULL
+                                ;CCTTA2 ;WAS CCTTA2 IN JAPANESE VERSION
+                                LOWER
+.,EC44 C9 0E    CMP #$0E               CMP #$0E        ;DOES HE WANT LOWER CASE?
+.,EC46 D0 07    BNE $EC4F              BNE UPPER       ;BRANCH IF NOT
+.,EC48 AD 18 D0 LDA $D018              LDA VICREG+24   ;ELSE SET VIC TO POINT TO LOWER CASE
+.,EC4B 09 02    ORA #$02               ORA #$02
+.,EC4D D0 09    BNE $EC58              BNE ULSET       ;JMP
+                                UPPER
+.,EC4F C9 8E    CMP #$8E               CMP #$8E        ;DOES HE WANT UPPER CASE
+.,EC51 D0 0B    BNE $EC5E              BNE LOCK        ;BRANCH IF NOT
+.,EC53 AD 18 D0 LDA $D018              LDA VICREG+24   ;MAKE SURE VIC POINT TO UPPER/PET SET
+.,EC56 29 FD    AND #$FD               AND #$FF-$02
+.,EC58 8D 18 D0 STA $D018       ULSET  STA VICREG+24
+.,EC5B 4C A8 E6 JMP $E6A8       OUTHRE JMP LOOP2
+                                LOCK
+.,EC5E C9 08    CMP #$08               CMP #8          ;DOES HE WANT TO LOCK IN THIS MODE?
+.,EC60 D0 07    BNE $EC69              BNE UNLOCK      ;BRANCH IF NOT
+.,EC62 A9 80    LDA #$80               LDA #$80        ;ELSE SET LOCK SWITCH ON
+.,EC64 0D 91 02 ORA $0291              ORA MODE        ;DON'T HURT ANYTHING - JUST IN CASE
+.,EC67 30 09    BMI $EC72              BMI LEXIT
+                                UNLOCK
+.,EC69 C9 09    CMP #$09               CMP #9          ;DOES HE WANT TO UNLOCK THE KEYBOARD?
+.,EC6B D0 EE    BNE $EC5B              BNE OUTHRE      ;BRANCH IF NOT
+.,EC6D A9 7F    LDA #$7F               LDA #$7F        ;CLEAR THE LOCK SWITCH
+.,EC6F 2D 91 02 AND $0291              AND MODE        ;DONT HURT ANYTHING
+.,EC72 8D 91 02 STA $0291       LEXIT  STA MODE
+.,EC75 4C A8 E6 JMP $E6A8              JMP LOOP2       ;GET OUT
+                                ;CCTTA3
+                                ;.BYT $04,$FF,$FF,$FF,$FF,$FF,$E2,$9D
+                                ;RUN-K24-K31
+                                ;.BYT $83,$01,$FF,$FF,$FF,$FF,$FF,$91
+                                ;K32-K39.F5
+                                ;.BYT $A0,$FF,$FF,$FF,$FF,$EE,$01,$89
+                                ;CO.KEY,K40-K47.F6
+                                ;.BYT $02,$FF,$FF,$FF,$FF,$E1,$FD,$8A
+                                ;K48-K55
+                                ;.BYT $FF,$FF,$FF,$FF,$FF,$B0,$E0,$8B
+                                ;K56-K63
+                                ;.BYT $F2,$F4,$F6,$FF,$F0,$ED,$93,$8C
+
+---
+Additional information can be found by searching:
+- "linz_and_linetables" which expands on LINZ and LDTB2 table definitions for line addressing

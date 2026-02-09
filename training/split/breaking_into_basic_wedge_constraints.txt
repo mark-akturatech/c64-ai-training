@@ -1,0 +1,40 @@
+# MACHINE - Discusses modifying BASIC (the wedge): constraints include preserving A/X/Y registers and flags, avoiding slowing BASIC, and careful placement for PET/CBM (modify in CHRGET or after LDA in CHRGOT). Notes VIC-20 and C64 provide a helpful vector at $0308/$0309 allowing control before each BASIC command.
+
+
+
+Breaking Into BASIC
+-------------------
+
+Since BASIC comes to this subroutine often, we can infiltrate BASIC by
+changing this subroutine.  Extra coding in this area is often called a
+"wedge" program.  We must be very careful:
+
+  o We must leave A, X, and Y unchanged; either we must not use them or we
+    must save them away and bring them back.
+
+  o We must not interfere with the flags.
+
+  o We must be careful not to slow BASIC down too much.
+
+This is a tall order.  The last requirement is often helped by two
+techniques:  use the wedge to implement extra commands in direct mode only;
+and make use of a special character to identify our special commands.
+
+In PET/CBM, we may choose to modify this subroutine in either of two places:
+near the beginning, in CHRGET; or after the LDA, in CHRGOT.  Each location
+has its advantages.  In the CHRGET area, we don't need to preserve the A
+register or status flags, since CHRGOT will fix them up for us.  In the area
+following CHRGOT, we have the character we wish to examine in the A register.
+
+But in either case, it's an exacting job.
+
+VIC-20 and Commodore 64 have made the job much more easy by providing a
+vector at address $0308/$0309 that will give us control of the computer, if
+we wish, immediately before each BASIC command is executed.  We still need to
+use due care, but we have much more latitude.
+
+
+---
+Additional information can be found by searching:
+- "infiltrating_basic_wedge_intro_and_CHRGET_location" which expands on CHRGET locations and wedge opportunities
+- "txtptr_and_$0308_vector" which expands on Use of $0308 vector to intercept commands on VIC/C64

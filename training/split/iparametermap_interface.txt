@@ -1,0 +1,46 @@
+# Kick Assembler - IParameterMap interface representing name-value parameter collections (values are IValue). Methods include exist(String), getBoolValue(String,paramDefault), getEnumValue(), getIntValue(String,int), getParameterNames(), getSourceRange(String), getStringValue(String,String), getValue(String). Useful for reading directive or plugin parameters parsed from square-bracket maps.
+
+}
+
+You implement a modifier by implementing the following interface. The 'name' in the definition is the modifier
+name ('MyModifier' in the above example.):
+public interface IModifier extends IPlugin {
+ModifierDefinition getDefinition();
+byte[] execute(List<IMemoryBlock> memoryBlocks, IValue[] parameters, IEngine
+engine);
+}
+public class ModifierDefinition {
+private String name;
+// Getters and setters
+}
+
+Also see the chapter on modifiers.
+
+17.5.3. SegmentModifier plugins
+With segment modifiers you can modify the memory block of a segment before it is passed on to its destination.
+For instance you could implement a packer plugin and have a file packed before it is saved with the command:
+.file [name="PackedData.prg", segments="Data", modify="MyPacker", _start=$2000]
+
+A segment modifier is created by implementing a class thats realises the ISegmentModifier plugin:
+public interface ISegmentModifier extends IPlugin {
+SegmentModifierDefinition getDefinition();
+List<IMemoryBlock> execute(List<IMemoryBlock> memoryBlocks, IParameterMap
+parameters, IEngine engine);
+}
+
+public class SegmentModifierDefinition {
+private String name;
+private Set<String> allParameters;
+private Set<String> nonOptionalParameters;
+// getters and setters
+}
+
+The allParameters set defines the possible parameters for the modifier. As a convention you should prefix them
+with _ like '_start' in the above example. This way the names won't collide with future segment parameter names
+and you can easily tell which parameters belong to the modifier.
+See the 'segments' chapter for more about Segment Modifiers and the example project of how to implement.
+
+82
+
+3rd Party Java plugins
+

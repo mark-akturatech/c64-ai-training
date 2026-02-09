@@ -1,0 +1,39 @@
+# C64 PAL/NTSC Raster Timing Reference - Visible display window coordinates and how RSEL/CSEL bits affect them. Vertical display window depends on RSEL in $D011: RSEL=0 => 24 rows (first line 55/$37, last 246/$F6, height 192 pixels); RSEL=1 => 25 rows (first line 51/$33, last 250/$FA, height 200 pixels). Horizontal display depends on CSEL in $D016: CSEL=0 => 38 cols (first pixel 31/$1F, last 334/$14E, width 304 pixels); CSEL=1 => 40 cols (first pixel 24/$18, last 343/$157, width 320 pixels). Lists first/last visible X coordinates for chip variants 6567R56A, 6567R8, 6569 (both decimal and hex where shown). Vertical blanking first/last lines by chip variant and note that PAL 6569 wraps vertical blank across line counter boundary (lines 300-311, then 0-15).
+
+=============================================================================
+SECTION 7: DISPLAY WINDOW COORDINATES
+=============================================================================
+
+The visible display area depends on the RSEL and CSEL bits in $D011/$D016.
+
+Vertical Display Window (raster lines):
+                    RSEL=0 (24 rows)     RSEL=1 (25 rows)
+  First line:       55 ($37)             51 ($33)
+  Last line:        246 ($F6)            250 ($FA)
+  Height (pixels):  192                  200
+
+Horizontal Display Window (X coordinates):
+                    CSEL=0 (38 cols)     CSEL=1 (40 cols)
+  First pixel:      31 ($1F)            24 ($18)
+  Last pixel:       334 ($14E)          343 ($157)
+  Width (pixels):   304                 320
+
+First/Last Visible Coordinates by Chip Variant:
+                    6567R56A    6567R8      6569
+  First vis. X:     488/$1E8   489/$1E9    480/$1E0
+  Last vis. X:      388/$184   396/$18C    380/$17C
+
+Vertical Blanking:
+                    6567R56A    6567R8      6569
+  First VBlank:     line 13     line 13     line 300
+  Last VBlank:      line 40     line 40     line 15
+
+The PAL 6569 wraps its vertical blank across the line counter boundary
+(lines 300-311, then 0-15).
+
+
+
+---
+Additional information can be found by searching:
+- "vicii_chip_variants" which expands on which VIC-II chip affects visible X coordinate offsets and blanking
+- "frame_timing_comparison" which expands on relationship between total raster lines and visible window

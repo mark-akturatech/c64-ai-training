@@ -1,0 +1,33 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Handle the BVS branch (overflow set) and decide write parameters: checks $B5 and $B6 counters and shifts $A7 (LSR) to examine write flags. Uses $BD to decide between 4-bit and other limits, masks the low nibble, and loads that into $AA. Decrements $AA to test zero, or sets $AA to #$40/#$80 in alternative branches. Calls $FB8E to prepare device transfer and initializes $AB. Several branches lead back to the central exit ($FEBC) if conditions indicate abort; otherwise control flows on to conduct directory entry processing.
+
+.,FA8D 70 31    BVS $FAC0
+.,FA8F D0 18    BNE $FAA9
+.,FA91 A5 B5    LDA $B5
+.,FA93 D0 F5    BNE $FA8A
+.,FA95 A5 B6    LDA $B6
+.,FA97 D0 F1    BNE $FA8A
+.,FA99 A5 A7    LDA $A7
+.,FA9B 4A       LSR
+.,FA9C A5 BD    LDA $BD
+.,FA9E 30 03    BMI $FAA3
+.,FAA0 90 18    BCC $FABA
+.,FAA2 18       CLC
+.,FAA3 B0 15    BCS $FABA
+.,FAA5 29 0F    AND #$0F
+.,FAA7 85 AA    STA $AA
+.,FAA9 C6 AA    DEC $AA
+.,FAAB D0 DD    BNE $FA8A
+.,FAAD A9 40    LDA #$40
+.,FAAF 85 AA    STA $AA
+.,FAB1 20 8E FB JSR $FB8E
+.,FAB4 A9 00    LDA #$00
+.,FAB6 85 AB    STA $AB
+.,FAB8 F0 D0    BEQ $FA8A
+.,FABA A9 80    LDA #$80
+.,FABC 85 AA    STA $AA
+.,FABE D0 CA    BNE $FA8A
+
+---
+Additional information can be found by searching:
+- "initial_device_setup_and_flag_tests" which expands on this is the follow-up branch when BIT $AA / BPL tested earlier redirects here
+- "store_name_bytes_into_directory_buffer_and_update_counters" which expands on when write parameters are decided successfully the code proceeds to copy bytes into the directory buffer

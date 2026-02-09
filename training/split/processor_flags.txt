@@ -1,0 +1,64 @@
+# NMOS 6510 - Processor status flags summary: N (Negative), V (Overflow), B (Break), D (Decimal), I (Interrupt), Z (Zero), C (Carry). Also explains notation used to indicate instruction dependence/usage of flags: 'i' = depends on (input only), 'o' = sets/clears (output only), 'x' = both depends on and changes the flag.
+
+
+V
+
+oVerflow
+
+-
+
+bit5 of the status register is unused
+
+B
+
+Break
+
+D
+
+Decimal
+
+I
+
+Interrupt
+
+Z
+
+Zero
+
+C
+
+Carry
+
+To indicate what processor flags are used and/or modified by the respective instructions this
+document uses a slightly different notation than many other existing ones. In particular this will
+allow to indicate directly in the tables whether an instruction depends on, modifies, or just sets a
+flag.
+i
+
+The instruction depends on this flag (takes it as INPUT) but does not change it. In this
+document this applies to the decimal flag only.
+
+o
+
+The instruction does not depend on this flag, but does set or clear it (it is OUTPUT only).
+The zero flag is a typical example for this (only branches depend on it, other instruction
+would only set it)
+
+x
+
+The instruction depends on this flag, and does change it too. The carry flag is a typical
+example for this (although not generally in all instructions).
+The instruction does not depend on, nor change, this flag
+
+- IV -
+
+Opcode Matrix
+The instructions of the 6502 are compressed into a 130-entry decode ROM. Instead of 256 entries
+telling how to process each separate opcode, it's encoded as combinatorial logic post-processing the
+output of a "sparse" ROM that acts in some ways like a programmable logic array (PLA).
+Many instructions activate multiple lines of the decode ROM at once. Often this is on purpose, such
+as one line for the addressing mode and one for the opcode part. But many of the unintended
+
+---
+Additional information can be found by searching:
+- "what_you_get" which expands on flag notation used in opcode descriptions

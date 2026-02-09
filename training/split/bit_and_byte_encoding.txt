@@ -1,0 +1,31 @@
+# A Minimal C64 Datasette Program Loader - How bits and bytes are encoded using pulses: each data bit uses two pulses (Short/Medium = 0, Medium/Short = 1); first pulse alone determines the bit. Byte marker is Long/Medium, end-of-data marker is Long/Short. Complete byte format: marker (L/M), bits 0..7 (S/M pairs), parity (M/S). Parity uses inverted odd parity.
+
+Bit and Byte Encoding
+---------------------
+
+Every bit is encoded using two pulses. The first pulse is either short or
+medium, and the second pulse is the other one:
+
+    Short/Medium = 0 bit
+    Medium/Short = 1 bit
+
+This is differentiated by only checking the first pulse: if it's short,
+the bit is 0; if it's medium, the bit is 1. The second pulse is ignored
+for data purposes (it serves as a consistency check in the full KERNAL
+loader).
+
+A byte marker (Long/Medium) signals byte boundaries.
+An end-of-data marker (Long/Short) signals file termination.
+
+The complete byte structure:
+
+    L/M    S/M  S/M  S/M  S/M  S/M  S/M  S/M  S/M  M/S
+    marker bit0 bit1 bit2 bit3 bit4 bit5 bit6 bit7 parity
+
+The parity bit uses odd parity (inverted).
+
+
+
+---
+Additional information can be found by searching:
+- "get_byte_routine" which expands on detection of byte markers and reading bits

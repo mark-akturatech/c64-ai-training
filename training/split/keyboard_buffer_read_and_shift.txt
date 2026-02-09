@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Reads a character from the keyboard buffer: moves bytes down the buffer (shifts out the first byte), decrements the buffer index, copies the current key into A, reenables interrupts, and flags that a byte was obtained.
+
+
+                                *** input from the keyboard buffer
+.,E5B4 AC 77 02 LDY $0277       get the current character from the buffer
+.,E5B7 A2 00    LDX #$00        clear the index
+.,E5B9 BD 78 02 LDA $0278,X     get the next character,X from the buffer
+.,E5BC 9D 77 02 STA $0277,X     save it as the current character,X in the buffer
+.,E5BF E8       INX             increment the index
+.,E5C0 E4 C6    CPX $C6         compare it with the keyboard buffer index
+.,E5C2 D0 F5    BNE $E5B9       loop if more to do
+.,E5C4 C6 C6    DEC $C6         decrement keyboard buffer index
+.,E5C6 98       TYA             copy the key to A
+.,E5C7 58       CLI             enable the interrupts
+.,E5C8 18       CLC             flag got byte
+.,E5C9 60       RTS             
+
+---
+Additional information can be found by searching:
+- "wait_for_key_and_autoload_run_sequence" which expands on used by the wait-for-key loop
+- "input_from_screen_or_keyboard_loop" which expands on related input-processing routines that consume buffer data

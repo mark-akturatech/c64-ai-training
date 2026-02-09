@@ -1,0 +1,27 @@
+# An Introduction to Programming C-64 Demos - Simple example: flash the border by repeatedly INC $D020 and JMP loop. Assembler origin *=$1000, label use, INC semantics vs LDA/ADC/STA, $D020 is border colour register.
+
+Flashing the Border
+A very simple effect, that shows how you can achieve some things on the C-64, is to make the border flash in different colours. Here's the code to do it2:
+
+
+           * = $1000
+
+loop:      inc $d020 ; increment $d020
+           jmp loop  ; jump to label loop
+That was a short program, wasn't it? If you type in and run this program3, you will see the border flashing wildly. If you're using an assembler like Turbo Assembler or AssBlaster, you should just have to tap the RESTORE key to get back to the assembler.
+
+Let's explain exactly what the program does. On the first line, we simply tell the assembler that the machine code it creates should start at memory address $1000 (1000 hexadecimal, which is the same as 4096 in the decimal number system). This is Turbo Assembler syntax. If you're using some other assembler, consult the documentation.
+
+The second line has a label, loop, which is just a way to name that memory location, ie. the one where the instruction inc $d020 starts. As we have told the assembler to assemble the code to address $1000, we know that what the label loop represents is actually $1000.
+
+After the label comes an instruction, inc $d020, which tells means ``increment whatever value is at the address $d020 in place''. This is the same thing as loading the value from $d020 (using the instruction lda $d020), adding 1 to it (adc #$01) and then storing it in the same address (sta $d020). Why do we do this? Because the C-64 has memory mapped I/O, and the adress $d020 actually represents the border colour. So by putting different values in $d020, we change the colour of the border. So if it was initially black (value 0), it will be white (value 1) after executing the instruction inc $d020.
+
+Then we come to the last line, which says jmp loop. When the program flow reaches this line, it jumps to the adress corresponding to the label loop and keeps executing instructions there. In our case, it will jump back to the previous line and execute inc $d020 again. Then it will again reach the jmp loop line, go back, increment the border colour etc., forever. Or rather, until we press RESTORE, which will take us back to the assembler, or if we reset the computer or whatever.
+
+So, now you know how to flash the border. If you use some other address than $d020, you can change other things. Some addresses will just give weird results, others will give sane results. If you use $d021 instead of $d020, the main screen will flash instead.
+
+
+---
+Additional information can be found by searching:
+- "why_c64_vic" which expands on VIC register $d020 controls border colour
+- "using_a_monitor" which expands on how to enter and run short machine code examples

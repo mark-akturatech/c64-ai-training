@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - 6502 code that implements SHIFT+C= handling: tests and toggles the shift-mode lock bit at zero page address $0291 (ORA/AND/STA $0291), compares with the enable code (#$09), sets unlock value (#$7F) when appropriate, and returns (JMP $E6A8). Restores registers and sets the quote flag as part of exiting.
+
+.,EC64 0D 91 02 ORA $0291       OR it with the shift mode switch
+.,EC67 30 09    BMI $EC72       go save the value, branch always
+.,EC69 C9 09    CMP #$09        compare with enable [SHIFT][C=]
+.,EC6B D0 EE    BNE $EC5B       exit if not enable [SHIFT][C=]
+.,EC6D A9 7F    LDA #$7F        set to unlock shift mode switch
+.,EC6F 2D 91 02 AND $0291       AND it with the shift mode switch
+.,EC72 8D 91 02 STA $0291       save the shift mode switch $00 = enabled, $80 = locked
+.,EC75 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+
+---
+Additional information can be found by searching:
+- "control_keyboard_table" which expands on control-key mapping used when SHIFT/C= or other control keys interpreted
+- "vicii_initialization_values" which expands on context: screen/keyboard initialization sequence in ROM

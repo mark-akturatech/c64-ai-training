@@ -1,0 +1,47 @@
+# Contents - Example routine to set YSCRL fine scroll safely: LDA YSCRL; AND #$F8; ORA #$07; STA YSCRL (sets vertical scroll to 7 without disturbing upper bits). Border expansion for scrolling: 38-column mode via clearing bit 3 of XSCRL (gives hidden buffer columns), normal 40-column by setting bit 3. Vertical border expansion by clearing bit 3 of YSCRL when vertical scroll = 3 (covers halves of top/bottom rows); set bit 3 to return to normal 25-row mode.
+
+33 
+
+
+
+The following is a routine that can be used to 
+change the value of the YSCRL or XSCRL register. 
+This example shows how to set the YSCRL register 
+to a scroll value of 7 without disturbing the value 
+of the upper bits of the register. 
+
+LDA YSCRL ;LOAD THE DATA 
+
+AND #$F8 ;MASK THE LOWER 3 BITS 
+
+ORA #$07 ;SCROLL 7 PIXELS 
+
+STA YSCRL ;STORE THE NEW VALUE 
+
+
+
+As the scrolling value goes from to 7 in the 
+YSCRL register, the screen will scroll down. As the 
+value in the XSCRL register goes from to 7, the 
+screen will scroll to the right. 
+
+When scrolling the screen, you will usually want 
+to expand the border area of the screen. This will 
+give you an area to place the new graphics to be 
+scrolled onto the screen where they will not be seen. 
+The VIC chip has two controls that will expand the 
+border. The first of these is a 38 column mode. This 
+mode can be selected by clearing bit 3 of the 
+XSCRL register. The VIC chip can be returned to 
+the 40 column mode by setting bit 3 of the XSCRL 
+register. In the 38 column mode, one column on the 
+right side of the screen and one column from the 
+left side of the screen are covered by the border col- 
+or. This will give you a buffer area where changes 
+to the screen will not be seen. 
+
+The other border expansion option is useful for 
+
+---
+Additional information can be found by searching:
+- "hardware_scrolling_and_registers" which expands on masking lower 3 bits before OR'ing new fine scroll value

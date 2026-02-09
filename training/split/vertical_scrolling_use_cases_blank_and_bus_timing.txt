@@ -1,0 +1,106 @@
+# ********* - Details on Bit3 shortened display to aid vertical scrolling; Bit4 blanking to remove VIC-II bus delays and speed up 6510 by ~7% (useful for tape/disk timing), example timing test program and explanation of using POKE to clear screen blanking for loading from older 1540 drives.
+
+70 FORK=1TO30-I
+80 NEXT K,J,I:RUN
+
+Changing the value of the three horizontal scroll bits will affect the
+entire screen display.  If you wish to scroll only a portion of the
+screen, you will have to use raster interrupts (see 53274 ($D01A)
+below) to establish a scroll zone, change the value of these scroll
+bits only when that zone is being displayed, and change it back to 0
+afterward.
+
+Bit 3.  Bit 3 of this register allows you to cover up the first and
+last columns of the screen display with the border.  Since the viewers
+cannot see the characters there, they will not be able to see you
+insert a new character on the end of the line when you do coarse
+scrolling (see explanation of Bits 0-2 above).
+
+Setting this bit to 1 enables the normal 40-column display, while
+resetting it to 0 changes the display to 38 columns.  This is a purely
+cosmetic aid, and it is not necessary to change the screen to the
+smaller size to use the scrolling feature.
+
+Bit 4.  This bit selects multicolor graphics.  The effect of setting
+this bit to 1 depends on whether or not the bitmap graphics mode is
+also enabled.
+
+If you are not in bitmap mode, and you select multicolor text
+character mode by setting this bit to 1, characters with a color
+nybble whose value is less than 8 are displyed normally.  There will
+be one background color and one foreground color.  But each dot of a
+character with a color nybble whose value is over 7 can have any one
+of four different colors.
+
+The two colors in the Background Control Registers 1 and 2 (53282-3,
+$D022-3) are available in addition to the colors supplied by the Color
+RAM.  The price of these extra colors is a reduction in horizontal
+resolution.  Instead of each bit controlling one dot, in multicolor
+mode a pair of bits control the color of a larger dot.  A pattern of
+11 will light it with the color from the lower three bits of color
+RAM.  Patterns of 01 and 10 will select the colors from Background
+Color Registers 1 and 2, respectively, for the double-width dot.
+
+You can see the effect that setting this bit has by typing in the
+following BASIC command line:
+
+POKE 53270,PEEK(53280)OR16:PRINT CHR$(149)"THIS IS MULTICOLOR MODE"
+
+It is obvious from this example that the normal set of text characters
+was not made to be used in multicolor mode.  In order to take
+advantage of this mode, you will need to design custom four-color
+characters.  For more information, see the alternate entry for 53248
+($D000), the Character Generator ROM.
+
+If the multicolor and bitmap enable bits are both set to 1, the result
+is a multicolor bitmap mode.  As in multicolor text mode, pairs of
+graphics data bits are used to set each dot in a 4 by 8 matrix to one
+of four colors.  This results in a reduction of the horizontal
+resolution to 160 double-wide dots across.  But while text multicolor
+mode allows only one of the four colors to be set individually for
+each 4 by 8 dot area, bitmap multicolor mode allows up to three
+different colors to be individually selected in each 4 by 8 dot area.
+The source of the dot color for each bit-pair combination is shown
+below:
+
+00 Background Color Register 0 (53281, $D021)
+01 Upper four bits of Video Matrix
+10 Lower four bits of Video Matrix
+11 Color RAM nybble (area starts at 55296 ($D800))
+
+The fact that bit-pairs are used in this mode changes the strategy for
+plotting somewhat.  In order to find the byte BY in which the desired
+bit-pair resides, you must multiply the horizontal position X, which
+has a value of 0- 159, by 2, and then use the same formula as for
+hi-res bitmap mode.
+
+Given that the horizontal position (0-159) of the dot is stored in the
+variable X, its vertical position is in the variable Y, and the base
+address of the bitmap area ia in the variable BASE, you can find the
+desired byte with the formula:
+
+BY=BASE+(Y AND 248)*40+(Y AND 7)+(2*X AND 504)
+
+Setting the desired bit-pair will depend on what color you chose.
+First, you must set up an array of bit masks.
+
+CA(0)=1:CA(1)=4:CA(2)=16:CA(3)=64
+
+To turn on the desired dot, select a color CO from 0 to 3
+(representing the color selected by the corresponding bit pattern) and
+execute the following statement:
+
+BI=(NOT X AND 3):POKE BY,PEEK(BY) AND (NOT 3*CA(BI)) OR (CO*CA(BI))
+
+The following program will demonstrate this technique:
+
+10 CA(0)=1:CA(1)=4:CA(2)=16:CA(3)=64:REM ARRAY FOR BIT PAIRS
+20 BASE=2*4096:POKE53272,PEEK(53272)OR8:REM PUT BIT MAP AT 8192
+30 POKE53265,PEEK(53265)OR32:POKE53270,PEEK(53270)OR16:REM MULTI-COLOR BIT MAP
+40 A$="":FOR I=1 TO 37:A$=A$+"C":NEXT:PRINT CHR$(19);
+50 FOR I=1 TO 27:PRINT A$;:NEXT:POKE 2023,PEEK(2022): REM SET COLOR MAP
+60 A$="":FOR I=1 TO 128:A$=A$+"@":NEXT:FOR I=32 TO 63 STEP 2
+
+---
+Additional information can be found by searching:
+- "vertical_fine_scrolling_and_control_register_$D011" which expands on Related scrolling bits and behavior

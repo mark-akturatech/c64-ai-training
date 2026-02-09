@@ -1,0 +1,25 @@
+# - C64 I/O Map (Mapping The Commodore 64) - CIA #2 Control Register B at $DD0F (CI2CRB): mirrors CIA#1 CIACRB: bit 0 start/stop Timer B, bit 1 Timer B output on PB7, bit 2 PB7 toggle/pulse, bit 3 Timer B one-shot/continuous, bit 4 force load Timer B latch, bits 5-6 Timer B input mode (00 CPU cycles, 01 CNT pulses, 10 count Timer A underflows, 11 Timer A underflows with CNT), bit 7 select TOD write (0 writing sets alarm, 1 writing sets clock).
+
+$DD0F        CI2CRB       Control Register B
+
+                     0    Start Timer B (1=start, 0=stop)
+                     1    Select Timer B output on Port B (1=Timer B output appears on
+                          Bit 7 of Port B)
+                     2    Port B output mode (1=toggle Bit 7, 0=pulse Bit 7 for one
+                            cycle)
+                     3    Timer B run mode (1=one shot, 0=continuous)
+                     4    Force latched value to be loaded to Timer B counter (1=force
+                            load strobe)
+                     5-6  Timer B input mode
+                              00 = Timer B counts microprocessor cycles
+                              01 = Count signals on CNT line at pin 4 of User Port
+                              10 = Count each time that Timer A counts down to 0
+                              11 = Count Timer A 0's when CNT pulses are also present
+                     7    Select Time of Day write (0=writing to TOD registers sets
+                            alarm, 1=writing to ROD registers sets clock)
+
+
+---
+Additional information can be found by searching:
+- "dd08_dd0b_time_of_day_clock_cia2" which expands on bit 7 influences TOD register write behavior
+- "dd04_dd07_timers_overview" which expands on Timer B mode selections and linking with Timer A

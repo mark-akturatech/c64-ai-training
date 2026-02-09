@@ -1,0 +1,29 @@
+# byRiclianll - Open a scratch channel (#2) and use DOS U1 to transfer the starting disk block into the drive buffer. Sends the 'U1' command to load the block, checks the drive's EN*/error response, and (on success) issues a memory-read (M-R) of two specific buffer offsets to read the two bytes that hold the file's load address (LOW and HIGH). Converts the two returned characters into numeric LOW and HIGH values using ASC(...+CHR$(0)).
+
+
+480  G0T0900 
+
+490  0PEN2,8,2, "#2" 
+
+500  PRINT#15,  "Ul";2-,o;  t;s 
+
+510  INPUT#15,EN*,EM*,ET*,ES* 
+
+520  IFEN*="00"GOTO54O 
+
+530  G0T0900 
+
+
+86 
+
+
+540  PRINT#15, "M-R"CHR*(2)CHR*(5)CHR*(2) 
+
+550  GET#15,L0W* 
+
+560  LOW=ASC ( LOW*+CHR* ( O ) ) 
+
+---
+Additional information can be found by searching:
+- "read_directory_start_block" which expands on uses the start track/sector from the directory read to identify the block to U1
+- "compute_and_display_old_load_address_and_prompt_new" which expands on passes the LOW and HIGH bytes to construct and display the old load address

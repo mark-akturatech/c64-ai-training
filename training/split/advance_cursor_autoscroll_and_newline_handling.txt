@@ -1,0 +1,52 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Advances the logical cursor column and handles line wrap/scroll: tests if the cursor exceeded the current line length, handles maximum column wrap (back up and newline), checks autoscroll flag and either inserts/open-space on-screen or triggers screen scrolling, updates logical-line pointers and line length, computes new screen address pointers and handles newline behavior.
+
+
+                                *** advance the cursor
+.,E6B6 20 B3 E8 JSR $E8B3       test for line increment
+.,E6B9 E6 D3    INC $D3         increment the cursor column
+.,E6BB A5 D5    LDA $D5         get current screen line length
+.,E6BD C5 D3    CMP $D3         compare ?? with the cursor column
+.,E6BF B0 3F    BCS $E700       exit if line length >= cursor column
+.,E6C1 C9 4F    CMP #$4F        compare with max length
+.,E6C3 F0 32    BEQ $E6F7       if at max clear column, back cursor up and do newline
+.,E6C5 AD 92 02 LDA $0292       get the autoscroll flag
+.,E6C8 F0 03    BEQ $E6CD       branch if autoscroll on
+.,E6CA 4C 67 E9 JMP $E967       else open space on screen
+.,E6CD A6 D6    LDX $D6         get the cursor row
+.,E6CF E0 19    CPX #$19        compare with max + 1
+.,E6D1 90 07    BCC $E6DA       if less than max + 1 go add this row to the current
+                                logical line
+.,E6D3 20 EA E8 JSR $E8EA       else scroll the screen
+.,E6D6 C6 D6    DEC $D6         decrement the cursor row
+.,E6D8 A6 D6    LDX $D6         get the cursor row
+                                add this row to the current logical line
+.,E6DA 16 D9    ASL $D9,X       shift start of line X pointer high byte
+.,E6DC 56 D9    LSR $D9,X       shift start of line X pointer high byte back,
+                                make next screen line start of logical line, increment line length and set pointers
+                                clear b7, start of logical line
+.,E6DE E8       INX             increment screen row
+.,E6DF B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E6E1 09 80    ORA #$80        mark as start of logical line
+.,E6E3 95 D9    STA $D9,X       set start of line X pointer high byte
+.,E6E5 CA       DEX             restore screen row
+.,E6E6 A5 D5    LDA $D5         get current screen line length
+                                add one line length and set the pointers for the start of the line
+.,E6E8 18       CLC             clear carry for add
+.,E6E9 69 28    ADC #$28        add one line length
+.,E6EB 85 D5    STA $D5         save current screen line length
+.,E6ED B5 D9    LDA $D9,X       get start of line X pointer high byte
+.,E6EF 30 03    BMI $E6F4       exit loop if start of logical line
+.,E6F1 CA       DEX             else back up one line
+.,E6F2 D0 F9    BNE $E6ED       loop if not on first line
+.,E6F4 4C F0 E9 JMP $E9F0       fetch a screen address
+.,E6F7 C6 D6    DEC $D6         decrement the cursor row
+.,E6F9 20 7C E8 JSR $E87C       do newline
+.,E6FC A9 00    LDA #$00        clear A
+.,E6FE 85 D3    STA $D3         clear the cursor column
+.,E700 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "insert_uppercase_graphic_character" which expands on called after printing to advance the cursor
+- "back_to_previous_line_logic" which expands on used when needing to move up a line

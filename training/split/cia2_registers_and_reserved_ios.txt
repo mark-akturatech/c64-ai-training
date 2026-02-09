@@ -1,0 +1,105 @@
+# COMMODORE 64 - CIA #2 (MOS 6526) mapping at $DD00-$DDFF: DD00 data port A for serial bus/RS-232/VIC memory control (bits include serial bus data/clock inputs/outputs, ATN), DD01 data port B shows user port/RS-232 lines (DTR, RTS, CTS, DSR, RI, etc). DD02/DD03 data direction registers; DD04-DD07 timers; DD08-DD0B TOD clock; DD0C serial I/O buffer; DD0D-DD0F interrupt/control registers (NMI flags and mask). DE00-DEFF and DF00-DFFF reserved for future I/O expansion. Followed by formatting markers.
+
+  DD02       56578                 Data Direction Register - Port A
+  DD03       56579                 Data Direction Register - Port B
+  DD04       56580                 Timer A: Low-Byte
+  DD05       56581                 Timer A: High-Byte
+  DD06       56582                 Timer B: Low-Byte
+  DD07       56583                 Timer B: High-Byte
+  DD08       56584                 Time-of-Day Clock: 1/10 Seconds
+  DD09       56585                 Time-of-Day Clock: Seconds
+  DD0A       56586                 Time-of-Day Clock: Minutes
+  DD0B       56587                 Time-of-Day Clock: Hours + AM/PM Flag
+                                     (Bit 7)
+  DD0C       56588                 Synchronous Serial I/O Data Buffer
+  DD0D       56589                 CIA Interrupt Control Register (Read
+                                     NMls/Write Mask)
+                            7        NMI Flag (1 = NMI Occurred) / Set-
+                                       Clear Flag
+                            4        FLAG1 NMI (User/RS-232 Received Data
+                                       Input)
+                            3        Serial Port Interrupt
+                            1        Timer B Interrupt
+                            0        Timer A Interrupt
+
+  DD0E       56590                 CIA Control Register A
+                            7      Time-of-Day Clock Frequency: 1 = 50 Hz,
+                                     0 = 60 Hz
+                            6      Serial Port I/O Mode Output, 0 = Input
+                            5      Timer A Counts: 1 = CNT Signals,
+                                     0 = System 02 Clock
+                            4      Force Load Timer A: 1 = Yes
+
+                                            BASIC TO MACHINE LANGUAGE   325
+~
+
+
+   HEX      DECIMAL        BITS                 DESCRIPTION
+  -------------------------------------------------------------------------
+
+                            3      Timer A Run Mode: 1 = One-Shot,
+                                     0 = Continuous
+                            2      Timer A Output Mode to PB6: 1 = Toggle,
+                                     0 = Pulse
+                            1      Timer A Output on PB6: 1 = Yes, 0 = No
+                            0      Start/Stop Timer A: 1 = Start, 0 = Stop
+
+  DD0F       56591                 CIA Control Register B
+                            7      Set Alarm/TOD-Clock: 1=Alarm, 0=Clock
+                            6-5    Timer B Mode Select:
+                                     00 = Count System 02 Clock Pulses
+                                     01 = Count Positive CNT Transitions
+                                     10 = Count Timer A Underflow Pulses
+                                     11 = Count Timer A Underflows While
+                                       CNT Positive
+                            4-0    Same as CIA Control Reg. A - for Timer B
+
+  DE00-DEFF  56832-57087           Reserved for Future I/O Expansion
+  DF00-DFFF  57088-57343           Reserved for Future I/O Expansion
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  326   BASIC TO MACHINE LANGUAGE
+~~
+
+
+
+
+
+
+
+
+
+
+                                                 CHAPTER 6
+
+
+
+
+                                              INPUT/OUTPUT
+                                                     GUIDE
+
+
+
+
+---
+Additional information can be found by searching:
+- "user_port_table" which expands on User-port lines and RS-232 signals described later

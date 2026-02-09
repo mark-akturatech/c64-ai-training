@@ -1,0 +1,37 @@
+# VIC-II Memory Banking and Address Configuration Guide - Common configuration examples and defaults:
+Default C64 (Bank 0): $DD00 bits 0-1 = %11 -> Bank 0 ($0000-$3FFF); $D018 = $15 (%00010101) -> Screen $0400, Charset $1000 (ROM).
+Custom example (Bank 1 with custom charset): $DD00 bits 0-1 = %10 -> Bank 1 ($4000-$7FFF); $D018 = $18 (%00011000) -> Screen at $4400, Charset at $6000.
+Custom example (Bank 3 with bitmap): $DD00 bits 0-1 = %00 -> Bank 3 ($C000-$FFFF); $D018 = $18 -> Screen/color data at $C400, Bitmap at $E000 (bit 3=1).
+
+================================================================================
+PART 3: PRACTICAL REFERENCE AND EXAMPLES
+================================================================================
+
+Common Configurations
+----------------------
+
+Default C64 setup (Bank 0):
+  $DD00 bits 0-1 = %11  ->  Bank 0: $0000-$3FFF
+  $D018 = $15 (%00010101)
+    Screen RAM at $0400  (offset %0001)
+    Charset at $1000     (offset %010, ROM charset shadow)
+
+Custom setup example - Bank 1 with custom charset:
+  $DD00 bits 0-1 = %10  ->  Bank 1: $4000-$7FFF
+  $D018 = $18 (%00011000)
+    Screen RAM at $4400  (bank base $4000 + offset $0400, bits 7-4 = %0001)
+    Charset at $6000     (bank base $4000 + offset $2000, bits 3-1 = %100)
+
+Custom setup example - Bank 3 with bitmap:
+  $DD00 bits 0-1 = %00  ->  Bank 3: $C000-$FFFF
+  $D018 = $18 (%00011000)
+    Screen/color data at $C400  (bank base $C000 + offset $0400)
+    Bitmap at $E000             (bank base $C000 + offset $2000, bit 3 = 1)
+
+
+
+---
+Additional information can be found by searching:
+- "bank_selection_table" which expands on bank base addresses and ROM shadows
+- "d018_bit_layout_and_defaults" which expands on $D018 example values
+- "basic_example_switch_bank2" which expands on BASIC bank switching example

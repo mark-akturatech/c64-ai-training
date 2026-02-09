@@ -1,0 +1,35 @@
+# Kick Assembler - Shows more examples of using '@' to place variables and definitions in the root scope from within another scope. Examples: .label @x = 1234, .var @y = "Hello world", .const @z = true. Also shows a library file (mylib.lib) using .filenamespace MyLibrary with .function @myFunction(), .macro @MyMacro(), and .macro @MyPseudoCommand to export root-level entities.
+
+loop:
+sta $0400,x
+sta $0500,x
+sta $0600,x
+sta $0700,x
+inx
+bne loop
+rts
+}
+
+The above code fills the screen with black spaces. The code that calls the clearScreen subroutine use
+clearScreen.fillbyte to access the fillbyte label. If you use the label directive to define the fillbyte label, the code
+can be done a little nicer:
+lda #’a’
+sta clearScreen2.fillbyte
+jsr clearScreen2
+rts
+ClearScreen2: {
+.label fillbyte = *+1
+lda #0
+ldx #0
+loop:
+sta $0400,x
+sta $0500,x
+sta $0600,x
+sta $0700,x
+inx
+bne loop
+rts
+
+---
+Additional information can be found by searching:
+- "filenamespace_example_files" which expands on library and filenamespace usage

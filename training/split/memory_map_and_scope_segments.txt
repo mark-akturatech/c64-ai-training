@@ -1,0 +1,25 @@
+# Kick Assembler - Example memory map produced by -showmem option for the previous example: Code-segment ranges and Data-segment ranges. Notes that scoping and segments don't affect each other (labels can be local inside different segments).
+
+.segment Buffer
+table1: .fill $100, 0
+table2: .fill $100, 0
+
+Notice that overlapping code only gives an error if it's inside the same segment. So you can place code in both
+'InitCode' and 'Buffer' without getting errors. The Code and InitCode segments are saved in the file while the
+Buffer is thrown away.
+By using the 'align' parameter together with 'startAfter' you align the default memory block.
+.segmentdef Code
+[start=$8000]
+.segmentdef Virtual100 [startAfter= "Code", align=$100, virtual]
+.segment Code "Some code"
+ldx #$ff
+lda table,x
+.segment Virtual100 "Table"
+table: .fill $100,0
+
+47
+
+
+---
+Additional information can be found by searching:
+- "segment_naming_and_example_project" which expands on shows how source separation maps to memory

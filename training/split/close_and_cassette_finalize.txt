@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - CLOSE logical file handling: finds the logical entry (JLTLK/JZ100), handles device-specific close operations — for RS232 cleans up and deallocates buffers (CLN232), for cassette writes EOF markers or writes final block (CASOUT/WBLK/TAPEH), for serial calls CLSEI. Deallocates RIBUF/ROBUF pointers and updates MEMTCF to change top-of-memory if buffers freed.
+
+                                ;
+.,F281 20 BE ED JSR $EDBE       JSR    SCATN           ;NO...RELEASE LINES
+.,F284 D0 03    BNE $F289       BNE    CK60            ;BRANCH ALWAYS
+                                ;
+.,F286 20 B9 ED JSR $EDB9       CK50   JSR SECND       ;SEND SECOND...
+                                ;
+.,F289 8A       TXA             CK60   TXA
+.,F28A 24 90    BIT $90         BIT    STATUS          ;DID HE LISTEN?
+.,F28C 10 E7    BPL $F275       BPL    CK30            ;YES...FINISH UP
+                                ;
+.,F28E 4C 07 F7 JMP $F707       JMP    ERROR5          ;NO...DEVICE NOT PRESENT
+                                .END
+                                .LIB   CLOSE
+                                ;***************************************
+                                ;* CLOSE -- CLOSE LOGICAL FILE       *
+                                ;*                                   *
+                                ;*     THE LOGICAL FILE NUMBER OF THE*
+                                ;* FILE TO BE CLOSED IS PASSED IN .A.*
+                                ;* KEYBOARD, SCREEN, AND FILES NOT   *
+                                ;* OPEN PASS STRAIGHT THROUGH. TAPE  *
+                                ;* FILES OPEN FOR WRITE ARE CLOSED BY*
+                                ;* DUMPING THE LAST BUFFER AND       *
+                                ;* CONDITIONALLY WRITING AN END OF   *
+                                ;* TAPE BLOCK.SERIAL FILES ARE CLOSED*
+                                ;* BY SENDING A CLOSE FILE COMMAND IF*
+                                ;* A SECONDARY ADDRESS WAS SPECIFIED *
+                                ;* IN ITS OPEN COMMAND.              *
+                                ;***************************************
+                                ;
+.,F291 20 14 F3 JSR $F314       NCLOSE JSR JLTLK       ;LOOK FILE UP
+.,F294 F0 02    BEQ $F298       BEQ    JX050           ;OPEN...
+.,F296 18       CLC             CLC                    ;ELSE RETURN
+.,F297 60       RTS             RTS
+                                ;
+.,F298 20 1F F3 JSR $F31F       JX050  JSR JZ100       ;EXTRACT TABLE DATA
+.,F29B 8A       TXA             TXA                    ;SAVE TABLE INDEX
+.,F29C 48       PHA             PHA
+                                ;
+.,F29D A5 BA    LDA $BA         LDA    FA              ;CHECK DEVICE NUMBER
+.,F29F F0 50    BEQ $F2F1       BEQ    JX150           ;IS KEYBOARD...DONE
+.,F2A1 C9 03    CMP #$03        CMP    #3
+.,F2A3 F0 4C    BEQ $F2F1       BEQ    JX150           ;IS SCREEN...DONE
+.,F2A5 B0 47    BCS $F2EE       BCS    JX120           ;IS SERIAL...PROCESS
+.,F2A7 C9 02    CMP #$02        CMP    #2              ;RS232?
+.,F2A9 D0 1D    BNE $F2C8       BNE    JX115           ;NO...
+                                ;
+                                ; RS-232 CLOSE
+                                ;
+                                ; REMOVE FILE FROM TABLES
+.,F2AB 68       PLA                    PLA
+.,F2AC 20 F2 F2 JSR $F2F2              JSR JXRMV
+                                ;
+.,F2AF 20 83 F4 JSR $F483              JSR CLN232      ;CLEAN UP RS232 FOR CLOSE
+                                ;
+                                ; DEALLOCATE BUFFERS
+                                ;
+.,F2B2 20 27 FE JSR $FE27              JSR GETTOP      ;GET MEMSIZ
+.,F2B5 A5 F8    LDA $F8                LDA RIBUF+1     ;CHECK INPUT ALLOCATION
+.,F2B7 F0 01    BEQ $F2BA              BEQ CLS010      ;NOT...ALLOCATED
+.,F2B9 C8       INY                    INY
+
+---
+Additional information can be found by searching:
+- "jtget_and_cassette_buffers" which expands on uses CASOUT/WBLK/TAPEH to finalize cassette writes

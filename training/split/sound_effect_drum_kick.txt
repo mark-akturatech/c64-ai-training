@@ -1,0 +1,23 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Drum kick example: short noise burst followed by low-frequency tone. Sequence: set ADSR for short envelope, set initial freq high and noise+gate for a burst, after 1-2 frames switch to low frequency triangle ($D401/$D404) to simulate kick pitch drop.
+
+
+DRUM KICK:
+  ; Short noise burst followed by low-frequency tone
+  lda #$00
+  sta $d405
+  lda #$09          // S=0, R=9
+  sta $d406
+  lda #$20
+  sta $d401         // Medium-high frequency
+  lda #$81          // Noise + gate
+  sta $d404
+  ; After 1-2 frames, switch to triangle at low frequency
+  lda #$05
+  sta $d401
+  lda #$11          // Triangle + gate
+  sta $d404
+
+---
+Additional information can be found by searching:
+- "waveforms_triangle" which expands on use triangle for low tone tail
+- "waveforms_noise" which expands on initial noise burst

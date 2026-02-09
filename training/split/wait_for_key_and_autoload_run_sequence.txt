@@ -1,0 +1,40 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Saves/outputs a character (calls the output routine) then waits for a key: disables cursor flashing and autoscroll while the keyboard buffer contains characters, handles overwriting the cursor-phase character, calls the keyboard-buffer read routine, detects the [SHIFT][RUN] special key sequence and, if present, fills the keyboard buffer with the automatic LOAD/CR/RUN/CR sequence for autoloading programs.
+
+
+                                *** write character and wait for key
+.,E5CA 20 16 E7 JSR $E716       output character
+
+                                *** wait for a key from the keyboard
+.,E5CD A5 C6    LDA $C6         get the keyboard buffer index
+.,E5CF 85 CC    STA $CC         cursor enable, $00 = flash cursor, $xx = no flash
+.,E5D1 8D 92 02 STA $0292       screen scrolling flag, $00 = scroll, $xx = no scroll
+                                this disables both the cursor flash and the screen scroll
+                                while there are characters in the keyboard buffer
+.,E5D4 F0 F7    BEQ $E5CD       loop if the buffer is empty
+.,E5D6 78       SEI             disable the interrupts
+.,E5D7 A5 CF    LDA $CF         get the cursor blink phase
+.,E5D9 F0 0C    BEQ $E5E7       if cursor phase skip the overwrite
+                                else it is the character phase
+.,E5DB A5 CE    LDA $CE         get the character under the cursor
+.,E5DD AE 87 02 LDX $0287       get the colour under the cursor
+.,E5E0 A0 00    LDY #$00        clear Y
+.,E5E2 84 CF    STY $CF         clear the cursor blink phase
+.,E5E4 20 13 EA JSR $EA13       print character A and colour X
+.,E5E7 20 B4 E5 JSR $E5B4       input from the keyboard buffer
+.,E5EA C9 83    CMP #$83        compare with [SHIFT][RUN]
+.,E5EC D0 10    BNE $E5FE       if not [SHIFT][RUN] skip the buffer fill
+                                keys are [SHIFT][RUN] so put "LOAD",$0D,"RUN",$0D into
+                                the buffer
+.,E5EE A2 09    LDX #$09        set the byte count
+.,E5F0 78       SEI             disable the interrupts
+.,E5F1 86 C6    STX $C6         set the keyboard buffer index
+.,E5F3 BD E6 EC LDA $ECE6,X     get byte from the auto load/run table
+.,E5F6 9D 76 02 STA $0276,X     save it to the keyboard buffer
+.,E5F9 CA       DEX             decrement the count/index
+.,E5FA D0 F7    BNE $E5F3       loop while more to do
+.,E5FC F0 CF    BEQ $E5CD       loop for the next key, branch always
+
+---
+Additional information can be found by searching:
+- "keyboard_buffer_read_and_shift" which expands on invokes the buffer-read routine to get keys
+- "write_character_unshifted_and_control_dispatch" which expands on calls the character output routine before waiting

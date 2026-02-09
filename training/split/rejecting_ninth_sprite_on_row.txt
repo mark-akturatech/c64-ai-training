@@ -1,0 +1,27 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Reject sprites that would become the 9th sprite on a rasterline: while walking the sorted list and mapping virtual→physical, test if the next virtual sprite's Y is within 21 pixels of the virtual sprite previously mapped to the same physical sprite. Test example: if (spry[next_sprite] - sortspry[accepted_count - 8] < 21) then reject(). The test is skipped for the first 8 sprites (no negative index).
+
+2.3 Rejecting sprites that try to be the 9th sprite on a row.
+
+This is quite easy. Let's assume we're walking through the order array of
+sprites, like the one produced by the algorithm presented just above. The
+virtual sprites are to be mapped to physical sprites by the round-and-round
+method, next_sprite is the next sprite-index in sorted order, and there's a
+variable sorted_sprites (like before) that indicates how many sprites have
+been "accepted" so far. The accepted sprites so far have been copied to the
+sorted arrays (sortsprx, sortspry etc.)
+
+The test is:
+if (spry[next_sprite] - sortspry[sorted_sprites - 8] < 21) then reject();
+
+You'll see that this test cannot be done for the first 8 sprites because the
+sorted array index would turn negative. That is logical, the test is
+unnecessary for the first 8 sprites and they can always be accepted. But the
+idea for further sprites is to compare the Y-coordinate of the previous
+"virtual" sprite mapped to that physical sprite; if the difference is less
+than 21 pixels then the sprite would be too close and couldn't be displayed by
+the hardware.
+
+
+---
+Additional information can be found by searching:
+- "mapping_virtual_to_physical_sprites" which expands on uses mapping order to determine which previous virtual sprite corresponds to the same physical sprite

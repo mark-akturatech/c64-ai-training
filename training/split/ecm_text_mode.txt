@@ -1,0 +1,57 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=1, BMM=0, MCM=0 Extended Color Mode text: same as standard text but allows selection of one of four background colors per character using upper two bits of character pointer, at cost of reducing character set from 256 to 64. c-data bits include per-character background selection; g-access addresses force bits 9/10 low in ECM text mode addressing. g-data: 8 pixels; '0' uses background selected by c-data bits 6/7, '1' uses color from c-data bits 8-11.
+
+3.7.3.5. ECM text mode (ECM/BMM/MCM=1/0/0)
+------------------------------------------
+
+This text mode is the same as the standard text mode, but it allows the
+selection of one of four background colors for every single character. The
+selection is done with the upper two bits of the character pointer. This,
+however, reduces the character set from 256 to 64 characters.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |     Color of      |Back.col.| D5 | D4 | D3 | D2 | D1 | D0 |
+ |    "1" pixels     |selection|    |    |    |    |    |    |
+ +-------------------+---------+----+----+----+----+----+----+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13|CB12|CB11|  0 |  0 | D5 | D4 | D3 | D2 | D1 | D0 | RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       |
+ | "0": Depending on bits 6/7 of c-data  |
+ |      00: Background color 0 ($d021)   |
+ |      01: Background color 1 ($d022)   |
+ |      10: Background color 2 ($d023)   |
+ |      11: Background color 3 ($d024)   |
+ | "1": Color from bits 8-11 of c-data   |
+ +---------------------------------------+
+
+---
+Additional information can be found by searching:
+- "standard_text_mode" which expands on comparison: ECM changes background selection, not pixel fetching

@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Checks for the STOP key and, if pressed, performs a warm-start (TIMB): calls UD60 and STOP to test STOP key; if STOP is detected, executes system restore sequence (RESTOR, IOINIT, CINT) and then jumps to the BASIC warm-start vector at ($A002). If no STOP, execution continues to NMI handling.
+
+                                ;
+                                ; CHECK FOR STOP KEY DOWN
+                                ;
+                                NNMI19
+.,FE5E 20 BC F6 JSR $F6BC              JSR UD60        ;NO .Y
+.,FE61 20 E1 FF JSR $FFE1              JSR STOP        ;NO .Y
+.,FE64 D0 0C    BNE $FE72              BNE NNMI20      ;NO STOP KEY...TEST FOR RS232
+                                ;
+                                ; TIMB - WHERE SYSTEM GOES ON A BRK INSTRUCTION
+                                ;
+.,FE66 20 15 FD JSR $FD15       TIMB   JSR RESTOR      ;RESTORE SYSTEM INDIRECTS
+.,FE69 20 A3 FD JSR $FDA3              JSR IOINIT      ;RESTORE I/O FOR BASIC
+.,FE6C 20 18 E5 JSR $E518              JSR CINT        ;RESTORE SCREEN FOR BASIC
+.,FE6F 6C 02 A0 JMP ($A002)            JMP ($A002)     ;...NO, SO BASIC WARM START
+
+---
+Additional information can be found by searching:
+- "rs232_nmi_entry_and_rom_check" which expands on previous NMI entry and ROM presence check
+- "nmi_prepare_and_t1_transmit" which expands on next: disable NMIs until ready and handle T1/T2/FLAG

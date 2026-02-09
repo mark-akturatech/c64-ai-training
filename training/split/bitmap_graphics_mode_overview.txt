@@ -1,0 +1,106 @@
+# ********* - Bitmap (hi-res) graphics mode enabled by Bit 5 of $D011: 320x200 dots, 1 bit per dot; mapping of bitmap and color memory within VIC-II 16K bank controlled by $D018; multicolor bitmap variations, color memory requirements (1K), differences from text mode layout.
+
+display area, and a position 355 ($158) the whole sprite has moved out
+of sight, off the right edge of the screen.
+
+These registers are all intialized to 0 at power-up.
+
+53248         $D000          SP0X
+Sprite 0 Horizontal Position
+
+53249         $D001          SP0Y
+Sprite 0 Vertical Position
+
+53250         $D002          SP1X
+Sprite 1 Horizontal Position
+
+53251         $D003          SP1Y
+Sprite 1 Vertical Position
+
+53252         $D004          SP2X
+Sprite 2 Horizontal Position
+
+53253         $D005          SP2Y
+Sprite 2 Vertical Position
+
+53254         $D006          SP3X
+Sprite 3 Horizontal Position
+
+53255         $D007          SP3Y
+Sprite 3 Vertical Position
+
+53256         $D008          SP4X
+Sprite 4 Horizontal Position
+
+53257         $D009          SP4Y
+Sprite 4 Vertical Position
+
+53258         $D00A          SP5X
+Sprite 5 Horizontal Position
+
+53259         $D00B          SP5Y
+Sprite 5 Vertical Position
+
+53260         $D00C          SP6X
+Sprite 6 Horizontal Position
+
+53261         $D00D          SP6Y
+Sprite 6 Vertical Position
+
+53262         $D00E          SP7X
+Sprite 7 Horizontal Position
+
+53263         $D00F          SP7Y
+Sprite 7 Vertical Position
+
+53264         $D010          MSIGX
+Most Significant Bits of Sprites 0-7 Horizontal Position
+
+Bit 0:  Most significant bit of Sprite 0 horizontal position
+Bit 1:  Most significant bit of Sprite 1 horizontal position
+Bit 2:  Most significant bit of Sprite 2 horizontal position
+Bit 3:  Most significant bit of Sprite 3 horizontal position
+Bit 4:  Most significant bit of Sprite 4 horizontal position
+Bit 5:  Most significant bit of Sprite 5 horizontal position
+Bit 6:  Most significant bit of Sprite 6 horizontal position
+Bit 7:  Most significant bit of Sprite 7 horizontal position
+
+Setting one of these bites to 1 adds 256 to the horizontal position of
+the corresponding sprite.  Resetting one of these bits to 0 restricts
+the horizontal position of the corresponding sprite to a value of 255
+or less
+
+53265         $D011          SCROLY
+Vertical Fine Scrolling and Control Register
+
+Bits 0-2:  Fine scroll display vertically by X scan lines (0-7)
+Bit 3:  Select a 24-row or 25-row text display (1=25 rows, 0=24 rows)
+Bit 4:  Blank the entire screen to the same color as the background
+  (0=blank)
+Bit 5:  Enable bitmap graphics mode (1=enable)
+Bit 6:  Enable extended color text mode (1=enable)
+Bit 7:  High bit (Bit 8) of raster compare register at 53266 ($D012)
+
+This is one of the two important multifunction control registers on
+the VIC-II chip.  Its defaule value is 155, which sets the high bit of
+the raster compare to 1, selects a 25-row display, disables the
+blanking feature, and uses a vertical scrolling offset of three scan
+lines.
+
+Bits 0-2.  These bits control vertical fine scrolling of the screen
+display.  This feature allows you to move the entire text display
+smoothly up and down, enabling the display area to act as a window,
+scrolling over a larger text or character graphics display.
+
+Since each row of text is eight scan lines high, if you simply move
+each line of text up one row, the characters travel an appreciable
+distance each time they move, which gives the motion a jerky quality.
+This is called coarse scrolling, and you can see an example of it when
+LISTing a program that is too long to fit on the screen all at one
+time.
+
+By placing a number from 1 to 7 into these three bits, you can move
+
+---
+Additional information can be found by searching:
+- "bitmap_pixel_addressing_and_plotting" which expands on How to find and set individual pixels in bitmap mode

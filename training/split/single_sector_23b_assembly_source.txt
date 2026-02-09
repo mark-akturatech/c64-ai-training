@@ -1,0 +1,126 @@
+# byRiclianll - Assembly source for 23B.PAL (Single-Sector 23 error, duplicate variant). Contains the machine-code driver entry used to convert data to GCR (JSR *F73F), locate the header (JSR *F510), wait out the header gap, enable WRITE mode (writes to *1C03 and *1C0C), write sync marks, and stream GCR bytes from the overflow buffer and sector buffer to the drive via *1C01. Ends by re-enabling READ mode (JSR *FE00) and returning to DOS with appropriate zero-page values set (STA *31 etc.). Includes the SYS/BASIC invocation lines and assembler directives used when saving the file to disk.
+
+
+
+100  REM  23B.PAL 
+110  REM 
+
+120  0PEN2, 8, 2, "SO: 23B. B, P, W" 
+
+130  REM 
+
+140  SYS40960 
+
+150  ; 
+
+
+135 
+
+
+160   .OPT  P,02 
+170  ; 
+
+ISO  »=  *0500 
+190  ; 
+
+200  LDA  #«04 
+210  STA  *31 
+220  ; 
+
+230  JSR  «F73F  ;   CONVERT  TO 
+
+GCR 
+
+240  JSR  *F510  ;   FIND  HEADER 
+
+# 
+
+250  ; 
+
+260  LDX  #*0S 
+
+270  WAITGAP  BVC  WAITGAP  ;    WAIT  OUT  G 
+
+AP 
+
+2S0  CLV 
+290  DEX 
+
+300  BNE  WAITGAP 
+310  ; 
+
+320  LDA  #*FF  ;    ENABLE  WRI 
+
+TE 
+
+330  STA  *1C03 
+340  LDA  «1C0C 
+350  AND  #*1F 
+360  ORA  #*C0 
+370  STA  *1C0C 
+380  LDA  #*FF 
+390  LDX  #*05 
+400  STA  *1C01 
+410  CLV 
+
+420  WRITESYNC  BVC  WRITESYNC 
+430  CLV 
+440  DEX 
+
+450  BNE  WRITESYNC 
+460  ; 
+
+470  LDY  #*BB 
+
+480  OVERFLOW  LDA  *0100,Y  ;    WRITE  OUT 
+
+OVERFLOW  BUFFER 
+
+490  WAITl   BVC  WAITl 
+
+500  CLV 
+
+510  STA  *1C01 
+
+520   I NY 
+
+530  BNE  OVERFLOW 
+
+540  BUFFER  LDA  *0400,Y  ;    WRITE  OUT 
+
+BUFFER 
+
+550  WAIT2  BVC  WAIT2 
+
+560  CLV 
+
+570  STA  «1C01 
+
+580   I NY 
+
+590  BNE  BUFFER 
+
+
+136 
+
+
+600  WAIT3  BVC  WAIT3 
+610  ; 
+
+620  JSR  *FEOO  ;    ENABLE  REA 
+
+D 
+
+630  ; 
+
+640  LDA  #*05 
+650  STA  *31 
+660  LDA  #*01 
+670  JMP  *F969 
+
+
+
+---
+Additional information can be found by searching:
+- "duplicate_single_sector_23_annotation" which expands on Notes about the 23B variant leaving checksum intact
+- "full_track_23m_assembly_source" which expands on Related full-track assembly driver that uses similar WRITE/READ sequencing

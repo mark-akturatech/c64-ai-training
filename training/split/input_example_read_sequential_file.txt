@@ -1,0 +1,91 @@
+# MACHINE - Example program to read a sequential file to the screen: BASIC shows opening files; machine code example: LDX #$01; JSR $FFC6 to switch input; loop: JSR $FFE4 (GETIN) then JSR $FFD2 (CHROUT) to echo to screen; LDA $90 (ST) and BEQ back to loop until ST nonzero; finally JSR $FFCC and RTS. Explains ST semantics and locations for ST on different machines.
+
+  1.  Load a value of 1 into X (LDX #$01).
+
+  2.  JSR to address $FFC6.
+
+Once the input is switched, we may obtain as many characters as we wish using
+subroutine $FFE4.  Eventually, we must disconnect from the logical file and
+return to our default input--the keyboard.  We do this by calling subroutine
+CLRCHN at address $FFCC.  This is the same subroutine that disconnects output
+from a logical file.
+
+
+Input Example
+-------------
+
+We can write a program to read an input file from disk or cassette.  First,
+let's write the file.  We open the file according to its type:
+
+  Disk:      OPEN 1,8,3,"0:DEMO,S,W"
+  Cassette:  OPEN 1,1,1
+
+This may be done with a direct statement.  Now let's write a few things to
+the file:
+
+  PRINT #1,"HELLO THIS IS A TEST"
+  PRINT #1,"THIS IS THE LAST LINE"
+  CLOSE 1
+
+If we have typed in the above statements correctly, we should have a
+completed sequential file written on cassette or disk.  Before writing the
+machine language input program, let's examine how we might read the file back
+in BASIC:
+
+  Disk:      100 OPEN 1,8,3,"DEMO"
+  Cassette:  100 OPEN 1
+             110 INPUT #1,X$
+             120 PRINT X$
+             130 IF ST=0 GOTO 110
+             140 CLOSE 1
+
+We might alternatively have written lines 110 and 120 as
+
+             120 GET #1,X$
+             130 PRINT X$;
+
+This more closely approximates the logic flow of our machine language
+program, since it will get the characters one at a time.  If you are unsure
+about the role of ST, read up on it.  We will use the same variable (at its
+address of $90 or $96) to do exactly the same thing in machine language.
+
+Type NEW and enter the following program:
+
+                                                                        :138:
+
+  Disk:      100 OPEN 1,8,3,"DEMO"
+  Cassette:  100 OPEN 1,1,1
+             110 SYS 828
+             120 CLOSE 1
+
+We will read the file and copy it to the screen entirely in machine language.
+Let's start coding at $033C:
+
+  .A 033C  LDX #$01
+  .A 033E  JSR $FFC6
+
+Now the input is connected to logical file 1.  Let's get information from it
+and put it on the screen:
+
+  .A 0341  JSR $FFE4
+  .A 0344  JSR $FFD2
+
+We must check ST as we would in BASIC.  ST might be at either of two
+addresses, depending on the system:
+
+  VIC, Commodore 64:  .A 0347  LDA $90
+  PET/CBM:            .A 0347  LDA $96
+
+If ST is zero, there is more to come from the file; we may go back.  If ST is
+nonzero, there could be an error or we may be at the end of the file.  In
+either case, we don't want to read more from the file.
+
+  .A 0349  BEQ $0341
+  .A 034B  JSR $FFCC
+  .A 034E  RTS
+
+Check it and try it.  The file is delivered to the screen quickly.
+
+---
+Additional information can be found by searching:
+- "switching_input_chkin_and_clrchn" which expands on How CHKIN and CLRCHN are used in this example

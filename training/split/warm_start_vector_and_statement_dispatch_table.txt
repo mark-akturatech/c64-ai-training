@@ -1,0 +1,80 @@
+# ********* - Warm Start Vector (40962-40963 / $A002-$A003): entry used to reset BASIC after STOP/RESTORE; does not disturb program. Followed by STMDSP (Statement Dispatch Vector Table, $A00C-$A051) which contains two-byte vectors pointing to routines performing each BASIC statement in token order. Reproduces the statement token->routine address mapping for tokens 128..162 (e.g., END 43057, FOR 42818, NEXT 44318, DATA 43256, INPUT# 43941, PRINT 43680, etc.).
+
+40962-40963   $A002-$A003
+Warm Start Vector
+
+The warm start vector points to the address of the routines used to
+reset BASIC after the STOP/RESTORE key combination is pressed.  This
+is the same address to which the BRK instruction is vectored.  When
+BASIC is entered through this vector, the program in memory is not
+disturbed.  For more information, see the entry for 58235 ($E37B), the
+current warm start entry point.
+
+40964-40971   $A004-$A00B
+ASCII Text characters CBMBASIC
+
+The ASCII characters for the letters CBMBASIC are located here.
+Possibly an identifier, this text is not referenced elsewhere in the
+program.
+
+40972041941   $A00C-$A051    STMDSP
+Statement Dispatch Vector Table
+
+This table contains two-byte vectors, each of which points to an
+address which is one byte before the address of one of the routines
+that perform a BASIC statement.
+
+The statements are in token number order.  When it comes time to
+execute a statement, the NEWSTT routine at 42926 ($A7AE) places this
+address-1 on the stack and jumps to the CHRGET routine.  The RTS
+instruction at the end of that routine causes the statement address to
+be pulled off the stack, incremented, and placed in the Program
+Counter, just as if it were the actual return address.
+
+This table is handy for locating the address of the routine that
+performs a BASIC statement, so that the routine can be disassembled
+and examined.  To aid in this purpose, the table is reproduced below
+with the actual target address, and not in the address-1 format used
+by BASIC.
+
+Token #   Statement   Routine Address
+128 $80   END         43057 $A831
+129 $81   FOR         42818 $A742
+130 $82   NEXT        44318 $AD1E
+131 $83   DATA        43256 $A8F8
+132 $84   INPUT#      43941 $ABA5
+133 $85   INPUT       43967 $ABBF
+134 $86   DIM         45185 $B081
+135 $87   READ        44038 $AC06
+136 $88   LET         43429 $A9A5
+137 $89   GOTO        43168 $A8A0
+138 $8A   RUN         43121 $A871
+139 $8B   IF          43304 $A928
+140 $8C   RESTORE     43037 $A81D
+141 $8D   GOSUB       43139 $A883
+142 $8E   RETURN      43218 $A8D2
+143 $8F   REM         43323 $A93B
+144 $90   STOP        43055 $A82F
+145 $91   ON          43339 $A94B
+146 $92   WAIT        47149 $B82D
+147 $93   LOAD        57704 $E168
+148 $94   SAVE        57686 $E156
+149 $95   VERIFY      57701 $E165
+150 $96   DEF         46003 $B3B3
+151 $97   POKE        47140 $B824
+152 $98   PRINT#      43648 $AA80
+153 $99   PRINT       43680 $AAA0
+154 $9A   CONT        43095 $A857
+155 $9B   LIST        42652 $A69C
+156 $9C   CLR         42590 $A65E
+157 $9D   CMD         43654 $AA86
+158 $9E   SYS         57642 $E12A
+159 $9F   OPEN        57790 $E1BE
+160 $A0   CLOSE       57799 $E1C7
+161 $A1   GET         43899 $AB7B
+162 $A2   NEW         42562 $A642
+
+
+---
+Additional information can be found by searching:
+- "fndfor_and_crunch_qplop" which expands on Related BASIC routines that interact with STMDSP during parsing/execution

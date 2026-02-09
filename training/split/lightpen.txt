@@ -1,0 +1,37 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Light pen (LP) input behavior: negative edge latches current raster beam position into LPX ($D013) and LPY ($D014) — LPX upper 8 bits of 9-bit X, LPY lower 8 bits of 9-bit Y. Only one negative edge per frame is recognized (trigger released at next vertical blank). LP line shares keyboard matrix so can be triggered by software via CIA port B ($DC01/$DC03), enabling software measurement of current X position. LPX results correspond to sprite X coordinate conventions (resolution 2 pixels horizontally). VIC can optionally generate an interrupt on LP negative edge.
+
+3.11. Lightpen
+--------------
+
+On a negative edge on the LP input, the current position of the raster beam
+is latched in the registers LPX ($d013) and LPY ($d014). LPX contains the
+upper 8 bits (of 9) of the X position and LPY the lower 8 bits (likewise of
+9) of the Y position. So the horizontal resolution of the light pen is
+limited to 2 pixels.
+
+Only one negative edge on LP is recognized per frame. If multiple edges
+occur on LP, all following ones are ignored. The trigger is not released
+until the next vertical blanking interval.
+
+As the LP input of the VIC is connected to the keyboard matrix as are all
+lines of the joystick ports, it can also be controlled by software. This is
+done with bit 4 of port B of CIA A ($dc01/$dc03). This allows to determine
+the current X position of the raster beam by triggering an LP edge and
+reading from LPX afterwards (the VIC has no register that would allow
+reading the X position directly). This can e.g. be used to synchronize
+raster interrupt routines on exact cycles.
+
+The values you get from the LPX register can be calculated from the sprite
+coordinates of the timing diagrams in section 3.6.3. The reference point is
+the end of the cycle in which the LP line is triggered. E.g. if you trigger
+LP in cycle 20, you get the value $1e in LPX, corresponding to the sprite
+coordinate $03c (LPX contains the upper 8 bits of the 9 bit X coordinate).
+
+The VIC can also additionally trigger an interrupt on a negative edge on
+the LP pin (see next section), likewise only once per frame.
+
+
+---
+Additional information can be found by searching:
+- "x_coordinates" which expands on measuring X position by triggering LP and reading LPX
+- "vic_interrupts" which expands on LP interrupt source bit and latching behavior

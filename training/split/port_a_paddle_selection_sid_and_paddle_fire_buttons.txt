@@ -1,0 +1,40 @@
+# ********* - Describes CIA #1 Data Port A (Port A) role selecting which paddles SID reads and reading paddle fire buttons. Bit 7=1 & Bit 6=0 -> SID reads paddles on Port 1; Bit 7=0 & Bit 6=1 -> SID reads paddles on Port 2. Notes conflict with keyscan (CIA #1 Data Port A used for keyscan writes) and necessity to disable keyscan IRQ to get accurate paddle readings. Also explains paddle fire buttons are read at CIA #1 Data Ports A and B: paddles on Controller Port 1 via Data Port B (56321,$DC01), Controller Port 2 via Data Port A (56320,$DC00). Fire buttons use Bits 2 and 3 (bit reads 0 when pushed).
+
+As if all of the above were not enough, Port A is also used to control
+which set of paddles is read by the SID chip, and to read the paddle
+fire buttons.  Since there are two paddles per joystick Controller
+Port, and only two SID registers for reading paddle positions, there
+has to be a method for switching the paddle read from joystick Port 1
+to joystick Port 2.
+
+When Bit 7 of Port A is set to 1 and Bit 6 is cleared to 0, the SID
+registers will read the paddles on Port 1.  When Bit 7 is set to 0 and
+Bit 6 is set to 1, the paddles on Port 2 are read by the SID chip
+registers.  Note that this also conflicts with the keyscan routine,
+which is constantly writing different values to CIA #1 Data Port A in
+order to select the keyboard column to read (most of the time, the
+value for the last column is written to this port, which coincides
+with the selection of paddles on joystick Port 1).  Therefore, in
+order to get an accurate reading, you must turn off the keyscan IRQ
+and select which joystick port you want to read.  See POTX at 54297
+($D419), which is the SID register where the paddles are read, for the
+exact technique.
+
+Although the SID chip is used to read the paddle settings, the fire
+buttons are read at CIA #1 Data Ports A and B.  The fire buttons for
+the paddles plugged into Controller Port 1 are read at Data Port B
+(56321, $DC01), while those for the paddles plugged into Controller
+Port 2 are read from Data Port A (56320, $DC00).  The fire buttons are
+read at Bit 2 and Bit 3 of each port (the same as the joystick left
+and joystick right switches), and as usual, the bit will read 0 if the
+corresponding button is pushed, and 1 if it is not.
+
+Although only two of the rout paddle values can be read at any one
+time, you can always read all four paddle buttons.  See the game
+paddle input description at 54297 ($D419) for the BASIC statements
+used to read these buttons.
+
+---
+Additional information can be found by searching:
+- "sid_potx_paddle_input" which expands on SID POTX register used to read paddle positions ($D419/54297)
+- "reading_joystick_fire_buttons" which expands on reading joystick trigger bits at CIA ports

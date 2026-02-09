@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - NLOAD entry: store verify flag (VERCK) and clear STATUS. Loads device number FA and validates it (disallow keyboard and screen loads). Branches to appropriate error handlers for bad device numbers, or to tape handling if FA indicates a tape device (carry set).
+
+                                ;
+.,F4A5 85 93    STA $93         NLOAD  STA VERCK       ;STORE VERIFY FLAG
+.,F4A7 A9 00    LDA #$00        LDA    #0
+.,F4A9 85 90    STA $90         STA    STATUS
+                                ;
+.,F4AB A5 BA    LDA $BA         LDA    FA              ;CHECK DEVICE NUMBER
+.,F4AD D0 03    BNE $F4B2       BNE    LD20
+                                ;
+.,F4AF 4C 13 F7 JMP $F713       LD10   JMP ERROR9      ;BAD DEVICE #-KEYBOARD
+                                ;
+.,F4B2 C9 03    CMP #$03        LD20   CMP #3
+.,F4B4 F0 F9    BEQ $F4AF       BEQ    LD10            ;DISALLOW SCREEN LOAD
+.,F4B6 90 7B    BCC $F533       BCC    LD100           ;HANDLE TAPES DIFFERENT
+
+---
+Additional information can be found by searching:
+- "load_header_and_entry_points" which expands on Initial entry points and monitor-load alt-start handling
+- "ieee_load_sequence" which expands on If device is not tape, proceed to IEEE device load sequence
+- "tape_load_dispatch" which expands on If device indicates tape, branch to tape load logic

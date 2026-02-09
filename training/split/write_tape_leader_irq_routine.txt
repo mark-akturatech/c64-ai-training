@@ -1,0 +1,29 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Write tape leader IRQ routine: sets time constant (#$78) via JSR $FBAF, toggles tape and decrements leader cycle counters ($A7, $AB). When leader finished sets tape write vector and enables interrupts; uses $A5/$B6 to set sync counts. Interacts with $FB97 (new byte setup) and $FCBD (set tape vector).
+
+                                *** write tape leader IRQ routine
+.,FC6A A9 78    LDA #$78        set time constant low byte for bit = leader
+.,FC6C 20 AF FB JSR $FBAF       write time constant and toggle tape
+.,FC6F D0 E3    BNE $FC54       if tape bit high restore registers and exit interrupt
+.,FC71 C6 A7    DEC $A7         decrement cycle count
+.,FC73 D0 DF    BNE $FC54       if not all done restore registers and exit interrupt
+.,FC75 20 97 FB JSR $FB97       new tape byte setup
+.,FC78 C6 AB    DEC $AB         decrement cassette leader count
+.,FC7A 10 D8    BPL $FC54       if not all done restore registers and exit interrupt
+.,FC7C A2 0A    LDX #$0A        set index for tape write vector
+.,FC7E 20 BD FC JSR $FCBD       set the tape vector
+.,FC81 58       CLI             enable the interrupts
+.,FC82 E6 AB    INC $AB         clear cassette leader counter, was $FF
+.,FC84 A5 BE    LDA $BE         get cassette block count
+.,FC86 F0 30    BEQ $FCB8       if all done restore everything for STOP and exit the
+                                interrupt
+.,FC88 20 8E FB JSR $FB8E       copy I/O start address to buffer address
+.,FC8B A2 09    LDX #$09        set nine synchronisation bytes
+.,FC8D 86 A5    STX $A5         save cassette synchronization byte count
+.,FC8F 86 B6    STX $B6         
+.,FC91 D0 83    BNE $FC16       go do the next tape byte, branch always
+
+
+---
+Additional information can be found by searching:
+- "tape_write_irq_routine" which expands on leader writing performed after block copy operations
+- "set_tape_vector" which expands on sets IRQ vector for tape routines (JSR $FCBD)

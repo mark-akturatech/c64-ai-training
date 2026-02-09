@@ -1,0 +1,16 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SETMSG: Flag status (vectored from $ff90). Stores A into MSGFLG ($9D) and merges I/O STATUS ($90) into STATUS by ORA $90 and STA $90. Also supports entry point $FE1C where A stored in STATUS. Controls whether KERNAL prints messages.
+
+                                *** SETMSG: FLAG STATUS
+                                The KERNAL routine SETMSG ($ff90) jumps to this routine.
+                                On entry, the value in (A) is stored in MSGFLG, then the
+                                I/O status is placed in (A). If routine is entered at
+                                $fe1c the contents in (A) will be stored in STATUS.
+.,FE18 85 9D    STA $9D         store MSGFLG
+.,FE1A A5 90    LDA $90         read STATUS
+.,FE1C 05 90    ORA $90
+.,FE1E 85 90    STA $90
+.,FE20 60       RTS
+
+---
+Additional information can be found by searching:
+- "output_kernal_error_messages" which expands on MSGFLG controls whether error messages are printed

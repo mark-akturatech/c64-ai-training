@@ -1,0 +1,50 @@
+# byRiclianll - BASIC program header and user-interface setup. Covers: REM header; building PAD* via a FOR..NEXT loop; printing introductory messages prompting the user to remove/insert diskette and press RETURN; waiting for RETURN (GET C* loop); printing OK; opening device 15 (OPEN 15,8,15); sending command channel '10' to the drive (PRINT#15,"10"); reading the drive's initial response (INPUT#15,EN*,EM*,ET*,ES*); checking EN* for "00" success and, if an error, printing EN*/EM*/ET*/ES*, closing the channel and ENDing the program.
+
+109 
+
+
+lOO  REM  JOB  QUEUE  RE AD /WRITE  -  EDIT  DISK 
+NAME 
+
+no  FOR   1  =  1   TO  16 
+
+1 20  PAD*=P AD*+CHR* ( 1 60 ) 
+
+130  NEXT  I 
+
+140  PRINT"{CLR>EDIT  DISK  NAME  -  1541" 
+150  PRINT" {DOWN3 REMOVE   tRVSJWRITE  PROTEC 
+T  TAB^ROFFJ" 
+
+160  PRINT" tDOWNJ INSERT  DISKETTE   IN  DRIVE 
+
+II 
+
+170  PRINT" {DOWNJPRESS  tRVSJRETURN^ROFFD 
+TO  CONTINUE" 
+
+180  GET  C*: IF  C*=""THEN  180 
+
+190   IF  C*<>CHR*(13)GOTO  180 
+
+200  PR I NT "OK" 
+
+210  OPEN   15, 8, 15 
+
+220  PRINT* 15, "10" 
+
+230  INPUT#15,EN*,EM*,ET*,ES* 
+
+240   IF  EN*="00"GOTO  290 
+
+250  PRINT"  <:D0WN}  "EN*",    "EM*"  ,  "ET*"  ,  "ES* 
+
+260  CLOSE  15 
+
+270  END 
+
+
+---
+Additional information can be found by searching:
+- "seek_read_and_disk_name_fetch_and_edit_input" which expands on Performs SEEK/READ and retrieves the disk name after device open
+- "job_queue_subroutine_and_error_handler" which expands on Uses the job-queue subroutine (GOSUB 660) to perform SEEK/READ

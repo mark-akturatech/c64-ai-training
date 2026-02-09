@@ -1,0 +1,50 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - WRT2/WRT3/WRT4/WRTS: advances to next bit (LSR OCHAR), decrements bit counter (PCNTR), checks for end-of-byte and moves parity into OCHAR, handles header counter logic (CNTDN) to write header characters (including marking first header via FSBLK), clears/updates BCC (DATA) and uses NEWCH/CMPSTE/INCSAL for character fetch/compare logic. Ends with jump to PREND (RESTORE REGS/RTI) when required.
+
+                                ;
+.,FC0C 46 BD    LSR $BD         WRT2   LSR OCHAR       ;MOVE TO NEXT BIT
+.,FC0E C6 A3    DEC $A3         DEC    PCNTR           ;DEC COUNTER FOR # OF BITS
+.,FC10 A5 A3    LDA $A3         LDA    PCNTR           ;CHECK FOR 8 BITS SENT...
+.,FC12 F0 3A    BEQ $FC4E       BEQ    WRT4            ;...IF YES MOVE IN PARITY
+.,FC14 10 F3    BPL $FC09       BPL    WRT3            ;...ELSE SEND REST
+                                ;
+.,FC16 20 97 FB JSR $FB97       WRTS   JSR NEWCH       ;CLEAN UP COUNTERS
+.,FC19 58       CLI             CLI                    ;ALLOW FOR INTERRUPTS TO NEST
+.,FC1A A5 A5    LDA $A5         LDA    CNTDN           ;ARE WE WRITING HEADER COUNTERS?...
+.,FC1C F0 12    BEQ $FC30       BEQ    WRT6            ;...NO
+                                ; WRITE HEADER COUNTERS (9876543210 TO HELP WITH READ)
+.,FC1E A2 00    LDX #$00        LDX    #0              ;CLEAR BCC
+.,FC20 86 D7    STX $D7         STX    DATA
+.,FC22 C6 A5    DEC $A5         WRTS1  DEC CNTDN
+.,FC24 A6 BE    LDX $BE         LDX    FSBLK           ;CHECK FOR FIRST BLOCK HEADER
+.,FC26 E0 02    CPX #$02        CPX    #2
+.,FC28 D0 02    BNE $FC2C       BNE    WRT61           ;...NO
+.,FC2A 09 80    ORA #$80        ORA    #$80            ;...YES MARK FIRST BLOCK HEADER
+.,FC2C 85 BD    STA $BD         WRT61  STA OCHAR       ;WRITE CHARACTERS IN HEADER
+.,FC2E D0 D9    BNE $FC09       BNE    WRT3
+                                ;
+.,FC30 20 D1 FC JSR $FCD1       WRT6   JSR CMPSTE      ;COMPARE START:END
+.,FC33 90 0A    BCC $FC3F       BCC    WRT7            ;NOT DONE
+.,FC35 D0 91    BNE $FBC8       BNE    WRTL3           ;GO MARK END
+.,FC37 E6 AD    INC $AD         INC    SAH
+.,FC39 A5 D7    LDA $D7         LDA    DATA            ;WRITE OUT BCC
+.,FC3B 85 BD    STA $BD         STA    OCHAR
+.,FC3D B0 CA    BCS $FC09       BCS    WRT3            ;JMP
+                                ;
+.,FC3F A0 00    LDY #$00        WRT7   LDY #0          ;GET NEXT CHARACTER
+.,FC41 B1 AC    LDA ($AC),Y     LDA    (SAL)Y
+.,FC43 85 BD    STA $BD         STA    OCHAR           ;STORE IN OUTPUT CHARACTER
+.,FC45 45 D7    EOR $D7         EOR    DATA            ;UPDATE BCC
+.,FC47 85 D7    STA $D7         STA    DATA
+.,FC49 20 DB FC JSR $FCDB       JSR    INCSAL          ;INCREMENT FETCH ADDRESS
+.,FC4C D0 BB    BNE $FC09       BNE    WRT3            ;BRANCH ALWAYS
+                                ;
+.,FC4E A5 9B    LDA $9B         WRT4   LDA PRTY        ;MOVE PARITY INTO OCHAR...
+.,FC50 49 01    EOR #$01        EOR    #1
+.,FC52 85 BD    STA $BD         STA    OCHAR           ;...TO BE WRITTEN AS NEXT BIT
+.,FC54 4C BC FE JMP $FEBC       WRTBK  JMP PREND       ;RESTORE REGS AND RTI EXIT
+
+---
+Additional information can be found by searching:
+- "write_end_of_block_and_bit_processing" which expands on arrives here after per-byte bit handling
+- "block_completion_sync_and_write_zero_sequence" which expands on follows to complete block and write trailing sync/zeros
+- "increment_address_pointer_insal" which expands on INCSAL used to increment source address (SAL) during header/data fetch

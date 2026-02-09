@@ -1,0 +1,45 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Character Generator ROM ($D000-$DFFF alternate 53248-57343) overview: holds 4096 bytes representing two complete character sets (256 chars each, 8 bytes per character). Each byte defines one row of an 8x8 dot matrix; bit values for bits 0-7 are 1,2,4,8,16,32,64,128 respectively. Explains how byte values map to displayed pixels and how character shapes are stored sequentially.
+
+                          Alternate 53248-57343 ($D000-$DFFF)
+                          Character Generator ROM
+
+                          The character generator ROM supplies the data which is to form the
+                          shapes of the text and graphics characters that are displayed on the
+                          screen.  Each character requires eight bytes of shape data, and these
+                          eight-byte sequences are arranged in order in which the characters
+                          appear in the screen code chart (see Appendix G).  For example, the
+                          first eight bytes of data in the ROM hold the shape information for
+                          the commercial at sign (@), the next eight hold the shape of the
+                          letter A, etc.  In all, there are 4096 bytes, representing shape data
+                          for two complete character sets of 256 characters each--1K each for
+                          uppercase/graphics, reverse uppercase/reverse graphics, lowercase/
+                          uppercase, and reverse lowercase/reverse uppercase.
+
+                          The shape of each character is formed by an 8 by 8 matrix of screen
+                          dots.  Whether any of the 64 dots is lit up or not is determined by
+                          the bit patterns of the character data.  Each byte of the Character
+                          ROM holds a number from 0 to 255.  This number can be represented by
+                          eight binary digits of 0 or 1.  The leftmost bit of these eight is
+                          known as Bit 7, while the rightmost bit is called Bit 0.  Each of
+                          these binary digits has a bit value that is two times greater than the
+                          last.  The values of a bit set to 1 in each of the bit places are:
+
+                          |       |   |   |   |   |    |    |    |     |
+                          |-------|---|---|---|---|----|----|----|-----|
+                          | Bit   | 0 | 1 | 2 | 3 |  4 |  5 |  6 |   7 |
+                          | Value | 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 |
+
+                          A byte whose value is 255 has every bit set to 1
+                          (128+64+32+16+8+4+2+1=255), while a byte whose value is 0 is made up
+                          of all zero bits.  Numbers in between are made up of combinations of
+                          bits set to 1 and bits set to 0.  If you think of every bit that holds
+                          0 as a dot on the screen which is the color of the screen background,
+                          and every bit that holds a 1 as a dot whose color is that of the
+                          appropriate nybble in Color RAM, you can begin to get an idea of how
+                          the byte values relate to the shape of the character.  For example, if
+                          you PEEK at the first eight bytes of the character ROM (the technique
+
+---
+Additional information can be found by searching:
+- "character_rom_example_and_display_program" which expands on Example showing ROM bytes and a BASIC program to display character shapes
+- "vic_character_rom_mapping_and_copying" which expands on How VIC-II maps character ROM into VIC address space and copying ROM to RAM

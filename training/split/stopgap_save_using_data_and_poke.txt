@@ -1,0 +1,64 @@
+# MACHINE - A practical workaround for short programs: use BASIC PRINT PEEK to list bytes from memory (FOR J=828 TO 847:PRINT PEEK(J)), transcribe the decimal bytes into DATA statements, and reconstruct the machine code with a READ/POKE loop (FOR J=828 TO 847:READ X:POKE J,X:NEXT J). Includes example DATA lines and a full BASIC program to store and run the routine safely.
+
+
+
+A Stopgap SAVE
+--------------
+
+We can preserve short programs by making them part of DATA statements.  The
+procedure is not difficult if screen editing is used intelligently.
+
+We note that the program extends from $033C to $034F, including the message
+(HELLO) at the end.  The decimal equivalents to these addresses are 828 to
+847.  Enter the following BASIC line:
+
+  FOR J=828 TO 847:PRINT PEEK(J);:NEXT J
+
+Study the above line.  You will see that it asks BASIC to go through the part
+of memory containing your machine language program, and display the contents
+(in decimal notation, of course).  You'll see a result that looks something
+like this:
+
+                                                                         :35:
+
+   162  0  189  74  3  32  210  255  232
+  224  6  208  245  96  72  69  76  76  79
+    13
+
+These are indeed the bytes that make up your program.  With a little study,
+you could reconstruct the 162-0 combination to be LDX #$00, or the 72-69-76-
+76-69 at the end to be the word HELLO in ASCII.  It looks different when it's
+in decimal, but it's still the same numbers.
+
+You may try a little skill and artistry, using screen editing to perform the
+next activity, or you may just retype the numbers into data lines as shown.
+Either way, arrange the numbers as follows:
+
+  50 DATA 162,0,189,74,3,32,210,255,232,224,6
+  60 DATA 208,245,96,72,69,76,76,79,13
+
+We now have a copy of our program, exactly the way it appears in memory, but
+stored within DATA statements.  The DATA statements are part of a normal
+BASIC program, of course, and will SAVE and LOAD with no trouble at all.
+
+We can now reconstruct our machine language program, placing it back into
+memory, with a simple BASIC POKE program:
+
+  80 FOR J=828 TO 847:READ X:POKE J,X:NEXT J
+
+Now our program is safe and sound--it handles like BASIC, but it will do a
+machine language task for us as desired.  Let's display the entire BASIC
+program
+
+  50 DATA 162,0,189,74,3,32,210,255,232,224,6
+  60 DATA 208,245,96,72,69,76,76,79,13
+  80 FOR J=828 TO 847:READ X:POKE J,X:NEXT J
+  100 FOR J=1 TO 3
+  110 SYS 828
+  120 NEXT J
+
+
+---
+Additional information can be found by searching:
+- "save_cassette_disk_pointer_issues" which expands on addresses the cassette/disk save problem
+- "summary_learning_points_and_exercises" which expands on summarizes what was learned and suggests projects

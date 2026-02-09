@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - WAIT FOR CLOCK helper routine: Disables interrupts (SEI), sets data=0 (JSR $EEA0), sets ATN=1 (JSR $EDBE), sets CLK=1 (JSR $EE85), then repeatedly reads the serial bus (JSR $EEA9) and loops until CLK becomes 0 (tests bit6 via BMI). Re-enables interrupts (CLI) and returns. Used to synchronize with remote device clock transitions.
+
+                                *** WAIT FOR CLOCK
+                                This routine sets data = 0, ATN = 1 and CLK = 1. It then
+                                waits to receive CLK = 0 from the serial bus.
+.,EDCC 78       SEI             disable interrupts
+.,EDCD 20 A0 EE JSR $EEA0       set data 0
+.,EDD0 20 BE ED JSR $EDBE       set ATN 1
+.,EDD3 20 85 EE JSR $EE85       set CLK 1
+.,EDD6 20 A9 EE JSR $EEA9       read serial bus I/O port
+.,EDD9 30 FB    BMI $EDD6       test bit6, and wait for CLK = 0
+.,EDDB 58       CLI             enable interrupt
+.,EDDC 60       RTS
+
+---
+Additional information can be found by searching:
+- "tksa_send_talk_sa" which expands on used after sending TALK secondary address to await clock
+- "acptr_receive_from_serial_bus" which expands on CLK/data handling and serial I/O primitives

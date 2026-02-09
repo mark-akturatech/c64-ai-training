@@ -1,0 +1,26 @@
+# A 256 Byte Autostart Fast Loader for the Commodore 64 - IEC handshake details: drive signals readiness by pulling CLK=0, C64 signals readiness by pulling both CLK and DATA low. After transfer both release lines. The drive's check loop timing (example: ldx $1800; bne wait_c64) yields up to 10 cycles delay before the C64 reads; the C64 delays exactly 10 cycles after signaling via PHA/PLA/BIT $00.
+
+
+Handshake Protocol
+------------------
+
+Both devices signal readiness through the IEC bus:
+
+  - Drive sets CLK=0 when ready to send
+  - C64 sets both CLK and DATA to 0 when ready to receive
+  - After transfer, both reset to not-ready state
+
+Precise timing ensures the drive's check loop completes before the C64
+starts reading:
+
+    ldx $1800       ; 4 cycles
+    bne wait_c64    ; 2-3 cycles (branch decision)
+    ; maximum delay: 10 cycles before C64 reads
+
+The C64 delays exactly 10 cycles after signaling readiness using
+PHA/PLA/BIT $00.
+
+---
+Additional information can be found by searching:
+- "sending_code_1541" which expands on drive readiness and encoded transfers
+- "receiving_code_c64" which expands on C64-side delay and exact-timing reads

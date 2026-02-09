@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Save deferred transmit byte and call the routine to set serial clock/data and transmit the byte (used for sending the secondary address after LISTEN or TALK). Includes small routine to set serial ATN high via VIA 2 DRA.
+
+                                *** send secondary address after LISTEN
+.,EDB9 85 95    STA $95         save the defered Tx byte
+.,EDBB 20 36 ED JSR $ED36       set the serial clk/data, wait and Tx the byte
+
+                                *** set serial ATN high
+.,EDBE AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,EDC1 29 F7    AND #$F7        mask xxxx 0xxx, set serial ATN high
+.,EDC3 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,EDC6 60       RTS             
+
+                                *** send secondary address after TALK
+.,EDC7 85 95    STA $95         save the defered Tx byte
+.,EDC9 20 36 ED JSR $ED36       set the serial clk/data, wait and Tx the byte
+
+
+---
+Additional information can be found by searching:
+- "serial_pin_control_and_1ms_delay" which expands on sets/reads VIA 2 DRA to control ATN/clock/data lines
+- "wait_for_serial_bus_end_after_send" which expands on follow-up: wait for bus end after sending

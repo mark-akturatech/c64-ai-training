@@ -1,0 +1,35 @@
+# ********* - Section 4.10: CLOSE statement usage and importance (CLOSE file#). Emphasizes closing files to properly update BAM and directory; advice to open error channel first and close it last; warnings about BASIC errors auto-closing files at the BASIC level but not on the drive, and the remedy (OPEN 15,8,15,"I").
+
+
+
+4.10 CLOSE
+
+It is extremely important that you properly CLOSE files once you are
+finished using them. Closing the file causes DOS to properly allocate
+blocks in the BAM and to finish the entry in the directory. If you
+don't CLOSE the file, all your data will be lost!
+
+FORMAT FOR CLOSE STATEMENT:
+
+ CLOSE file#
+
+You should also be careful not to CLOSE the error channel (channel#
+15) before CLOSEing your data channels.  The error channel should be
+OPENed first and CLOSEd last of all your files! That will keep your
+programs out of trouble.
+
+If you close the error channel while other files are OPEN, the disk
+drive will close them for you, but BASIC will still think they are
+open (unless you CLOSE them properly), let you to try to write to them.
+
+
+NOTE: If your BASIC program leads you into an effor condition, all
+files are CLOSEd in BASIC, without CLOSEing them on your disk drive!
+This is a very dangerous condition. You should immediately type the
+statement OPEN 15, 8, 15, "I". This will re-initialize your drive and
+make all your files safe.
+
+
+---
+Additional information can be found by searching:
+- "directory_bam_and_listing" which expands on why CLOSE is required to update the BAM and directory entries

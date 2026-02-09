@@ -1,0 +1,49 @@
+# MACHINE - Explains reasons to use CHROUT instead of directly writing (POKE) to screen memory: automatic cursor placement, automatic scrolling, ASCII vs screen codes, screen memory location variability, honoring control characters (RETURN, cursor movement, color), and automatic color handling on VIC/64.
+
+
+Why Not POKE?
+-------------
+
+It may seem that there's an easier way to make things appear on the screen.
+We might POKE information directly to screen memory; in machine language, we
+would call this a store rather than a POKE, of course.  The moment we change
+something in this memory area, the information displayed on the screen will
+change.  Screen memory is generally located at the following addresses:
+
+  PET/CBM:       $8000 and up (decimal 32768)
+  Commodore 64:  $0400 and up (decimal 1024)
+  264/364:       $0C00 and up (decimal 3072)
+  VIC-20:        $1E00 and up (decimal 7680)
+
+The screen memory of the VIC-20 in particular may move around a good deal,
+depending on how much additional RAM memory has been fitted.
+
+Occasionally, screen POKEs are the best way to do the job.  But most of the
+time we'll use the CHROUT, $FFD2 subroutine.  Here are some of the reasons
+why:
+
+ o As with PRINT, we don't need to worry about where to place the next
+   character; it will be positioned automatically at the cursor point.
+
+ o If the screen is filled, scrolling will take place automatically.
+
+ o Screen memory needs special characters.  For example, the character X has
+   a standard ASCII code of $58, but to POKE it to the screen we'd need to
+   use the code $18.  The CHROUT subroutine uses $58.
+
+ o Screen memory may move around, depending on the system and the program.
+   The POKE address would need to change; but CHROUT keeps working.
+
+ o Special control characters are honored:  $0D for RETURN, to start a new
+   line; cursor movements; color changes.  We can even clear the screen by
+   loading the screen-clear character ($93) and calling $FFD2.
+
+ o To POKE the screen of the VIC or Commodore 64, the corresponding color
+   nybble memory must also be POKEd (see the appropriate memory map in
+   Appendix B).  With the subroutine at $FFD2, color is set automatically.
+
+
+---
+Additional information can be found by searching:
+- "printing_single_character_steps" which expands on alternative to direct POKE to display characters
+- "print_project_building_H_program" which expands on practical printing example using CHROUT

@@ -1,0 +1,26 @@
+# Kick Assembler - Introduces segment modifiers: functions that take memory blocks and output modified blocks (e.g., packers/crunchers). Explains built-in 'BasicUpstart' modifier that adds a $0801 basic upstart block to jump to a start address, controlled via the 'modify' parameter with modifier arguments prefixed by underscore (e.g., .segment Code [start=$8000, modify="BasicUpstart", _start=$8000]). Users can write modifiers as plug-ins.
+
+// Main code
+BasicUpstart2(start)
+sei
+ldx #0
+lda zpCode,x
+sta zpStart,x
+inx
+cpx #zpCodeSize
+bne loop
+jmp zpStart
+
+zpCode: .segmentout [segments="ZeroPage_Code"]
+.label zpCodeSize = *-zpCode
+// Zeropage code
+.segment ZeroPage_Code [start=$10]
+zpStart:
+inc $d020
+jmp *-3
+
+
+---
+Additional information can be found by searching:
+- "built_in_modifiers_list" which expands on list of built-in modifiers
+- "modify_directives" which expands on using modifiers via .modify and .filemodify

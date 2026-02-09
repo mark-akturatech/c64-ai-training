@@ -1,0 +1,65 @@
+# MACHINE - Appendix E, From Chapter 6 — VIC-20 (Unexpanded) exercise. BASIC program to input 5 values and call a machine language routine via SYS to multiply by ten. Shows BASIC lines 100-150 and the machine language assembly intended to start at $1080 (decimal 4224), including LDA/STA using indirect addressing, shifts (ASL/ROL), ADC/CLC, and final RTS. Instructions on changing the start-of-variables pointer for placement above the machine code are also included.
+
+                                                         Appendix E
+
+                                                      Exercises for
+                                                        Alternative
+                                                          Commodore
+                                                           Machines
+
+
+
+                                                                        :226:
+
+From Chapter 6
+==============
+
+
+VIC-20 (Unexpanded) Version
+---------------------------
+
+We write the BASIC program as follows:
+
+  100 V%=0
+  110 FOR J=1 TO 5
+  120 INPUT "VALUE";V%
+  130 SYS ++++
+  140 PRINT "TIMES TEN =";V%
+  150 NEXT J
+
+Plan to start the machine language program at around 4097+127, or 4224
+(hexadecimal 1080).  On that basis, we may change line 130 to SYS 4224.  Do
+not try to run the program yet.
+
+  .A 1080  LDY #$02
+  .A 1082  LDA ($2D),Y
+  .A 1084  STA $033C
+  .A 1087  STA $033E
+  .A 108A  LDY #$03
+  .A 108C  LDA ($2D),Y
+  .A 108E  STA $033D
+  .A 1091  STA $033F
+  .A 1094  ASL $033D
+  .A 1097  ROL $033C
+  .A 109A  ASL $033D
+  .A 109D  ROL $033C
+  .A 10A0  CLC
+  .A 10A1  LDA $033D
+  .A 10A4  ADC $033F
+  .A 10A7  STA $033D
+  .A 10AA  LDA $033C
+  .A 10AD  ADC $033E
+  .A 10B0  STA $033C
+  .A 10B3  ASL $033D
+  .A 10B6  ROL $033C
+  .A 10B9  LDY #$02
+  .A 10BB  LDA $033C
+  .A 10BE  STA ($2D),Y
+  .A 10C0  LDY #$03
+  .A 10C2  LDA $033D
+  .A 10C5  STA ($2D),Y
+  .A 10C7  RTS
+
+---
+Additional information can be found by searching:
+- "vic20_exercise_change_sov" which expands on how to change SOV pointer so variables sit above ML program

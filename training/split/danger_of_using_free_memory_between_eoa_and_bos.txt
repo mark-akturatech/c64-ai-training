@@ -1,0 +1,32 @@
+# MACHINE - Warning: region between EOA and BOS appears free but is used for dynamic strings which can move down; placing ML code there is unsafe because BOS moves down as strings are created and may overwrite code until garbage collection runs when BOS touches EOA.
+
+program.
+
+
+Free Memory:  The Dangerous Place
+---------------------------------
+
+It seems to beginners that there is a great deal of free memory available
+above the end-of-arrays and below the bottom-of-strings, and that this would
+be an ideal place to put a machine language program.  This is a pitfall:  it
+usually won't work.
+
+Here's the danger.  As more and more dynamic strings are created, the bottom-
+of-strings location keeps moving down.  Even when strings are no longer
+needed, they are abandoned and left dead in memory, taking up space.
+
+The BOS keeps moving down.  Only when it touches the EOA will the dead
+strings be cleaned up and the good ones repacked, an action called garbage
+collection.  It's important for BASIC programmers to know about garbage
+collection:  except on BASIC 4.0 and Commodore PLUS/4 systems, it can be a
+cause of serious program slowdown.
+
+                                                                         :95:
+
+It's evident that the space between EOA and BOS is not safe.  If you put a
+program there, the strings will eventually destroy it.  We must look
+elsewhere.
+
+---
+Additional information can be found by searching:
+- "where_to_put_machine_language_programs" which expands on safer areas for ML programs: cassette buffer, top-of-memory, after end-of-BASIC with SOV adjusted

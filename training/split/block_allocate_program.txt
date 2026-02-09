@@ -1,0 +1,57 @@
+# byRiclianll - Program example (BASIC) that opens a direct-access channel and iterates through tracks/sectors issuing B-A commands to allocate sectors. It demonstrates reading the drive's error responses to detect when allocation returns next available track/sector and stops when all sectors are allocated. Shows how to avoid allocating the directory track (track 18).
+
+100  REM  BLOCK-ALLOCATE 
+
+no  OPEN  15,8,  15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES» 
+
+140  IF  EN*<>"00"GOTO  310 
+
+150  OPEN  2,8,2, "#" 
+
+160  T=l 
+
+170  S=0 
+
+180  PRINT#15, "B-A";0;T;S 
+190  INPUT#15,EN*,EM*,ET»,ES* 
+
+
+89 
+
+
+200  IF  EN*="00"60T0  180 
+
+210  IF  EN*<>"65"G0T0  330 
+
+220  BA=BA+1 
+
+230  PRINT  T,S,BA 
+
+240  T=VAL<ET*> 
+
+250  IF  T=0  GOTO  290 
+
+260   IF  T=18  THEN  T=19: S=0: GOTO  180 
+270  S=VAL<ES*) 
+280  GOTO  180 
+290  CLOSE  2 
+
+300  INPUT#15,EN*,EM*,ET*,ES* 
+310  CLOSE  15 
+320  END 
+
+330  PRINT" CDOWN>"EN«",  "EM«" , "ET*" , "ES* 
+340  CLOSE  2 
+
+350  INPUT#15,EN«,EM«,ET*,ES« 
+360  CLOSE  15 
+370  END 
+
+
+---
+Additional information can be found by searching:
+- "block_allocate_command" which expands on illustrates syntax and error handling of B-A

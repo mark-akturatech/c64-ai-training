@@ -1,0 +1,29 @@
+# NMOS 6510 - Operation and behaviour summary for ISC/ISB/INS: increments memory by one then performs SBC (subtract with borrow) using that memory. Notes that the carry (C) affects the SBC and SBC sets N/V/Z/C as expected. Mentions that ISC inherits SBC's decimal-mode dependency and points to the decimal-mode notes. Provides a short example (ISC $FF) and lists equivalent instruction sequence (INC $FF; SBC $FF) and test files (Lorenz/*.prg, 64doc/dincsbc.prg).
+
+Operation: Increase memory by one, then subtract memory from accumulator (with borrow).
+•
+
+C is affecting the SBC, and SBC sets N / V / Z / C as expected
+
+This instruction inherits the decimal flag dependency from SBC. For the behaviour in decimal mode
+see Unintended decimal mode: ISC (ISB, INS).
+Example:
+ISC $FF
+
+;E7 FF
+
+Equivalent Instructions:
+INC $FF
+SBC $FF
+Test code: Lorenz-2.15/insa.prg, Lorenz-2.15/insax.prg,
+Lorenz-2.15/insay.prg, Lorenz-2.15/insix.prg,
+Lorenz-2.15/insiy.prg, Lorenz-2.15/insz.prg,
+Lorenz-2.15/inszx.prg, 64doc/dincsbc.prg
+
+- 26 -
+
+
+---
+Additional information can be found by searching:
+- "isc_opcode_variants_and_addressing_modes" which expands on opcode hex bytes and addressing modes for ISC
+- "isc_examples_and_usage_patterns" which expands on code examples showing how to use ISC in place of INC+LDA/CMP patterns

@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Implementation of MID$(): sets a default length (255), scans input for parameters (commas/parentheses), gets the start index and optional length (JSR $B79E to get byte parameter), pulls the string descriptor and parameters (JSR $B761), handles null strings and out-of-range starts (illegal quantity), adjusts indexes (decrement start for zero-based offset), computes remaining length and clamps against requested length, and branches to the LEFT$/RIGHT$ copy/allocation sequence as appropriate.
+
+                                *** perform MID$()
+.,B737 A9 FF    LDA #$FF        set default length = 255
+.,B739 85 65    STA $65         save default length
+.,B73B 20 79 00 JSR $0079       scan memory
+.,B73E C9 29    CMP #$29        compare with ")"
+.,B740 F0 06    BEQ $B748       branch if = ")" (skip second byte get)
+.,B742 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+.,B745 20 9E B7 JSR $B79E       get byte parameter
+.,B748 20 61 B7 JSR $B761       pull string data and byte parameter from stack
+                                return pointer in descriptor, byte in A (and X), Y=0
+.,B74B F0 4B    BEQ $B798       if null do illegal quantity error then warm start
+.,B74D CA       DEX             decrement start index
+.,B74E 8A       TXA             copy to A
+.,B74F 48       PHA             save string start offset
+.,B750 18       CLC             clear carry for sub-1
+.,B751 A2 00    LDX #$00        clear output string length
+.,B753 F1 50    SBC ($50),Y     subtract string length
+.,B755 B0 B6    BCS $B70D       if start>string length go do null string
+.,B757 49 FF    EOR #$FF        complement -length
+.,B759 C5 65    CMP $65         compare byte parameter
+.,B75B 90 B1    BCC $B70E       if length>remaining string go do RIGHT$
+.,B75D A5 65    LDA $65         get length byte
+.,B75F B0 AD    BCS $B70E       go do string copy, branch always
+
+
+---
+Additional information can be found by searching:
+- "pull_string_and_byte_param" which expands on used to fetch descriptor and parameters (JSR $B761)
+- "left_string_function" which expands on branches into LEFT$/RIGHT$ copy/allocation path
+- "byte_parameter_parsing_and_evaluation" which expands on uses routines to parse and evaluate numeric byte parameters

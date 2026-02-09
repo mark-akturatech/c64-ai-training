@@ -1,0 +1,41 @@
+# MACHINE - Notes on moving pointers: after changing TOM or SOV, return to BASIC and use CLR/NEW to align pointers; caution about restoring machine configuration when program loaded; VIC-20 specifics: video chip sees RAM in $0000-$1FFF and start-of-BASIC is often moved to free low memory for video effects; careful manipulation required.
+
+                                                NEW  OLD
+                 SOB       SOV  SOA  EOA   BOS  TOM  TOM
+                  |         |    |    |     |    |    |
+  -+--------+----+---------+----+----+-- --+----+====+--
+   |C.B.    |    |         |    |    | ... |    |====|
+  -+--------+----+---------+----+----+-- --+----+====+--
+
+  Figure 6.3
+
+
+                           OLD  NEW
+                 SOB       SOV  SOV  SOA  EOA   BOS  TOM
+                  |         |    |    |    |     |    |
+  -+--------+----+---------+====+----+----+-- --+----+--
+   |C.B.    |    |      000|====|    |    | ... |    |
+  -+--------+----+---------+====+----+----+-- --+----+--
+
+  Figure 6.3
+
+
+Third, move up the start-of-variables pointer, and place the program after
+the end of BASIC and before the new start-of-variables.  Your space here is
+unlimited  Programs placed here will tend to "join company" with the BASIC
+program; the two will save and load together.
+
+                                                                         :96:
+
+After moving a pointer--as was done in the last two methods--it's a good idea
+to return to BASIC and command CLR, so that all other variable pointers will
+align correctly with the ones that have moved.
+
+These three areas will be discussed more in a few moments.  First there are
+one or two extra locations available to VIC-20 and Commodore 64.
+
+
+
+---
+Additional information can be found by searching:
+- "vic_and_c64_memory_extras" which expands on VIC/C64-specific RAM areas and use of top-of-memory

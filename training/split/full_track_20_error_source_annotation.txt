@@ -1,0 +1,47 @@
+# byRiclianll - Annotated explanation of the Full Track formatting routine (20M): explains initialization (drive number to $007F), reading track/sector from header table ($000C -> $0051, $000D -> $0043), try counter for retries, tail gap length choice, LED cosmetic behavior, creation of header and dummy data block, binary-to-GCR conversion, jump trick to let FDC/ROM complete formatting, and the IP/FDC mode handoff behavior. Mentions ENDCMD ($C194) termination.
+
+Full  Track  20  Error  Source  Annotation 
+
+This  routine  has  a  real  surprise  in  store.  Initialization  in  lines  220-290  sets  the  drive 
+number  to  0  ($007F)  rather  than  rely  on  a  default.  The  track  is  read  from  the  header 
+table  location  $000C  and  stored  at  $0051.  (Recall  that  the  driver  set  up  the  header  table.) 
+This  memory  location  normally  contains  an  $FF  at  powerup  to  let  the  drive  know  that 
+formatting  has  not  yet  begun.  We  must  reset  it  to  the  active  track,  or  the  drive  will 
+do  a  BUMP  to  track  one  to  start  the  format.  Similarly,  we  read  the  sector  range  from 
+$000D,  incremented  this  number  to  obtain  a  sector  total  for  the  track,  and  stored  it  at 
+$0043.  Line  300  is  our  try  counter.  Normally  the  drive  makes  10  attempts  to  format 
+a  single  track.  We  either  get  it  right  the  first  time  or  give  up.  (The  driver  erases  the 
+track  as  a  safeguard.)  We  cannot  allow  the  FDC  to  reattempt  to  format  the  track  because 
+it  will  bypass  our  machine  language  routine  and  re-enter  the  standard  ROM  routine. 
+Lines  310-330  arbitrarily  sets  the  tail  gap  to  eight  bytes  in  length.  This  avoids  duplicating 
+245  bytes  of  code  from  $FB1D  to  $FC12.  RAM  is  at  a  dire  premium  and  we  have  neither 
+the  overhead  nor  the  desire. 
+
+Next  we  turn  on  the  LED  for  cosmetic  purposes  fline  370)  and  build  our  header  table 
+and  a  dummy  data  block  flines  410-860).  We  incremented  the  data  block  identifier  in 
+line  420.  Binary  to  GCR  conversion  is  done  in  lines  900-1040.  Now  for  the  jump  instruc- 
+tion. First  we  reset  the  track  number  to  35  Oines  1080-1090)  to  let  the  FDC  think  that 
+this  is  the  last  track  of  a  normal  format.  Why?  We  will  be  passing  control  to  a  standard 
+ROM  routine  in  a  minute  and  will  let  the  FDC  execute  it.  In  other  words,  we  are  going 
+to  work  the  6502  in  both  IP  and  FDC  modes.  Formatting  is  done  as  a  single  job;  one 
+
+
+149 
+
+
+track  at  a  time.  When  a  track  is  formatted  the  FDC  looks  at  $0051  to  see  if  35  tracks 
+have  been  done.  If  not,  it  increments  $0051  and  does  the  next  track  as  another  discrete 
+job.  The  IP  is  going  to  wait  for  the  FDC  to  reformat  the  track  and  then  retake  control. 
+We  store  the  indirect  buffer  pointer  to  our  data  block  buffer  and  a  jump  to  $FCAA  at 
+$0600.  This  ensures  that  the  data  block  will  not  be  lost  in  the  ensuing  shuffle.  We  then 
+set  up  the  job  queue  for  an  execute  of  buffer  number  3  ($0600)  and  away  we  go.  The 
+IP  monitors  the  FDC  while  it  is  reformatting  the  track.  (Not  only  that,  but  the  FDC 
+will  verify  the  track  to  ensure  that  it  was  reformatted  incorrectly!)  When  bit  seven  of 
+the  job  code  ($E0)  goes  low,  the  IP  wrestles  control  away  from  the  FDC  and  jumps 
+to  ENDCMD  ($C194)  to  terminate  the  routine.  DOS  ist  gut! 
+
+
+---
+Additional information can be found by searching:
+- "formatting_initialization_and_header_building" which expands on where the code sets up header and counters
+- "jump_instruction_and_ip_fdc_handshake" which expands on why the track number is reset to 35 and how control is passed to ROM

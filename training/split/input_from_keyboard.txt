@@ -1,0 +1,65 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Main keyboard input loop. Waits for a key (uses LP2 to fetch chars) and echoes to the screen except for <shift/RUN>, which injects the string 'LOAD <CR> RUN <CR>' into the keyboard buffer. Handles carriage return detection, computes input line end (INDX), sets up cursor and flags (CRSV, AUTODN, PNTR, QTSW), and may call retreat cursor if required. (Code: $E5CA..$E65C).
+
+                                *** INPUT FROM KEYBOARD
+                                This routine uses the previous routine to get characters
+                                from the keyboard buffer. Each character is output to the
+                                screen, unless it is <shift/RUN>. If so, the contents of
+                                the keyboard buffer is replaced with LOAD <CR> RUN <CR>.
+                                The routine ends when a carriage routine is encountered.
+.,E5CA 20 16 E7 JSR $E716       output to screen
+.,E5CD A5 C6    LDA $C6         read NDX, number of characters in keyboard queue
+.,E5CF 85 CC    STA $CC         BLNSW, cursor blink enable
+.,E5D1 8D 92 02 STA $0292       AUTODN, auto scroll down flag
+.,E5D4 F0 F7    BEQ $E5CD       loop till key is pressed
+.,E5D6 78       SEI             disable interrupt
+.,E5D7 A5 CF    LDA $CF         BLNON, last cursor blink (on/off)
+.,E5D9 F0 0C    BEQ $E5E7
+.,E5DB A5 CE    LDA $CE         GDBLN, character under cursor
+.,E5DD AE 87 02 LDX $0287       GDCOL, background color under cursor
+.,E5E0 A0 00    LDY #$00
+.,E5E2 84 CF    STY $CF         clear BLNON
+.,E5E4 20 13 EA JSR $EA13       print to screen
+.,E5E7 20 B4 E5 JSR $E5B4       Get character from keyboard buffer
+.,E5EA C9 83    CMP #$83        test if <shift/RUN> is pressed
+.,E5EC D0 10    BNE $E5FE       nope
+.,E5EE A2 09    LDX #$09        transfer 'LOAD <CR> RUN <CR>' to keyboard buffer
+.,E5F0 78       SEI
+.,E5F1 86 C6    STX $C6         store #9 in NDX, characters in buffer
+.,E5F3 BD E6 EC LDA $ECE6,X     'LOAD <CR> RUN <CR>' message in ROM
+.,E5F6 9D 76 02 STA $0276,X     store in keyboard buffer
+.,E5F9 CA       DEX
+.,E5FA D0 F7    BNE $E5F3       all nine characters
+.,E5FC F0 CF    BEQ $E5CD       always jump
+.,E5FE C9 0D    CMP #$0D        carriage return pressed?
+.,E600 D0 C8    BNE $E5CA       nope, go to start
+.,E602 A4 D5    LDY $D5         get LNMX, screen line length
+.,E604 84 D0    STY $D0         CRSV, flag input/get from keyboard
+.,E606 B1 D1    LDA ($D1),Y     PNT, screen address
+.,E608 C9 20    CMP #$20        space?
+.,E60A D0 03    BNE $E60F       nope
+.,E60C 88       DEY
+.,E60D D0 F7    BNE $E606       next
+.,E60F C8       INY
+.,E610 84 C8    STY $C8         store in INDX, end of logical line for input
+.,E612 A0 00    LDY #$00
+.,E614 8C 92 02 STY $0292       AUTODN
+.,E617 84 D3    STY $D3         PNTR, cursor column
+.,E619 84 D4    STY $D4         QTSW, reset quotes mode
+.,E61B A5 C9    LDA $C9         LXSP, cursor X/Y position
+.,E61D 30 1B    BMI $E63A
+.,E61F A6 D6    LDX $D6         TBLX, cursor line number
+.,E621 20 ED E6 JSR $E6ED       retreat cursor
+.,E624 E4 C9    CPX $C9         LXSP
+.,E626 D0 12    BNE $E63A
+.,E628 A5 CA    LDA $CA
+.,E62A 85 D3    STA $D3         PNTR
+.,E62C C5 C8    CMP $C8         INDX
+.,E62E 90 0A    BCC $E63A
+.,E630 B0 2B    BCS $E65D
+
+
+---
+Additional information can be found by searching:
+- "lp2_get_char_from_keyboard_buffer" which expands on fetches characters using LP2
+- "setup_screen_print" which expands on calls print/setup routines to echo characters to screen
+- "retreat_cursor" which expands on may call retreat cursor when restoring previous cursor line

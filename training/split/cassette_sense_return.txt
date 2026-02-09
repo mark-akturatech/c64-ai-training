@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Reads the 6510 I/O port and tests the cassette sense line: loads a mask, BITs the port $01 and branches according to the bit to determine cassette switch state. Leaves flags accordingly and returns (intended to provide cassette sense in Z/Carry for callers).
+
+                                *** return cassette sense in Zb
+.,F82E A9 10    LDA #$10        set the mask for the cassette switch
+.,F830 24 01    BIT $01         test the 6510 I/O port
+.,F832 D0 02    BNE $F836       branch if cassette sense high
+.,F834 24 01    BIT $01         test the 6510 I/O port
+.,F836 18       CLC             
+.,F837 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "wait_for_play_prompt_and_display" which expands on used to detect the PLAY switch state
+- "wait_for_play_or_record_prompt" which expands on used to detect PLAY/RECORD switch state for write operations

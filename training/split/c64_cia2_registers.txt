@@ -1,0 +1,63 @@
+# MACHINE - Commodore 64 CIA 2 (6526) register usage ($DD00-$DD0F). Shows Port A/Port B bit usage for serial bus, RS-232, user port (DSR, CTS, DCD, RI, DTR, RTS), Data Direction Registers defaults, Timer A/B for RS-232 timing, TOD clock registers (unused on C64), shift register (unused), interrupt control/status (NMI and other bits), and CA/CB control functions (serial in/out, PB6/PB7 outputs, timer one-shots).
+
+Figure C.9
+
+                                                                        :192:
+
+Commodore 64 6526 Usage (CIA 2)
+-------------------------------
+
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD00 |Serial | Clock |Serial | Clock |  ATN  |RS-232 |  Video Bank   | 56320
+      |  In   |  In   |  Out  |  Out  |  Out  |  Out  |    Select     |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD01 |  DSR  |  CTS  |       | DCD*  |  RI*  |  DTR  |  RTS  |RS-232 | 56321
+      |  In   |  In   |       |  In   |  In   |  Out  |  Out  |  In   |
+      |                      Parallel User Port                       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD02 |  In   |  In   |  Out  |  Out  |  Out  |  Out  |  Out  |  Out  | 56322
+      |      Data Direction Register A (for $DC00), Default $3F       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD03 |  In   |  In   |  In   |  In   |  In   |  Out  |  Out  |  In   | 56323
+      |     Data Direction Register B (for $DC01), $06 for RS-232     |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD04 |                                                               | 56324
+      |                           Timer A:                            |
+      +- - - - - - - - - - - - -              - - - - - - - - - - - - +
+$DD05 |                         RS-232 Timing                         | 56325
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD06 |                                                               | 56326
+      |                           Timer B:                            |
+      +- - - - - - - - -                            - - - - - - - - - +
+$DD07 |                  RS-232 or Serial Bus Timing                  | 56327
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD08 |                 TOD clock registers (unused)                  | 56328
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD09 |                 TOD clock registers (unused)                  | 56329
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0A |                 TOD clock registers (unused)                  | 56330
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0B |                 TOD clock registers (unused)                  | 56331
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0C |                    Shift Register (unused)                    | 56332
+      |                                                               |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0D |  NMI  |       |       |RS-232 |       |  TOD  |Timer B|Timer A| 56333
+      |Control|       |       |  In   |       | Alarm |       |       |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0E |       |       |       |       |Timer A|PB6 Out|Timer A|Timer A| 56334
+      |       |       |       |       |OneShot| Mode  |PB6 Out| Start |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+$DD0F |       |       |       |       |Timer B|PB7 Out|Timer B|Serial | 56335
+      |       |       |       |       |OneShot| Mode  |PB7 Out|Clk In |
+      +-------+-------+-------+-------+-------+-------+-------+-------+
+
+---
+Additional information can be found by searching:
+- "c64_cia1_registers" which expands on CIA1 compared (IRQ vs NMI roles)

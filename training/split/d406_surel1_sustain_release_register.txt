@@ -1,0 +1,44 @@
+# - C64 I/O Map (Mapping The Commodore 64) - $D406 (54278) SUREL1 — Voice 1 Sustain/Release Register: bits4-7 select sustain level (0..15) representing volume held after decay; bits0-3 select release duration (0..15) with same timing table as decay. Explains usage and examples of values/time mapping.
+
+$D406        SUREL1       Voice 1 Sustain/Release Control Register
+
+                     0-3  Select release cycle duration (0-15)
+                     4-7  Select sustain volume level (0-15)
+
+                          Bits 4-7 select the volume level at which the note is sustained.
+                          Following the decay cycle, the volume of the output of voice 1 will
+                          remain at the selected sustain level as long as the gate bit of the
+                          Control Register is set to 1.  The sustain values range from 0, which
+                          chooses no volume, to 15, which sets the output of voice 1 equal to
+                          the peak volume achieved during the attack cycle.
+
+                          Bits 0-3 determine the length of the release cycle.  This phase, in
+                          which the volume fades from the sustain level to near zero volume,
+                          begins when the gate bit of the Control Register is set to 0 (while
+                          leaving the waveform setting that was previously chosen).  The
+                          duration of this decline in volume corresponds to the number (0-15)
+                          selected in the same way as for the decay value:
+
+                          |    |                  |
+                          |----|------------------|
+                          |  0 | 6 milliseconds   |
+                          |  1 | 24 milliseconds  |
+                          |  2 | 48 milliseconds  |
+                          |  3 | 72 milliseconds  |
+                          |  4 | 114 milliseconds |
+                          |  5 | 168 milliseconds |
+                          |  6 | 204 milliseconds |
+                          |  7 | 240 milliseconds |
+                          |  8 | 300 milliseconds |
+                          |  9 | 750 milliseconds |
+                          | 10 | 1.5 seconds      |
+                          | 11 | 2.4 seconds      |
+                          | 12 | 3 seconds        |
+                          | 13 | 9 seconds        |
+                          | 14 | 15 seconds       |
+                          | 15 | 24 seconds       |
+
+
+---
+Additional information can be found by searching:
+- "d405_atdcy1_attack_decay_register" which expands on Attack/decay mapping for complementary phases

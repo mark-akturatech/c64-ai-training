@@ -1,0 +1,33 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Assembly example to play a simple note on Voice 1: set ADSR ($D405/$D406), write frequency bytes ($D400/$D401) for A4=$1CC8 (PAL), select waveform and GATE ($D404), then later clear GATE to start release.
+
+--------------------------------------------------------------------------------
+11.2 PLAYING A SIMPLE NOTE
+--------------------------------------------------------------------------------
+
+  ; Configure Voice 1
+  lda #$20          ; Attack=2, Decay=0
+  sta $d405
+  lda #$f8          ; Sustain=15, Release=8
+  sta $d406
+
+  ; Set frequency (A4 = 440 Hz, PAL value $1CC8)
+  lda #$c8
+  sta $d400         ; Freq lo
+  lda #$1c
+  sta $d401         ; Freq hi
+
+  ; Gate on with sawtooth waveform
+  lda #$21          ; Sawtooth ($20) + Gate ($01)
+  sta $d404
+
+  ; ... wait for desired duration ...
+
+  ; Gate off (start release)
+  lda #$20          ; Sawtooth, gate off
+  sta $d404
+
+
+---
+Additional information can be found by searching:
+- "adsr_overview" which expands on ADSR setup for the note example
+- "frequency_calculation" which expands on frequency register values used in example

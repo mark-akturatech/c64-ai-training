@@ -1,0 +1,21 @@
+# Kick Assembler - Explains importing .prg files as memory blocks using prgFiles parameter (e.g., .segmentdef Misc1 [prgFiles="data/Music.prg, data/Charset2x2.prg"]) or using .import c64 to place prg contents after an explicit *= address.
+
+used values in the min-max range is set to the fill byte:
+// This will generate $1000: 0,0,1,2,3,0,0,0
+.segment Data [min=$1000, max=$1008, fill]
+*=$1002
+.byte 1,2,3
+
+In the above example the fill byte is zero, but it can be specified with the 'fillByte' parameter.
+Restricting size can be used to avoid using the ROM area or simply enforcing the rules of a maximum size
+of 256 or 128 bytes.
+The following entry was submitted to the 128 byte font competition on CSDb by Jesper Balman Gravgaard
+(Rex). It rotates the ROM font 90 degrees. The max size of 128 bytes includes the two address bytes of the prg file.
+// 90 degree rotated ROM font in 69 bytes of code
+.segment Main [min=$0801, max=$0880-2, outPrg="out.prg"]
+.label SCREEN = $400
+.label CHARGEN = $d000
+
+---
+Additional information can be found by searching:
+- "including_other_segments" which expands on combining imported blocks with other segments

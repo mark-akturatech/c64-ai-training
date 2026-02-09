@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Two-step scanner: first scan for a comma (JSR $AEFD), else do syntax error and warm start; then scan for a valid following byte (JSR $0079) and branch to syntax error if no valid byte follows. This handles patterns like ",<byte>" and enforces presence of the byte after the comma.
+
+                                *** scan for ",valid byte", else do syntax error then warm start
+.,E20E 20 FD AE JSR $AEFD       scan for ",", else do syntax error then warm start
+
+                                *** scan for valid byte, not [EOL] or ":", else do syntax error then warm start
+.,E211 20 79 00 JSR $0079       scan memory
+.,E214 D0 F7    BNE $E20D       exit if following byte
+.,E216 4C 08 AF JMP $AF08       else do syntax error then warm start
+
+
+---
+Additional information can be found by searching:
+- "scan_and_get_byte" which expands on scan_and_get_byte calls this to enforce comma and byte presence
+- "get_params_for_open_close" which expands on OPEN/CLOSE parameter parsing also uses comma-and-byte scanning

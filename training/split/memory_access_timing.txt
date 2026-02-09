@@ -1,0 +1,73 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Basic bus access behavior: both 6510 and VIC perform a memory access every clock cycle (no wait states). VIC accesses in first phase (φ2 low), CPU in second (φ2 high). VIC generates RAS/CAS and system clocks, does DRAM refresh (5 refresh accesses per line). When VIC needs extra cycles for character pointers (40 cycles) or sprite data (2 cycles per sprite), it pulls BA low and holds AEC low to take the bus (BA goes low three cycles before take-over). Diagram and explanation of takeover sequence and BA/AEC interaction are included.
+
+2.4.3 Memory access of the 6510 and VIC
+---------------------------------------
+
+6510 and VIC are both based on a relatively simple hard-wired design. Both
+chips make a memory access in EVERY clock cycle, even if that is not
+necessary at all. E.g if the processor is busy executing an internal
+operation like indexed addressing in one clock cycle, that really doesn't
+require an access to memory, it nevertheless performs a read and discards
+the read byte. The VIC only performs read accesses, while the 6510 performs
+both reads and writes.
+
+There are no wait states, no internal caches and no sophisticated access
+protocols for the bus as seen with more modern processors. Every access is
+done in a single cycle.
+
+The VIC generates the clock frequencies for the system bus and the RAS and
+CAS signals for accessing the dynamic RAM (for both the processor and the
+VIC). So it has primary control over the bus and may "stun" the processor
+sometime or another when it needs additional cycles for memory accesses.
+Besides this, the VIC takes care of the DRAM refresh by reading from 5
+refresh addresses in each raster line.
+
+The division of accesses between 6510 and VIC is basically static: Each
+clock cycle (one period of the �2 signal) consists of two phases. The VIC
+accesses in the first phase (�2 low), the processor in the second phase (�2
+high). The AEC signal closely follows �2. That way the 6510 and VIC can
+both use the memory alternatively without disturbing each other.
+
+However, the VIC sometimes needs more cycles than made available to it by
+this scheme. This is the case when the VIC accesses the character pointers
+and the sprite data. In the first case it needs 40 additional cycles, in
+the second case it needs 2 cycles per sprite. BA will then go low 3 cycles
+before the VIC takes over the bus completely (3 cycles is the maximum
+number of successive write accesses of the 6510). After 3 cycles, AEC stays
+low during the second clock phase so that the VIC can output its addresses.
+
+The following diagram illustrates the process of the take-over:
+
+       _ _ _ _ _ _ _ _ _ _ _ _ _    _ _ _ _ _ _ _ _ _ _ _ _ _
+ �2   _ _ _ _ _ _ _ _ _ _ _ _ _ ..._ _ _ _ _ _ _ _ _ _ _ _ _
+      ______________                       __________________
+ BA                 ____________...________
+       _ _ _ _ _ _ _ _ _ _                  _ _ _ _ _ _ _ _ _
+ AEC  _ _ _ _ _ _ _ _ _ _ ______..._________ _ _ _ _ _ _ _ _
+
+ Chip VPVPVPVPVPVPVPVpVpVpVVVVVV...VVVVVVVVVPVPVPVPVPVPVPVP
+
+           1       |  2  |       3        |       4
+         Normal    |Take-| VIC has taken  |  VIC releases
+      bus activity |over | over the bus   |    the bus
+
+
+The line "Chip" designates which chip is just accessing the bus (as said
+before, there is an access in every cycle). "V" stands for the VIC, "P" for
+the 6510. The cycles designated with "p" are accesses of the 6510 that are
+only performed if they are write accesses. The first "p" read access stops
+the 6510, at least after the third "p" as the 6510 never does more than 3
+write accesses in succession. On a "p" read access the processor addresses
+are still output on the bus because AEC is still high.
+
+The diagram describes the normal process of a bus take-over. By
+appropriately modifying the VIC register $d011, it is possible to force a
+bus take-over at extraordinary times. This is explained in chapter 3 as
+well as the complete bus timing of a VIC raster line.
+
+
+
+---
+Additional information can be found by searching:
+- "6510_processor" which expands on RDY/AEC signals and CPU bus behavior
+- "timing_of_raster_line" which expands on detailed per-cycle access schedule including BA/AEC/IRQ

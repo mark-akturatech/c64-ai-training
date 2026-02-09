@@ -1,0 +1,63 @@
+# ********* - Reserved I/O Expansion area (56832-57087 $DE00-$DEFF) accessible via Expansion Port pin 7 used by cartridges (examples: CP/M module, Simon's BASIC). Notes an alternate character generator ROM (53248-57343 $D000-$DFFF) description: ROM holds 4096 bytes = two complete 256-character sets (8 bytes/character), representing shape bitmaps (8x8), and how bytes map to pixel columns via bit positions (bit weights 1..128).
+
+Location Range: 56832-57087 ($DE00-$DEFF)
+Reserved for I/O Expansion
+
+This range of locations is not used directly by the 64's internal
+hardware.  It is, however, accessible via pin 7 of the Expansion Port.
+It can be used to control cartridges which are connected to this port.
+For example, the CP/M module uses this space to control which
+microprocessor is in control of the system.  The Z-80 microprocessor
+is turned on and off by writing to 56832 ($DE00).
+
+Another cartridge which uses this space is Simon's BASIC.  This 16K
+cartridge is addressed at memory locations 32768-49151 ($8000-$BFFF),
+which means that it overlaps the regular BASIC ROM at 40960-49151
+($A000-$BFFF).  But since it contains additions to BASIC, it must use
+the BASIC ROM as well.  This problem is solved by copying the
+cartridge at 32768-40959 ($8000-$9FFF) to RAM, and turning the
+cartridge on and off by writing to or reading from location 56832
+($DE00).
+
+Location Range: 57088-57343 ($DF00-$DFFF)
+CIA #2 Register Images
+
+This range of locations is not used directly by the 64's internal
+hardward, but is accessible via pin 10 of the Expansion Port.  One
+possible use for this I/O memory that Commodore has mentioned is an
+inexpensive parallel disk drive (which presumable would be much faster
+than the current serial model).
+
+Alternate 53248-57343 ($D000-$DFFF)
+Character Generator ROM
+
+The character generator ROM supplies the data which is to form the
+shapes of the text and graphics characters that are displayed on the
+screen.  Each character requires eight bytes of shape data, and these
+eight-byte sequences are arranged in order in which the characters
+appear in the screen code chart (see Appendix G).  For example, the
+first eight bytes of data in the ROM hold the shape information for
+the commercial at sign (@), the next eight hold the shape of the
+letter A, etc.  In all, there are 4096 bytes, representing shape data
+for two complete character sets of 256 characters each--1K each for
+uppercase/graphics, reverse uppercase/reverse graphics, lowercase/
+uppercase, and reverse lowercase/reverse uppercase.
+
+The shape of each character is formed by an 8 by 8 matrix of screen
+dots.  Whether any of the 64 dots is lit up or not is determined by
+the bit patterns of the character data.  Each byte of the Character
+ROM holds a number from 0 to 255.  This number can be represented by
+eight binary digits of 0 or 1.  The leftmost bit of these eight is
+known as Bit 7, while the rightmost bit is called Bit 0.  Each of
+these binary digits has a bit value that is two times greater than the
+last.  The values of a bit set to 1 in each of the bit places are:
+
+Bit    0    1     2    3    4    5    6    7
+Value  1    2     4    8   16   32   64  128
+
+A byte whose value is 255 has every bit set to 1
+
+---
+Additional information can be found by searching:
+- "character_rom_byte_examples_and_graphic_tools" which expands on examples of bytes forming character graphics and BASIC program to display shapes
+- "vic_memory_blocks_and_considerations_for_graphics" which expands on where Character ROM is visible to VIC-II depending on bank

@@ -1,0 +1,96 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Continuation of zero page and low memory declarations: BASIC/monitor buffers, file tables (LAT/FAT/SAT), keyboard queue (KEYD, NDX), editor variables (LDTB1, USER, KEYTAB), RS-232 zero page pointers (RIBUF/ROBUF/RIDBE/RIDBS/RODBS/RODBE) and device registers like M51CTR/M51CDR. Also sets *=$100 and *=$200 origins for data/buffers and TBUFFR cassette buffer (TBUFFR) at $0300 etc.
+
+                                BAD    *=*+1
+                                *=$200
+                                BUF    *=*+89          ;BASIC/MONITOR BUFFER
+                                ; TABLES FOR OPEN FILES
+                                ;
+                                LAT    *=*+10          ;LOGICAL FILE NUMBERS
+                                FAT    *=*+10          ;PRIMARY DEVICE NUMBERS
+                                SAT    *=*+10          ;SECONDARY ADDRESSES
+                                ; SYSTEM STORAGE
+                                ;
+                                KEYD   *=*+10          ;IRQ KEYBOARD BUFFER
+                                MEMSTR *=*+2           ;START OF MEMORY
+                                MEMSIZ *=*+2           ;TOP OF MEMORY
+                                TIMOUT *=*+1           ;IEEE TIMEOUT FLAG
+                                ; SCREEN EDITOR STORAGE
+                                ;
+                                COLOR  *=*+1           ;ACTIV COLOR NYBBLE
+                                GDCOL  *=*+1           ;ORIGINAL COLOR BEFORE CURSOR
+                                HIBASE *=*+1           ;BASE LOCATION OF SCREEN (TOP)
+                                XMAX   *=*+1
+                                RPTFLG *=*+1           ;KEY REPEAT FLAG
+                                KOUNT  *=*+1
+                                DELAY  *=*+1
+                                SHFLAG *=*+1           ;SHIFT FLAG BYTE
+                                LSTSHF *=*+1           ;LAST SHIFT PATTERN
+                                KEYLOG *=*+2           ;INDIRECT FOR KEYBOARD TABLE SETUP
+                                MODE   *=*+1           ;0-PET MODE, 1-CATTACANNA
+                                AUTODN *=*+1           ;AUTO SCROLL DOWN FLAG(=0 ON,<>0 OFF)
+                                ; RS-232 STORAGE
+                                ;
+                                M51CTR *=*+1           ;6551 CONTROL REGISTER
+                                M51CDR *=*+1           ;6551 COMMAND REGISTER
+                                M51AJB *=*+2           ;NON STANDARD (BITTIME/2-100)
+                                RSSTAT *=*+1           ; RS-232 STATUS REGISTER
+                                BITNUM *=*+1           ;NUMBER OF BITS TO SEND (FAST RESPONSE)
+                                BAUDOF *=*+2           ;BAUD RATE FULL BIT TIME (CREATED BY OPEN)
+                                ;
+                                ; RECIEVER STORAGE
+                                ;
+                                ; INBIT *=*+1 ;INPUT BIT STORAGE
+                                ; BITCI *=*+1 ;BIT COUNT IN
+                                ; RINONE *=*+1 ;FLAG FOR START BIT CHECK
+                                ; RIDATA *=*+1 ;BYTE IN BUFFER
+                                ; RIPRTY *=*+1 ;BYTE IN PARITY STORAGE
+                                RIDBE  *=*+1           ;INPUT BUFFER INDEX TO END
+                                RIDBS  *=*+1           ;INPUT BUFFER POINTER TO START
+                                ;
+                                ; TRANSMITTER STORAGE
+                                ;
+                                ; BITTS *=*+1 ;# OF BITS TO BE SENT
+                                ; NXTBIT *=*+1 ;NEXT BIT TO BE SENT
+                                ; ROPRTY *=*+1 ;PARITY OF BYTE SENT
+                                ; RODATA *=*+1 ;BYTE BUFFER OUT
+                                RODBS  *=*+1           ;OUTPUT BUFFER INDEX TO START
+                                RODBE  *=*+1           ;OUTPUT BUFFER INDEX TO END
+                                ;
+                                IRQTMP *=*+2           ;HOLDS IRQ DURING TAPE OPS
+                                ;
+                                ; TEMP SPACE FOR VIC-40 VARIABLES ****
+                                ;
+                                ENABL  *=*+1           ;RS-232 ENABLES (REPLACES IER)
+                                CASTON *=*+1           ;TOD SENSE DURING CASSETTES
+                                KIKA26 *=*+1           ;TEMP STORAGE FOR CASSETTE READ ROUTINE
+                                STUPID *=*+1           ;TEMP D1IRQ INDICATOR FOR CASSETTE READ
+                                LINTMP *=*+1           ;TEMPORARY FOR LINE INDEX
+                                *=$0300                ;REM PROGRAM INDIRECTS(10)
+                                *=$0300+20             ;REM KERNAL/OS INDIRECTS(20)
+                                CINV   *=*+2           ;IRQ RAM VECTOR
+                                CBINV  *=*+2           ;BRK INSTR RAM VECTOR
+                                NMINV  *=*+2           ;NMI RAM VECTOR
+                                IOPEN  *=*+2           ;INDIRECTS FOR CODE
+                                ICLOSE *=*+2           ; CONFORMS TO KERNAL SPEC 8/19/80
+                                ICHKIN *=*+2
+                                ICKOUT *=*+2
+                                ICLRCH *=*+2
+                                IBASIN *=*+2
+                                IBSOUT *=*+2
+                                ISTOP  *=*+2
+                                IGETIN *=*+2
+                                ICLALL *=*+2
+                                USRCMD *=*+2
+                                ILOAD  *=*+2
+                                ISAVE  *=*+2           ;SAVESP
+                                *=$0300+60
+                                TBUFFR *=*+192         ;CASSETTE DATA BUFFER
+                                *      =$400
+                                VICSCN *=*+1024
+                                RAMLOC
+                                ; I/O DEVICES
+                                ;
+
+---
+Additional information can be found by searching:
+- "declare_zero_page_part1" which expands on previous zero-page declarations and register names

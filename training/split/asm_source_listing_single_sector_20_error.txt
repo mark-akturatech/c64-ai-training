@@ -1,0 +1,295 @@
+# byRiclianll - Assembly source listing for the single-sector 20-error routine. Includes directives (.OPT, *=), JSR calls to DOS/FDC entry points, register setups (LDY, LDA, CMP, DEY), zone/sector calculations, header creation and staging in RAM ($0024-$002C), subroutine calls to DOS routines (JSR *F934, JSR *F556, JSR *FEOO), write mode loop that writes the prepared header image to the disk, and final jumps back to DOS. This block represents the machine-code source that the BASIC program's DATA statements encode.
+
+SINGLE  SECTOR  20  ERROR  SOURCE  LISTING 
+
+
+100 
+
+REM 
+
+20. PAL 
+
+110 
+
+REM 
+
+120 
+
+0PEN2,8,2, 
+
+130 
+
+REM 
+
+140 
+
+SYS40960 
+
+150 
+
+» 
+
+160 
+
+.OPT  P,02 
+
+170 
+
+180 
+
+*=  *0500 
+
+190 
+
+200 
+
+JSR 
+
+$F510 
+
+K 
+
+210 
+
+JSR 
+
+*F556 
+
+220 
+
+5 
+
+230 
+
+LDY 
+
+tt*14 
+
+240 
+
+LDA 
+
+*19 
+
+250 
+
+CMP 
+
+tt*12 
+
+260 
+
+BCC 
+
+ZONE 
+
+270 
+
+DEY 
+
+280 
+
+DEY 
+
+290 
+
+CMP 
+
+#*19 
+
+300 
+
+BCC 
+
+ZONE 
+
+310 
+
+DEY 
+
+320 
+
+CMP 
+
+#*1F 
+
+330 
+
+BCC 
+
+ZONE 
+
+340 
+
+DEY 
+
+350 
+
+ZONE  INC 
+
+360 
+
+CMP 
+
+*18 
+
+370 
+
+BCC 
+
+HEADER 
+
+380 
+
+BEQ 
+
+HEADER 
+
+390 
+
+LDA 
+
+4**00 
+
+400 
+
+STA 
+
+*19 
+
+410 
+
+5 
+
+420 
+
+HEADER  LDA 
+
+430 
+
+EOR 
+
+«16 
+
+440 
+
+EOR 
+
+*17 
+
+450 
+
+EOR 
+
+*18 
+
+460 
+
+EOR 
+
+*19 
+
+470 
+
+STA 
+
+*1A 
+
+480 
+
+490 
+
+JSR 
+
+*F934 
+
+tt  IMAGE 
+
+500 
+
+JSR 
+
+*F556 
+
+K 
+
+510 
+
+LDA 
+
+#*FF 
+
+520 
+
+STA 
+
+*1C03 
+
+530 
+
+LDA 
+
+*1C0C 
+
+540 
+
+AND 
+
+#*1F 
+
+FIND  HEADER  BLOC 
+
+
+FIND  DATA  BLOCK 
+
+
+CREATE  NEW  HEADER 
+
+
+FIND  HEADER  BLOC 
+
+
+WRITE  MODE 
+
+
+143 
+
+
+550  ORA  #*C0 
+
+560  STA  *1C0C 
+
+570  LDX  #*00 
+
+580  WRITE  LDA  *0024, X 
+
+590  WAITl    BVC  WAITl 
+
+600  CLV 
+
+610  STA  *1C01 
+
+620  INX 
+
+630  CPX  tt*08 
+
+640  BNE  WRITE 
+
+650  WAIT2  BVC  WAIT2 
+
+660  ; 
+
+670  JSR  *FEOO  ;    READ  MODE 
+
+680  ; 
+
+690  LDA  tt*01 
+700  JMP  *F969 
+
+
+
+---
+Additional information can be found by searching:
+- "basic_driver_listing_single_sector_20_error" which expands on BASIC program that contains the DATA bytes corresponding to this assembly source
+- "source_annotation_single_sector_20_error" which expands on Annotation that explains behavior and timing limitations of this assembly routine
+- "overview_and_parameters_single_sector_20_error" which expands on High-level description and parameters relevant to the assembly routine

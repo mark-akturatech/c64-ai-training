@@ -1,0 +1,91 @@
+# byRiclianll - Partial table showing a few FDC-to-IP error code mappings and their English messages (e.g., FDC $01 => IP 0 OK; $02 => IP 20; $03 => IP 21 READ ERROR (non-specific); $04 => IP 22 READ ERROR (data block not present); $07 => IP 25 WRITE ERROR; $08 => IP 26 WRITE PROTECT ON; $09 => IP 27 header checksum error; $0B => IP 29 disk ID mismatch). Points to Chapter 7 for fuller descriptions.
+
+
+A  more  detailed  description  of  each  of  these  error  messages  can  be  found  in  Chapter  7. 
+
+Suppose  that  we  want  to  read  the  contents  of  a  given  track  and  sector.  The  command 
+initiated  on  the  C64  side  is  parsed  by  the  IP.  If  the  syntax  is  correct,  it  is  broken  down 
+into  a  job  code,  a  track,  and  a  sector.  Depending  upon  what  buffer  has  been  assigned, 
+the  job  code  is  poked  into  the  corresponding  job  queue  table  location.  The  track  and 
+sector  for  the  job  are  poked  into  the  corresponding  header  table  locations.  The  buffers 
+and  their  corresponding  job  queue  and  header  table  addresses  are  outlined  below: 
+
+
+Buffer 
+
+Address 
+
+Job       Track  Sector 
+
+$0000  - 
+
+$OOFF 
+
+Not  available  (ZERO  PAGE) 
+
+$0100  - 
+
+$01FF 
+
+Not  available  (STACK) 
+
+$0200  - 
+
+$03FF 
+
+Not  available  (COMMAND  BUFFER) 
+
+#0 
+
+$0300  - 
+
+$03FF 
+
+$0000        $0006  $0007 
+
+#1 
+
+$0400  - 
+
+$04FF 
+
+$0001        $0008  $0009 
+
+#2 
+
+$0500  - 
+
+$05FF 
+
+$0002        $000A  $000B 
+
+#3 
+
+$0600  - 
+
+$06FF 
+
+$0003        $000C  $000D 
+
+$0700  - 
+
+$07FF 
+
+Not  available  (BAM) 
+
+For  example,  a  block-read  command  (Ul)  issued  by  the  C64  to  read  the  contents  of  track 
+18,  sector  0  into  buffer  number  0  ($0300-$03FF)  is  checked  for  a  syntax  error  and  then 
+broken  dovm  by  the  IP.  In  time,  the  FDC  will  find  an  $80  (128)  at  address  $0000  in  the 
+job  queue  table,  a  $12  (18)  at  address  $0006  in  the  header  table,  and  a  $00  (0)  at  address 
+$0007  in  the  header  table.  Armed  with  that  information,  the  FDC  will  attempt  to  seek 
+(find)  the  track  and  read  the  sector.  Upon  successful  completion  of  the  read,  the  con- 
+tents of  the  sector  will  be  transferred  to  buffer  number  0  ($0300-$03FF)  and  a  $01  (1) 
+will  be  returned  by  the  FDC  to  address  $0000.  (If  the  job  request  could  not  be  com- 
+pleted for  some  reason,  the  job  request  would  be  aborted  and  the  corresponding  error 
+code  would  be  stored  at  address  $0000  instead.)  Interrogation  of  the  error  channel  will 
+transfer  the  IP  counterpart  of  the  FDC  error  code,  the  English  message,  the  track 
+
+---
+Additional information can be found by searching:
+- "job_codes_table" which expands on jobs produce these FDC codes which are mapped to IP errors
+- "job_queue_read_example" which expands on example uses reading a sector and checking job result via error channel

@@ -1,0 +1,54 @@
+# COMMODORE 64 - CHKin: open a logical file as an input channel. Includes purpose, call address ($FFC6 / 65478), communication register (X), preparatory OPEN requirement (unless reading keyboard only), possible errors (#3 file not open, #5 device not present, #6 file not an input file), how the routine auto-sends TALK (and secondary address from OPEN) for serial devices, a usage sequence (load X with logical file number, JSR CHKIN), and a brief example (LDX #2; JSR CHKIN).
+
+  B-2. Function Name: CHKIN
+
+    Purpose: Open a channel for input
+    Call address: $FFC6 (hex) 65478 (decimal)
+    Communication registers: X
+    Preparatory routines: (OPEN)
+    Error returns:
+    Stack requirements: None
+    Registers affected: A, X
+
+
+    Description: Any logical file that has already been opened by the
+  KERNAL OPEN routine can be defined as an input channel by this routine.
+  Naturally, the device on the channel must be an input device. Otherwise
+  an error will occur, and the routine will abort.
+    If you are getting data from anywhere other than the keyboard, this
+  routine must be called before using either the CHRIN or the GETIN KERNAL
+  routines for data input. If you want to use the input from the keyboard,
+  and no other input channels are opened, then the calls to this routine,
+  and to the OPEN routine are not needed.
+    When this routine is used with a device on the serial bus, it auto-
+  matically sends the talk address (and the secondary address if one was
+  specified by the OPEN routine) over the bus.
+
+  How to Use:
+
+    0) OPEN the logical file (if necessary; see description above).
+    1) Load the X register with number of the logical file to be used.
+    2) Call this routine (using a JSR command).
+
+
+  Possible errors are:
+
+    #3: File not open
+    #5: Device not present
+    #6: File not an input file
+
+  EXAMPLE:
+
+    ;PREPARE FOR INPUT FROM LOGICAL FILE 2
+    LDX #2
+    JSR CHKIN
+
+                                            BASIC TO MACHINE LANGUAGE   275
+~
+
+
+
+---
+Additional information can be found by searching:
+- "acptr_get_byte_from_serial_bus_full_handshake" which expands on how a device commanded to TALK can later be read with ACPTR/CHRIN
+- "chkin_chkin_to_chkin_relationship_chkout" which expands on paired I/O concept: opening input (CHKIN) vs output (CHKOUT) channels

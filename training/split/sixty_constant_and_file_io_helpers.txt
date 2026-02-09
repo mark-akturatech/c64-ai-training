@@ -1,0 +1,42 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - SIXTY constant and small IO/file helper routines: defines SIXTY (keyboard timer value), SETNAM (store filename length & pointer), SETLFS (set logical file parameters LA/FA/SA), READSS (determine whether input device is RS-232 and clear RS-232 status on read), SETMSG (set message flag), READST (read and OR status byte), and SETTMO (store timeout). These helpers are used by higher-level device/file operations.
+
+                                ; LDA #$81 ;ENABLE T1 IRQ'S
+                                ; STA D1ICR
+                                ; LDA D1CRA
+                                ; AND #$80 ;SAVE ONLY TOD BIT
+                                ; ORA #%00010001 ;ENABLE TIMER1
+                                ; STA D1CRA
+                                ; JMP CLKLO ;RELEASE THE CLOCK LINE
+                                ;
+                                ; SIXTY HERTZ VALUE
+                                ;
+                                SIXTY  = 16667
+.,FDF9 85 B7    STA $B7         SETNAM STA FNLEN
+.,FDFB 86 BB    STX $BB         STX    FNADR
+.,FDFD 84 BC    STY $BC         STY    FNADR+1
+.,FDFF 60       RTS             RTS
+.,FE00 85 B8    STA $B8         SETLFS STA LA
+.,FE02 86 BA    STX $BA         STX    FA
+.,FE04 84 B9    STY $B9         STY    SA
+.,FE06 60       RTS             RTS
+.,FE07 A5 BA    LDA $BA         READSS LDA FA          ;SEE WHICH DEVICES' TO READ
+.,FE09 C9 02    CMP #$02               CMP #2          ;IS IT RS-232?
+.,FE0B D0 0D    BNE $FE1A              BNE READST      ;NO...READ SERIAL/CASS
+.,FE0D AD 97 02 LDA $0297              LDA RSSTAT      ;YES...GET RS-232 UP
+.,FE10 48       PHA                    PHA
+.,FE11 A9 00    LDA #$00               LDA #00         ;CLEAR RS232 STATUS WHEN READ
+.,FE13 8D 97 02 STA $0297              STA RSSTAT
+.,FE16 68       PLA                    PLA
+.,FE17 60       RTS                    RTS
+.,FE18 85 9D    STA $9D         SETMSG STA MSGFLG
+.,FE1A A5 90    LDA $90         READST LDA STATUS
+.,FE1C 05 90    ORA $90         UDST   ORA STATUS
+.,FE1E 85 90    STA $90         STA    STATUS
+.,FE20 60       RTS             RTS
+.,FE21 8D 85 02 STA $0285       SETTMO STA TIMOUT
+.,FE24 60       RTS             RTS
+
+---
+Additional information can be found by searching:
+- "ioinit_configure_io_devices_and_ports" which expands on SIXTY is used during IOINIT to program the keyboard timer
+- "memtop_gettop_settop_and_membot" which expands on SETTMO and related helpers interact with timeout/IO management

@@ -1,0 +1,73 @@
+# ********* - Details logical (Boolean) bit operations used to manipulate single bits in bytes: AND (masking/clearing bits), OR (setting bits), and EOR/XOR (toggling bits). Explains when adding/subtracting bit values is unsafe and gives reliable formulas: BYTEVALUE AND (255-BITVALUE) to clear, BYTEVALUE OR BITVALUE to set, and EOR with a mask (or 255 for full complement) to flip bits. Includes binary examples demonstrating each operation and notes that EOR is available in machine language.
+
+AND, OR, and EOR
+
+Certain functions on the 64 (particularly those using the sound and
+graphics chips) are controlled by a single bit.  You will often see
+references to setting Bit 6 to a value of one, or setting Bit 3 to a
+value of zero.  This can be done by adding or subtracting the bit
+value for that particular bit from the value of the whole byte.
+
+Adding or subtracting the bit value will work only if you know the
+status of that bit already.  If Bit 4 is off, and you add 16 (the bit
+value of Bit 4) to the byte, it will turn Bit 4 on.  But if it were on
+already, adding 16 would turn Bit 4 off, and another bit on.
+
+This is where logical (sometimes called Boolean) functions come in
+handy.  Two functions, OR and AND, are available in BASIC, and a
+third, EOR, can be used in machine language programming for bit
+manipulation.
+
+AND is usually used to zero out (or mask) unwanted bits.  When you AND
+a number with another, a 1 will appear in the resulting number only of
+identical bits in the ANDed numbers had been set to 1.  For example,
+if you wanted to turn of Bit 4 in the number 154, you could AND it
+with 239 (which is the maximum bit combination minus the bit value to
+be masked; 255-16):
+
+    10011010 = 154
+AND 11101111 = 239
+    --------
+  = 10001010 = 138
+
+By using the AND function, nothing would be harmed if we tried to turn
+off a bit that wasn't on.  You can always turn a bit off by using the
+formula BYTEVALUE AND (255-BITVALUE).  Remember, there must be a 1 in
+the same bit of both numbers in order for the same bit in the result
+to have a 1.
+
+The opposite function, turning a bit on, is performed by the OR
+statement.  The OR function puts a 1 in the bit of the resulting
+number if there was a 1 in the same bit in either of the two numbers.
+For example, to turn Bit 4 back on in the number 138, we would use the
+statement 138 OR 16 (the bit value for the bit we want to turn on):
+
+    10001010 = 138
+OR  00010000 =  16
+    --------
+  = 10011010 = 154
+
+Again, no harm would be done if the bit was already on.  A bit can
+always be turned on with the formula BYTEVALUE OR BITVALUE.
+
+The third operation, EOR, can be done only in machine language.  It is
+used to reverse the value of a bit.  If the bit of the second number
+holds a 1, it will reverse the value of the corresponding bit in the
+first number.  Therefore, to switch all of the bits, you can EOR a
+number by 255:
+
+    10011010 = 154
+EOR 11111111 = 255
+    --------
+  = 01100101 = 101
+
+Notice that this produces the complement of the original number (256
+minus the number).  Anytime you with to flip a bit from 0 to 1, or 1
+to 0, you can EOR it with the value of that bit.
+
+
+---
+Additional information can be found by searching:
+- "bits_bytes_and_binary_numbering" which expands on the bit weights (Bit0..Bit7) used in masks and operations
+- "hexadecimal_and_nybbles" which expands on masks and values are frequently represented in hexadecimal
+- "format_of_memory_map_entries" which expands on flags in the memory map are often manipulated using these operations

@@ -1,0 +1,79 @@
+# NMOS 6510 - Cycle sequence for hardware interrupts (IRQ, NMI, RESET): shows the sequence of dummy fetches (PC, PC+1), pushes to stack, and vector fetches for low/high bytes. Notes specificities: dummy fetches and that RESET doesn't write to stack (R/W remains high), plus a visual6502 simulation link.
+
+LDY abs, x
+
+NOP abs, x
+
+ORA abs, x
+
+ADC abs, y
+ORA abs, y
+
+AND abs, y
+SBC abs, y
+
+CMP abs, y
+SHA abs, y
+
+EOR abs, y
+TAS abs, y
+
+LAS abs, y
+SHX abs, y
+
+LAX abs, y
+STA abs, y
+
+LDA abs, y
+
+LDX abs, y
+
+Cycle
+
+Address-Bus
+
+Data-Bus
+
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+DO + 1
+
+Absolute Address High
+
+R
+
+3a (*)
+
+< AAH, AAL + IL >
+
+Byte at target address before high byte was corrected
+
+R
+
+4
+
+AA
+
+Data
+
+---
+Additional information can be found by searching:
+- "stack_software_interrupts_brk" which expands on BRK stack behaviour and vector fetches

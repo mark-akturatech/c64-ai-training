@@ -1,0 +1,25 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Further interrupt routine logic: if bit count nonzero, check VIA1 ICR shadow ($02A3) for timer-A interrupt enable and CRA shadow ($02A4) to decide whether to clear the bit cycle phase ($A4). Handles EOI flag testing and branches, sets timing by JSR $F8E2 when needed, and conditionally returns from interrupt (JMP $FEBC) to restore registers.
+
+.,F9AC A5 B4    LDA $B4         get the bit count
+.,F9AE F0 22    BEQ $F9D2       if all done go ??
+.,F9B0 AD A3 02 LDA $02A3       read VIA 1 ICR shadow copy
+.,F9B3 29 01    AND #$01        mask 0000 000x, timer A interrupt enabled
+.,F9B5 D0 05    BNE $F9BC       if timer A is enabled go ??
+.,F9B7 AD A4 02 LDA $02A4       read VIA 1 CRA shadow copy
+.,F9BA D0 16    BNE $F9D2       if ?? just exit
+.,F9BC A9 00    LDA #$00        clear A
+.,F9BE 85 A4    STA $A4         clear the tape bit cycle phase
+.,F9C0 8D A4 02 STA $02A4       save VIA 1 CRA shadow copy
+.,F9C3 A5 A3    LDA $A3         get EOI flag byte
+.,F9C5 10 30    BPL $F9F7       
+.,F9C7 30 BF    BMI $F988       
+.,F9C9 A2 A6    LDX #$A6        set timimg max byte
+.,F9CB 20 E2 F8 JSR $F8E2       set timing
+.,F9CE A5 9B    LDA $9B         
+.,F9D0 D0 B9    BNE $F98B       
+.,F9D2 4C BC FE JMP $FEBC       restore registers and exit interrupt
+
+---
+Additional information can be found by searching:
+- "bit_count_handling_phase_toggle_and_timing_adjust" which expands on continues processing after updating phase/timing variables
+- "timing_constant_fine_tuning_start_bit_and_sync_handling" which expands on final timing tweaks and start-bit/sync handling occur next

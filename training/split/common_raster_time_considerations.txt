@@ -1,0 +1,37 @@
+# C64 PAL/NTSC Raster Timing Reference - Practical considerations for routines that depend on raster timing. Music/sound: SID players typically need 3,000-8,000 cycles per frame and should run once per frame during VBlank or stable raster; digi playback may require disabling VIC-II. Raster effects: raster splits require precise timing, stable raster IRQ setup, and compensation for bad-line jitter; the 'double IRQ' technique helps achieve cycle-exact timing. Screen updates: do them in VBlank or border time; scrolling routines benefit from border cycles; PAL's longer VBlank aids screen manipulation. Sprite multiplexing: max 8 hardware sprites per raster line, more sprites possible by repositioning across lines but requires precise timing and accounting for sprite DMA cycle stealing.
+
+=============================================================================
+SECTION 9: COMMON RASTER TIME CONSIDERATIONS
+=============================================================================
+
+Music/Sound Routines:
+  - SID music players typically need 3,000-8,000 cycles per frame
+  - Should be called once per frame during vertical blank or a stable raster
+  - Digi sample playback may require disabling the VIC-II display entirely
+    to free up maximum CPU cycles
+
+Raster Effects:
+  - Raster splits (changing VIC-II registers mid-screen) require precise timing
+  - A stable raster interrupt setup is essential for flicker-free effects
+  - Bad lines cause timing jitter that must be compensated for
+  - The "double IRQ" technique is commonly used to achieve cycle-exact timing
+
+Screen Updates:
+  - Updating screen RAM should ideally happen during VBlank or border time
+  - Scrolling routines benefit from the extra cycles in the border area
+  - PAL's longer VBlank period gives more time for screen manipulation
+
+Sprite Multiplexing:
+  - Only 8 hardware sprites can appear on any single raster line
+  - By re-positioning sprites on different raster lines, more than 8 can
+    appear on screen simultaneously
+  - Each sprite reposition requires careful timing relative to the raster
+  - Sprite DMA cycle stealing must be accounted for in timing calculations
+
+
+
+---
+Additional information can be found by searching:
+- "raster_time_basics" which expands on how raster timing relates to per-frame tasks and cycle budgets
+- "sprite_dma_timing" which expands on sprite DMA impact when multiplexing sprites
+- "bad_lines" which expands on bad-line jitter effects on timing-sensitive raster effects

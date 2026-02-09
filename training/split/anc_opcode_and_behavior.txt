@@ -1,0 +1,112 @@
+# NMOS 6510 - ANC (aka ANC2, ANA, ANB) undocumented immediate opcode ($0B/$2B): AND A with immediate then set Carry to bit 7 of A (as if ASL/ROL would have been executed). Opcodes, sizes, cycles, and description. Examples: enforcing carry state, setting A to 0 while clearing carry, and using ANC to remember a high bit in Carry.
+
+
+ANC #imm
+
+A = A & #{imm}
+
+2
+
+2
+
+o
+
+o
+
+o
+
+Operation: ANDs the contents of the A register with an immediate value and then moves bit 7 of A
+into the Carry flag.
+•
+
+This opcode works basically identically to AND #imm. except that the Carry flag is set to
+the same state that the Negative flag is set to. (bit 7 is put into the carry, as if the ASL/ROL
+would have been executed)
+
+Example:
+ANC #$AA
+
+;2B AA
+
+Equivalent Instructions:
+AND #$AA
+; ROL A – not actually executed, set C as if it was
+
+Test code: Lorenz-2.15/ancb.prg
+
+- 28 -
+
+Example: implicit enforcement of carry flag state
+
+When using an AND instruction before an addition (or any other operation where you might want
+to know the state of the carry flag), you might save two cycles (not having to do CLC or SEC) by
+using ANC instead of AND. Since a cleared high bit in the value used with the ANC instruction
+always leads to a unset carry flag after this operation, you can take advantage of that. An example:
+LDA value
+ANC #$0f
+
+;Carry flag is always set to 0
+;after this op.
+
+ADC value2
+
+;Add a value. CLC not needed!
+
+STA result
+Another case like this is when you want to set the A register to #$00 specifically, and also happen
+to want to have the carry cleared:
+ANC #0
+
+;Carry always cleared after this op,
+;and A register always set to zero.
+
+Example: remembering a bit
+
+You can use ANC to simply putting the highest bit of a byte into the carry flag without affecting a
+register (by using ANC #$FF). This can be useful sometimes since not that many instructions
+destroy the (C)arry flag as well as the (N)egative flag (mainly mathematical operations, shifting
+operations and comparison operations), in order to 'remember' this information during the
+execution of other code (such as some LDA/STA stuff).
+A command that does this too is CMP #$80 (as well as CPX and CPY), which non destructively
+puts the high bit of a register into Carry as well.
+
+- 29 -
+
+ALR (ASR)
+Type: Combination of an immediate and an implied command (Sub-instructions: AND, LSR)
+Opc.
+$4B
+
+Mnemonic
+ALR #imm
+
+Function
+
+Size
+
+A = (A & #{imm}) / 2
+
+2
+
+Cycles
+
+N V B D I Z
+
+C
+
+2
+
+o
+
+o
+
+o
+
+Operation: AND the contents of the A register with an immediate value and then LSRs the result.
+•
+•
+
+
+---
+Additional information can be found by searching:
+- "arr_opcode_and_behavior" which expands on ARR is another combined AND+rotate opcode and also affects flags in unusual ways

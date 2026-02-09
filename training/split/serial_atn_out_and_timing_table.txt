@@ -1,0 +1,58 @@
+# COMMODORE 64 - Covers SERIAL ATN OUT (Serial Attention Out): how the C64 initiates command sequences by pulling ATN low, causing all devices to listen for an address; devices must respond within a preset time or the C64 returns a device-not-present error. Includes the SERIAL BUS TIMING table with timing symbols (Tat, Th, Tne, Ts, Tv, Tf, Tr, Tbb, Tye, Tei, Try, Tpr, Ttk, Tdc, Tda, Tfr) and the notes specifying error conditions and minimum timing requirements for external talkers/listeners.
+
+
+
+
+  364   INPUT/OUTPUT GUIDE
+~
+
+
+  SERIAL ATN OUT: (SERIAL ATTENTION OUT)
+
+    The Commodore 64 uses this signal to start a command sequence for a
+  device on the serial bus. When the Commodore 64 brings this signal LOW,
+  all other devices on the bus start listening for the Commodore 64 to
+  transmit an address. The device addressed must respond in a preset period
+  of time; otherwise, the Commodore 64 will assume that the device
+  addressed is not on the bus, and will return an error in the STATUS WORD.
+  (See Figure 6-4).
+
+
+
+                          [THE PICTURE IS MISSING!]
+
+
+                              SERIAL BUS TIMING
+  +-----------------------------+-------+-------+-------+-----------------+
+  |     Description             | Symbol|  Min. |  Typ. |       Max.      |
+  +-----------------------------+-------+-------+-------+-----------------+
+  | ATN RESPONSE (REQUIRED) (1) |  Tat  |   -   |   -   |     1000us      |
+  | LISTENER HOLD-OFF           |  Th   |   0   |   -   |    infinite     |
+  | NON-EOI RESPONSE TO RFD (2) |  Tne  |   -   |  40us |      200us      |
+  | BIT SET-UP TALKER (4)       |  Ts   |  20us |  70us |        -        |
+  | DATA VALID                  |  Tv   |  20us |  20us |        -        |
+  | FRAME HANDSHAKE (3)         |  Tf   |   0   |  20   |     1000us      |
+  | FRAME TO RELEASE OF ATN     |  Tr   |  20us |   -   |        -        |
+  | BETWEEN BYTES TIME          |  Tbb  | 100us |   -   |        -        |
+  | EOI RESPONSE TIME           |  Tye  | 200us | 250us |        -        |
+  | EOI RESPONSE HOLD TIME (5)  |  Tei  |  60us |   -   |        -        |
+  | TALKER RESPONSE LIMIT       |  Try  |   0   |  30us |       60us      |
+  | BYTE-ACKNOWLEDGE (4)        |  Tpr  |  20us |  30us |        -        |
+  | TALK-ATTENTION RELEASE      |  Ttk  |  20us |  30us |      100us      |
+  | TALK-ATTENTION ACKNOWLEDGE  |  Tdc  |   0   |   -   |        -        |
+  | TALK-ATTENTION ACK. HOLD    |  Tda  |  80us |   -   |        -        |
+  | EOI ACKNOWLEDGE             |  Tfr  |  60us |   -   |        -        |
+  +-----------------------------+-------+-------+-------+-----------------+
+     Notes:
+     1. If maximum time exceeded, device not present error.
+     2. If maximum time exceeded, EOI response required.
+     3. If maximum time exceeded, frame error.
+     4. Tv and Tpr minimum must be 60us for external device to be a talker.
+     5. Tei minimum must be 80us for external device to be a listener.
+
+                                                   INPUT/OUTPUT GUIDE   365
+
+---
+Additional information can be found by searching:
+- "serial_service_request_srq_in_and_figure_reference" which expands on SRQ behavior and Figure 6-4 reference
+- "serial_clock_data_and_expansion_port_pinout" which expands on Physical serial clock/data lines and the expansion port that follows

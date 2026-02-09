@@ -1,0 +1,36 @@
+# COMMODORE 64 - BASIC example program (tok64 page110.prg) that: switches to upper case, reserves memory for characters (POKE 52,48:POKE 56,48:CLR), disables keyboard interrupt, switches in character ROM, copies 64 characters (512 bytes) from ROM ($D000) to RAM at 12288 ($3000), then restores I/O and re-enables interrupts, and sets the character pointer to 12288. Uses POKE 56334 operations and POKE 1 to switch ROM/I/O.
+
+
+  Now type:
+
+    PRINT FRE(0)-(SGN(FRE(0))<0)*65535
+
+                                                 PROGRAMMING GRAPHICS   109
+~
+
+
+  See the change? BASIC now thinks it has less memory to work with. The
+  memory you just claimed from BASIC is where you are going to put your
+  character set, safe from actions of BASIC.
+    The next step is to put your characters into RAM. When you begin, there
+  is random data beginning at 12288 ($3000 HEX). You must put character
+  patterns in RAM (in the same style as the ones in ROM) for the VIC-II
+  chip to use.
+    The following program moves 64 characters from ROM to your character
+  set RAM:
+
+start tok64 page110.prg
+  5 printchr$(142)               :rem switch to upper case
+  10 poke52,48:poke 56,48:clr    :rem reserve memory for characters
+  20 poke56334,peek(56334)and254 :rem turn off keyscan interrupt timer
+  30 poke1,peek(1)and251         :rem switch in character
+  40 fori=0to511:pokei+12288,peek(i+53248):next
+  50 poke1,peek(1)or4            :rem switch in i/o
+  60 poke56334,peek(56334)or1    :rem restart keyscan interrupt timer
+  70 end
+stop tok64
+
+---
+Additional information can be found by searching:
+- "switching_io_and_interrupts_for_copying_char_rom" which expands on must disable interrupts and switch ROM/I/O while copying
+- "standard_character_mode_and_address_formula" which expands on setting the character pointer to RAM via 53272

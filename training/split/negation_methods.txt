@@ -1,0 +1,31 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - How to negate numbers on 6502: to negate a value in A (quickest): EOR #$FF; CLC; ADC #1 (two's complement). To negate memory-held multi-byte numbers, subtract them from zero using SEC/SBC: LDA #0; SEC; SBC NUM; STA NUM; LDA #0; SBC NUM+1; STA NUM+1. Use these methods to make operands positive for unsigned routines.
+
+To make a number positive, first examine its high bit.  If the high
+bit is 0, no action is necessary, otherwise the number will have to
+negated.  The best way to do this depends on where the number is stored
+- if it's in the accumulator, the quickest way is this:
+
+
+EOR #$FF
+        CLC
+        ADC #1
+
+
+If the number to be negated is in a memory location, the quickest way
+to negate it is to subtract it from 0.  For example, to negate a
+two-byte number:
+
+
+LDA #0
+        SEC
+        SBC NUM
+        STA NUM
+        LDA #0
+        SBC NUM+1
+        STA NUM+1
+
+
+
+---
+Additional information can be found by searching:
+- "signed_multiply_wrapper" which expands on uses these negation techniques

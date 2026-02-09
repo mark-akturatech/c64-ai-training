@@ -1,0 +1,56 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Presents an overview and bitfield layouts for p-access and s-access addresses and returned data: p-access address format (VM13..VM10 and constant bits with sprite number in low bits) and p-access data bits MP7..MP0 (sprite pointer). s-access address format combining MP7..MP0 with MC5..MC0 to form the full address. s-access data interpretations for standard mode (8 pixels, 1 bit/pixel; '0' transparent, '1' sprite color) and multicolor mode (4 pixels, 2 bits/pixel with encodings for transparent, multicolor 0 from $D025, sprite color $D027-$D02E, multicolor 1 from $D026).
+
+Once again an overview of the scheme of p- and s-accesses:
+
+p-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10|  1 |  1 |  1 |  1 |  1 |  1 |  1 |Sprite number |
+ +----+----+----+----+----+----+----+----+----+----+----+--------------+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ | MP7| MP6| MP5| MP4| MP3| MP2| MP1| MP0|
+ +----+----+----+----+----+----+----+----+
+
+s-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | MP7| MP6| MP5| MP4| MP3| MP2| MP1| MP0| MC5| MC4| MC3| MC2| MC1| MC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       | MxMC = 0
+ | "0": Transparent                      |
+ | "1": Sprite color ($d027-$d02e)       |
+ +---------------------------------------+
+ |         4 pixels (2 bits/pixel)       |
+ |                                       |
+ | "00": Transparent                     | MxMC = 1
+ | "01": Sprite multicolor 0 ($d025)     |
+ | "10": Sprite color ($d027-$d02e)      |
+ | "11": Sprite multicolor 1 ($d026)     |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "sprite_memory_layout_and_pointer_mechanism" which expands on How the p-access pointer forms the upper 8 address bits for s-accesses
+- "sprite_display_modes_and_x_y_expansion" which expands on How bits returned by s-access map to pixels in standard and multicolor modes
+- "s_access_timing_and_bus_takeover" which expands on When these p- and s-accesses occur within a raster line

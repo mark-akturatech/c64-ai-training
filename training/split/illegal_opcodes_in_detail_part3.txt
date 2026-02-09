@@ -1,0 +1,66 @@
+# 6502 Instruction Set - Further undocumented instructions: SLO (ASL then ORA), SRE (LSR then EOR), TAS (puts A AND X into SP and stores A AND X AND (H+1) in memory) and USBC (SBC variant), many NOP variants (various opcodes acting as NOP in different addressing modes and byte sizes), and JAM (KIL/HLT) description (freezes CPU requiring reset) with listing of JAM opcodes. Discussion on how illegal opcodes can be understood as combinations of c=1 and c=2 threads (bit patterns) producing combined behavior.
+
+                 SHY (A11, SYA, SAY)
+                      Stores Y AND (high-byte of addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                      used as the high-byte of the address)
+                      Y AND (H+1) -> M
+                                                         N Z C I D V
+                                                         - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      absolute,X     SHY oper,X       9C   3      5   †
+                 SLO (ASO)
+                      ASL oper + ORA oper
+                      M = C <- [76543210] <- 0, A OR M -> A
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       SLO oper         07   2      5
+                      zeropage,X     SLO oper,X       17   2      6
+                      absolute       SLO oper         0F   3      6
+                      absolute,X     SLO oper,X       1F   3      7
+                      absolute,Y     SLO oper,Y       1B   3      7
+                      (indirect,X)   SLO (oper,X)     03   2      8
+                      (indirect),Y   SLO (oper),Y     13   2      8
+                 SRE (LSE)
+                      LSR oper + EOR oper
+                      M = 0 -> [76543210] -> C, A EOR M -> A
+                                                         N Z C I D V
+                                                         + + + - - -
+                      addressing     assembler       opc bytes cycles
+                      zeropage       SRE oper         47   2      5
+                      zeropage,X     SRE oper,X       57   2      6
+                      absolute       SRE oper         4F   3      6
+                      absolute,X     SRE oper,X       5F   3      7
+                      absolute,Y     SRE oper,Y       5B   3      7
+                      (indirect,X)   SRE (oper,X)     43   2      8
+                                                               6502 Instruction Set
+                      (indirect),Y    SRE (oper),Y    53     2      8
+                 TAS (XAS, SHS)
+                      Puts A AND X in SP and stores A AND X AND (high-byte of
+                      addr. + 1) at addr.
+                      unstable: sometimes 'AND (H+1)' is dropped, page boundary
+                      crossings may not work (with the high-byte of the value
+                      used as the high-byte of the address)
+                      A AND X -> SP, A AND X AND (H+1) -> M
+                                                           N Z C I D V
+                                                           - - - - - -
+                      addressing      assembler      opc   bytes cycles
+                      absolute,Y      TAS oper,Y      9B     3      5   †
+                 USBC (SBC)
+                      SBC oper + NOP
+                      effectively same as normal SBC immediate, instr. E9.
+                      A - M - C̅ -> A
+                                                           N Z C I D V
+                                                           + + + - - +
+                      addressing      assembler      opc   bytes cycles
+                      immediate       USBC #oper      EB     2      2
+                 NOPs (including DOP, TOP)
+                      Instructions effecting in 'no operations' in various
+                      address modes. Operands are ignored.
+                                                           N Z C I D V
+
+---
+Additional information can be found by searching:
+- "illegal_opcode_timing_and_layout" which expands on how instruction table binary layout explains illegals and JAM behavior

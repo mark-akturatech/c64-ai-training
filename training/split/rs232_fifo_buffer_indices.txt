@@ -1,0 +1,42 @@
+# ********* - Locations 667-670 ($29B-$29E): 4 indices for the two 256-byte FIFO buffers used for RS-232 transmit and receive. Definitions: 667 RIDBE index to end of receive buffer (adds data), 668 RIDBS index to start of receive buffer (removes data), 669 RODBS index to start of transmit buffer (removes data), 670 RODBE index to end of transmit buffer (adds data). Explains dynamic wraparound FIFO behavior.
+
+Location Range: 667-670 ($29B-$29E)
+Byte Indices to the Beginning and End of Receive and Transmit Buffers
+
+The two 256-byte First In, First Out (FIFO) buffers for RS-232 data
+reception and transmission are dynamic wraparound buffers.  This means
+that the starting point and the ending point of the buffer can change
+over time, and either point can be anywhere withing the buffer.  If,
+for example, the starting point is at byte 100, the buffer will fill
+towards byte 255, at which point it will wrap around to byte 0 again.
+To maintain this system, the following four locations are used as
+indices to the starting and the ending point of each buffer.
+
+667           $29B           RIDBE
+RS-232: Index to End of Receive Buffer
+
+This index points to the ending byte within the 256-byte RS-232
+receive buffer, and is used to add data to that buffer.
+
+668           $29C           RIDBS
+RS-232: Index to Start of Receive Buffer
+
+This index points to the starting byte within the 256-byte RS-232
+receive buffer, and is used to remove data from that buffer.
+
+669           $29D           RODBS
+RS-232: Index to Start of Transmit Buffer
+
+This index points to the starting byte within the 256-byte RS-232
+transmit buffer, and is used to remove data from that buffer.
+
+670           $29E           RODBE
+RS-232: Index to End of Transmit Buffer
+
+This index points to the ending byte within the 256-byte RS-232
+transmit buffer, and is used to add data to that buffer.
+
+
+---
+Additional information can be found by searching:
+- "tbuffer_cassette_io_buffer" which expands on Contrast with cassette buffer usage (separate 192-byte buffer)

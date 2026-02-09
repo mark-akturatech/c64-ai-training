@@ -1,0 +1,58 @@
+# COMMODORE 64 - Lists sprite X/Y position register addresses: $D000..$D00F (decimal 53248..53263) hold X and Y registers interleaved: X0 ($D000 53248), Y0 ($D001 53249), X1 ($D002), Y1 ($D003), ... up to X7 ($D00E) and Y7 ($D00F). X MSB register at $D010 (53264) stores the most significant X bit for sprites 0..7 (bit 0 for sprite0 etc) allowing 9-bit X positions (0..511). Positioning is referenced to the top-left corner of the 24x21 sprite box.
+
+  SPRITE POSITIONING
+
+    Once you've made a sprite you want to be able to move it around the
+  screen. To do this, your Commodore 64 uses three positioning registers:
+
+    1) SPRITE X POSITION REGISTER
+    2) SPRITE Y POSITION REGISTER
+    3) MOST SIGNIFICANT BIT X POSITION REGISTER
+
+    Each sprite has an X position register, a Y position register, and a
+  bit in the X most significant bit register. This lets you position your
+  sprites very accurately. You can place your sprite in 512 possible X
+  positions and 256 possible Y positions.
+    The X and Y position registers work together, in pairs, as a team. The
+  locations of the X and Y registers appear in the memory map as follows:
+  First is the X register for sprite 0, then the Y register for sprite 0.
+
+                                                 PROGRAMMING GRAPHICS   137
+~
+
+
+  Next comes the X register for sprite 1, the Y register for sprite 1, and
+  so on. After all 16 X and Y registers comes the most significant bit in
+  the X position (X MSB) located in its own register.
+    The chart below lists the locations of each sprite position register.
+  You use the locations at their appropriate time through POKE statements:
+
+  +-------------------+---------------------------------------------------+
+  |     LOCATION      |                                                   |
+  +---------+---------+                   DESCRIPTION                     |
+  | DECIMAL |   HEX   |                                                   |
+  +---------+---------+---------------------------------------------------+
+  |  53248  | ($D000) |     SPRITE 0 X POSITION REGISTER                  |
+  |  53249  | ($D001) |     SPRITE 0 Y POSITION REGISTER                  |
+  |  53250  | ($D002) |     SPRITE 1 X POSITION REGISTER                  |
+  |  53251  | ($D003) |     SPRITE 1 Y POSITION REGISTER                  |
+  |  53252  | ($D004) |     SPRITE 2 X POSITION REGISTER                  |
+  |  53253  | ($D005) |     SPRITE 2 Y POSITION REGISTER                  |
+  |  53254  | ($D006) |     SPRITE 3 X POSITION REGISTER                  |
+  |  53255  | ($D007) |     SPRITE 3 Y POSITION REGISTER                  |
+  |  53256  | ($D008) |     SPRITE 4 X POSITION REGISTER                  |
+  |  53257  | ($D009) |     SPRITE 4 Y POSITION REGISTER                  |
+  |  53258  | ($D00A) |     SPRITE 5 X POSITION REGISTER                  |
+  |  53259  | ($D00B) |     SPRITE 5 Y POSITION REGISTER                  |
+  |  53260  | ($D00C) |     SPRITE 6 X POSITION REGISTER                  |
+  |  53261  | ($D00D) |     SPRITE 6 Y POSITION REGISTER                  |
+  |  53262  | ($D00E) |     SPRITE 7 X POSITION REGISTER                  |
+  |  53263  | ($D00F) |     SPRITE 7 Y POSITION REGISTER                  |
+  |  53264  | ($D010) |     SPRITE X MSB REGISTER                         |
+  +---------+---------+---------------------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "sprite_vertical_positioning_limits_and_example" which expands on Y ranges and on-screen values
+- "horizontal_movement_examples" which expands on X movement uses X MSB register for >255 positions

@@ -1,0 +1,33 @@
+# COMMODORE 64 - Standard Character Mode: default mode on power-up. Characters sourced from ROM or RAM (programmable). VIC-II uses screen memory to determine character code and color memory for color per character. Character address calculation formula: CHARACTER ADDRESS = SCREEN CODE*8 + (CHARACTER SET*2048) + (BANK*16384). Each character is 8x8 dots, stored as 8 bytes (one byte per row; each bit is a dot). Example shows binary rows and corresponding decimal PEEK values (e.g., A pattern rows such as 00011000 -> 24). Notes that full char set is 2K and char ROM total 4K for both upper/lower sets.
+
+
+  STANDARD CHARACTER MODE
+
+    Standard character mode is the mode the Commodore 64 is in when you
+  first turn it on. It is the mode you will generally program in.
+    Characters can be taken from ROM or from RAM, but normally they are
+  taken from ROM. When you want special graphics characters for a program,
+  all you have to do is define the new character shapes in RAM, and tell
+  the VIC-II chip to get its character information from there instead of
+  the character ROM. This is covered in more detail in the next section.
+    In order to display characters on the screen in color, the VIC-II chip
+  accesses the screen memory to determine the character code for that
+  location on the screen. At the same time, it accesses the color memory to
+  determine what color you want for the character displayed. The character
+  code is translated by the VIC-II into the starting address of the 8-byte
+  block holding your character pattern. The 8-byte block is located in
+  character memory.
+    The translation isn't too complicated, but a number of items are com-
+  bined to generate the desired address. First the character code you use
+  to POKE screen memory is multiplied by 8. Next add the start of char-
+  acter memory (see CHARACTER MEMORY section). Then the Bank Select Bits
+  are taken into account by adding in the base address (see VIDEO BANK
+  SELECTION section). Below is a simple formula to illustrate what happens:
+
+  CHARACTER ADDRESS = SCREEN CODE*8+(CHARACTER SET*2048)+(BANK*16384)
+
+
+
+---
+Additional information can be found by searching:
+- "character_memory_overview" which expands on where character patterns are stored and how VIC-II computes addresses

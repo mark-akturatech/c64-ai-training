@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Branch on overflow (BVC/BVS) details and opcodes. Flag instructions CLC, CLD, CLI, CLV descriptions with opcodes. CMP instruction (Compare accumulator with memory) opcodes and modes; CPX and CPY opcodes (compare X and Y) and their addressing modes. DEC/DEX/DEY decrement group opcodes and how they affect flags. This section covers a broad set of control/compare instructions and their operational specifics.
+
+              addressing    assembler       opc   bytes cycles
+              implied       CLV             B8      1      2
+          CMP Compare Memory with Accumulator
+              A - M                                N Z C I D V
+                                                   + + + - - -
+              addressing    assembler       opc   bytes cycles
+              immediate     CMP #oper       C9      2      2
+              zeropage      CMP oper        C5      2      3
+              zeropage,X    CMP oper,X      D5      2      4
+              absolute      CMP oper        CD      3      4
+              absolute,X    CMP oper,X      DD      3      4*
+              absolute,Y    CMP oper,Y      D9      3      4*
+              (indirect,X)  CMP (oper,X)    C1      2      6
+              (indirect),Y  CMP (oper),Y    D1      2      5*
+          CPX Compare Memory and Index X
+              X - M                                N Z C I D V
+                                                   + + + - - -
+                                              6502 Instruction Set
+              addressing    assembler       opc   bytes cycles
+              immediate     CPX #oper       E0      2      2
+              zeropage      CPX oper        E4      2      3
+              absolute      CPX oper        EC      3      4
+          CPY Compare Memory and Index Y
+              Y - M                                N Z C I D V
+                                                   + + + - - -
+              addressing    assembler       opc   bytes cycles
+              immediate     CPY #oper       C0      2      2
+              zeropage      CPY oper        C4      2      3
+              absolute      CPY oper        CC      3      4
+          DEC Decrement Memory by One
+              M - 1 -> M                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              zeropage      DEC oper        C6      2      5
+              zeropage,X    DEC oper,X      D6      2      6
+              absolute      DEC oper        CE      3      6
+              absolute,X    DEC oper,X      DE      3      7
+          DEX Decrement Index X by One
+              X - 1 -> X                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       DEX             CA      1      2
+          DEY Decrement Index Y by One
+              Y - 1 -> Y                           N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       DEY             88      1      2
+          EOR Exclusive-OR Memory with Accumulator
+              A EOR M -> A                         N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              immediate     EOR #oper       49      2      2
+              zeropage      EOR oper        45      2      3
+              zeropage,X    EOR oper,X      55      2      4
+              absolute      EOR oper        4D      3      4
+              absolute,X    EOR oper,X      5D      3      4*
+              absolute,Y    EOR oper,Y      59      3      4*
+                                               6502 Instruction Set
+              (indirect,X)  EOR (oper,X)    41      2      6
+              (indirect),Y  EOR (oper),Y    51      2      5*
+
+---
+Additional information can be found by searching:
+- "pragmatics_of_comparisons_and_bit" which expands on how comparisons encode relations via flags
+- "status_register_and_flags" which expands on impact of these instructions on SR flags

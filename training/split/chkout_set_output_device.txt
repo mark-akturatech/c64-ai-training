@@ -1,0 +1,48 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CHKOUT ($FFC9): set logical output device for a given logical file (X). Finds file entry, validates it's open and an output file, prevents keyboard assignment for output, and handles screen/RS232/serial-bus devices. For serial-bus devices sends LISTEN and SA and checks ST. Stores default output device (DFLTO $9A) or returns I/O errors if necessary.
+
+                                *** CHKOUT: SET OUTPUT DEVICE
+                                The KERNAL routine CHKOUT ($ffc9) is vectored to this
+                                routine. On entry (X) must hold the logical filenumber. A
+                                test is made to see if the file is open, or ?FILE NOT OPEN
+                                error. If the device is 0, ie. the keyboard, or the file
+                                is not an output file, then ?FILE OUTPUT FILE error is
+                                generated. If the device is on the serial bus, then it
+                                commanded to LISTEN and the secondary address is sent. ST
+                                is then checked and if non-zero, then ?DEVICE NOT PRESENT
+                                error. Finally, the device number is stored in DFLTO.
+.,F250 20 0F F3 JSR $F30F       fine file number (X)
+.,F253 F0 03    BEQ $F258       OK
+.,F255 4C 01 F7 JMP $F701       I/O error #3, file not open
+.,F258 20 1F F3 JSR $F31F       set file values
+.,F25B A5 BA    LDA $BA         FA, current device number
+.,F25D D0 03    BNE $F262       not keyboard
+.,F25F 4C 0D F7 JMP $F70D       I/O error #7, not output file
+.,F262 C9 03    CMP #$03        screen?
+.,F264 F0 0F    BEQ $F275       yes
+.,F266 B0 11    BCS $F279       serial bus device
+.,F268 C9 02    CMP #$02        RS232
+.,F26A D0 03    BNE $F26F       nope
+.,F26C 4C E1 EF JMP $EFE1       submit to RS232
+.,F26F A6 B9    LDX $B9         SA, current secondary address
+.,F271 E0 60    CPX #$60
+.,F273 F0 EA    BEQ $F25F       not output file error
+.,F275 85 9A    STA $9A         DFLTO, default output device
+.,F277 18       CLC             clear carry to indicate no errors
+.,F278 60       RTS
+.,F279 AA       TAX             file (X) to (A)
+.,F27A 20 0C ED JSR $ED0C       send LISTEN to serial device
+.,F27D A5 B9    LDA $B9         SA
+.,F27F 10 05    BPL $F286       send SA
+.,F281 20 BE ED JSR $EDBE       clear ATN
+.,F284 D0 03    BNE $F289
+.,F286 20 B9 ED JSR $EDB9       send listen secondary address
+.,F289 8A       TXA
+.,F28A 24 90    BIT $90         STATUS, I/O status word
+.,F28C 10 E7    BPL $F275       OK, set output device
+.,F28E 4C 07 F7 JMP $F707       I/O error #5, device not present
+
+
+---
+Additional information can be found by searching:
+- "chkin_set_input_device" which expands on symmetrical input-device logic (TALK vs LISTEN)
+- "send_secondary_address" which expands on SA/send logic used when selecting serial devices

@@ -1,0 +1,32 @@
+# ca65 Users Guide - Recursive macro examples and techniques. Shows a recursive 'push r1,r2,r3' macro using .ifnblank to recurse, and explains .EXITMACRO to stop expansion immediately. Includes a larger example using .EXITMACRO to push up to seven parameters and how calls with varying parameter counts behave.
+
+12.5 Recursive macros
+Macros may be used recursively:
+
+
+.macro  push    r1, r2, r3
+        lda     r1
+        pha
+.ifnblank       r2
+        push    r2, r3
+.endif
+.endmacro
+There's also a special macro command to help with writing recursive macros: .EXITMACRO. That command will stop macro expansion immediately:
+
+
+.macro  push    r1, r2, r3, r4, r5, r6, r7
+.ifblank        r1
+        ; First parameter is empty
+        .exitmacro
+.else
+        lda     r1
+        pha
+.endif
+        push    r2, r3, r4, r5, r6, r7
+.endmacro
+When expanding that macro, the expansion will push all given parameters until an empty one is encountered. The macro may be called like this:
+
+---
+Additional information can be found by searching:
+- "macro_detect_parameter_types" which expands on other advanced macro examples (.MATCH usage is another advanced macro technique)
+- "local_symbols_in_macros" which expands on use .LOCAL to avoid duplicate labels in recursive macro expansions

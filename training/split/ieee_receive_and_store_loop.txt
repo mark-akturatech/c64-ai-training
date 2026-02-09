@@ -1,0 +1,47 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Main IEEE data receive loop and exit sequence: checks STOP key, repeatedly calls ACPTR to get bytes, tests for timeouts and retries, performs verify (VERCK) vs store into memory using EAL/EAH pointer, increments EAL/EAH, checks STATUS/EOI to detect end-of-file, then UNTLK/CLSEI to close the channel. Handles STOP-key break and file-not-found error jumps.
+
+                                ;
+.,F4F3 A9 FD    LDA #$FD        LD40   LDA #$FD        ;MASK OFF TIMEOUT
+.,F4F5 25 90    AND $90         AND    STATUS
+.,F4F7 85 90    STA $90         STA    STATUS
+                                ;
+.,F4F9 20 E1 FF JSR $FFE1       JSR    STOP            ;STOP KEY?
+.,F4FC D0 03    BNE $F501       BNE    LD45            ;NO...
+                                ;
+.,F4FE 4C 33 F6 JMP $F633       JMP    BREAK           ;STOP KEY PRESSED
+                                ;
+.,F501 20 13 EE JSR $EE13       LD45   JSR ACPTR       ;GET BYTE OFF IEEE
+.,F504 AA       TAX             TAX
+.,F505 A5 90    LDA $90         LDA    STATUS          ;WAS THERE A TIMEOUT?
+.,F507 4A       LSR             LSR    A
+.,F508 4A       LSR             LSR    A
+.,F509 B0 E8    BCS $F4F3       BCS    LD40            ;YES...TRY AGAIN
+.,F50B 8A       TXA             TXA
+.,F50C A4 93    LDY $93         LDY    VERCK           ;PERFORMING VERIFY?
+.,F50E F0 0C    BEQ $F51C       BEQ    LD50            ;NO...LOAD
+.,F510 A0 00    LDY #$00        LDY    #0
+.,F512 D1 AE    CMP ($AE),Y     CMP    (EAL)Y          ;VERIFY IT
+.,F514 F0 08    BEQ $F51E       BEQ    LD60            ;O.K....
+.,F516 A9 10    LDA #$10        LDA    #SPERR          ;NO GOOD...VERIFY ERROR
+.,F518 20 1C FE JSR $FE1C       JSR    UDST            ;UPDATE STATUS
+.:F51B 2C       .BYTE $2C       .BYT   $2C             ;SKIP NEXT STORE
+                                ;
+.,F51C 91 AE    STA ($AE),Y     LD50   STA (EAL)Y
+.,F51E E6 AE    INC $AE         LD60   INC EAL         ;INCREMENT STORE ADDR
+.,F520 D0 02    BNE $F524       BNE    LD64
+.,F522 E6 AF    INC $AF         INC    EAH
+.,F524 24 90    BIT $90         LD64   BIT STATUS      ;EOI?
+.,F526 50 CB    BVC $F4F3       BVC    LD40            ;NO...CONTINUE LOAD
+                                ;
+.,F528 20 EF ED JSR $EDEF       JSR    UNTLK           ;CLOSE CHANNEL
+.,F52B 20 42 F6 JSR $F642       JSR    CLSEI           ;CLOSE THE FILE
+.,F52E 90 79    BCC $F5A9       BCC    LD180           ;BRANCH ALWAYS
+                                ;
+.,F530 4C 04 F7 JMP $F704       LD90   JMP ERROR4      ;FILE NOT FOUND
+                                ;
+
+---
+Additional information can be found by searching:
+- "ieee_load_open_and_address_fetch" which expands on Begins after fetch of starting address and LODING message
+- "load_header_and_entry_points" which expands on Uses saved SA/MEMUSS for alternate start behavior
+- "loading_verify_message" which expands on Uses the LODING/VERIFYING message routines to inform the user

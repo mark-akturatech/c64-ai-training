@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Remove trailing zeros from the fractional part and prepare exponent data: walk backwards in the output buffer removing '0' characters until a non-zero or the decimal point is found, restore the last character if the decimal point is reached, place a '+' placeholder, load the exponent count, and test for zero-exponent early exit (which will null-terminate the string and finish).
+
+                                now remove trailing zeroes
+.,BEC4 A4 71    LDY $71         restore the output string index
+.,BEC6 B9 FF 00 LDA $00FF,Y     get character from output string
+.,BEC9 88       DEY             decrement output string index
+.,BECA C9 30    CMP #$30        compare with "0"
+.,BECC F0 F8    BEQ $BEC6       loop until non "0" character found
+.,BECE C9 2E    CMP #$2E        compare with "."
+.,BED0 F0 01    BEQ $BED3       branch if was dp
+                                restore last character
+.,BED2 C8       INY             increment output string index
+.,BED3 A9 2B    LDA #$2B        character "+"
+.,BED5 A6 5E    LDX $5E         get exponent count
+.,BED7 F0 2E    BEQ $BF07       if zero go set null terminator and exit
+
+---
+Additional information can be found by searching:
+- "digit_extraction_loop_and_output_write" which expands on operates on the output produced by digit extraction
+- "write_exponent_digits_and_null_terminate" which expands on if exponent != 0, the exponent digits are formatted and appended

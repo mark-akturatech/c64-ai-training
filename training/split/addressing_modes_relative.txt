@@ -1,0 +1,32 @@
+# 6502 Microprocessor - Relative addressing: used by branch instructions. A signed one-byte displacement (two's complement) is added to the PC (which points to next instruction) allowing ±127-byte branches. Notes on branch range, signed format, and branching strategy if further than 127 bytes.
+
+  11) Relative
+  This mode is used with Branch-on-Condition instructions. It is probably
+  the mode you will use most often. A 1 byte value is added to the program
+  counter, and the program continues execution from that address. The 1
+  byte number is treated as a signed number - i.e. if bit 7 is 1, the number
+  given byt bits 0-6 is negative; if bit 7 is 0, the number is positive. This
+  enables a branch displacement of up to 127 bytes in either direction.
+  eg  bit no.  7 6 5 4 3 2 1 0    signed value          unsigned value
+      value    1 0 1 0 0 1 1 1    -39                   $A7
+      value    0 0 1 0 0 1 1 1    +39                   $27
+  Instruction example:
+    BEQ $A7
+    $F0 $A7
+  This instruction will check the zero status bit. If it is set, 39 decimal
+  will be subtracted from the program counter and execution continues from
+  that address. If the zero status bit is not set, execution continues from
+  the following instruction.
+  Notes:  a) The program counter points to the start of the instruction
+  after the branch instruction before the branch displacement is added.
+  Remember to take this into account when calculating displacements.
+          b) Branch-on-condition instructions work by checking the relevant
+  status bits in the status register. Make sure that they have been set or
+  unset as you want them. This is often done using a CMP instruction.
+          c) If you find you need to branch further than 127 bytes, use the
+  opposite branch-on-condition and a JMP.
+
+
+---
+Additional information can be found by searching:
+- "branch_instructions_behavior" which expands on BCC, BCS, BEQ, BNE, BMI, BPL, BVC, BVS timing and page-cross penalty

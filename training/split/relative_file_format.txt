@@ -1,0 +1,47 @@
+# ********* - Relative file (REL) format for 1540/1541. DATA BLOCK: bytes 0-1 = track and block of next data block; bytes 2-256 = 254 bytes of data. Empty records are encoded with $FF in first byte followed by $00 to end of record; partially filled records are padded with $00. SIDE SECTOR BLOCK: bytes 0-1 = track and block of next side sector block; byte 2 = side sector number (0-5); byte 3 = record length; bytes 4-15 = track/blocks of side sectors 0-5; bytes 16-256 = track/block pointers to up to 120 data blocks.
+
+                    RELATIVE FILE FORMAT
+ +---------------------------------------------------------------+
+ | DATA BLOCK                                                    |
+ +---------------------------------------------------------------+
+ | BYTE   | DEFINITION                                           |
+ +--------+------------------------------------------------------+
+ | 0,1    | Track and block of next data block.                  |
+ +--------+------------------------------------------------------+
+ | 2-256  | 254 bytes of data. Empty records contain FF (all     |
+ |        | binary ones) in the first byte followed by 00        |
+ |        | (binary all zeros) to the end of the record.         |
+ |        | Partially filled records are padded with nulls (00). |
+ +---------------------------------------------------------------+
+ | SIDE SECTOR BLOCK                                             |
+ +--------+------------------------------------------------------+
+ | BYTE   | DEFINITION                                           |
+ +--------+------------------------------------------------------+
+ | 0,1    | Track and block of next side sector block.           |
+ +--------+------------------------------------------------------+
+ | 2      | Side sector number. (0-5)                            |
+ +--------+------------------------------------------------------+
+ | 3      | Record length.                                       |
+ +--------+------------------------------------------------------+
+ | 4,5    | Track and block of first side sector (number 0)      |
+ +--------+------------------------------------------------------+
+ | 6,7    | Track and block of second side sector (number 1)     |
+ +--------+------------------------------------------------------+
+ | 8,9    | Track and block of third side sector (number 2)      |
+ +--------+------------------------------------------------------+
+ | 10,11  | Track and block of fourth side sector (number 3)     |
+ +--------+------------------------------------------------------+
+ | 12,13  | Track and block of fifth side sector (number 4)      |
+ +--------+------------------------------------------------------+
+ | 14,15  | Track and block of sixth side sector (number 5)      |
+ +--------+------------------------------------------------------+
+ | 16-256 | Track and block pointers to 120 data blocks.         |
+ +--------+------------------------------------------------------+
+
+
+
+
+---
+Additional information can be found by searching:
+- "single_directory_entry_structure" which expands on Directory entries contain relative-file pointers and record size
+- "block_distribution_by_track" which expands on Relative file block allocation respects per-track block counts

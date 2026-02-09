@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Key repeat and queue handling: RPT10..RPT40 logic resets and handles repeat delays (DELAY/KOUNT), checks repeat enable flags (RPTFLG), handles special-case keys (cursor, space), debounces key changes, inserts raw key data into KEYD queue (PUTQUE), and handles stop key sense via COLM. Works with LSTX/LSTSHF to detect repeated key events.
+
+.,EA8E 84 CB    STY $CB                STY SFDX        ;NULL KEY FOUND
+.,EA90 8D 00 DC STA $DC00              STA COLM        ;RAISE ALL LINES
+.,EA93 AE 01 DC LDX $DC01              LDX ROWS        ;CHECK FOR A KEY DOWN
+.,EA96 E0 FF    CPX #$FF               CPX #$FF        ;NO KEYS DOWN?
+.,EA98 F0 61    BEQ $EAFB              BEQ SCNOUT      ;BRANCH IF NONE
+.,EA9A A8       TAY                    TAY             ;.A=0 LDY #0
+.,EA9B A9 81    LDA #$81               LDA #<MODE1
+.,EA9D 85 F5    STA $F5                STA KEYTAB
+.,EA9F A9 EB    LDA #$EB               LDA #>MODE1
+.,EAA1 85 F6    STA $F6                STA KEYTAB+1
+.,EAA3 A9 FE    LDA #$FE               LDA #$FE        ;START WITH 1ST COLUMN
+.,EAA5 8D 00 DC STA $DC00              STA COLM
+.,EAA8 A2 08    LDX #$08        SCN20  LDX #8          ;8 ROW KEYBOARD
+.,EAAA 48       PHA                    PHA             ;SAVE COLUMN OUTPUT INFO
+.,EAAB AD 01 DC LDA $DC01       SCN22  LDA ROWS
+.,EAAE CD 01 DC CMP $DC01              CMP ROWS        ;DEBOUNCE KEYBOARD
+.,EAB1 D0 F8    BNE $EAAB              BNE SCN22
+.,EAB3 4A       LSR             SCN30  LSR A           ;LOOK FOR KEY DOWN
+.,EAB4 B0 16    BCS $EACC              BCS CKIT        ;NONE
+.,EAB6 48       PHA                    PHA
+.,EAB7 B1 F5    LDA ($F5),Y            LDA (KEYTAB),Y  ;GET CHAR CODE
+.,EAB9 C9 05    CMP #$05               CMP #$05
+.,EABB B0 0C    BCS $EAC9              BCS SPCK2       ;IF NOT SPECIAL KEY GO ON
+.,EABD C9 03    CMP #$03               CMP #$03        ;COULD IT BE A STOP KEY?
+.,EABF F0 08    BEQ $EAC9              BEQ SPCK2       ;BRANCH IF SO
+.,EAC1 0D 8D 02 ORA $028D              ORA SHFLAG
+.,EAC4 8D 8D 02 STA $028D              STA SHFLAG      ;PUT SHIFT BIT IN FLAG BYTE
+.,EAC7 10 02    BPL $EACB              BPL CKUT
+                                SPCK2
+.,EAC9 84 CB    STY $CB                STY SFDX        ;SAVE KEY NUMBER
+.,EACB 68       PLA             CKUT   PLA
+.,EACC C8       INY             CKIT   INY
+.,EACD C0 41    CPY #$41               CPY #65
+.,EACF B0 0B    BCS $EADC              BCS CKIT1       ;BRANCH IF FINISHED
+.,EAD1 CA       DEX                    DEX
+.,EAD2 D0 DF    BNE $EAB3              BNE SCN30
+.,EAD4 38       SEC                    SEC
+.,EAD5 68       PLA                    PLA             ;RELOAD COLUMN INFO
+.,EAD6 2A       ROL                    ROL A
+.,EAD7 8D 00 DC STA $DC00              STA COLM        ;NEXT COLUMN ON KEYBOARD
+.,EADA D0 CC    BNE $EAA8              BNE SCN20       ;ALWAYS BRANCH
+.,EADC 68       PLA             CKIT1  PLA             ;DUMP COLUMN OUTPUT...ALL DONE
+.,EADD 6C 8F 02 JMP ($028F)            JMP (KEYLOG)    ;EVALUATE SHIFT FUNCTIONS
+.,EAE0 A4 CB    LDY $CB         REKEY  LDY SFDX        ;GET KEY INDEX
+.,EAE2 B1 F5    LDA ($F5),Y            LDA (KEYTAB)Y   ;GET CHAR CODE
+.,EAE4 AA       TAX                    TAX             ;SAVE THE CHAR
+.,EAE5 C4 C5    CPY $C5                CPY LSTX        ;SAME AS PREV CHAR INDEX?
+.,EAE7 F0 07    BEQ $EAF0              BEQ RPT10       ;YES
+.,EAE9 A0 10    LDY #$10               LDY #$10        ;NO - RESET DELAY BEFORE REPEAT
+.,EAEB 8C 8C 02 STY $028C              STY DELAY
+.,EAEE D0 36    BNE $EB26              BNE CKIT2       ;ALWAYS
+.,EAF0 29 7F    AND #$7F        RPT10  AND #$7F        ;UNSHIFT IT
+.,EAF2 2C 8A 02 BIT $028A              BIT RPTFLG      ;CHECK FOR REPEAT DISABLE
+.,EAF5 30 16    BMI $EB0D              BMI RPT20       ;YES
+.,EAF7 70 49    BVS $EB42              BVS SCNRTS
+.,EAF9 C9 7F    CMP #$7F               CMP #$7F        ;NO KEYS ?
+.,EAFB F0 29    BEQ $EB26       SCNOUT BEQ CKIT2       ;YES - GET OUT
+.,EAFD C9 14    CMP #$14               CMP #$14        ;AN INST/DEL KEY ?
+.,EAFF F0 0C    BEQ $EB0D              BEQ RPT20       ;YES - REPEAT IT
+.,EB01 C9 20    CMP #$20               CMP #$20        ;A SPACE KEY ?
+
+---
+Additional information can be found by searching:
+- "keyboard_scan_and_irq_handling" which expands on continues SCNKEY flow and handles repeat/queueing

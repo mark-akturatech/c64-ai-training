@@ -1,0 +1,75 @@
+# MACHINE - Explanation of the N (negative / high-bit) flag: it reflects the high bit of a register and is affected by most register-changing instructions; branch instructions BMI/BPL test N. Includes a diversion explaining signed numbers and two's-complement representation, how high bit denotes negative in signed interpretation, and examples of counting past zero in hex.
+
+N Flag
+------
+
+The N (negative) flag is also probably misnamed.  It should have been called
+the HB (high bit) flag, since numbers are positive or negative only if they
+are used in a certain way.  The N flag is set to indicate that a register has
+been given a value whose high bit is set.
+
+The N flag is as busy as the Z flag; it changes with every instruction that
+affects a register.  The N flag is affected by comparisons, but in this case
+its condition is not usually meaningful to the computer.
+
+To sort out the operation of the N flag, it's important to become familiar
+with hexadecimal-to-binary conversion.  For example, will LDA #$65 set the N
+flag?  Rewrite it into binary:  $65 equals %01100101.  We can see that the
+high bit is not set, meaning that the N flag will be off after loading this
+value.  As another example, suppose we LDX #$DA.  Hex DA is 11011010 binary.
+We see that the high bit is on and thus the N flag is set.
+
+                                                                         :43:
+
+If the N flag is set "on," the BMI (branch minus) instruction will branch to
+the specified address; otherwise it will be ignored and the next instruction
+in sequence will be executed.  If the N flag is reset "off," the BPL (branch
+plus) instruction will branch.
+
+
+A Brief Diversion:  Signed Numbers
+----------------------------------
+
+How can a location--which is usually thought to contain a decimal value from
+0 to 255--contain a negative number?  It's up to the programmer to decide
+whether a memory value is unsigned, having a value range from 0 to 255, or
+signed, having a value range from -128 to +127.  There are still a total of
+256 possibilities.  The computer's memory simply holds bits, while the
+programmer decides how the bits are to be used in a specific case.
+
+Mathematically, it's described this way:  signed numbers, if desired, are
+held in two's-complement form.  We can hold -1 as hex FF, and -2 as hex FE,
+all the way down to -128 as hex 80.  You may have noticed that in all the
+examples, the high bit is set for these negative numbers.
+
+We may need more intuitive help, however.  If the computer loads the decimal
+value 200 into the A register with LDA #$C8, the N flag will be set and will
+seemingly indicate that 200 is a negative number.  It may be more comfortable
+to simply think of 200 as a number with the high bit set.  But in a sense,
+200 could be a negative number if we wanted it to be.  Let's examine the
+situation by means of examples.
+
+If I were asked to count down in hexadecimal from 10, I'd start out with $10,
+$0F, $0E, and $0D, continuing down to $02, $01, and $00.  If I needed to keep
+going, I'd continue past $00 with $FF; in this case, hex FF would clearly
+represent negative one.  Continuing, FE, FD, and FC would represent -2, -3,
+and -4.  And the high bit is set on all these "negative" numbers.
+
+Let's discuss a decimal analogy.  Suppose you have a cassette recorder with a
+counter device attached, and the counter reads 0025.  If you rewind the unit
+a distance of 30 units, you would not be surprised to see a value of 9995 on
+the counter and would understand that it meant a position of -5.  If you had
+a car with 1,500 miles on the odometer, and "rolled back" the mileage by
+1,501 miles, you'd see a reading of 99999, which would mean -1.  (The author
+does not know this from personal experience, but is assured by many machine
+language students that it is so.)  In these cases, based on the decimal
+system, the negative numbers are called "ten's complement."
+
+                                                                         :44:
+
+
+---
+Additional information can be found by searching:
+- "c_flag_description" which expands on Other flag descriptions (C)
+- "v_flag_and_overflow" which expands on Signed-number overflow and the V flag
+- "comparison_instructions_and_branch_usage" which expands on How compares interact with N in practice

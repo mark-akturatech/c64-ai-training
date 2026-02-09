@@ -1,0 +1,72 @@
+# COMMODORE 64 - Line-by-line explanation of EXAMPLE PROGRAM 6 followed by EXAMPLE PROGRAM 7 code: explains clearing registers, setting pulse width, ADSR, waveform choice for oscillator 3, muting voice 3 audio but using its output for modulation, timing loop, and computing HF/LF to POKE into voice 1. Example 7 (siren) demonstrates similar modulation technique using peek(S+27) * 3.5 for wider frequency sweep.
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 6:
+
+  +----------+------------------------------------------------------------+
+  | Lines(s) |                        Description                         |
+  +----------+------------------------------------------------------------+
+  | 10       | Set S to beginning of sound chip.                          |
+  | 20       | Clear all sound chip locations.                            |
+  | 30       | Set high pulse width for voice 1.                          |
+  | 40       | Set Attack/Decay for voice 1 (A=2, D=9).                   |
+  |          | Set Sustain/Release for voice 1 (S=5, R=9).                |
+  | 50       | Set low frequency for voice 3.                             |
+  | 60       | Set triangle waveform for voice 3.                         |
+  | 70       | Set volume 15, turn off audio output of voice 3.           |
+  | 80       | Read frequency and duration of note.                       |
+  | 90       | If frequency equals zero, stop.                            |
+  | 100      | POKE start pulse waveform control voice 1.                 |
+  | 110      | Start timing loop for duration.                            |
+  | 120      | Get new frequency using oscillator 3 output.               |
+  | 130      | Get high and low frequency.                                |
+  | 140      | POKE high and low frequency for voice 1.                   |
+  | 150      | End of timing loop.                                        |
+  | 160      | POKE stop pulse waveform control voice 1.                  |
+  | 170      | Go back for next note.                                     |
+  | 500-550  | Frequencies and durations for song,                        |
+  | 560      | Zeros signal end of song.                                  |
+  +----------+------------------------------------------------------------+
+
+
+
+
+
+
+    A wide variety of sound effects can also be achieved using dynamic
+  effects. For example, the following siren program dynamically changes the
+  frequency output of oscillator 1 when it's based on the output of
+  oscillator 3's triangular wave:
+
+
+
+
+
+
+
+  204   PROGRAMMING SOUND AND MUSIC
+~
+
+
+  EXAMPLE PROGRAM 7:
+
+start tok64 page205.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+14,5
+  40 pokes+18,16
+  50 pokes+3,1
+  60 pokes+24,143
+  70 pokes+6,240
+  80 pokes+4,65
+  90 fr=5389
+  100 fort=1to200
+  110 fq=fr+peek(s+27)*3.5
+  120 hf=int(fq/256):lf=fq-hf*256
+  130 pokes+0,lf:pokes+1,hf
+  140 next
+  150 pokes+24,0
+stop tok64
+
+---
+Additional information can be found by searching:
+- "advanced_techniques_and_example_6" which expands on discussion of oscillator 3 output usage and muting with bit 7

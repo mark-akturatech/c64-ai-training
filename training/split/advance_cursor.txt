@@ -1,0 +1,44 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Advance cursor one screen position. Increments PNTR ($D3) and checks against LNMX ($D5). Handles crossing a logical 40/80-column boundary: links logical lines via LDTB1 ($D9,X), updates LNMX to allow 80-character logical lines (adds $28), checks auto-scroll (AUTODN $0292) and either opens a space or scrolls the screen down when bottom is reached. (Code: $E6B6..$E6EB).
+
+                                *** ADVANCE CURSOR
+                                The cursor is advanced one position on the screen. If this
+                                puts it beyond the 40th column, then it is placed at the
+                                beginning of the next line. If the length of that line is
+                                less than 80, then this new line is linked to the previous
+                                one. A space is opened if data already exists on the new
+                                line. If the cursor has reached the bottom of the screen,
+                                then the screen is scrolled down.
+.,E6B6 20 B3 E8 JSR $E8B3       check line increment
+.,E6B9 E6 D3    INC $D3         increment PNTR, cursor column on current line
+.,E6BB A5 D5    LDA $D5         LNMX, physical screen line length
+.,E6BD C5 D3    CMP $D3         compare to PNTR
+.,E6BF B0 3F    BCS $E700       not beyond end of line, exit
+.,E6C1 C9 4F    CMP #$4F        $4f = 79
+.,E6C3 F0 32    BEQ $E6F7       put cursor on new logical line
+.,E6C5 AD 92 02 LDA $0292       AUTODN, auto scroll down flag
+.,E6C8 F0 03    BEQ $E6CD       auto scroll is on
+.,E6CA 4C 67 E9 JMP $E967       open a space on the screen
+.,E6CD A6 D6    LDX $D6         read TBLX, current line number
+.,E6CF E0 19    CPX #$19        $19 = 25
+.,E6D1 90 07    BCC $E6DA       less than 25
+.,E6D3 20 EA E8 JSR $E8EA       scroll down
+.,E6D6 C6 D6    DEC $D6         place cursor on line 24
+.,E6D8 A6 D6    LDX $D6
+.,E6DA 16 D9    ASL $D9,X       clear bit7 in LDTB1 to indicate that it is line 2
+.,E6DC 56 D9    LSR $D9,X       in the logical line
+.,E6DE E8       INX             next line
+.,E6DF B5 D9    LDA $D9,X       set bit7 in LDTB1 to indicate that it is line 1
+.,E6E1 09 80    ORA #$80        in the logical line
+.,E6E3 95 D9    STA $D9,X
+.,E6E5 CA       DEX
+.,E6E6 A5 D5    LDA $D5         add $28 (40) to LNMX to allow 80 characters
+.,E6E8 18       CLC             on the logical line
+.,E6E9 69 28    ADC #$28
+.,E6EB 85 D5    STA $D5
+
+
+---
+Additional information can be found by searching:
+- "setup_screen_print" which expands on called after printing a character to move the cursor
+- "output_to_screen_unshifted_and_control_codes" which expands on advance cursor logic is used throughout screen output for wrapping and scrolling
+- "retreat_cursor" which expands on inverse operation to reposition the cursor when backing up across logical lines

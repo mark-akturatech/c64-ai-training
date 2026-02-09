@@ -1,0 +1,48 @@
+# COMMODORE 64 - KERNAL OPEN (call $FFC0 / 65472): open a logical file. Preparatory routines required: SETLFS, SETNAM. Error returns: 1,2,4,5,6,240 and READST. A,X,Y registers affected. Example implements BASIC 'OPEN 15,8,15,"I/O"' by calling SETNAM, SETLFS, then JSR OPEN.
+
+  B-18. Function Name: OPEN
+
+
+    Purpose: Open a logical file
+    Call address: $FFC0 (hex) 65472 (decimal)
+    Communication registers: None
+    Preparatory routines: SETLFS, SETNAM
+    Error returns: 1,2,4,5,6,240, READST
+    Stack requirements: None
+    Registers affected: A, X, Y
+
+    Description: This routine is used to OPEN a logical file. Once the
+  logical file is set up, it can be used for input/output operations. Most
+  of the I/O KERNAL routines call on this routine to create the logical
+  files to operate on. No arguments need to be set up to use this routine,
+  but both the SETLFS and SETNAM KERNAL routines must be called before
+  using this routine.
+
+
+  How to Use:
+
+    0) Use the SETLFS routine.
+    1) Use the SETNAM routine.
+    2) Call this routine.
+
+  EXAMPLE:
+
+    This is an implementation of the BASIC statement: OPEN 15,8,15,"I/O"
+
+
+          LDA #NAME2-NAME    ;LENGTH OF FILE NAME FOR SETLFS
+          LDY #>NAME         ;ADDRESS OF FILE NAME
+          LDX #<NAME
+          JSR SETNAM
+          LDA #15
+          LDX #8
+          LDY #15
+          JSR SETLFS
+          JSR OPEN
+    NAME  .BYT 'I/O'
+
+---
+Additional information can be found by searching:
+- "setlfs_kernal_routine" which expands on SETLFS usage to set logical file, device, secondary address
+- "setnam_kernal_routine" which expands on SETNAM usage to provide filename to OPEN
+- "readst_kernal_routine" which expands on Check error status after OPEN

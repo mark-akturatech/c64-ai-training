@@ -1,0 +1,65 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Voice 1 registers $D400-$D406: $D400 Frequency low byte, $D401 Frequency high byte (16-bit frequency, PAL/NTSC clocks and Fout calculation), $D402/$D403 Pulse Width (12-bit, PW% and special values), $D404 Control bits (waveform selects, TEST, RING MOD, SYNC, GATE), $D405 Attack/Decay (nibbles), $D406 Sustain/Release (nibbles). Notes on combined waveforms and LFSR lockup.
+
+
+--------------------------------------------------------------------------------
+3.1 VOICE 1 REGISTERS ($D400-$D406)
+--------------------------------------------------------------------------------
+
+$D400 / 54272 - VOICE 1: FREQUENCY LOW BYTE (Write-only)
+  Bits 7-0: Low 8 bits of the 16-bit frequency value
+  Combined with $D401 to form the oscillator frequency.
+
+$D401 / 54273 - VOICE 1: FREQUENCY HIGH BYTE (Write-only)
+  Bits 7-0: High 8 bits of the 16-bit frequency value
+  Frequency = (Fout * 16777216) / Clock
+    PAL  Clock = 985248 Hz  -> Fout = Fn * 0.058725 Hz
+    NTSC Clock = 1022727 Hz -> Fout = Fn * 0.060959 Hz
+  Where Fn is the 16-bit register value (0-65535).
+
+$D402 / 54274 - VOICE 1: PULSE WIDTH LOW BYTE (Write-only)
+  Bits 7-0: Low 8 bits of the 12-bit pulse width value
+
+$D403 / 54275 - VOICE 1: PULSE WIDTH HIGH BYTE (Write-only)
+  Bits 3-0: High 4 bits of the 12-bit pulse width value
+  Bits 7-4: Unused
+  Pulse Width % = (PWn / 40.95)
+  PWn = 2048 ($800) produces a 50% duty cycle (square wave).
+  PWn = 0 or 4095 produces silence (fully on or fully off).
+
+$D404 / 54276 - VOICE 1: CONTROL REGISTER (Write-only)
+  Bit 7: NOISE     - Select noise waveform
+  Bit 6: PULSE     - Select pulse/rectangle waveform
+  Bit 5: SAWTOOTH  - Select sawtooth waveform
+  Bit 4: TRIANGLE  - Select triangle waveform
+  Bit 3: TEST      - Reset oscillator and hold at zero; lock pulse at high
+  Bit 2: RING MOD  - Ring modulate Voice 1 with Voice 3 oscillator
+                      (replaces triangle output with ring modulated output;
+                       triangle bit must also be set)
+  Bit 1: SYNC      - Synchronize Voice 1 oscillator with Voice 3 oscillator
+                      (Voice 3 resets Voice 1's oscillator accumulator on
+                       each cycle of Voice 3)
+  Bit 0: GATE      - 1 = Start Attack/Decay/Sustain cycle
+                      0 = Start Release cycle
+
+  NOTE: Setting multiple waveform bits simultaneously produces combined
+  waveforms (logical AND of the selected waveforms). On the 6581 this
+  produces audible but attenuated results. On the 8580 combined waveforms
+  are quieter and sometimes silent. The noise waveform combined with any
+  other waveform can lock up the noise LFSR.
+
+$D405 / 54277 - VOICE 1: ATTACK / DECAY (Write-only)
+  Bits 7-4: ATTACK rate (0-15)
+  Bits 3-0: DECAY rate (0-15)
+  Register value = (Attack * 16) + Decay
+
+$D406 / 54278 - VOICE 1: SUSTAIN / RELEASE (Write-only)
+  Bits 7-4: SUSTAIN level (0-15, where 15 = peak volume)
+  Bits 3-0: RELEASE rate (0-15)
+  Register value = (Sustain * 16) + Release
+
+
+---
+Additional information can be found by searching:
+- "voice2_registers" which expands on identical layout for Voice 2
+- "waveforms_triangle" which expands on triangle waveform behavior and ring mod
+- "adsr_overview" which expands on ADSR rates and usage with GATE

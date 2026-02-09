@@ -1,0 +1,51 @@
+# byRiclianll - Illustration of a single directory file entry (hex bytes shown). Introduction to the elements present in a file entry and note that eight file entries are stored per sector; leads into explanation of the significance of bytes 0-1 for the first sector.
+
+Eight  file  entries  are  recorded  per  sector.  Let's  examine  the  contents  of  a  single  direc- 
+tory file  entry. 
+
+.    00:    12  04  82   11   00  48  4F  57  HOW 
+
+.   08:   20  54  4F  20  55  53  45  AO     TO  USE 
+
+.    10:    AO  AO  AO  AO  AO  00  00  OO   
+
+.    18:    00  00  00  OO  OO  OO  OD  00   
+
+Because  this  is  the  first  entry  in  the  directory,  bytes  0  and  1  are  significant.  They  point 
+to  track  18,  sector  4  (converts  to  18).  This  indicates  that  there  are  further  directory  en- 
+tries. You  will  note  that  the  sectors  are  not  sequential  in  nature,  i.e.,  sector  1  does  not 
+point  to  sector  2,  etc.  Remember  that  the  diskette  itself  is  rotating  at  300  rpm.  Stagger- 
+ing the  use  of  the  sectors  allows  quicker  access  and  fewer  rotations  of  the  drive 
+mechanism  and  the  media.  Typically  sectors  are  staggered  in  increments  of  10.  The  direc- 
+tory track  is  staggered  in  increments  of  3,  however.  The  table  below  indicates  the  se- 
+quence in  which  a  full  directory  containing  144  files  is  stored: 
+
+SECTOR  FILLING  SEQUENCE 
+FOR  THE  DIRECTORY 
+
+0  (BAM) 
+
+1,  4,  7,  10,  13,  16 
+
+2,  5,  8,  11,  14,  17 
+
+3,  6,  9,  12,  15,  18 
+
+When  a  diskette  is  initially  formatted,  sector  1  is  set  up  with  8  null  entries.  As  you  store 
+files  on  the  diskette  the  directory  grows.  It  soon  becomes  a  long  chain  of  directory  sec- 
+tors. The  first  two  bytes  in  a  sector  point  to  the  next  directory  sector  in  the  chain  (this 
+is  known  as  a  forward  pointer).  But,  what  about  the  last  sector  in  the  chain?  It  has  nothing 
+to  point  to!  In  the  last  sector  in  the  chain,  there  is  no  forward  pointer;  byte  0  contains 
+a  0  ($00)  and  byte  1  contains  a  255  ($FF)  as  indicated  below.  This  indicates  to  the  DOS 
+that  there  are  no  more  sectors  in  the  directory. 
+
+.   00:   00  FF  XX  XX  XX  xx  xx  xx   
+
+One  final  note  about  chaining.  Commodore  uses  only  forward  pointers.  A  sector  does 
+not  show  where  it  came  from,  only  where  it  is  going.  This  makes  recovery  of  corrupted 
+files  much  more  difficult,  but  more  about  that  later. 
+
+---
+Additional information can be found by searching:
+- "directory_sector_layout_table" which expands on byte ranges for file entries
+- "file_entry_forward_pointer_and_chaining" which expands on how bytes 0-1 chain directory sectors

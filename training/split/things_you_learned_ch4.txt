@@ -1,0 +1,52 @@
+# MACHINE - Chapter 4 summary bullets: signed vs unsigned numbers; multi-byte numbers and carry handling; ADC with CLC for add; SBC with SEC for subtract; checking C and V for overflow depending on signed/unsigned; ASL/ROL and LSR/ROR use for multiply/divide; shift/rotate can operate on A or memory; subroutines in machine language.
+
+
+
+Things You Have Learned
+-----------------------
+
+- We may decide to use a number as a signed value; in this case, the high bit
+  of the number will be 0 if the number is positive and 1 if the number is
+  negative.  It's up to us.  As far as the computer is concerned, it's just
+  bits in either case.
+
+- When a number might have a value that won't fit into an eight-bit byte, we
+  may use more than one byte to hold the value.  We have already done this to
+  hold addresses in two bytes:  there's a high byte to hold the high part of
+  the value and a low byte to hold the low part.
+
+- We may add two numbers together using the ADC instruction with the A
+  register; we should always clear the carry flag before starting an
+  addition.  The carry flag will take care of multi-byte numbers for us,
+  providing we remember to start the addition at the low end.
+
+- We may subtract two numbers using the SBC instruction with the A register;
+  we should always set the carry flag before starting a subtraction.  The
+  carry--which is sometimes called an inverted borrow--will take care of
+  multi-byte numbers for us, providing we remember to start the subtraction
+  at the low end.
+
+- For unsigned numbers, the carry should end up as it started (clear for
+  addition, set for subtraction); otherwise we have overflow in the result.
+  For signed numbers, the carry doesn't matter; the V flag will be set if we
+  have overflow.
+
+- We may multiply a byte by two with the ASL (arithmetic shift left)
+  instruction.  If we have a multiple-byte number, we may carry the
+  multiplication through to other bytes by using the ROL (rotate left)
+  instruction, starting at the low byte of the number.
+
+- We may divide a byte by two with the LSR (logical shift right) instruction.
+  If we have a multiple-byte number, we may carry the division through to
+  other bytes by using the ROR (rotate right) instruction, starting at the
+  high byte of the number.
+
+- The shift and rotate instructions may be used on the contents of the A
+  register or directly on memory.  The N and Z flags are affected, and the C
+  flag plays an important role in the shift/rotate action.
+
+
+---
+Additional information can be found by searching:
+- "addition_and_multi_byte_addition" which expands on ADC/CLC rules recapped
+- "left_shift_and_rol" which expands on ASL/ROL summary

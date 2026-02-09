@@ -1,0 +1,41 @@
+# byRiclianll - Explains the three-parameter memory-read example: selecting buffer #1, doing block-read into that buffer, using a three-parameter memory-read to request a range ($0490-$049F), using a GET# loop to fetch 16 characters, and how inclusion of the third parameter avoids needing an M-R for each byte.
+
+Line  Range  Description 
+
+
+150  Opens  logical  file  number  2  to  device  8  with  a  secondary 
+
+address  of  2  assigning  buffer  number  1  ($0400  -  $04FF) 
+as  a  workspace. 
+
+160  Reads  the  block  from  drive  0,  track  18,  sector  0  into 
+
+channel  2  buffer  area  ($0400  -  $04FF). 
+
+190  Memory-read  command  ($0490  -  $049F). 
+
+200  Begin  loop  to  read  16  characters. 
+
+210  Transfer  a  byte  from  channel  2  buffer  area  to  C64 
+
+memory  over  the  command  channel  (GET#15,). 
+
+Inclusion  of  the  third  memory-read  parameter  means  that  we  no  longer  have  to  issue 
+a  memory-read  command  to  fetch  each  byte  like  we  did  in  the  first  sample  program. 
+Instead,  we  establish  a  loop  after  the  memory-read  command  to  pull  a  byte  in.  (See  lines 
+
+
+84 
+
+
+200-280  above.)  The  alternate  format  of  the  three  parameter  memory-read  command 
+in  line  190  is: 
+
+PRINT#15, "M-R: "CHR*(144)CHR*(4)CHR*(16) 
+
+
+
+---
+Additional information can be found by searching:
+- "three_parameter_memory_read_example" which expands on example implementation and behavior
+- "selecting_dos_buffer_open_syntax_and_buffer_table" which expands on buffer #1 address range $0400-$04FF referenced

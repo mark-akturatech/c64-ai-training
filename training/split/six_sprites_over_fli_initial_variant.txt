@@ -1,0 +1,82 @@
+# NMOS 6510 - Introduction and the first full assembly listing for the '6 sprites over FLI' routine (as used in 'Darwin'). Explains the use of undocumented Read-Modify-Write opcodes to produce side-effects on the accumulator to meet tight cycle constraints, notes the register and hardware initial values, and provides the step-by-step instruction sequence for the variant that begins with A=$A0 (includes per-instruction cycle counts, effective values written, and accumulator transformations up to the page marker).
+
+6 sprites over FLI
+The '6 sprites over FLI' routine used in 'Darwin' is based on the following code. It uses unintended
+Read-Modify-Write opcodes since they have a side-effect on the accumulator. This is needed
+because there is no time to load it explicitly with LDA #. 'Finding this combination with usable
+side-effects took 6 months (duration, not effort) and the game to find a second solution has been
+rightfully named FLI-Sudoku :)'
+First column in the comments show cycles, second the actual value written, and third the effective
+bits.
+; A=$A0 X=$36 Y=$21
+; $d018=$1f $dd00=$3d $dd02=$36
+STA $D011
+
+;4 A0 (20)
+
+SRE $DD02
+
+;6 1b (03) A:A0 -> BB
+
+STY $D011
+
+;4 21 (21)
+
+ASL $D018
+
+;6 3f (38)
+
+SAX $D011
+
+;4 32 (22)
+
+STY $DD02
+
+;4 21 (01)
+
+STA $D011
+
+;4 BB (23)
+
+SRE $D018
+
+;6 1f (18) A:BB -> A4
+
+STA $D011
+
+;4 A4 (24)
+
+RRA $DD02
+
+;6 90 (00) A:A4 -> 35
+
+STA $D011
+
+;4 35 (25)
+
+SLO $D018
+
+;6 3f (38) A:35 -> 3F
+
+STX $D011
+
+;4 36 (26)
+
+STX $DD02
+
+;4 36 (02)
+
+STA $D011
+
+;4 3F (27)
+
+SRE $D018
+
+;6 1f (18) A:3F -> 20
+
+- 99 -
+
+
+---
+Additional information can be found by searching:
+- "six_sprites_over_fli_alternate_and_repetition" which expands on shows how this block is repeated across the screen and provides the alternate variant starting with A=$20

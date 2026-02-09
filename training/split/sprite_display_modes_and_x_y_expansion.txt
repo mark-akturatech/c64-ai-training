@@ -1,0 +1,26 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Covers sprite display modes and size expansion: standard mode (1 bit per pixel; 0 transparent, 1 sprite color from $D027-$D02E) and multicolor mode (2 bits per pixel, resolution halved horizontally to 12x21). Explains X and Y expansion: X-expansion outputs pixels at half frequency (pixels doubled horizontally); Y-expansion causes sprite address generator to read the same addresses for two consecutive lines (pixels doubled vertically). Notes that X and Y expansions are implemented differently and combined effects (e.g., x-expanded multicolor pixel size).
+
+Like the text and bitmap graphics, the sprites also have a standard mode
+and a multicolor mode. In standard mode, every bit directly corresponds to
+one pixel on the screen. A "0" pixel is transparent and the underlying
+graphics are visible below it, a "1" pixel is displayed in the sprite color
+from registers $d027-$d02e belonging to the sprite in question. In
+multicolor mode, two adjacent bits form one pixel, thus reducing the
+resolution of the sprite to 12�21 (the pixels are twice as wide).
+
+Moreover, the sprites can be doubled in their size on the screen in X
+and/or Y direction (X/Y expansion). For that, every sprite pixel simply
+becomes twice as wide/tall, the resolution doesn't change. So a pixel of an
+x-expanded multicolor sprite is four times as wide as a pixel of an
+unexpanded standard sprite. Although both expansions look similar, they are
+implemented completely differently in the VIC. The X expansion simply
+instructs the sprite data sequencer to output pixels with half frequency.
+But the Y expansion makes the sprite address generator read from the same
+addresses in each two lines in sequence so that every sprite line is output
+twice.
+
+
+---
+Additional information can be found by searching:
+- "sprite_data_sequencer_and_registers" which expands on How the sequencer and shift register implement X expansion
+- "p_and_s_access_address_and_data_format" which expands on How data bits map to pixels in standard vs multicolor modes

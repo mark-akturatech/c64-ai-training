@@ -1,0 +1,25 @@
+# Analyzing C64 tape loaders - The Read Byte subroutine used throughout the loader to gather bits/bytes from tape. Covers: comment header; LDA #$07 and STA $F8 to set bit counter; JSR $02D4 to align/read bits; ROL $F7 to collect bits into the MSb-first buffer (carry retrieved from the bit-read handler at $02E1); border flashing via INC $D020; loop decrement of $F8 and BPL back to JSR $02D4 until 8 bits read; final LDA $F7 and RTS; trailing separator and two zero bytes then closing </code> tag.
+
+
+--Read byte subroutine-------------
+03E7  A9  07      LDA #$07   ; 8 bits to read...
+03E9  85  F8      STA $F8
+03EB  20  D4  02  JSR $02D4
+03EE  26  F7      ROL $F7    ; ...grouping them with MSbF
+                             ; ROL retrieves the Carry
+                             ; bit where incoming bit was
+                             ; stored (code at $02E1)
+03F0  EE  20  D0  INC $D020  ; Performs border flashing
+03F3  C6  F8      DEC $F8
+03F5  10  F4      BPL $03EB
+03F7  A5  F7      LDA $F7
+03F9  60          RTS
+-----------------------------------
+03FA  00 00
+</code>
+
+
+---
+Additional information can be found by searching:
+- "loader_core_leader_sync_and_header_read" which expands on Called from the loader core to read leader, sync, and header bytes
+- "load_loop_store_and_checksum" which expands on Called from the Load Loop to read each data byte that is stored and checksummed

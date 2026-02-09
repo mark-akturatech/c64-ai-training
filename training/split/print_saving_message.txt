@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Print 'SAVING <file name>' helper: checks the kernel message flag ($9D), and if enabled indexes to the 'SAVING ' message and calls the kernel I/O message display (JSR $F12F) then jumps to the file-name print routine (JMP $F5C1).
+
+
+                                *** print saving <file name>
+.,F68F A5 9D    LDA $9D         get message mode flag
+.,F691 10 FB    BPL $F68E       exit if control messages off
+.,F693 A0 51    LDY #$51        
+                                index to "SAVING "
+.,F695 20 2F F1 JSR $F12F       display kernel I/O message
+.,F698 4C C1 F5 JMP $F5C1       print file name and return
+
+---
+Additional information can be found by searching:
+- "tape_save_entry_and_device_checks" which expands on invoked prior to starting tape write to display the status
+- "print_file_name" which expands on continuation that actually prints the filename (JMP target $F5C1)

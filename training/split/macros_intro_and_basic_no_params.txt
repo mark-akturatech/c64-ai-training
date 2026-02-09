@@ -1,0 +1,25 @@
+# ca65 Users Guide - Introduction to macros and the simplest form: macros without parameters. Explains that macros are token sequences replaced at expansion. Shows a simple .macro/.endmacro example (asr) and how macro expansion inserts the instructions into code.
+
+12. Macros
+12.1 Introduction
+Macros may be thought of as "parametrized super instructions". Macros are sequences of tokens that have a name. If that name is used in the source file, the macro is "expanded", that is, it is replaced by the tokens that were specified when the macro was defined.
+
+12.2 Macros without parameters
+In its simplest form, a macro does not have parameters. Here's an example:
+
+
+.macro  asr             ; Arithmetic shift right
+        cmp     #$80    ; Put bit 7 into carry
+        ror             ; Rotate right with carry
+.endmacro
+The macro above consists of two real instructions, that are inserted into the code, whenever the macro is expanded. Macro expansion is simply done by using the name, like this:
+
+
+        lda     $2010
+        asr
+        sta     $2010
+
+---
+Additional information can be found by searching:
+- "parametrized_macros_and_parameter_handling" which expands on Parameterized macros, empty parameters, and control commands (.IFBLANK/.IFNBLANK)
+- "c_style_define_macros" which expands on Alternative single-line .DEFINE C-style macros and differences

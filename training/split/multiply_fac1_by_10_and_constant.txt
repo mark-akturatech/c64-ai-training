@@ -1,0 +1,24 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Multiply FAC1 by 10 helper: rounds/copies FAC1 to FAC2, adjusts exponent for *10 via additions and an add FAC2-to-FAC1 subroutine (FAC1 = (FAC1 + FAC2)*2 then increment exponent). Includes the 5-byte floating constant representing 10 (data bytes). Handles overflow error if exponent overflows.
+
+                                *** multiply FAC1 by 10
+.,BAE2 20 0C BC JSR $BC0C       round and copy FAC1 to FAC2
+.,BAE5 AA       TAX             copy exponent (set the flags)
+.,BAE6 F0 10    BEQ $BAF8       exit if zero
+.,BAE8 18       CLC             clear carry for add
+.,BAE9 69 02    ADC #$02        add two to exponent (*4)
+.,BAEB B0 F2    BCS $BADF       do overflow error if > $FF
+                                FAC1 = (FAC1 + FAC2) * 2
+.,BAED A2 00    LDX #$00        clear byte
+.,BAEF 86 6F    STX $6F         clear sign compare (FAC1 EOR FAC2)
+.,BAF1 20 77 B8 JSR $B877       add FAC2 to FAC1 (*5)
+.,BAF4 E6 61    INC $61         increment FAC1 exponent (*10)
+.,BAF6 F0 E7    BEQ $BADF       if exponent now zero go do overflow error
+.,BAF8 60       RTS             
+
+                                *** 10 as a floating value
+.:BAF9 84 20 00 00 00           10
+
+
+---
+Additional information can be found by searching:
+- "test_and_adjust_accumulators" which expands on used to check exponent range before/after scaling

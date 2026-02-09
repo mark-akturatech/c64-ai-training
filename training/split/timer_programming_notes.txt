@@ -1,0 +1,44 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - Practical notes for programming CIA timers: resolution at PHI2 (~985,248 Hz PAL / 1,022,727 Hz NTSC) making minimum period about 1 microsecond and maximum single 16-bit period ~65.5 ms. Cascading A and B yields a 32-bit timer (~71.8 minutes PAL). One-shot vs continuous mode explained. Latch vs counter: writes go to latch; latch transferred to counter on underflow (continuous), via force-load (CRA/CRB bit 4), or when timer starts. Timer underflow output on PB6/PB7 can be pulse mode (one PHI2 cycle) or toggle mode (invert each underflow) useful for waveforms or timing signals.
+
+=============================================================
+9. TIMER PROGRAMMING NOTES
+=============================================================
+
+Timer Resolution:
+  At PHI2 clock rate of approximately 985,248 Hz (PAL) or
+  1,022,727 Hz (NTSC), the minimum timer period is about 1
+  microsecond, and the maximum single timer period is about
+  65.5 milliseconds (65536 cycles).
+
+  Cascading Timer A and Timer B provides a 32-bit timer with
+  a maximum period of approximately 71.8 minutes (PAL).
+
+One-Shot vs Continuous:
+  - Continuous mode: Timer reloads from latch and continues
+    counting on underflow. Used for periodic interrupts.
+  - One-Shot mode: Timer stops after single underflow. Useful
+    for precise delay generation.
+
+Timer Latch vs Counter:
+  - Writing to timer registers always writes to the LATCH,
+    not directly to the counter.
+  - The latch is transferred to the counter when:
+    (a) Timer underflows in continuous mode
+    (b) Force load bit (CRA/CRB bit 4) is set
+    (c) Timer transitions from stopped to running (START bit
+        goes from 0 to 1)
+
+Output to Port B:
+  Timer underflow output on PB6 (Timer A) or PB7 (Timer B) can
+  be either:
+  - Pulse mode: PB6/PB7 goes high for one PHI2 cycle on underflow
+  - Toggle mode: PB6/PB7 inverts state on each underflow
+  This is useful for generating waveforms or timing signals.
+
+
+---
+Additional information can be found by searching:
+- "timer_a_16bit" which expands on Timer A latch/counter behavior and outputs to PB6
+- "timer_b_16bit" which expands on Timer B latch/counter behavior and cascading with Timer A
+- "control_register_a" which expands on CRA bits for Timer A control (START, LOAD, INMODE, OUTMODE)
+- "control_register_b" which expands on CRB bits for Timer B control (START, LOAD, INMODE, OUTMODE)

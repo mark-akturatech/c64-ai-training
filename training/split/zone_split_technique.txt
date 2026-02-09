@@ -1,0 +1,91 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Zone split technique: reuse sprites by rewriting Y-coordinates, frames and colors for groups (rows) via raster interrupts. Key hardware constraint: sprite Y must be written before raster reaches that Y, and frame/color writes take at least one raster line causing timing artifacts. Example assembly-like code shows copying and advancing Y coordinates ($D007, $D009, $D00B, $D00D, $D00F), writing frame & color tables to screen and sprite color registers ($C3FB-$C3FF, $D02A-$D02E), and advancing spriteindex.
+
+1. "Zone split" technique
+
+Let's begin with this to introduce the hardware features involved within a
+simpler approach. Consider the following situation in Turrican where the player
+is battling against the first boss enemy, the giant "fist": There's the player
+character composed of 3 sprites (2 multicolors sprites and a singlecolor white
+sprite Y-expanded on top of that) and the "fist", composed of 5 sprites per
+row and 4 rows (20 sprites total) Here's a diagram of the sprite numbers in
+use on the screen, with the 3rd (the Y-expanded sprite) omitted.
+
+                  4 5 6 7 8
+                  4 5 6 7 8
+                  4 5 6 7 8
+             1    4 5 6 7 8
+             2
+    ______________________________
+
+So, the idea seems to be as follows: a raster interrupt happens before the
+start of each sprite row for the boss enemy, and in it the Y-coordinates,
+sprite frames, and colors for sprites 4-8 are rewritten, to re-use the sprites.
+X-coordinates do not change between rows so they can be set beforehand.
+
+The most important hardware feature to take into account: The Y-coordinate for
+a sprite must have been set before the raster line reaches that Y-position, or
+the re-used sprite won't display at all!
+
+This is not as bad as it sounds. The Y-coordinate can actually be set well
+beforehand, right after the previous sprite row has started displaying
+(modifying the Y-coord in the middle of a sprite display won't "cut" it or
+anything)
+
+In fact, more trouble will come from the frames and colors. It will take
+at least one rasterline to rewrite the frame & color registers, so it's likely
+that the last pixel line of the "previous" sprite row will already be
+displaying the "new" sprite row's last pixel line graphics and colors, at least
+for some sprites (we're too early) or the first pixel line of the "new" sprite
+row still has the "previous" sprite row's graphics data & colors (we're too
+late). So it's a matter of very careful timing adjustments, and possibly
+designing the sprites so that it doesn't matter if frame & color register
+writes are late (using only multicolors, not the sprite color, in the first
+pixel line of sprites)
+
+An example code for handling the rewriting in above situation could look
+something like this:
+
+        lda $d007        ;Take the Y-coord of the 4th sprite,
+        clc              ;advance it 21 pixels lower and
+        adc #21          ;write to Y-coords of sprites 4-8.
+        sta $d007        ;This must happen before the raster
+        sta $d009        ;line reaches the new Y-coordinate,
+        sta $d00b        ;or sprites won't be displayed.
+        sta $d00d
+        sta $d00f
+        ldx spriteindex
+        lda frametable,x    ;Here, X has been loaded with an index
+        sta $c3fb            ;into the boss enemy's sprite frame &
+        lda frametable+1,x   ;color tables. Screen memory is at
+        sta $c3fc            ;$c000
+        lda frametable+2,x
+        sta $c3fd
+        lda frametable+3,x
+        sta $c3fe
+        lda frametable+4,x
+        sta $c3ff
+        lda colortable,x
+        sta $d02a
+        lda colortable+1,x
+        sta $d02b
+        lda colortable+2,x
+        sta $d02c
+        lda colortable+3,x
+        sta $d02d
+        lda colortable+4,x
+        sta $d02e
+        txa              ;Increase the sprite index with 5
+        clc              ;for the next sprite row.
+        adc #5
+        sta spriteindex
+
+In fact, I've never written a this kind of multiplexer and probably never will.
+Of course it allows impressively big enemy sprites but the freedom to do
+whatever I want with the sprites is lost, and therefore I introduce next...
+
+
+
+---
+Additional information can be found by searching:
+- "raster_interrupt_code_example_and_notes" which expands on timing and register write ordering in raster interrupts
+- "doublebuffering_sorted_sprite_tables" which expands on doublebuffering suggestion to avoid tearing while updating tables

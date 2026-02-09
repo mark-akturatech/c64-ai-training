@@ -1,0 +1,67 @@
+# byRiclianll - Initialization and error-handling routines plus embedded machine-code DATA for load/save. Covers OPEN15 to initialize communications with the 1541, sending the '10' init command and checking EN/EM/ET/ES response, printing drive/version info, handling 'file not found' / 'file exists' conditions via OPEN2/O: and reading the error channel, printing failure messages and closing channels, and finally a block of DATA statements containing machine-code bytes (used by the SYS loader/saver).
+
+800  REM  INITIALIZATION 
+
+810  0PEN15,8, 15 
+
+820  PRINT#15, "10" 
+
+830  INPUT#15,EN*,EM*,ET*,ES* 
+
+840  IFEN*="00"THENRETURN 
+
+850  PRINT"  <:D0WN>  "EN*".    "EM*"  ,  "ET*"  ,  "ES* 
+
+860  CLOSE 15 
+
+870  G0T0670 
+
+880  REM  FILE  NOT  FOUND  -  FILE  EXISTS 
+
+890  0PEN2,8,2, "O: "+F*+", "+T*+", "+RW* 
+
+900  INPUT#15,EN*,EM*,ET*,ES* 
+
+910  IFEN*="00"THENRETURN 
+
+920  CL0SE2 
+
+930  PRINT"  <:D0WN>" EN*"  ,    "EM*"  ,  "ET*"  ,  "ES* 
+
+940  PRINT" <:down> <:rvs>failed<roff> " 
+
+950  INPUT#15,EN*,EM*,ET*,ES* 
+
+960  CLOSE 15 
+
+970  G0T0670 
+
+980  REM  LOAD  -  SAVE 
+
+990  DATA162,      2,    32,198,255,160,      O,  32 
+1000  DATA228, 255, 145,251,    32,183,255,  41 
+
+1010  DATA  64,208,  8,200,208,241,230,252 
+
+
+170 
+
+
+1020  DATA  76,      5,192,132,251,  32,204,255 
+
+1030  DATA  96,162,      2,    32,201,255,160,  O 
+
+1040  DATA177,253,  32,210,255,196,251,240 
+
+105O  DATA     3,200,208,244,230,254,    76,  38 
+
+1060  DATA192, 165,254, 197,252,208,242,  132 
+
+1O70  DATA253,    32,204,255,  96,234,234,234 
+
+
+---
+Additional information can be found by searching:
+- "1541_copy_basic_main_program" which expands on Main program issues SYS calls that rely on the initialization and on the DATA machine code loaded by these routines
+- "copy_file_source_listing_assembly_stub" which expands on Assembler source listing and PAL/assembly stub that corresponds to the machine-code bytes embedded here
+- "support_routines_delay_and_return" which expands on Error handling and flow control jumps back to the support routines

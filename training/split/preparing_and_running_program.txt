@@ -1,0 +1,43 @@
+# MACHINE - Preparation before running the swap program: initialize memory locations $0380/$0381 to known values (example: 11 and 99) via .M editing, then run the program with .G 033C. Notes that execution is extremely fast, BRK returns to MLM with B* display, and suggests checking register changes and memory to confirm the swap.
+
+                                                                         :19:
+
+If everything looks in order, you're ready to run your first machine language
+program.
+
+
+Preparation
+-----------
+
+There's one more thing that we need to do.  If we want to swap the contents
+of addresses $0380 and $0381, we'd better put something into those two
+locations so that we'll know that the swap has taken place correctly.
+
+Display memory with .M 0380 0381 and set the resulting display so that the
+values are
+
+  .:0380 11 99 xx xx xx xx xx xx
+
+Remember to press RETURN.  Now we may run our program; we start it up with
+
+  .G 033C
+
+The program runs so quickly that it seems instantaneous (the run time is less
+that one fifty thousandth of a second).  The last instruction in our program
+was BRK for break, and that sends us straight to the MLM with a display of B*
+(for break, of course) plus all the registers.
+
+Nothing seems to have changed.  But wait.  Look carefully at the register
+display.  Can you explain the values you see in the AC and XR registers?  Can
+you explain the PC value?
+
+Now you may display the data values we planned to exchange.  Give the memory
+display command .M 0380 0831--have the contents of the two locations changed?
+
+They'd better have changed.  Because that's what the writing of our program
+was all about.
+
+---
+Additional information can be found by searching:
+- "entering_program_with_mlm" which expands on how the program was entered before running
+- "detail_program_execution" which expands on gives a step-by-step account of what the CPU did during the run

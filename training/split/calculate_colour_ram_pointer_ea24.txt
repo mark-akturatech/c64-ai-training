@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - EA24: Computes the colour-RAM pointer for the current screen line: reads current screen line pointer low/high ($D1/$D2), saves low into $F3, masks the high byte to line page (AND #$03), ORs with the colour memory page (ORA #$D8), and saves the resulting high byte to $F4. Returns (RTS).
+
+                                *** calculate the pointer to colour RAM
+.,EA24 A5 D1    LDA $D1         get current screen line pointer low byte
+.,EA26 85 F3    STA $F3         save pointer to colour RAM low byte
+.,EA28 A5 D2    LDA $D2         get current screen line pointer high byte
+.,EA2A 29 03    AND #$03        mask 0000 00xx, line memory page
+.,EA2C 09 D8    ORA #$D8        set  1101 01xx, colour memory page
+.,EA2E 85 F4    STA $F4         save pointer to colour RAM high byte
+.,EA30 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "shift_screen_line_up_down" which expands on This routine is called (JSR) by the line-shift routine to set colour pointers
+- "clear_screen_line_x" which expands on Used when clearing a line to compute where to store colours
+- "print_and_store_char_and_colour_at_cursor" which expands on Used to compute the colour RAM pointer before storing the colour at the cursor

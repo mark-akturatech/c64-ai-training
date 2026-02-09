@@ -1,0 +1,38 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Explanation of Raster Compare IRQ (bit 0): how raster scanning works on the VIC-II, the 262-line/200-visible-line NTSC scan, how raster line number is tracked in $D012/$D011, and the dual role of the Raster Register for reading current line and writing a target line for raster interrupts. Also describes how the raster-compare status bit triggers the interrupt allowing mid-screen register changes.
+
+                          Bit 0.  This bit enables the Raster Compare IRQ.  The conditions for
+                          this IRQ are met when the raster scan reaches the video line indicated
+                          by the value written to the Raster Register at 53266 ($D012) and Bit 7
+                          of 53265 ($D011).  Again, an explanation of the terminology is in
+                          order.
+
+                          In the normal TV display, a beam of electrons (raster) scans the
+                          screen, starting in the top-left corner, and moving in a straight line
+                          to the right, lighting up appropriate parts of the screen line on the
+                          way.  When it comes to the right edge, the beam moves down a line, and
+                          starts again from the left.  There are 262 such line that are scanned
+                          by the 64 display, 200 of which form the visible screen area.  This
+                          scan updates the complete screen display 60 times every second.
+
+                          The VIC-II chip keeps track of which line is being scanned, and stores
+                          the scan number in the Raster Register at 53266 and 53265 ($D012 and
+                          $D011).  The Raster Register has two functions.  When read, it tells
+                          what line is presently being scanned.  But when written to, it
+                          designates a particular scan line as the place where a raster
+                          interrupt will occur.
+
+                          At the exact moment that the raster beam line number equals the number
+                          written to the register, Bit 0 of the status register will be set to
+                          1, showing that the conditions for a Raster Compare Interrupt have
+                          been fulfilled.  If the raster interrupt is enabled then,
+                          simultaneously, the interrupt program will be executed.  This allows
+                          the user to reset any of the VIC-II registers at any point in the
+                          display, and thus change character sets, background color, or graphics
+                          mode for only a part of the screen display.
+
+
+---
+Additional information can be found by searching:
+- "irqmask_register_overview" which expands on Bit assignment for Raster Compare IRQ (bit 0)
+- "installing_raster_irq_steps" which expands on Practical steps to enable and use raster interrupts
+- "raster_interrupt_example_basic_and_data_listing" which expands on Example program that uses raster interrupts to split the screen

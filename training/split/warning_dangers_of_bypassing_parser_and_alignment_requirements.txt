@@ -1,0 +1,38 @@
+# byRiclianll - Detailed WARNING about the dangers of bypassing the drive parser and working the job queue directly. Explains that bypassing the parser removes built-in protections: issuing out-of-range track numbers (e.g., track 99) can cause the head to step beyond normal boundaries and physically lock; while sectors out of range produce an FDC error, stepper motor movement risks requiring manual repositioning after power-off. Emphasizes the necessity of keeping header-table and job-queue locations correctly aligned with the buffer number being used; mismatches can cause the FDC to attempt nonexistent jobs or seek invalid tracks, potentially leaving the drive in an uncontrolled state requiring power cycle or manual intervention.
+
+
+
+WARNING 
+
+
+Read  this  passage  carefully.  Then  read  it  again  for  good  measure. Experience  is  a  hard 
+teacher  —  test  first,  lesson  afterward. 
+
+1.  You  must  remember  at  all  times  when  working  the  job  queue  that  you  have 
+directly  bypassed  the  parser  routine.  This  is  extremely  dangerous  because  you 
+have  in  effect  killed  all  protection  built  into  the  1541  itself.  Let  us  explain.  If 
+by  some  poor  misfortune  you  elect  to  do  a  read  on  track  99,  the  FDC  doesn't 
+know  any  better  and  takes  off  in  search  of  track  99.  You  can  physically  lock 
+the  read/v«-ite  head  if  it  accidentally  steps  beyond  its  normal  boundaries,  i.e., 
+a  track  less  than  1  or  a  track  greater  than  35.  No  damage  is  done  to  the  1541 
+itself  but  if  the  power- on  sequence  doesn't  return  the  head  to  center  you  will 
+have  to  disassemble  the  drive  and  reposition  the  head  manually.  Exceeding  the 
+sector  range  for  a  given  track  is  no  problem,  however.  The  drive  will  eventual- 
+ly give  up  trying  to  find  a  sector  out  of  range  and  report  an  FDC  error  2  (an 
+IP  20  error).  Tracks  are  a  pain  in  the  stepper  motor,  however. 
+
+2.  You  must  keep  your  header  table  locations  and  your  job  queue  table  locations 
+straight  in  relation  to  the  buffer  number  you  are  working.  If  they  are  not  in 
+agreement,  the  drive  will  go  off  into  never-never  land.  The  FDC  will  either  at- 
+tempt to  work  a  nonexistent  job  code  or  seek  a  track  and  sector  out  of  bounds. 
+Remember  the  FDC  will  do  exactly  what  you  tell  it  to  do.  You  are  at  the  helm 
+at  all  times.  At  the  minimum,  you  will  have  to  power  off  the  drive  to  regain 
+control.  Again,  no  physical  damage  has  been  done  to  the  1541  but  you  may  have 
+to  reposition  the  read/write  head  yourself.  We  know  from  experience. 
+
+
+
+---
+Additional information can be found by searching:
+- "job_queue_mechanism_and_job_code_bit7" which expands on Why precise header/job table addresses and bit-handling matter
+- "fdc_error_handling_and_job_hierarchy" which expands on Consequences for error handling and the importance of proper job ordering

@@ -1,0 +1,43 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - NMI ENTRY POINT (vectored at $fffa): Entry for every NMI. Disables interrupts (SEI), jumps to NMINV vector via indirect ($0318), pushes A/X/Y onto stack, sets CIA#2 IRQ control to mask RS232 interrupts, checks for autostart cartridge at $8000 (call $FD02), and continues into warm start or RS232 handling. Restores registers and RTI at end of NMI handler. Uses PHA/PLA/TXA/TYA/JSR/JMP/RTI.
+
+                                *** NMI ENTRY POINT
+                                The processor jumps to this routine every time a NMI
+                                occurs (see jump vector at $fffa). On entry all processor
+                                registers will be put on the stack. The routine will check
+                                the presents of a ROM cartridge at $8000 with autostart,
+                                and warm start it. Otherwise, the following warm start
+                                routine is called.
+.,FE43 78       SEI             disable interrupts
+.,FE44 6C 18 03 JMP ($0318)     jump to NMINV, points normally to $fe47
+.,FE47 48       PHA             store (A), (X), (Y) on the stack
+.,FE48 8A       TXA
+.,FE49 48       PHA
+.,FE4A 98       TYA
+.,FE4B 48       PHA
+.,FE4C A9 7F    LDA #$7F        CIA#2 interrupt control register
+.,FE4E 8D 0D DD STA $DD0D
+.,FE51 AC 0D DD LDY $DD0D
+.,FE54 30 1C    BMI $FE72       NMI caused by RS232? If so - jump
+.,FE56 20 02 FD JSR $FD02       check for autostart at $8000
+.,FE59 D0 03    BNE $FE5E
+.,FE5B 6C 02 80 JMP ($8002)     Jump to warm start vector
+.,FE5E 20 BC F6 JSR $F6BC       Scan 1 row in keymatrix and store value in $91
+.,FE61 20 E1 FF JSR $FFE1       Check $91 to see if <STOP> was pressed
+.,FE64 D0 0C    BNE $FE72       <STOP> not pressed, skip part of following routine
+
+                                *** WARM START BASIC
+                                This routine is called from the NMI routine above. If
+                                <STOP> was pressed, then KERNAL vectors are restored to
+                                default values, I/O vectors initialised and a jump to
+                                ($a002), the Basic warm start vector.
+                                The NMI routine continues at $fe72 by checking the RS232,
+                                if there is anything to send.
+.,FE66 20 15 FD JSR $FD15       KERNAL reset
+.,FE69 20 A3 FD JSR $FDA3       init I/O
+.,FE6C 20 18 E5 JSR $E518       init I/O
+.,FE6F 6C 02 A0 JMP ($A002)     jump to Basic warm start vector
+
+---
+Additional information can be found by searching:
+- "warm_start_basic" which expands on NMI handler may warm-start BASIC or dispatch to warm start vector
+- "nmi_rs232_handling" which expands on NMI handler tests/dispatches RS232 in/out paths

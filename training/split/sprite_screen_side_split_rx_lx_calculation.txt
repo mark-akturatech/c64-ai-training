@@ -1,0 +1,24 @@
+# COMMODORE 64 - Explains LINE 55 computations used inside the movement loop. RX = INT(X/256) produces 0 for X<256 and 1 for X≥256; RX is used to POKE V+16 with 0 or 1 to indicate the right side of the screen. LX = X - RX*256 computes the low 8 bits (0–255) used for the VIC X-position register, resetting to 0 when crossing from the left to the right side so POKE V+16,1 can be used properly.
+
+  LINE 55:
+
+    RX=INT(X/256)       RX is the integer of X/256 which means that RX is
+                        rounded off to 0 when X is less than 256, and RX
+                        becomes 1 when X reaches position 256. We will
+                        use RX in a moment to POKE V+16 with a 0 or 1
+                        to turn on the "RIGHT SIDE" of the screen.
+
+    LX=X-RX*256         When the sprite is at X position 0, the formula
+                        looks like this: LX = 0 - (0 times 256) or 0. When
+                        the sprite is at X position 1 the formula looks
+                        like this: LX = 1 - (0 times 256) or 1. When the
+                        sprite is at X position 256 the formula looks like
+                        this: LX = 256 - (1 times 256) or 0 which resets X
+                        back to 0 which must be done when you start over on
+                        the RIGHT SIDE of the screen (POKEV+16,1).
+
+---
+Additional information can be found by searching:
+- "sprite_horizontal_movement_loop" which expands on These formulas are evaluated each loop iteration to position the sprite horizontally
+- "sprite_color_and_y_position" which expands on Y is handled separately; RX/LX handle X positioning across screen halves
+- "sprite_pointer_setting_p_equals_192" which expands on Pointer changes combined with RX/LX create the full animated movement

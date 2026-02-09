@@ -1,0 +1,60 @@
+# byRiclianll - Line-range descriptions for the 'edit load address' program: which groups of lines perform DOS version query, filename input, open direct-access channel to buffer #1, block-read of starting block, three-parameter memory-read fetching load address bytes ($0502-$0503), decimal/hex conversions, M-W of new load address, writing the buffer back to disk (U2), and error handling.
+
+Line  Range  Description 
+
+
+260-320  Query  DOS  version  ($0101). 
+
+330-350  Input  file  r^me. 
+
+360-390  Opens  logical  file  number  2  to  device  8  with  a  secondary 
+
+address  of  2  for  a  program  read. 
+400-440  Fetch  file  name  track  ($0018)  and  sector  ($0019). 
+
+450  Close  logical  file  number  2. 
+
+490  Reopens  logical  file  number  2  to  device  8  with  a  second- 
+
+ary address  of  2  assigning  buffer  number  2  ($0500  - 
+$05FF)  as  a  workspace. 
+
+500  Reads  the  starting  block  of  the  filename  from  drive  0  as 
+
+specified  by  $0018  and  $0019  into  channel  2  buffer  area 
+($0500  -  $05FF). 
+
+540  Three  parameter  memory-read  command  to  fetch  two 
+
+byte  load  address  ($0502  -  $0503). 
+550  Fetch  lo-byte  of  load  address  ($0502). 
+
+570  Fetch  hi-byte  of  load  address  ($0503). 
+
+590-640  Decimal  to  hexadecimal  conversion  of  load  address. 
+
+660-700  Input  new  load  address. 
+
+710-780  Hexadecimal  to  decimal  conversion  of  new  load  address. 
+
+790  Memory-write  of  new  two  byte  load  address  ($0502  - 
+
+$0503). 
+
+800  Write  channel  2  buffer  ($0500  -  $05FF)  to  drive  0,  track 
+
+($0018),  sector  ($0019). 
+
+
+88 
+
+
+The  alternate  format  of  the  memory-write  command  in  line  790  is: 
+
+PRINT#15, "M-W: "CHR*  <2) CHR* (5) CHR« (2) CHR* (L0> 
+CHR*<HI) 
+
+
+---
+Additional information can be found by searching:
+- "edit_load_address_program" which expands on maps code segments to functional descriptions

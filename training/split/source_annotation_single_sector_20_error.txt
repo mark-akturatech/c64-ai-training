@@ -1,0 +1,25 @@
+# byRiclianll - Annotated explanation of the single-sector 20-error source. Describes the routine's dependence on an intact preceding sector, synchronization steps to the prior header/data block (lines 200-210), calculation of the next sector in the zone (lines 230-400), creation of a header image in RAM ($0024-$002C), an extra sync to position at the header to be destroyed, and flipping to write mode to intentionally write too slowly and corrupt the header identifier. Notes the difficulty in gauging the tail gap length and why the approach is still sufficient.
+
+Single  Sector  20  Error  Source  Annotation 
+
+This  routine  represents  a  halfhearted  attempt  to  rewrite  a  header.  It  is  dependent  upon 
+the  preceding  sector  being  intact.  Lines  200-210  sync  up  to  the  preceding  header  and 
+data  block.  Lines  230-400  calculate  the  next  sector  in  the  zone.  A  header  image  for  the 
+sector  is  created  in  RAM  at  $0024-$002C.  We  sync  up  one  more  time  which  positions 
+us  to  the  start  of  the  header  block  we  want  to  destroy.  We  flip  to  write  mode  and  rewrite 
+the  header.  We  are  coming  in  just  a  shade  too  slow  and  create  enough  noise  at  the  end 
+of  the  sync  mark  to  destroy  the  actual  header  block  identifier.  (Tweaking  the  internal 
+clock  reveals  that  the  header  was  completely  rewritten.)  If  the  tail  gap  was  a  constant 
+length  our  task  would  be  analogous  to  rewriting  a  sector  where  the  FDC  syncs  up  to 
+a  header  block,  reads  the  header,  and  counts  off  eight  bytes.  We  would  similarly  sync 
+up  to  a  data  block,  count  off  325  GCR  bytes,  then  count  off  the  tail  gap,  and  flip  to  write 
+mode.  However,  it  is  virtually  impossible  to  gauge  the  length  of  the  tail  gap,  so  we're 
+stuck.  Rest  assured,  though.  It  still  gets  the  job  done. 
+
+
+
+---
+Additional information can be found by searching:
+- "basic_driver_listing_single_sector_20_error" which expands on BASIC driver that uses the machine routine described here
+- "asm_source_listing_single_sector_20_error" which expands on Assembly implementation whose timing and actions are explained in this annotation
+- "overview_and_parameters_single_sector_20_error" which expands on Context and limitations noted in the overview

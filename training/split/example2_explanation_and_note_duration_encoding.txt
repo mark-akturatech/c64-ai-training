@@ -1,0 +1,120 @@
+# COMMODORE 64 - Line-by-line explanation of EXAMPLE PROGRAM 2 (control of three voices): describes clearing registers, dimensioning arrays, storing waveform control bytes for each voice, reading base frequencies, decoding encoded note numbers (duration, octave, note), dividing base frequencies for octaves, populating activity arrays (high/low freq and control bytes), and finally POKE loop to play each 1/16th measure. Includes note duration table mapping durations to 1/16th counts and the encoding formula ((((D*8)+O)*16)+N). Negative durations used for silences.
+
+
+    Here is a line,-by-line explanation of Example Program 2. For now, we
+  are interested in how the three voices are controlled.
+
+  LINE-BY-LINE EXPLANATION OF EXAMPLE PROGRAM 2:
+
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                       Description                           |
+  +---------+-------------------------------------------------------------+
+  | 10      | Set S equal to start of sound chip and clear all sound      |
+  |         | chip registers.                                             |
+  | 20      | Dimension arrays to contain activity of song, 1/16th of a   |
+  |         | measure per location.                                       |
+  | 30      | Dimension array to contain base frequency for each note.    |
+  | 40      | Store waveform control byte for each voice.                 |
+  | 50      | Set high pulse width for voice 2.                           |
+  |         | Set high frequency for filter cutoff.                       |
+  |         | Set resonance for filter and filter voice 3.                |
+  | 60      | Read in base frequency for each note.                       |
+  | 100     | Begin decoding loop for each voice.                         |
+  | 110     | Initialize pointer to activity array.                       |
+  | 120     | Read coded note.                                            |
+  | 130     | If coded note is zero, then next voice.                     |
+  | 140     | Set waveform controls to proper voice.                      |
+  |         | If silence, set waveform controls to 0.                     |
+  | 150     | Decode duration and octave.                                 |
+  | 160     | Decode note.                                                |
+  | 170     | Get base frequency for this note.                           |
+  | 180     | If highest octave, skip division loop.                      |
+  | 190     | Divide base frequency by 2 appropriate number of times.     |
+  | 200     | Get high and low frequency bytes.                           |
+  | 210     | If sixteenth note, set activity array: high frequency, low  |
+  |         | frequency, and waveform control (voice on).                 |
+  | 220     | For all but last beat of note, set activity array: high     |
+  |         | frequency, low frequency, waveform control (voice on).      |
+  | 230     | For last beat of note, set activity array: high frequency,  |
+  |         | low frequency, waveform control (voice off).                |
+  | 240     | Increment pointer to activity array. Get next note.         |
+  | 250     | If longer than before, reset number of activities.          |
+  | 260     | Go back for next voice.                                     |
+  | 500     | Set Attack/Decay for voice 1 (A=0, D=0).                    |
+  |         | Set Sustain/Release for voice 1 (S=15, R=0).                |
+
+
+                                          PROGRAMMING SOUND AND MUSIC   189
+~
+
+
+  +---------+-------------------------------------------------------------+
+  | Line(s) |                       Description                           |
+  +---------+-------------------------------------------------------------+
+  | 510     | Set Attack/Decay for voice 2 (A=5, D=5).                    |
+  |         | Set Sustain/Release for voice 2 (S=8, R=5).                 |
+  | 520     | Set Attack/Decay for voice 3 (A=O, D=10).                   |
+  |         | Set Sustain/Release for voice 3 (S=12, R=5).                |
+  | 530     | Set volume 15, low-pass filtering.                          |
+  | 540     | Start loop for every 1/16th of a measure.                   |
+  | 550     | POKE low frequency from activity array for all voices.      |
+  | 560     | POKE high frequency from activity array for all voices.     |
+  | 570     | POKE waveform control from activity array for all voices.   |
+  | 580     | Timing loop for 1/16th of a measure and back for next       |
+  |         | 1/16th measure.                                             |
+  | 590     | Pause, then turn off volume.                                |
+  | 600-620 | Base frequency data.                                        |
+  |1000-1999| Voice 1 data.                                               |
+  |2000-2999| Voice 2 data.                                               |
+  |3000-3999| Voice 3 data.                                               |
+  +-----------------------------------------------------------------------+
+
+    The values used in the data statements were found by using the note
+  table in Appendix E and the chart below:
+
+
+                    +-----------------+------------+
+                    |   NOTE TYPE     |  DURATION  |
+                    +-----------------+------------+
+                    |        1/16     |     128    |
+                    |        1/8      |     256    |
+                    | DOTTED 1/8      |     384    |
+                    |        1/4      |     512    |
+                    |    1/4+1/16     |     640    |
+                    | DOTTED 1/4      |     768    |
+                    |        1/2      |    1024    |
+                    |    1/2+1/16     |    1152    |
+                    |    1/2+1/8      |    1280    |
+                    | DOTTED 1/2      |    1536    |
+                    |  WHOLE          |    2048    |
+                    +-----------------+------------+
+
+
+
+  190   PROGRAMMING SOUND AND MUSIC
+~
+
+
+    The note number from the note table is added to the duration above.
+  Then each note can be entered using only one number which is decoded by
+  your program. This is only one method of coding note values. You may be
+  able to come up with one with which you are more comfortable. The formula
+  used here for encoding a note is as follows:
+
+    1) The duration (number of 1/16ths of a measure) is multiplied by 8.
+    2) The result of step 1 is added to the octave you've chosen (0-7).
+    3) The result of step 2 is then multiplied by 16.
+    4) Add your note choice (0-11) to the result of the operation in step
+       3.
+
+  In other words:
+
+                            ((((D*8)+O)*16)+N)
+
+  Where D = duration, O = octave, and N = note
+    A silence is obtained by using the negative of the duration number
+  (number of 1/16ths of a measure * 128).
+
+---
+Additional information can be found by searching:
+- "using_multiple_voices_and_example_program_2" which expands on the full program listing that this explanation decodes

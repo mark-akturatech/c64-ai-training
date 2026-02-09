@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFCC that JMPs ($0322) to close input and output channels. If serial channels are open sends UNTALK/UNLISTEN appropriately and resets I/O channels to defaults.
+
+                                *** close input and output channels
+                                this routine is called to clear all open channels and restore the I/O channels to
+                                their original default values. It is usually called after opening other I/O
+                                channels and using them for input/output operations. The default input device is
+                                0, the keyboard. The default output device is 3, the screen.
+                                If one of the channels to be closed is to the serial port, an UNTALK signal is sent
+                                first to clear the input channel or an UNLISTEN is sent to clear the output channel.
+                                By not calling this routine and leaving listener(s) active on the serial bus,
+                                several devices can receive the same data from the VIC at the same time. One way to
+                                take advantage of this would be to command the printer to TALK and the disk to
+                                LISTEN. This would allow direct printing of a disk file.
+.,FFCC 6C 22 03 JMP ($0322)     do close input and output channels
+
+
+---
+Additional information can be found by searching:
+- "kernal_vectors_list" which expands on CLRCHN vector at $0322

@@ -1,0 +1,41 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Manages copying received bytes into the receive buffer memory and related load/store bookkeeping. Checks flag $B5 and ORs status into the serial-status byte (JSR $FE1C) when needed. Calls the read/write-pointer check (JSR $FCD1) to detect buffer-end and branches to pointer-wrap/exit if necessary. Uses $A7 as a temporary receiver-bit counter; if loading, sets up Y=0 and compares the received RS232 byte ($BD) with the buffer byte at ($AC),Y. If loading a new byte, sets up X and $9E index and writes the incoming bytes to $0100+X (storing $AD and $AC), increments X, and stores the updated index back to $9E before jumping to the further completion/verify stage.
+
+.,FAC0 A5 B5    LDA $B5         
+.,FAC2 F0 0A    BEQ $FACE       
+.,FAC4 A9 04    LDA #$04        
+.,FAC6 20 1C FE JSR $FE1C       OR into serial status byte
+.,FAC9 A9 00    LDA #$00        
+.,FACB 4C 4A FB JMP $FB4A       
+.,FACE 20 D1 FC JSR $FCD1       check read/write pointer, return Cb = 1 if pointer >= end
+.,FAD1 90 03    BCC $FAD6       
+.,FAD3 4C 48 FB JMP $FB48       
+.,FAD6 A6 A7    LDX $A7         get receiver input bit temporary storage
+.,FAD8 CA       DEX             
+.,FAD9 F0 2D    BEQ $FB08       
+.,FADB A5 93    LDA $93         get load/verify flag
+.,FADD F0 0C    BEQ $FAEB       if load go ??
+.,FADF A0 00    LDY #$00        clear index
+.,FAE1 A5 BD    LDA $BD         get RS232 parity byte
+.,FAE3 D1 AC    CMP ($AC),Y     
+.,FAE5 F0 04    BEQ $FAEB       
+.,FAE7 A9 01    LDA #$01        
+.,FAE9 85 B6    STA $B6         
+.,FAEB A5 B6    LDA $B6         
+.,FAED F0 4B    BEQ $FB3A       
+.,FAEF A2 3D    LDX #$3D        
+.,FAF1 E4 9E    CPX $9E         
+.,FAF3 90 3E    BCC $FB33       
+.,FAF5 A6 9E    LDX $9E         
+.,FAF7 A5 AD    LDA $AD         
+.,FAF9 9D 01 01 STA $0101,X     
+.,FAFC A5 AC    LDA $AC         
+.,FAFE 9D 00 01 STA $0100,X     
+.,FB01 E8       INX             
+.,FB02 E8       INX             
+.,FB03 86 9E    STX $9E         
+.,FB05 4C 3A FB JMP $FB3A       
+
+---
+Additional information can be found by searching:
+- "rs232_parity_and_startbit_handling" which expands on This section receives control after parity/start-bit checks decide the byte should be stored
+- "verify_and_pointer_increment" which expands on After storing the byte this code jumps to the verify/pointer-increment logic to finish the byte handling

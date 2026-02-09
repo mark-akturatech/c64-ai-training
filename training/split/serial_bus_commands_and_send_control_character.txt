@@ -1,0 +1,27 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Helpers for serial bus device commands: ORA #$40 to set TALK ($ED09), a byte token (.BYTE $2C) used for a following BIT, ORA #$20 to set LISTEN ($ED0C), and a JSR to check RS-232 bus idle ($F0A4). Also includes the 'send a control character' sequence beginning at $ED11: PHA to save device address, test deferred character flag (BIT $94), set EOI if deferred, call Tx byte routine ($ED40), and clear deferred/EOI flags before restoring device address.
+
+
+                                *** command serial bus device to TALK
+.,ED09 09 40    ORA #$40        OR with the TALK command
+.:ED0B 2C       .BYTE $2C       makes next line BIT $2009
+
+                                *** command devices on the serial bus to LISTEN
+.,ED0C 09 20    ORA #$20        OR with the LISTEN command
+.,ED0E 20 A4 F0 JSR $F0A4       check RS232 bus idle
+
+                                *** send a control character
+.,ED11 48       PHA             save device address
+.,ED12 24 94    BIT $94         test deferred character flag
+.,ED14 10 0A    BPL $ED20       if no defered character continue
+.,ED16 38       SEC             else flag EOI
+.,ED17 66 A3    ROR $A3         rotate into EOI flag byte
+.,ED19 20 40 ED JSR $ED40       Tx byte on serial bus
+.,ED1C 46 94    LSR $94         clear deferred character flag
+.,ED1E 46 A3    LSR $A3         clear EOI flag
+.,ED20 68       PLA             restore the device address
+
+
+---
+Additional information can be found by searching:
+- "defer_serial_command_sequence" which expands on deferring a command uses the same serial control primitives and flags ($94,$A3)
+- "serial_tx_byte_routine" which expands on calls the Tx byte routine to transmit the control character on the serial bus

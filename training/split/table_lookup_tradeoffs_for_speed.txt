@@ -1,0 +1,25 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Discusses that even optimized routines are relatively slow (~151 cycles worst-case) and introduces table lookup as the fastest method: precompute multiplication/division results and look up answers. Notes tradeoff between speed and memory: full multiplication table for arbitrary 1-byte operands is too large for 6502 direct access, so algebraic reduction can shrink tables.
+
+
+But even the fastest of those routines, under the best possible
+circumstances (all variables in page 0, no page crossings, and NUM2 = 0),
+takes 151 cycles.  If you need to do much better than that, different
+techniques must be used.  The best way to get fast multiplication or
+division on the 6502 is table lookup - i.e., the programmer precomputes the
+answers to the multiplication or division problems and stores them in
+a table, and when the program needs to multiply or divide, it looks up the
+answer in the table.
+
+
+Of course this means there's a tradeoff between speed and code size.
+Table lookup works best when the numbers to be multiplied or divided
+fall in a limited range, otherwise the tables quickly grow to
+unmanageable sizes - for example, a multiplication table for
+multiplying two arbitrary one-byte numbers requires more memory than the
+6502 can directly access.
+
+
+
+---
+Additional information can be found by searching:
+- "algebraic_square_trick" which expands on reducing multiplication table size using square identities

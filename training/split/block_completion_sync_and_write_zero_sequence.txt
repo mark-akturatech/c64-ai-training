@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - WRNC/WREND/WRTZ/WRTS entry sequence: checks and decrements FSBLK (block counter) and, if last, calls TNOF to turn off cassette motor. Sets up trailing sync (SHCNL/SHCNH) and uses BSIV to switch IRQ vectors to the "write zeros" handler. Implements writing low/high sync pulses (WRTZ loop), clears counters (NEWCH), sets up for data writing (BSIV with different selector), and prepares for next header/data write by calling RD300 and initializing CNTDN/PRP before jumping back to WRTS.
+
+                                ;
+.,FC57 C6 BE    DEC $BE         WRNC   DEC FSBLK       ;CHECK FOR END
+.,FC59 D0 03    BNE $FC5E       BNE    WREND           ;...BLOCK ONLY
+.,FC5B 20 CA FC JSR $FCCA       JSR    TNOF            ;...WRITE, SO TURN OFF MOTOR
+.,FC5E A9 50    LDA #$50        WREND  LDA #80         ;PUT 80 CASSETTE SYNCS AT END
+.,FC60 85 A7    STA $A7         STA    SHCNL
+.,FC62 A2 08    LDX #$08        LDX    #8
+.,FC64 78       SEI             SEI
+.,FC65 20 BD FC JSR $FCBD       JSR    BSIV            ;SET VECTOR TO WRITE ZEROS
+.,FC68 D0 EA    BNE $FC54       BNE    WRTBK           ;JMP
+                                ;
+.,FC6A A9 78    LDA #$78        WRTZ   LDA #120        ;WRITE LEADING ZEROS FOR SYNC
+.,FC6C 20 AF FB JSR $FBAF       JSR    WRT1
+.,FC6F D0 E3    BNE $FC54       BNE    WRTBK
+.,FC71 C6 A7    DEC $A7         DEC    SHCNL           ;CHECK IF DONE WITH LOW SYNC...
+.,FC73 D0 DF    BNE $FC54       BNE    WRTBK           ;...NO
+.,FC75 20 97 FB JSR $FB97       JSR    NEWCH           ;...YES CLEAR UP COUNTERS
+.,FC78 C6 AB    DEC $AB         DEC    SHCNH           ;CHECK IF DONE WITH SYNC...
+.,FC7A 10 D8    BPL $FC54       BPL    WRTBK           ;...NO
+.,FC7C A2 0A    LDX #$0A        LDX    #10             ;...YES SO SET VECTOR FOR DATA
+.,FC7E 20 BD FC JSR $FCBD       JSR    BSIV
+.,FC81 58       CLI             CLI
+.,FC82 E6 AB    INC $AB         INC    SHCNH           ;ZERO SHCNH
+.,FC84 A5 BE    LDA $BE         LDA    FSBLK           ;IF DONE THEN...
+.,FC86 F0 30    BEQ $FCB8       BEQ    STKY            ;...GOTO SYSTEM RESTORE
+.,FC88 20 8E FB JSR $FB8E       JSR    RD300
+.,FC8B A2 09    LDX #$09        LDX    #9              ;SET UP FOR HEADER COUNT
+.,FC8D 86 A5    STX $A5         STX    CNTDN
+.,FC8F 86 B6    STX $B6         STX    PRP             ;CLEAR ENDOF BLOCK FLAG
+.,FC91 D0 83    BNE $FC16       BNE    WRTS            ;JMP
+
+---
+Additional information can be found by searching:
+- "bsiv_change_irq_vectors" which expands on uses BSIV to set IRQ vectors for zero/data writing
+- "turn_off_cassette_motor_tnof" which expands on calls TNOF to shut the motor after the final block
+- "interrupt_restore_and_vic_keyboard_restore_tnif_tniq" which expands on eventually restores system state after write completes

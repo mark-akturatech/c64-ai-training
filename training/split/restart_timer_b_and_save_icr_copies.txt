@@ -1,0 +1,16 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Start timer B in single-shot mode (CRA/CRB writes), save CRB ($DC0F) and an ICR shadow copy ($02A3), and prepare stack/registers. Also stores copies of the VIA timer B bytes (DC06/DC07) for later use.
+
+.,F943 A9 19    LDA #$19        load timer B, timer B single shot, start timer B
+.,F945 8D 0F DC STA $DC0F       save VIA 1 CRB
+.,F948 AD 0D DC LDA $DC0D       read VIA 1 ICR
+.,F94B 8D A3 02 STA $02A3       save VIA 1 ICR shadow copy
+.,F94E 98       TYA             y = $FF
+.,F94F E5 B1    SBC $B1         subtract tape timing constant max byte
+                                A = $FF - T2C_h
+.,F951 86 B1    STX $B1         save tape timing constant max byte
+                                $B1 = $FF - T2C_l
+
+---
+Additional information can be found by searching:
+- "irq_routine_read_t2c_and_compute_difference" which expands on continues after computing $FFFF-T2C
+- "compute_shifted_timing_and_threshold_compare" which expands on the routine next shifts and compares the measured interval

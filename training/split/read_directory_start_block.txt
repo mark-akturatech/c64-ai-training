@@ -1,0 +1,22 @@
+# byRiclianll - Issue a DOS memory-read (M-R) to query the device for the file's directory/block information and capture the return bytes T and S. Sends the M-R command (PRINT#15,"M-R" + CHR$(...)) on channel 15, reads T* and S* via GET#15, converts them to numeric values with ASC( ... + CHR$(0) ), closes channel 2, reads the command status (INPUT#15,EN*,EM*,ET*,ES*), and branches on success or error to subsequent routines.
+
+400  PRINT#15, "M-R"CHR* (24) CHR* (O) CHR* (2) 
+
+410  GET#15,T* 
+
+420  T= ASC ( T*+CHR* ( O ) ) 
+
+430  GET#15,S* 
+
+440  S=ASC(S*+CHR*<0) ) 
+
+450  CL0SE2 
+
+460  INPUT#15,EN*,EM*,ET*,ES* 
+
+470  IFEN*="0O"GOTO490 
+
+---
+Additional information can be found by searching:
+- "filename_input_and_file_open" which expands on operates on the file opened in channel 2
+- "load_disk_block_into_buffer_and_read_bytes" which expands on uses the returned start track/sector to open a scratch buffer and fetch the disk block

@@ -1,0 +1,50 @@
+# ********* - Explains that Bits 0-1 of CIA #2 Port A select the 16K VIC-II video memory bank (00=bank3 $C000-$FFFF, 01=bank2 $8000-$BFFF, 10=bank1 $4000-$7FFF, 11=bank0 $0000-$3FFF). Describes default power-on bank (bottom 16K) and why you might change banks. Overview of what each 16K block contains and issues when VIC-II sees ROMs under certain banks (character generator ROM mapping), and notes the technique to change banks from BASIC.
+
+Bits 0 and 1 of CIA #2 Port A have an extremely important function.
+As mentioned in the section on the VIC-II chip (53248, $D000), the
+video chip can address only 16K of memory at a time, and all graphics
+data must be stored in that 16K block in order to be displayed.
+Within this area, sprite graphics data may be placed in any of 256
+groups of 64 bytes each.  Character data can be stored in any of eight
+2K blocks.  Text screen memory may be in any of 16 1K areas, and
+bitmap screen memory may be in either of two 8K sections.
+
+When you turn the power on, the VIC-II uses the bottom 16K of memory
+for graphics.  Unfortunately, this block of memory is also used
+extensively for other important purposes.  Though some means of
+eliminating these conflicts are discussed above, in many situations
+you will want to change from the default 16K bank at the low end of
+memory.
+
+Bits 0 and 1 select the current 16K bank for video memory from the
+four possible choices using the following bit patterns:
+
+00 (bit value of 0) Bank 3 (49152-65535, $C000-$FFFF)
+01 (bit value of 1) Bank 2 (32768-49151, $8000-$BFFF)
+10 (bit value of 2) Bank 1 (16384-32767, $4000-$7FFF)
+11 (bit value of 3) Bank 0 (0-16383, $0-$3FFF)
+
+The technique for making this change from BASIC is discussed below.
+But before we go ahead and start changing banks, let's briefly review
+the contents of these areas, and the considerations for using them for
+graphics.
+
+Block 0.  This is normally used for system variables and BASIC program
+text.  Locations 1024-2047 ($400-$7FF) are reserved for the default
+position of screen memory.
+
+There is an addition limitation on memory usage of this block, as the
+VIC-II sees the character generator ROM at 4096-8191 ($1000-$1FFF),
+making this portion of memory unavailable for other graphics data.
+Generally, there is little free space here for graphics display data.
+Locations 679-767 ($2A7- $2FF) are unused, and could hold one sprite
+shape (number 11) or data for 11 characters.  The area from 820-1023
+($334-$3FF), which includes the cassette I/O buffer, is available for
+graphics memory, and is large enough to hold three sprite shapes
+(numbers 13, 14, and 15), or data for 25 characters (numbers 103-127).
+But getting enough memory for bitmap graphics requires that you either
+
+---
+Additional information can be found by searching:
+- "changing_vic_memory_banks_from_basic" which expands on procedures and POKE examples to change bank and VIC registers
+- "character_generator_rom_and_user_defined_chars" which expands on character ROM visibility under different banks

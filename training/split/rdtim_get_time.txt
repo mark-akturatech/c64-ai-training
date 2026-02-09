@@ -1,0 +1,18 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - RDTIM: Read realtime jiffy clock (vectored at $ffde). Returns clock in (A/X/Y) formatted as high/mid/low bytes ($A0/$A1/$A2). Executes SEI to disable interrupts during read. Uses LDA/LDX/LDY to load values and returns.
+
+                                *** RDTIM: GET TIME
+                                The KERNAL routine RDTIM ($ffde) jumps to this routine.
+                                The three byte jiffy clock is read into (A/X/Y) in the
+                                format high/mid/low. The routine exits, setting the time
+                                to its existing value in the next routine. The clock
+                                resolution is 1/60 second. SEI is included since part of
+                                the IRQ routine is to update the clock.
+.,F6DD 78       SEI             disable interrupt
+.,F6DE A5 A2    LDA $A2         read TIME
+.,F6E0 A6 A1    LDX $A1
+.,F6E2 A4 A0    LDY $A0
+
+
+---
+Additional information can be found by searching:
+- "udtim_bump_clock" which expands on shared jiffy clock storage ($A0/$A1/$A2)

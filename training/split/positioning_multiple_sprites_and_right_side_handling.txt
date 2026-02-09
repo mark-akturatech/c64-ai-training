@@ -1,0 +1,69 @@
+# COMMODORE 64 - Demonstrates positioning multiple sprites (0,1,2) with different colors and pointers, using POKE loops to fill sprite data and POKE V+21 to enable multiple sprites. Discusses showing sprites beyond the 255th X position by setting appropriate bit in V+16 for the sprite (see RIGHT X row in chart) and then assigning new X (starting at 0 as 256th). Example shows POKE V+16,1:POKE V,24:POKE V+1,75 to place sprite 0 on the right side area.
+
+                                                 PROGRAMMING GRAPHICS   159
+~
+
+
+  This POKE starts the X numbering over again from 0 at the 256th position
+  (Example: POKE V+16,PEEK(V+16)OR 1 and POKE V,1 must be included to place
+  sprite 0 at the 257th pixel across the screen.) To get back to the left
+  side X positions you have to TURN OFF the control setting by typing
+  POKE V+16,PEEK(V+16)AND 254.
+
+  POSITIONING MULTIPLE SPRITES ON THE SCREEN
+
+    Here's a program which defines THREE DIFFERENT SPRITES (0, 1 and 2) in
+  different colors and places them in different positions on the screen:
+
+start tok64 page160.prg
+  10 print"{clear}":v=53248:fors=832to895:pokes,255:next
+  20 form=2040to2042:pokem,13:next
+  30 pokev+21,7
+  40 pokev+39,1:pokev+40,7:pokev+41,8
+  50 pokev,24:pokev+1,50
+  60 pokev+2,12:pokev+3,229
+  70 pokev+4,255:pokev+5,50
+stop tok64
+
+    For convenience, all 3 sprites have been defined as solid squares,
+  getting their data from the same place. The important lesson here is how
+  the 3 sprites are positioned. The white sprite 0 is at the top lefthand
+  corner. The yellow sprite 1 is at the bottom lefthand corner but HALF the
+  sprite is OFF THE SCREEN (remember, 24 is the leftmost X position in the
+  viewing area... an X position less than 24 puts all or part of the sprite
+  off the screen and we used an X position 12 here which put the sprite
+  halfway off the screen). Finally, the orange sprite 2 is at the RIGHT X
+  LIMIT (position 255)... but what if you want to display a sprite in the
+  area to the RIGHT of X position 255?
+
+  DISPLAYING A SPRITE BEYOND THE 255TH X-POSITION
+
+    Displaying a sprite beyond the 255th X position requires a special POKE
+  which SETS the most significant bit of the X position and starts over at
+  the 256th pixel position across the screen. Here's how it works...
+    First, you POKE V+16 with the number for the sprite you're using (check
+  the "RIGHT X" row in the X-Y chart... we'll use sprite 0). Now we assign
+  an X position, keeping in mind that the X counter starts over from 0 at
+  the 256th position on the screen. Change line 50 to read as follows:
+    50 POKE V+16,1:POKE V,24:POKE V+1,75
+
+  160   PROGRAMMING GRAPHICS
+~
+
+
+  This line POKEs V+ 16 with the number required to "open up" the right
+  side of the screen... the new X position 24 for sprite 0 now begins 24
+  pixels to the RIGHT of position 255. To check the right edge of the
+  screen, change line 60 to:
+
+    60 POKE V+16,1:POKE V,65:POKE V+1,75
+
+    Some experimentation with the settings in the sprite chart will give
+  you the settings you need to position and move sprites on the left and
+  right sides of the screen. The section on "moving sprites" will also
+  increase your understanding of how sprite positioning works.
+
+
+---
+Additional information can be found by searching:
+- "sprite_pointers_and_memory_location_formula" which expands on setting multiple sprite pointers 2040..2047

@@ -1,0 +1,33 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Routine to unpack a floating-point number at the (AY) pointer into FAC2: saves pointer, reads 5 bytes (mantissa 4..1 and sign+mantissa1), normalises sign bit, saves exponent and prepares FAC2 mantissa/sign bytes. Also computes sign compare (FAC1 XOR FAC2) for later operations. Returns to caller.
+
+                                *** unpack memory (AY) into FAC2
+.,BA8C 85 22    STA $22         save pointer low byte
+.,BA8E 84 23    STY $23         save pointer high byte
+.,BA90 A0 04    LDY #$04        5 bytes to get (0-4)
+.,BA92 B1 22    LDA ($22),Y     get mantissa 4
+.,BA94 85 6D    STA $6D         save FAC2 mantissa 4
+.,BA96 88       DEY             decrement index
+.,BA97 B1 22    LDA ($22),Y     get mantissa 3
+.,BA99 85 6C    STA $6C         save FAC2 mantissa 3
+.,BA9B 88       DEY             decrement index
+.,BA9C B1 22    LDA ($22),Y     get mantissa 2
+.,BA9E 85 6B    STA $6B         save FAC2 mantissa 2
+.,BAA0 88       DEY             decrement index
+.,BAA1 B1 22    LDA ($22),Y     get mantissa 1 + sign
+.,BAA3 85 6E    STA $6E         save FAC2 sign (b7)
+.,BAA5 45 66    EOR $66         EOR with FAC1 sign (b7)
+.,BAA7 85 6F    STA $6F         save sign compare (FAC1 EOR FAC2)
+.,BAA9 A5 6E    LDA $6E         recover FAC2 sign (b7)
+.,BAAB 09 80    ORA #$80        set 1xxx xxx (set normal bit)
+.,BAAD 85 6A    STA $6A         save FAC2 mantissa 1
+.,BAAF 88       DEY             decrement index
+.,BAB0 B1 22    LDA ($22),Y     get exponent byte
+.,BAB2 85 69    STA $69         save FAC2 exponent
+.,BAB4 A5 61    LDA $61         get FAC1 exponent
+.,BAB6 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "multiply_fac1_by_memory_shift_add_loop" which expands on used by the FAC1 * (AY) multiply entry
+- "divide_ay_by_fac1_core_algorithm" which expands on used when dividing (AY) by FAC1 (unpacks divisor/operand into FAC2)

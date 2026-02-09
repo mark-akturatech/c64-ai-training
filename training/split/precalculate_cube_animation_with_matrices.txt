@@ -1,0 +1,82 @@
+# Kick Assembler - A full example using Vector and Matrix utilities to precalculate an animation of a rotating cube and project it to plane z=2.5. Defines Cube list of 8 vectors, macro PrecalcObject(object, animLength, nrOfXrot, nrOfYrot, nrOfZrot) that computes frames by building transformation matrix m=ScaleMatrix*PerspectiveMatrix*MoveMatrix*RotationMatrix and dumps coordinates into memory. Example uses .align $100 and stores cubeCoords: PrecalcObject(Cube,256,2,-1,1).
+
+//--------------------------------------------------------------------------------
+
+70
+
+Chapter 15
+Assemble Information
+Kick Assembler 4, and later versions, exposes information of build in features and of the assembled source
+files. This is intended for authors of editors who want to provide extra support for Kick Assembler such as realtime
+error and syntax feedback and help text for build in directives and libraries. These features are under development
+and the interface might change. If you plan to use this get in touch with the author so we can coordinate our efforts.
+
+15.1. The AsmInfo option
+To get assemble info back from Kick Assembler, use the -asminfo option:
+java -jar KickAss.jar mysource.asm -asminfo all
+
+When executing the above statement, output is written to the file "asminfo.txt", but you can specify the file
+by the -asminfofile option:
+java -jar KickAss.jar mysource.asm -asminfo all -asminfofile myAsmInfo.txt
+
+The content of the file will have different sections dependent on what info you have requested. The second
+parameter describes which info is returned, so in the above example all possible info is returned. The output divided
+into sections, with different types of information, here is an example:
+[libraries]
+Math;constant;PI
+Math;constant;E
+Math;function;abs;1
+Math;function;acos;1
+...
+[directives]
+.text;.text "hello";Dumps text bytes to memory.
+.by;.by $01,$02,$03;An alias for '.byte'.
+...
+[files]
+0;KickAss.jar:/include/autoinclude.asm
+1;mySource.asm
+[syntax]
+symbolReference;38,8,38,17,0
+symbolReference;41,20,41,26,0
+functionCall;41,8,41,18,0
+symbolReference;56,8,56,17,0
+...
+[errors]
+...
+
+The details of the sections will be explained later.
+There are two categories of asmInfo: Predefined info, which contains information about the features that is
+build into the assembler like directives and libraries. The other main category is source specific informations, like
+the syntax of the source or errors in the source. You can turn on one or several categories or sections:
+This will export all predefined assemble info sections:
+java -jar KickAss.jar mysource.asm -asminfo allPredefined
+
+And this will export all predefined assemble info sections and any errors:
+java -jar KickAss.jar mysource.asm -asminfo allPredefined|errors
+
+71
+
+Assemble Information
+
+Notice the '|' is used to give several selections - you can add as many as you want. This is the available options:
+
+Table 15.1. AsmInfo
+Name
+
+Category
+
+Description
+
+all
+
+meta
+
+Exports all info, both predefined and
+source specific
+
+allPredefined
+
+---
+Additional information can be found by searching:
+- "matrix_value_constructors_and_usage" which expands on matrix constructors used in example
+- "vector_value_functions" which expands on vector math in example

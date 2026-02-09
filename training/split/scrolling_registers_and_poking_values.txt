@@ -1,0 +1,41 @@
+# COMMODORE 64 - Explains scroll registers: X scroll is bits 2-0 of VIC-II control at 53270 ($D016); set via POKE 53270,(PEEK(53270)AND248)+X where X is 0..7. Y scroll is bits 2-0 of VIC-II control at 53265 ($D011); set via POKE 53265,(PEEK(53265)AND248)+Y. Explains covered-area placement for scrolling directions and stepping registers up/down to scroll text on/off screen.
+
+    When scrolling in the X direction, it is necessary to place the VIC-II
+  chip into 38 column mode. This gives new data a place to scroll from.
+  When scrolling LEFT, the new data should be placed on the right. When
+  scrolling RIGHT the new data should be placed on the left. Please note
+  that there are still 40 columns to screen memory, but only 38 are
+  visible.
+    When scrolling in the Y direction, it is necessary to place the VIC-II
+  chip into 24 row mode. When scrolling UP, place the new data in the LAST
+  row. When scrolling DOWN, place the new data on the FIRST row. Unlike X
+  scrolling, where there are covered areas on each side of the screen,
+  there is only one covered area in Y scrolling. When the Y scrolling
+
+
+                                                 PROGRAMMING GRAPHICS   129
+~
+
+
+  register is set to 0, the first line is covered, ready for new data. When
+  the Y scrolling register is set to 7 the last row is covered.
+    For scrolling in the X direction, the scroll register is located in
+  bits 2 to 0 of the VIC-II control register at location 53270 ($D016 in
+  HEX). As always, it is important to affect only those bits. The following
+  POKE does this:
+
+    POKE 53270,(PEEK(53270)AND 248)+X
+
+  where X is the X position of the screen from 0 to 7.
+    For scrolling in the Y direction, the scroll register is located in
+  bits 2 to 0 of the VIC-II control register at location 53265 ($D011 in
+  HEX). As always, it is important to affect only those bits. The following
+  POKE does this:
+
+    POKE 53265,(PEEK(53265)AND 248)+Y
+
+  where Y is the Y position of the screen from 0 to 7.
+
+---
+Additional information can be found by searching:
+- "smooth_scrolling_overview_and_steps" which expands on full smooth scrolling procedure

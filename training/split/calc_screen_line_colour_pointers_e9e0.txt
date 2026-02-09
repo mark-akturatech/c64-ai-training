@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Helper (at $E9E0) that prepares the colour-RAM pointer corresponding to a given screen line pointer: calls EA24 to compute the base colour pointer, copies the source line pointer low byte ($AC) into $AE, masks the source high byte ($AD) to the 0-3 page (AND #$03), ORA #$D8 to map to the colour memory page, and stores the high byte into $AF. Returns (RTS).
+
+                                *** calculate pointers to screen lines colour RAM
+.,E9E0 20 24 EA JSR $EA24       calculate the pointer to the current screen line colour
+                                RAM
+.,E9E3 A5 AC    LDA $AC         get the next screen line pointer low byte
+.,E9E5 85 AE    STA $AE         save the next screen line colour RAM pointer low byte
+.,E9E7 A5 AD    LDA $AD         get the next screen line pointer high byte
+.,E9E9 29 03    AND #$03        mask 0000 00xx, line memory page
+.,E9EB 09 D8    ORA #$D8        set  1101 01xx, colour memory page
+.,E9ED 85 AF    STA $AF         save the next screen line colour RAM pointer high byte
+.,E9EF 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "calculate_colour_ram_pointer_ea24" which expands on Calls this routine (JSR $EA24) to compute the current screen line colour-RAM pointer; this helper adapts it for the source/target line
+- "shift_screen_line_up_down" which expands on Used by the line-shift routine to set the colour RAM pointers before copying bytes

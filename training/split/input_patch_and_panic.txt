@@ -1,0 +1,45 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Patch and panic handling inside editor: a patch for input logic (avoid A$ issues) with FINPUT/FINDST flows, PANIC/NMI entry which calls PANIC to fix VIC screen and set default I/O (DFLTO/DFLTN), and a short routine to return to home (NXTD). Contains checks for same-line handling and branching back to find routines.
+
+                                ;   FIXES INPUT"XXXXXXX-40-XXXXX";A$ PROBLEM
+                                ;
+.,E591 E4 C9    CPX $C9         FINPUT CPX LSXP        ;CHECK IF ON SAME LINE
+.,E593 F0 03    BEQ $E598              BEQ FINPUX      ;YES..RETURN TO SEND
+.,E595 4C ED E6 JMP $E6ED              JMP FINDST      ;CHECK IF WE WRAPPED DOWN...
+.,E598 60       RTS             FINPUX RTS
+.,E599 EA       NOP                    NOP             ;KEEP THE SPACE THE SAME...
+                                ;PANIC NMI ENTRY
+                                ;
+.,E59A 20 A0 E5 JSR $E5A0       VPAN   JSR PANIC       ;FIX VIC SCREEN
+.,E59D 4C 66 E5 JMP $E566       JMP    NXTD            ;HOME CURSOR
+.,E5A0 A9 03    LDA #$03        PANIC  LDA #3          ;RESET DEFAULT I/O
+.,E5A2 85 9A    STA $9A         STA    DFLTO
+.,E5A4 A9 00    LDA #$00        LDA    #0
+.,E5A6 85 99    STA $99         STA    DFLTN
+                                ;INIT VIC
+                                ;
+.,E5A8 A2 2F    LDX #$2F        INITV  LDX #47         ;LOAD ALL VIC REGS ***
+.,E5AA BD B8 EC LDA $ECB8,X     PX4    LDA TVIC-1,X
+.,E5AD 9D FF CF STA $CFFF,X            STA VICREG-1,X
+.,E5B0 CA       DEX             DEX
+.,E5B1 D0 F7    BNE $E5AA       BNE    PX4
+.,E5B3 60       RTS             RTS
+                                ;
+                                ;REMOVE CHARACTER FROM QUEUE
+                                ;
+.,E5B4 AC 77 02 LDY $0277       LP2    LDY KEYD
+.,E5B7 A2 00    LDX #$00        LDX    #0
+.,E5B9 BD 78 02 LDA $0278,X     LP1    LDA KEYD+1,X
+.,E5BC 9D 77 02 STA $0277,X     STA    KEYD,X
+.,E5BF E8       INX             INX
+.,E5C0 E4 C6    CPX $C6         CPX    NDX
+.,E5C2 D0 F5    BNE $E5B9       BNE    LP1
+.,E5C4 C6 C6    DEC $C6         DEC    NDX
+.,E5C6 98       TYA             TYA
+.,E5C7 58       CLI             CLI
+.,E5C8 18       CLC             CLC                    ;GOOD RETURN
+.,E5C9 60       RTS             RTS
+                                ;
+
+---
+Additional information can be found by searching:
+- "editor_initialize_and_home" which expands on PANIC and STUPT interplay during initialization

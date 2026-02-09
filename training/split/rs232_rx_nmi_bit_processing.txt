@@ -1,0 +1,37 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - RS-232 receive NMI handler and bit-processing loop. Checks start-bit flag, decrements receiver bit count, assembles incoming bits into the shift registers ($AA/$A7), updates receiver parity, and branches to continue assembling until a full byte is ready. Also contains code to re-enable FLAG interrupts and program VIA2 ICR to set up reception of the next bit, and to disable timer B while awaiting the next bit.
+
+                                *** RS232 Rx NMI
+.,EF59 A6 A9    LDX $A9         get start bit check flag
+.,EF5B D0 33    BNE $EF90       if no start bit received go ??
+.,EF5D C6 A8    DEC $A8         decrement receiver bit count in
+.,EF5F F0 36    BEQ $EF97       if the byte is complete go add it to the buffer
+.,EF61 30 0D    BMI $EF70       
+.,EF63 A5 A7    LDA $A7         get the RS232 received data bit
+.,EF65 45 AB    EOR $AB         EOR with the receiver parity bit
+.,EF67 85 AB    STA $AB         save the receiver parity bit
+.,EF69 46 A7    LSR $A7         shift the RS232 received data bit
+.,EF6B 66 AA    ROR $AA         
+.,EF6D 60       RTS             
+.,EF6E C6 A8    DEC $A8         decrement receiver bit count in
+.,EF70 A5 A7    LDA $A7         get the RS232 received data bit
+.,EF72 F0 67    BEQ $EFDB       
+.,EF74 AD 93 02 LDA $0293       get pseudo 6551 control register
+.,EF77 0A       ASL             shift the stop bit flag to Cb
+.,EF78 A9 01    LDA #$01        + 1
+.,EF7A 65 A8    ADC $A8         add receiver bit count in
+.,EF7C D0 EF    BNE $EF6D       exit, branch always
+
+                                *** setup to receive an RS232 bit
+.,EF7E A9 90    LDA #$90        enable FLAG interrupt
+.,EF80 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,EF83 0D A1 02 ORA $02A1       OR with the RS-232 interrupt enable byte
+.,EF86 8D A1 02 STA $02A1       save the RS-232 interrupt enable byte
+.,EF89 85 A9    STA $A9         set start bit check flag, set no start bit received
+.,EF8B A9 02    LDA #$02        disable timer B interrupt
+.,EF8D 4C 3B EF JMP $EF3B       set VIA 2 ICR from A and return
+
+
+---
+Additional information can be found by searching:
+- "rs232_no_start_bit_received" which expands on handler branch when no start bit was detected
+- "rs232_received_byte_buffering_and_errors" which expands on when a complete byte is received it is added to the Rx buffer and validated

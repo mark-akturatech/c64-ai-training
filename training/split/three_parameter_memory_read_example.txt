@@ -1,0 +1,58 @@
+# byRiclianll - Three-parameter M-R example: demonstrates the alternate format and an example that reads 16 bytes (disk name) from buffer #1 ($0400-$04FF) using PRINT#15,"M-R"CHR$(lo)CHR$(hi)CHR$(#) then looping GET# to pull the specified number of bytes into the C64 and assembling a printable disk name.
+
+The  alternate  format  of  the  standard  memory-read  command  in  hne  200  is: 
+PRINT#15, "M-R: "CHR*(I )CHR*(3) 
+
+Please  note  that  we  deliberately  omitted  the  third  parameter  of  the  memory-read  com- 
+mand in  the  preceding  example.  The  following  example  incorporates  all  three  parameters 
+of  the  memory-read  command  to  read  a  disk  name. 
+
+100  REM  THREE  PARAMETER  MEMORY-READ 
+
+110  OPEN   15,8, 15 
+
+120  PRINT#15, "lO" 
+
+130   I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+
+140   IF  EN*<>"00"GOTO  320 
+
+150  OPEN  2,8, 2, "#1 " 
+
+160  PRINT#15,  "Ul";2ii0;  i8;o 
+
+170  INPUT#15,EN*,EM*,ET*,ES* 
+
+180   IF  EN*<>"00"GOTO  300 
+
+190  PRINT#15, "M-R"CHR*(144)CHR*(4)CHR*(1 
+6) 
+
+200  FOR   1=1   TO  16 
+210  GET#15,B* 
+
+220   IF  B*=""THEN  B*=CHR*(0) 
+
+230  A=ASC(B*) 
+
+240   IF  A>127  THEN  A=A-128 
+
+250   IF  A<32  OR  A>95  THEN  A=63 
+
+260   IF  A=34  THEN  A=63 
+
+270  DN*=DN*+CHR*(A) 
+
+280  NEXT  I 
+
+290  PRINT" ^DOWN> DISK  NAME:    " ; DN* 
+300  CLOSE  2 
+
+310  INPUT«15,EN*,EM*,ET*,ES* 
+
+320  CLOSE  15 
+330  END 
+
+---
+Additional information can be found by searching:
+- "memory_read_parameters" which expands on the optional third parameter CHR$(# of bytes) and its default behavior

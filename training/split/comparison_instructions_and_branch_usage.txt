@@ -1,0 +1,49 @@
+# MACHINE - How to compare bytes using CMP/CPX/CPY (value must be in A/X/Y and the other value in memory or immediate). List of branch tests available after compare (BEQ, BNE, BCS, BCC). Examples showing how to combine branches to test for 'less than or equal to' (CPY #$05 then BEQ/BCC) and an optimized version (CPY #$06 then BCC). Emphasis on using common sense to reason about comparisons.
+
+A Note on Comparison
+--------------------
+
+If we wish to compare two bytes with each other, we must perform a
+comparison.  One value must be in a register (A, X, or Y); the other must be
+either stored in memory, or must be an immediate value we use in the
+instruction.
+
+We will use the appropriate compare instruction depending on the register
+involved; CMP for the A register, CPX for the X register, and CPY for the Y
+register.  Following the comparison, we may use any of the following branch
+tests:
+
+  BEQ--branches if the two bytes are equal.
+  BNE--branches if the two bytes are not equal.
+  BCS--branches if the value in the register is greater than or equal to the
+       other value.
+  BCC--branches if the value in the register is less than the other value.
+
+We can use more than one branch instruction after a comparison.  Suppose our
+program wanted to test the Y register for a value equal or less than 5.  We
+might code
+
+  CPY #$05
+  BEQ ..somewhere
+  BCC ..somewhere
+
+We can see that our code will branch if the value is equal to 5 (using the
+BEQ) or less than 5 (using the BCC); otherwise it will continue without
+branching.  In this case, we could make the coding more efficient by changing
+it to read
+
+                                                                         :47:
+
+  CPY #$06
+  BCC ..somewhere
+
+A little common sense will tell us that testing a number to see if it is less
+than 6 is the same as testing it to see if it is less than or equal to 5.
+Common sense is a valuable programming tool.
+
+
+
+---
+Additional information can be found by searching:
+- "flag_summary_and_status_register_overview" which expands on Which flags compares affect (Z/C/N)
+- "flags_introduction_and_z_flag" which expands on Z flag behavior in compares

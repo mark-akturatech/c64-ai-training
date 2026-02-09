@@ -1,0 +1,23 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CIOUT: SEND SERIAL DEFERRED. KERNAL CIOUT ($FFA8) entry point. Tests C3PO flag (bit in $94) with BIT $94; if not set, it sets the deferred-output flag by rotating $94 (ROR) under SEC, then pushes A (PHA), calls send-data routine at $ED40 to place the byte on the serial bus, pulls A (PLA), stores the character into BSOUR ($95), clears carry (CLC) to indicate no error, and returns. Implements deferred output queuing for the serial driver.
+
+
+                                *** CIOUT: SEND SERIAL DEFERRED
+                                The KERNAL routine CIOUT ($ffa8) jumps to this routine.
+                                The output flag, C3PO is set (ie. bit 7 = 1) and the
+                                contents of (A) is placed in the serial buffer.
+.,EDDD 24 94    BIT $94         C3PO flag, character in serial buffer
+.,EDDF 30 05    BMI $EDE6       yes
+.,EDE1 38       SEC             prepare for ROR
+.,EDE2 66 94    ROR $94         set C3PO
+.,EDE4 D0 05    BNE $EDEB       always jump
+.,EDE6 48       PHA             temp store
+.,EDE7 20 40 ED JSR $ED40       send data to serial bus
+.,EDEA 68       PLA
+.,EDEB 85 95    STA $95         store character in BSOUR
+.,EDED 18       CLC             clear carry to indicate no errors
+.,EDEE 60       RTS
+
+---
+Additional information can be found by searching:
+- "tksa_send_talk_sa" which expands on both use the send-byte handshake $ED36/$ED40 primitives
+- "flag_errors" which expands on error flag setting and exit handshake when send fails

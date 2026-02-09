@@ -1,0 +1,64 @@
+# ********* - Section 7.2: OPEN syntax to create a relative file (OPEN file#, device#, channel#, "name,L," + CHR$(record length)), examples, and Table 7.1 showing the on-disk relative file format: data blocks, side sector blocks, field for side sector pointers to data blocks, and record padding rules.
+
+
+
+7.2 CREATING A RELATIVE FILE
+
+When a RELative file is first to be used, the OPEN statement will
+create that file; after that, that same file will be used.  The
+replace option (with the @ sign) does not erase and re-create the file.
+. The file can be expanded, read, and written into.
+
+FORMAT FOR THE OPEN STATEMENT TO CREATE RELATIVE FILE:
+
+    OPEN file#, device#, channel#, "name,L," + CHR$(record length)
+
+EXAMPLES OF OPEN STATEMENT CREATING RELATIVE FILES:
+
+    OPEN 2, 8, 2, "FILE,L," + CHR$(100)  <--+---------------+
+    OPEN F, 8, F, A$+ ",L," + CHR$(Q)  <----+ Record Length |
+    OPEN A, B, C, "TEST,L," + CHR$(33)  <---+---------------+
+
+Table 7.1: RELATIVE FILE FORMAT
+
+ +---------------------------------------------------------------+
+ | DATA BLOCK                                                    |
+ +---------------------------------------------------------------+
+ | BYTE   | DEFINITION                                           |
+ +--------+------------------------------------------------------+
+ | 0,1    | Track and block of next data block.                  |
+ +--------+------------------------------------------------------+
+ | 2-256  | 254 bytes of data. Empty records contain FF (all     |
+ |        | binary ones) in the first byte followed by 00        |
+ |        | (binary all zeros) to the end of the record.         |
+ |        | Partially filled records are padded with nulls (00). |
+ +---------------------------------------------------------------+
+ | SIDE SECTOR BLOCK                                             |
+ +--------+------------------------------------------------------+
+ | BYTE   | DEFINITION                                           |
+ +--------+------------------------------------------------------+
+ | 0,1    | Track and block of next side sector block.           |
+ +--------+------------------------------------------------------+
+ | 2      | Side sector number. (0-5)                            |
+ +--------+------------------------------------------------------+
+ | 3      | Record length.                                       |
+ +--------+------------------------------------------------------+
+ | 4,5    | Track and block of first side sector (number 0)      |
+ +--------+------------------------------------------------------+
+ | 6,7    | Track and block of second side sector (number 1)     |
+ +--------+------------------------------------------------------+
+ | 8,9    | Track and block of third side sector (number 2)      |
+ +--------+------------------------------------------------------+
+ | 10,11  | Track and block of fourth side sector (number 3)     |
+ +--------+------------------------------------------------------+
+ | 12,13  | Track and block of fifth side sector (number 4)      |
+ +--------+------------------------------------------------------+
+ | 14,15  | Track and block of sixth side sector (number 5)      |
+ +--------+------------------------------------------------------+
+ | 16-256 | Track and block pointers to 120 data blocks.         |
+ +--------+------------------------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "using_relative_files_position_command_and_record_numbering" which expands on how to open and position within existing relative files (POSITION command)

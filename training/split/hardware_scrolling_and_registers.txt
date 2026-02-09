@@ -1,0 +1,37 @@
+# Contents - Hardware scrolling: VIC can perform fine scrolling within an 8-pixel range in X and/or Y freeing CPU from pixel-level moves. Lower 3 bits of YSCRL ($D011) control vertical scroll; lower 3 bits of XSCRL ($D016) control horizontal scroll. Because these registers also hold other control bits, read-modify-write is required when changing fine scroll values (mask lower 3 bits and OR new value).
+
+more information on using interrupts properly. 
+
+SCROLLING 
+
+One of the most advanced features of the VIC 
+chip is its ability to smoothly scroll the screen in 
+either the X or Y direction. The VIC chip can scroll 
+the screen using hardware, freeing the 
+microprocessor from the task of finely scrolling the 
+screen. When the screen needs to be scrolled, the 
+VIC chip can be instructed to scroll the screen 
+within a range of 8 pixels in the X direction, the Y 
+direction, or both. 
+
+The least significant three bits of the YSCRL 
+($D01 1) register control the amount of vertical 
+scrolling. Since this register is also used for a 
+number of control functions, the register should be 
+read before it is changed. The XSCRL ($D016) 
+register works in the same way as the YSCRL 
+register except that the XSCRL register controls the 
+amount of horizontal scrolling. When changing 
+either of these registers, the lower 3 bits should be 
+masked to 0, and the number of pixels to be 
+scrolled should be OR'd to the new value. The result 
+of this procedure can then be stored back into the 
+register. 
+
+
+
+
+---
+Additional information can be found by searching:
+- "example_and_border_expansion" which expands on example code to safely modify YSCRL/XSCRL fine scroll bits
+- "scrolling_repositioning_and_performance" which expands on when to shift screen memory and swap display base

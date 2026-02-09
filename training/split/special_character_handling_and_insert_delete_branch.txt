@@ -1,0 +1,31 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Final special-character handling: sets the colour code, masks high bit of character bytes to canonical ranges, handles $FF mapping to $5E, distinguishes printable vs control ranges, dispatches to insertion/shift/quote logic or to CR/insert-delete handling, and branches into the insert/delete processing path when appropriate.
+
+.,E7CE 20 CB E8 JSR $E8CB       set the colour code
+.,E7D1 4C 44 EC JMP $EC44       go check for special character codes
+.,E7D4 29 7F    AND #$7F        mask 0xxx xxxx, clear b7
+.,E7D6 C9 7F    CMP #$7F        was it $FF before the mask
+.,E7D8 D0 02    BNE $E7DC       branch if not
+.,E7DA A9 5E    LDA #$5E        else make it $5E
+.,E7DC C9 20    CMP #$20        compare the character with [SPACE]
+.,E7DE 90 03    BCC $E7E3       if < [SPACE] go ??
+.,E7E0 4C 91 E6 JMP $E691       insert uppercase/graphic character and return
+                                character was $80 to $9F and is now $00 to $1F
+.,E7E3 C9 0D    CMP #$0D        compare with [CR]
+.,E7E5 D0 03    BNE $E7EA       if not [CR] continue
+.,E7E7 4C 91 E8 JMP $E891       else output [CR] and return
+                                was not [CR]
+.,E7EA A6 D4    LDX $D4         get the cursor quote flag, $xx = quote, $00 = no quote
+.,E7EC D0 3F    BNE $E82D       branch if quote mode
+.,E7EE C9 14    CMP #$14        compare with [INSERT DELETE]
+.,E7F0 D0 37    BNE $E829       if not [INSERT DELETE] go ??
+.,E7F2 A4 D5    LDY $D5         get current screen line length
+.,E7F4 B1 D1    LDA ($D1),Y     get character from current screen line
+.,E7F6 C9 20    CMP #$20        compare the character with [SPACE]
+.,E7F8 D0 04    BNE $E7FE       if not [SPACE] continue
+.,E7FA C4 D3    CPY $D3         compare the current column with the cursor column
+.,E7FC D0 07    BNE $E805       if not cursor column go open up space on line
+
+---
+Additional information can be found by searching:
+- "output_character_unshifted_and_control_dispatch" which expands on continues handling for characters and decides where to route them
+- "insert_delete_close_line_and_clear_last_char" which expands on branches here when detecting insert/delete in non-quote mode

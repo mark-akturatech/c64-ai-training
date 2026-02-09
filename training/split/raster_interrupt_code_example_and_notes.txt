@@ -1,0 +1,58 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Example raster interrupt code typical of Ocean games (inefficient): virtual sprite number in Y used to derive physical sprite (TYA AND #$07), write sortsprc→$D027,X, sortsprf→$C3F8/$C7F8 (doublebuffered two screens), sortspry→$D001,X, sortsprx→$D000,X (example multiplies X by 2 losing 1-pixel accuracy), and manipulate $D010 MSB via OR/AND tables (ortbl/andtbl) to select sprite X MSB. Includes table constants for MSB handling. Comments list potential optimizations (per-physical-sprite code, precalc $D010, write frame to only one screen).
+
+2.6 The raster interrupt code
+
+The aim is simple: to write the needed sprite register values as fast as
+possible. Many commercial games are quite inefficient in this, consider the
+following, which tries to be quite much like the typical code in Ocean
+games: (here, we assume Y contains the "virtual" spritenumber)
+
+                tya
+                and #$07                    ;Get physical spritenum
+                tax                         ;to X
+                lda sortsprc,y
+                sta $d027,x
+                lda sortsprf,y
+                sta $c3f8,x                 ;Write frame to both screens of the
+                sta $c7f8,x                 ;doublebuffered screen (unnecessary!)
+                txa
+                asl
+                tax
+                lda sortspry,y
+                sta $d001,x
+                lda sortsprx,y              ;Multiply sprite X-coord by 2; does
+                asl                         ;not allow 1-pixel accuracy
+                sta $d000,x
+                bcc msb_low
+msb_high:       lda $d010
+                ora ortbl,x
+                sta $d010
+                jmp nextsprite
+msb_low:        lda $d010
+                and andtbl,x
+                sta $d010
+nextsprite:     iny
+                ...
+
+ortbl:          dc.b 1
+andtbl:         dc.b 255-1
+                dc.b 2
+                dc.b 255-2
+                dc.b 4
+                dc.b 255-4
+                dc.b 8
+                dc.b 255-8
+                dc.b 16
+                dc.b 255-16
+                dc.b 32
+                dc.b 255-32
+                dc.b 64
+                dc.b 255-64
+                dc.b 128
+                dc.b 255-128
+
+
+---
+Additional information can be found by searching:
+- "raster_interrupt_optimizations_and_unrolled_code" which expands on suggests faster unrolled code variants and per-sprite routines
+- "eliminating_flicker_in_raster_interrupts" which expands on flicker issues arise from late/overlapping raster IRQs and must be handled

@@ -1,0 +1,60 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - BASIC I/O error handling and simple input/output wrappers: BIOERR error dispatcher, BCHOUT (calls CHROUT at $FFD2), BCHIN (calls CHRIN at $FFCF), BCKOUT (CHKOUT wrapper calling $E4AD/$FFC9), BCKIN (CHKIN wrapper). Includes checks for carry and branching to the I/O error handler. Registers and vectors referenced: JSR $FFD2, $FFCF, $FFC6, $E4AD, error vector $A437, MEMSIZ ($38), SPREG/SAREG/SXREG/SYREG at $030F-$030E.
+
+                                *** BIOERR: HANDLE I/O ERROR IN BASIC
+                                This routine is called whenever BASIC wishes to call one
+                                of the KERNAL I/O routines. It is also used to handle I/O
+                                errors in BASIC.
+.,E0F9 C9 F0    CMP #$F0        test error
+.,E0FB D0 07    BNE $E104
+.,E0FD 84 38    STY $38         MEMSIZ, highest address in BASIC
+.,E0FF 86 37    STX $37
+.,E101 4C 63 A6 JMP $A663       do CLR without aborting I/O
+.,E104 AA       TAX             put error flag i (X)
+.,E105 D0 02    BNE $E109       if error code $00, then set error code $1e
+.,E107 A2 1E    LDX #$1E
+.,E109 4C 37 A4 JMP $A437       do error
+
+                                *** BCHOUT: OUTPUT CHARACTER
+                                This routine uses the KERNAL routine CHROUT to output the
+                                character in (A) to an available output channel. A test is
+                                made for a possible I/O error.
+.,E10C 20 D2 FF JSR $FFD2       output character in (A)
+.,E10F B0 E8    BCS $E0F9       if carry set, handle I/O error
+.,E111 60       RTS             else return
+
+                                *** BCHIN: INPUT CHARACTER
+                                This routine uses the KERNAL routine CHRIN to input a
+                                character to (A) from an available input channel. A test
+                                is made for a possible I/O error.
+.,E112 20 CF FF JSR $FFCF       input character from CHRIN
+.,E115 B0 E2    BCS $E0F9       if carry set, handle I/O error
+.,E117 60       RTS             else return
+
+                                *** BCKOUT:SET UP FOR OUTPUT
+                                This routine uses the KERNAL routine CHKOUT to open an
+                                output channel, and tests for possible I/O error. On entry
+                                (X) must hold the the logical file number as used in OPEN.
+.,E118 20 AD E4 JSR $E4AD       open output channel via CHKOUT
+.,E11B B0 DC    BCS $E0F9       if carry set, handle I/O error
+.,E11D 60       RTS             else return
+
+                                *** BCKIN: SET UP FOR INPUT
+                                This routine uses the KERNAL routine CHKIN to open an
+                                input channel. A test as made for possible I/O error.
+.,E11E 20 C6 FF JSR $FFC6       open input channel via CHKIN
+.,E121 B0 D6    BCS $E0F9       if carry set, handle I/O error
+.,E123 60       RTS             else return
+
+                                *** BGETIN: GET ONT CHARACTER
+                                This routine uses the KERNAL routine GETIN to get a
+                                character from the keyboard buffer into (A). A test is
+                                made for possible I/O error.
+.,E124 20 E4 FF JSR $FFE4       GETIN, get character from keyboard buffer
+.,E127 B0 D0    BCS $E0F9       if carry set, handle I/O error
+.,E129 60       RTS             else return
+
+
+---
+Additional information can be found by searching:
+- "parameter_parsing_and_open_close_helpers" which expands on parsing of device/file params for OPEN/CLOSE
+- "file_io_and_serial_open_close" which expands on higher-level OPEN/CLOSE/CHKIN/CHKOUT semantics

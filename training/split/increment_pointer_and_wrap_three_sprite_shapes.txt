@@ -1,0 +1,25 @@
+# COMMODORE 64 - Explains LINE 85: P=P+1 increments the sprite pointer so the sprite cycles through multiple shapes. Describes the wrap test (IF P>194 THEN P=192) that keeps P cycling through 192, 193, 194 (three 64-byte sprite shape blocks located at the specified memory ranges). Explains how this makes the pointer point consecutively to three shape blocks for animation.
+
+
+
+
+  LINE 85:
+
+    P=P+1               Now we increase the value of the pointer by adding
+                        1 to the original value of P.
+
+    IFP>194THEN         We only want to point the sprite to 3 memory lo-
+    P=192               cations. 192 points to locations 12288 to 12350,
+                        193 points to locations 12352 to 12414, and 194
+                        points to locations 12416 to 12478. This line tells
+                        the computer to reset P back to 192 as soon as P
+                        becomes 195 so P never really becomes 195. P is
+                        192, 193, 194 and then resets back to 192 and the
+                        pointer winds up pointing consecutively to the
+                        three sprite shapes in the three 64-byte groups of
+                        memory locations containing the DATA.
+
+---
+Additional information can be found by searching:
+- "sprite_pointer_sound_triggers_gosub200_and_gosub300" which expands on which pointer values (192,193) invoke the waveform subroutines
+- "sprite_data_blocks_and_animation_via_pointers" which expands on the exact DATA blocks pointed to by P (memory ranges and how they map to sprite shapes)

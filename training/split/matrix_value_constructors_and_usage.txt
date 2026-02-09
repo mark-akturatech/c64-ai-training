@@ -1,0 +1,60 @@
+# Kick Assembler - Describes Matrix() identity matrix and constructor helpers: RotationMatrix(aX,aY,aZ) (angles in radians), ScaleMatrix(sX,sY,sZ), MoveMatrix(mX,mY,mZ), PerspectiveMatrix(zProj). Explains combining matrices by multiplication (read right to left) and transforming vectors via m*Vector(x,y,z).
+
+Matrix()*Vector(1,2,3)
+
+Return the product of the matrix and
+a vector.
+
+*Matrix
+
+Matrix()*Matrix()
+
+Returns the product of two matrixes.
+
+Here is a little program to illustrate how matrixes can be used. It pre calculates an animation of a cube that rotates
+around the x, y and z-axis and is projected on the plane where z=2.5. The data is placed at the label ‘cubeCoords’:
+//-------------------------------------------------------------------------------// Objects
+//-------------------------------------------------------------------------------.var Cube = List().add(
+Vector(1,1,1), Vector(1,1,-1), Vector(1,-1,1), Vector(1,-1,-1),
+Vector(-1,1,1), Vector(-1,1,-1), Vector(-1,-1,1), Vector(-1,-1,-1))
+
+//-------------------------------------------------------------------------------// Macro for doing the precalculation
+//-------------------------------------------------------------------------------.macro PrecalcObject(object, animLength, nrOfXrot, nrOfYrot, nrOfZrot) {
+// Rotate the coordinate and place the coordinates of each frams in a list
+.var frames = List()
+.for(var frameNr=0; frameNr<animLength;frameNr++) {
+// Set up the transform matrix
+.var aX = toRadians(frameNr*360*nrOfXrot/animLength)
+.var aY = toRadians(frameNr*360*nrOfYrot/animLength)
+
+69
+
+Special Features
+
+.var aZ = toRadians(frameNr*360*nrOfZrot/animLength)
+.var zp = 2.5 // z-coordinate for the projection plane
+.var m = ScaleMatrix(120,120,0)*
+PerspectiveMatrix(zp)*
+MoveMatrix(0,0,zp+5)*
+RotationMatrix(aX,aY,aZ)
+// Transform the coordinates
+.var coords = List()
+.for (var i=0; i<object.size(); i++) {
+.eval coords.add(m*object.get(i))
+}
+.eval frames.add(coords)
+}
+// Dump the list to the memory
+.for (var coordNr=0; coordNr<object.size(); coordNr++) {
+.for (var xy=0;xy<2; xy++) {
+.fill animLength, $80+round(frames.get(i).get(coordNr).get(xy))
+}
+}
+}
+//-------------------------------------------------------------------------------// The vector data
+//-------------------------------------------------------------------------------.align $100
+cubeCoords: PrecalcObject(Cube,256,2,-1,1)
+
+---
+Additional information can be found by searching:
+- "vector_value_functions" which expands on apply matrices to vectors

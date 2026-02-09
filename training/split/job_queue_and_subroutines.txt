@@ -1,0 +1,63 @@
+# byRiclianll - Post-certification steps, bad-sector allocation routine and low-level disk job support routines. Contains code that allocates any recorded bad sectors from the error array (looping PRINT#15 'B-A' calls), and small subroutines for SEEK and WRITE (JOB values), plus the JOB QUEUE implementation (assembling M-W/M-R job packets, retry logic, reading job results, and returning with error handling).
+
+
+960  FORI=lTOA 
+
+970  PRINT#15,  "B-A";0;T7.(I)  ;  S7.  ( I  ) 
+980  NEXTI 
+990  CLOSE 15 
+
+lOOO  PRINT" tDOWNJDONE ! " 
+
+1010  END 
+
+102O  REM  SEEK 
+
+1030  J0B=176 
+
+1040  G0SUB112O 
+
+1050  IFE=lGOT010aO 
+
+1060  RETURN 
+
+1070  REM  WRITE 
+
+1080  JOB=144 
+
+1090  G0SUB1120 
+
+llOO  RETURN 
+
+1110  REM  JOB  QUEUE 
+
+1120  TRY=0 
+
+1 130  PRINT#15, "M-W"CHR* (8) CHR* (O) CHR* (2) 
+CHR*(T)CHR*(S) 
+
+1140  PRINT#15, "M-W"CHR*(1)CHR*(0)CHR*(1) 
+
+CHR* < JOB) 
+
+1150  TRY=TRY+1 
+
+1160  PRINT#15, "M-R"CHR*(1)CHR*(0) 
+1170  GET#15,E* 
+
+
+93 
+
+
+1180  IFE*=""THENE*=CHR* (O) 
+1190  E=ASC<E*> 
+1200  IFTRY=500G0T01220 
+1210  IFE>127G0T01150 
+1220  RETURN 
+
+
+
+---
+Additional information can be found by searching:
+- "buffer_init_certify_loop_and_restore_bam" which expands on called/used to perform the actual disk write/allocate operations during certification
+- "annotated_line_range_summary" which expands on points to where these subroutines are documented for intermediate disk programming (lines 1020-1230)

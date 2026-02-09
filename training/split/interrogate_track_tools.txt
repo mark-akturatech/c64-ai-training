@@ -1,0 +1,31 @@
+# byRiclianll - Descriptions of the interrogation utilities: INTERROGATE FORMATTING ID'S (uses SEEK to read a track's header and prints ID HI/LO from zero page $0016-$0017; may hang if FDC gets 'stuck' on a track — fail-safe mechanism discussed), INTERROGATE A TRACK (scans a single track using the job queue: SEEK then READ of each sector, returns IP error codes to screen; warns about occasional erroneous results), SHAKE, RATTLE, AND ROLL (uses a UI command instead of direct READ from queue; does a SEEK first to avoid 29 errors caused by multiple formatting), INTERROGATE A DISKETTE (runs INTERROGATE A TRACK in a loop; reports only bad sectors).
+
+INTERROGATE  A  TRACK  scans  a  single  track  using  the  job  queue.  The  track  is  found 
+with  a  SEEK  and  then  the  integrity  of  each  sector  is  verified  with  a  READ.  IP  error 
+codes  are  returned  to  the  screen.  No  BUMP  occurs.  The  routine  may  occasionally  pro- 
+vide erroneous  information.  This  is  a  major  shortcoming  of  a  READ  from  the  queue. 
+Certain  errors  are  returned  clean  as  a  whistle  (22,  23,  27).  A  partially  formatted  track 
+(mid-track  21  error)  or  a  smattering  of  20  errors  tend  to  throw  the  FDC  into  an  absolute 
+tizzy.  Make  note  of  this.  Repeated  runs  of  the  same  track  often  return  a  different  error 
+pattern.  Errors  tend  to  accumulate  when  a  BUMP  is  overridden.  Solution?  See  the  follow- 
+ing paragraph. 
+
+SHAKE,  RATTLE,  AND  ROLL  also  scans  a  single  track  by  using  a  Ul  command  rather 
+than  a  direct  READ  from  the  job  queue.  The  track  is  still  found  by  a  SEEK,  however, 
+to  prevent  29  errors  in  the  event  that  multiple  formatting  played  a  part  in  the  protec- 
+tion scheme.  A  29  error  is  not  an  error  per  se.  It  is  merely  a  stumbling  block.  A  Ul 
+without  a  SEEK  to  a  multiple-formatted  diskette  will  report  a  DISK  ID  MISMATCH. 
+Information  can  be  stored  on  a  track  with  a  different  ID.  A  loader  will  retrieve  it  by 
+the  same  method  we're  using  here.  Errors  will  force  a  BUMP  so  use  discretion.  Please 
+note  that  a  full  track  of  21  errors,  23  errors,  or  27  errors  does  not  need  to  be  read  with 
+this  routine.  After  you  analyze  a  track,  write  the  errors  down  and  file  your  notes  away 
+for  archival  needs.  Your  1541  will  love  you  for  it. 
+
+INTERROGATE  A  DISKETTE  is  the  lazy  man's  routine.  It  scans  an  entire  diskette 
+reporting  only  bad  sectors  to  the  screen.  The  program  is  essentially  INTERROGATE 
+A  TRACK  in  a  loop.  Note  that  you  may  have  to  patch  around  a  track  to  map  the  entire 
+diskette.  See  the  example  patch  above. 
+
+---
+Additional information can be found by searching:
+- "analyzing_protected_diskette_intro" which expands on context and why these utilities are useful

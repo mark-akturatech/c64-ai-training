@@ -1,0 +1,34 @@
+# Kick Assembler - Explains 'min' and 'max' parameters to enforce segment address ranges and that exceeding them raises errors. Demonstrates 'fill' parameter to fill unused bytes in min-max range with a fill byte, and 'fillByte' to specify the byte. Gives example of restricting size e.g. 128 bytes competition entry where .segment Main [min=$0801, max=$0880-2, outPrg="out.prg"] is used.
+
+pix:
+
+lda CHARGEN // Start char line
+ldx #7
+asl
+// Start pixel
+rol CHARSET,x
+dex
+bpl npi
+inc ch+1
+// Next char line
+bne ch4
+inc pix+2
+// Inc both high bytes
+inc ch+2
+bne ch4
+// Run until CHARGEN is $0000
+
+ee:
+lda #$37
+sta $1
+cli
+lda #SCREEN/$40|CHARSET/$400
+sta $d018
+rts
+
+10.12. Overlapping memory block
+When all blocks of a segment are assembled, any overlaps are detected. Normally overlaps will give an error
+
+---
+Additional information can be found by searching:
+- "rotated_rom_font_128b_example" which expands on example of enforcing small prg size

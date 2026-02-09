@@ -1,0 +1,30 @@
+# COMMODORE 64 - STEP 8 — How to compress BASIC programs by running DATA statements together (crunching). Includes a crunched sample BASIC listing that sets VIC base and sprite pointers, pokes control registers, uses a FOR...READ...POKE loop to transfer 63 DATA bytes into RAM (POKE 832+n), and positions the sprite. Contains the program lines 10–40 (setup and load loop), crunched DATA lines 100–102, and placement line 200. Key addresses shown: VIC base at 53248, sprite control at 53269 and 53252/53253, and example uses memory starting at 832.
+
+~
+
+
+  STEP 8:
+
+  CRUNCH YOUR PROGRAM INTO A SMALLER SPACE BY RUNNING TOGETHER ALL THE DATA
+  STATEMENTS, AS SHOWN IN THE SAMPLE PROGRAM BELOW. Note that we asked you
+  to write your sprite program on a piece of paper. We did this for a good
+  reason. The DATA STATEMENT LINES 100-120 in the program in STEP 1 are
+  only there to help you see which numbers relate to which groups of pixels
+  in your sprite. Your final program should be "crunched" like this:
+
+start tok64 page165.prg
+  10 print"{clear}":poke53280,5:poke53281,6
+  20 v=53248:pokev+34,3
+  30 poke 53269,4:poke2042,13
+  40 forn=0to62:readq:poke832+n,q:next
+  100 data255,255,255,128,0,1,128,0,1,128,0,1,144,0,1,144,0,1,144,0,1,144,0
+  101 data1,144,0,1,144,0,1,144,0,1,144,0,1,144,0,1,144,0,1,128,0,1,128,0,1
+  102 data128,0,1,128,0,1,128,0,1,128,0,1,255,255,255
+  200 x=200:y=100:poke53252,x:poke53253,y
+stop tok64
+
+
+---
+Additional information can be found by searching:
+- "smooth_and_reverse_sprite_movement_plus_vertical_scrolling" which expands on Techniques to move the sprite after loading (wrap-around, right/left X settings, and vertical scroll).
+- "michael_s_dancing_mouse_example_program" which expands on Full example animation that demonstrates loading multiple sprites and movement techniques described earlier.

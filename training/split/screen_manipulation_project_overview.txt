@@ -1,0 +1,34 @@
+# MACHINE - Project plan: change a window on the screen spanning multiple lines and columns using indirect, indexed addressing. Use an indirect pointer per line (in zero page) to the start of a line and Y index to walk columns within each line, then advance indirect pointer to next line.
+
+
+Project:  Screen Manipulation
+-----------------------------
+
+This project is intended to show how indirect, indexed addressing can be used
+effectively.  We'll change something on the screen--enough so that we reach
+more than 256 addresses.  Ordinary indexing, therefore, won't do.
+
+                                                                         :85:
+
+We'll select a number of lines on the screen; within each line, we'll change
+a certain group of characters.  In other words, we will write the code so as
+to manipulate a window on the screen.
+
+To do this, we'll need to code two steps:  setting up the start of a screen
+line, and later moving on to the next line when needed.  Within each line,
+we'll work our way through the range of screen columns that we have selected.
+In fact, it's a big loop (for the lines) containing a small loop (for the
+columns within that line).  We'll use indirect addressing to point to the
+start of each line, and indexing (the Y register) to select the portion of
+that line to change.
+
+Since there's a variety of Commodore machines, we have some problems to
+resolve.  All Commodore screens are "memory mapped," that is, the information
+appearing on the screen is copied directly from some part of memory.  We may
+change the screen by changing the appropriate memory.  But different machines
+use different memory addresses; and in VIC and Commodore 64, the screen may
+be moved around.  Another thing to consider is that the length of the line
+
+---
+Additional information can be found by searching:
+- "indirect_indexed_addressing" which expands on core addressing mode used in the screen manipulation project

@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Entry point to start a tape write: calls set-pointer (JSR $F7D7), sets the write lead cycle count ($AB) (20 cycles or other value depending on entry), waits for PLAY/RECORD (JSR $F838), exits if STOP pressed, disables interrupts (SEI), loads an interrupt enable constant and selects the tape-write leader vector index (LDX #$08). Control then falls into the shared tape read/write handler.
+
+                                *** initiate a tape write
+.,F864 20 D7 F7 JSR $F7D7       set tape buffer start and end pointers
+                                do tape write, 20 cycle count
+.,F867 A9 14    LDA #$14        set write lead cycle count
+.,F869 85 AB    STA $AB         save write lead cycle count
+                                do tape write, no cycle count set
+.,F86B 20 38 F8 JSR $F838       wait for PLAY/RECORD
+.,F86E B0 6C    BCS $F8DC       if STOPped clear save IRQ address and exit
+.,F870 78       SEI             disable interrupts
+.,F871 A9 82    LDA #$82        enable ?? interrupt
+.,F873 A2 08    LDX #$08        set index for tape write tape leader vector
+
+
+---
+Additional information can be found by searching:
+- "set_tape_buffer_start_and_end_pointers" which expands on used to set buffer boundaries before writing
+- "wait_for_play_or_record_prompt" which expands on waits for RECORD+PLAY before starting a write
+- "tape_read_write_setup_and_irq_save" which expands on common setup for read/write that follows

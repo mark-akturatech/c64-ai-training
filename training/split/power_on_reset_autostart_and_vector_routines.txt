@@ -1,0 +1,106 @@
+# ********* - Power-On Reset routine (64738 $FCE2) executed on reset: sets interrupt disable, stack pointer, tests for autostart cartridge and jumps to cold start vector if found, else initializes Kernal (IOINIT, RAMTAS, RESTOR, CINT) and enters BASIC cold start. Autostart cartridge check (64770 $FD02 and 64784 $FD10) looks for 'CBM80' pattern in cartridge header. RESTOR routine (64789 $FD15) restores RAM vectors for default I/O, and VECTOR (64794 $FD1A) sets RAM vector table from table pointed by .X/.Y allowing save/restore of vector tables (recommend SEI/CLI around VECTOR calls).
+
+
+62223         $F30F
+Find the File in the Logical File Table
+
+This subroutine is used by many Kernal routines to find the position
+of the logical file in the logical file table at 601 ($259).
+
+62239         $F31F
+Set Current Logical File, Current Device, and Current Seconday Address
+
+This subroutine is used to update the Kernal variables at 184-186
+($B8-$BA) which holds the current logical file number, current device
+number, and current secondary address number.
+
+62255         $F32F          CLALL
+Close All Logical I/O Files
+
+CLALL is a documented Kernal routine whose entry point in the jump
+table is 65511 ($FFE7).
+
+The routine jumps through a RAM vector at 812 ($32C).  It closes all
+open files, by resetting the index into open files at 152 ($98) to
+zero.  It then falls through to the next routine, which restores the
+default I/O devices.
+
+62259         $F333          CLRCHN
+Restore Current Input and Output Devices to the Default Devices
+
+This is a documented Kernal Routine which can be entered at location
+65484 ($FFCC) in the jump table.
+
+The routine jumps through a RAM vector at 802 ($322).  It sets the
+current input device to the keyboard, and the current output device to
+the screen.  Also, if the current input device was formerly a serial
+device, the routine sends it an UNTALK command on the serial bus, and
+if a serial device was formerly the current output device, the routine
+sends it an UNLISTEN command.
+
+62282         $F34A          OPEN
+Open a Logical I/O File
+
+OPEN is a documented Kernal I/O routine.  It can be entered from the
+jump table at 65472 ($FFC0).
+
+The routine jumps through a RAM vector at 794 ($31A).  This routine
+assigns a logical file to a device, so that it can be used for
+Input/Output operations.  In order to specify the logical file number,
+the device number, and the secondary address if any, the SETLFS
+routine must first be called.  Likewise, in order to designate the
+filename, the SETNAM routine must be used first.  After these two
+routines are called, OPEN is then called.
+
+62622         $F49E          LOAD
+Load RAM from a Device
+
+This is a documented Kernal routine, whose entry in the jump table
+appears at 65493 ($FFD5).
+
+The routine jumps through a RAM vector at 816 ($330).  LOAD is used to
+transfer data froma device directly to RAM.  It can also be used to
+verify RAM, comparing its contents to those of a disk or tape file.
+To choose between these operations you must set the Accumulator with a
+0 for LOAD, or a 1 for VERIFY.
+
+Since the LOAD routine performs an OPEN, it must be preceded by a call
+to the SETLFS routine to specify the logical file number, device
+number, and secondary address, and a call to the SETNAM routine to
+specify the filename (a LOAD from tape can be performed without a
+filename being specified).  Then the .X and .Y registers should be set
+with the starting address for the load, and the LOAD routine called.
+If the secondary address specified was a 1, this starting address will
+be ignored, and the header information will be used to supply the load
+address.  If the secondary address was a 0, the address supplied by
+the call will be used.  In either case, upon return from the
+subroutine, the .X and .Y registers will contain the address of the
+highest RAM location that was loaded.
+
+62885         $F5A5
+Print SEARCHING Message if in Direct Mode
+
+62930         $F5D2
+Print LOADING or VERIFYING
+
+62941         $F5DD          SAVE
+Save RAM to a Device
+
+This is a documented Kernal routine, whose entry in the jump table
+appears at 65496 ($FFD8).
+
+The routine jumps through a RAM vector at 818 ($332).  SAVE is used to
+transfer data directly from RAM to an I/O device.  Since the SAVE
+routine performs an OPEN, it must be preceded by a call to the SETLFS
+routine to specify the logical file number, device number, and
+secondary address, and a call to the SETNAM routine to specify the
+filename (although a SAVE to the cassette can be performed without
+giving a filename).  A Page 0 pointer to the starting address of the
+area to be saved should be set up, with the low byte of the address
+first.  The accumulator should be loaded with the Page 0 offset of
+that pointer, then the .X and .Y registers should be set with the
+ending address for the save, and the SAVE routine called.
+
+---
+Additional information can be found by searching:
+- "kernal_patches_iobase_and_screen_plot_routines" which expands on IOINIT is called during reset to initialize CIAs and VIC defaults

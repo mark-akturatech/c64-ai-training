@@ -1,0 +1,47 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Lists the main rules (cycles valid for the 6569) governing sprite display steps 1–6: initialization of expansion flip-flop (MxYE in $D017), inversion on cycle 55 if MxYE set, checks in cycles 55/56 for MxE in $D015 and Y coordinate to enable DMA and clear MCBASE, loading MC from MCBASE in phase 1 of cycle 58 and enabling display if DMA and Y match, the s-access sequence (three reads stored into the 24-bit shift register and MC increments after each s-access), and shifting/out output behavior when the raster X matches sprite X (including X-expansion behavior from MxXE in $D01D and multicolor grouping).
+
+The display of a sprite is done after the following rules (the cycle
+numbers are only valid for the 6569):
+
+1. The expansion flip flip is set as long as the bit in MxYE in register
+   $d017 corresponding to the sprite is cleared.
+
+2. If the MxYE bit is set in the first phase of cycle 55, the expansion
+   flip flop is inverted.
+
+3. In the first phases of cycle 55 and 56, the VIC checks for every sprite
+   if the corresponding MxE bit in register $d015 is set and the Y
+   coordinate of the sprite (odd registers $d001-$d00f) match the lower 8
+   bits of RASTER. If this is the case and the DMA for the sprite is still
+   off, the DMA is switched on, MCBASE is cleared, and if the MxYE bit is
+   set the expansion flip flip is reset.
+
+4. In the first phase of cycle 58, the MC of every sprite is loaded from
+   its belonging MCBASE (MCBASE->MC) and it is checked if the DMA for the
+   sprite is turned on and the Y coordinate of the sprite matches the lower
+   8 bits of RASTER. If this is the case, the display of the sprite is
+   turned on.
+
+5. If the DMA for a sprite is turned on, three s-accesses are done in
+   sequence in the corresponding cycles assigned to the sprite (see the
+   diagrams in section 3.6.3.). The p-accesses are always done, even if the
+   sprite is turned off. The read data of the first access is stored in the
+   upper 8 bits of the shift register, that of the second one in the middle
+   8 bits and that of the third one in the lower 8 bits. MC is incremented
+   by one after each s-access.
+
+6. If the sprite display for a sprite is turned on, the shift register is
+   shifted left by one bit with every pixel as soon as the current X
+   coordinate of the raster beam matches the X coordinate of the sprite
+   (even registers $d000-$d00e), and the bits that "fall off" are
+   displayed. If the MxXE bit belonging to the sprite in register $d01d is
+   set, the shift is done only every second pixel and the sprite appears
+   twice as wide. If the sprite is in multicolor mode, every two adjacent
+   bits form one pixel.
+
+
+---
+Additional information can be found by searching:
+- "s_access_timing_and_bus_takeover" which expands on Which cycles include the s-accesses and how they relate to p-access timing
+- "sprite_data_sequencer_and_registers" which expands on Where the s-access read data are stored (24-bit shift register) and MC increment behavior
+- "sprite_display_rules_7_and_8" which expands on Continuation: MCBASE adjustments and termination of DMA/display

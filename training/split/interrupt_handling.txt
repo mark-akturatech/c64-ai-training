@@ -1,0 +1,48 @@
+# CIA 6526 Complex Interface Adapter - Comprehensive Reference - CIA interrupt handling overview: CIA1 connects to CPU /IRQ, CIA2 to /NMI. Five interrupt sources per CIA: Timer A underflow, Timer B underflow, TOD alarm match, Shift register transfer complete, FLAG pin negative edge. Reading the ICR clears all interrupt flags and de-asserts IRQ/NMI. Important: NMI is edge-triggered; NMI handler must read $DD0D to clear CIA2's interrupt flag or subsequent NMIs won't trigger. Typical IRQ setup example (assembly) provided for enabling Timer A IRQ on CIA1.
+
+8. INTERRUPT HANDLING
+=============================================================
+
+CIA 1 -> IRQ (directly connected to CPU /IRQ line)
+CIA 2 -> NMI (directly connected to CPU /NMI line)
+
+Five interrupt sources per CIA:
+  1. Timer A underflow
+  2. Timer B underflow
+  3. TOD alarm match
+  4. Shift register (8 bits transferred)
+  5. FLAG pin (negative edge)
+
+Interrupt Acknowledgement:
+  Reading the ICR register ($DC0D or $DD0D) clears all pending
+  interrupt flags and de-asserts the IRQ/NMI line.
+
+  IMPORTANT: Because NMI is edge-triggered on the CPU, the NMI
+  handler must read $DD0D to clear the CIA 2 interrupt flag.
+  Otherwise, subsequent NMIs cannot be triggered.
+
+Typical IRQ Setup for Timer A (CIA 1):
+  SEI              ; Disable interrupts
+  LDA #<handler    ; Set IRQ vector low byte
+  STA $0314
+  LDA #>handler    ; Set IRQ vector high byte
+  STA $0315
+  LDA #$7F        ; Disable all CIA 1 interrupts
+  STA $DC0D
+  LDA $DC0D       ; Acknowledge any pending interrupts
+  LDA #<count     ; Set timer value low byte
+  STA $DC04
+  LDA #>count     ; Set timer value high byte
+  STA $DC05
+  LDA #$81        ; Enable Timer A interrupt
+  STA $DC0D
+  LDA #$11        ; Start Timer A, continuous mode, PHI2 clock
+  STA $DC0E
+  CLI              ; Enable interrupts
+
+
+---
+Additional information can be found by searching:
+- "interrupt_control_register_icr" which expands on ICR read clears flags and write masks enable/disable sources
+- "cia1_detailed_connections" which expands on CIA1 -> /IRQ usage and typical IRQ setup in KERNAL
+- "cia2_detailed_connections" which expands on CIA2 -> /NMI behavior and need to clear ICR in NMI handler

@@ -1,0 +1,72 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - NMI handler: saves A/X/Y on stack, disables interrupts, saves VIA 2 ICR, checks for autostart ROM and triggers autostart if present, increments real time clock (JSR $F6BC), scans stop key (JSR $FFE1), handles BRK/user-function default vector if STOP pressed (calls $FD15, $FDA3, $E518 then JMP into BASIC break handler), and runs RS232 NMI handling sublogic. Restores processor state and RTI at end. Interacts with VIA 2 registers ($DD0D), and RS232 interrupt enable byte $02A1.
+
+                                *** NMI handler
+.,FE47 48       PHA             save A
+.,FE48 8A       TXA             copy X
+.,FE49 48       PHA             save X
+.,FE4A 98       TYA             copy Y
+.,FE4B 48       PHA             save Y
+.,FE4C A9 7F    LDA #$7F        disable all interrupts
+.,FE4E 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FE51 AC 0D DD LDY $DD0D       save VIA 2 ICR
+.,FE54 30 1C    BMI $FE72       
+.,FE56 20 02 FD JSR $FD02       scan for autostart ROM at $8000
+.,FE59 D0 03    BNE $FE5E       branch if no autostart ROM
+.,FE5B 6C 02 80 JMP ($8002)     else do autostart ROM break entry
+.,FE5E 20 BC F6 JSR $F6BC       increment real time clock
+.,FE61 20 E1 FF JSR $FFE1       scan stop key
+.,FE64 D0 0C    BNE $FE72       if not [STOP] restore registers and exit interrupt
+
+                                *** user function default vector
+                                BRK handler
+.,FE66 20 15 FD JSR $FD15       restore default I/O vectors
+.,FE69 20 A3 FD JSR $FDA3       initialise SID, CIA and IRQ
+.,FE6C 20 18 E5 JSR $E518       initialise the screen and keyboard
+.,FE6F 6C 02 A0 JMP ($A002)     do BASIC break entry
+
+                                *** RS232 NMI routine
+.,FE72 98       TYA             
+.,FE73 2D A1 02 AND $02A1       AND with the RS-232 interrupt enable byte
+.,FE76 AA       TAX             
+.,FE77 29 01    AND #$01        
+.,FE79 F0 28    BEQ $FEA3       
+.,FE7B AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,FE7E 29 FB    AND #$FB        mask xxxx x0xx, clear RS232 Tx DATA
+.,FE80 05 B5    ORA $B5         OR in the RS232 transmit data bit
+.,FE82 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,FE85 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FE88 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FE8B 8A       TXA             
+.,FE8C 29 12    AND #$12        
+.,FE8E F0 0D    BEQ $FE9D       
+.,FE90 29 02    AND #$02        
+.,FE92 F0 06    BEQ $FE9A       
+.,FE94 20 D6 FE JSR $FED6       
+.,FE97 4C 9D FE JMP $FE9D       
+.,FE9A 20 07 FF JSR $FF07       
+.,FE9D 20 BB EE JSR $EEBB       
+.,FEA0 4C B6 FE JMP $FEB6       
+.,FEA3 8A       TXA             get active interrupts back
+.,FEA4 29 02    AND #$02        mask ?? interrupt
+.,FEA6 F0 06    BEQ $FEAE       branch if not ?? interrupt
+                                was ?? interrupt
+.,FEA8 20 D6 FE JSR $FED6       
+.,FEAB 4C B6 FE JMP $FEB6       
+.,FEAE 8A       TXA             get active interrupts back
+.,FEAF 29 10    AND #$10        mask CB1 interrupt, Rx data bit transition
+.,FEB1 F0 03    BEQ $FEB6       if no bit restore registers and exit interrupt
+.,FEB3 20 07 FF JSR $FF07       
+.,FEB6 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FEB9 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FEBC 68       PLA             pull Y
+.,FEBD A8       TAY             restore Y
+.,FEBE 68       PLA             pull X
+.,FEBF AA       TAX             restore X
+.,FEC0 68       PLA             restore A
+.,FEC1 40       RTI             
+
+---
+Additional information can be found by searching:
+- "scan_for_autostart_rom_and_signature" which expands on autostart detection used by NMI
+- "rs232_interrupt_and_timing_handlers" which expands on RS232 NMI handling uses FED6.. block
+- "restore_default_io_vectors" which expands on user-function default vector invoked via $FD15

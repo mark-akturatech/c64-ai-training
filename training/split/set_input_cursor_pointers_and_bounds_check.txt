@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Checks the input cursor row/column against internal logical-line pointers: determines whether the input came from the screen or keyboard by comparing the saved input cursor row to current pointers, saves cursor column if within bounds, and branches depending on position (inside line vs beyond end-of-line).
+
+.,E61B A5 C9    LDA $C9         get the input cursor row
+.,E61D 30 1B    BMI $E63A       
+.,E61F A6 D6    LDX $D6         get the cursor row
+.,E621 20 ED E6 JSR $E6ED       find and set the pointers for the start of logical line
+.,E624 E4 C9    CPX $C9         compare with input cursor row
+.,E626 D0 12    BNE $E63A       
+.,E628 A5 CA    LDA $CA         get the input cursor column
+.,E62A 85 D3    STA $D3         save the cursor column
+.,E62C C5 C8    CMP $C8         compare the cursor column with input [EOL] pointer
+.,E62E 90 0A    BCC $E63A       if less, cursor is in line, go ??
+.,E630 B0 2B    BCS $E65D       else the cursor is beyond the line end, branch always
+
+---
+Additional information can be found by searching:
+- "process_carriage_return_trim_spaces_prepare_input" which expands on called after trimming and preparing input
+- "input_from_screen_or_keyboard_loop" which expands on enters the main input-from-screen handling if relevant

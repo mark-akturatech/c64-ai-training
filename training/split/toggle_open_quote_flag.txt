@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Subroutine to detect the double-quote character ("), toggle the cursor's quote-mode flag and return the quote character in A; used to enter/exit quote mode when typing or reading from screen.
+
+
+                                *** if open quote toggle cursor quote flag
+.,E684 C9 22    CMP #$22        comapre byte with "
+.,E686 D0 08    BNE $E690       exit if not "
+.,E688 A5 D4    LDA $D4         get cursor quote flag, $xx = quote, $00 = no quote
+.,E68A 49 01    EOR #$01        toggle it
+.,E68C 85 D4    STA $D4         save cursor quote flag
+.,E68E A9 22    LDA #$22        restore the "
+.,E690 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "input_from_screen_or_keyboard_loop" which expands on called when an open-quote is encountered
+- "insert_uppercase_graphic_character" which expands on quote mode affects how characters are inserted

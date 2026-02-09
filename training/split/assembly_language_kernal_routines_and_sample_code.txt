@@ -1,0 +1,59 @@
+# ********* - Chapter 10: Using the 1541 from assembly language — list of Kernal subroutine entry points (SETLFS, SETNAM, OPEN, CLOSE, CHKIN, CLRCH, BASIN, BSOUT), notes to consult the Programmer's Reference Guide for details, and a sample assembly-language program showing how to open and read a sequential file one byte at a time using JSR calls to the Kernal routines.
+
+
+
+10. ASSEMBLY LANGUAGE AND THE 1541
+
+If you want to use your 1541 disk drive to manipulate data directly
+from assembly language you can use the information presented below.
+
+Here is a list of subroutines that provide the start of memory
+locations in each of the Kernal routines. These routines are used in
+conjunction with the assembly language command JSR to jump to that
+subroutine location in memory:
+
+ SUBROUTINE
+ SETLFS = $FFBA       ; set logical, physical & secondary addresses
+ SETNAM = $FFBD       ; save length & address of filename
+ OPEN   = SFFC0       ; open a logical file
+ CLOSE  = $FFC3       ; close a logical file
+ CHKIN  = $FFC6       ; open a channel for input
+ CLRCH  = $FFCC       ; clear all channels
+ BASIN  = $FFCF       ; get a byte from a file
+ BSOUT  = $FFD2       ; output a character to the screen
+
+For a more complete description as to what each routine does and what
+parameters are passed to and from each routine, see your Commodore 64
+or VIC-20 Programmer's Reference Guide.
+
+Now, for a practical application of the subroutines listed above, here
+is a sample program using those routines to read a sequential file on
+a disk. Assume that you have stored the filename "TEST" at $C000.
+
+ INIT                 ; initialize:
+ LDA #$04             ; filename length
+ LDX #$00             ; low byte of filename address
+ LDY #$C0             ; high byte of filename address
+ JSR SETNAM           ; save length & address of filename
+ LDA #$03             ; logical address
+ LDX #$08             ; device number
+ LDY #$00             ; secondary address (0 = read seq. file)
+ JSR SETLFS           ; set logical, physical & secondary addresses
+ JSR OPEN             ; open logical file
+ LDX #$03             ; set x-register to logical address
+ JSR CHKIN            ; open input channel
+ your program info    ; get data and print it one byte at a time
+ JSR BASIN            ; get one byte
+ BEQ END              ; if 0 then end of file or error
+ JSR BSOUT            ; output character to the screen
+ JMP your prog. info  ; loop
+ END
+ LDA #$03             ; set accumulator to logical address
+ JSR CLOSE            ; close file
+ JSR CLRCH            ; clear channels and reset defaults
+ RTS                  ; end of assembly language program
+
+
+---
+Additional information can be found by searching:
+- "memory_read_command_and_sample_program" which expands on reading controller memory and executing code are related low-level operations

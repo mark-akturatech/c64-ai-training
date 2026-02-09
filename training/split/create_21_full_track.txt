@@ -1,0 +1,123 @@
+# byRiclianll - 7.6 How to Create 21 Errors on a Full Track: BASIC driver to destroy an entire track (FULL TRACK 21 ERROR). Includes user prompts (track number), validation (track in 1-35), writer setup (OPEN to drive, print commands), job queue interaction (JSUB to machine-code entry points), and limitations/parameters: none; parameter is track number. Driver writes non-sync bytes via machine-code routine to make the FDC time out (full-track 21 error).
+
+7.6  How  to  Create  21  Errors  on  a  Full  Track 
+
+
+FULL  TRACK  21  ERROR 
+
+100  REM  21   ERROR  -  1541 
+
+110  PRINT" CCLR>21   ERROR  -  1541" 
+
+120  PRINT" {DOWN> INSERT  CLONE   IN  DRIVE" 
+
+130  input" cdown> destroy  track" ;t 
+
+140  ift< 10rt>35thenend 
+
+150  input" {down> are  you  sure    y{left  3> " 
+
+;q« 
+
+160  ifq*<>"y"thenend 
+
+170  0PEN15,8, 15 
+180  PRINTttlS, "10" 
+
+
+Limitations:  None. 
+
+
+Parameters:  Track  number. 
+
+
+124 
+
+
+1 90  I NPUT# 1 5 , EN* , EM* , ET* , ES* 
+200  IFEN*="0b"GQTQ250 
+
+210  PRINT" <DOWN> "EN*",    "EM*" , "ET*" , "ES* 
+
+220  CLQSE15 
+
+230  END 
+
+240  REM  SEEK 
+
+250  JQB=176 
+
+260  GDSUB400 
+
+270  FQRI=0T023 
+
+280  READD 
+
+290  D*=D*+CHR*(D) 
+
+300  NEXTI 
+
+310  PRINT#15, "M-W"CHR* (0) CHR* (4) CHR* (24) 
+D* 
+
+320  REM  EXECUTE 
+
+330  PRINT"  <:D0WN>^RVS>  DESTROY  I NGCRQFFJ  TR 
+
+ACK";T 
+
+340  J0B=224 
+
+350  G0SUB400 
+
+360  PRINT" tDOWN>DONE ! " 
+
+370  CLOSE 15 
+
+380  END 
+
+390  REM  JOB  QUEUE 
+400  TRY=0 
+
+410  PRINT#15. "M-W"CHR* (8) CHR* (O) CHR* (2) C 
+HR*(T)CHR*(0) 
+
+420  PRINT#15, "M-W"CHR*<1)CHR*(0)CHR*<1)C 
+
+HR*(JOB) 
+
+430  TRY=TRY+1 
+
+440  PRINT#15, "M-R"CHR* ( 1 ) CHR* (O) 
+
+450  GET#15,E* 
+
+460  IFE*=""THENE*=CHR*(0) 
+
+470  E=ASC(E*) 
+
+480  IFTRY=500G0T0510 
+
+490  IFE>127G0TQ430 
+
+500  RETURN 
+
+510  CL0SE15 
+
+520  PRINT"  <:down>  CRVSJFAILEDCROFFJ " 
+530  END 
+
+540  REM  21  ERROR 
+
+550  DATA  32,163,253,169,  85,141,  1,  28 
+560  DATA  162,255,160,  48,  32,201,253,  32 
+570  DATA       0,254,169,      1,  76,105,249,234 
+
+
+125 
+
+
+
+---
+Additional information can be found by searching:
+- "full_track_21_source" which expands on machine-language source used by the BASIC driver

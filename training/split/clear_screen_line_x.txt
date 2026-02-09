@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Clears a full screen line to spaces: sets Y counter to 39 (LDY #$27), fetches the screen address (JSR $E9F0), computes the colour-RAM pointer (JSR $EA24), saves the current colour to colour RAM (JSR $E4DA), loads the ASCII for space (LDA #$20) and stores it across the line via STA ($D1),Y while decrementing Y. Returns (RTS).
+
+                                *** clear screen line X
+.,E9FF A0 27    LDY #$27        set number of columns to clear
+.,EA01 20 F0 E9 JSR $E9F0       fetch a screen address
+.,EA04 20 24 EA JSR $EA24       calculate the pointer to colour RAM
+.,EA07 20 DA E4 JSR $E4DA       save the current colour to the colour RAM
+.,EA0A A9 20    LDA #$20        set [SPACE]
+.,EA0C 91 D1    STA ($D1),Y     clear character in current screen line
+.,EA0E 88       DEY             decrement index
+.,EA0F 10 F6    BPL $EA07       loop if more to do
+.,EA11 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "fetch_screen_address" which expands on Initializes the ($D1/$D2) pointer used to write the spaces
+- "calculate_colour_ram_pointer_ea24" which expands on Computes colour-RAM pointer for the current line before writing colours

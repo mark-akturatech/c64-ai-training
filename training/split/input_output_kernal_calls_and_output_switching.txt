@@ -1,0 +1,105 @@
+# MACHINE - KERNAL I/O overview: CHROUT ($FFD2) sends ASCII chars to the current output channel; GETIN ($FFE4) reads keyboard/input into A. You can redirect input/output to logical files using CHKIN ($FFC6) and CHKOUT ($FFC9), and restore default channels with CLRCHN ($FFCC). Diagram (Figure 8.1) shows how CHKIN/CHKOUT/CLRCHN switch input/output channels. Notes that CHKOUT/CHKIN change A and X registers and may set carry flag on errors. Give usage pattern: LDX #file; JSR $FFC9 to set output, JSR $FFD2 to send characters; JSR $FFCC to restore.
+
+
+Input and Output
+----------------
+
+We know that calling the kernal routine CHROUT at $FFD2 will send an ASCII
+character to the screen.  We may also redirect output to any logical file.
+
+We have seen that we may obtain input from the keyboard buffer into the A
+register by calling kernal routine GETIN at $FFE4.  We may also redirect the
+input so that we draw information from any logical file.
+
+The same commands--$FFD2 and $FFE4--still perform the input and output.  But
+we "switch" either of them to connect to a chosen device--or more accurately,
+a chosen logical file.  The file must be open; we may switch to the file, and
+then switch back to normal I/O as we wish.
+
+
+Switching Output
+----------------
+
+We use subroutine CHKOUT at address $FFC9 to switch output to a logical file.
+When we want to restore output to the screen, we call subroutine CLRCHN at
+$FFCC.  This is not the same as an OPEN and CLOSE--we simply connect to the
+file and disconnect, and we can do this as many times as we want.
+
+                                                                        :134:
+
+
+  KEYBOARD                +---------+                  ,------.
+   +----+         INPUT   |         |   OUTPUT         |      |
+   |::::|-o<--O-----------| PROGRAM |------------O-->o-|SCREEN|
+   +----+                 |         |                  |      |
+           o              +---------+               o  `------'
+          /  o                                    o  \
+         |  /   CHKIN ($FFC6)     CHKOUT ($FFC9)   \  |
+         | |    SETS THE INPUT   SETS THE OUTPUT    | |
+        INPUT   SWITCH                    SWITCH  OUTPUT
+       DEVICES                                    DEVICES
+                        CLRCHN ($FFCC)
+                         RESTORES BOTH
+                     SWITCHES TO "NORMAL"
+
+  Figure 8.1
+
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   CHKOUT                                                      |
+| Address:      $FFC9                                                       |
+| Action:       Switches the output path (used by CHROUT, $FFD2) so that    |
+|               output is directed to the logical file specified in the X   |
+|               register.  The logical file must previously have been       |
+|               opened.                                                     |
+|                                                                           |
+| The character subsequently sent by $FFD2 is usually ASCII (or PET ASCII). |
+| When sent to the printer, special characters--text/graphics, width--will  |
+| be honored in the usual way.  Similarly, disk commands can be transmitted |
+| over secondary address 15 if desired; a logical "command channel" file    |
+| must be previously opened.                                                |
+|                                                                           |
+| Registers:  Registers A and X will be changed during the CHKOUT call.  Be |
+| sure to save any sensitive data in these registers before calling CHKOUT. |
+|                                                                           |
+| Status:  Status flags may be changed.  In VIC and Commodore 64, the C     |
+| (carry) flag indicates some type of problem with connecting to the output |
+| channel.                                                                  |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+                                                                        :135:
+
+To switch output to logical file 1, we would need to follow these steps:
+
+  1.  Load a value of 1 into X (LDX #$01).
+
+  2.  JSR to address $FFC9.
+
+Once the output is switched, we may send as many characters as we wish using
+subroutine $FFD2.  Eventually, we must disconnect from the logical file and
+return to our default output, the screen.  We do this by calling subroutine
+CLRCHN at address $FFCC.
+
+*---------------------------------------------------------------------------*
+|                                                                           |
+| Subroutine:   CLRCHN                                                      |
+| Address:      $FFCC                                                       |
+| Action:       Disconnects input and output from any logical files and     |
+|               restores them to the "default" input and output channels,   |
+|               keyboard and screen.  The logical files are not closed, and |
+|               may be reconnected at a later time.                         |
+|                                                                           |
+| Registers:  Registers A and X will be changed during the CLRCHN call.  Be |
+| sure to save any sensitive data in these registers.                       |
+|                                                                           |
+| Status:  Status flags may be changed.  In VIC and Commodore 64, the C     |
+| (carry) flag indicates some type of problem with output                   |
+|                                                                           |
+*---------------------------------------------------------------------------*
+
+---
+Additional information can be found by searching:
+- "output_example_print_to_printer" which expands on Practical example sending 'HI' to printer using CHKOUT and CHROUT
+- "input_example_read_sequential_file" which expands on Reading from a logical input file using CHKIN and GETIN

@@ -1,0 +1,35 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - IOINIT: INIT I/O (vectored from $ff84). Initializes CIAs and system I/O: sets CIA#1/#2 IRQ control registers ($DC0D/$DD0D), clears CIA data ports ($DC00), sets control registers (timers A/B), sets DDRs for CIA ports (DDRB/DDRA), disables SID sound ($D418), configures 6510 I/O port ($01) and DDR ($00), and sets video bank and serial bus control ($DD00/$DD02). Prepares system hardware for operation.
+
+                                *** IOINIT: INIT I/O
+                                The KERNAL routine IOINIT ($ff84) jumps to this routine.
+                                It sets the init-values for the CIAs (IRQ, DDRA, DRA
+                                etc.), the SID-volume, and the processor onboard I/O port.
+.,FDA3 A9 7F    LDA #$7F
+.,FDA5 8D 0D DC STA $DC0D       CIA#1 IRQ control register
+.,FDA8 8D 0D DD STA $DD0D       CIA#2 IRQ control register
+.,FDAB 8D 00 DC STA $DC00       CIA#1 data port $ (keyboard)
+.,FDAE A9 08    LDA #$08
+.,FDB0 8D 0E DC STA $DC0E       CIA#1 control register timer A
+.,FDB3 8D 0E DD STA $DD0E       CIA#2 control register timer A
+.,FDB6 8D 0F DC STA $DC0F       CIA#1 control register timer B
+.,FDB9 8D 0F DD STA $DD0F       CIA#2 control register timer B
+.,FDBC A2 00    LDX #$00
+.,FDBE 8E 03 DC STX $DC03       CIA#1 DDRB. Port B is input
+.,FDC1 8E 03 DD STX $DD03       CIA#2 DDRB. Port B is input
+.,FDC4 8E 18 D4 STX $D418       No sound from SID
+.,FDC7 CA       DEX
+.,FDC8 8E 02 DC STX $DC02       CIA#1 DDRA. Port A is output
+.,FDCB A9 07    LDA #$07        %00000111
+.,FDCD 8D 00 DD STA $DD00       CIA#2 dataport A. Set Videobank to $0000-$3fff
+.,FDD0 A9 3F    LDA #$3F        %00111111
+.,FDD2 8D 02 DD STA $DD02       CIA#2 DDRA. Serial bus and videobank
+.,FDD5 A9 E7    LDA #$E7        6510 I/O port - %XX100111
+.,FDD7 85 01    STA $01
+.,FDD9 A9 2F    LDA #$2F        6510 I/O DDR - %00101111
+.,FDDB 85 00    STA $00
+
+
+---
+Additional information can be found by searching:
+- "enable_timer" which expands on called later to start CIA1 timer based on PAL/NTSC
+- "start_timer" which expands on actual timer start sequence references these registers

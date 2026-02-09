@@ -1,0 +1,49 @@
+# byRiclianll - Introduction to relative (random-access) files in Commodore DOS: a relative file consists of (1) a sequential data file of fixed-length records and (2) a side-sector file which stores track/sector pointers. Explains record size concept and that the side-sector file size depends on sequential file length (approximately 1/120th of the sequential file, min 1 block, max 6 blocks). Notes that one side-sector read locates the data block for any given record (plus up to two additional reads if the record spans two blocks). Also reiterates the standard sequential data block format (bytes 0-1 forward pointer, bytes 2-255 data).
+
+4.7  Relative  File  Storage 
+
+Relative  file  types  have  the  most  elaborate  internal  structure.  Relative  files  are  often 
+referred  to  as  random  access  files.  A  relative  file  is  actually  two  files  in  one: 
+
+1.  A  sequential  data  file  with  records  of  a  fixed  length. 
+
+2.  A  file  of  track  and  sector  pointers  called  side  sectors. 
+
+The  sequential  data  file  uses  fixed  length  records  so  that  the  DOS  can  calculate  where 
+to  find  any  given  record.  This  makes  it  possible  to  position  to  a  particular  record  and 
+read  or  write  it  without  disturbing  the  rest  of  the  file.  In  the  jargon  of  relative  files, 
+the  length  of  one  record  in  the  sequential  data  file  is  known  as  the  record  size. 
+
+The  complete  file  of  track  and  sectors  pointers  is  called  the  side  sector  file.  The  size 
+of  this  file  depends  on  the  length  of  the  sequential  file.  In  general  it  is  l/120th  the  length 
+of  the  sequential  file  (minimum  length  =  1  block;  maximum  length  =  6  blocks).  Each 
+block  in  this  file  is  known  as  a  side  sector.  There  are  really  two  sets  of  track  and  sector 
+pointers  in  this  file.  The  larger  set  is  a  list  of  the  track  and  sector  numbers  of  the  blocks 
+used  to  store  the  sequential  data  file  (its  file  chain).  The  other  is  a  list  of  the  track  and 
+sector  numbers  of  the  side  sectors  (the  file  chain  of  the  side  sector  file). 
+
+The  purpose  of  the  side  sector  file  is  to  allow  the  DOS  to  find  any  given  record  with 
+remarkable  efficiency.  One  disk  read  of  a  side  sector  is  all  that  is  required  to  locate  the 
+track  and  sector  of  the  block  where  a  particular  record  is  stored.  Two  additional  reads 
+may  then  be  required  to  retrieve  a  record  itself  if  it  spans  two  data  blocks.  This  will 
+be  explained  shortly  when  we  examine  records  in  more  detail. 
+
+
+56 
+
+
+Remember  that  sequential  data  blocks  have  the  following  format: 
+
+Byte  Purpose  
+
+0  Track  of  the  next  block  in  this  file 
+
+1  Sector  of  the  next  block  in  this  file 
+
+2-255  254  bytes  of  data 
+
+
+---
+Additional information can be found by searching:
+- "side_sector_block_format" which expands on layout of a side sector block
+- "relative_file_directory_entry_dump_part1" which expands on example relative-file directory entry

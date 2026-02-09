@@ -1,0 +1,37 @@
+# Kick Assembler - IMemoryBlock interface: represents a memory block with a start address, bytes, and a name. Methods: int getStartAddress(), byte[] getBytes(), String getName(). Example assembler code shows two memory blocks created by the assembler. Memory blocks can be passed to plugins or created via IEngine.createMemoryBlock.
+
+(setName("MyPlugin") etc). Many of the definitions only contains a name, but having a definition class makes it
+easier to extend without breaking backwards compatibility.
+You will find that all plugin interfaces extends IPlugin. IPlugin is empty and simply a way of ensuring type
+safety if you want an object you are sure is a plugin.
+
+17.5.1. Macro Plugins
+The interface for a macro looks like this:
+public interface IMacro extends IPlugin {
+MacroDefinition getDefinition();
+byte[] execute(IValue[] parameters, IEngine engine);
+}
+public class MacroDefinition {
+// Properties
+private String name;
+// Getters/setters for properties, in this case getName() and setName(name)
+....
+}
+
+81
+
+3rd Party Java plugins
+
+Macro plugins are described previously in the 'Quick Example' section, so look there for a complete example.
+
+17.5.2. Modifier Plugins
+With modifiers you modify the outputted bytes from a section of the code. E.g the following will send the
+memory block starting at $8080 the the modifier called 'MyModifier' and the returned bytes will be used instead:
+.modify MyModifier(27) {
+*=$8080
+main:
+
+---
+Additional information can be found by searching:
+- "modifier_plugins_interface" which expands on Modifiers receive List<IMemoryBlock> to modify output bytes
+- "disk_writer_plugins" which expands on Disk writer files refer to IMemoryBlock bytes

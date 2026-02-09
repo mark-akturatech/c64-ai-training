@@ -1,0 +1,72 @@
+# NMOS 6510 - SHX (A11,SXA,XAS,TEX) undocumented opcode ($9E) using abs,Y addressing: store X & {H+1}. Details: opcode, size, cycles (5), operation, instabilities (RDY dropoff and page-cross &{H+1} increment-and-AND), example usage and equivalent instruction sequence; test code list and simulation links.
+
+http://visual6502.org/JSSim/expert.html?graphics=f&a=0&steps=18&d=a27fa0f39e0f11
+• &{H+1} drop off, plus page boundary crossing anomaly:
+http://visual6502.org/JSSim/expert.html?
+graphics=f&a=0&steps=20&d=a27fa0f39e0f11&logmore=rdy&rdy0=15&rdy1=16
+- 52 -
+
+Example: STX abs, y
+
+When using $FE00 as address, the value stored would be ANDed by $FF and the SHX turns into a
+STX:
+SHX $FE00,Y
+
+; STX $FE00,Y
+
+Example: Sync with raster beam (remove cycle variance)
+
+The following snippets can be used as a replacement for the commonly used “half variance” $D012
+polling loop, to synchronise the code to a fixed position before setting up a timer that is then synced
+to the raster beam.
+
+You can sync to the raster beam in order to remove jitter in just 9 bytes by doing this:
+* = $0f00 ; Some address with (H+1) & 1 = 0
+; and (H+1) & $10 = $10
+loop:
+cont:
+
+LDY #$00
+LDX #$11
+SHX cont, y
+BPL loop
+
+It uses the fact that we will AND the written value with H+1 unless a badline pauses the CPU
+between the third and fourth cycle of shx. The latter then changes the "bpl" into an "ora" and
+drops us out of the loop at horizontal position 61.
+
+- 53 -
+
+This variant works at any address. It is required that $A0 holds a value <$80 before the routine is
+started. A good init value would be $01, since this will be restored by the last loop iteration.
+The code can be written in two ways, the following two snippets are the same piece of code. The
+first shows what executes when the code was started:
+loop = * + 1
+LDX #$B5
+SBC #$9E
+LDY #$00
+BPL loop
+
+; initialize X
+; SBC-opcode $eb (Accu does not matter)
+; initialize Y
+
+now the BPL branches to the operand of the LDX, so the loop looks as follows:
+loop:
+
+!byte $a2
+LDA $EB,X
+SHX $00A0,Y
+BPL loop
+
+; LDX
+
+The SHX stores a value to zp-adress $A0. Now the unintended SBC-opcode reveals its real magic:
+the hex-value $EB. Performing the LDA $EB,X, with X=$B5, ends up reading the value from
+$A0. Since SHX does not influence the flags, the branch solely depends on what was read with
+LDA $EB,X – which in turn is the value that was written by the SHX in the loop iteration before.
+
+---
+Additional information can be found by searching:
+- "unstable_address_high_byte_group" which expands on SHX is part of this group
+- "shx_examples_and_sync" which expands on practical examples of SHX used to sync with raster beam

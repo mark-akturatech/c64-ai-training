@@ -1,0 +1,26 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - BASSFT: BASIC warm-start routine vectored at the start of the BASIC ROM. Called by BRK or STOP/RESTORE, closes I/O channels (CLRCHN), clears input prompt flag ($13), calls CLR, enables IRQ (CLI), sets up an error code in X (#$80) and calls the IERROR vector at $0300. Handles returned error number in A (TXA/BMI) to either jump to the generic error-print routine or print the READY prompt. Key instructions: JSR $FFCC (CLRCHN), STA $13, JSR $A67A, CLI, LDX #$80, JMP ($0300), TXA, BMI to READY or JMP to error printer.
+
+                                *** BASSFT: BASIC WARM START
+                                This is the BASIC warm start routine that is vectored at
+                                the very start of the BASIC ROM. The routine is called by
+                                the 6510 BRK instruction, or STOP/RESTORE being pressed.
+                                It outputs the READY prompt via the IERROR vector at
+                                $0300. If the error code, in (X) is larger than $80, then
+                                only the READY text will be displayed.
+.,E37B 20 CC FF JSR $FFCC       CLRCHN, close all I/O channels
+.,E37E A9 00    LDA #$00
+.,E380 85 13    STA $13         input prompt flag
+.,E382 20 7A A6 JSR $A67A       do CLR
+.,E385 58       CLI             enable IRQ
+.,E386 A2 80    LDX #$80        error code #$80
+.,E388 6C 00 03 JMP ($0300)     perform error
+.,E38B 8A       TXA             error number
+.,E38C 30 03    BMI $E391       larger than $80
+.,E38E 4C 3A A4 JMP $A43A       nope, print error
+.,E391 4C 74 A4 JMP $A474       print READY
+
+
+---
+Additional information can be found by searching:
+- "init_cold_start" which expands on BASIC cold start sequence that follows warm start
+- "initcz_initialize_basic_ram" which expands on zero-page variables and vectors set up during cold init referenced by warm-start behavior

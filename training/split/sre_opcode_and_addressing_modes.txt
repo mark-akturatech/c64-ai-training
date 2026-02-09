@@ -1,0 +1,108 @@
+# NMOS 6510 - SRE (aka LSE) undocumented opcode: lists opcode bytes and addressing modes ($47,$57,$43,$53,$4F,$5F,$5B) with their sizes, cycle counts and flag effects; per-addressing-mode mnemonics (SRE zp, x; SRE (zp, x); SRE (zp), y; SRE abs; SRE abs, x; SRE abs, y). Operation summary: performs LSR on memory then EORs the accumulator with that memory; LSB goes into carry, N and Z are set after the EOR. Includes a short example invocation (SRE $C100,X), equivalent instruction sequence (LSR then EOR) and filenames of test programs.
+
+
+Cycles N V - B D I Z C
+
+2
+
+5
+
+o
+
+o o
+
+SRE zp, x
+
+2
+
+6
+
+o
+
+o o
+
+$43
+
+SRE (zp, x)
+
+2
+
+8
+
+o
+
+o o
+
+$53
+
+SRE (zp), y
+
+2
+
+8
+
+o
+
+o o
+
+$4F
+
+SRE abs
+
+3
+
+6
+
+o
+
+o o
+
+$5F
+
+SRE abs, x
+
+3
+
+7
+
+o
+
+o o
+
+$5B
+
+SRE abs, y
+
+3
+
+7
+
+o
+
+o o
+
+Operation: Shift right one bit in memory, then EOR accumulator with memory.
+•
+•
+
+LSB is shifted into the carry flag
+N and Z are set after the EOR
+
+Example:
+SRE $C100,X
+
+;5F 00 C1
+
+Equivalent Instructions:
+LSR $C100,X
+EOR $C100,X
+Test code: Lorenz-2.15/lsea.prg, Lorenz-2.15/lseax.prg,
+Lorenz-2.15/lseay.prg, Lorenz-2.15/lseix.prg,
+Lorenz-2.15/lseiy.prg, Lorenz-2.15/lsez.prg, Lorenz-2.15/lsezx.prg
+
+
+---
+Additional information can be found by searching:
+- "sre_8bit_one_of_eight_counter_example" which expands on Practical 8-bit counter example using SRE and how it integrates with pixel setting
+- "sre_parity_example_and_lsr_addressing_simulation" which expands on Parity example using repeated SRE and notes on simulating extra LSR addressing modes
+- "rra_opcode_header" which expands on Next undocumented opcode section (RRA) following SRE

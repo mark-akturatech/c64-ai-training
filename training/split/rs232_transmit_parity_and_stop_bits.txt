@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - 6502 code and commentary handling RS-232 parity and stop-bit insertion for transmit. Covers odd/even/fixed mark-or-space parity modes, reading the RS232 parity byte, setting/clearing the parity bit, and adjusting the RS232 bit count to account for one or two stop bits (including the special case where parity is disabled and the parity bit becomes a stop bit). References the pseudo 6551 control register at $0293 and uses parity/status flags.
+
+.,EEDC F0 14    BEQ $EEF2       if parity disabled go ??
+.,EEDE 30 1C    BMI $EEFC       if fixed mark or space parity go ??
+.,EEE0 70 14    BVS $EEF6       if even parity go ??
+                                else odd parity
+.,EEE2 A5 BD    LDA $BD         get RS232 parity byte
+.,EEE4 D0 01    BNE $EEE7       if parity not zero leave parity bit = 0
+.,EEE6 CA       DEX             make parity bit = 1
+.,EEE7 C6 B4    DEC $B4         decrement RS232 bit count, 1 stop bit
+.,EEE9 AD 93 02 LDA $0293       get pseudo 6551 control register
+.,EEEC 10 E3    BPL $EED1       if 1 stop bit save parity bit and exit
+                                else two stop bits ..
+.,EEEE C6 B4    DEC $B4         decrement RS232 bit count, 2 stop bits
+.,EEF0 D0 DF    BNE $EED1       save bit and exit, branch always
+                                parity is disabled so the parity bit becomes the first,
+                                and possibly only, stop bit. to do this increment the bit
+                                count which effectively decrements the stop bit count.
+.,EEF2 E6 B4    INC $B4         increment RS232 bit count, = -1 stop bit
+.,EEF4 D0 F0    BNE $EEE6       set stop bit = 1 and exit
+                                do even parity
+.,EEF6 A5 BD    LDA $BD         get RS232 parity byte
+.,EEF8 F0 ED    BEQ $EEE7       if parity zero leave parity bit = 0
+.,EEFA D0 EA    BNE $EEE6       else make parity bit = 1, branch always
+                                fixed mark or space parity
+.,EEFC 70 E9    BVS $EEE7       if fixed space parity leave parity bit = 0
+.,EEFE 50 E6    BVC $EEE6       else fixed mark parity make parity bit = 1, branch always
+                                decrement stop bit count, set stop bit = 1 and exit. $FF is one stop bit, $FE is two
+                                stop bits
+.,EF00 E6 B4    INC $B4         decrement RS232 bit count
+.,EF02 A2 FF    LDX #$FF        set stop bit = 1
+.,EF04 D0 CB    BNE $EED1       save stop bit and exit, branch always
+
+
+---
+Additional information can be found by searching:
+- "rs232_compute_bit_count" which expands on how many bits are transmitted (8/7/5 data bits and stop bit adjustments)
+- "rs232_setup_next_tx_byte" which expands on called after parity/stop-bit processing to set up the next Tx byte

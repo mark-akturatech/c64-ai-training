@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - OPN232 entry: initializes RS-232 subsystem by calling CLN232 (clears NMI, configures ports), clears RSSTAT, inspects FNLEN and if parameters exist copies up to 4 filename parameters from FNADR into 6551 (M51) control/data registers (M51CTR/M51CDR) for later use in configuring the 6551 ACIA.
+
+                                ; OPN232 - OPEN AN RS-232 OR PARALLEL PORT FILE
+                                ;
+                                ; VARIABLES INITILIZED
+                                ;   BITNUM - # OF BITS TO BE SENT CALC FROM M51CTR
+                                ;   BAUDOF - BAUD RATE FULL
+                                ;   RSSTAT - RS-232 STATUS REG
+                                ;   M51CTR - 6551 CONTROL REG
+                                ;   M51CDR - 6551 COMMAND REG
+                                ;   M51AJB - USER BAUD RATE (CLOCK/BAUD/2-100)
+                                ;   ENABL  - 6526 NMI ENABLES (1-NMI BIT ON)
+                                ;
+.,F409 20 83 F4 JSR $F483       OPN232 JSR CLN232      ;SET UP RS232, .Y=0 ON RETURN
+                                ;
+                                ; PASS PRAMS TO M51REGS
+                                ;
+.,F40C 8C 97 02 STY $0297              STY RSSTAT      ;CLEAR STATUS
+                                ;
+.,F40F C4 B7    CPY $B7         OPN020 CPY FNLEN       ;CHECK IF AT END OF FILENAME
+.,F411 F0 0A    BEQ $F41D              BEQ OPN025      ;YES...
+                                ;
+.,F413 B1 BB    LDA ($BB),Y            LDA (FNADR)Y    ;MOVE DATA
+.,F415 99 93 02 STA $0293,Y            STA M51CTR,Y    ;TO M51REGS
+.,F418 C8       INY                    INY
+.,F419 C0 04    CPY #$04               CPY #4          ;ONLY 4 POSSIBLE PRAMS
+.,F41B D0 F2    BNE $F40F              BNE OPN020
+
+---
+Additional information can be found by searching:
+- "rs232_bit_calculation" which expands on calculate number of data bits (BITNUM) based on M51 control register
+- "cln232_cleanup_and_port_setup" which expands on CLN232 routine invoked here to set up DDRB/CB2 and initial port state

@@ -1,0 +1,36 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Performance-minded optimizations for the one-byte multiply. Introduces sentinel-bit technique: preload RESULT with $80 as sentinel in hi byte so the loop can terminate using BCC when sentinel falls into carry. Code reduces DEY from loop by using carry for loop control: LDA #$80; STA RESULT; ASL A; L1 LSR NUM2; BCC L2; CLC ADC NUM1; L2 ROR A; ROR RESULT; BCC L1; STA RESULT+1. Notes savings in cycles and that Y register preserved. (Assumes RESULT in page 0 for additional savings.)
+
+
+I feel the NEED for SPEED!
+----------------------------------------
+
+
+The routines shown above are reasonably compact, but not the speediest.
+With a little bit of trickery, we can squeeze a few cycles out of some of
+the above routines...for example, here's the one-byte multiplication again,
+using the carry flag instead of the Y register for the loop counter, which
+takes the DEY instruction out of the loop:
+
+
+LDA #$80     ;Preload sentinel bit into RESULT
+        STA RESULT
+        ASL A        ;Initialize RESULT hi byte to 0
+L1      LSR NUM2     ;Get low bit of NUM2
+        BCC L2       ;0 or 1?
+        CLC          ;If 1, add NUM1
+        ADC NUM1
+L2      ROR A        ;"Stairstep" shift (catching carry from add)
+        ROR RESULT
+        BCC L1       ;When sentinel falls off into carry, we're done
+        STA RESULT+1
+
+
+Assuming RESULT is in page 0, this saves 14 cycles.  As an
+added bonus, the Y register is no longer trashed.
+
+
+
+---
+Additional information can be found by searching:
+- "one_byte_multiplication_routine" which expands on original routine being optimized
+- "remove_clc_trick" which expands on further micro-optimization to remove CLC

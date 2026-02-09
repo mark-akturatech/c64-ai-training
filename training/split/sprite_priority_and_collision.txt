@@ -1,0 +1,103 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Sprite priority rules and collision detection: sprites have fixed internal priority (0 highest, 7 lowest). Sprite vs text/bitmap priority controlled per-sprite with MxDP bits in $D01B (two priority modes: MxDP=0 sprites in front of foreground graphics but behind border; MxDP=1 sprites between background and foreground). Foreground/background definition depends on MCM (MCM=0 1bpp: '1'=foreground; MCM=1 2bpp: '10'/'11'=foreground). Collision detection: sprite-sprite (sets bits in $D01E) when two sprite sequencers output non-transparent pixels simultaneously; sprite-data collisions (sets bits in $D01F) when sprite outputs non-transparent while graphics sequencer outputs foreground pixel. Collision bits are latched until read (auto-cleared on read) and can trigger interrupts if enabled.
+
+3.8.2. Priority and collision detection
+---------------------------------------
+
+As soon as several graphics elements (sprites and text/bitmap graphics)
+overlap on the screen, it has to be decided which element is displayed in
+the foreground. To do this, every element has a priority assigned and only
+the element with highest priority is displayed.
+
+The sprites have a rigid hierarchy among themselves: Sprite 0 has the
+highest and sprite 7 the lowest priority. If two sprites overlap, the
+sprite with the higher number is displayed only where the other sprite has
+a transparent pixel.
+
+The priority of the sprites to the text/bitmap graphics can be controlled
+within some limits. First of all, you have to distinguish the text/bitmap
+graphics between foreground and background pixels. Which bit combinations
+belong to the foreground or background is decided by the MCM bit in
+register $d016 independently of the state of the graphics data sequencer
+and of the BMM and ECM bits in register $d011:
+
+             | MCM=0 |   MCM=1
+ ------------+-------+-----------
+ Bits/pixel  |   1   |     2
+ Pixels/byte |   8   |     4
+ Background  |  "0"  | "00", "01"
+ Foreground  |  "1"  | "10", "11"
+
+In multicolor mode (MCM=1), the bit combinations "00" and "01" belong to
+the background and "10" and "11" to the foreground whereas in standard mode
+(MCM=0), cleared pixels belong to the background and set pixels to the
+foreground. It should be noted that this is also valid for the graphics
+generated in idle state.
+
+With the MxDP bits from register $d01b, you can separately specify for each
+sprite if it should be displayed in front of or behind the foreground
+pixels (the table in [2] is wrong):
+
+ MxDP=0:
+
+       +-----------------------+
+       |  Background graphics  |  low priority
+     +-----------------------+ |
+     |  Foreground graphics  |-+
+   +-----------------------+ |
+   |       Sprite x        |-+
+ +-----------------------+ |
+ |     Screen border     |-+
+ |                       |   high priority
+ +-----------------------+
+
+ MxDP=1:
+
+       +-----------------------+
+       |  Background graphics  |  low priority
+     +-----------------------+ |
+     |       Sprite x        |-+
+   +-----------------------+ |
+   |  Foreground graphics  |-+
+ +-----------------------+ |
+ |     Screen border     |-+
+ |                       |   high priority
+ +-----------------------+
+
+Of course, the graphics elements with lower priority than an overlayed
+sprite are visible where the sprite has a transparent pixel.
+
+If you choose one of the invalid video modes only the sprites will be
+visible (fore- and background graphics will all become black, see sections
+3.7.3.6.-3.7.3.8.), but by setting the sprites to appear behind the
+foreground graphics, the foreground graphics will actually become visible
+as black pixels overlaying the sprite pixels.
+
+Together with the priority management, the VIC has the ability to detect
+collisions of sprites among themselves and of sprites and foreground pixels
+of the text/bitmap graphics.
+
+A collision of sprites among themselves is detected as soon as two or more
+sprite data sequencers output a non-transparent pixel in the course of
+display generation (this can also happen somewhere outside of the visible
+screen area). In this case, the MxM bits of all affected sprites are set in
+register $d01e and (if allowed, see section 3.12.), an interrupt is
+generated. The bits remain set until the register is read by the processor
+and are cleared automatically by the read access.
+
+A collision of sprites and other graphics data is detected as soon as one
+or more sprite data sequencers output a non-transparent pixel and the
+graphics data sequencer outputs a foreground pixel in the course of display
+generation. In this case, the MxD bits of the affected sprites are set in
+register $d01f and (if allowed, see section 3.12.), an interrupt is
+generated. As with the sprite-sprite collision, the bits remain set until
+the register is read by the processor.
+
+If the vertical border flip flop is set (normally within the upper/lower
+border, see next section), the output of the graphics data sequencer is
+turned off and there are no collisions.
+
+
+---
+Additional information can be found by searching:
+- "vic_registers_table" which expands on collision registers $D01E/$D01F and interrupt bits $D019/$D01A
+- "graphics_modes_overview" which expands on how MCM determines background/foreground

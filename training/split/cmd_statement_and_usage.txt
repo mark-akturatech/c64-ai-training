@@ -1,0 +1,54 @@
+# COMMODORE 64 - CMD <file number>[,string]: redirect primary output device from TV screen to OPENed file/device (printer, tape, disk, modem). When in effect, PRINT and LIST output to device. Advice to send a blank line with PRINT# before CLOSE to unlisten device and bring output back; examples for listing to printer and writing to tape file buffers.
+
+
+
+
+
+
+
+  CMD
+
+
+  TYPE: I/O Statement
+  FORMAT: <file number> [,string]
+
+    Action: This statement switches the primary- output device from the TV
+  screen to the file specified. This file could be on disk, tape, printer,
+  or an I/O device like the modem. The file number must be specified in a
+  prior OPEN statement. The string, when specified, is sent to the file.
+  This is handy for titling printouts, etc.
+    When this command is in effect, any PRINT statements and LIST commands
+  will not display on the screen, but will send the text in the same
+  format to the file.
+    To re-direct the output back to the screen, the PRINT# command should
+  send a blank line to the CMD device before CLOSEing, so it will
+  stop expecting data (called "un-listening" the device).
+
+
+
+  40   BASIC LANGUAGE VOCABULARY
+~
+
+
+    Any system error (like ?SYNTAX ERROR) will cause output to return to
+  the screen. Devices aren't un-listened by this, so you should send a
+  blank line after an error condition. (See your printer or disk manual for
+  more details.)
+
+  EXAMPLES of CMD Statement:
+
+    OPEN 4,4: CMD 4,"TITLE" : LIST: REM LISTS PROGRAM ON PRINTER
+    PRINT#4: CLOSE 4: REM UN-LISTENS AND CLOSES PRINTER
+
+    10 OPEN 1,1,1,"TEST" : REM CREATE SEQ FILE
+    20 CMD 1 : REM OUTPUT TO TAPE FILE, NOT SCREEN
+    30 FOR L = 1 TO 100
+    40 PRINT L: REM PUTS NUMBER IN TAPE BUFFER
+    50 NEXT
+    60 PRINT#1 : REM UNLISTEN
+    70 CLOSE 1 : REM WRITE UNFINISHED BUFFER, PROPERLY FINISH
+
+
+---
+Additional information can be found by searching:
+- "close_statement" which expands on how to finalize file output properly (PRINT# then CLOSE)

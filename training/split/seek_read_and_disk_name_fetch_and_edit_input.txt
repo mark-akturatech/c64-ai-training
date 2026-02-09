@@ -1,0 +1,63 @@
+# byRiclianll - BASIC code that issues SEEK and READ jobs via the job queue and fetches the disk name for editing. Covers: setting T=18 and S=0; setting JOB codes for SEEK (176) and READ (128) and calling the shared job-queue subroutine (GOSUB 660); sending an M-R (memory-read) to the drive to fetch 16 bytes of the disk name; per-byte processing to ensure printable ASCII (strip high bit, replace out-of-range bytes and quotes with '?'); assembling ODN* (old disk name) and printing it; prompting the user for NDN* (new disk name); validating length and, on confirmation, padding/truncating the new name to 16 bytes with PAD* (NDN*=LEFT*(NDN*+PAD*,16)); includes input flow with Y/N confirmation and FALLBACK to close/END if not confirmed.
+
+280  REM  SEEK 
+
+290  T=18 
+
+300  S=0 
+
+310  JOB=176 
+
+320  GOSUB  660 
+
+330  REM  READ 
+
+340  J0B=128 
+
+350  GOSUB  660 
+
+360  PRINT* 15, "M-R"CHR*(144)CHR*(5)CHR*(1 
+
+6) 
+
+370  FOR   1=1   TO  16 
+380  GET#15,B* 
+
+390   IF  B*=""THEN  B*=CHR*(0) 
+
+400  A=ASC(B*) 
+
+410   IF  A>127  THEN  A=A-128 
+
+420   IF  A<32  OR  A>95  THEN  A=63 
+
+430   IF  A=34  THEN  A=63 
+
+440  ODN*=ODN*+CHR* (A) 
+
+450  NEXT  I 
+
+460  PRINT" CDOWNJ OLD  DISK  NAME:    " ; ODN* 
+470   INPUT" {DOWNJNEW  DISK  NAME";NDN* 
+480   IF  LEN(NDN*)<>0  AND  LEN(NDN*)<17  GOT 
+O  500 
+
+490  GOTO  630 
+
+500  INPUT"  {:D0WNJARE  you  SURE  (Y/N)  Y^LE 
+FT  3J";Q* 
+
+510   IF  Q*<>"Y"GOTO  630 
+
+520  NDN*=LEFT*(NDN*+PAD*,  16) 
+
+
+110 
+
+
+
+---
+Additional information can be found by searching:
+- "basic_ui_and_device_open_error_check" which expands on Relies on the device being opened and initial status checked
+- "write_new_disk_name_and_finalize" which expands on Sends the new name (M-W) into the buffer and issues WRITE via job queue
+- "job_queue_subroutine_and_error_handler" which expands on GOSUB 660 handles the low-level M-W/M-R job queue operations used here

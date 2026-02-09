@@ -1,0 +1,46 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Detailed rules about what counts as a collision: only sprite shape bits of 1 (or nonzero multicolor pairs other than 01) can collide; invisible sprites with all-zero shape bytes never collide; collisions can be detected even in border-covered areas; ambiguous multi-sprite collisions may require positional checks to determine exact pairing.
+
+                          Note that while these registers tell you what sprites were involved in
+                          a collision, they do not necessarily tell you what objects have
+                          collided with each other.  It is quite possible to have three sprites
+                          lined up in a row, where Sprite A is on the left, Sprite B is in the
+                          middle, touching Sprite A, and Sprite C is on the right, touching
+                          Sprite B but not touching Sprite A.  The Sprite-Sprite Collision
+                          register would show that all three are involved.  The only way to make
+                          absolutely certain which collided with which is to check the position
+                          of each sprite, and calculate for each sprite display line if a sprite
+                          of that size would touch either of the others.  As you can imagine,
+                          this is no easy task.
+
+                          There are a few simple rules concerning what does or does not cause a
+                          collision.  Though the sprite character consists of 504 dots in a 24
+                          by 21 matrix, does which represent data bits that are equal to 0 (or
+                          multicolor bit- pairs equal to 00), and therefore always displayed in
+                          the background color, do not count when it comes to collision.
+
+                          A collision can occur only if a dot which represents a sprite shape
+                          data bit of 1 touches another dot of nonzero graphics data.  Consider
+                          the case of two invisible sprites.  The first sprite is enabled, its
+                          color set to contrast the background, and it is positioned on the
+                          screen, but its shape data bytes are all 0.  This sprite can never be
+                          involved in a collision, because it displays no nonzero data.  The
+                          second sprite is enabled, positioned on the screen, and its shape
+                          pointer set for a data read that is filled with bytes having a value
+                          of 255.  Even if that sprite's color is set to the same value as the
+                          background color, making the sprite invisible, it can still be
+                          involved in collisions.  The only exception to this rule is the 01
+                          bit-pair of multicolor graphics data.  This bit-pair is considered
+                          part of the background, and the dot it displays can never be involved
+                          in a collision.
+
+                          The other rule to remember about collisions is that they can occur in
+                          areas that are covered by the screen border.  Collision between
+                          sprites can occur when the sprites are offscreen, and collisions
+                          between sprites and foreground display data can occur when that data
+                          is in an area that is covered by the border due to the reduction of
+                          the display to 38 columns or 24 rows.
+
+
+---
+Additional information can be found by searching:
+- "sprite_collision_detection_registers_intro" which expands on Where to read which sprites were involved ($D01E-$D01F)

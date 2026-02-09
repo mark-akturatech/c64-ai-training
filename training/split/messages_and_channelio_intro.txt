@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - MESSAGES library and channel I/O intro: contains message strings (MS1, MS5..MS21 etc.) like 'I/O ERROR', 'SEARCHING', 'PRESS PLAY ON TAP' and SPMSG routine (checks MSGFLG and prints message via BSOUT). Also starts CHANNELIO library with comments describing GETIN semantics and device mapping (0 keyboard, 1 cassette, 2 RS232, 3 screen, 4-31 serial bus).
+
+.,F0AD 29 03    AND #$03               AND #%00000011  ; WITH T1 & T2
+.,F0AF D0 F9    BNE $F0AA              BNE RSPOFF
+.,F0B1 A9 10    LDA #$10               LDA #%00010000  ; DISABLE FLAG (NEED TO RENABLE IN USER CODE)
+.,F0B3 8D 0D DD STA $DD0D              STA D2ICR       ;TURN OF ENABL************
+.,F0B6 A9 00    LDA #$00               LDA #0
+.,F0B8 8D A1 02 STA $02A1              STA ENABL       ;CLEAR ALL ENABLS
+.,F0BB 68       PLA             RSPOK  PLA             ;ALL DONE
+.,F0BC 60       RTS                    RTS
+                                .END
+                                .LIB   MESSAGES
+                                MS1    .BYT $D,'I/O ERROR ',$A3
+                                MS5    .BYT $D,'SEARCHING',$A0
+                                MS6    .BYT 'FOR',$A0
+                                MS7    .BYT $D,'PRESS PLAY ON TAP',$C5
+                                MS8    .BYT 'PRESS RECORD & PLAY ON TAP',$C5
+                                MS10   .BYT $D,'LOADIN',$C7
+                                MS11   .BYT $D,'SAVING',$A0
+                                MS21   .BYT $D,'VERIFYIN',$C7
+                                MS17   .BYT $D,'FOUND',$A0
+                                MS18   .BYT $D,'OK',$8D
+                                ; MS34 .BYT $D,'MONITOR',$8D
+.:F0BD 0D 49 2F 4F 20 45 52 52  ; MS36 .BYT $D,'BREA',$CB
+                                ;PRINT MESSAGE TO SCREEN ONLY IF
+                                ;OUTPUT ENABLED
+                                ;
+.,F12B 24 9D    BIT $9D         SPMSG  BIT MSGFLG      ;PRINTING MESSAGES?
+.,F12D 10 0D    BPL $F13C       BPL    MSG10           ;NO...
+.,F12F B9 BD F0 LDA $F0BD,Y     MSG    LDA MS1,Y
+.,F132 08       PHP             PHP
+.,F133 29 7F    AND #$7F        AND    #$7F
+.,F135 20 D2 FF JSR $FFD2       JSR    BSOUT
+.,F138 C8       INY             INY
+.,F139 28       PLP             PLP
+.,F13A 10 F3    BPL $F12F       BPL    MSG
+.,F13C 18       CLC             MSG10  CLC
+.,F13D 60       RTS             RTS
+                                .END
+                                .LIB   CHANNELIO
+                                ;***************************************
+                                ;* GETIN -- GET CHARACTER FROM CHANNEL *
+                                ;*      CHANNEL IS DETERMINED BY DFLTN.*
+                                ;* IF DEVICE IS 0, KEYBOARD QUEUE IS   *
+                                ;* EXAMINED AND A CHARACTER REMOVED IF *
+                                ;* AVAILABLE.  IF QUEUE IS EMPTY, Z    *
+                                ;* FLAG IS RETURNED SET.  DEVICES 1-31 *
+                                ;* ADVANCE TO BASIN.                   *
+                                ;***************************************
+                                ;
+.,F13E A5 99    LDA $99         NGETIN LDA DFLTN       ;CHECK DEVICE
+.,F140 D0 08    BNE $F14A       BNE    GN10            ;NOT KEYBOARD
+                                ;
+.,F142 A5 C6    LDA $C6         LDA    NDX             ;QUEUE INDEX
+.,F144 F0 0F    BEQ $F155       BEQ    GN20            ;NOBODY THERE...EXIT
+                                ;
+.,F146 78       SEI             SEI
+.,F147 4C B4 E5 JMP $E5B4       JMP    LP2             ;GO REMOVE A CHARACTER
+                                ;
+.,F14A C9 02    CMP #$02        GN10   CMP #2          ;IS IT RS-232
+.,F14C D0 18    BNE $F166       BNE    BN10            ;NO...USE BASIN
+                                ;
+
+---
+Additional information can be found by searching:
+- "declare_zero_page_part1" which expands on MSGFLG and BSOUT variables are in zero page declarations

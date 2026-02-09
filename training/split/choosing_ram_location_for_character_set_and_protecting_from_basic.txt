@@ -1,0 +1,35 @@
+# COMMODORE 64 - Gives safe starting positions for RAM-based character sets: avoid $0000 and $0800 (0 and 2048). Recommends $3000 (12288) for experiments and shows how to set the low 4 bits of 53272 to 12: POKE 53272,(PEEK(53272)AND240)+12. Shows how to reduce BASIC's available memory (POKE 52148:POKE56,48:CLR) so BASIC won't overwrite the character RAM, and how to check free memory with PRINT FRE(0)-(SGN(FRE(0))<0)*65535.
+
+    There are two locations in the Commodore 64 to start your character set
+  that should NOT be used with BASIC: location 0 and location 2048. The
+  first should not be used because the system stores important data on
+  page 0. The second can't be used because that is where your BASIC program
+  starts! However, there are 6 other starting positions for your custom
+  character set.
+    The best place to put your character set for use with BASIC while
+  experimenting is beginning at 12288 ($3000 in HEX). This is done by
+  POKEing the low 4 bits of location 53272 with 12. Try the POKE now, like
+  this:
+
+    POKE 53272,(PEEK(53272)AND240)+12
+
+    Immediately, all the letters on the screen turn to garbage, This is
+  because there are no characters set up at location 12288 right now...
+  only random bytes. Set the Commodore 64 back to normal by hitting the
+  <RUN/STOP> key and then the <RESTORE> key.
+    Now let's begin creating graphics characters. To protect your char-
+  acter set from BASIC, you should reduce the amount of memory BASIC
+  thinks it has. The amount of memory in your computer stays the same...
+  it's just that you've told BASIC not to use some of it. Type:
+
+    PRINT FRE(0)-(SGN(FRE(0))<0)*65535
+
+    The number displayed is the amount of memory space left unused. Now
+  type the following:
+
+    POKE 52148:POKE56,48:CLR
+
+---
+Additional information can be found by searching:
+- "programmable_characters_overview_and_considerations" which expands on ram tradeoffs and precautions
+- "copy_characters_from_ROM_to_RAM_example_program" which expands on example using these steps

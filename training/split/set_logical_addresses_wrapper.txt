@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wrapper at $FFBA that JMPs to $FE00 to set logical file number (STA $B8), device number (STX $BA) and secondary address (STY $B9). Includes device number table description and usage notes.
+
+                                *** set logical, first and second addresses
+                                this routine will set the logical file number, device address, and secondary
+                                address, command number, for other KERNAL routines.
+                                the logical file number is used by the system as a key to the file table created
+                                by the OPEN file routine. Device addresses can range from 0 to 30. The following
+                                codes are used by the computer to stand for the following CBM devices:
+                                ADDRESS DEVICE
+                                ======= ======
+                                 0      Keyboard
+                                 1      Cassette #1
+                                 2      RS-232C device
+                                 3      CRT display
+                                 4      Serial bus printer
+                                 8      CBM Serial bus disk drive
+                                device numbers of four or greater automatically refer to devices on the serial
+                                bus.
+                                a command to the device is sent as a secondary address on the serial bus after
+                                the device number is sent during the serial attention handshaking sequence. If
+                                no secondary address is to be sent Y should be set to $FF.
+.,FFBA 4C 00 FE JMP $FE00       set logical, first and second addresses
+
+---
+Additional information can be found by searching:
+- "set_logical_first_second_addresses" which expands on implementation at $FE00

@@ -22,16 +22,253 @@
     },
     {
       "start": 35,
-      "end": 2813,
-      "name": "c64_ram_map_0000_0305",
-      "description": "Comprehensive C64 memory-map overview covering zero-page I/O and BASIC variables, system vectors, stack, BASIC line editor buffer, file/device tables, keyboard and screen editor state, tape/RS-232 I/O emulation, floating-point accumulators, CHRGET routine, RND seed, Kernal I/O status and related flags, RS-232 pseudo-6551 registers and buffers, BASIC indirect vector table up to vector ICRNCH. Includes detailed descriptions of: $0000 D6510 (6510 data direction register), $0001 R6510 (6510 I/O port - LORAM/HIRAM/CHAREN and datasette control), various BASIC zero-page variables and vectors ($0003-$00FF), microprocessor stack ($0100-$01FF), BASIC line editor input buffer ($0200-$0258), I/O file/device tables ($0259-$0276), keyboard buffer and scan state ($0277-$02FF), RS-232 pseudo 6551 control/command/status registers ($0293-$0297 and related indices), and the BASIC indirect vector table ($0300-$0305 shown through ICRNCH). The chunk contains explanations of bitfields (e.g., PORT and DDR bits), example BASIC POKE sequences (moving ROM to RAM, reading character ROM), CHRGET disassembly and flags, RND seed behavior, Kernal message control (MSGFLG), jiffy clock (TIME), tape and serial timing and buffering (TAPE1, BUFPT, BAUDOF), keyboard repeat/delay flags and tables (XMAX, RPTFLAG, DELAY, KEYTAB), and how these zero-page locations are used by BASIC and the Kernal.",
+      "end": 257,
+      "name": "c64_zp_6510_io_port_0000_0001",
+      "description": "6510 CPU I/O port ($0000-$0001): Data Direction Register (D6510) and I/O Port (R6510). Memory banking via LORAM/HIRAM/CHAREN bits, cassette data output and motor control, cassette switch sense. Explains how to switch BASIC ROM, Kernal ROM, character ROM in/out of address space. Includes BASIC examples for copying ROM to RAM and customizing the interpreter. Covers GAME/EXROM cartridge lines and Max Machine emulation mode.",
       "references": [
         {
-          "chunk": "c64_ram_map_0000_0305",
-          "topic": "See individual register descriptions within this consolidated map for details such as CHRGET, D6510, R6510, RS-232 pseudo-6551, and the BASIC vectors."
+          "chunk": "c64_zp_basic_workspace_0002_0012",
+          "topic": "next zero-page region: BASIC workspace variables"
+        },
+        {
+          "chunk": "c64_zp_basic_memory_layout_002b_0038",
+          "topic": "BASIC memory pointers affected by ROM/RAM switching"
         }
-      ],
-      "no_refine": true
+      ]
+    },
+    {
+      "start": 258,
+      "end": 423,
+      "name": "c64_zp_basic_workspace_0002_0012",
+      "description": "BASIC workspace zero-page variables ($0002-$0012): unused byte at $0002, ADRAY1/ADRAY2 float-to-int/int-to-float conversion vectors, CHARAC/ENDCHR text scanning characters, TRMPOS TAB/SPC cursor position, VERCK LOAD/VERIFY flag, COUNT input buffer index, DIMFLG/VALTYP/INTFLG/GARBFL array and variable type flags, SUBFLG subscript/FN flag, INPFLG GET/READ/INPUT discriminator, TANSGN/DOMASK comparison result flags, CHANNL current I/O channel.",
+      "references": [
+        {
+          "chunk": "c64_zp_6510_io_port_0000_0001",
+          "topic": "preceding zero-page region: 6510 I/O port"
+        },
+        {
+          "chunk": "c64_zp_basic_pointers_0013_002a",
+          "topic": "next region: BASIC pointers and string stack"
+        }
+      ]
+    },
+    {
+      "start": 424,
+      "end": 535,
+      "name": "c64_zp_basic_pointers_0013_002a",
+      "description": "BASIC pointers and temporary storage ($0013-$002A): CHANNL current I/O channel number, LINNUM target line number for GOTO/LIST/GOSUB, TEMPPT/LASTPT/TEMPST temporary string descriptor stack, INDEX miscellaneous temporary pointers, RES floating point multiplication work area.",
+      "references": [
+        {
+          "chunk": "c64_zp_basic_workspace_0002_0012",
+          "topic": "preceding zero-page region"
+        },
+        {
+          "chunk": "c64_zp_basic_memory_layout_002b_0038",
+          "topic": "BASIC memory layout pointers that follow"
+        }
+      ]
+    },
+    {
+      "start": 536,
+      "end": 817,
+      "name": "c64_zp_basic_memory_layout_002b_0038",
+      "description": "BASIC memory layout pointers ($002B-$0038): TXTTAB start of BASIC program text, VARTAB start of variable storage (detailed explanation of variable format: floating point, integer, string, FN definitions; 7-byte entries, bit encoding for type), ARYTAB array storage (format with dimension counts), STREND end of arrays/start of free RAM, FRETOP bottom of string text area, FRESPC temporary string pointer, MEMSIZ highest BASIC address. Includes advice on variable ordering for speed, chaining programs via LOAD, and RS-232 buffer allocation.",
+      "references": [
+        {
+          "chunk": "c64_zp_basic_pointers_0013_002a",
+          "topic": "preceding zero-page region"
+        },
+        {
+          "chunk": "c64_zp_basic_execution_state_0039_0060",
+          "topic": "BASIC execution state (current line, DATA pointer, etc.)"
+        }
+      ]
+    },
+    {
+      "start": 818,
+      "end": 967,
+      "name": "c64_zp_basic_execution_state_0039_0060",
+      "description": "BASIC execution state ($0039-$0060): CURLIN current line number (255 in $003A = immediate mode), OLDLIN/OLDTXT previous line/text pointer for CONT, DATLIN/DATPTR current DATA line and address, INPPTR GET/READ/INPUT source pointer, VARNAM/VARPNT current variable name and value pointer, FORPNT FOR index variable pointer, OPPTR math operator table displacement, DEFPNT pointer to current FN descriptor, OPMASK comparison mask, FOUR6 constant value 60 (unused), JMPER JMP instruction for evaluating functions.",
+      "references": [
+        {
+          "chunk": "c64_zp_basic_memory_layout_002b_0038",
+          "topic": "BASIC memory structure these pointers reference"
+        },
+        {
+          "chunk": "c64_zp_fac_and_chrget_0061_008a",
+          "topic": "floating point accumulators and CHRGET that follow"
+        }
+      ]
+    },
+    {
+      "start": 968,
+      "end": 1149,
+      "name": "c64_zp_fac_and_chrget_0061_008a",
+      "description": "Floating point accumulators and CHRGET ($0061-$008A): FAC1 (exponent, 4-byte mantissa, sign, overflow byte), FAC2 (same format), ARISGN sign comparison result, FACOV rounding byte, FBUFPT series evaluation pointer. CHRGET/CHRGOT subroutine with full disassembly listing (INC TXTPTR, LDA, CMP #$3A, space skipping, digit detection). Explains wedge technique for adding BASIC commands. RNDX random number seed (5-byte FP value, RND(0) vs RND(positive) vs RND(negative) behavior).",
+      "references": [
+        {
+          "chunk": "c64_zp_basic_execution_state_0039_0060",
+          "topic": "BASIC execution uses CHRGET to read program text"
+        },
+        {
+          "chunk": "c64_zp_kernal_io_status_008b_009f",
+          "topic": "Kernal I/O status flags that follow"
+        }
+      ]
+    },
+    {
+      "start": 1150,
+      "end": 1350,
+      "name": "c64_zp_kernal_io_status_008b_009f",
+      "description": "Kernal I/O status and device management ($008B-$009F): STATUS (ST) I/O status word with cassette and serial error bit tables, STKEY stop-key flag (keyboard matrix row values), SVXT tape timing constant, VERCK load/verify flag, C3P0/BSOUR serial bus output buffering, SYNO cassette sync, XSAV temporary .X save, LDTND open file count, DFLTN/DFLTO default input/output device numbers, PRTY tape parity, DPSW tape byte received flag, MSGFLG Kernal message control (error vs control messages), PTR1/PTR2 tape pass error log indexes.",
+      "references": [
+        {
+          "chunk": "c64_zp_fac_and_chrget_0061_008a",
+          "topic": "preceding zero-page region"
+        },
+        {
+          "chunk": "c64_zp_jiffy_clock_tape_io_00a0_00c0",
+          "topic": "jiffy clock and tape/serial I/O pointers"
+        }
+      ]
+    },
+    {
+      "start": 1351,
+      "end": 1631,
+      "name": "c64_zp_jiffy_clock_tape_io_00a0_00c0",
+      "description": "Jiffy clock, tape/serial I/O, and file management ($00A0-$00C0): TIME/TI$ 3-byte software jiffy clock (updated every 1/60 second, wraps after 24 hours), serial bus timeout flag, cassette sync countdown, tape/serial timing pointers, load/save start/end address pointers, TAPE1 cassette buffer pointer, RS-232 bit count/next bit/output byte, FNLEN filename length, LA logical file number, SA secondary address (disk/tape/printer usage explained), FA device number table, FNADR filename pointer, ROPRTY RS-232 parity, FSBLK cassette block count, MYCH tape input buffer, CAS1 tape motor interlock.",
+      "references": [
+        {
+          "chunk": "c64_zp_kernal_io_status_008b_009f",
+          "topic": "Kernal I/O status flags"
+        },
+        {
+          "chunk": "c64_zp_keyboard_screen_editor_00c1_00d8",
+          "topic": "keyboard and screen editor state"
+        }
+      ]
+    },
+    {
+      "start": 1632,
+      "end": 1948,
+      "name": "c64_zp_keyboard_screen_editor_00c1_00d8",
+      "description": "Keyboard and screen editor state ($00C1-$00D8): STAL I/O start address, LSTX last key pressed matrix coordinate, NDX keyboard buffer count (dynamic keyboard technique with programming examples), RVS reverse character flag, INDX end of logical line pointer, cursor X/Y position at input start, SFDX current key matrix coordinate (full 64-key lookup table), BLNSW/BLNCT/GDBLN/BLNON cursor blink control, CRSW keyboard/screen input flag, PNT current screen line pointer, PNTR cursor column, QTSW quote mode flag (with ML program to escape quote mode via F1), LNMX physical line length, TBLX cursor physical line number, INSRT insert mode flag.",
+      "references": [
+        {
+          "chunk": "c64_zp_jiffy_clock_tape_io_00a0_00c0",
+          "topic": "preceding zero-page region"
+        },
+        {
+          "chunk": "c64_zp_screen_line_table_rs232_00d9_00ff",
+          "topic": "screen line link table and RS-232 buffers"
+        }
+      ]
+    },
+    {
+      "start": 1949,
+      "end": 2042,
+      "name": "c64_zp_screen_line_table_rs232_00d9_00ff",
+      "description": "Screen line link table and RS-232 buffers ($00D9-$00FF): LDTB1 25-entry screen line link table (bits 0-3 for screen page, bit 7 for logical line start marker), USER color RAM pointer synchronized with PNT, KEYTAB keyboard decode table vector (4 tables at $EB81/$EBC2/$EC03/$EC78 for unshifted/shifted/logo/CTRL), RIBUF/ROBUF RS-232 input/output buffer pointers (256 bytes each created at top of memory when device 2 opened), FREKZP four free zero-page bytes ($00FB-$00FE) guaranteed safe from BASIC, BASZPT temporary storage for float-to-ASCII conversion.",
+      "references": [
+        {
+          "chunk": "c64_zp_keyboard_screen_editor_00c1_00d8",
+          "topic": "preceding zero-page region: keyboard and screen editor"
+        },
+        {
+          "chunk": "c64_ram_map_stack_0100_01ff",
+          "topic": "stack area that follows zero page"
+        }
+      ]
+    },
+    {
+      "start": 2043,
+      "end": 2110,
+      "name": "c64_ram_map_stack_0100_01ff",
+      "description": "C64 stack area memory map ($0100-$01FF): microprocessor hardware stack, tape input error log, stack usage by GOSUB/FOR/DEF routines"
+    },
+    {
+      "start": 2111,
+      "end": 2161,
+      "name": "c64_ram_input_buffer_file_tables_0200_0276",
+      "description": "C64 BASIC input buffer and file management tables ($0200-$0276): BUF BASIC line editor input buffer ($0200-$0258, 89 bytes), LAT Kernal table of logical file numbers ($0259-$0262), FAT Kernal table of device numbers ($0263-$026C), SAT Kernal table of secondary addresses ($026D-$0276). These ten-entry tables track up to 10 simultaneously open files.",
+      "references": [
+        {
+          "chunk": "c64_zp_kernal_io_status_008b_009f",
+          "topic": "LDTND open file count and device defaults"
+        },
+        {
+          "chunk": "c64_ram_keyboard_buffer_0277_0280",
+          "topic": "keyboard buffer that follows"
+        }
+      ]
+    },
+    {
+      "start": 2162,
+      "end": 2260,
+      "name": "c64_ram_keyboard_buffer_0277_0280",
+      "description": "C64 keyboard buffer ($0277-$0280): KEYD 10-byte keyboard buffer (queue), stores keypresses as PETSCII values. Dynamic keyboard technique: POKE characters into buffer and set NDX count to simulate user input. Includes programming examples for auto-typing RUN, self-modifying programs, and using CHR$(13) for carriage returns. Also covers buffer size limit at $0289.",
+      "references": [
+        {
+          "chunk": "c64_ram_input_buffer_file_tables_0200_0276",
+          "topic": "preceding low memory: input buffer and file tables"
+        },
+        {
+          "chunk": "c64_ram_os_pointers_screen_state_0281_028e",
+          "topic": "OS memory pointers and screen editor state"
+        }
+      ]
+    },
+    {
+      "start": 2261,
+      "end": 2489,
+      "name": "c64_ram_os_pointers_screen_state_0281_028e",
+      "description": "C64 OS memory pointers and screen editor state ($0281-$028E): MEMSTR/MEMSIZ OS start/end of memory pointers ($0281-$0284), TIMOUT IEEE bus timeout flag, COLOR current foreground color for text, GDCOL background color under cursor, HIBASE top page of screen memory, XMAX maximum keyboard buffer size, RPTFLG key repeat mode (0=cursor/INST-DEL only, 64=no repeat, 128=all keys), KOUNT repeat speed counter, DELAY repeat delay counter, SHFLAG keyboard SHIFT/CTRL/Logo status, LSTSHF last shift pattern.",
+      "references": [
+        {
+          "chunk": "c64_ram_keyboard_buffer_0277_0280",
+          "topic": "keyboard buffer and dynamic keyboard technique"
+        },
+        {
+          "chunk": "c64_ram_keyboard_vector_charset_028f_0292",
+          "topic": "keyboard decode vector and character set flag"
+        }
+      ]
+    },
+    {
+      "start": 2490,
+      "end": 2627,
+      "name": "c64_ram_keyboard_vector_charset_028f_0292",
+      "description": "C64 keyboard decode vector and character set flag ($028F-$0292): KEYLOG vector to keyboard table setup routine ($028F-$0290, points to $EB48), MODE keyboard SHIFT/Commodore key mode flag ($0291, controls character set switching between uppercase/graphics and upper/lowercase), AUTODN flag for automatic screen scrolling ($0292, 0=enabled). Includes details on enabling/disabling SHIFT+Commodore key toggle and controlling scroll behavior.",
+      "references": [
+        {
+          "chunk": "c64_ram_os_pointers_screen_state_0281_028e",
+          "topic": "screen editor state and key repeat settings"
+        },
+        {
+          "chunk": "c64_ram_rs232_pseudo_registers_0293_0297",
+          "topic": "RS-232 pseudo-registers that follow"
+        }
+      ]
+    },
+    {
+      "start": 2628,
+      "end": 2813,
+      "name": "c64_ram_rs232_pseudo_registers_0293_0297",
+      "description": "C64 RS-232 pseudo 6551 registers ($0293-$0297): M51CTR mock control register ($0293, baud rate/word length/stop bits), M51CDR mock command register ($0294, parity/echo/duplex), M51AJB user-specified baud rate ($0295-$0296, non-standard prescaler value), RSSTAT RS-232 status register ($0297, error flags: parity/framing/overrun/buffer/CTS/DSR). Includes detailed bit maps for each register, explanation of baud rate prescaler formula, standard baud rate table, and techniques for reading/clearing status via the ST variable.",
+      "references": [
+        {
+          "chunk": "c64_ram_keyboard_vector_charset_028f_0292",
+          "topic": "preceding low memory region"
+        },
+        {
+          "chunk": "rs232_bitnum",
+          "topic": "RS-232 bit padding at $0298"
+        },
+        {
+          "chunk": "rs232_baud_prescaler",
+          "topic": "baud rate prescaler formula and CIA timer values"
+        }
+      ]
     },
     {
       "start": 2814,

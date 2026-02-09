@@ -1,0 +1,35 @@
+# NMOS 6510 - Example: using DCP to implement a decrementing loop counter. Shows how DEC+LDA+CMP+BNE can be replaced by LDA, DCP and BNE to save cycles/bytes and leave A usable.
+
+For decrementing a 16 bit pointer it is also of good use:
+LDA #$ff
+DCP ptr
+BNE +
+DEC ptr+1
++
+;carry is set always for free
+
+- 23 -
+
+Example: decrement indirect indexed memory
+
+The 6502 has no DEC (zp), y instruction, so with legal opcodes one would write:
+LDY #$00
+LDA (zp),Y
+SEC
+SBC #$01
+STA (zp),Y
+instead you can use:
+LDY #$00
+DCP (zp), y
+which is 5 bytes smaller, 7 cycles faster and leaves A untouched (but changes N, Z, C flags).
+As a bonus, you get a compare with the result for free, so instead of:
+LDY #$00
+LDA (zp),Y
+SEC
+SBC #$01
+STA (zp),Y
+LDA #$42
+
+---
+Additional information can be found by searching:
+- "dcp_operation_and_equivalents" which expands on behavior and equivalence of DCP to DEC + CMP

@@ -1,0 +1,25 @@
+# ca65 Users Guide - Design goals for ca65: macros, CPU support (65C02/65816), relocatable code, conditional assembly, segments, linker expression resolution, lexical nesting and local symbols, one-pass assembly, licensing goals.
+
+1.1 Design criteria
+Here's a list of the design criteria, that I considered important for the development:
+
+
+The assembler must support macros. Macros are not essential, but they make some things easier, especially when you use the assembler in the backend of a compiler.
+The assembler must support the newer 65C02 and 65816 CPUs. I have been thinking about a 65816 backend for the C compiler, and even my old a816 assembler had support for these CPUs, so this wasn't really a problem.
+The assembler must produce relocatable code. This is necessary for the compiler support, and it is more convenient.
+Conditional assembly must be supported. This is a must for bigger projects written in assembler (like Elite128).
+The assembler must support segments, and it must support more than three segments (this is the count, most other assemblers support). Having more than one code segments helps developing code for systems with a divided ROM area (like the C64).
+The linker must be able to resolve arbitrary expressions. It should be able to get things like
+        .import S1, S2
+        .export Special
+        Special = 2*S1 + S2/7
+right.
+True lexical nesting for symbols. This is very convenient for larger assembly projects.
+"Cheap" local symbols without lexical nesting for those quick, late night hacks.
+I liked the idea of "options" as Anre Fachats .o65 format has it, so I introduced the concept into the object file format use by the new cc65 binutils.
+The assembler will be a one pass assembler. There was no real need for this decision, but I've written several multipass assemblers, and it started to get boring. A one pass assembler needs much more elaborated data structures, and because of that it's much more fun:-)
+Non-GPLed code that may be used in any project without restrictions or fear of "GPL infecting" other code.
+
+---
+Additional information can be found by searching:
+- "overview_introduction" which expands on context for the design

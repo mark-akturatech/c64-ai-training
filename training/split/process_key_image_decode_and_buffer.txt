@@ -1,0 +1,64 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - PROCESS KEY IMAGE: Decodes a pressed key and calculates its ASCII value using the KEYTAB decode tables. Entry jumps via KEYLOG vector ($028F) to the handler at $EAE0. Loads the key index (SFDX from $CB), fetches the ASCII from the current KEYTAB table (($F5),Y), implements key-repeat detection by comparing to the last key (LSTX $C5) and managing repeat delay/counters (DELAY $028C, KOUNT $028B). Tests repeat mode (RPTFLG $028A) and special-case keys that do not repeat (<DEL>, <space>, cursor keys). When repeat conditions are met it decrements DELAY/KOUNT and, if allowed and buffer space exists (NDX $C6 vs XMAX $0289), stores the new character into the keyboard buffer ($0277,X), updates NDX and exits (RTS). Also writes #$7F to the keyboard write register ($DC00) before returning.
+
+                                *** PROCESS KEY IMAGE
+                                This routine decodes the pressed key, and calculates its
+                                ASCII value, by use of the four tables. If the pressed key
+                                is the same key as in the former interrupt, then the key-
+                                repeat-section is entered. The routine tests the RPTFLG if
+                                he key shall repeat. The new key is stored in the keyboard
+                                buffer, and all pointers are updated.
+.,EADD 6C 8F 02 JMP ($028F)     jump through KEYLOG vector, points to $eae0
+.,EAE0 A4 CB    LDY $CB         SFDX, number of the key we pressed
+.,EAE2 B1 F5    LDA ($F5),Y     get ASCII value from decode table
+.,EAE4 AA       TAX             temp store
+.,EAE5 C4 C5    CPY $C5         same key as former interrupt
+.,EAE7 F0 07    BEQ $EAF0       yepp
+.,EAE9 A0 10    LDY #$10        restore the repeat delay counter
+.,EAEB 8C 8C 02 STY $028C       DELAY
+.,EAEE D0 36    BNE $EB26       always jump
+.,EAF0 29 7F    AND #$7F
+.,EAF2 2C 8A 02 BIT $028A       RPTFLG, test repeat mode
+.,EAF5 30 16    BMI $EB0D       repeat all keys
+.,EAF7 70 49    BVS $EB42       repeat none - exit routine
+.,EAF9 C9 7F    CMP #$7F
+.,EAFB F0 29    BEQ $EB26
+.,EAFD C9 14    CMP #$14        <DEL> key pressed
+.,EAFF F0 0C    BEQ $EB0D       yepp...
+.,EB01 C9 20    CMP #$20        <space> key pressed
+.,EB03 F0 08    BEQ $EB0D       yepp...
+.,EB05 C9 1D    CMP #$1D        <CRSR LEFT/RIGHT>
+.,EB07 F0 04    BEQ $EB0D       yepp..
+.,EB09 C9 11    CMP #$11        <CRSRS DOWN/UP>
+.,EB0B D0 35    BNE $EB42       yepp..
+.,EB0D AC 8C 02 LDY $028C       DELAY
+.,EB10 F0 05    BEQ $EB17       skip
+.,EB12 CE 8C 02 DEC $028C       decrement DELAY
+.,EB15 D0 2B    BNE $EB42       end
+.,EB17 CE 8B 02 DEC $028B       decrement KOUNT, repeat speed counter
+.,EB1A D0 26    BNE $EB42       end
+.,EB1C A0 04    LDY #$04
+.,EB1E 8C 8B 02 STY $028B       init KOUNT
+.,EB21 A4 C6    LDY $C6         read NDX, number of keys in keyboard queue
+.,EB23 88       DEY
+.,EB24 10 1C    BPL $EB42       end
+.,EB26 A4 CB    LDY $CB         read SFDX
+.,EB28 84 C5    STY $C5         store in LSTX
+.,EB2A AC 8D 02 LDY $028D       read SHFLAG
+.,EB2D 8C 8E 02 STY $028E       store in LSTSHF, last keyboard shift pattern
+.,EB30 E0 FF    CPX #$FF        no valid key pressed
+.,EB32 F0 0E    BEQ $EB42       end
+.,EB34 8A       TXA
+.,EB35 A6 C6    LDX $C6         NDX, number of keys in buffer
+.,EB37 EC 89 02 CPX $0289       compare to XMAX, max numbers oc characters in buffer
+.,EB3A B0 06    BCS $EB42       buffer is full, end
+.,EB3C 9D 77 02 STA $0277,X     store new character in keyboard buffer
+.,EB3F E8       INX             increment counter
+.,EB40 86 C6    STX $C6         and store in NDX
+.,EB42 A9 7F    LDA #$7F
+.,EB44 8D 00 DC STA $DC00       keyboard write register
+.,EB47 60       RTS             exit
+
+---
+Additional information can be found by searching:
+- "scnkey_keyboard_scan" which expands on provides the key index (SFDX) used here
+- "shift_cbm_toggle_keytab_select" which expands on handles shift/CBM combination and selects the appropriate KEYTAB vector before re-entering this decode routine

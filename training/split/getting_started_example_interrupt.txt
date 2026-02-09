@@ -1,0 +1,61 @@
+# Kick Assembler - Section 2.2: A small example IRQ program (C64 code) demonstrating comments, macros, includes, BasicUpstart2 use, interrupt setup, importing binary data, and a macro definition (SetBorderColor). Full example code and usage notes.
+
+2.2. An Example Interrupt
+Below is a little sample program to quickly get you started using Kick Assembler. It sets up an interrupt, which
+play some music. It shows you how to use non-standard features such as comments, how to use macros, how to
+include external files and how to use the BasicUpstart2-macro which inserts a basic sys-line to start your program.
+This should be enough to get you (kick) started.
+BasicUpstart2(start)
+//---------------------------------------------------------//---------------------------------------------------------//
+Simple IRQ
+//---------------------------------------------------------//---------------------------------------------------------* = $4000 “Main Program”
+start: lda #$00
+sta $d020
+sta $d021
+lda #$00
+jsr $1000
+// init music
+sei
+lda #<irq1
+sta $0314
+lda #>irq1
+sta $0315
+lda #$7f
+sta $dc0d
+sta $dd0d
+lda #$81
+sta $d01a
+lda #$1b
+sta $d011
+lda #$80
+sta $d012
+lda $dc0d
+lda $dd0d
+
+2
+
+Getting Started
+
+asl $d019
+cli
+jmp *
+//---------------------------------------------------------irq1:
+asl $d019
+SetBorderColor(2)
+jsr $1003
+// play music
+SetBorderColor(0)
+jmp $ea81
+//---------------------------------------------------------*=$1000 “Music”
+.import binary “ode to 64.bin”
+//---------------------------------------------------------// A little macro
+.macro SetBorderColor(color) {
+lda #color
+sta $d020
+}
+
+
+---
+Additional information can be found by searching:
+- "getting_started_running_assembler" which expands on how to run the assembler to assemble the example
+- "functions_define" which expands on macros and functions referenced in examples

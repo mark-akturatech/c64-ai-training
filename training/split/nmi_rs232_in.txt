@@ -1,0 +1,28 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - NMI RS232 IN: Reads a received data bit from the RS232 port (CIA dataport $DD01), stores single-bit INBIT ($A7), loads and adjusts timer B (DD06/DD07) by subtracting a constant and adding BAUD offset (<BAUDOF >BAUDOF at $0299/$029A), starts CIA control register B ($DD0F) and re-enables CIA2 interrupts to continue receive. Jumps to RS232 receive routine at $EF59.
+
+                                *** NMI RS232 IN
+                                This routine inputs a bit from the RS232 port and sets the
+                                baudrate timing for the next bit. Continues to the RS232
+                                receive routine.
+.,FED6 AD 01 DD LDA $DD01       RS232 I/O port
+.,FED9 29 01    AND #$01        test bit0, received data
+.,FEDB 85 A7    STA $A7         store in INBIT
+.,FEDD AD 06 DD LDA $DD06       lowbyte of timer B
+.,FEE0 E9 1C    SBC #$1C
+.,FEE2 6D 99 02 ADC $0299       <BAUDOF
+.,FEE5 8D 06 DD STA $DD06       store timer B
+.,FEE8 AD 07 DD LDA $DD07       highbyte of timer B
+.,FEEB 6D 9A 02 ADC $029A       >BAUDOF
+.,FEEE 8D 07 DD STA $DD07       store timer B
+.,FEF1 A9 11    LDA #$11
+.,FEF3 8D 0F DD STA $DD0F       CIA#2 control register B
+.,FEF6 AD A1 02 LDA $02A1       ENABL
+.,FEF9 8D 0D DD STA $DD0D       CIA#2 interrupt control register
+.,FEFC A9 FF    LDA #$FF
+.,FEFE 8D 06 DD STA $DD06
+.,FF01 8D 07 DD STA $DD07
+.,FF04 4C 59 EF JMP $EF59       jump to RS232 receive routine
+
+---
+Additional information can be found by searching:
+- "rs232_timing_table_ntsc" which expands on timing constants used to program timer B for next bit

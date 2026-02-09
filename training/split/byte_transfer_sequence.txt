@@ -1,0 +1,24 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - IEC Layer 2: Basic byte transmission sequence. Sender controls CLK, receivers control DATA. Steps include sender releasing/controlling CLK, placing bits LSB-first on DATA, 60 µs minimum data-valid holds, receivers pulling DATA to acknowledge, repeated per bit and per byte.
+
+================================================================================
+PART 4: STANDARD SERIAL (IEC) BUS - LAYER 2: BYTE TRANSFER PROTOCOL
+================================================================================
+
+The sender controls CLK exclusively; receivers control DATA between bytes.
+
+Basic Byte Transmission Sequence:
+  1. Sender releases CLK to signal "ready to send"
+  2. Receivers release DATA when ready to receive
+  3. Sender pulls CLK (indicates data on DATA line is NOT yet valid)
+  4. Sender places bit on DATA line (LSB first)
+  5. Sender releases CLK (data valid) - held minimum 60 microseconds
+  6. Sender pulls CLK again (data no longer valid) - held minimum 60 microseconds
+  7. Steps 4-6 repeat for all 8 bits (LSB first)
+  8. Receivers pull DATA to signal busy/acknowledge
+  9. Sequence repeats for next byte or transmission ends
+
+
+---
+Additional information can be found by searching:
+- "iec_layer1_electrical" which expands on pin roles for CLK and DATA
+- "timing_evolution_on_commodore_models" which expands on timing history and practical hold-times

@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - LUKING subroutine: prints 'SEARCHING' (and 'FOR' plus filename if present) to the console depending on MSGFLG and FNLEN. Calls MSG for the text and uses existing routines to output messages.
+
+                                ;SUBROUTINE TO PRINT TO CONSOLE:
+                                ;
+                                ;SEARCHING [FOR NAME]
+                                ;
+.,F5AF A5 9D    LDA $9D         LUKING LDA MSGFLG      ;SUPPOSED TO PRINT?
+.,F5B1 10 1E    BPL $F5D1       BPL    LD115           ;...NO
+.,F5B3 A0 0C    LDY #$0C        LDY    #MS5-MS1        ;"SEARCHING"
+.,F5B5 20 2F F1 JSR $F12F       JSR    MSG
+.,F5B8 A5 B7    LDA $B7         LDA    FNLEN
+.,F5BA F0 15    BEQ $F5D1       BEQ    LD115
+.,F5BC A0 17    LDY #$17        LDY    #MS6-MS1        ;"FOR"
+.,F5BE 20 2F F1 JSR $F12F       JSR    MSG
+                                ;SUBROUTINE TO OUTPUT FILE NAME
+
+---
+Additional information can be found by searching:
+- "ieee_load_open_and_address_fetch" which expands on Called from IEEE open sequence to inform the user the system is searching for the file
+- "tape_load_dispatch_and_file_search" which expands on Also called during tape search to inform the user
+- "output_filename_subroutine" which expands on Uses the OUTFN routine to print the actual filename after 'FOR' if present

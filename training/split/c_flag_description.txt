@@ -1,0 +1,40 @@
+# MACHINE - Description of the C (carry / greater-or-equal) flag: meaning after comparisons, behavior in arithmetic, which instructions affect it (compare and arithmetic), branch instructions BCS/BCC, and direct set/clear via SEC and CLC. Notes on substituting branches (BNE vs BCC) in example loops.
+
+C Flag
+------
+
+The C (carry) flag is probably misnamed, too.  It should have been called the
+GE (greater/equal) flag, since after a comparison (CPX, CPY or CMP), the C
+flag is set "on" if the register (X, Y, or A) is greater than or equal to the
+value compared.  If the register concerned is smaller, the C flag will be
+reset "off."
+
+The C flag is not as busy as the Z flag.  The C flag is affected only by
+comparison instructions and by arithmetic activities (add, subtract, and a
+type of multiplication and division called rotate or shift).  When used in
+arithmetic, the C flag is properly named, since it acts as a "carry" bit
+between various columns as they are calculated.  For example, an LDA
+instruction always affects the Z flag since a register is being changed, but
+never affects the C flag since no arithmetic or comparison is being
+performed.
+
+If the C flag is set "on," the BCS (branch carry set) instruction will branch
+to the specified address; otherwise it will be ignored and the next
+instruction in sequence will be executed.  If the C flag is reset "off," the
+BCC (branch carry clear) instruction will branch.
+
+The C flag may be directly set or reset by means of the instructions SEC (set
+carry) and CLC (clear carry).  We will use these instructions when we begin
+to deal with addition and subtraction.
+
+If you examine the last program of Chapter 2, you will see that the BNE
+instruction could be replaced by BCC.  Instead of "branch back if not equal
+to 6," we could code "branch back if less than 6."  The operation would be
+the same in either case.
+
+
+
+---
+Additional information can be found by searching:
+- "flags_introduction_and_z_flag" which expands on Related Z flag behavior and compare/branch examples
+- "v_flag_and_overflow" which expands on Contrast with V flag for signed overflow

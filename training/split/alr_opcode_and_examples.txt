@@ -1,0 +1,119 @@
+# NMOS 6510 - ALR (ASR) undocumented opcode ($4B): AND A with immediate then LSR A. Effects: result is (A & imm) >> 1 with bit 1 shifted into Carry; sets N and Z. Includes opcode, size, cycles, example uses (mask+shift), fetch 2 bits, and using LSB to conditionally add offsets.
+
+Bit 1 (after the AND) is shifted into the carry flag
+N and Z are set after the shift
+
+Example:
+ALR #$FE
+
+;4B FE
+
+Equivalent Instructions:
+AND #$FE
+LSR A
+
+Test code: Lorenz-2.15/alrb.prg
+Example: right shift and mask
+
+Whenever you need to shift and influence the carry afterwards, you can use ALR for that, and if
+you even need to apply an and-mask beforehand, you are extra lucky and can do 3 commands by
+that:
+ALR #$fe
+
+;-> A & $fe = $fe -> lsr -> carry is cleared
+; as bit 0 was not set before lsr
+
+… same as …
+AND #$ff
+LSR
+CLC
+
+- 30 -
+
+Example: fetch 2 bits from a byte
+
+LDA #%10110110
+LSR
+ALR #$03*2
+This will mask out and shift down bits 2 and 3. Note that the mask is applied before shifting,
+therefore the mask is multiplied by two.
+
+Example: add offset depending on LSB
+
+Another nice trick to transform a single bit into a new value (good for adding offsets depending
+on the value of a single bit) offset is the following:
+LDA xposl
+
+;load a value
+
+ALR #$01
+
+;move LSB to carry and clear A
+
+BCC +
+LDA #$3f
+
+;carry is set
+
+ADC #stuff
+
+;things will work sane, as offset
+
++
+;includes already the carry
+As you can see we have now either loaded $00 or $40 (carry!) to A depending on the state of bit
+0, that is ideal for e.g. when we want to load from a different bank depending on if a position is
+odd or even. As you see, the above example is even faster than this (as the shifting always takes 6
+cycles, whereas the above example takes 5/6 cycles):
+LDA xposl
+ALR #$01
+ROR
+LSR
+ADC #stuff
+
+;things will work sane as carry is
+;always clear (upper bits are masked)
+
+- 31 -
+
+ARR
+Type: Combination of an immediate and an implied command (Sub-instructions: AND, ROR)
+Opc.
+$6B
+
+Mnemonic
+
+Function
+
+ARR #imm
+
+Size
+
+A = (A & #{imm}) / 2
+
+2
+
+Cycles N V - B D I Z
+
+C
+
+2
+
+x
+
+o o
+
+o
+
+i
+
+note to ARR: part of this command are some ADC mechanisms. following effects appear after AND
+but before ROR: the V-Flag is set according to (A and #{imm}) + #{imm}, bit 0 does NOT go into
+carry, but bit 7 is exchanged with the carry.
+The following applies to when the decimal flag is clear, for the behaviour in decimal mode see
+Unintended decimal mode: ARR.
+ARR ANDs the accumulator with an immediate value and then rotates the content right. The
+
+---
+Additional information can be found by searching:
+- "anc_opcode_and_behavior" which expands on both ANC and ALR combine AND with a shift/rotate and set flags accordingly

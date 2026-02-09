@@ -1,0 +1,106 @@
+# ********* - How bitmap data is arranged (character-like interleaved layout). Formula for finding the byte BY for a dot given X, Y, and BASE: BY = BASE + 40*(Y AND 256) + (Y AND 7) + (X AND 504). BASIC examples to set/reset bits with POKE/PEEK and optimization suggestions (array of powers of two BI(I)).
+
+that you type in on the keyboard.  To fix this, you must POKE 648 with
+the page number of the starting address of screen memory (page
+number=location/256).  Remember, the actual starting address of screen
+memory depends not only on the offset from the beginning of VIC-II
+memory in the register, but also on which bank of 16K is used for
+VIC-II memory.
+
+For example, if the screen area starts 1024 bytes from the beginning
+of VIC- II memory, and the video chip is using Bank 2 (32768-49151),
+the actual starting address of screen memory is 32768+1024=33792
+($8400).  For examples of how to change the video memory area, and of
+how to relocate the screen, see the entro for 56576 ($DD00).
+
+53273         $D019          VICIRQ
+VIC Interrupt Flag Register
+
+Bit 0:  Flag:  Is the Raster Compare a possible source of an IRQ?
+        (1=yes)
+Bit 1:  Flag:  Is a collision between a sprite and the normal graphics
+        display a possible source of an IRQ?  (1=yes)
+Bit 2:  Flag:  Is a collision between two sprites a possible source of
+        an IRQ?  (1=yes)
+Bit 3:  Flag:  Is the light pen trigger a possible source of an IRQ?
+        (1=yes)
+Bits 4-6:  Not used
+Bit 7:  Flag:  Is there any VIC-II chip IRQ source which could cause
+        an IRQ?  (1=yes)
+
+The VIC-II chip is capable of generating a maskable request (IRQ) when
+certain conditions relating to the video display are fulfilled.
+Briefly, the conditions that can cause a VIC-II chip IRQ are:
+
+1.  The line number of the current screen line being scanned by the
+raster is the same as the line number value written to the Raster
+Register (53266, $D012).
+
+2.  A sprite is positioned at the same location where normal graphics
+data are being displayed.
+
+3.  Two sprites are positioned so that they are touching.
+
+4.  The light sensor on the light pen has been struck by the raster
+beam, causing the fire button switch on joystick Control Port #1 to
+close (pressing the joystick fire button can have the same effect).
+
+When one of these conditions is met, the corresponding bit in this
+status register is set to 1 and latched.  That means that as long as
+the corresponding enable bit in the VIC IRQ Mask register is set to 1,
+and IRQ requested will be generated, and any subsequent fulfillment of
+the same condition will be ignored until the latch is cleared.
+
+This allows you to preserve multiple interrupt requests if more than
+one of the interrupt conditions is met at a time.  In order to keep an
+IRQ source from generating another request after it has been serviced,
+and to enable subsequent interrupt conditions to be detected, the
+interrupt service routine must write a 1 to the corresponding bit.
+This will clear the latch for that bit.  The default value written to
+this register is 15, which clears all interrupts.
+
+There is only 1 IRQ vector that points to the address of the routine
+that will be executed when an IRQ interrupt occurs.  The same routine
+will therefore be executed regardless of the source of the interrupt.
+This status register provides a method for that routine to check what
+the source of the IRQ was, so that the routine can take appropriate
+action.  First, the routine can check Bit 7.  Anytime that any of the
+other bits in the status register is set to 1, Bit 7 will also be set.
+Therefore, if that bit holds a 1, you know that the VIC-II chip
+requested an IRQ (the two CIA chips which are the other sources of IRQ
+interrupts can be checked in a similar manner).  Once it has been
+determined that the VIC chip is responsible for the IRQ, the
+individual bits can be tested to see which of the IRQ conditions have
+been met.
+
+For more information, and a sample VIC IRQ program, see the following
+entry.
+
+53274         $D01A          IRQMASK
+IRQ Mask Register
+
+Bit 0:  Enable Raster Compare IRQ (1=interrupt enabled)
+Bit 1:  Enable IRQ to occure when sprite collides with display of
+  normal
+        graphics data (1=interrupt enabled)
+Bit 2:  Enable IRQ to occur when two sprites collide (1=interrupt
+  enabled)
+Bit 3:  Enable light pen to trigger an IRQ (1=interrupt enabled)
+Bits 4-7:  Not used
+
+This register is used to enable an IRQ request to occur when one of
+the VIC-II chip interrupt conditions is met.  In order to understand
+what that means, and how these interrupts can extend the range of
+options available to a programmer, you must first understand what an
+interrupt is.
+
+An interrupt is a signal given to the microprocessor (the brains of
+the computer) that tells it to stop executing its machine language
+program (for example, BASIC), and to work on another program for a
+short time, perhaps only a fraction of a second.  After finishing the
+interrupt program, the computer goes back to executing the main
+program, just as if there had never been a detour.
+
+---
+Additional information can be found by searching:
+- "bitmap_mode_selection_and_memory_control_$D018" which expands on BASE and VIC memory bank selection are controlled by $D018

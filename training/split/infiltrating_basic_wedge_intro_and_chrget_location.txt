@@ -1,0 +1,30 @@
+# MACHINE - Introduces the idea of a 'wedge'—modifying BASIC's frequently-used zero-page subroutine used to get characters from BASIC text (CHRGET/CHRGOT). Gives typical locations: $0070-$0087 (most PET/CBM) and $0073-$008A (VIC-20, C64). Notes the routine is self-modifying and is used to fetch and classify characters (numeric, end-of-command, etc.).
+
+
+Infiltrating BASIC:  The Wedge
+------------------------------
+
+In zero-page, there's a subroutine that the BASIC interpreter uses frequently
+to obtain information from your BASIC program.  It's used to get a character
+from your BASIC program, and to check it for type (numeric, end-of-command,
+or other).
+
+The routine is normally entered at either of two points:  CHRGET, to get the
+next character from your BASIC program; and CHRGOT, to recheck the last
+character.  The subroutine is located at $0070 to $0087 in most PET/CBM
+computers, and at $0073 to $008A in VIC-20 or Commodore 64.  You may
+disassemble it there if you wish.  The coding is described below.
+
+                                                                        :123:
+
+Since CHRGET is in different locations, depending on the machine, the
+following code is shown with symbolic addresses.  That is, instead of showing
+the hex address value, the address is given a name, or symbol.  Thus, CHRGOT
+might represent address $0079, CHRGOT+1 would represent $007A, and so on.
+
+  CHRGET INC CHRGOT+1
+         BNE CHRGOT
+
+---
+Additional information can be found by searching:
+- "wedge_and_CHRGET_code_examples" which expands on Detailed CHRGET/CHRGOT code and numeric test

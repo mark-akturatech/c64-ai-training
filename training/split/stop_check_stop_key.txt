@@ -1,0 +1,20 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - STOP: Check <STOP> key (vectored at $ffe1). Tests STKEY ($91) for value $7F (STOP pressed while jiffy clock updated). If detected it calls CLRCHN ($FFCC) to close all I/O channels, saves keyboard buffer count in $C6 and resets keyboard buffer pointer. Preserves processor flags around CLRCHN call (PHP/PLP).
+
+                                *** STOP: CHECK <STOP> KEY
+                                The KERNAL routine STOP ($ffe1) is vectored here. If STKEY
+                                =#7f, then <STOP> was pressed and logged whilst the jiffy
+                                clock was being updated, so all I/O channels are closed
+                                and the keyboard buffer reset.
+.,F6ED A5 91    LDA $91         STKEY
+.,F6EF C9 7F    CMP #$7F        <STOP> ?
+.,F6F1 D0 07    BNE $F6FA       nope
+.,F6F3 08       PHP
+.,F6F4 20 CC FF JSR $FFCC       CLRCHN, close all I/O channels
+.,F6F7 85 C6    STA $C6         NDX, number of characters in keyboard buffer
+.,F6F9 28       PLP
+.,F6FA 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "clrchn_restore_default_io" which expands on CLRCHN is called to close I/O channels when STOP is detected

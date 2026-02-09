@@ -1,0 +1,43 @@
+# byRiclianll - The job-queue implementation used by the duplication routine: initialization (TRY=0), composing and sending job packets (PRINT#15 M-W / M-R sequences), waiting for GET#15 responses, normalizing empty responses to CHR$(0), converting response bytes with ASC, retry counting (TRY increments and IF TRY=500 -> timeout path), conditional branches for response values (>127 and error recovery), CLOSE 15 and final error message on failure. Contains the subroutine's RETURN/END behavior and error-exit printout.
+
+
+540  REM  JOB  QUEUE 
+550  TRY=0 
+
+560  PRINr#15, "M-W"CHR*(8>CHR*(0)CHR*(2)C 
+HR*(T)CHR*(S) 
+
+570  PRINT#15,  "M-W"CHR*  ( 1 )  CHR*  (O)  CHR*  (DC 
+
+HR*(JOB> 
+
+580  TRY=TRY+1 
+
+590  PRINT#15, "M-R"CHR*<1)CHR*(0> 
+
+600  GET#15,E* 
+
+610  IFE*=""THENE*=CHR*(0) 
+
+
+157 
+
+
+620  E=ASC(E*> 
+630  IFTRY=500G0T0660 
+640  IFE>127G0T0580 
+650  RETURN 
+
+660  PRINT#15, "M-W"CHR«(71)CHR*(0)CHR«(1) 
+
+CHR*(7) 
+
+670  CLOSE 15 
+
+680  PRINT" {DOWN>  CRVSJFAILED^ROFFJ " 
+690  END 
+
+---
+Additional information can be found by searching:
+- "duplicate_single_sector_clone_routine" which expands on Called by the duplication main flow to send and confirm drive commands
+- "multiple_id_formatting_subroutines_delay_and_job_queue" which expands on Shared job-queue logic and retry behavior used elsewhere in the multiple-ID formatter

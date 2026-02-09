@@ -1,0 +1,20 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Sets the I/O start pointer (C1/C2) and the tape buffer end pointer (AE/AF) based on the tape buffer start pointer and a fixed buffer length. Calls the get_tape_buffer_start_pointer helper (JSR $F7D0), copies X/A to C1, adds buffer-length low and high bytes to compute AE/AF, and saves the index Y to $9F.
+
+                                *** set the tape buffer start and end pointers
+.,F7D7 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F7DA 8A       TXA             copy tape buffer start pointer low byte
+.,F7DB 85 C1    STA $C1         save as I/O address pointer low byte
+.,F7DD 18       CLC             clear carry for add
+.,F7DE 69 C0    ADC #$C0        add buffer length low byte
+.,F7E0 85 AE    STA $AE         save tape buffer end pointer low byte
+.,F7E2 98       TYA             copy tape buffer start pointer high byte
+.,F7E3 85 C2    STA $C2         save as I/O address pointer high byte
+.,F7E5 69 00    ADC #$00        add buffer length high byte
+.,F7E7 85 AF    STA $AF         save tape buffer end pointer high byte
+.,F7E9 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "get_tape_buffer_start_pointer" which expands on obtains the buffer start pointer in X/Y
+- "create_tape_header_and_initiate_write" which expands on used to set start/end pointers before writing header data

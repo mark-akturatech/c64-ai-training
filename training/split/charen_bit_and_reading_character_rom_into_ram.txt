@@ -1,0 +1,45 @@
+# ********* - Explains Bit 2 (CHAREN): selecting character generator ROM vs. I/O devices. Describes that normally CHAREN=1 leaves character ROM inaccessible to PEEK while VIC-II can use it; setting CHAREN=0 maps the character ROM into $D000-$DFFF and disables I/O. Provides a BASIC example to read the 2K character ROM into RAM (including POKEs to disable interrupts, switch in ROM, loop to POKE BASE+I,PEEK(53248+I), and restore CHAREN and interrupts). Advises alignment of BASE on an even 2K boundary within VIC-II-addressed memory and references related VIC-II and character ROM sections.
+
+Bit 2.  This bit controls the CHAREN signal.  A 0 in this position
+switches the character generator ROM in, so that it can be read by the
+6510 at addresses 53248-57343 ($D000-$DFFF).  Normally, this bit is
+set to 1, so that while the VIC-II chip has access to the character
+generator ROM for purposes of creating the screen display, the user
+cannot PEEK into it.  Since this ROM is switched into the system in
+the same location as the I/O devices (SID chip, VIC-II chip, and 6526
+CIA's), o I/O can occur when this ROM is switched in.
+
+The ability to switch in the character generator ROM is very useful to
+the programmer who wishes to expirement with user-defined characters.
+Modified character graphics is one of the  more powerful graphics
+tools available, but often the user will not want to redefine a whole
+character set at one time.  By reading the character ROM and
+duplicating its contents in RAM, the user can replace only a few
+characters in the set.  The method for reading this ROM into RAM from
+BASIC is as follows:
+
+10 POKE 56333,127:POKE1,PEEK(1) AND 251:FOR I=0 TO 2048
+20 POKE BASE+I,PEEK(53248+I):NEXT:POKE 1,PEEK(1) OR 4:POKE 56333,129
+
+The first POKE is necessary to turn off the system timer interrupt.
+Since the I/O devices are addressed in the same space as the character
+ROM, switching that ROM in switches all I/O out, making it necessary
+to turn off any interrupts which use these devices.
+
+The second POKE is the one which switches in the character ROM.  The
+program loop then reads this ROM memory into RAM, starting with the
+address BASE.  Note that this address should start on an even 2K
+boundary (an address evenly divisible by 2048) within the block of
+memory presently being addresses by the VIC-II chip (for more
+information on where to put user-defined character sets, and how to
+use them, see the section on the VIC-II chip, under location 53272
+($D018), the section on the character ROM at 49152 ($C000), and the
+section on banking VIC-II memory at 56576 ($DD00)).  After reading the
+contents of ROM into RAM, the next POKEs switch out the character ROM
+and restore the interrupt.
+
+
+---
+Additional information can be found by searching:
+- "r6510_internal_io_port_overview" which expands on Definition of CHAREN and how it conflicts with I/O device addressing
+- "loram_hiram_and_moving_rom_to_ram_examples" which expands on Similar technique of copying ROM into RAM applied to BASIC & Kernal

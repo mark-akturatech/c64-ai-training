@@ -1,0 +1,20 @@
+# Analyzing C64 tape loaders - Explains how a Turbo Loader achieves faster data rates: shorter pulses -> higher density. Describes a common timing scheme: disable interrupts, start a timer between short and long lengths (threshold), check interrupt flag before/after timer to classify pulse as short or long. Bits are rotated into a byte storage MSb-first or LSb-first. Sync uses repeated pilot bytes (e.g. $40) to align bit/byte boundaries.
+
+
+Almost every marketed C64 tape software uses some form of Turbo Loader. The origin of these Turbo Loaders is rather obscure since many of the software houses use the same routines.
+
+A Turbo Loader is a routine which must be loaded into C64 RAM before being executed and therefore every Turbo Loader routine is stored in a Standard CBM encoded "boot" file.
+Usually a part of the Turbo Loader routines is stored in the CBM file Header and therefore loaded in the tape buffer (at $033C-$03FB). CBM file Data is often used both for other Turbo Loader routines and to modify the table of vectors in low RAM, to cause the autostart of the turbo loader itself (eg. it may modify $0326/$0327 where the output vector is located).
+When the standard LOAD ends, the operating system executes various operations, one of which is printing the "READY." message on the C64 screen. By default, at $0326/$0327 there's the start address of the onscreen print routine (remember any of the 64K memory addresses can be identified by 2 bytes, low significant part first and then most significant. As example, the couple of values 01-08 is a pointer to $0801).
+If CBM loader loads Data block overwriting this vector with the Turbo Loader start address, the operating system, instead of printing the "READY." message at the end of CBM LOAD, executes the Turbo Loader.
+
+When executed, a Turbo Loader "replaces" the existing LOAD and allows a program or data to be loaded from tape at a faster speed than the normal LOAD. This is achieved by simply reducing the length of pulses stored onto the tape, in order to allow a far greater density of information storage per inch of tape.
+
+Each bit is flagged in the interrupt register on the falling (negative) edge of the pulse. A widely used Turbo loader scheme runs with the interrupts disabled, sets a timer to between the two lengths (which we will refer as "threshold" value), and when the timer runs out, the interrupt register is checked to see if the pulse came in or not. If the falling edge of the pulse sets the relevant interrupt flag before the timer runs out then the pulse was a "short" pulse (usually identified with bit zero), otherwise it was a "long" one (bit one). Bits are then rotated into a byte storage until 8 bits have been read, thereby loading a full byte. This rotation may be to left or right, which establishes endianess: MSbF or LSbF.
+
+Before any byte can be read and stored, the Turbo Loader must set itself to be in sync with the bits on the tape. This is done by writing a certain string of bits at every byte interval. The routine then tries to align itself by recognising the value of the byte. An example of a header byte for aligning would be the value 64, hex $40 or in binary: 01000000. A series of these bytes is written as the header; only when this byte has been read in a number of times consecutively, the actual program can be read without risk of alignment errors.
+
+
+---
+Additional information can be found by searching:
+- "figuring_out_threshold_value" which expands on How thresholds are chosen and measured with CIA timers

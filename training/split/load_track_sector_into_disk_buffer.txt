@@ -1,0 +1,19 @@
+# ********* - Prompt for track and sector, validate input, and issue disk commands to load specified block into the disk buffer. Includes INPUT for t,s, validation of track range (0 or >35 aborts), optional echo to screen/printer, and the CBM commands sent to the drive via channel 15: the 'U1' (u1:2,d$,t,s) command to position and read the addressed sector into the drive buffer, followed by an error-checking Gosub 650.
+
+ 280 rem******************************
+ 290 rem* load track and sector      *
+ 300 rem* into disk buffer           *
+ 310 rem******************************
+ 320 input "{down}{right*2}track, sector";t,s
+ 330 if t=0 or t>35 then print#15,"i"d$:close 2:close 4:close 15:\
+     print "end":end
+ 340 if jj$="s" then print "{down}{right*2}track" t " sector" s \
+     "{down}"
+ 341 if jj$="p" then print#4:print#4,"track" t " sector" s:print#4
+ 350 print#15,"u1:2," d$;t;s:gosub 650
+
+---
+Additional information can be found by searching:
+- "device_selection_and_file_opening" which expands on requires opened channels and selected output device
+- "read_byte0_and_m_r_commands" which expands on subsequent read of disk buffer starts by reading byte 0
+- "next_track_sector_prompt_and_loop" which expands on uses nb() results to iterate to next sector

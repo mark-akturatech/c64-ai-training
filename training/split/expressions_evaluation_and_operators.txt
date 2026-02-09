@@ -1,0 +1,85 @@
+# ca65 Users Guide - Expression evaluation rules: 32-bit precision, constant vs linker-evaluated expressions, rules for determining expression result size (byte/word), boolean expression semantics and shortcut operators, constant-expression rules and the list of available operators with precedence (string funcs, pseudo-variables, unary + -, bitwise not, < > ^ bank byte, arithmetic, bitwise ops, shifts, compare, logical AND/OR/NOT). Parentheses for grouping.
+
+5. Expressions
+5.1 Expression evaluation
+All expressions are evaluated with (at least) 32 bit precision. An expression may contain constant values and any combination of internal and external symbols. Expressions that cannot be evaluated at assembly time are stored inside the object file for evaluation by the linker. Expressions referencing imported symbols must always be evaluated by the linker.
+
+5.2 Size of an expression result
+Sometimes, the assembler must know about the size of the value that is the result of an expression. This is usually the case, if a decision has to be made, to generate a zero page or an absolute memory references. In this case, the assembler has to make some assumptions about the result of an expression:
+
+
+If the result of an expression is constant, the actual value is checked to see if it's a byte sized expression or not.
+If the expression is explicitly casted to a byte sized expression by one of the '>', '<' or '^' operators, it is a byte expression.
+If this is not the case, and the expression contains a symbol, explicitly declared as zero page symbol (by one of the .importzp or .exportzp instructions), then the whole expression is assumed to be byte sized.
+If the expression contains symbols that are not defined, and these symbols are local symbols, the enclosing scopes are searched for a symbol with the same name. If one exists and this symbol is defined, its attributes are used to determine the result size.
+In all other cases the expression is assumed to be word sized.
+Note: If the assembler is not able to evaluate the expression at assembly time, the linker will evaluate it and check for range errors as soon as the result is known.
+
+5.3 Boolean expressions
+In the context of a boolean expression, any non zero value is evaluated as true, any other value to false. The result of a boolean expression is 1 if it's true, and zero if it's false. There are boolean operators with extreme low precedence with version 2.x (where x > 0). The .AND and .OR operators are shortcut operators. That is, if the result of the expression is already known, after evaluating the left hand side, the right hand side is not evaluated.
+
+5.4 Constant expressions
+Sometimes an expression must evaluate to a constant without looking at any further input. One such example is the .IF command that decides if parts of the code are assembled or not. An expression used in the .IF command cannot reference a symbol defined later, because the decision about the .IF must be made at the point when it is read. If the expression used in such a context contains only constant numerical values, there is no problem. When unresolvable symbols are involved it may get harder for the assembler to determine if the expression is actually constant, and it is even possible to create expressions that aren't recognized as constant. Simplifying the expressions will often help.
+
+In cases where the result of the expression is not needed immediately, the assembler will delay evaluation until all input is read, at which point all symbols are known. So using arbitrary complex constant expressions is no problem in most cases.
+
+5.5 Available operators
+
+
+Operator	Description	Precedence
+Built-in string functions	0
+ 	 	 
+Built-in pseudo-variables	1
+Built-in pseudo-functions	1
++	Unary positive	1
+-	Unary negative	1
+~
+.BITNOT	Unary bitwise not	1
+<
+.LOBYTE	Unary low-byte operator	1
+>
+.HIBYTE	Unary high-byte operator	1
+^
+.BANKBYTE	Unary bank-byte operator	1
+ 	 	 
+*	Multiplication	2
+/	Division	2
+.MOD	Modulo operator	2
+&
+.BITAND	Bitwise and	2
+^
+.BITXOR	Binary bitwise xor	2
+<<
+.SHL	Shift-left operator	2
+>>
+.SHR	Shift-right operator	2
+ 	 	 
++	Binary addition	3
+-	Binary subtraction	3
+|
+.BITOR	Bitwise or	3
+ 	 	 
+=	Compare operator (equal)	4
+<>	Compare operator (not equal)	4
+<	Compare operator (less)	4
+>	Compare operator (greater)	4
+<=	Compare operator (less or equal)	4
+>=	Compare operator (greater or equal)	4
+ 	 	 
+&&
+.AND	Boolean and	5
+.XOR	Boolean xor	5
+ 	 	 
+||
+.OR	Boolean or	6
+ 	 	 
+!
+.NOT	Boolean not	7
+Available operators, sorted by precedence
+
+To force a specific order of evaluation, parentheses may be used, as usual.
+
+---
+Additional information can be found by searching:
+- "address_size_overrides" which expands on when assembler needs to know address size
+- "pseudo_functions" which expands on operators and functions (.LOBYTE, .HIBYTE, etc.)

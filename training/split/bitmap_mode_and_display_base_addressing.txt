@@ -1,0 +1,39 @@
+# COMMODORE 64 - Bit map mode overview and addressing (BMM = 1): explanation that bitmap mode creates a one-to-one mapping between memory bits and displayed dots for a 320×200 resolution. Describes that the VIDEO MATRIX is still accessed but interpreted as color data and that the VIDEO MATRIX COUNTER is used to fetch dot data from an 8000-byte DISPLAY BASE. Includes the DISPLAY BASE address formation: A13 = CB13, A12-A04 = VC9..VC0, A03-A01 = RC2..RC0 (raster counter), and notes that VCx and RCx behavior formats memory as 8×8 dot blocks.
+
+  BIT MAP MODE
+
+    In bit map mode, the 6566/6567 fetches data from memory in a different
+  fashion, so that a one-to-one correspondence exists between each
+  displayed dot and a memory bit. The bit map mode provides a screen
+  resolution of 320H * 200V individually controlled display dots. Bit map
+  mode is selected by setting the BMM bit in register 17 ($11) to a "1".
+  The VIDEO MATRIX is still accessed as in character mode, but the video
+  matrix data is no longer interpreted as character pointers, but rather as
+  color data. The VIDEO MATRIX COUNTER is then also used as an address to
+  fetch the dot data for display from the 8000-byte DISPLAY BASE. The
+  display base address is formed as follows:
+
+
+     A13| A12| A11| A10| A09| A08| A07| A06| A05| A04| A03| A02| A01| A00
+  ------+----+----+----+----+----+----+----+----+----+----+----+----+------
+    CB13| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0| RC2| RC1| RC0
+
+                                                           APPENDIX N   439
+~
+
+
+  VCx denotes the video matrix counter outputs, RCx denotes the 3-bit
+  raster line counter and CB13 is from register 24 ($18). The video matrix
+  counter steps through the same 40 locations for eight raster lines, con-
+  tinuing to the next 40 locations every eighth line, while the raster
+  counter increments once for each horizontal video line (raster line).
+  This addressing results in each eight sequential memory locations being
+  formatted as an 8*8 dot block on the video display.
+
+
+
+---
+Additional information can be found by searching:
+- "character_display_mode_and_addressing" which expands on How the video matrix counter is re-used in bitmap mode vs character mode
+- "standard_bitmap_mode_behavior" which expands on Standard bitmap color selection rules
+- "multi_color_bitmap_mode" which expands on Multi-color bitmap interpretation and nybble usage

@@ -1,0 +1,213 @@
+{
+  "source_file": "256_Byte_Autostart_Fast_Loader.txt",
+  "context": "A 256 Byte Autostart Fast Loader for the Commodore 64",
+  "splits": [
+    {
+      "start": 1,
+      "end": 4,
+      "ignore": true,
+      "reason": "Title, author and source lines (non-technical metadata)"
+    },
+    {
+      "start": 5,
+      "end": 12,
+      "name": "overview",
+      "description": "High-level summary of a compact 256-byte bootloader that combines C64 and 1541 drive code in a single sector, auto-executes after loading, and replaces ROM disk transfer routines with custom fast code.",
+      "references": [
+        {
+          "chunk": "implementation_details",
+          "topic": "how C64 and drive code are stored in the single sector"
+        },
+        {
+          "chunk": "autostart_mechanism",
+          "topic": "how the loader auto-executes after loading"
+        }
+      ]
+    },
+    {
+      "start": 13,
+      "end": 21,
+      "name": "hardware_context",
+      "description": "Hardware overview: Commodore 64 (6502 @ ~1 MHz, 64KB RAM), 1541 disk drive (separate 6502 @ ~1 MHz, 2KB RAM), and the IEC serial bus wiring (ATN, CLK, DATA from computer to drive; CLK, DATA return lines).",
+      "references": [
+        {
+          "chunk": "handshake_protocol",
+          "topic": "IEC bus signaling used during transfer"
+        },
+        {
+          "chunk": "badline_avoidance",
+          "topic": "VIC-II DMA timing that affects CPU synchronization"
+        }
+      ]
+    },
+    {
+      "start": 22,
+      "end": 29,
+      "name": "speed_problem",
+      "description": "Explanation of the original ROM loader's performance limits: bit-by-bit handshakes yielding ~400 bytes/sec, long load times for large programs, and periodic ROM-disabled interrupts that prevented background music.",
+      "references": [
+        {
+          "chunk": "serial_protocol_overview",
+          "topic": "optimized protocol to improve throughput"
+        }
+      ]
+    },
+    {
+      "start": 30,
+      "end": 41,
+      "name": "serial_protocol_overview",
+      "description": "Protocol optimization that exploits synchronized CPU clocks to send two data bits per cycle (two bits transmitted simultaneously), reducing byte transfer steps from eight to four and enabling much higher throughput by using lines previously reserved for handshaking.",
+      "references": [
+        {
+          "chunk": "receiving_code_c64",
+          "topic": "C64-side implementation of the optimized receive routine"
+        },
+        {
+          "chunk": "sending_code_1541",
+          "topic": "1541-side encoding that complements the protocol"
+        }
+      ]
+    },
+    {
+      "start": 42,
+      "end": 56,
+      "name": "receiving_code_c64",
+      "description": "C64 receive routine using reads from $DD00 and shifts/XORs to assemble a byte from four 2-bit transfers. The snippet shows lda $DD00, repeated lsr and eor sequences; total reception costs ~28 cycles enabling ~20,000 bytes/sec theoretically.",
+      "references": [
+        {
+          "chunk": "serial_protocol_overview",
+          "topic": "two-bits-per-cycle protocol concept"
+        },
+        {
+          "chunk": "badline_avoidance",
+          "topic": "timing constraints due to VIC-II DMA that affect this routine"
+        }
+      ]
+    },
+    {
+      "start": 57,
+      "end": 63,
+      "name": "sending_code_1541",
+      "description": "1541-side encoding: the drive uses a 16-byte lookup table to encode signals and correct for inverted return lines. Example table pattern: \"1111, 0111, 1101, 0101...\" that interleaves four bits with inversion.",
+      "references": [
+        {
+          "chunk": "serial_protocol_overview",
+          "topic": "how encoded bit pairs are transmitted to the C64"
+        }
+      ]
+    },
+    {
+      "start": 64,
+      "end": 78,
+      "name": "badline_avoidance",
+      "description": "Handling VIC-II 'badlines': the VIC-II performs DMA every 8th raster line (raster lines 50-249), stealing 40 CPU cycles and breaking timing. The loader checks $D012 (raster), compares against #50, masks with #$07, and loops to avoid starting transfers on dangerous lines.",
+      "references": [
+        {
+          "chunk": "receiving_code_c64",
+          "topic": "ensuring the receive routine runs during safe raster lines"
+        },
+        {
+          "chunk": "handshake_protocol",
+          "topic": "timing coordination with the drive's check loop"
+        }
+      ]
+    },
+    {
+      "start": 79,
+      "end": 86,
+      "name": "autostart_mechanism",
+      "description": "Autostart technique: instead of modifying BASIC vectors, the loader places code into the stack area ($01ED-$01F7) and relies on a jump at $0203 to catch execution when the ROM loader returns. Fills intervening bytes with $02 for compatibility with modified ROMs.",
+      "references": [
+        {
+          "chunk": "code_assembly",
+          "topic": "linker mapping and VECTOR segment used for stack protection bytes"
+        },
+        {
+          "chunk": "implementation_details",
+          "topic": "how the single-sector layout supports the autostart flow"
+        }
+      ]
+    },
+    {
+      "start": 87,
+      "end": 96,
+      "name": "implementation_details",
+      "description": "Single-sector layout: combines C64 code in the first half and 1541 drive code in the second half. The 1541 default buffer at $0400 still contains the sector, allowing the C64 to send an \"M-E\" (memory-execute) command pointing to the drive code's address within that buffer.",
+      "references": [
+        {
+          "chunk": "sector_format",
+          "topic": "how the filesystem's 2-byte link reduces usable space to 254 bytes"
+        },
+        {
+          "chunk": "autostart_mechanism",
+          "topic": "stack-region placement and catching execution at $0203"
+        },
+        {
+          "chunk": "code_assembly",
+          "topic": "how segments LOADADDR/PART2/FCODE map into the sector"
+        }
+      ]
+    },
+    {
+      "start": 97,
+      "end": 102,
+      "name": "sector_format",
+      "description": "1541 sector format notes: the filesystem stores track/sector of the next block in the first two bytes, leaving 254 bytes of usable payload in a 256-byte sector. This also conceals the drive code in the 'unused' area of the sector.",
+      "references": [
+        {
+          "chunk": "implementation_details",
+          "topic": "single-sector packing of C64 and drive code"
+        }
+      ]
+    },
+    {
+      "start": 103,
+      "end": 121,
+      "name": "handshake_protocol",
+      "description": "IEC handshake details: drive signals readiness by pulling CLK=0, C64 signals readiness by pulling both CLK and DATA low. After transfer both release lines. The drive's check loop timing (example: ldx $1800; bne wait_c64) yields up to 10 cycles delay before the C64 reads; the C64 delays exactly 10 cycles after signaling via PHA/PLA/BIT $00.",
+      "references": [
+        {
+          "chunk": "sending_code_1541",
+          "topic": "drive readiness and encoded transfers"
+        },
+        {
+          "chunk": "receiving_code_c64",
+          "topic": "C64-side delay and exact-timing reads"
+        }
+      ]
+    },
+    {
+      "start": 122,
+      "end": 138,
+      "name": "code_assembly",
+      "description": "Build layout and segments in ca65 assembly: segments include LOADADDR (program header), PART2 (main receive logic), VECTOR (stack protection bytes), CMD (\"M-E\" command string), START (jump to main), and FCODE (1541 drive code). Linker script maps segments into memory exploiting the stack trick and command buffer positioning.",
+      "references": [
+        {
+          "chunk": "autostart_mechanism",
+          "topic": "VECTOR and stack-region placement"
+        },
+        {
+          "chunk": "implementation_details",
+          "topic": "how segments are arranged within the 256-byte sector"
+        }
+      ]
+    },
+    {
+      "start": 139,
+      "end": 151,
+      "name": "historical_context_and_sources",
+      "description": "Context and significance: individual fast-loader techniques (fast protocols, drive code uploading, screen-off optimization) pre-existed; novelty here is combining them into a single-sector (256-byte) implementation. Includes pointer to full source at https://github.com/mist64/fastboot1541.",
+      "references": [
+        {
+          "chunk": "code_assembly",
+          "topic": "complete source code and assembly organization"
+        },
+        {
+          "chunk": "overview",
+          "topic": "summary of the single-sector bootloader concept"
+        }
+      ]
+    }
+  ],
+  "source_md5": "4e746b9132f466bde863db8602f8c9ba"
+}

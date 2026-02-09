@@ -1,0 +1,70 @@
+# byRiclianll - Start of section 7.16 and the MULTIPLE ID FORMATTING program header and initialization: displays title/prompts, requests the user to insert the master (RVS) disk, opens device 15, initializes arrays (T(), H$(), L$()), loops over tracks (FOR T=1 TO 35) to read embedded ID bytes from the master using drive job (J0B=176) and GET#15 reads, stores primary track mapping T(T) and high/low ID bytes H$(T), L$(T) (normalizing blank reads to CHR$(0)), and then closes the drive after finishing the read pass. Covers setup and the complete ID-collection phase.
+
+
+7.16  How  to  Format  a  Diskette  with  Muitiple  IDs 
+
+Limitations:  None  (requires  disk  swapping). 
+Parameters:  None. 
+
+MULTIPLE  ID  FORMATTING 
+
+100  REM  FORMAT  A  DISKETTE  -  1541 
+no  DIMT(35)  ,H«(35)  ,L«(35) 
+
+120  PRINT"  <:CLR  J  FORMAT  A  DISKETTE  -  1541" 
+
+130  PRINT"  «D0WN3  INSERT   tRVS> MASTER <:R0FF> 
+
+IN  DRIVE" 
+140  G0SUB910 
+
+150  PRINT" <:down><:rvs>fetching<:roff>  form 
+
+ATTING  ID" 
+
+160  0PEN15,8, 15 
+
+170  F0RI=1T035 
+
+180  T(I)=1 
+
+190  NEXTI 
+
+200  J0B=176 
+
+210  F0RT=1T035 
+
+220  IFT(T>=0G0T0340 
+
+230  G0SUB970 
+
+240  IFE=160T0280 
+
+250  H*<T)=CHR«(0) 
+
+260  L*(T)=CHR«<0) 
+
+270  G0T0340 
+
+230  PR I NT# 1 5 , " M-R " CHR*  <  22 ) CHR* ( O ) 
+290  GET#15,H«(T) 
+
+300  I FH* ( T ) = " " THENH* ( T ) =CHR« ( 0 ) 
+310  PRINT#15, "M-R"CHR*<23)CHR«(0) 
+320  GET#15,L*(T) 
+
+
+158 
+
+
+330   I FL* ( T ) = " " THENL* ( T ) =CHR* ( 0 ) 
+340  NEXTT 
+350  T=18 
+360  G0SUB970 
+370  CLOSE 15 
+
+
+---
+Additional information can be found by searching:
+- "multiple_id_formatting_write_parameters_and_execute" which expands on Uses the arrays populated here to prepare per-track format parameters and to execute the format
+- "multiple_id_formatting_subroutines_delay_and_job_queue" which expands on Calls the common job-queue/GOSUB routines for drive communication and user delays

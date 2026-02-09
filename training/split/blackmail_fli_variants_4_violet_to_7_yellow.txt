@@ -1,0 +1,69 @@
+# NMOS 6510 - Detailed code sequences for opcode variants 4..7 used to force specific colour-ram fetch opcodes and write the corresponding background colour to $D021. Covers: 4 (violet) — LDY zp, STY $D021, BIT $24; 5 (green) — LDA zp, STA $D021, BIT $24; 6 (blue) — LDX zp, STX $D021, BIT $24; 7 (yellow) — LAX zp, SAX $D021, BIT $24. Each variant shows opcode bytes, addressing modes (zero-page), writes to $D021 and the extra BIT $24 used in some sequences; includes cycle notes and the same intent of using $A* row loads to control the open-bus colour fetch.
+
+4: violet as colour ram colour
+(3) a4 xx
+
+ldy zp
+
+(4) 8c 21 d0
+
+sty $d021
+
+(3) 24 24
+
+bit $24
+
+; <(background colour << 1) + $59>
+
+- 102 -
+
+5: green as colour ram colour
+(3) a5 xx
+
+lda zp
+
+(4) 8d 21 d0
+
+sta $d021
+
+(3) 24 24
+
+bit $24
+
+; <(background colour << 1) + $59>
+
+6: blue as colour ram colour
+(3) a6 xx
+
+ldx zp
+
+(4) 8e 21 d0
+
+stx $d021
+
+(3) 24 24
+
+bit $24
+
+; <(background colour << 1) + $59>
+
+7: yellow as colour ram colour
+(3) a7 xx
+
+lax zp
+
+(4) 8f 21 d0
+
+sax $d021
+
+(3) 24 24
+
+bit $24
+
+; <(background colour << 1) + $59>
+
+
+---
+Additional information can be found by searching:
+- "blackmail_fli_variants_0_black_to_3_cyan" which expands on Previous variants 0-3 (black through cyan) with similar structure
+- "blackmail_fli_variants_8_orange_to_9_brown" which expands on Next variants (8-9) which switch addressing/loads and keep the same pattern

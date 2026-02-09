@@ -1,0 +1,37 @@
+# MACHINE - JSR pushes return address-1 (two bytes, high byte first) onto stack; RTS pulls two bytes, adds one, and resumes at that address+1. Example demonstrates where PC gets stored and how RTS calculates return point; stack can be inspected to see caller address.
+
+
+JSR and RTS
+-----------
+
+We know these commands.  What are they doing here?
+
+When a JSR command is executed, the return address is placed onto the stack.
+When an RTS command is executed, the return address is picked from the stack,
+and that's where the program returns to.
+
+More precisely, when a JSR occurs, the processor places onto the stack the
+return address minus one as two bytes; the high-order part of the address
+goes to the stack first.  When an RTS is encountered, the processor takes the
+two bytes from the stack, adds one, and then proceeds from the address so
+formed.
+
+                                                                        :115:
+
+Example:  If address $0352 contains the command JSR $033C, the following
+events occur.  The return address would be $0355, the instruction directly
+behind the JSR; but an address of $0354 is calculated--the 03 goes to the
+stack first, and the 54 below it.  The subroutine at $033C now starts to run.
+Eventually, it encounters an RTS.  The values 54 and 03 are pulled from the
+stack and formed into address $0354; one is added, and the processor resumes
+execution at address $0355.
+
+You hardly need to know this.  We have been using subroutines for some time
+without knowing that all this happened.  But sometimes, it's useful to be
+able to examine the stack, asking, "Who called this subroutine?"  The answer
+is there.
+
+
+---
+Additional information can be found by searching:
+- "manipulating_stack_for_control_flow" which expands on fake return addresses to achieve JMP-like behavior via RTS

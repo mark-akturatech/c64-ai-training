@@ -1,0 +1,106 @@
+# ********* - Vertical fine scrolling and control register ($D011) bits: Bits0-2 fine vertical scroll (0-7 scanlines), Bit3 24/25 row selection, Bit4 screen blanking, Bit5 enable bitmap mode, Bit6 extended color text mode, Bit7 high bit of raster compare; default register value and explanation of vertical fine scrolling including need for coarse scroll when wrapping and sample BASIC code showing smooth scroll.
+
+language driver.
+
+53267         $D013          LPENX
+Light Pen Horizontal Position
+
+This location holds the horizontal position of the light pen.  Since
+there are only eight bits available (which give a range of 256 values)
+for 320 possible horizontal screen positions, the value here is
+accurate only to every second dot position.  The number here will
+range from 0 to 160 and must be multiplied by 2 in order to get a
+close approximation of the actual horizontal dot position of the light
+pen.
+
+53268         $D014          LPENY
+Light Pen Vertical Position
+
+This location holds the vertical position of the light pen.  Since
+there are only 200 visible scan lines on the screen, the value in this
+register corresponds exactly to the current raster scan line.
+
+53269         $D015          SPENA
+Sprite Enable Register
+
+Bit 0:  Enable Sprite 0 (1=sprite is on, 0=sprite is off)
+Bit 1:  Enable Sprite 1 (1=sprite is on, 0=sprite is off)
+Bit 2:  Enable Sprite 2 (1=sprite is on, 0=sprite is off)
+Bit 3:  Enable Sprite 3 (1=sprite is on, 0=sprite is off)
+Bit 4:  Enable Sprite 4 (1=sprite is on, 0=sprite is off)
+Bit 5:  Enable Sprite 5 (1=sprite is on, 0=sprite is off)
+Bit 6:  Enable Sprite 6 (1=sprite is on, 0=sprite is off)
+Bit 7:  Enable Sprite 7 (1=sprite is on, 0=sprite is off)
+
+In order for any sprite to be displayed, the corresponding bit in this
+register must be set to 1 (the default for this location is 0).  Of
+course, just setting this bit along will not guarantee that a sprite
+will be shown on the screen.  The Sprite Data Pointer must indicate a
+data area that holds some values other than 0.  The Sprite Color
+Register must also contain a value other than that of the background
+color.  In addition, the Sprite Horizontal and Vertical Position
+Registers must be set for positions that lie within the visible screen
+range in order for a sprite to appear on screen.
+
+53270         $D016          SCROLX
+Horizontal Fine Scrolling and Control Register
+
+Bits 0-2:  Fine scroll display horizontally by X dot positions (0-7)
+Bit 3:  Select a 38-column or 40-column text display (1=40 columns,
+  0=38 columns)
+Bit 4:  Enable multicolor text or multicolor bitmap mode (1=multicolor on,
+  0=multicolor off)
+Bit 5:  Video chip reset (0=normal operations, 1=video completely off)
+Bits 6-7:  Unused
+
+This is one of the two important multifunction control registers on
+the VIC-II chip.  On power-up, it is set to a default value of 8,
+which means that the VIC chip Reset line is set for a normal display,
+Multicolor Mode is disabled, a 40-column text display is selected, and
+no horizontal fine-scroll offset is used.
+
+Bits 0-2.  The first three bits of this chip control vertical fine
+scrolling of the screen display.  This feature allows you to smoothly
+move the entire text display back and forth, enabling the display area
+to act as a window, scrolling over a larger text or character graphics
+display.
+
+Since each text character is eight dots wide, moving each character
+over one whole character position (known as coarse scrolling) is a
+relatively big jump, and the motion looks jerky.  By placing a number
+from 1 to 7 into these three bits, you can move the whole screen
+display from one to seven dot spaces to the right.
+
+Stepping through values 1 to 7 allows you to smoothly make the
+transition from having a character appear at one screen column to
+having it appear at the next one over.  To demonstrate this, type in
+the following program, LIST, and RUN it.
+
+10 FOR I=1 TO 50:FOR J=0 TO 7
+20 POKE 53270,(PEEK(53270)AND248) OR J:NEXT J,I
+30 FOR I=1 TO 50:FOR J=7 TO 0 STEP-1
+40 POKE 53270,(PEEK(53270)AND248) OR J:NEXT J,I
+
+As you can see, after the display has moved over seven dots, it starts
+over at its original position.  In order to continue with the scroll,
+you must do a coarse scroll every time the value of the scroll bits
+goes from 7 to 0, or from 0 to 7.  This is accomplished by moving each
+byte of display data on each line over one position, overwriting the
+last character, and introducing a new byte of data on the opposite end
+of the screen line to replace it.
+
+Obviously, only a machine language program can move all of these bytes
+quickly enough to maintain the effect of smooth motion.  The following
+BASIC program, however, will give you an idea of what the combination
+of fine and coarse scrolling looks like.
+
+10 POKE 53281,0:PRINT CHR$(5);CHR$(147):FOR I=1 TO 5:PRINT CHR$(17):NEXT
+20 FOR I=1 TO 30
+30 PRINT TAB(I-1)"{UP}{10 SPACES}{UP}"
+40 WAIT53265,128:POKE53270,PEEK(53270)AND248:PRINTTAB(I)"AWAY WE GO"
+50 FOR J=1 TO 7
+60 POKE 53270,(PEEK(53270)AND248)+J
+
+---
+Additional information can be found by searching:
+- "raster_register_and_interrupts" which expands on Bit 7 is high bit (9th) of raster compare at $D012

@@ -1,0 +1,32 @@
+# COMMODORE 64 - VIC-II accesses 16K at a time; four 16K banks exist to cover 64K memory. Bank select bits (bits 0-1 of PORT A of CIA #2 at location 56576 / $DD00) control which bank VIC-II sees. To change bank, set those bits as outputs by setting bits 0-1 of location 56578 / $DD02 to outputs, then write bank bits into 56576. Example POKEs show turning bits to outputs and selecting bank. 'A' value selects bank 0..3.
+
+  VIDEO BANK SELECTION
+
+    The VIC-II chip can access ("see") 16K of memory at a time. Since there
+  is 64K of memory in the Commodore 64, you want to be able to have the
+  VIC-II chip see all of it. There is a way. There are 4 possible BANKS
+  (or sections) of 16K of memory. All that is needed is some means of
+  controlling which 16K bank the VIC-II chip looks at. In that way, the
+  chip can "see" the entire 64K of memory. The BANK SELECT bits that allow
+  you access to all the different sections of memory are located in the
+  6526 COMPLEX INTERFACE ADAPTER CHIP #2 (CIA #2). The POKE and PEEK BASIC
+  statements (or their machine language versions) are used to select a
+  bank, by controlling bits 0 and 1 of PORT A of CIA#2 (location 56576 (or
+  $DD00 HEX)). These 2 bits must be set to outputs by setting bits 0 and 1
+  of location 56578 ($DD02,HEX) to change banks. The following example
+  shows this:
+
+    POKE 56578,PEEK(56578)OR 3: REM MAKE SURE BITS 0 AND 1 ARE OUTPUTS
+    POKE 56576,(PEEK(56576)AND 252)OR A: REM CHANGE BANKS
+
+    "A" should have one of the following values:
+
+                                                 PROGRAMMING GRAPHICS   101
+~
+
+
+
+---
+Additional information can be found by searching:
+- "character_memory" which expands on bank choice affects character set images and where VIC-II reads patterns
+- "screen_memory" which expands on bank selection affects where screen lives in physical memory

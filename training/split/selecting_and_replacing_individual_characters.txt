@@ -1,0 +1,43 @@
+# COMMODORE 64 - Explains copying or creating individual characters from ROM into RAM to replace unwanted ones. Example shows copying a reversed 'Z' into location of '>' via FOR I=0 TO 7:POKE 12784+I,255-PEEK(I+12496):NEXT. Notes that visual replacement doesn't change the logical character code behavior (the character still acts like its original code). Introduces creating custom characters using DATA and POKE sequences.
+
+    Remember that we only took the first 64 characters. Something else will
+  have to be done if you want one of the other characters.
+    What if you wanted character number 154, a reversed Z? Well, you could
+  make it yourself, by reversing a Z, or you could copy the set of reversed
+  characters from the ROM, or just take the one character you want from ROM
+  and replace one of the characters you have in RAM that you don't need.
+
+    Suppose you decide that you won't need the > sign. Let's replace the
+  > sign with the reversed Z. Type this:
+
+
+    FOR I=0 TO 7:POKE 12784+I,255-PEEK(I+12496):NEXT
+
+    Now type a > sign. It comes up as a reversed Z. No matter how many
+  times you type the >, it comes out as a reversed Z. (This change is
+  really an illusion. Though the > sign looks like a reversed Z, it still
+  acts like a > in a program. Try something that needs a > sign. It will
+  still work fine, only it will look strange.)
+    A quick review: You can now copy characters from ROM into RAM. You can
+  even pick and choose only the ones you want. There's only one step left
+  in programmable characters (the best step!)... making your own
+  characters.
+    Remember how characters are stored in ROM? Each character is stored as
+  a group of eight bytes. The bit patterns of the bytes directly control
+  the character. If you arrange 8 bytes, one on top of another, and write
+  out each byte as eight binary digits, it forms an eight by eight matrix,
+  looking like the characters. When a bit is a one, there is a dot at that
+  location. When a bit is a zero, there is a space at that location. When
+  creating your own characters, you set up the same kind of table in
+  memory. Type NEW and then type this program:
+
+    10 FOR I=12448 TO 12455: READ A:POKE I,A:NEXT
+    20 DATA 60, 66, 165, 129, 165, 153, 66, 60
+
+                                                 PROGRAMMING GRAPHICS   111
+~
+
+
+---
+Additional information can be found by searching:
+- "creating_character_patterns_and_worksheet" which expands on creating characters with DATA statements and the 8-row encoding

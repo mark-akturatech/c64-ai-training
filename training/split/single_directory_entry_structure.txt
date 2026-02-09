@@ -1,0 +1,38 @@
+# ********* - Structure of a single directory entry on Commodore disks. Byte 0 = 128 + file type (OR'ed with $80 indicates properly closed file). File types: 0 = DELeted, 1 = SEQential, 2 = PROGram, 3 = USER, 4 = RELative. Bytes 1-2 = track and sector of first data block. Remaining bytes include filename (padded with shifted spaces), relative-file fields (side-sector pointer and record size) where applicable, placeholders for replacement-file track/sector (OPEN@), and number-of-blocks (low byte, high byte).
+
+*STRUCTURE OF SINGLE DIRECTORY ENTRY
+
+ +---------+----------+--------------------------------------------+
+ | BYTE    | CONTENTS |              DEFINITION                    |
+ +---------+----------+--------------------------------------------+
+ | 0       | 128+type | File type OR'ed with $80 (hexadecimal) to  |
+ |         |          | indicate properly closed file.             |
+ |         |          | TYPES: 0 = DELeted                         |
+ |         |          |        1 = SEQential                       |
+ |         |          |        2 = PROGram                         |
+ |         |          |        3 = USER                            |
+ |         |          |        4 = RELative                        |
+ +---------+----------+--------------------------------------------+
+ | 1,2     |          | Track and sector of 1st data block.        |
+ +---------+----------+--------------------------------------------+
+ |         |          | File name padded with shifted spaces.      |
+ +---------+----------+--------------------------------------------+
+ |         |          | Relative file only: track and sector for   |
+ |         |          | first side sector block.                   |
+ +---------+----------+--------------------------------------------+
+ |         |          | Relative file only: Record size.           |
+ +---------+----------+--------------------------------------------+
+ |         |          | Unused.                                    |
+ +---------+----------+--------------------------------------------+
+ |         |          | Track and sector of replacement file when  |
+ |         |          | OPEN@ is in effect.                        |
+ +---------+----------+--------------------------------------------+
+ |         |          | Number of blocks in file: low byte, high   |
+ |         |          | byte.                                      |
+ +---------+----------+--------------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "directory_format_structure" which expands on Directory entries are stored in the directory sectors
+- "relative_file_format" which expands on Relative-file-specific fields inside directory entry

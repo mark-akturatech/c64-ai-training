@@ -1,0 +1,40 @@
+# Commodore IEC Serial Bus Protocol Reference - pagetable.com - Common IEC bus programming patterns in BASIC: LOAD "FILENAME",8,1; SAVE "FILENAME",8; reading the error channel using OPEN 15,8,15 and INPUT#15; sending disk commands via OPEN 15,8,15,"S:FILENAME"; sequential file read/write examples using OPEN/GET#/PRINT#.
+
+================================================================================
+COMMON IEC BUS PROGRAMMING PATTERNS (C64 BASIC & ASSEMBLY)
+================================================================================
+
+BASIC Examples:
+
+  Loading a program:
+    LOAD "FILENAME",8,1
+
+  Saving a program:
+    SAVE "FILENAME",8
+
+  Reading the error channel:
+    OPEN 15,8,15
+    INPUT#15,A,B$,C,D
+    PRINT A;B$;C;D
+    CLOSE 15
+
+  Sending a disk command:
+    OPEN 15,8,15,"S:FILENAME"  ; Scratch (delete) a file
+    CLOSE 15
+
+  Sequential file read:
+    OPEN 2,8,2,"DATAFILE,S,R"
+    10 GET#2,A$
+    20 IF ST=0 THEN PRINT A$;:GOTO 10
+    CLOSE 2
+
+  Sequential file write:
+    OPEN 2,8,2,"DATAFILE,S,W"
+    PRINT#2,"HELLO WORLD"
+    CLOSE 2
+
+
+---
+Additional information can be found by searching:
+- "status_reporting_and_error_codes" which expands on reading and interpreting the error/status channel
+- "assembly_examples_for_channel_io" which expands on equivalent operations in assembly via KERNAL calls

@@ -1,0 +1,17 @@
+# Sprite Multiplexing Techniques by Cadaver (Lasse Oorni) - Tips for reverse-engineering sprite multiplexers: search ML monitor for byte sequences like $01 $D0 (writes to first sprite Y) or other sprite-register writes; look near IRQ address for multiplexing code. Noting pattern: an indexed memory access whose result is used only as an index (not stored to sprite I/O) is likely the sprite order array; following references to it can lead to the sortroutine.
+
+When you look at the indexed accesses made in the sprite display interrupt code,
+you'll usually notice one memory access whose result doesn't go into any sprite
+I/O register, but is used as an index (either in X or Y register) for accesses
+into other sprite arrays. This is likely the sprite order array, and by looking
+for memory references to it you'll find the sortroutine.
+
+Good luck in your multiplexer experiments! Remember, when you get your
+multiplexer running, stress-test it with abnormal amounts of sprites...
+
+
+
+---
+Additional information can be found by searching:
+- "continuous_insertion_sort_ocean_algorithm" which expands on the referenced order array often contains the sortorder used by these algorithms
+- "raster_interrupt_optimizations_and_unrolled_code" which expands on multiplexer code is often located near IRQ handlers

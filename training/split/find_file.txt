@@ -1,0 +1,23 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - FIND FILE: search LAT (table of active logical files) for a logical file number. Entry: (X) holds logical file to find. Scans LAT ($0259) using LDTND ($98). On success X contains offset (index) to position and Z flag set; otherwise Z clear. Uses STA/LDX/DEX/CMP/BNE/RTS. Zero page STATUS $90 is cleared at start.
+
+                                *** FIND FILE
+                                This routine finds a logical file from it's file number.
+                                On entry, (X) must hold the logical file number to be
+                                found. LAT, the table of file numbers is searched, and if
+                                found (X) contains the offset to the position of the file
+                                in the table, and the Z flag is set. If not found, Z=0.
+.,F30F A9 00    LDA #$00
+.,F311 85 90    STA $90         clear STATUS
+.,F313 8A       TXA             file number to search for
+.,F314 A6 98    LDX $98         LDTND, number of open files
+.,F316 CA       DEX
+.,F317 30 15    BMI $F32E       end of table, return
+.,F319 DD 59 02 CMP $0259,X     compare file number with LAT, table of open files
+.,F31C D0 F8    BNE $F316       not equal, try next
+.,F31E 60       RTS             back with Z flag set
+
+
+---
+Additional information can be found by searching:
+- "close_file_part1" which expands on used by CLOSE routine to locate file entries
+- "set_file_values" which expands on retrieves file parameter values after a successful find

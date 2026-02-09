@@ -1,0 +1,22 @@
+# C64 KERNAL API (Lee Davison) - $FFA8 — Output a byte to the serial bus (full handshaking). Sends A as a data byte. Requires a prior LISTEN ($FFB1). Routine buffers one character; when UNLISTEN ($FFAE) is called, the buffered char is sent with EOI, then UNLISTEN is transmitted. Timeout or other errors reflected in status word.
+
+$FFA8          output a byte to serial bus
+               
+               This routine is used to send information to devices on the serial bus. A call to
+               this routine will put a data byte onto the serial bus using full handshaking.
+               Before this routine is called the LISTEN routine, $FFB1, must be used to
+               command a device on the serial bus to get ready to receive data.
+               
+               The accumulator is loaded with a byte to output as data on the serial bus. A
+               device must be listening or the status word will return a timeout. This routine
+               always buffers one character. So when a call to the UNLISTEN routine, $FFAE,
+               is made to end the data transmission, the buffered character is sent with EOI
+               set. Then the UNLISTEN command is sent to the device.
+               
+               
+
+---
+Additional information can be found by searching:
+- "ffb1_command_listen" which expands on must LISTEN before sending
+- "ffae_command_unlisten" which expands on UNLISTEN completes transfer
+- "ffb7_read_io_status_word" which expands on check errors/status

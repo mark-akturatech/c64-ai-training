@@ -1,0 +1,21 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - IRQ ENTRY (vectored at $FFFE): Entry point for hardware IRQ and software BRK. Saves A/X/Y and determines HW vs SW interrupt by reading a byte on stack and testing bit 4. If BRK (software) jumps to CBINV via indirect ($0316) (usually warm start FE66), otherwise jumps to CINV via indirect ($0314) (normal IRQ handler at EA31). Stores registers on stack for later restore.
+
+                                $fffe. This routine is able to distinguish between a
+                                hardware IRQ, and a software BRK. The two types of
+                                interrupts are processed by its own routine.
+.,FF48 48       PHA             Store Acc
+.,FF49 8A       TXA
+.,FF4A 48       PHA             Store X-reg
+.,FF4B 98       TYA
+.,FF4C 48       PHA             Store Y-reg
+.,FF4D BA       TSX
+.,FF4E BD 04 01 LDA $0104,X     Read byte on stack written by processor?
+.,FF51 29 10    AND #$10        check bit 4 to determine HW or SW interrupt
+.,FF53 F0 03    BEQ $FF58
+.,FF55 6C 16 03 JMP ($0316)     jump to CBINV. Points to FE66, basic warm start
+.,FF58 6C 14 03 JMP ($0314)     jump to CINV. Points to EA31, main IRQ entry point
+
+
+---
+Additional information can be found by searching:
+- "kernal_reset_vectors" which expands on CINV/CBINV vectors are part of the kernel vector table

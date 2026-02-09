@@ -1,0 +1,86 @@
+# COMMODORE 64 - Detailed SID filter control: Register 24 also contains filter enable bits in addition to volume. Bit 6 = high-pass (0=off/1=on), bit 5 = bandpass, bit 4 = low-pass. Low 3 bits of cutoff frequency are in register 21 (Lcf, 0–7), and high 8 bits in register 22 (Hcf, 0–255). Combining high- and low-pass yields notch filters; explains dynamic filtering during ADSR phases to create evolving timbres.
+
+    Try RUNning the program now. Notice the lower tones have had their
+  volume cut down. It makes the overall quality of the note sound tinny.
+  This is because you are using a high-pass filter which attenuates (cuts
+  down the level of) frequencies below the specified cutoff frequency.
+    There are three types of filters in your Commodore computer's SID chip.
+  We have been using the high-pass filter. It will pass all the frequencies
+  at or above the cutoff, while attenuating the frequencies below the
+  cutoff.
+
+                             |
+                      AMOUNT |      +-----
+                      PASSED |     /
+                             |    /
+                             |   /
+                             +------|-------
+                                FREQUENCY
+
+  200   PROGRAMMING SOUND AND MUSIC
+~
+
+
+    The SID chip also has a low-pass filter. As its name implies, this
+  filter will pass the frequencies below cutoff and attenuate those above.
+
+
+                             |
+                      AMOUNT | -----+
+                      PASSED |       \
+                             |        \
+                             |         \
+                             +------|-------
+                                FREQUENCY
+
+
+    Finally, the chip is equipped with a bandpass filter, which passes a
+  narrow band of frequencies around the cutoff, and attenuates all others.
+
+
+                             |
+                      AMOUNT |      +
+                      PASSED |     / \
+                             |    /   \
+                             |   /     \
+                             +------|-------
+                                FREQUENCY
+
+
+
+    The high- and low-pass filters can be combined to form a notch reject
+  filter which passes frequencies away from the cutoff while attenuating
+  at the cutoff frequency.
+
+
+                             |
+                      AMOUNT | --+     +---
+                      PASSED |    \   /
+                             |     \ /
+                             |      +
+                             +------|-------
+                                FREQUENCY
+
+
+
+
+                                          PROGRAMMING SOUND AND MUSIC   201
+~
+
+
+    Register 24 determines which type filter you want to use. This is in
+  addition to register 24's function as the overall volume control. Bit 6
+  controls the high-pass filter (0 = off, 1 = on), bit 5 is the bandpass
+  filter, and bit 4 is the low-pass filter. The low 3 bits of the cutoff
+  frequency are determined by register 21 (Lcf) (Lcf = 0 through 7). While
+  the 8 bits of the high cutoff frequency are determined by register 22
+  (Hcf) (Hcf = 0 through 255).
+    Through careful use of filtering, you can change the harmonic structure
+  of any waveform to get just the sound you want. In addition, changing the
+  filtering of a sound as it goes through the ADSR phases of its life can
+  produce interesting effects.
+
+
+---
+Additional information can be found by searching:
+- "filtering_and_example_program_5" which expands on example demonstrating use of registers 21,22,23 and 24 for filter effects

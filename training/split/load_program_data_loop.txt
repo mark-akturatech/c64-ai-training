@@ -1,0 +1,14 @@
+# A Minimal C64 Datasette Program Loader - Main program load loop: call get_block with A=#0 to read until an end-of-data marker sets carry. After each block read, increment the high byte of ptr (ptr+1) to advance destination pointer; loop uses BCC to continue until high byte overflows, or get_block returns with carry to end.
+
+Load the program data:
+
+    m3: lda #0
+        jsr get_block
+        inc ptr + 1
+        bcc m3
+
+
+---
+Additional information can be found by searching:
+- "extract_start_address" which expands on ptr initialized from header for where to store program data
+- "data_block_reading" which expands on get_block performs the actual byte writes

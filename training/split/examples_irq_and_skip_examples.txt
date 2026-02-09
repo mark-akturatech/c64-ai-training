@@ -1,0 +1,48 @@
+# NMOS 6510 - Practical examples using undocumented NOPs: acknowledging an IRQ by performing a read with an abs,X NOP (example: 'NOP $DCOD'), and techniques for skipping or disabling instructions using undocumented NOPs rather than BIT/other instructions. Includes code examples demonstrating how multi-byte or single-byte undocumented NOPs can be used to skip the next instruction without affecting registers or flags, and commentary about why this is useful for merging code paths.
+
+Example: acknowledge IRQ
+
+If for some reason you want to acknowledge a timer IRQ and can not afford changing a register or
+the CPU status, you can use the fact that some of these NOPs actually perform a read operation:
+NOP $DCOD
+
+;0C 0D DC
+
+Example: skip instructions
+
+For skipping instructions, the undocumented NOPs are better than the commonly used BIT ($24,
+$2c) as they do not touch any registers or flags, perfect for merging two code pathes:
+entry1:
+LDX #$00
+TOP
+
+; $0C instead of $2C to skip next instruction
+
+LDX #$20
+
+; two byte instruction
+
+entry2:
+common_path:
+or
+entry1:
+SEC
+DOP
+
+; $04 instead of $24 to skip next instruction
+
+CLC
+
+; one byte instruction
+
+entry2:
+common_path:
+
+Example: skip instructions
+
+Sometimes you want to “disable” an instruction, like above using the undocumented NOPs is
+
+---
+Additional information can be found by searching:
+- "absolute_nops_and_abs_x_variants" which expands on example uses of abs,X NOPs (IRQ acknowledgment) and page-cross behavior
+- "zero_page_nops" which expands on using zero-page and zero-page,X NOPs as one- or two-byte skips depending on instruction size

@@ -1,0 +1,13 @@
+# Analyzing C64 tape loaders - Practical examples and notes about using the CIA Interrupt Control Register: how reading the register shows pending interrupt sources and why reads clear the register. Example POKE use-cases for disabling and enabling interrupts in BASIC.
+
+
+For example, in order to disable all interrupts from BASIC, you could POKE 56333, 127. This sets Bit 7 to 0, which clears all of the other bits, since they are all written with 1's. Don't try this from BASIC immediate mode, as it will turn off Timer A which causes the IRQ for reading the keyboard, so that it will in effect turn off the keyboard.
+
+To turn on the Timer A interrupt, a program could POKE 56333,129. Bit 7 is set to 1 and so is Bit 0, so the interrupt which corresponds to Bit 0 (Timer A) is enabled.
+
+When you read this register, you can tell if any of the conditions for a CIA Interrupt were satisfied because the corresponding bit will be set to a 1. For example, if Timer A counts down to 0, Bit 0 of this register will be set to 1. If, in addition, the mask bit that corresponds to that interrupt source is set to 1, and an interrupt occurs, Bit 7 will also be set. This allows a multi-interrupt system to read one bit and see if the source of a particular interrupt was CIA #1. You should note, however, that reading this register clears it, so you should preserve its contents in RAM if you want to test more than one bit.
+
+
+---
+Additional information can be found by searching:
+- "cia1_registers_and_interrupt_control" which expands on Bit meanings and mask behavior of $DC0D

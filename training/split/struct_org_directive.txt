@@ -1,0 +1,20 @@
+# ca65 Users Guide - The .ORG keyword inside structs changes the offset assigned to subsequent member names — useful for mapping hardware registers. Example: .struct ACIA with .org $031C followed by DATA/.byte, STATUS/.byte, CMD/.byte, CTRL/.byte and usage: lda ACIA::DATA.
+
+
+15.4 The .ORG keyword
+The .ORG keyword changes the offset value that is assigned to subsequent member names. It's useful when using a struct to define the names of the registers in an I/O chip. Example:
+
+; 6551
+.struct ACIA            ; Asynchronous Communications Interface Adapter
+        .org    $031C
+DATA    .byte
+STATUS  .byte
+CMD     .byte           ; Command register
+CTRL    .byte           ; Control register
+.endstruct
+
+        lda     ACIA::DATA      ; Get an RS-232 character
+
+---
+Additional information can be found by searching:
+- "struct_tag_keyword" which expands on struct layout and access using :: and .TAG

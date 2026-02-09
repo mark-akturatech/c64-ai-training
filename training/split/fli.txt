@@ -1,0 +1,60 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Flexible Line Interpretation (FLI): make every raster line a Bad Line by adjusting YSCROLL so the VIC reads video matrix color info every line, enabling per-raster-line color changes in bitmap modes (increase color granularity from 8x8 blocks down to line granularity). Practical constraints: VCBASE doesn't increment when creating new Bad Lines before current text line finished; requires switching VM10-VM13 to cycle through pre-prepared matrices and timing constraints for writes to $D011 (must not occur before cycle 14). Variants like AFLI (Advanced FLI) and IFLI (Interlaced FLI) are described.
+
+3.14.3. FLI
+-----------
+
+Instead of delaying the occurrence of Bad Lines as for the FLD effect, you
+may also artificially create additional Bad Lines before the VIC has
+completed the current text line. This is especially interesting for the
+bitmap modes, as these use the data from the video matrix (which is read in
+the Bad Lines) for color information, so normally only single 8�8 pixel
+blocks can be colored individually in bitmap modes. But if you make every
+raster line a Bad Line by appropriately modifying YSCROLL, the VIC will
+read from the video matrix in every line and so it will also read new color
+information for every line.
+
+This way, each of the 4�8 pixels of a block in multicolor mode can have a
+different color. This software-generated new graphics mode is called
+"Flexible Line Interpretation" (FLI) and is probably the most outstanding
+example of "unconventional" VIC programming.
+
+There is however one problem: If you create a new Bad Line before the
+current text line has been finished, VCBASE is not incremented (see
+3.7.2.). So the VIC reads from the same addresses in the video matrix as in
+the previous line. As you cannot change the video matrix fast enough with
+the processor, you have to switch the base address of the video matrix with
+the bits VM10-VM13 of register $d018 (unfortunately the Color RAM cannot be
+switched, so the color selection of the pixels is not completely free).
+
+Besides, the access to $d011 to create the Bad Line may not happen until
+cycle 14 of each raster line, or else the RC would be cleared in every line
+and the bitmap display would not be as desired. But this also implies that
+the first three c-accesses of the VIC in each line do not read valid data,
+because the first c-access in cycle 15 requires that BA should already have
+gone low in cycle 12 so that AEC can stay low in cycle 15 (AEC doesn't stay
+low until three cycles after the negative edge of BA, there is no way
+around that). But as the Bad Line was first created in cycle 14, it's true
+that BA is low in cycle 15 on the first c-access, but AEC is high and so
+the internal data bus drivers D0-D7 of the VIC are closed and as the chip
+is manufactured in NMOS technology, it reads the value $ff and not the
+video matrix data (the data bus drivers D8-D11 are indeed open, but this is
+explained in section 3.14.6. in more detail) which is visible as 24 pixel
+wide stripes on the left side of the screen.
+
+Practically you store eight video matrices in memory that are used in the
+following way: In the first raster line the first line of the first matrix,
+in the second line the first line of the second matrix, etc..., in the
+eighth line the first line of the eighth matrix, in the ninth line the
+second line of the first matrix, etc. With these eight matrices you can
+line-wise cover a complete bitmap.
+
+There are several flavors of the FLI mode, such as AFLI (Advanced FLI)
+which uses the standard bitmap mode and simulates color blends by similarly
+colored adjacent pixels, and IFLI (Interlaced FLI) that alternates between
+two frames in a sort of interlace mode.
+
+
+---
+Additional information can be found by searching:
+- "standard_bitmap_mode" which expands on FLI increases color resolution in bitmap modes by forcing per-line video matrix reads
+- "vc_and_rc" which expands on VCBASE/VC behavior when additional Bad Lines are inserted

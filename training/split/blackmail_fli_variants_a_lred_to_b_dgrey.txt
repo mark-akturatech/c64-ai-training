@@ -1,0 +1,52 @@
+# NMOS 6510 - Detailed code sequences for variants a and b. Covers: a (light red) — TAX then LDX #<bg>, STX $D021 with NOPs; b (dark grey) — LAX #<bg> (LAX immediate variant) then SAX $D021 with NOPs. Includes the original code's note that using A=$08,$18...$78 made LAX#imm rely on bits of a 'magic constant', and documents the small fix (using A=$0f,$1f...$7f) to make lax#imm work for all 16 colours. Shows the opcode bytes and cycle padding used to meet the 10-cycle tail requirement.
+
+a: l.red as colour ram colour
+(2) aa
+
+tax
+
+(2) a2 xx
+
+ldx # <background colour>
+
+(4) 8e 21 d0
+
+stx $d021
+
+(2) ea
+
+nop
+
+b: d.grey as colour ram colour
+(2) ab xx
+
+lax # <background colour> ; the original code uses
+; A=$08,$18...$78 for the
+; values written to $d011,
+; which makes this rely on
+; bit0-2 of the “magic
+; constant” being set.
+; However if we use A=$0f,
+; $1f...$7f instead, that
+; takes the constant out
+; of the equation and this
+; lax#imm will always work
+; for all 16 colours.
+
+(4) 8f 21 d0
+
+sax $d021
+
+(2) ea
+
+nop
+
+(2) ea
+
+nop
+
+
+---
+Additional information can be found by searching:
+- "blackmail_fli_variants_8_orange_to_9_brown" which expands on Previous variants 8-9 (orange, brown)
+- "blackmail_fli_variants_c_mgrey_to_f_lgrey" which expands on Following variants c-f which use absolute addressing for background table lookups

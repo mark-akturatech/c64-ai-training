@@ -1,0 +1,39 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles [INSERT]/[DELETE] control behavior: supports inserting reversed characters, tests for line-wrap/back-to-previous-line, shifts characters left to close up a deleted position across the line (moving both screen character bytes and colour RAM bytes), clears the last character on the line to SPACE and sets its colour, and returns appropriately.
+
+                                character was < [SPACE] so is a control character
+                                of some sort
+.,E745 A6 D8    LDX $D8         get the insert count
+.,E747 F0 03    BEQ $E74C       if no characters to insert continue
+.,E749 4C 97 E6 JMP $E697       insert reversed character
+.,E74C C9 14    CMP #$14        compare the character with [INSERT]/[DELETE]
+.,E74E D0 2E    BNE $E77E       if not [INSERT]/[DELETE] go ??
+.,E750 98       TYA             
+.,E751 D0 06    BNE $E759       
+.,E753 20 01 E7 JSR $E701       back onto the previous line if possible
+.,E756 4C 73 E7 JMP $E773       
+.,E759 20 A1 E8 JSR $E8A1       test for line decrement
+                                now close up the line
+.,E75C 88       DEY             decrement index to previous character
+.,E75D 84 D3    STY $D3         save the cursor column
+.,E75F 20 24 EA JSR $EA24       calculate the pointer to colour RAM
+.,E762 C8       INY             increment index to next character
+.,E763 B1 D1    LDA ($D1),Y     get character from current screen line
+.,E765 88       DEY             decrement index to previous character
+.,E766 91 D1    STA ($D1),Y     save character to current screen line
+.,E768 C8       INY             increment index to next character
+.,E769 B1 F3    LDA ($F3),Y     get colour RAM byte
+.,E76B 88       DEY             decrement index to previous character
+.,E76C 91 F3    STA ($F3),Y     save colour RAM byte
+.,E76E C8       INY             increment index to next character
+.,E76F C4 D5    CPY $D5         compare with current screen line length
+.,E771 D0 EF    BNE $E762       loop if not there yet
+.,E773 A9 20    LDA #$20        set [SPACE]
+.,E775 91 D1    STA ($D1),Y     clear last character on current screen line
+.,E777 AD 86 02 LDA $0286       get the current colour code
+.,E77A 91 F3    STA ($F3),Y     save to colour RAM
+.,E77C 10 4D    BPL $E7CB       branch always
+
+---
+Additional information can be found by searching:
+- "output_character_unshifted_and_control_dispatch" which expands on invoked when control character is insert/delete
+- "advance_cursor_autoscroll_and_newline_handling" which expands on may call back to newline logic when moving across lines

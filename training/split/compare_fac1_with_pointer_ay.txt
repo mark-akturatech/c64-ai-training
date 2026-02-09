@@ -1,0 +1,49 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Compare FAC1 with the 4-byte floating value at address (AY): saves pointer, loads the target exponent and mantissa bytes, handles zero exponent and sign differences, compares exponents and mantissas (including normalising top bit and checking the rounding byte), and returns A=$00 if equal, A=$01 if FAC1>(AY), A=$FF if FAC1<(AY).
+
+                                *** compare FAC1 with (AY)
+                                returns A=$00 if FAC1 = (AY)
+                                returns A=$01 if FAC1 > (AY)
+                                returns A=$FF if FAC1 < (AY)
+.,BC5B 85 24    STA $24         save pointer low byte
+.,BC5D 84 25    STY $25         save pointer high byte
+.,BC5F A0 00    LDY #$00        clear index
+.,BC61 B1 24    LDA ($24),Y     get exponent
+.,BC63 C8       INY             increment index
+.,BC64 AA       TAX             copy (AY) exponent to X
+.,BC65 F0 C4    BEQ $BC2B       branch if (AY) exponent=0 and get FAC1 sign
+                                A = $FF, Cb = 1/-ve A = $01, Cb = 0/+ve
+.,BC67 B1 24    LDA ($24),Y     get (AY) mantissa 1, with sign
+.,BC69 45 66    EOR $66         EOR FAC1 sign (b7)
+.,BC6B 30 C2    BMI $BC2F       if signs <> do return A = $FF, Cb = 1/-ve
+                                A = $01, Cb = 0/+ve and return
+.,BC6D E4 61    CPX $61         compare (AY) exponent with FAC1 exponent
+.,BC6F D0 21    BNE $BC92       branch if different
+.,BC71 B1 24    LDA ($24),Y     get (AY) mantissa 1, with sign
+.,BC73 09 80    ORA #$80        normalise top bit
+.,BC75 C5 62    CMP $62         compare with FAC1 mantissa 1
+.,BC77 D0 19    BNE $BC92       branch if different
+.,BC79 C8       INY             increment index
+.,BC7A B1 24    LDA ($24),Y     get mantissa 2
+.,BC7C C5 63    CMP $63         compare with FAC1 mantissa 2
+.,BC7E D0 12    BNE $BC92       branch if different
+.,BC80 C8       INY             increment index
+.,BC81 B1 24    LDA ($24),Y     get mantissa 3
+.,BC83 C5 64    CMP $64         compare with FAC1 mantissa 3
+.,BC85 D0 0B    BNE $BC92       branch if different
+.,BC87 C8       INY             increment index
+.,BC88 A9 7F    LDA #$7F        set for 1/2 value rounding byte
+.,BC8A C5 70    CMP $70         compare with FAC1 rounding byte (set carry)
+.,BC8C B1 24    LDA ($24),Y     get mantissa 4
+.,BC8E E5 65    SBC $65         subtract FAC1 mantissa 4
+.,BC90 F0 28    BEQ $BCBA       exit if mantissa 4 equal
+                                gets here if number <> FAC1
+.,BC92 A5 66    LDA $66         get FAC1 sign (b7)
+.,BC94 90 02    BCC $BC98       branch if FAC1 > (AY)
+.,BC96 49 FF    EOR #$FF        else toggle FAC1 sign
+.,BC98 4C 31 BC JMP $BC31       return A = $FF, Cb = 1/-ve A = $01, Cb = 0/+ve
+
+---
+Additional information can be found by searching:
+- "get_fac1_sign" which expands on used to determine sign-based comparison results
+- "round_fac1" which expands on uses the rounding byte when comparing mantissa4
+- "perform_sgn" which expands on provides the sign-byte convention used in comparison return values

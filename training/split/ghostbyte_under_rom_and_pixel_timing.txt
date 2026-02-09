@@ -1,0 +1,106 @@
+# NMOS 6510 - Detailed example 'ghostbyte under ROM': when reading from ROM the CPU reads ROM, but writing falls through to RAM beneath ROM. Using R-M-W instructions you can write two values to RAM one cycle apart where the first write isn't necessarily the original value. Discusses limitations (values determined by ROM content) and gives possibilities for pixel/chars timing, including a large table of example byte patterns and discussion of using this for precise rendering tricks.
+
+between $00 and $FF every rasterline.
+Example: start a REU transfer
+
+It is possible to start a REU transfer by writing to address $FF00, which is useful when you want
+to transfer to or from memory in the $D000-$DFFF range. But sometimes you don't want to trash
+the byte at $FF00, so you end up starting the transfer like this:
+LDA $FF00
+STA $FF00
+However, it turns out you can use any RMW instruction:
+INC $FF00
+The dummy write causes the REU to immediately take over the bus, so the second write-request
+from the CPU doesn't reach the memory chips. The incremented value never gets written into RAM
+- Three cycles saved.
+Test code:
+• REU/rmw-trigger/rmwtrigger-ram.prg,
+REU/rmw-trigger/rmwtrigger-rom.prg
+The 6502 has two inputs, /RDY (Ready) and /AEC (Address Enable Control). RDY tells the CPU to
+pause execution, but it is only obeyed during read cycles. AEC immediately disconnects the CPU
+from the buses (address, data, and the read/write signal).
+The VIC chip has two outputs, BA (Bus Available) and AEC (Address Enable Control). During
+normal operation, VIC asserts AEC (which is connected to AEC on the CPU) on every other halfcycle in order to read e.g. font bits. It has to work immediately, i.e. asynchronously, because it
+needs to be fast enough for half-cycle operations.
+When VIC needs to halt the CPU, it first pulls BA low for three cycles, to ensure that the CPU is on
+a read cycle. Then it asserts AEC in order to access memory on both half-cycles.
+The expansion port has an output, BA, and an input, /DMA. BA comes from the VIC. But /DMA is
+connected to both /RDY and /AEC. That is, it tells the CPU to pause, but it also immediately
+disconnects the CPU from the buses.
+
+- 90 -
+
+The REU monitors BA so it can pause an ongoing transfer during badlines and sprite fetches. But
+otherwise, it pulls /DMA and just assumes that the bus is free. The engineers must have assumed
+(wrongly) that the CPU will always trigger a transfer on the last cycle of an instruction, so that the
+next cycle is guaranteed to be a read (to fetch the next instruction).
+Instead, due to the double-write of our RMW instruction, part of the CPU will attempt to place an
+address and data value on the buses, and set the read/write line to write. But the CPU is
+disconnected from the buses because /DMA is held low, and therefore /AEC. The bits never reach
+the actual bus lines; they dissipate into a small amount of heat.
+Zeropage (R-M-W)
+ASL zp
+
+DCP zp
+
+Cycle
+
+DEC zp
+
+INC zp
+
+ISC zp
+
+LSR zp
+
+RLA zp
+
+Address-Bus
+
+ROL zp
+
+ROR zp
+
+RRA zp
+
+SLO zp
+
+Data-Bus
+
+SRE zp
+Read/Write
+
+1
+
+PC
+
+Opcode fetch
+
+R
+
+2
+
+PC + 1
+
+Absolute Address Low
+
+R
+
+3
+
+AA
+
+Old Data
+
+R
+
+4 (*1) AA
+
+Old Data
+
+W
+
+---
+Additional information can be found by searching:
+- "read_modify_write_dummy_write_behavior" which expands on R-M-W dummy writes and ghostbyte writes
+- "vicii_sprite_fetch_examples" which expands on VIC-II sprite fetch timing (external reference)

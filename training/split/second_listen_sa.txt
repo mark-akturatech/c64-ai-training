@@ -1,0 +1,16 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - SECOND: SEND LISTEN SECONDARY ADDRESS. Entry: A contains the secondary address. Stores A into the serial buffer BSOUT ($95) and calls the handshake/send-byte routine at $ED36. This routine is the KERNAL SECOND ($FF93) vector implementation and drops through to CLEAR ATN afterwards.
+
+                                *** SECOND: SEND LISTEN SA
+                                The KERNAL routine SECOND ($ff93) is vectored here. On
+                                entry, (A) holds the secondary address. This is placed in
+                                the serial buffer and sent to the serial bus "under
+                                attention". Finally the routine drops through to the next
+                                routine to set ATN false.
+.,EDB9 85 95    STA $95         store (A) in BSOUT, buffer for the serial bus
+.,EDBB 20 36 ED JSR $ED36       handshake and send byte.
+
+
+---
+Additional information can be found by searching:
+- "clear_atn" which expands on drops through to CLEAR ATN to release attention line
+- "tksa_send_talk_sa" which expands on similar handling for sending TALK secondary address

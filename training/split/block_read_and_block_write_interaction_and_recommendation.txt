@@ -1,0 +1,28 @@
+# byRiclianll - Explains the interaction when B-R reads a sector previously rewritten by Block-Write (B-W): the EOI is tied to the ASCII value of byte 0 (which B-W overwrites with the buffer-pointer position), destroying the forward-track link and limiting readable characters to that byte's value. Advises changing the track parameter in the demo (line 160) and recommends using the Ul command instead of B-R; notes manuals often ignore Ul or don't explain its use.
+
+
+
+What's  even  more  problematic  is  the  situation  that  occurs  when  you  do  a  block-read 
+(B-R)  of  a  track  and  sector  that  was  rewritten  by  the  block-write  command  (B-W)  which 
+is  discussed  below.  The  EOI  occurs  in  connection  with  the  ASCII  value  of  the  0th  byte 
+of  the  sector  that  was  read.  Byte  0  contains  the  value  of  the  buffer-pointer  position  at 
+the  time  the  block  was  written  with  a  block-write  command  (B-W).  The  forward  track 
+reference  that  was  originally  there,  has  been  destroyed.  The  ASCII  value  of  the  0th 
+byte  determines  how  many  characters  you  can  access  before  the  EOI  occurs.  Run  the 
+block-read  (B-R)  program  listed  above  against  track  1,  sector  0  after  you've  done  the 
+block-write  (B-W)  experiment  listed  below  on  a  test  disk.  Change  the  track  number  in 
+line  160  from  an  18  to  a  1  like  this: 
+
+160  PRINT#15, "B-R";2;0; l;0 
+
+After  further  experimentation  on  your  own,  you  should  have  little  trouble  understand- 
+ing why  the  Ul  command  replaces  the  block-read  command  (B-R).  Not  only  do  user 
+manuals  continue  to  promote  the  use  of  the  block-read  command  (B-R),  but  they  also 
+either  ignore  the  Ul  command  altogether  or  simply  mention  it  in  passing  without  even 
+a  hint  on  how  to  use  it. 
+
+
+---
+Additional information can be found by searching:
+- "block_read_demo_program" which expands on indicates which line (line 160) to change in the demo program to observe the effect
+- "block_write_behavior_and_demo_program" which expands on explains how B-W writes the buffer-pointer into byte 0 and breaks links

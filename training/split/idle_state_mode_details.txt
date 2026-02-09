@@ -1,0 +1,75 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Behavior of the sequencer in idle state: g-access repeatedly reads a single address ($3FFF or $39FF if ECM=1) and outputs it according to selected graphics mode but with video matrix treated as all zeros. Tables show effective addresses read and how the single byte is interpreted in each graphics mode in idle state (which pixels/colors result).
+
+3.7.3.9. Idle state
+-------------------
+
+In idle state, the VIC reads the graphics data from address $3fff (resp.
+$39ff if the ECM bit is set) and displays it in the selected graphics mode,
+but with the video matrix data (normally read in the c-accesses) being all
+"0" bits. So the byte at address $3fff/$39ff is output repeatedly.
+
+c-access
+
+ No c-accesses occur.
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+
+g-access
+
+ Addresses (ECM=0)
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Addresses (ECM=1)
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |  1 |  1 |  1 |  0 |  0 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |  1 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        | Standard text mode/
+ |                                       | Multicolor text mode/
+ | "0": Background color 0 ($d021)       | ECM text mode
+ | "1": Black                            |
+ +---------------------------------------+
+ |         8 pixels (1 bit/pixel)        | Standard bitmap mode/
+ |                                       | Invalid text mode/
+ | "0": Black (background)               | Invalid bitmap mode 1
+ | "1": Black (foreground)               |
+ +---------------------------------------+
+ |         4 pixels (2 bits/pixel)       | Multicolor bitmap mode
+ |                                       |
+ | "00": Background color 0 ($d021)      |
+ | "01": Black (background)              |
+ | "10": Black (foreground)              |
+ | "11": Black (foreground)              |
+ +---------------------------------------+
+ |         4 pixels (2 bits/pixel)       | Invalid bitmap mode 2
+ |                                       |
+ | "00": Black (background)              |
+ | "01": Black (background)              |
+ | "10": Black (foreground)              |
+ | "11": Black (foreground)              |
+ +---------------------------------------+
+
+
+---
+Additional information can be found by searching:
+- "idle_state_display_state" which expands on definition of idle state and when it occurs
+- "graphics_modes_overview" which expands on how g-access interpretation changes with mode in idle state

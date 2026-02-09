@@ -1,0 +1,30 @@
+# NMOS 6510 - Example demonstrating how ARR can be used when rotating 16-bit values across two bytes. Shows code sequences storing high/low bytes (STA $fc / STA $fb) and compares ARR-based approach to explicit LDA / ROR sequence. Notes explain how the final Carry state can be influenced by the initial LDA value (#$00 vs #$01 and special cases for ARR when A has bit 7 set).
+
+Example: rotating 16 bit values
+
+LDA #>addr
+LSR
+STA $fc
+ARR #$00
+
+;A = A & $00 -> ror A
+
+STA $fb
+… is the same as …
+LDA #>addr
+LSR
+STA $fc
+LDA #$00
+ROR
+STA $fb
+Note: Again, you can influence the final state of the carry by either using #$00 or #$01 for the
+LDA ($00 or $80 in case of ARR, but the later only if A has bit 7 set as well, so be carefully
+here).
+
+- 33 -
+
+
+---
+Additional information can be found by searching:
+- "arr_opcode_flags_and_table" which expands on explains ARR flags and the mapping table used to understand the effect on multi-byte rotates
+- "arr_load_register_depending_on_carry" which expands on another example of exploiting ARR's effect on Carry for control flow or data loading

@@ -1,0 +1,55 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - RS232 bit handling routines: Reads VIA 2 DRB for Rx bit ($DD01), stores received bit into $A7, adjusts VIA 2 timer B ($DD06/$DD07) for bit timing, starts timer B single-shot by writing $DD0F, updates RS-232 interrupt enable byte $02A1, and includes nonstandard bit timing routines ($FF07-$FF37) to set VIA timers from stored timing words at $0295/$0296/$0299/$029A. Ends by jumping into higher-level RS232 handler ($EF59).
+
+                                *** ??
+.,FED6 AD 01 DD LDA $DD01       read VIA 2 DRB, RS232 port
+.,FED9 29 01    AND #$01        mask 0000 000x, RS232 Rx DATA
+.,FEDB 85 A7    STA $A7         save the RS232 received data bit
+.,FEDD AD 06 DD LDA $DD06       get VIA 2 timer B low byte
+.,FEE0 E9 1C    SBC #$1C        
+.,FEE2 6D 99 02 ADC $0299       
+.,FEE5 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FEE8 AD 07 DD LDA $DD07       get VIA 2 timer B high byte
+.,FEEB 6D 9A 02 ADC $029A       
+.,FEEE 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FEF1 A9 11    LDA #$11        set timer B single shot, start timer B
+.,FEF3 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FEF6 AD A1 02 LDA $02A1       get the RS-232 interrupt enable byte
+.,FEF9 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,FEFC A9 FF    LDA #$FF        
+.,FEFE 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF01 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF04 4C 59 EF JMP $EF59       
+.,FF07 AD 95 02 LDA $0295       nonstandard bit timing low byte
+.,FF0A 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF0D AD 96 02 LDA $0296       nonstandard bit timing high byte
+.,FF10 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF13 A9 11    LDA #$11        set timer B single shot, start timer B
+.,FF15 8D 0F DD STA $DD0F       save VIA 2 CRB
+.,FF18 A9 12    LDA #$12        
+.,FF1A 4D A1 02 EOR $02A1       EOR with the RS-232 interrupt enable byte
+.,FF1D 8D A1 02 STA $02A1       save the RS-232 interrupt enable byte
+.,FF20 A9 FF    LDA #$FF        
+.,FF22 8D 06 DD STA $DD06       save VIA 2 timer B low byte
+.,FF25 8D 07 DD STA $DD07       save VIA 2 timer B high byte
+.,FF28 AE 98 02 LDX $0298       
+.,FF2B 86 A8    STX $A8         
+.,FF2D 60       RTS             
+
+                                *** ??
+.,FF2E AA       TAX             
+.,FF2F AD 96 02 LDA $0296       nonstandard bit timing high byte
+.,FF32 2A       ROL             
+.,FF33 A8       TAY             
+.,FF34 8A       TXA             
+.,FF35 69 C8    ADC #$C8        
+.,FF37 8D 99 02 STA $0299       
+.,FF3A 98       TYA             
+.,FF3B 69 00    ADC #$00        add any carry
+.,FF3D 8D 9A 02 STA $029A       
+.,FF40 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "baud_rate_tables_ntsc" which expands on baud word table used to compute timer values
+- "nmi_handler" which expands on called from NMI RS232 handling paths

@@ -1,0 +1,61 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Implements INSERT: opens a space on the current screen line. Checks screen line link table for linked lines, may call scroll_screen when near bottom. Otherwise pushes SAL/EAL, loops to move and clear lines downwards, and adjusts the link table. Uses a temporary index ($02A5) and calls move_a_screen_line, clear_screen_line and adjust-link-table routine ($E6DA).
+
+                                *** OPEN A SPACE ON THE SCREEN
+                                This routine opens a space on the screen for use with
+                                <INST>. If needed, the screen is then scrolled down,
+                                otherwise the screen line is moved and cleared. Finally
+                                the screen line link table is adjusted and updated.
+.,E965 A6 D6    LDX $D6         TBLX, current cursor line number
+.,E967 E8       INX             test next
+.,E968 B5 D9    LDA $D9,X       LDTB1, screen line link table
+.,E96A 10 FB    BPL $E967
+.,E96C 8E A5 02 STX $02A5       temp line for index
+.,E96F E0 18    CPX #$18        bottom of screen
+.,E971 F0 0E    BEQ $E981       yes
+.,E973 90 0C    BCC $E981       above bottom line
+.,E975 20 EA E8 JSR $E8EA       scroll screen down
+.,E978 AE A5 02 LDX $02A5       temp line for index
+.,E97B CA       DEX
+.,E97C C6 D6    DEC $D6         TBLX
+.,E97E 4C DA E6 JMP $E6DA       adjust link table and end
+.,E981 A5 AC    LDA $AC         push SAL, scrolling pointer
+.,E983 48       PHA
+.,E984 A5 AD    LDA $AD
+.,E986 48       PHA
+.,E987 A5 AE    LDA $AE         push EAL, end of program
+.,E989 48       PHA
+.,E98A A5 AF    LDA $AF
+.,E98C 48       PHA
+.,E98D A2 19    LDX #$19
+.,E98F CA       DEX
+.,E990 20 F0 E9 JSR $E9F0       set start of line
+.,E993 EC A5 02 CPX $02A5       temp line for index
+.,E996 90 0E    BCC $E9A6
+.,E998 F0 0C    BEQ $E9A6
+.,E99A BD EF EC LDA $ECEF,X     screen line address table
+.,E99D 85 AC    STA $AC         SAL
+.,E99F B5 D8    LDA $D8,X       LDTB1
+.,E9A1 20 C8 E9 JSR $E9C8       move screen line
+.,E9A4 30 E9    BMI $E98F
+.,E9A6 20 FF E9 JSR $E9FF       clear screen line
+.,E9A9 A2 17    LDX #$17        fix screen line link table
+.,E9AB EC A5 02 CPX $02A5       temp line for index
+.,E9AE 90 0F    BCC $E9BF
+.,E9B0 B5 DA    LDA $DA,X       LDTB1+1
+.,E9B2 29 7F    AND #$7F
+.,E9B4 B4 D9    LDY $D9,X       LDTB1
+.,E9B6 10 02    BPL $E9BA
+.,E9B8 09 80    ORA #$80
+.,E9BA 95 DA    STA $DA,X
+.,E9BC CA       DEX             next line
+.,E9BD D0 EC    BNE $E9AB       till line zero
+.,E9BF AE A5 02 LDX $02A5       temp line for index
+.,E9C2 20 DA E6 JSR $E6DA       adjust link table
+.,E9C5 4C 58 E9 JMP $E958       pull SAL and EAL
+
+
+---
+Additional information can be found by searching:
+- "scroll_screen" which expands on called when space insertion requires scrolling
+- "move_a_screen_line" which expands on used to move individual screen lines down to open a space
+- "clear_screen_line" which expands on clears the inserted/emptied screen line

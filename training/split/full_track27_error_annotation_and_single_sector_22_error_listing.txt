@@ -1,0 +1,94 @@
+# byRiclianll - Documentation and BASIC program for 'Full Track 27 Error Source Annotation' and the chapter 7.14 example 'How to Create a 22 Error on a Single Sector'. Contains the annotation note comparing to 20M.PAL, and a complete BASIC listing (lines 100 to 420) implementing the single-sector 22 error creator: prompts, parameter checks (track/sector validation), I/O open/close and the main M-W/M-R commands used to provoke the 22 error, ending with program END.
+
+Full  Track  27  Error  Source  Annotation 
+
+See  the  annotation  for  20M.PAL.  The  only  major  difference  is  in  line  700  above.  Note 
+the  header  block  identifier  ($08)  in  line  420  is  left  alone. 
+
+7.14  How  to  Create  a  22  Error  on  a  Single  Sector 
+
+Limitations:  None. 
+
+Parameters:  Track  and  sector  number. 
+
+SINGLE  SECTOR  22  ERROR 
+
+100  REM  22A  ERROR  -  1541 
+
+110  PRINT"  <:CLR>22A  ERROR  -  1541" 
+
+120  PRINT"  <:D0WN>  INSERT  CLONE   IN  DRIVE" 
+
+130  INPUT"  <:D0WN> DESTROY  TRACK  AND  SECTOR 
+
+(T,S)  ";T,S 
+140  IFT<10RT>35THENEND 
+150  NS=20+2»(T>17)+(T>24)+(T>30) 
+160  IFS<OORS>NSTHENEND 
+
+170  INPUT"  <:D0WN>  ARE  YOU  SURE     YtLEFT  3>" 
+
+;q$ 
+
+180  ifq*<>"y"thenend 
+
+190  0PEN15,a, 15 
+
+200  PRINT#15, "10" 
+
+210  INPUT#15,EN*,EM*,ET*,ES* 
+
+220  IFEN*="00"G0T0270 
+
+230  PRINT"  <:D0WN>  "EN*",    "EM*"  ,  "ET*"  ,  "ES* 
+
+240  CLOSE 15 
+
+250  END 
+
+260  REM  SEEK 
+
+270  J0B=176 
+
+280  G0SUB440 
+
+290  IFEO1G0T0550 
+
+300  REM  READ 
+
+310  J0B=128 
+
+320  G0SUB44O 
+
+330  I  FE<  >  1  ANDE<  .>4 ANDE<  >5G0T0550 
+
+340  PRINT#15, "M-W"CHR*(71)CHR*(0)CHR*(1) 
+
+CHR*(6) 
+
+350  REM  WRITE 
+
+360  J0B=144 
+
+
+155 
+
+
+370  eOSUB440 
+
+380  PRINT#15, "M-W"CHR* (71 ) CHR* (O) CHR* ( 1 ) 
+CHR*(7) 
+
+390  IFEO1G0T0550 
+
+400  CLOSE 15 
+
+410  PRINT" CDOWNJDONE ! " 
+
+420  END 
+
+
+---
+Additional information can be found by searching:
+- "format_routine_setup_and_wait_loop" which expands on Assembly pieces of the formatting/attack routine used earlier in the chapter
+- "job_queue_subroutine_listing_and_io_handling" which expands on Subroutine (job queue) called by the BASIC listing for device I/O and retries

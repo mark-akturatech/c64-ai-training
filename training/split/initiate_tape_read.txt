@@ -1,0 +1,28 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Entry point to start a tape read (load/verify): clears serial status and load/verify flags ($90,$93), calls set-pointer (JSR $F7D7), waits for PLAY (JSR $F817), exits if STOP pressed, disables interrupts (SEI), clears several tape-related state bytes ($AA,$B4,$B0,$9E,$9F,$9C), sets up CA1 interrupt enable and selects the tape read IRQ vector index (LDX #$0E) then branches (BNE) to the common tape read/write handler.
+
+                                *** initiate a tape read
+.,F841 A9 00    LDA #$00        clear A
+.,F843 85 90    STA $90         clear serial status byte
+.,F845 85 93    STA $93         clear the load/verify flag
+.,F847 20 D7 F7 JSR $F7D7       set the tape buffer start and end pointers
+.,F84A 20 17 F8 JSR $F817       wait for PLAY
+.,F84D B0 1F    BCS $F86E       exit if STOP was pressed, uses a further BCS at the
+                                target address to reach final target at $F8DC
+.,F84F 78       SEI             disable interrupts
+.,F850 A9 00    LDA #$00        clear A
+.,F852 85 AA    STA $AA         
+.,F854 85 B4    STA $B4         
+.,F856 85 B0    STA $B0         clear tape timing constant min byte
+.,F858 85 9E    STA $9E         clear tape pass 1 error log/char buffer
+.,F85A 85 9F    STA $9F         clear tape pass 2 error log corrected
+.,F85C 85 9C    STA $9C         clear byte received flag
+.,F85E A9 90    LDA #$90        enable CA1 interrupt ??
+.,F860 A2 0E    LDX #$0E        set index for tape read vector
+.,F862 D0 11    BNE $F875       go do tape read/write, branch always
+
+
+---
+Additional information can be found by searching:
+- "set_tape_buffer_start_and_end_pointers" which expands on called first to derive I/O and end pointers
+- "wait_for_play_prompt_and_display" which expands on waits for PLAY before enabling read
+- "tape_read_write_setup_and_irq_save" which expands on control then flows to the common tape read/write setup (branch to F875)

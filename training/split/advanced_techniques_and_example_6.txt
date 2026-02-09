@@ -1,0 +1,80 @@
+# COMMODORE 64 - Advanced SID techniques: using oscillator 3 and envelope 3 outputs for dynamic modulation. Register 27 exposes oscillator 3 digital output (0–255) reflecting waveform (saw increments 0..255 etc.); register 25 gives envelope generator 3 output. Bit 7 of register 24 mutes audio output of voice 3 while still allowing its digital output to be read. Demonstrates vibrato/modulation by adding oscillator 3 output to another oscillator's frequency. Includes EXAMPLE PROGRAM 6 that uses peek(S+27) to modulate voice 1 frequency and example data.
+
+  ADVANCED TECHNIQUES
+
+    The SID chip's parameters can be changed dynamically during a note or
+  sound to create many interesting and fun effects. In order to make this
+  easy to do, digitized outputs from oscillator three and envelope
+  generator three are available for you in registers 27 and 28, respec-
+  tively.
+    The output of oscillator 3 (register 27) is directly related to the
+  waveform selected. If you choose the sawtooth waveform of oscillator 3,
+  this register will present a series of numbers incremented (increased
+  step by step) from 0 to 255 at a rate determined by the frequency of
+  oscillator 3. If you choose the triangle waveform, the output will incre-
+  ment from 0 up to 255, then decrement (decrease step by step) back down
+  to 0. If you choose the pulse wave, the output will jump back-and-forth
+  between 0 and 255. Finally, choosing the noise waveform will give you a
+  series of random numbers. When oscillator 3 is used for modulation, you
+  usually do NOT want to hear its output. Setting bit 7 of register 24
+  turns the audio output of voice 3 off. Register 27 always reflects the
+  changing output of the oscillator and is not affected in any way by the
+  envelope (ADSR) generator.
+
+
+
+
+
+
+
+
+
+
+  202   PROGRAMMING SOUND AND MUSIC
+~
+
+
+    Register 25 gives you access to the output of the envelope generator
+  of oscillator 3. It functions in much the same fashion that the output of
+  oscillator 3 does. The oscillator must be turned on to produce any output
+  from this register.
+    Vibrato (a rapid variation in frequency) can be achieved by adding the
+  output of oscillator 3 to the frequency of another oscillator. Example
+  Program 6 illustrates this idea.
+
+
+  EXAMPLE PROGRAM 6:
+
+
+start tok64 page203.prg
+  10 s=54272
+  20 forl=0to24:pokes+l,0:next
+  30 pokes+3,8
+  40 pokes+5,41:pokes+6,89
+  50 pokes+14,117
+  60 pokes+18,16
+  70 pokes+24,143
+  80 readfr,dr
+  90 iffr=0thenend
+  100 pokes+4,65
+  110 fort=1todr*2
+  120 fq=fr+peek(s+27)/2
+  130 hf=int(fq/256):lf=lqand255
+  140 pokes+0,lf:pokes+1,hf
+  150 next
+  160 pokes+4,64
+  170 goto80
+  500 data4817,2,5103,2,5407,2
+  510 data8583,4,5407,2,8583,4
+  520 data5407,4,8583,12,9634,2
+  530 data10207,2,10814,2,8583,2
+  540 data9634,4,10814,2,8583,2
+  550 data8583,12
+  560 data0,0
+stop tok64
+
+
+---
+Additional information can be found by searching:
+- "example_program_7_code_and_explanation" which expands on siren example using oscillator 3 output for modulation
+- "example_program_6_code_and_explanation" which expands on detailed explanation of Example 6

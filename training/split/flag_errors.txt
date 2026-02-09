@@ -1,0 +1,21 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - FLAG ERRORS routine: loads A with one of two error flags (#$80 = device not present or #$03 = write timeout), stores the value into the I/O status word ST via JSR $FE1C, then clears/sets processor flags (CLI, CLC) and performs a final unconditional branch (BCC) to the final handshake. Covers the assembly sequence that sets ST and exits the serial transfer with the final handshake.
+
+                                *** FLAG ERRORS
+                                (A) is loaded with one of the two error flags, depending
+                                on the entry point. #$80 signifies the device was not
+                                present, and #$03 signifies a write timeout. The value is
+                                then set into the I/O status word, ST. The routine exits
+                                by clearing ATN and giving the final handshake.
+.,EDAD A9 80    LDA #$80        flag ?DEVICE NOT PRESENT
+.:EDAF 2C       .BYTE $2C       mask LDA #$03
+.,EDB0 A9 03    LDA #$03        flag write timeout
+.,EDB2 20 1C FE JSR $FE1C       set I/O status word
+.,EDB5 58       CLI
+.,EDB6 18       CLC
+.,EDB7 90 4A    BCC $EE03       always jump, do final handshake
+
+
+---
+Additional information can be found by searching:
+- "second_listen_sa" which expands on next KERNAL routines invoked after final handshake
+- "acptr_receive_from_serial_bus" which expands on related I/O status setting for read timeouts and EOI

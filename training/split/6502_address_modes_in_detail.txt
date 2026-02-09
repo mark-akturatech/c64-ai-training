@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Detailed coverage of 6502 address modes: implied (impl), accumulator (A), immediate (#), absolute (abs), zero-page (zpg), indexed absolute (abs,X and abs,Y) with page crossing note, zero-page indexed (zpg,X and zpg,Y), indirect (JMP (abs)), pre-indexed indirect (X,ind) aka (zeropage,X), post-indexed indirect (ind,Y) aka (zeropage),Y. Also mentions NMOS JMP indirect bug where high byte fetch wraps at page boundary, corrected in CMOS W65C02 with extra cycle. WDC 65C02 extended modes: (zpg) (zeropage indirect) and (abs,X) absolute indexed indirect for JMP.
+
+           (One way to think of the zero-page is as a page of 256 additional
+           registers, somewhat slower than the internal registers, but with
+           zero-page instructions also faster executing than "normal"
+           instructions. The zero-page has a few more tricks up its sleeve,
+           making these addresses perform more like real registers, see below.)
+           Indexed Addressing: Absolute,X and Absolute,Y
+           Indexed addressing adds the contents of either the X-register or the
+           Y-register to the provided address to give the effective address,
+           which provides the operand.
+                                                               6502 Instruction Set
+           These instructions are usefull to e.g., load values from tables or
+           to write to a continuous segment of memory in a loop. The most basic
+           forms are "absolute,X" and "absolute,X", where either the X- or the
+           Y-register, respectively, is added to a given base address. As the
+           base address is a 16-bit value, these are generally 3-byte
+           instructions. Since there is an additional operation to perform to
+           determine the effective address, these instructions are one cycle
+           slower than those using absolute addressing mode.*
+            Mnemonic      Instruction            Data
+            LDA $3120,X    BD 20 31
+                                     + = $3132: 78
+                              X: 12
+                                              A: 78
+           Mnemonic Examples:
+           LDA $3120,X ... load the contents of address "$3120 + X" into A
+           LDX $8240,Y ... load the contents of address "$8240 + Y" into X
+           INC $1400,X ... increment the contents of address "$1400 + X"
+           *) If the addition of the contents of the index register effects in
+           a change of the high-byte given by the base address so that the
+           effective address is on the next memory page, the additional
+           operation to increment the high-byte takes another CPU cycle. This
+           is also known as a crossing of page boundaries.
+           Indexed Addressing: Zero-Page,X (and Zero-Page,Y)
+           As with absolute addressing, there is also a zero-page mode for
+           indexed addressing. However, this is generally only available with
+           the X-register. (The only exception to this is LDX, which has an
+           indexed zero-page mode utilizing the Y-register.)
+           As we have already seen with normal zero-page mode, these
+           instructions are one byte less in total length (two bytes) and take
+           one CPU cycle less than instructions in absolute indexed mode.
+           Unlike absolute indexed instructions with 16-bit base addresses,
+           zero-page indexed instructions never affect the high-byte of the
+           effective address, which will simply wrap around in the zero-page,
+           and there is no penalty for crossing any page boundaries.
+            Mnemonic    Instruction          Data
+            LDA $80,X      B6 80
+                                  + = $0082: 64
+                          X: 02
+                                          A: 64
+                                                                 6502 Instruction Set
+           Mnemonic Examples:
+           LDA $80,X ... load the contents of address "$0080 + X" into A
+           LSR $82,X ... shift the contents of address "$0082 + X" left
+           LDX $60,Y ... load the contents of address "$0060 + Y" into X
+           Indirect Addressing
+           This mode looks up a given address and uses the contents of this
+           address and the next one (in LLHH little-endian order) as the
+           effective address. In its basic form, this mode is available for the
+           JMP instruction only. (Its generally use is jump vectors and jump
+           tables.)
+
+---
+Additional information can be found by searching:
+- "indirect_and_indexed_indirect_examples" which expands on examples of JMP ($FF82), LDA ($70,X), LDA ($70),Y
+- "w65c02_extensions_address_modes" which expands on W65C02 extra modes and behavior differences

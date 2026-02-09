@@ -1,0 +1,30 @@
+# NMOS 6510 - Overview of 'Magic Constant' group: two opcodes whose behavior depends on a chip- and temperature-dependent 'magic constant', and on RDY line. These opcodes are considered truly unstable: the constant may vary over chips/temperature and bits 0/4 are 'weaker'. Advises to avoid relying on reading the constant and to remove its effect by choosing immediates or accumulator values that mask it out.
+
+
+AND $02
+
+; instruction
+
+Note: Memory location $02 would not be altered by the ANE opcode.
+Test code:
+• general: CPU/asap/cpu_ane.prg, Lorenz-2.15/aneb.prg
+• temperature dependency: general/ane-lax/ane-lax.prg
+• dependency on RDY line: CPU/ane/ane.prg, CPU/ane/anenone.prg, CPU/ane/ane-border.prg
+Simulation Links:
+• read magic constant:
+http://visual6502.org/JSSim/expert.html?graphics=f&a=0&steps=13&d=a200a9ff8bffea
+for some very detailed info on how this opcode works look here:
+http://visual6502.org/wiki/index.php?title=6502_Opcode_8B_(XAA,_ANE)
+
+- 61 -
+
+Real world code
+
+Interestingly, the unstable ANE #imm opcode can actually be found in code “in the wild”:
+•
+
+The Ocean/Imagine tape loader (Rambo II, Comic Bakery, Yie Ar Kung Fu) uses it, albeit in
+
+---
+Additional information can be found by searching:
+- "ane_and_lax_magic_constant" which expands on ANE and LAX are the two opcodes in this unstable category

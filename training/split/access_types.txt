@@ -1,0 +1,65 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Types of VIC memory accesses: c-access (video matrix, 12 bits), g-access (character generator or bitmap, 8 bits), p-access (sprite data pointers, 8 bits), s-access (sprite data, 8 bits). Additional accesses: DRAM refresh (5 reads per raster line) and idle accesses (reads to $3FFF when nothing else pending). Explains video matrix (1000 addresses, includes Color RAM upper nybble), character generator/bitmap area (2KB/8KB steps), sprite pointer area (8 bytes after video matrix), and sprite data area (63 bytes per sprite in 64-byte granularity).
+
+3.6.2. Access types
+-------------------
+
+The VIC generates two kinds of graphics that require access to memory: The
+text/bitmap graphics (also often called "background graphics" or simply
+"graphics") and the sprite graphics. Both require accesses to two separated
+memory areas:
+
+For the text/bitmap graphics:
+
+ � The video matrix; an area of 1000 video addresses (40�25, 12 bits each)
+   that can be moved in 1KB steps within the 16KB address space of the VIC
+   with the bits VM10-VM13 of register $d018. It stores the character codes
+   and their color for the text modes and some of the color information of
+   8�8 pixel blocks for the bitmap modes. The Color RAM is part of the
+   video matrix, it delivers the upper 4 bits of the 12 bit matrix. The
+   data read from the video matrix is stored in an internal buffer in the
+   VIC, the 40�12 bit video matrix/color line.
+
+ � The character generator resp. the bitmap; an area of 2048 bytes (bitmap:
+   8192 bytes) that can be moved in 2KB steps (bitmap: 8KB steps) within
+   the VIC address space with the bits CB11-CB13 (bitmap: only CB13) of
+   register $d018. It stores the pixel data of the characters for the text
+   modes and the bitmap for the bitmap modes. The character generator has
+   basically nothing to do with the Char ROM. The Char ROM only contains
+   prepared bit patterns that can be used as character generator, but you
+   can also store the character generator in normal RAM to define your own
+   character images.
+
+For the sprites:
+
+ � The sprite data pointers; 8 bytes after the end of the video matrix,
+   that select one out of 256 blocks of 64 bytes within the VIC address
+   space for each sprite.
+
+ � The sprite data; an area of 63 bytes containing the pixel data of the
+   sprites which can be moved in steps of 64 bytes with the sprite data
+   pointers independently for each sprite.
+
+Corresponding to that, the VIC does 4 different kinds of graphics accesses:
+
+1. To the video matrix ("c-access", 12 bits wide).
+2. To the pixel data, i.e. character generator or bitmap ("g-access", 8
+   bits wide).
+3. To the sprite data pointers ("p-access", 8 bits wide).
+4. To the sprite data ("s-access", 8 bits wide).
+
+Moreover, the VIC does two additional types of accesses:
+
+5. Accesses for refreshing the dynamic RAM, 5 read accesses per raster
+   line.
+
+6. Idle accesses. As described, the VIC accesses in every first clock phase
+   although there are some cycles in which no other of the above mentioned
+   accesses is pending. In this case, the VIC does an idle access; a read
+   access to video address $3fff (i.e. to $3fff, $7fff, $bfff or $ffff
+   depending on the VIC bank) of which the result is discarded.
+
+
+---
+Additional information can be found by searching:
+- "sprite_memory_access_and_display" which expands on p- and s-access timing for sprites
+- "vc_and_rc" which expands on VC/VCBASE/RC involvement in c/g-access sequences

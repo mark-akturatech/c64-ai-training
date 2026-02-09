@@ -1,0 +1,15 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Wait-for-PLAY/RECORD routine used before writes: calls the cassette-sense helper (JSR $F82E); if switch open it displays 'PRESS RECORD & PLAY ON TAPE' and waits (branching back to the play prompt/display routine). Always uses the cassette sense helper and display message flow.
+
+                                *** wait for PLAY/RECORD
+.,F838 20 2E F8 JSR $F82E       return the cassette sense in Zb
+.,F83B F0 F9    BEQ $F836       exit if switch closed
+                                cassette switch was open
+.,F83D A0 2E    LDY #$2E        
+                                index to "PRESS RECORD & PLAY ON TAPE"
+.,F83F D0 DD    BNE $F81E       display message and wait for switch, branch always
+
+
+---
+Additional information can be found by searching:
+- "cassette_sense_return" which expands on called to read the cassette switch status
+- "initiate_tape_write" which expands on invoked by the write initiation path before starting a write

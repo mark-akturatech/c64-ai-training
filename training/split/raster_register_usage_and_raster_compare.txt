@@ -1,0 +1,31 @@
+# COMMODORE 64 - Describes raster register at 53266 ($D012): reading returns the lower 8 bits of current raster line; the MSB of raster is in 53265 ($D011). Writing raster register stores a compare value for raster-compare interrupts: when current raster equals stored value an interrupt bit is set in interrupt status register 53273 ($D019). Use raster compare to time screen changes (split-screen effects).
+
+  RASTER REGISTER
+
+    The raster register is found in the VIC-II chip at location 53266
+  ($D012). The raster register is a dual purpose register. When you read
+  this register it returns the lower 8 bits of the current raster position.
+  The raster position of the most significant bit is in register location
+  53265 ($D011). You use the raster register to set up timing changes in
+  your display so that you can get rid of screen flicker. The changes on
+  your screen should be mode when the raster is not in the visible display
+  area, which is when your dot positions fall between 51 and 251.
+    When the raster register is written to (including the MSB) the number
+  written to is saved for use with the raster compare function. When the
+  actual raster value becomes the same as the number written to the raster
+  register, a bit in the VIC-II chip interrupt register 53273 ($D019) is
+  turned ON by setting it to 1.
+
+  +-----------------------------------------------------------------------+
+  | NOTE: If the proper interrupt bit is enabled (turned on), an interrupt|
+  | (IRQ) will occur.                                                     |
+  +-----------------------------------------------------------------------+
+
+  150   PROGRAMMING GRAPHICS
+~
+
+
+
+---
+Additional information can be found by searching:
+- "interrupt_status_and_enable_registers_and_usage" which expands on raster-compare sets a bit in the interrupt status register

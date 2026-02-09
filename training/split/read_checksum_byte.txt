@@ -1,0 +1,24 @@
+# Analyzing C64 tape loaders - Reads checksum byte and stores it into $06, sets loop_break variable ($02) to indicate completion, updates stored vector for next header ($03A1), and resets branch at $036D to seek the first pilot byte for next file. Prepares post-load actions (execute or return to BASIC).
+
+; ********************************************
+; * Read Checksum byte                       *
+; ********************************************
+03D5  85 06          STA $06        ; Load checksum byte
+
+03D7  A9 FF          LDA #$FF       ; Sets the loop_break variable
+03D9  85 02          STA $02
+
+03DB  A9 07          LDA #$07       ; Restore the vector to where store next header
+03DD  8D A1 03       STA $03A1
+
+03E0  A9 02          LDA #$02       ; Restore the Branch at $036C to seek the FIRST
+03E2  8D 6D 03       STA $036D      ; Pilot Byte.
+03E5  D0 92          BNE $0379      ; (6)
+; ********************************************
+; * Read Checksum byte.END                   *
+; ********************************************
+
+
+---
+Additional information can be found by searching:
+- "checksum_subroutine_disassembly" which expands on Checksum verification and reset on error

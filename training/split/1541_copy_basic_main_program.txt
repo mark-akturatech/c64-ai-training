@@ -1,0 +1,126 @@
+# byRiclianll - Full BASIC '1541 COPY' program main flow (lines 100–690 and surrounding code): initialization POKEs to set up communication parameters, driver/queue initialization, prompts to insert master disk, filename and file-type input and validation, logic to open the source file on the master, directory header reading (EN/EM/ET/ES), block and free-space computation, choosing read/write mode, job-queue setup, issuing SYS (machine-language) calls to perform memory-read and memory-write transfers between the 1541 and the C64, channel closes and final END. Includes messages for user prompts and disk full handling.
+
+1541  COPY 
+
+100  REM   1541  COPY 
+
+110  P0KE56, 16 
+
+120  CLR 
+
+130  P0KE251,0 
+
+140  P0KE252, 16 
+
+150  P0KE253,0 
+
+160  P0KE254, 16 
+
+170  F0RI=1T072 
+
+180  RE ADD 
+
+190  P0KE49151+I,D 
+
+200  NEXTI 
+
+210  PRINT" <CLR> 1541  COPY" 
+
+220  PRINT"  <:D0WN>  INSERT  MASTER   IN  DRIVE" 
+230  G0SUB750 
+240  G0SUB810 
+
+250  INPUT"  <:down>filename";f* 
+
+260   I FLEN ( F* )<  >0ANDLEN ( F* )< 1 7GOT02SO 
+270  GOTOIOOO 
+
+280   INPUT" CDOWNJ FILE  TYPE    (DSPU)  PtLEFT 
+
+3>";t* 
+
+290  ift$="d"0rt*="s"ort*="p"ort*="u"g0to 
+
+310 
+
+300  GOTOIOOO 
+310  RW*="R" 
+320  G0SUBS90 
+330  SYS49152 
+340  CL0SE2 
+
+350   I NPUT# 1 5 . EN* , EM* , ET* , ES$ 
+360  IFEN$="00"60T0380 
+370  G0T0850 
+380  CLOSE 15 
+
+390  PRINT" tD0WN> INSERT  CLONE   IN  DRIVE" 
+400  60SUB750 
+410  G0SUB810 
+
+420  PRINT#15, "M-R"CHR* ( 1 ) CHR* ( 1 ) 
+
+430  GET#15,D* 
+
+440  D= ASC ( D*+CHR* ( O ) ) 
+
+450  IFD=65G0T0490 
+
+460  PRINT"  <:D0WN>73,CBM  DOS  V2.  6  1541,  OO, 
+00" 
+
+470  60T0710 
+
+480  PRINT#15,  "M-R"CHR* (250) CHR* (2) CHR*  <3 
+) 
+
+490  6ET#15,L* 
+
+500  L=ASC ( L*+CHR* ( O ) ) 
+
+510  GET4il5,B* 
+
+520  GET#15,H* 
+
+530  H=ASC(H*+CHR$(0) ) 
+
+
+169 
+
+
+540  C=L+(H*256) 
+
+550  S=PEEK ( 252 ) + ( ( PEEK ( 253 ) - 1 6 ) *256 ) 
+560  B=INT( (S/254)+.5) 
+570  IFC-B>=0G0T0600 
+
+580  PRINT" iDOWNi 72, DISK  FULL, 00,00 " 
+
+590  G0T0710 
+
+600  RW*="W" 
+
+610  G0SUB890 
+
+620  SYS49ia2 
+
+630  CL0SE2 
+
+640  INPUT#15,EN*,EM*,ET*,ES* 
+
+650  PRINT"  <:DGWN>bGNE!  " 
+
+660  CLGSE15 
+
+670  PGKE56, 160 
+
+680  CLR 
+
+690  END 
+
+
+---
+Additional information can be found by searching:
+- "support_routines_delay_and_return" which expands on Small supporting subroutines (close, delay/press-return) called by the main program
+- "initialization_and_error_handling_and_mldata" which expands on Initialization, file-not-found handling, and embedded machine-code DATA bytes used by the SYS routines
+- "1541_backup_source_annotation" which expands on Explains the high-level backup flow that this BASIC program implements

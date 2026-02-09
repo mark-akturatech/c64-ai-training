@@ -1,0 +1,55 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - Discussion of signed division: preserve dividend = divisor*quotient + remainder. Two common conventions: floored division (quotient <= mathematical quotient, remainder >=0) and toward-zero division (quotient truncated toward zero, remainder has sign of dividend). Implementation uses wrapper around unsigned division: compute sign of quotient (EOR high bytes), make both numbers positive, call unsigned division, then adjust results depending on convention: floored — if quotient should be negative negate it and leave remainder; toward-zero — if quotient negative negate quotient then add 1, and if original dividend negative then negate remainder. Notes wrapper is analogous to signed multiplication example.
+
+Doing signed division is a bit trickier.  The trick is to preserve the
+following relation:
+
+
+dividend = divisor * quotient + remainder
+
+
+In the unsigned case there's only one way to arrange this:  The quotient
+is always less than or equal to the true mathematical quotient (which may
+have a fractional part), and the remainder is always positive.
+
+
+In the signed case, the ability to have signed remainders makes the issue
+murkier.  There are two conventions in common use:
+
+
+  * Floored division:  If the true mathematical quotient has a
+    fractional part, the same choices are made as in the unsigned case:
+    the quotient is always less than (more negative) or equal to the
+    mathematical quotient, and the remainder is always positive.
+
+  * Toward-zero division:  If the true mathematical quotient
+    has a fractional part, the fractional part is truncated (i.e. the
+    quotient is rounded toward zero), and the remainder has the sign of the
+    dividend.
+
+
+Signed division is implemented with a wrapper around an unsigned
+routine, as with signed multiplication, but the wrapper varies depending
+on which convention you choose.  In either case, first compute the sign
+of the quotient the same way you would compute the sign of the result of
+a multiplication, and then make both numbers positive, and call the
+unsigned division routine.  What happens next depends on which
+convention you choose.
+
+
+  * Floored division:  If the quotient should be negative,
+    negate it.  Leave the remainder unchanged.
+
+  * Toward-zero division:  If the quotient should be negative,
+    negate it, and then add one to it.  If the quotient should be negative
+    and the original dividend was negative, negate the
+    remainder.
+
+
+The code is analogous to the signed multiplication example above.
+
+
+
+---
+Additional information can be found by searching:
+- "two_byte_division_routine" which expands on unsigned routine used as core
+- "negation_methods" which expands on used to adjust sign of quotient/remainder

@@ -1,0 +1,24 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - LOAD: LOAD RAM entry (vectored from $ffd5). Stores relocated load address (MEMUSS) in $C3/$C4 via STX/STY and jumps to the ILOAD vector ($0330). Sets VERCK ($93) flag for load/verify and clears STATUS ($90). Checks FA ($BA) for illegal devices (keyboard or screen => I/O error #9).
+
+                                *** LOAD: LOAD RAM
+                                The kernal routine LOAD ($ffd5) is vectored here. If a
+                                relocated load is desired, then the start address is set
+                                in MEMUSS. The load/verify flag is set, and the I/O status
+                                word is reset. A test is done on the device number, less
+                                than 3 results in illegal device number.
+.,F49E 86 C3    STX $C3         MEMUSS, relocated load address
+.,F4A0 84 C4    STY $C4
+.,F4A2 6C 30 03 JMP ($0330)     ILOAD vector. Points to $f4a5
+.,F4A5 85 93    STA $93         VRECK, load/verify flag
+.,F4A7 A9 00    LDA #$00
+.,F4A9 85 90    STA $90         clear STATUS, I/O status
+.,F4AB A5 BA    LDA $BA         get FA, current device
+.,F4AD D0 03    BNE $F4B2       keyboard
+.,F4AF 4C 13 F7 JMP $F713       I/O error #9, illegal device
+.,F4B2 C9 03    CMP #$03        screen?
+.,F4B4 F0 F9    BEQ $F4AF       yes, illegal device
+
+
+---
+Additional information can be found by searching:
+- "load_from_serial_bus" which expands on actual serial-bus load implementation follows the vector

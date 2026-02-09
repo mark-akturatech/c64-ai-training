@@ -1,0 +1,28 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - TAN routine for BASIC: computes tangent by using the SIN implementation and other support routines. It performs setup (clearing flags, loading constants), calls the SIN routine at $E26B, uses additional helper routines ($E0F6, $BBA2, $BB0F) and branching logic, and ends with transfer/jump sequences. Includes a local push/branch sequence that returns control depending on intermediate flags.
+
+                                *** TAN: PERFORM TAN
+.,E2B4 20 CA BB JSR $BBCA
+.,E2B7 A9 00    LDA #$00
+.,E2B9 85 12    STA $12
+.,E2BB 20 6B E2 JSR $E26B
+.,E2BE A2 4E    LDX #$4E
+.,E2C0 A0 00    LDY #$00
+.,E2C2 20 F6 E0 JSR $E0F6
+.,E2C5 A9 57    LDA #$57
+.,E2C7 A0 00    LDY #$00
+.,E2C9 20 A2 BB JSR $BBA2
+.,E2CC A9 00    LDA #$00
+.,E2CE 85 66    STA $66
+.,E2D0 A5 12    LDA $12
+.,E2D2 20 DC E2 JSR $E2DC
+.,E2D5 A9 4E    LDA #$4E
+.,E2D7 A0 00    LDY #$00
+.,E2D9 4C 0F BB JMP $BB0F
+.,E2DC 48       PHA
+.,E2DD 4C 9D E2 JMP $E29D
+
+
+---
+Additional information can be found by searching:
+- "sin_routine_sequence" which expands on invokes SIN routine to obtain sine components used in tangent calculation
+- "pi2_trig_constants_table" which expands on sin/tan series constants used indirectly during evaluation

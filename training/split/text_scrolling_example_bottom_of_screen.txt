@@ -1,0 +1,28 @@
+# COMMODORE 64 - BASIC example (page130.prg) demonstrating scrolling text onto the bottom of the screen: go to 24-row mode, clear screen, position cursor to bottom, set Y scroll to 7 (POKE 53265,(PEEK(53265)AND248)+7), print text and loop decrementing scroll position with delays to animate scrolling.
+
+    To scroll text onto the screen from the bottom, you would step the low-
+  order 3 bits of location 53265 from 0-7, put more data on the covered
+  line at the bottom of the screen, and then repeat the process. To scroll
+  characters onto the screen from left to right, you would step the low-
+  order 3 bits of location 53270 from 0 to 7, print or POKE another column
+  of new data into column 0 of the screen, then repeat the process.
+    If you step the scroll bits by -1, your text will move in the opposite
+  direction.
+
+  EXAMPLE: Text scrolling onto the bottom of the screen:
+
+start tok64 page130.prg
+  10 poke53265,peek(53265)and247        :rem go into 24 row mode
+  20 printchr$(147)                     :rem clear the screen
+  30 forx=1to24:printchr$(17);:next     :rem move the cursor to the bottom
+  40 poke53265,(peek(53265)and248)+7:print :rem position for 1st scroll
+  50 print"     hello";
+  60 forp=6to0step-1
+  70 poke53265,(peek(53265)and248)+p
+  80 forx=1to50:next                    :rem delay loop
+  90 next:goto40
+stop tok64
+
+---
+Additional information can be found by searching:
+- "scrolling_registers_and_poking_values" which expands on manipulating scroll bits to animate text

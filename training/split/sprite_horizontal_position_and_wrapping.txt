@@ -1,0 +1,23 @@
+# COMMODORE 64 - Explains LINE 60: how POKEV,LX sets the horizontal (X) position of sprite 0 (LX 0–255), how LX wraps from 255 back to 0 due to the LX equation, and how POKEV+16,RX sets the 'right side' carry bit for positions beyond 256 (RX = 0 or 1). Covers usage of V and V+16 sprite position registers for horizontal placement and wrap behavior.
+
+  LINE 60:
+
+    POKEV,LX            You POKE V by itself with a value to set the Hori-
+                        zontal (X) Position of sprite 0 on the screen. (See
+                        SPRITEMAKING CHART on Page 176). As shown above,
+                        the value of LX, which is the horizontal position
+                        of the sprite, changes from 0 to 255 and when it
+                        reaches 255 it automatically resets back to zero
+                        because of the LX equation set up in line 55.
+
+    POKEV+16,RX         POKEV+16 always turns on the "right side" of the
+                        screen beyond position 256, and resets the
+                        horizontal positioning coordinates to zero. RX is
+                        either a 0 or a 1 based on the position of the
+                        sprite as determined by the RX formula in line 55.
+
+
+---
+Additional information can be found by searching:
+- "poke_sprite_pointer_poke2040_and_delay_loop" which expands on where P (the pointer) is later applied to the sprite pointer (POKE2040,P)
+- "increment_pointer_and_wrap_three_sprite_shapes" which expands on how pointer-wrapping logic (P reset) interacts with horizontal positioning and RX/LX sequencing

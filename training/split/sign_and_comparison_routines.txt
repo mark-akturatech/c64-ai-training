@@ -1,0 +1,34 @@
+# ********* - SIGN (put sign of FAC1 into .A: 0 for zero, 1 for positive, 255 for negative), SGN (convert sign into a floating point number in FAC1), ABS (make FAC1 positive), and FCOMP (compare FAC1 to a five-byte floating point number in memory, returning 0/1/255 in .A). Covers sign extraction, sign-to-FP conversion, absolute value, and comparison semantics.
+
+48171         $BC2B          SIGN
+Put the Sign of Accumulator #1 into .A Register
+
+On exit from this routine the Accumulator will hold a 0 if FAC1 is 0,
+a 1 if it is positive, and a value of 255 ($FF) if it is negative.
+
+48185         $BC39          SGN
+Perform SGN
+
+The SGN routine calls the above routine to put the sign of FAC1 into
+.A, and then converts that value into a floating point number in FAC1.
+
+48216         $BC58          ABS
+Perform ABS
+
+The FAC1 sign byte at 102 ($66) is shifted right by this command, so
+that the top bit is a 0 (positive).
+
+48219         $BC5B          FCOMP
+Compare FAC1 to Memory
+
+On entry to this routine, .A and .Y point to a five-byte floating
+point number to be compared to FAC1.  After the comparison, .A holds 0
+if the two are equal, a 1 if the value of FAC1 is greater than that in
+the memory location, and 255 ($FF) if the value of FAC1 is less than
+that in the memory location.
+
+
+---
+Additional information can be found by searching:
+- "normalization_negation_overflow" which expands on Sign and negation helpers complement normalization/overflow handling.
+- "qint_and_int_integer_conversion" which expands on Comparisons and sign operations used before integer conversion routines.

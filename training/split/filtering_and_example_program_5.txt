@@ -1,0 +1,55 @@
+# COMMODORE 64 - FILTERING overview and EXAMPLE PROGRAM 5: demonstrates setting filter cutoff and enabling filter for voice 1. Shows POKES+22 (Hcf) and POKES+21 (Lcf) for cutoff frequency and POKES+23 to turn filter ON. Demonstrates high-pass filter effect (attenuates frequencies below cutoff), and provides example code that alters register 24 for volume+filter settings. Contains high-level diagrams of filter frequency response types (high-pass, low-pass, band-pass, notch).
+
+  FILTERING
+
+    The harmonic content of a waveform can be changed by using a filter.
+  The SID chip is equipped with three types of filtering. They can be used
+  separately or in combination with one another. Let's go back to the
+  sample program you've been using to play with a simple example that uses
+  a filter. There are several filter controls to set.
+    You add line 15 in the program to set the cutoff frequency of the
+  filter. The cutoff frequency is the reference point for the filter. You
+  SET the high and low frequency cutoff points in registers 21 and 22. To
+  turn ON the filter for voice 1, POKE register 23.
+    Next change line 30 to show that a high-pass filter will be used (see
+  the SID register map).
+
+
+
+
+
+
+                                          PROGRAMMING SOUND AND MUSIC   199
+~
+
+
+EXAMPLE PROGRAM 5 (EXAMPLE 1 MODIFIED):
+
+start tok64 page200.prg
+  5 s=54272
+  10 forl=stos+24:pokel,0:next
+  15 pokes+22,128:pokes+21,0:pokes+23,1
+  20 pokes+5,9:pokes+6,0
+  30 pokes+24,79
+  40 readhf,lf,dr
+  50 ifhf<0thenend
+  60 pokes+1,hf:pokes,lf
+  70 pokes+4,33
+  80 fort=1todr:next
+  90 pokes+4,32:fort=1to50:next
+  100 goto40
+  110 data25,177,250,28,214,250
+  120 data25,177,250,25,177,250
+  130 data25,177,125,28,214,125
+  140 data32,94,750,25,177,250
+  150 data28,214,250,19,63,250
+  160 data19,63,250,19,63,250
+  170 data21,154,63,24,63,63
+  180 data25,177,250,24,63,125
+  190 data19,63,250,-1,-1,-1
+stop tok64
+
+---
+Additional information can be found by searching:
+- "filter_types_and_registers" which expands on which bits in register 24 control filter types and how Lcf/Hcf encode cutoff
+- "advanced_techniques_and_example_6" which expands on using oscillator outputs for modulation with filters

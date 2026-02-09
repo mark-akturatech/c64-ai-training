@@ -1,0 +1,24 @@
+# ca65 Users Guide - .MACPACK longbranch: defines long conditional jumps (named like short branches but with 'j' prefix, e.g. jeq). Example shows a macro that expands to a short branch if the target is within reach; otherwise it emits the inverted short branch to skip an absolute JMP to the target. Defines jeq, jne, jmi, jpl, jcs, jcc, jvs, jvc.
+
+13.2 .MACPACK longbranch
+This macro package defines long conditional jumps. They are named like the short counterpart but with the 'b' replaced by a 'j'. Here is a sample definition for the "jeq" macro, the other macros are built using the same scheme:
+
+
+        .macro  jeq     Target
+                .if     .def(Target) .and ((*+2)-(Target) <= 127)
+                beq     Target
+                .else
+                bne     *+5
+                jmp     Target
+                .endif
+        .endmacro
+All macros expand to a short branch, if the label is already defined (back jump) and is reachable with a short jump. Otherwise the macro expands to a conditional branch with the branch condition inverted, followed by an absolute jump to the actual branch target.
+
+The package defines the following macros:
+
+
+        jeq, jne, jmi, jpl, jcs, jcc, jvs, jvc
+
+---
+Additional information can be found by searching:
+- "macpack_generic_macros" which expands on related convenience branch macros

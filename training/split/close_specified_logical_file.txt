@@ -1,0 +1,65 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Close a specified logical file. Finds the file (JSR $F314), returns OK if already closed, or sets file details (JSR $F31F) and branches by device type. For RS232: closes the RS232 device (JSR $F2F2), initializes RS232 output (JSR $F483), reads top-of-memory (JSR $FE27), and reclaims RS232 input/output buffer memory by adjusting the memory pointer bytes ($F8/$FA). For tape devices: obtains tape buffer pointer, writes a terminating character and initiates tape write, handles errors, and writes tape header when needed. For serial-bus devices: calls the serial-bus close routine. Restores file index before returning.
+
+                                *** close a specified logical file
+.,F291 20 14 F3 JSR $F314       find file A
+.,F294 F0 02    BEQ $F298       if file found go close it
+.,F296 18       CLC             else the file was closed so just flag ok
+.,F297 60       RTS             
+                                file found so close it
+.,F298 20 1F F3 JSR $F31F       set file details from table,X
+.,F29B 8A       TXA             copy file index to A
+.,F29C 48       PHA             save file index
+.,F29D A5 BA    LDA $BA         get the device number
+.,F29F F0 50    BEQ $F2F1       if it is the keyboard go restore the index and close the
+                                file
+.,F2A1 C9 03    CMP #$03        compare the device number with the screen
+.,F2A3 F0 4C    BEQ $F2F1       if it is the screen go restore the index and close the
+                                file
+.,F2A5 B0 47    BCS $F2EE       if > screen go do serial bus device close
+.,F2A7 C9 02    CMP #$02        compare the device with the RS232 device
+.,F2A9 D0 1D    BNE $F2C8       if not the RS232 device go ??
+                                else close RS232 device
+.,F2AB 68       PLA             restore file index
+.,F2AC 20 F2 F2 JSR $F2F2       close file index X
+.,F2AF 20 83 F4 JSR $F483       initialise RS232 output
+.,F2B2 20 27 FE JSR $FE27       read the top of memory
+.,F2B5 A5 F8    LDA $F8         get the RS232 input buffer pointer high byte
+.,F2B7 F0 01    BEQ $F2BA       if no RS232 input buffer go ??
+.,F2B9 C8       INY             else reclaim RS232 input buffer memory
+.,F2BA A5 FA    LDA $FA         get the RS232 output buffer pointer high byte
+.,F2BC F0 01    BEQ $F2BF       if no RS232 output buffer skip the reclaim
+.,F2BE C8       INY             else reclaim the RS232 output buffer memory
+.,F2BF A9 00    LDA #$00        clear A
+.,F2C1 85 F8    STA $F8         clear the RS232 input buffer pointer high byte
+.,F2C3 85 FA    STA $FA         clear the RS232 output buffer pointer high byte
+.,F2C5 4C 7D F4 JMP $F47D       go set the top of memory to F0xx
+                                is not the RS232 device
+.,F2C8 A5 B9    LDA $B9         get the secondary address
+.,F2CA 29 0F    AND #$0F        mask the device #
+.,F2CC F0 23    BEQ $F2F1       if ?? restore index and close file
+.,F2CE 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F2D1 A9 00    LDA #$00        character $00
+.,F2D3 38       SEC             flag the tape device
+.,F2D4 20 DD F1 JSR $F1DD       output the character to the cassette or RS232 device
+.,F2D7 20 64 F8 JSR $F864       initiate tape write
+.,F2DA 90 04    BCC $F2E0       
+.,F2DC 68       PLA             
+.,F2DD A9 00    LDA #$00        
+.,F2DF 60       RTS             
+.,F2E0 A5 B9    LDA $B9         get the secondary address
+.,F2E2 C9 62    CMP #$62        
+.,F2E4 D0 0B    BNE $F2F1       if not ?? restore index and close file
+.,F2E6 A9 05    LDA #$05        set logical end of the tape
+.,F2E8 20 6A F7 JSR $F76A       write tape header
+.,F2EB 4C F1 F2 JMP $F2F1       restore index and close file
+
+                                *** serial bus device close
+.,F2EE 20 42 F6 JSR $F642       close serial bus device
+.,F2F1 68       PLA             restore file index
+
+
+---
+Additional information can be found by searching:
+- "close_file_index_and_table_compaction" which expands on updates open-file tables and compacts entries after close
+- "open_channel_for_input" which expands on open/close symmetry for devices (keyboard/screen/serial/tape)
+- "open_channel_for_output_and_serial_bus_handling" which expands on serial-bus device closing complements LISTEN/TALK setup

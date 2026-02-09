@@ -1,0 +1,73 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Tape-specific LOAD path: validate device, obtain tape buffer pointer, wait for PLAY, search for matching tape header (specific or any), handle serial status read-error flagging, extract load address from header into A/E/F pointers, set I/O start addresses and call tape read routine. Covers $F533..$F5AE including header find and address calculations.
+
+
+                                *** ??
+.,F533 4A       LSR             
+.,F534 B0 03    BCS $F539       
+.,F536 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F539 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F53C B0 03    BCS $F541       if ??
+.,F53E 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F541 20 17 F8 JSR $F817       wait for PLAY
+.,F544 B0 68    BCS $F5AE       exit if STOP was pressed
+.,F546 20 AF F5 JSR $F5AF       print "Searching..."
+.,F549 A5 B7    LDA $B7         get file name length
+.,F54B F0 09    BEQ $F556       
+.,F54D 20 EA F7 JSR $F7EA       find specific tape header
+.,F550 90 0B    BCC $F55D       if no error continue
+.,F552 F0 5A    BEQ $F5AE       exit if ??
+.,F554 B0 DA    BCS $F530       , branch always
+.,F556 20 2C F7 JSR $F72C       find tape header, exit with header in buffer
+.,F559 F0 53    BEQ $F5AE       exit if ??
+.,F55B B0 D3    BCS $F530       
+.,F55D A5 90    LDA $90         get the serial status byte
+.,F55F 29 10    AND #$10        mask 000x 0000, read error
+.,F561 38       SEC             flag fail
+.,F562 D0 4A    BNE $F5AE       if read error just exit
+.,F564 E0 01    CPX #$01        
+.,F566 F0 11    BEQ $F579       
+.,F568 E0 03    CPX #$03        
+.,F56A D0 DD    BNE $F549       
+.,F56C A0 01    LDY #$01        
+.,F56E B1 B2    LDA ($B2),Y     
+.,F570 85 C3    STA $C3         
+.,F572 C8       INY             
+.,F573 B1 B2    LDA ($B2),Y     
+.,F575 85 C4    STA $C4         
+.,F577 B0 04    BCS $F57D       
+.,F579 A5 B9    LDA $B9         get the secondary address
+.,F57B D0 EF    BNE $F56C       
+.,F57D A0 03    LDY #$03        
+.,F57F B1 B2    LDA ($B2),Y     
+.,F581 A0 01    LDY #$01        
+.,F583 F1 B2    SBC ($B2),Y     
+.,F585 AA       TAX             
+.,F586 A0 04    LDY #$04        
+.,F588 B1 B2    LDA ($B2),Y     
+.,F58A A0 02    LDY #$02        
+.,F58C F1 B2    SBC ($B2),Y     
+.,F58E A8       TAY             
+.,F58F 18       CLC             
+.,F590 8A       TXA             
+.,F591 65 C3    ADC $C3         
+.,F593 85 AE    STA $AE         
+.,F595 98       TYA             
+.,F596 65 C4    ADC $C4         
+.,F598 85 AF    STA $AF         
+.,F59A A5 C3    LDA $C3         
+.,F59C 85 C1    STA $C1         set I/O start addresses low byte
+.,F59E A5 C4    LDA $C4         
+.,F5A0 85 C2    STA $C2         set I/O start addresses high byte
+.,F5A2 20 D2 F5 JSR $F5D2       display "LOADING" or "VERIFYING"
+.,F5A5 20 4A F8 JSR $F84A       do the tape read
+.:F5A8 24       .BYTE $24       makes next line BIT $18, keep the error flag in Cb
+.,F5A9 18       CLC             flag ok
+.,F5AA A6 AE    LDX $AE         get the LOAD end pointer low byte
+.,F5AC A4 AF    LDY $AF         get the LOAD end pointer high byte
+.,F5AE 60       RTS             
+
+---
+Additional information can be found by searching:
+- "serial_bus_load_and_receive" which expands on alternate serial-bus load path and shared post-read handling
+- "print_searching_and_file_name" which expands on uses 'Searching...' message during tape searches
+- "display_loading_or_verifying" which expands on updates status message before calling tape read

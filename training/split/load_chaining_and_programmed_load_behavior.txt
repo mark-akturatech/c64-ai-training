@@ -1,0 +1,61 @@
+# MACHINE - Programmed LOAD from within BASIC preserves pointers (no SOV change) but resets program execution to first statement (chaining behavior). Use variable flags to avoid infinite re-load loops (e.g., IF A=1 GOTO...). Advice: understand chained LOAD behavior when building bootstraps.
+
+
+More on LOAD
+------------
+
+There is a machine language .S command to do a program load without changing
+any pointer (especially SOV).  There are a number of different machine
+language monitors around, and the .L command does not work the same way on
+all of them.  You might check out the one you are using:  ideally, the .L
+command (format:  .L"PROGRAM",01) should bring back the program without
+relocation.
+
+The .L command is of limited value.  A program user often cannot be expected
+to load up a machine language monitor and use it to go through a .L sequence.
+The program should take care of things for the user.
+
+We have been careful to say that the BASIC LOAD command changes the SOV when
+given as a direct command.  If a LOAD command is given from within a program,
+SOV is not changed; but there's a new item to be taken care of.
+
+Programmed LOAD has been carefully designed to perform a function called
+"chaining."  That's a BASIC technique, and not within the scope of this book.
+Chaining, however, has two important characteristics:
+
+  1.  No pointers are affected.  The program will not lose any variables when
+      it performs a LOAD.  That's good:  we will not lose any of our
+      computations.
+
+  2.  Once a LOAD is complete, the BASIC program will resume execution at the
+      first statement.  It will not continue from where it left off; it will
+      go back to the beginning.  For our application, that's bad; we seem to
+      have lost our place in BASIC.
+
+If we understand the problem that item 2 creates, we can easily fix it by
+using item 1.  Here's an example to illustrate the problem:  we have a
+program on disk written for the cassette buffer called "ML", and we want to
+have a BASIC program bring it in.  We could code as a first line:  100 LOAD
+"ML",8--but we'd have a problem.  First, the program would load ML.  Then it
+would go back to the beginning and load ML.  Then it would go back to the
+beginning...and so on.  This is not satisfactory.  Let's use rule 1 to fix
+everything:
+
+                                                                        :101:
+  100 IF A=1 GOTO 130
+  110 A=1
+  120 LOAD"ML",8,1
+  130 ... continues
+
+When we say RUN, the first line is executed.  A is not equal to one, so we
+continue on line 110.  A is set to one, and line 120 causes a load of the
+desired program.  BASIC goes back to the beginning, but all variables are
+preserved, so A is still equal to 1.  Line 100 tests A and goes to line 130,
+the next statement beyond the load.  Everything works as required.  If there
+are multiple LOADs, line 100 might be changed to 100 ON A GOTO 130,150,170...
+as necessary.
+
+
+---
+Additional information can be found by searching:
+- "monitor_save_command_format_and_load_relocation" which expands on difference between .L and BASIC LOAD behaviors

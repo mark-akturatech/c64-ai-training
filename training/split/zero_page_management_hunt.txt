@@ -1,0 +1,42 @@
+# MACHINE - Zero-page scarcity on Commodore machines: only a few free locations (e.g., $00FC-$00FF on VIC/64). Strategies to obtain pointers: find unused locations, use 'work areas' in memory maps, temporarily relocate zero-page contents to other RAM (careful with interrupts).
+
+
+                                                                         :84:
+
+The above example is a rather specialized use of the indexed, indirect
+address mode.  You may never need to use this mode.  Indeed, most programmers
+lead full, rich lives without ever writing code that uses indexed, indirect
+addressing.
+
+
+The Great Zero-Page Hunt
+------------------------
+
+Indirect, indexed addresses are very important.  They are your gateway to
+reaching any part of memory from a single instruction.  But you must have two
+bytes available in zero-page for each indirect address you want to use.
+
+The Commodore ROM system helps itself to liberal amounts of zero-page memory.
+You don't have much empty space left over.  How can you find space for these
+indirect pointers?
+
+First, look for unused locations.  There are only a few of them:  on the VIC
+and Commodore 64, you'll find four locations at locations $00FC to $00FF.
+That's enough for two indirect addresses.
+
+If you need more, look through the memory maps for locations designated as
+"work areas" or "utility pointers."  They can usually be put to work for a
+temporary job.
+
+Finally, you can take working parts of zero-page and copy them to some other
+parts of memory.  You can use these locations, carefully putting back the
+original contents before returning to BASIC.  Don't try this with any values
+that are used by the interrupt routines (involved with the screen, keyboard,
+or RS-232); the interrupt can and does strike while your machine language
+program is running.  And if the interrupt program changes these zero-page
+values, your program is going to behave badly.
+
+
+---
+Additional information can be found by searching:
+- "indirect_indexed_addressing" which expands on need two zero-page bytes per indirect pointer

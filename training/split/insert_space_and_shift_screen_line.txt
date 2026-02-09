@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Open a space on the current screen line for inserting a character. Compares cursor column with max line length, calls the open-space routine, computes pointers, shifts characters and colour-ram bytes right along the line (using indirect indexed loads/stores), writes a space at the cursor position, stores the current colour code to colour RAM, increments the insert count, and branches to restore/exit. Also tests the insert count and branches to insert-a-reversed-character routine if needed.
+
+.,E7FE C0 4F    CPY #$4F        compare current column with max line length
+.,E800 F0 24    BEQ $E826       if at line end just exit
+.,E802 20 65 E9 JSR $E965       else open up a space on the screen
+                                now open up space on the line to insert a character
+.,E805 A4 D5    LDY $D5         get current screen line length
+.,E807 20 24 EA JSR $EA24       calculate the pointer to colour RAM
+.,E80A 88       DEY             decrement the index to previous character
+.,E80B B1 D1    LDA ($D1),Y     get the character from the current screen line
+.,E80D C8       INY             increment the index to next character
+.,E80E 91 D1    STA ($D1),Y     save the character to the current screen line
+.,E810 88       DEY             decrement the index to previous character
+.,E811 B1 F3    LDA ($F3),Y     get the current screen line colour RAM byte
+.,E813 C8       INY             increment the index to next character
+.,E814 91 F3    STA ($F3),Y     save the current screen line colour RAM byte
+.,E816 88       DEY             decrement the index to the previous character
+.,E817 C4 D3    CPY $D3         compare the index with the cursor column
+.,E819 D0 EF    BNE $E80A       loop if not there yet
+.,E81B A9 20    LDA #$20        set [SPACE]
+.,E81D 91 D1    STA ($D1),Y     clear character at cursor position on current screen line
+.,E81F AD 86 02 LDA $0286       get current colour code
+.,E822 91 F3    STA ($F3),Y     save to cursor position on current screen line colour RAM
+.,E824 E6 D8    INC $D8         increment insert count
+.,E826 4C A8 E6 JMP $E6A8       restore the registers, set the quote flag and exit
+.,E829 A6 D8    LDX $D8         get the insert count
+.,E82B F0 05    BEQ $E832       branch if no insert space
+.,E82D 09 40    ORA #$40        change to uppercase/graphic
+.,E82F 4C 97 E6 JMP $E697       insert reversed character
+
+---
+Additional information can be found by searching:
+- "input_control_cursor_up_left_and_clear" which expands on dispatches that may call this insert/shift code
+- "set_colour_code" which expands on colour code is saved to $0286 and used when inserting

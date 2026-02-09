@@ -1,0 +1,33 @@
+# 6502 Microprocessor - BRK (Force Break) implied: opcode $00, pushes PC+2 and status to stack, sets B and I, loads PC from interrupt vector at $FFFE/$FFFF. Affects interrupt-disable flag. 7 cycles.
+
+  BRK                          BRK Force Break                          BRK
+
+  Operation:  Forced Interrupt PC + 2 toS P toS         N Z C I D V
+                                                        _ _ _ 1 _ _
+                                 (Ref: 9.11)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Implied       |   BRK                 |    00   |    1    |    7     |
+  +----------------+-----------------------+---------+---------+----------+
+  1. A BRK command cannot be masked by setting I.
+
+
+  BVC                   BVC Branch on overflow clear                    BVC
+
+  Operation:  Branch on V = 0                           N Z C I D V
+                                                        _ _ _ _ _ _
+                               (Ref: 4.1.1.8)
+  +----------------+-----------------------+---------+---------+----------+
+  | Addressing Mode| Assembly Language Form| OP CODE |No. Bytes|No. Cycles|
+  +----------------+-----------------------+---------+---------+----------+
+  |  Relative      |   BVC Oper            |    50   |    2    |    2*    |
+  +----------------+-----------------------+---------+---------+----------+
+  * Add 1 if branch occurs to same page.
+  * Add 2 if branch occurs to different page.
+
+
+
+---
+Additional information can be found by searching:
+- "instruction_operation_brk" which expands on BRK pseudocode and stack sequence

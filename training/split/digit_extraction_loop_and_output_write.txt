@@ -1,0 +1,62 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Prepare output buffer and extract digits: write the decimal point if needed and pad leading zeros, initialize table index and loop registers, then iterate adding table bytes (powers-of-ten bytes) to FAC1 mantissa bytes to determine each digit. Use carry sensing to decide digit sign, handle two's-complement negative results and convert the digit to ASCII (add '0'), write the digit into the output buffer, decrement the digits-before-decimal counter and output the decimal point when the integer digits are done.
+
+.,BE53 A4 71    LDY $71         get output string index
+.,BE55 A9 2E    LDA #$2E        character "."
+.,BE57 C8       INY             increment index
+.,BE58 99 FF 00 STA $00FF,Y     save to output string
+.,BE5B 8A       TXA             
+.,BE5C F0 06    BEQ $BE64       
+.,BE5E A9 30    LDA #$30        character "0"
+.,BE60 C8       INY             increment index
+.,BE61 99 FF 00 STA $00FF,Y     save to output string
+.,BE64 84 71    STY $71         save output string index
+.,BE66 A0 00    LDY #$00        clear index (point to 100,000)
+.,BE68 A2 80    LDX #$80        
+.,BE6A A5 65    LDA $65         get FAC1 mantissa 4
+.,BE6C 18       CLC             clear carry for add
+.,BE6D 79 19 BF ADC $BF19,Y     add byte 4, least significant
+.,BE70 85 65    STA $65         save FAC1 mantissa4
+.,BE72 A5 64    LDA $64         get FAC1 mantissa 3
+.,BE74 79 18 BF ADC $BF18,Y     add byte 3
+.,BE77 85 64    STA $64         save FAC1 mantissa3
+.,BE79 A5 63    LDA $63         get FAC1 mantissa 2
+.,BE7B 79 17 BF ADC $BF17,Y     add byte 2
+.,BE7E 85 63    STA $63         save FAC1 mantissa2
+.,BE80 A5 62    LDA $62         get FAC1 mantissa 1
+.,BE82 79 16 BF ADC $BF16,Y     add byte 1, most significant
+.,BE85 85 62    STA $62         save FAC1 mantissa1
+.,BE87 E8       INX             increment the digit, set the sign on the test sense bit
+.,BE88 B0 04    BCS $BE8E       if the carry is set go test if the result was positive
+                                else the result needs to be negative
+.,BE8A 10 DE    BPL $BE6A       not -ve so try again
+.,BE8C 30 02    BMI $BE90       else done so return the digit
+.,BE8E 30 DA    BMI $BE6A       not +ve so try again
+                                else done so return the digit
+.,BE90 8A       TXA             copy the digit
+.,BE91 90 04    BCC $BE97       if Cb=0 just use it
+.,BE93 49 FF    EOR #$FF        else make the 2's complement ..
+.,BE95 69 0A    ADC #$0A        .. and subtract it from 10
+.,BE97 69 2F    ADC #$2F        add "0"-1 to result
+.,BE99 C8       INY             increment ..
+.,BE9A C8       INY             .. index to..
+.,BE9B C8       INY             .. next less ..
+.,BE9C C8       INY             .. power of ten
+.,BE9D 84 47    STY $47         save current variable pointer low byte
+.,BE9F A4 71    LDY $71         get output string index
+.,BEA1 C8       INY             increment output string index
+.,BEA2 AA       TAX             copy character to X
+.,BEA3 29 7F    AND #$7F        mask out top bit
+.,BEA5 99 FF 00 STA $00FF,Y     save to output string
+.,BEA8 C6 5D    DEC $5D         decrement # of characters before the dp
+.,BEAA D0 06    BNE $BEB2       branch if still characters to do
+                                else output the point
+.,BEAC A9 2E    LDA #$2E        character "."
+.,BEAE C8       INY             increment output string index
+.,BEAF 99 FF 00 STA $00FF,Y     save to output string
+.,BEB2 84 71    STY $71         save output string index
+
+---
+Additional information can be found by searching:
+- "round_convert_and_prepare_digits" which expands on relies on the fixed representation and digits-before-decimal computed earlier
+- "digit_table_index_checks_and_loop_control" which expands on index bounds checks and loop control for the digit extraction table
+- "trim_trailing_zeroes_and_exponent_handling" which expands on after digits are emitted, trailing zeros are removed and exponent written if needed

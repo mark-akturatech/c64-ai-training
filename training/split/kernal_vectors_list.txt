@@ -1,0 +1,32 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - KERNAL vector table ($0314 onward). Provides default vector addresses for many KERNAL services: IRQ ($0314), BRK ($0316), NMI ($0318), OPEN ($031A), CLOSE ($031C), CHKIN ($031E), CHKOUT ($0320), CLRCHN ($0322), CHRIN ($0324), CHROUT ($0326), STOP key scan ($0328), GETIN ($032A), CLRCHNALL ($032C), user function ($032E), LOAD ($0330), SAVE ($0332). Includes explanatory notes on $032E legacy behavior.
+
+                                *** kernal vectors
+.:FD30 31 EA                    $0314 IRQ vector
+.:FD32 66 FE                    $0316 BRK vector
+.:FD34 47 FE                    $0318 NMI vector
+.:FD36 4A F3                    $031A open a logical file
+.:FD38 91 F2                    $031C close a specified logical file
+.:FD3A 0E F2                    $031E open channel for input
+.:FD3C 50 F2                    $0320 open channel for output
+.:FD3E 33 F3                    $0322 close input and output channels
+.:FD40 57 F1                    $0324 input character from channel
+.:FD42 CA F1                    $0326 output character to channel
+.:FD44 ED F6                    $0328 scan stop key
+.:FD46 3E F1                    $032A get character from the input device
+.:FD48 2F F3                    $032C close all channels and files
+.:FD4A 66 FE                    $032E user function
+                                Vector to user defined command, currently points to BRK.
+                                This appears to be a holdover from PET days, when the built-in machine language monitor
+                                would jump through the $032E vector when it encountered a command that it did not
+                                understand, allowing the user to add new commands to the monitor.
+                                Although this vector is initialized to point to the routine called by STOP/RESTORE and
+                                the BRK interrupt, and is updated by the kernal vector routine at $FD57, it no longer
+                                has any function.
+.:FD4C A5 F4                    $0330 load
+.:FD4E ED F5                    $0332 save
+
+
+---
+Additional information can be found by searching:
+- "restore_default_io_vectors" which expands on routine that (re)initialises these vectors
+- "irq_vector_dispatch" which expands on vectors used by IRQ/BRK/NMI dispatch

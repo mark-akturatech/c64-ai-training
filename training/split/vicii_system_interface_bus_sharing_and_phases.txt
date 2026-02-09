@@ -1,0 +1,71 @@
+# COMMODORE 64 - System interface and Theory of Operation for the 6566/6567 VIC-II: explains that the video chip normally accesses system memory during Phase 1 (clock low) so processor Phase 2 accesses remain free; describes AEC (Address Enable Control) active-low behavior and how it disables the processor address drivers; defines the effective 500 ns memory cycle tied to the 1 MHz Phase 2 clock; explains BA/RDY bus arbitration for required Phase-2 accesses, the three-phase allowance before takeover, and character pointer fetch timing (every 8th raster during display window requiring 40 consecutive Phase-2 accesses). Also introduces MOB (sprite) fetches and lists the 4-phase MOB fetch sequence (table of PHASE vs DATA and condition).
+
+  THEORY OF OPERATION
+
+  SYSTEM INTERFACE
+
+    The 6566/6567 video controller devices interact with the system data
+  bus in a special way. A 65XX system requires the system buses only during
+  the Phase 2 (clock high) portion of the cycle. The 6566/6567 devices take
+  advantage of this feature by normally accessing system memory during the
+  Phase 1 (clock low) portion of the clock cycle. Therefore, operations
+  such as character data fetches and memory refresh are totally transparent
+  to the processor and do not reduce the processor throughput. The video
+  chips provide the interface control signals required to maintain this bus
+  sharing.
+    The video devices provide the signal AEC (address enable control) which
+  is used to disable the processor address bus drivers allowing the video
+  device to access the address bus. AEC is active low which, permits direct
+  connection to the AEC input of the 65XX family. The AEC signal is
+
+
+
+
+
+  448   APPENDIX N
+~
+
+
+  normally activated during Phase 1 so that processor operation is not
+  affected. Because of this bus "sharing", all memory accesses must be
+  completed in 1/2 cycle. Since the video chips provide a 1-MHz clock
+  (which must be used as system Phase 2), a memory cycle is 500 ns
+  including address setup, data access and, data setup to the reading
+  device.
+    Certain operations of the 6566/6567 require data at a faster rate than
+  available by reading only during the Phase 1 time; specifically, the ac-
+  cess of character pointers from the video matrix and the fetch of MOB
+  data. Therefore, the processor must be disabled and the data accessed
+  during the Phase 2 clock. This is accomplished via the BA (bus available)
+  signal. The BA line is normally high but is brought low during Phase 1 to
+  indicate that the video chip will require a Phase 2 data access. Three
+  Phase-2 times are allowed after BA low for the processor to complete any
+  current memory accesses. On the fourth Phase 2 after BA low, the AEC
+  signal will remain low during Phase 2 as the video chip fetches data. The
+  BA line is normally connected to the RDY input of a 65XX processor. The
+  character pointer fetches occur every eighth raster line during the
+  display window and require 40 consecutive Phase 2 accesses to fetch the
+  video matrix pointers. The MOB data fetches require 4 memory accesses as
+  follows:
+
+
+    PHASE |     DATA    |                    CONDITION
+  --------+-------------+--------------------------------------------------
+      1   | MOB Pointer |  Every raster
+      2   | MOB Byte 1  |  Each raster while MOB is displayed
+      1   | MOB Byte 2  |  Each raster while MOB is displayed
+      2   | MOB Byte 3  |  Each raster while MOB is displayed
+
+
+  The MOB pointers are fetched every other Phase 1 at the end of each
+  raster line. As required, the additional cycles are used for MOB data
+  fetches. Again, all necessary bus control is provided by the 6566/6567
+  devices.
+
+
+
+---
+Additional information can be found by searching:
+- "vicii_memory_interface_address_output_6566_6567" which expands on memory access details and differences between 6566/6567 (addresses, RAS/CAS) referenced by system interface
+- "vicii_bus_activity_summary_table" which expands on quick reference of AEC/PH0/CS/RW actions summarized in a table
+- "vicii_processor_interface_register_access" which expands on how the processor accesses VIC registers when AEC and PH0 permit

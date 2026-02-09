@@ -1,0 +1,82 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - GETIN/CHRIN device dispatchors: GETIN ($FFE4) picks a byte from default input device DFLTN (keyboard $00: uses keyboard buffer NDX $C6; RS232 $02 uses RS232 fetch sequence), CHRIN ($FFCF) similar but returns two bytes and supports screen input if DFLTN=0/3 (uses INPUT/GET routines), and dispatcher to get bytes from serial/RS232 calls (calls $F086/$EE13/$F14E/$EE13 as needed). Uses NDX, CRSW ($D0), PNTR/TBLX for screen input and status word handling for RS232.
+
+                                *** GETIN: GET a BYTE
+                                The KERNAL routine GETIN ($ffe4) is vectored to this
+                                routine. It load a character into fac#1 from the external
+                                device indicated by DFLTN. Thus, if device = 0, GET is
+                                from the keyboard buffer. If device = 2, GET is from the
+                                RS232 port. If neither of these devices then GET is
+                                further handled by the next routine, INPUT.
+.,F13E A5 99    LDA $99         DFLTN, default input device.
+.,F140 D0 08    BNE $F14A       not keyboard
+.,F142 A5 C6    LDA $C6         NDX, number of keys in keyboard queue
+.,F144 F0 0F    BEQ $F155       buffer empty, exit
+.,F146 78       SEI             disable interrupts
+.,F147 4C B4 E5 JMP $E5B4       get character from keyboard buffer, and exit
+.,F14A C9 02    CMP #$02        RS232
+.,F14C D0 18    BNE $F166       nope, try next device
+.,F14E 84 97    STY $97         temp store
+.,F150 20 86 F0 JSR $F086       get character from RS232
+.,F153 A4 97    LDY $97         retrieve (Y)
+.,F155 18       CLC
+.,F156 60       RTS
+
+                                *** CHRIN: INPUT A BYTE
+                                The KERNAL routine CHRIN ($ffcf) is vectored to this
+                                routine. It is similar in function to the GET routine
+                                above, and also provides a continuation to that routine.
+                                If the input device is 0 or 3, ie. keyboard or screen,
+                                then input takes place from the screen. INPUT/GET from
+                                other devices are performed by calls to the next routine.
+                                Two bytes are input from the device so that end of file
+                                can be set if necessary (ie. ST = #40)
+.,F157 A5 99    LDA $99         DFLTN, default input
+.,F159 D0 0B    BNE $F166       not keyboard, next device
+.,F15B A5 D3    LDA $D3         PNTR, cursor column on  screen
+.,F15D 85 CA    STA $CA         >LXSP, cursor position at start
+.,F15F A5 D6    LDA $D6         TBLX, cursor line number
+.,F161 85 C9    STA $C9         <LXSP
+.,F163 4C 32 E6 JMP $E632       input from screen or keyboard
+.,F166 C9 03    CMP #$03        screen
+.,F168 D0 09    BNE $F173       nope, next device
+.,F16A 85 D0    STA $D0         CRSW, flag INPUT/GET from keyboard
+.,F16C A5 D5    LDA $D5         LNMX, physical screen line length
+.,F16E 85 C8    STA $C8         INDX, end of logical line for input
+.,F170 4C 32 E6 JMP $E632       input from screen of keyboard
+.,F173 B0 38    BCS $F1AD
+.,F175 C9 02    CMP #$02        RS232
+.,F177 F0 3F    BEQ $F1B8       yes, get data from RS232 port
+.,F179 86 97    STX $97
+.,F17B 20 99 F1 JSR $F199
+.,F17E B0 16    BCS $F196
+.,F180 48       PHA
+.,F181 20 99 F1 JSR $F199
+.,F184 B0 0D    BCS $F193
+.,F186 D0 05    BNE $F18D
+.,F188 A9 40    LDA #$40
+.,F18A 20 1C FE JSR $FE1C
+.,F18D C6 A6    DEC $A6
+.,F18F A6 97    LDX $97
+.,F191 68       PLA
+.,F192 60       RTS
+.,F193 AA       TAX
+.,F194 68       PLA
+.,F195 8A       TXA
+.,F196 A6 97    LDX $97
+.,F198 60       RTS
+.,F199 20 0D F8 JSR $F80D
+.,F19C D0 0B    BNE $F1A9
+.,F19E 20 41 F8 JSR $F841
+.,F1A1 B0 11    BCS $F1B4
+.,F1A3 A9 00    LDA #$00
+.,F1A5 85 A6    STA $A6
+.,F1A7 F0 F0    BEQ $F199
+.,F1A9 B1 B2    LDA ($B2),Y
+.,F1AB 18       CLC
+.,F1AC 60       RTS
+
+
+---
+Additional information can be found by searching:
+- "keyboard_input_and_screen_output" which expands on keyboard buffer format and input echo behavior
+- "rs232_buffers_input_and_idle" which expands on RS232 get functions and status handling

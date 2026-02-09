@@ -1,0 +1,15 @@
+# An Introduction to Programming C-64 Demos - $D018 usage: selects VIC locations for screen memory (upper 4 bits) and character set (lower 4 bits) of a 14-bit address; count $0400 chunks for screen location and $0800 chunks for charsets; example: screen at $0400 and charset at $2000 yields $D018 = $18.
+
+Changing Character Set
+The built-in character set isn't so hot, so if you're going to display text, you should usually load your own character set. Fortunately, this is very easy, and you can control the locations of both the character set and the screen memory with one VIC register: $d018. You put the upper parts of two addresses into this register: the four most significant bits of the 14 bit7 address of the screen memory in the four high bits, and the four most significant bits of the 14 bit address of the character set in the lower four bits. Confused? Let's take an example...
+
+Screen memory is $0400 bytes long, and it has to start on an address that is a multiple of $0400, so it can start at $0000, $0400, $0800, $0c00 etc. As I said, it's located at $0400 by default. A character set is $0800 bytes long, and has to start on an address that is a multiple of $0800, so it can be located at $0000, $0800, $1000, $1800 etc. Now, let's say we want screen memory to be where it usually is, at $0400, and we have a character set at $2000. We want the four most significant bits of the 14 bit address $0400, which is 1 (in binary, $0400 is 0000 0100 0000 0000, and if you count 14 bits from the right, you get 00 0100 0000 0000, of which 0001 are the four most significant bits). We also want the four most significant bits of the 14 bit address $2000 (the character set). In binary, $2000 is 0010 0000 0000 0000, which means the four most significant bits of the 14 bit address is 1000, which is 8.
+
+So, what do we actually store in $d018? We want 1 in the four most significant bits and 8 in the four least significant bits, ie. $18.
+
+Now, I may have made this a bit too complicated. It's really not that difficult. Here's a trick: to find out which value to store in $d018, just count the number of $0400 chunks until the start of the address you're interested in. If your screen memory should start at $1800, you count $0000, $0400, $0800, $0c00, $1000, $1400. That's 6, so you use 6 in the upper four bits of $d018. Use the same values for the character set, but put it in the lower four bits of $d018.
+
+
+---
+Additional information can be found by searching:
+- "altering_charset_realtime_example" which expands on real-time charset modification example that sets $D018 and pokes into char memory

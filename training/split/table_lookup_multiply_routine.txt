@@ -1,0 +1,24 @@
+# 6502 Multiplication and Division Algorithms - Source: llx.com - 6502 routine to multiply two bytes using the square-table trick. Caller: put one operand in A and the other in Y. Steps: STA PSLO/PSHI to set index into sum table by A; EOR #$FF and STA PDLO/PDHI to index diff table by -A-1; LDA (PSLO),Y to get (a+y)^2/4 (lo), SEC; SBC (PDLO),Y subtract (-a+y)^2/4 (lo), TAX to save result low, LDA (PSHI),Y SBC (PDHI),Y to get hi. Leaves product in A (high byte) and X (low byte). Notes worst-case ~38 cycles with page-crossing indexing.
+
+With that done, we can multiply two bytes by putting one in the
+accumulator and the other in the Y register, and calling this
+routine:
+
+
+STA PSLO     ;Index into sum table by A
+        STA PSHI
+        EOR #$FF
+        STA PDLO     ;Index into diff table by -A-1
+        STA PDHI
+        LDA (PSLO),Y ;Get (a+y)^2/4 (lo byte)
+        SEC
+        SBC (PDLO),Y ;Subtract (-a+y)^2/4 (lo byte)
+        TAX          ;Save it
+        LDA (PSHI),Y ;Get (a+y)^2/4 (hi byte)
+        SBC (PDHI),Y ;Subtract (-a+y)^2/4 (hi byte)
+
+
+---
+Additional information can be found by searching:
+- "pointer_setup_for_square_tables" which expands on table pointer initialization
+- "table_lookup_tradeoffs_for_speed" which expands on tradeoff explanation

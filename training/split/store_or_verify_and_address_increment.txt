@@ -1,0 +1,38 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RD59 / RD90 storage/verify and increment logic: if VERCK indicates load, store OCHAR into (SAL); if verify, compare and set PRP on mismatch. Uses INCSAL routine to increment address pointers, handle second-pass errors (SPERR/UDST), and then perform C64-specific adjustments: SEI while clearing T1 info, disable T1 via D1ICR, decrement FSBLK/SHCNL between passes, call TNIF when finished, and restore SAL/SAH via RD300. Also clears SHCNH used by BCC calculation.
+
+.,FB3A A5 93    LDA $93         RD59   LDA VERCK       ;LOAD OR VERIFY?...
+.,FB3C D0 05    BNE $FB43       BNE    RD90            ;...VERIFY, DON'T STORE
+.,FB3E A8       TAY             TAY                    ;MAKE Y ZERO
+.,FB3F A5 BD    LDA $BD         LDA    OCHAR
+.,FB41 91 AC    STA ($AC),Y     STA    (SAL)Y          ;STORE CHARACTER
+.,FB43 20 DB FC JSR $FCDB       RD90   JSR INCSAL      ;INCREMENT ADDR.
+.,FB46 D0 43    BNE $FB8B       BNE    RD180           ;BRANCH ALWAYS
+.,FB48 A9 80    LDA #$80        RD160  LDA #$80        ;SET MODE SKIP NEXT DATA
+.,FB4A 85 AA    STA $AA         RD161  STA RDFLG
+                                ;
+                                ; MODIFY FOR C64 6526'S
+                                ;
+.,FB4C 78       SEI             SEI                    ;PROTECT CLEARING OF T1 INFORMATION
+.,FB4D A2 01    LDX #$01        LDX    #$01
+.,FB4F 8E 0D DC STX $DC0D       STX    D1ICR           ;CLEAR T1 ENABLE...
+.,FB52 AE 0D DC LDX $DC0D       LDX    D1ICR           ;CLEAR THE INTERRUPT
+.,FB55 A6 BE    LDX $BE         LDX    FSBLK           ;DEC FSBLK FOR NEXT PASS...
+.,FB57 CA       DEX             DEX
+.,FB58 30 02    BMI $FB5C       BMI    RD167           ;WE ARE DONE...FSBLK=0
+.,FB5A 86 BE    STX $BE         STX    FSBLK           ;...ELSE FSBLK=NEXT
+.,FB5C C6 A7    DEC $A7         RD167  DEC SHCNL       ;DEC PASS CALC...
+.,FB5E F0 08    BEQ $FB68       BEQ    RD175           ;...ALL DONE
+.,FB60 A5 9E    LDA $9E         LDA    PTR1            ;CHECK FOR FIRST PASS ERRORS...
+.,FB62 D0 27    BNE $FB8B       BNE    RD180           ;...YES SO CONTINUE
+.,FB64 85 BE    STA $BE         STA    FSBLK           ;CLEAR FSBLK IF NO ERRORS...
+.,FB66 F0 23    BEQ $FB8B       BEQ    RD180           ;JMP TO EXIT
+.,FB68 20 93 FC JSR $FC93       RD175  JSR TNIF        ;READ IT ALL...EXIT
+.,FB6B 20 8E FB JSR $FB8E       JSR    RD300           ;RESTORE SAL & SAH
+.,FB6E A0 00    LDY #$00        LDY    #0              ;SET SHCNH TO ZERO...
+.,FB70 84 AB    STY $AB         STY    SHCNH           ;...USED TO CALC PARITY BYTE
+                                ;
+
+---
+Additional information can be found by searching:
+- "second_pass_bad_table_handling" which expands on This routine is invoked for actual store or verify operations including second-pass logic
+- "compute_block_parity_and_checksum" which expands on After storing/advancing addresses, block-level parity (BCC) calculation may be performed

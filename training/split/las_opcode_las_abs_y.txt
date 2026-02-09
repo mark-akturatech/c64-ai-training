@@ -1,0 +1,95 @@
+# NMOS 6510 - LAS (aka LAR) undocumented opcode ($BB) with abs,Y addressing: A, X, SP = memory & SP (i.e. memory AND stack pointer), transfers result into A, X, and SP. Describes size, cycles (4+1 potential), flags (N/Z set as loads), example usage, equivalent instruction sequence, and note about reliability and stack use.
+
+It can be the case that the stack is not used in a main routine, since it is cheaper to store things in
+the zeropage. Of course when a subroutine is called or an interrupt triggers the return address (and
+status register in case of an IRQ) is stored on the stack, but after returning to the main loop the
+stackpointer (SP) is back to the same value again. This means that you can change the SP at will in
+the main loop without messing things up. For example, you can use it as temporary storage of the X
+register with TXS/TSX. This makes it possible to use LAS (and TAS).
+
+- 41 -
+
+Example: cycle an index within bounds
+
+If you want to cycle an index and wrap around to zero at a number that is a power of two, you
+could do that with LAS. For example to cycle from 0-15, suppose we start with SP=$F7 (any
+value will work):
+LAS mask,y
+
+; if Mask is one page filled with $0f,
+; this brings the SP to $07 (and A and X
+; as well) for any Y.
+
+DEX
+
+; X = $06
+
+TXS
+
+; SP is now $06, so the next time
+; 'lda table,x' will pick the next value
+
+LDA table, x
+
+; use X as index
+
+SP and X after the LAS instruction will always remain in the range 0-$0F, no need to check for
+that!
+Instead of the LDA table, x one could use PLA if the data is on the stack and no interrupt can
+take place during this code snippet.Then DEX should be replaced by e.g. SBX #$11 to bring the
+SP to a safe area, to ensure the data on the stack is not messed up in other parts of the code.
+
+- 42 -
+
+NOP (NPO, UNP)
+Type: no effect
+Opc.
+
+Mnemonic
+
+Function
+
+Size
+
+Cycles N V - B D I Z C
+
+$1A
+
+NOP
+
+No operation
+
+1
+
+2
+
+$3A
+
+NOP
+
+No operation
+
+1
+
+2
+
+$5A
+
+NOP
+
+No operation
+
+1
+
+2
+
+$7A
+
+NOP
+
+No operation
+
+
+---
+Additional information can be found by searching:
+- "tas_opcode_and_examples" which expands on TAS and LAS are related combined STA/TSX patterns that interact with SP

@@ -1,0 +1,59 @@
+# MACHINE - Introduces loops for printing multiple characters and indexed addressing: storing the string HELLO as data at $034A-$034F, using an index register (X) to step through addresses (LDA $034A,X), explanation of immediate addressing (#), and the concept of effective address formed by base + X/Y indexing.
+
+                                                                         :32:
+
+Loops
+-----
+
+We know how to send characters to the screen, one at a time.  But long
+messages, such as THE QUICK BROWN CAT..., might lead to tedious coding if we
+had to write an instruction for each letter to be sent.  We need to set up a
+program loop to repeat the printing activity.
+
+Let's write a program to print the word HELLO followed by a RETURN.
+
+We must store the word HELLO somewhere in memory.  It doesn't matter where,
+provided it doesn't conflict with anything else.  I'll arbitrarily choose
+address $034A to $034F.  We'll put it there in a moment.  Remember that the
+characters that make up the word HELLO (plus the RETURN) are not program
+instructions; they are simple data.  We must put them in a place with a
+memory change--we must not try to assemble them.
+
+We will need to count the characters as we send them.  We wish to send six
+characters, so a count of six is our limit.  Let's use the X register to keep
+track of the count.  First, we must set X to zero:
+
+  .A 033C  LDX #$00
+
+Note that we use the # symbol to denote an immediate value:  we want to load
+X with the value zero, not something from address 0.  Now, we'll do something
+new.  I want to take a character to be printed from address $034A.  But wait,
+that's only the first time around.  When we come back to this point in the
+loop, I want to take a character from $034B, and then from $034C, and so on.
+
+How can we do this?  It seems that we must write one address into the LDA
+instruction, and that address can't change.  But there is a way.
+
+We can ask the computer to take the address we supply, and add the contents
+of X or Y to this address before we use it.  The computed address is called
+an effective address.
+
+Let's look at our position.  The first time around the loop, X is counting
+the characters and has a value of zero.  If we specify our address as 034A+X,
+the effective address will be 034A.  That's where we will have stored the
+letter H.
+
+When we come back around the loop--we haven't written that part yet--X should
+now equal one.  An address of 034A+X would give an effective address of 034B:
+the computer would go there and get the letter E.  As we go around the loop,
+the letters, L, L, O, and RETURN will be brought in as needed.
+
+As we enter the LDA instruction, we don't type the plus sign.  Instead, we
+signal indexing with a comma:  LDA $034A,X.  We may use either X or Y for
+indexing:  they are sometimes called index register.  In this case, of
+course, we use X.  So we code
+
+---
+Additional information can be found by searching:
+- "linking_machine_language_with_basic" which expands on useful to combine BASIC and machine language for repeated output
+- "loop_implementation_inx_cpx_bne_full_code" which expands on complete loop implementation and control flow

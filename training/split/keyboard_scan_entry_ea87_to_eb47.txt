@@ -1,0 +1,128 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Keyboard scan entry starting at $EA87: overview of scan steps and full scan routine. Clears keyboard flags ($028D), drives VIA1 DRA ($DC00) and reads VIA1 DRB ($DC01) to detect rows/columns, iterates columns and rows, counts closed keys (saved to $CB), handles special SHIFT/CTRL/CBM/STOP keys by ORing into $028D, saves and restores column/row state, evaluates key decode (via tables pointed at by $F5/$F6), compares key count with last key ($C5) and handles repeat logic (repeat delay at $028C, repeat speed at $028B), and saves decoded character into keyboard buffer $0277 using buffer index $C6 if appropriate. Ends with RTS at $EB47.
+
+                                count which is incremented on each shift. check for shift/stop/cbm keys and
+                                flag if closed
+                                
+                                4) repeat step 3 for the whole matrix
+                                
+                                5) evaluate the SHIFT/CTRL/C= keys, this may change the decode table selected
+                                
+                                6) use the key count saved in step 3 as an index into the table selected in step 5
+                                
+                                7) check for key repeat operation
+                                
+                                8) save the decoded key to the buffer if first press or repeat
+                                scan the keyboard
+.,EA87 A9 00    LDA #$00clear A
+.,EA89 8D 8D 02 STA $028D       clear the keyboard shift/control/c= flag
+.,EA8C A0 40    LDY #$40        set no key
+.,EA8E 84 CB    STY $CB         save which key
+.,EA90 8D 00 DC STA $DC00       clear VIA 1 DRA, keyboard column drive
+.,EA93 AE 01 DC LDX $DC01       read VIA 1 DRB, keyboard row port
+.,EA96 E0 FF    CPX #$FF        compare with all bits set
+.,EA98 F0 61    BEQ $EAFB       if no key pressed clear current key and exit (does
+                                further BEQ to $EBBA)
+.,EA9A A8       TAY             clear the key count
+.,EA9B A9 81    LDA #$81get the decode table low byte
+.,EA9D 85 F5    STA $F5         save the keyboard pointer low byte
+.,EA9F A9 EB    LDA #$EB        get the decode table high byte
+.,EAA1 85 F6    STA $F6save the keyboard pointer high byte
+.,EAA3 A9 FE    LDA #$FE        set column 0 low
+.,EAA5 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,EAA8 A2 08    LDX #$08        set the row count
+.,EAAA 48       PHA             save the column
+.,EAAB AD 01 DC LDA $DC01       read VIA 1 DRB, keyboard row port
+.,EAAE CD 01 DC CMP $DC01       compare it with itself
+.,EAB1 D0 F8    BNE $EAAB       loop if changing
+.,EAB3 4A       LSR             shift row to Cb
+.,EAB4 B0 16    BCS $EACC       if no key closed on this row go do next row
+.,EAB6 48       PHA             save row
+.,EAB7 B1 F5    LDA ($F5),Y     get character from decode table
+.,EAB9 C9 05    CMP #$05        compare with $05, there is no $05 key but the control
+                                keys are all less than $05
+.,EABB B0 0C    BCS $EAC9       if not shift/control/c=/stop go save key count
+                                else was shift/control/c=/stop key
+.,EABD C9 03    CMP #$03        compare with $03, stop
+.,EABF F0 08    BEQ $EAC9       if stop go save key count and continue
+                                character is $01 - shift, $02 - c= or $04 - control
+.,EAC1 0D 8D 02 ORA $028D       OR it with the keyboard shift/control/c= flag
+.,EAC4 8D 8D 02 STA $028D       save the keyboard shift/control/c= flag
+.,EAC7 10 02    BPL $EACB       skip save key, branch always
+.,EAC9 84 CB    STY $CB         save key count
+.,EACB 68       PLA             restore row
+.,EACC C8       INY             increment key count
+.,EACD C0 41    CPY #$41        compare with max+1
+.,EACF B0 0B    BCS $EADC       exit loop if >= max+1
+                                else still in matrix
+.,EAD1 CA       DEX             decrement row count
+.,EAD2 D0 DF    BNE $EAB3       loop if more rows to do
+.,EAD4 38       SEC             set carry for keyboard column shift
+.,EAD5 68       PLA             restore the column
+.,EAD6 2A       ROL             shift the keyboard column
+.,EAD7 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,EADA D0 CC    BNE $EAA8       loop for next column, branch always
+.,EADC 68       PLA             dump the saved column
+.,EADD 6C 8F 02 JMP ($028F)     evaluate the SHIFT/CTRL/C= keys, $EBDC
+                                key decoding continues here after the SHIFT/CTRL/C= keys are evaluated
+.,EAE0 A4 CB    LDY $CB         get saved key count
+.,EAE2 B1 F5    LDA ($F5),Y     get character from decode table
+.,EAE4 AA       TAX             copy character to X
+.,EAE5 C4 C5    CPY $C5         compare key count with last key count
+.,EAE7 F0 07    BEQ $EAF0       if this key = current key, key held, go test repeat
+.,EAE9 A0 10    LDY #$10        set the repeat delay count
+.,EAEB 8C 8C 02 STY $028C       save the repeat delay count
+.,EAEE D0 36    BNE $EB26       go save key to buffer and exit, branch always
+.,EAF0 29 7F    AND #$7F        clear b7
+.,EAF2 2C 8A 02 BIT $028A       test key repeat
+.,EAF5 30 16    BMI $EB0D       if repeat all go ??
+.,EAF7 70 49    BVS $EB42       if repeat none go ??
+.,EAF9 C9 7F    CMP #$7F        compare with end marker
+.,EAFB F0 29    BEQ $EB26       if $00/end marker go save key to buffer and exit
+.,EAFD C9 14    CMP #$14        compare with [INSERT]/[DELETE]
+.,EAFF F0 0C    BEQ $EB0D       if [INSERT]/[DELETE] go test for repeat
+.,EB01 C9 20    CMP #$20        compare with [SPACE]
+.,EB03 F0 08    BEQ $EB0D       if [SPACE] go test for repeat
+.,EB05 C9 1D    CMP #$1D        compare with [CURSOR RIGHT]
+.,EB07 F0 04    BEQ $EB0D       if [CURSOR RIGHT] go test for repeat
+.,EB09 C9 11    CMP #$11        compare with [CURSOR DOWN]
+.,EB0B D0 35    BNE $EB42       if not [CURSOR DOWN] just exit
+                                was one of the cursor movement keys, insert/delete
+                                key or the space bar so always do repeat tests
+.,EB0D AC 8C 02 LDY $028C       get the repeat delay counter
+.,EB10 F0 05    BEQ $EB17       if delay expired go ??
+.,EB12 CE 8C 02 DEC $028C       else decrement repeat delay counter
+.,EB15 D0 2B    BNE $EB42       if delay not expired go ??
+                                repeat delay counter has expired
+.,EB17 CE 8B 02 DEC $028B       decrement the repeat speed counter
+.,EB1A D0 26    BNE $EB42       branch if repeat speed count not expired
+.,EB1C A0 04    LDY #$04        set for 4/60ths of a second
+.,EB1E 8C 8B 02 STY $028B       save the repeat speed counter
+.,EB21 A4 C6    LDY $C6         get the keyboard buffer index
+.,EB23 88       DEY             decrement it
+.,EB24 10 1C    BPL $EB42       if the buffer isn't empty just exit
+                                else repeat the key immediately
+                                possibly save the key to the keyboard buffer. if there was no key pressed or the key
+                                was not found during the scan (possibly due to key bounce) then X will be $FF here
+.,EB26 A4 CB    LDY $CB         get the key count
+.,EB28 84 C5    STY $C5         save it as the current key count
+.,EB2A AC 8D 02 LDY $028D       get the keyboard shift/control/c= flag
+.,EB2D 8C 8E 02 STY $028E       save it as last keyboard shift pattern
+.,EB30 E0 FF    CPX #$FF        compare the character with the table end marker or no key
+.,EB32 F0 0E    BEQ $EB42       if it was the table end marker or no key just exit
+.,EB34 8A       TXA             copy the character to A
+.,EB35 A6 C6    LDX $C6         get the keyboard buffer index
+.,EB37 EC 89 02 CPX $0289       compare it with the keyboard buffer size
+.,EB3A B0 06    BCS $EB42       if the buffer is full just exit
+.,EB3C 9D 77 02 STA $0277,X     save the character to the keyboard buffer
+.,EB3F E8       INX             increment the index
+.,EB40 86 C6    STX $C6         save the keyboard buffer index
+.,EB42 A9 7F    LDA #$7F        enable column 7 for the stop key
+.,EB44 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,EB47 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "evaluate_shift_ctrl_c_keys_eb48_to_eb76" which expands on evaluating SHIFT/CTRL/C= and selecting decode table
+- "key_decode_tables_eb79_ec43" which expands on character decode tables used by this routine (standard/shift/cbm/control)
+- "special_character_codes_ec44_to_ec5e" which expands on special character handling (switch upper/lower case, SHIFT+C= lock)

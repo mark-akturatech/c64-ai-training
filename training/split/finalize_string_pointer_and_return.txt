@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Finalize the output string and return: handle various exit paths that save the last character or a null terminator to the output buffer, set the result string pointer in (AY) (low and high bytes), and execute RTS to return to the caller.
+
+                                save last character, [EOT] and exit
+.,BF04 99 FF 00 STA $00FF,Y     save last character to output string
+                                set null terminator and exit
+.,BF07 A9 00    LDA #$00        set null terminator
+.,BF09 99 00 01 STA $0100,Y     save after last character
+                                set string pointer (AY) and exit
+.,BF0C A9 00    LDA #$00        set result string pointer low byte
+.,BF0E A0 01    LDY #$01        set result string pointer high byte
+.,BF10 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "convert_fac1_to_ascii_sign_and_zero_handling" which expands on the main FAC1->ASCII routine which ends here
+- "print_in_and_convert_line_number_to_fac1" which expands on caller that prints the converted line number string

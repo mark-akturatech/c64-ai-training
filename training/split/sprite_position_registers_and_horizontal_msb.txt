@@ -1,0 +1,106 @@
+# ********* - Sprite horizontal and vertical position registers ($D000-$D010) details: vertical positions range 0-255 representing top line of 21-line sprite; visible raster lines 50-249; horizontal positions 0-511 supported via eight 8-bit registers plus a Most Significant Bits register ($D010) which provides the 9th bit for each sprite; explanation of visible dot ranges and examples of setting positions and MSB handling.
+
+reversed A, and a reversed, shifted A, all on a blue background.
+Next, we will put colors in the other background color registers:
+
+POKE 53282,0:POKE53283,2:POKE53284,5
+
+This sets the registers to black, red, and green, respectively.
+Finally, we will activate extended color mode by setting Bit 6 of the
+VIC-II register at location 53265 to a 1.  The BASIC statement that
+turns this mode on is:
+
+POKE 53265,PEEK(53265) OR 64
+
+Notice that two things happened.  First, all of the letters took on
+the same shape, that of the letter A.  Second, each took on the
+background color of a different color register.  To get things back to
+normal, turn off extended color mode with this statement:
+
+POKE 53265,PEEK(53265) AND 191
+
+Extended color mode can be a very useful enhancement for your text
+displays.  It allows the creation of windows.  These windows, because
+of their different background colors, make different bodies of text
+stand out as visually distinct from one another.  For example, a text
+adventure program could have one window to display the player's
+current location, one to show an inventory of possessions, and one to
+accept commands for the next move.
+
+In this mode the background color of these windows can be changed
+instantly, just by POKEing a new value to the color register.  This
+technique lends itself to some dramatic effects.  A window can be
+flashed to draw attention to a particular message at certain times.
+And varying the foreground color can make either the window or the
+message vanish and reappear later.
+
+There are, however, a couple of problems involved in using these
+windows.  The character shape that you want to use might not have a
+screen code of less than 64.  In that case, the only solution is to
+define your own character set, with the shape you want in one of the
+first 64 characters.
+
+Another problem is that characters within a PRINT statement in your
+program listing are not always going to look the same on the screen.
+Having to figure out what letter to print to get the number 4 with a
+certain background color can be very inconvenient.  The easiest
+solution to this problem is to have a subroutine to the translation
+for you.  Since letters will appear normally in window 1, and window 3
+characters are simply window 1 characters reversed, you will only have
+problems with characters in windows 2 and 4.  To conver these
+characters, put your message in A$, and use the following subroutine:
+
+500 B$="":FOR I=1 TO LEN(A$):B=ASC(MID$(A$,I,1))
+510 B=B+32:IF B<96 THEN B=B+96
+520 B$=B$+CHR$(B):NEXT I:RETURN
+
+This subroutine converts each letter to its ASCII equivalent, adds the
+proper offset, and converts it back to part of the new string, B$.
+When the conversion is complete, B$ will hold the characters necessary
+to PRINT that message in window 2.  For window 4, PRINT
+CHR$(18);B$;CHR$(146).  This will turn reverse video on before
+printing the string, and turn it off afterwards.
+
+A practical demonstration of the technique for setting up windows is
+given in the sample program below.  The program sets up three windows,
+and shows them flashing, appearing and disappearing.
+
+5 DIM RO$(25):RO$(0)=CHR$(19):FOR I=1 TO 24:RO$(I)=RO$(I-1)+CHR$(17):NEXT
+10 POKE 53265,PEEK(53265) OR 64
+20 POKE 53280,0:POKE 53281,0:POKE 53282,1:POKE 53283,2:POKE 53284,13
+25 OP$=CHR$(160):FOR I=1 TO 4:OP$=OP$:NEXTI:PRINTCHR$(147);RO$(3);
+30 FOR I=1 TO10:PRINTTAB(1);CHR$(18);"               ";TAB(23);OP$:NEXT
+40 PRINT CHR$(146):PRINT:PRINT:FOR I=1 TO 4:PRINTOP$;OP$;OP$;OP$;OP$;:NEXTI
+50 PRINT RO$(5);CHR$(5);CHR$(18);TAB(2);"A RED WINDOW"
+60 PRINT CHR$(18);TAB(2);"COULD BE USED"
+70 PRINT CHR$(18);TAB(2);"FOR ERROR"
+80 PRINT CHR$(18);TAB(2);"MESSAGES"
+100 A$="A GREEN WINDOW":GOSUB 300:PRINT RO$(5);CHR$(144);CHR$(18);TAB(24);B$
+110 A$="COULD BE USED":GOSUB 300:PRINTTAB(24);CHR$(18);B$
+120 A$="TO GIVE":GOSUB 300:PRINTTAB(24);CHR$(18);B$
+130 A$="INSTRUCTIONS":GOSUB 300:PRINTTAB(24);CHR$(18);B
+140 PRINT CHR$(31);RO$(19);
+150 A$="  WHILE THE MAIN WINDOW COULD BE USED":GOSUB 300:PRINT B$
+160 A$="  FOR ACCEPTING COMMANDS.":GOSUB 300:PRINT B$
+170 FOR I=1 TO 5000:NEXT I:POKE 53284,0
+180 FOR I=1 TO 5:FOR J=1 TO 300:NEXT J:POKE 53282,15
+190 FOR J=1 TO 300:NEXT J:POKE 53282,1
+200 NEXT I:POKE 53283,-2*(PEEK(53283)=240):POKE 53284,-13*(PEEK(53284)=240)
+210 GOTO 180
+300 B$="":FOR I=1TOLEN(A$):B=ASC(MID$(A$,I,1))
+310 B=B+32:IFB<96THENB=B+96
+320 B$=B$+CHR$(B):NEXTI:RETURN
+
+Bit 7.  Bit 7 of this register is the high-order bit (Bit 8) of the
+Raster Compare register at 53266 ($D012).  Even though it is located
+here, it functions as part of that register (see the description below
+for more information on the Raster Compare register).
+
+Machine language programmers should note that its position here at Bit
+7 allows testing this bit with the Negative flag.  Since scan lines
+above number 256 are all off the screen, this provides an easy way to
+delay changing the graphics display until the scan is in the vertical
+
+---
+Additional information can be found by searching:
+- "sprite_display_enable_position_and_color_registers" which expands on Enable bits and colors necessary to make sprite visible

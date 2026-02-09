@@ -1,0 +1,31 @@
+# MACHINE - Machine language monitor .S save format: .S"NAME",device,begin,end+1 (e.g., .S"PROGRAM",01,033C,0361). For disk .S include drive (e.g., .S"0:PROGRAM",08,033C,0361). Note on LOAD from BASIC: use LOAD with ,1 flag to prevent relocation on VIC/C64 (LOAD"PROGRAM",8,1). .L monitor command may load without relocating pointers depending on monitor.
+
+The Machine Language Monitor SAVE
+---------------------------------
+
+Now that we're becoming aware of the SOV pitfall, we're ready to discuss how
+to save a program in machine language.  You probably understand why I've
+been delaying this command until this time.  The MLM save command typically
+goes
+
+  .S"PROGRAM",01,033C,0361
+
+This would be the tape format.  The command is .S and is followed by the
+program name.  The device is tape, so we type 01--be sure to give two digits.
+Next comes the beginning address (in the example $033C) followed by the end
+address plus one.  In the last example, the last location saved will be
+$0360.  For disk saves, we might want to add the drive number:
+
+                                                                        :100:
+
+  .S"0:PROGRAM",08,033C,0361
+
+These programs, once saved, may be loaded directly from BASIC, but watch the
+SOV carefully.  VIC-20 and Commodore 64 BASIC LOAD commands should contain
+the extra field to defeat relocation:  LOAD"PROGRAM",8,1 will insist that the
+program load back into the same memory locations from which it was saved.
+
+
+---
+Additional information can be found by searching:
+- "checking_and_fixing_memory_pointers" which expands on after loading, verify SOV pointer with .M to ensure safety

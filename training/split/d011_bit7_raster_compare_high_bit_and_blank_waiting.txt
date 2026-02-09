@@ -1,0 +1,28 @@
+# - C64 I/O Map (Mapping The Commodore 64) - D011 Bit 7: High bit (bit 8) of the Raster Compare register ($D012). Note about testing this bit using the Negative flag (BPL/BMI) in machine language to wait for vertical blank (example: LOOP LDA $D011 / BPL LOOP) and advice to move sprites during vertical blanking to avoid wobble. BASIC WAIT 53265,128 is the equivalent but often too slow.
+
+                          Bit 7.  Bit 7 of this register is the high-order bit (Bit 8) of the
+                          Raster Compare register at 53266 ($D012).  Even though it is located
+                          here, it functions as part of that register (see the description below
+                          for more information on the Raster Compare register).
+
+                          Machine language programmers should note that its position here at Bit
+                          7 allows testing this bit with the Negative flag.  Since scan lines
+                          above number 256 are all off the screen, this provides an easy way to
+                          delay changing the graphics display until the scan is in the vertical
+                          blanking interval and the display is no longer being drawn:
+
+                              LOOP  LDA $D011
+                                    BPL LOOP
+
+                          Sprites should always be moved when the raster is scanning off-screen,
+                          because if they are moved while they are being scanned, their shapes
+                          will waver slightly.
+
+                          The BASIC equivalent of the program fragment above is the statement
+                          WAIT 53265,128, but BASIC is usually not fast enough to execute the
+                          next statement while still in the blanking interval.
+
+
+---
+Additional information can be found by searching:
+- "d012_raster_compare_register" which expands on This high bit forms the 9th bit of the raster compare value

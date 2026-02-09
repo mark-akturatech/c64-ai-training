@@ -1,0 +1,29 @@
+# - C64 I/O Map (Mapping The Commodore 64) - $D400-$D401 Voice 1 Frequency Control (low/high bytes): 16-bit frequency range and formula FREQUENCY = (REGISTER VALUE * CLOCK / 16777216) Hz; given NTSC clock ~1022730 yields FREQUENCY = REGISTER_VALUE * 0.060959458 Hz. Explains combining low and high bytes (value = low + 256*high).
+
+$D400-$D401               Voice 1 Frequency Control
+
+                          Together, these two locations control the frequency or pitch of the
+                          musical output of voice 1.  Some frequency must be selected in order
+                          for voice 1 to be heard.  This frequency may be changed in the middle
+                          of a note to achieve special effects.  The 16-bit range of the
+                          Frequency Control Register covers over eight full octaves, and allows
+                          you to vary the pitch from 0 (very low) to about 4000 Hz (very high),
+                          in 65536 steps.  The exact frequency of the output can be determined
+                          by the equation
+
+                          FREQUENCY=(REGISTER VALUE*CLOCK/16777216)Hz
+
+                          where CLOCK equals the system clock frequency, 1022730 for American
+                          (NTSC) systems, 985250 for European (PAL), and REGISTER VALUE is the
+                          combined value of these frequency registers.  That combined value
+                          equals the value of the low byte plus 256 times the value of the high
+                          byte.  Using the American (NTSC) clock value, the equation works out
+                          to
+
+                          FREQUENCY=REGISTER VALUE*.060959458 Hz
+
+
+---
+Additional information can be found by searching:
+- "sid_overview_intro" which expands on Where frequency fits in sequence
+- "voice1_pw_width_and_control" which expands on Pulse width registers and control for voice 1

@@ -1,0 +1,107 @@
+# NMOS 6510 - Undocumented absolute and absolute,X NOPs (TOP, SKW, IGN): $0C (NOP abs) and the absolute,X group $1C, $3C, $5C, $7C, $DC, $FC (NOP abs, x). $0C uses absolute addressing: the two bytes following form the absolute address; size = 3 bytes, cycles = 4. The abs,X variants use absolute indexed X addressing: size = 3 bytes, cycles = 4 (increased by +1 cycle when a page boundary is crossed). Operation note: these opcodes perform a memory read from the computed address; the read value is discarded. Test file references for validation are listed (Lorenz test programs).
+
+NOP (TOP, SKW, IGN)
+Type: no effect
+Opc.
+$0C
+
+Opc.
+
+Mnemonic
+NOP abs
+
+Function
+
+Size
+
+Fetch {addr}
+
+Mnemonic
+
+3
+
+Function
+
+Cycles N V - B D I Z C
+4
+
+Size
+
+Cycles N V - B D I Z C
+
+$1C
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+$3C
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+$5C
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+$7C
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+$DC
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+$FC
+
+NOP abs, x
+
+Fetch {addr}
+
+3
+
+4 (+1)
+
+Operation: These actually perform a read operation. It's just that the value read is not stored in any
+register. Further, opcode $0C uses the absolute addressing mode. The two bytes which follow it
+form the absolute address. All the other 3 byte NOP opcodes use the absolute indexed X addressing
+mode. If a page boundary is crossed, the execution time of one of these NOP opcodes is upped to 5
+clock cycles.
+Test code: Lorenz-2.15/nopa.prg, Lorenz-2.15/nopax.prg,
+Lorenz-2.15/nopb.prg, Lorenz-2.15/nopn.prg, Lorenz-2.15/nopz.prg,
+Lorenz-2.15/nopzx.prg
+
+- 44 -
+
+
+---
+Additional information can be found by searching:
+- "zero_page_x_nops" which expands on zero-page,X NOPs as analogous indexed-mode read-only NOPs
+- "examples_irq_and_skip_examples" which expands on practical examples showing use of abs,X NOPs (acknowledge IRQ, skipping instructions)

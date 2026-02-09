@@ -1,0 +1,21 @@
+# Kick Assembler - Explains assembler behavior for choosing zeropage vs absolute addressing: the assembler automatically converts arguments to zeropage mode when possible (e.g., lda $0030 becomes zeropage). Shows how to force a specific addressing form using mnemonic suffixes .a / .abs for absolute and .z / .zp for zeropage, with examples (lda.abs $0040,x, lda.a $0030,x, stx.zp zpLabel,y). Also shows defining a label (.label zpLabel = $10) and notes that forcing a mode on a mnemonic that doesn't support it has no effect (jmp.z $1000).
+
+An argument is converted to its zeropage mode if possible. This means that lda $0030 will generate an lda
+command in its zeropage mode1
+You can force the assembler to use the absolute form of the mnemonic by appending .a or .abs. The same way
+you can tell the assembler to use zeropage mode when it would otherwise use an absolute mode.
+lda.abs $0040,x
+// Uses absolute mode
+lda.a $0030,x
+// Same as abs (abbreviation)
+stx.zp zpLabel,y // Uses zeropage mode
+stx.z zpLabel,y
+// Same as zp (abbreviation)
+.label zpLabel = $10
+jmp.z $1000 // Modifies nothing, jmp don't have any zp mode
+
+
+---
+Additional information can be found by searching:
+- "6502_addressing_modes_overview" which expands on full list of addressing modes that may be chosen or forced
+- "deprecated_mnemonic_extensions" which expands on alternative (deprecated) mnemonic extensions for forcing modes

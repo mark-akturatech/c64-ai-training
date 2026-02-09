@@ -1,0 +1,29 @@
+# VIC-II Memory Banking and Address Configuration Guide - $D018 bit layout and default value:
+Bits (7-4) VVVV = screen memory base offset (16 possible positions, each $0400 apart)
+Bits (3-1) CCC = character dot-data base offset (8 positions, each $0800 apart)
+Bit 3 also selects bitmap base in bitmap mode (0 = bank base + $0000, 1 = bank base + $2000)
+Bit 0 unused.
+Default $D018 = $15 (%00010101): screen offset %0001 -> $0400, charset %010 -> $1000 (ROM charset in bank 0).
+
+Bit Layout
+----------
+
+  Bit 7  Bit 6  Bit 5  Bit 4  Bit 3  Bit 2  Bit 1  Bit 0
+  [  V  ] [  V  ] [  V  ] [  V  ] [  C  ] [  C  ] [  C  ] [  x  ]
+
+  Bits 7-4 (VVVV): Video Matrix (Screen Memory) base address offset
+  Bits 3-1 (CCC):  Character Dot-Data base address offset
+  Bit 3:           Also selects bitmap mode base address (in bitmap mode)
+  Bit 0:           Unused
+
+  Default value: $15 / #21 / %00010101
+    - Screen at offset $0400 (bits 7-4 = %0001)
+    - Charset at offset $1000 (bits 3-1 = %010) = ROM charset in bank 0
+
+
+
+---
+Additional information can be found by searching:
+- "d018_vmcsb_overview" which expands on what $D018 controls
+- "screen_memory_offsets" which expands on detail mapping of bits 7-4
+- "character_memory_offsets" which expands on detail mapping of bits 3-1

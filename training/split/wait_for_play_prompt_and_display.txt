@@ -1,0 +1,23 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - High-level 'WAIT FOR PLAY' routine: queries cassette sense (JSR $F82E), if open displays the prompt 'PRESS PLAY ON TAPE' (via kernel I/O message JSR $F12F), scans for STOP key (JSR $F8D0), and loops until the PLAY switch is closed. When closed displays 'OK' and returns. Uses the cassette-sense helper and display routines.
+
+                                *** wait for PLAY
+.,F817 20 2E F8 JSR $F82E       return cassette sense in Zb
+.,F81A F0 1A    BEQ $F836       if switch closed just exit
+                                cassette switch was open
+.,F81C A0 1B    LDY #$1B        
+                                index to "PRESS PLAY ON TAPE"
+.,F81E 20 2F F1 JSR $F12F       display kernel I/O message
+.,F821 20 D0 F8 JSR $F8D0       scan stop key and flag abort if pressed
+                                note if STOP was pressed the return is to the
+                                routine that called this one and not here
+.,F824 20 2E F8 JSR $F82E       return cassette sense in Zb
+.,F827 D0 F8    BNE $F821       loop if the cassette switch is open
+.,F829 A0 6A    LDY #$6A        
+                                index to "OK"
+.,F82B 4C 2F F1 JMP $F12F       display kernel I/O message and return
+
+
+---
+Additional information can be found by searching:
+- "cassette_sense_return" which expands on queries the 6510 I/O port to detect the cassette switch (called via JSR $F82E)
+- "tape_motor_and_spinup_delay" which expands on subsequent motor-control routines are used when starting actual tape operations

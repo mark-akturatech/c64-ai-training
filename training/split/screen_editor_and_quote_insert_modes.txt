@@ -1,0 +1,116 @@
+# COMMODORE 64 - Screen editor behavior: edit program lines after LIST; cursor keys move within 80-character logical line; hitting RETURN tokenizes and stores edited line. Limitations: editor reads only two physical lines -> 80 character effective limit. Explanation of QUOTE MODE (cursor controls and color controls produce reversed characters inside quotes), and INSERT MODE (SHIFT+INST shifts subsequent characters). Details of which cursor controls are available in quote mode and how DEL/INST behave differently in quote vs insert modes. Examples of embedding cursor moves and DEL/INST sequences within PRINT strings and warnings about difficulty of editing lines containing such control characters.
+
+  SCREEN EDITOR
+
+    The SCREEN EDITOR provides you with powerful and convenient facilities
+  for editing program text. Once a section of a program is listed to the
+  screen, the cursor keys and other special keys are used to move around
+  the screen so that you can make any appropriate changes. After making all
+  the changes you want to a specific line-number of text, hitting the
+  <RETURN> key anywhere on the line, causes the SCREEN EDITOR to read the
+  entire 80-character logical screen line.
+
+
+  94   BASIC LANGUAGE VOCABULARY
+~
+
+
+    The text is then passed to the Interpreter to be tokenized and stored
+  in the program. The edited line replaces the old version of that line in
+  memory. An additional copy of any line of text can be created simply by
+  changing the line-number and pressing <RETURN>.
+    If you use keyword abbreviations which cause a program line to exceed
+  80 characters, the excess characters will be lost when that line is
+  edited, because the EDITOR will read only two physical screen lines. This
+  is also why using INPUT for more than a total of 80 characters is not
+  possible. Thus, for all practical purposes, the length of a line of BASIC
+  text is limited to 80 characters as displayed on the screen.
+    Under certain conditions the SCREEN EDITOR treats the cursor control
+  keys differently from their normal mode of handling. If the CuRSoR is
+  positioned to the right of an odd number of double-quote marks (") the
+  EDITOR operates in what is known as the QUOTE-MODE.
+    In quote mode data characters are entered normally but the cursor
+  controls no longer move the CuRSoR, instead reversed characters are
+  displayed which actually stand for the cursor control being entered. The
+  same is true of the color control keys. This allows you to include cursor
+  and color controls inside string data items in programs. You will find
+  that this is a very important and powerful feature. That's because when
+  the text inside the quotes is printed to the screen it performs the
+  cursor positioning and color control functions automatically as part of
+  the string. An example of using cursor controls in strings is:
+
+
+
+    You type -->         10 PRINT"A(R)(R)B(L)(L)(L)C(R)(R)D": REM(R)=CRSR
+                            RIGHT, (L)=CRSR LEFT
+
+    Computer prints -->  AC BD
+
+
+     The <DEL> key is the only cursor control NOT affected by quote mode.
+   Therefore, if an error is made while keying in quote mode, the
+   <CRSR LEFT> key can't be used to back up and strike over the error -
+   even the <INST> key produces a reverse video character. Instead, finish
+   entering the line, and then, after hitting the <RETURN> key, you can
+   edit the line normally. Another alternative, if no further cursor-
+   controls are needed in the string, is to press the <RUN/STOP> and
+   <RESTORE> keys which will cancel QUOTE MODE. The cursor control keys
+   that you can use in strings are shown in Table 2-2.
+
+
+                                             BASIC LANGUAGE VOCABULARY   95
+~
+
+
+             Table 2-2. Cursor Control Characters in QUOTE MODE
+  -------------------------------------------------------------------------
+                  Control Key                      Appearance
+  -------------------------------------------------------------------------
+
+              CRSR up
+              CRSR down
+              CRSR left
+              CRSR right
+              CLR
+              HOME
+              INST
+
+  -------------------------------------------------------------------------
+
+    When you are NOT in quote mode, holding down the <SHIFT> key and then
+  pressing the INSerT <INST> key shifts data to the right of the cursor to
+  open up space between two characters for entering data between them. The
+  Editor then begins operating in INSERT MODE until all of the space opened
+  up is filled.
+    The cursor controls and color controls again show as reversed char-
+  acters in insert mode. The only difference occurs on the DELete and
+  INSerT <INST/DEL> key. The <DEL> instead of operating normally as in
+  the quote mode, now creates the reversed <T>. The <INST> key, which
+  created a reverse character in quote mode, inserts spaces normally.
+    This means that a PRINT statement can be created, containing DELetes,
+  which can't be done in quote mode. The insert mode is cancelled by
+  pressing the <RETURN>, <SHIFT> and <RETURN>, or <RUN/STOP> and <RESTORE>
+  keys. Or you can cancel the insert mode by filling all the inserted
+  spaces. An example of using DEL characters in strings is:
+
+    10 PRINT"HELLO"<DEL><INST><INST><DEL><DEL>P"
+   (Keystroke sequence shown above, appearance when listed below)
+   10 PRINT"HELP"
+
+    When the example is RUN, the word displayed will be HELP, because the
+  letters LO are deleted before the P is printed. The DELete character in
+  strings will work with LIST as well as PRINT. You can use this to "hide"
+  part or all of a line of text using this technique. However, trying to
+  edit a line with these characters will be difficult if not impossible.
+
+
+
+  96   BASIC LANGUAGE VOCABULARY
+~
+
+
+
+---
+Additional information can be found by searching:
+- "print_statement_and_quote_mode" which expands on how quote-mode control characters behave when printed
+- "keyboard_buffer_and_basic_key_handling" which expands on interaction with control keys (RVS, CTRL)

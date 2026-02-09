@@ -1,0 +1,27 @@
+# COMMODORE 64 - USR(numeric): calls user machine-language subroutine pointed to by two-byte address stored at memory locations 785-786. Caller must POKE the address into 785-786 first. The numeric argument is passed via floating-point accumulator area starting at location 97 for assembler access; when subroutine returns its result should be in the same accumulator area and USR returns that floating result. Example usage showing C=USR(B/2).
+
+  USR
+
+  TYPE: Floating-Point Function
+  FORMAT: USR (<numeric>)
+
+    Action: The USR function jumps to a User callable machine language
+  SubRoutine which has its starting address pointed to by the contents of
+  memory locations 785-786. The starting address is established before
+  calling the USR function by using POKE statements to set up locations
+  785-786. Unless POKE statements are used, locations 785-786 will give
+  you an ?ILLEGAL QUANTITY error message.
+    The value of the <numeric> argument is stored in the floating-point
+  accumulator starting at location 97, for access by the Assembler code,
+  and the result of the USR function is the value which ends up there when
+  the subroutine returns to BASIC.
+
+  EXAMPLES of USR Function:
+
+    10 B=T*SIN(Y)
+    20 C=USR(B/2)
+    30 D=USR(B/3)
+
+---
+Additional information can be found by searching:
+- "sys_statement" which expands on SYS for direct jumps to machine code vs USR which uses pointer at 785-786

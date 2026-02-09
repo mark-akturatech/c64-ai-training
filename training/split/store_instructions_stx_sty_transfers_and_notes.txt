@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Store instructions STA, STX, STY opcode tables (zeropage, zpg,X/Y, absolute, absolute,X/Y, (indirect,X), (indirect),Y). Transfer instructions TAX, TAY, TSX, TXA, TXS, TYA details (operations, flags, opcodes). Notes and footnotes about page boundary cycle penalties and branch penalties; legend for flags (+ modified, - not modified) and assembler syntax notes (forced zeropage), and a note on NMOS read-modify-write behavior causing two writes (NMOS only) which can affect devices on the bus.
+
+                            M6 .... memory bit 6
+                            M7 .... memory bit 7
+          Note on assembler syntax:
+          Some assemblers employ "OPC *oper" or a ".b" extension to the mneomonic for
+          forced zeropage addressing.
+          Note on Read-Modify-Write instructions (NMOS 6502 only):
+          Some instructions, like EOR, ASL, ROL, DEC, INC, etc., fetch a value from memory
+          to modify it and to write the modified value back to the originating address.
+          The original NMOS 6502 switches immediately into write mode after the read of
+          the value, resulting in the unmodified value being written back to the address
+          (while the value is modified in the next cycle), before the modified value is
+          finally written to the destination.
+          Normally, this should be of no concern, but it may cause issues when writing to
+          a device attached to the address bus that may trigger some action on any write
+          operation, as this address will be strobed twice (once for the intermediate,
+          unmodified write-back operation and a second time when writing the modified
+          value.)
+          This does not apply to the CMOS variants of the 6502.
+          Implementation Specific Details
+          The following sections cover traits specific to the implementation, like the
+          original NMOS version and variants by MOS Technology or the CMOS version by
+          Western Design Center (WDC).
+          "Illegal" Opcodes and Undocumented Instructions
+                  The following instructions are undocumented are not guaranteed to work.
+                  Some are highly unstable, some may even start two asynchronous threads
+                  competing in race condition with the winner determined by such miniscule
+                  factors as temperature or minor differences in the production series, at other
+                  times, the outcome depends on the exact values involved and the chip series.
+                                                                  6502 Instruction Set
+                 Use with care and at your own risk.
+                 Please mind that this section applies to the original NMOS version of the 6502
+                 by MOS Technology (and its variants, like the 6507 or 6510) only, but not to
+                 the later CMOS versions, like the W65C02S by Western Design Center (WDC). The
+                 latter either use these opcodes to implement extensions to the standard NMOS
+                 instruction set or will execute a NOP for any instruction codes still
+                 undefined.
+                 There are several mnemonics for various opcodes. Here, they are (mostly) the
+                 same as those used by the ACME and DASM assemblers with known synonyms provided
+                 in parentheses:
+                     ALR (ASR)
+                     ANC
+                     ANC (ANC2)
+                     ANE (XAA)
+                     ARR
+                     DCP (DCM)
+                     ISC (ISB, INS)
+                     LAS (LAR)
+                     LAX
+                     LXA (LAX immediate)
+                     RLA
+                     RRA
+                     SAX (AXS, AAX)
+                     SBX (AXS, SAX)
+                     SHA (AHX, AXA)
+                     SHX (A11, SXA, XAS)
+                     SHY (A11, SYA, SAY)
+                     SLO (ASO)
+                     SRE (LSE)
+                     TAS (XAS, SHS)
+                     USBC (SBC)
+
+---
+Additional information can be found by searching:
+- "note_on_read_modify_write" which expands on NMOS read-modify-write double write caveat
+- "w65c02_and_implementation_specifics" which expands on CMOS vs NMOS differences and WDC enhancements

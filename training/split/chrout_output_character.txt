@@ -1,0 +1,54 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - CHROUT ($FFD2) implementation: outputs one character (A). Saves A on stack, inspects default output device (DFLTO $9A) and routes to screen, serial-deferred send, or RS232. Handles RS232-related subcalls ($F80D/$F864), buffering into indirect pointer at $B2, and returns cleanly. Implements device selection logic and final RTS.
+
+                                *** CHROUT: OUTPUT ONE CHARACTER
+                                The KERNAL routine CHROUT ($ffd2) is vectored to this
+                                routine. On entry, (A) must hold the character to be
+                                output. The default output device number is examined, and
+                                output directed to relevant device. The screen, serial bus
+                                and RS232 all use previously described routines for their
+                                output.
+.,F1CA 48       PHA             temp store on stack
+.,F1CB A5 9A    LDA $9A         DFLTO, default output device
+.,F1CD C9 03    CMP #$03        screen?
+.,F1CF D0 04    BNE $F1D5       nope, test next device
+.,F1D1 68       PLA             retrieve (A)
+.,F1D2 4C 16 E7 JMP $E716       output to screen
+.,F1D5 90 04    BCC $F1DB       device <3
+.,F1D7 68       PLA             retrieve (A)
+.,F1D8 4C DD ED JMP $EDDD       send serial deferred
+.,F1DB 4A       LSR
+.,F1DC 68       PLA
+.,F1DD 85 9E    STA $9E         PTR1
+.,F1DF 8A       TXA
+.,F1E0 48       PHA
+.,F1E1 98       TYA
+.,F1E2 48       PHA
+.,F1E3 90 23    BCC $F208       RS232
+.,F1E5 20 0D F8 JSR $F80D
+.,F1E8 D0 0E    BNE $F1F8
+.,F1EA 20 64 F8 JSR $F864
+.,F1ED B0 0E    BCS $F1FD
+.,F1EF A9 02    LDA #$02
+.,F1F1 A0 00    LDY #$00
+.,F1F3 91 B2    STA ($B2),Y
+.,F1F5 C8       INY
+.,F1F6 84 A6    STY $A6
+.,F1F8 A5 9E    LDA $9E
+.,F1FA 91 B2    STA ($B2),Y
+.,F1FC 18       CLC
+.,F1FD 68       PLA
+.,F1FE A8       TAY
+.,F1FF 68       PLA
+.,F200 AA       TAX
+.,F201 A5 9E    LDA $9E
+.,F203 90 02    BCC $F207
+.,F205 A9 00    LDA #$00
+.,F207 60       RTS
+.,F208 20 17 F0 JSR $F017       send to RS232
+.,F20B 4C FC F1 JMP $F1FC       end output
+
+
+---
+Additional information can be found by searching:
+- "get_from_serial_rs232" which expands on receiving counterpart for serial/RS232 I/O
+- "send_secondary_address" which expands on sends secondary address and filenames when opening serial files

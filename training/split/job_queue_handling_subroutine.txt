@@ -1,0 +1,42 @@
+# byRiclianll - Job-queue communication subroutine (GOSUB 570): Implements the protocol for submitting jobs to the 1541's job queue. Initializes TRY counter, issues PRINT#15 'M-W' sequences that write the job descriptor (including track T, sector S and JOB code), increments TRY, polls the drive with PRINT#15 'M-R' and GET#15 to read status bytes, handles retries and failure cases (including close and error display), and returns when the job is accepted (E=1). This chunk encapsulates asynchronous job submission and polling logic used by SEEK/READ/WRITE steps.
+
+560  REM  JOB  QUEUE 
+570  TRY=0 
+
+580  PRINT#15, "M-W"CHR*(8)CHR*(0)CHR*(4)C 
+HR* (T) CHR* (S) CHR* (T) CHR* (S) 
+
+590  PRINT#15,  "M-W"CHR*  ( 1 )  CHR*  (O)  CHR*  (DC 
+
+HR* (JOB) 
+
+600  TRY=TRY+1 
+
+
+127 
+
+
+610  PRINT#15, "M-R"CHR« ( 1 ) CHR* (O) 
+
+620  GET#15,E* 
+
+630   IFE«=""THENE*=CHR« (O) 
+
+640  E=ASC(E«) 
+
+650  IFTRY=500G0T0680 
+
+660  IFE>127G0T0600 
+
+670  IFE=1THENRETURN 
+
+680  CLOSE 15 
+
+690  PRINT"  <DOWN>  <RVS>FAILED<:R0FF>  " 
+700  END 
+
+
+---
+Additional information can be found by searching:
+- "seek_operation_job_submission" which expands on called to submit seek jobs
+- "read_buffer_write_and_execute" which expands on called to submit read and write jobs during data transfer

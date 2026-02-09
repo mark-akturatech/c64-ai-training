@@ -1,0 +1,60 @@
+# NMOS 6510 - SHY sync examples: using SHY and related sequences to synchronize to a stable cycle for raster-timed timers (both per-line and per-frame sync techniques). Includes code snippets that use SHY to write a value that is then read to break out of a loop at a precise raster position, with notes about initialization requirements (e.g., specific register values).
+
+Function
+SP = A & X
+
+Size
+
+{addr} = A & X & {H+1}
+
+3
+
+Cycles N V - B D I Z C
+5
+
+Operation: This opcode ANDs the contents of the A and X registers (without changing the contents
+of either register) and transfers the result to the stack pointer. It then ANDs that result with the
+contents of the high byte of the target address of the operand +1 and stores that final result in
+memory.
+Instabilities:
+• The value written is ANDed with &{H+1}, except when the RDY line goes low in the 4 th
+cycle.
+• When adding Y to the target address causes a page boundary crossing, the highbyte of the
+target address is incremented by one (as expected), and then ANDed with (A & X).
+Example:
+TAS $7700,Y
+
+; 9B 00 77
+
+Equivalent Instructions:
+; save flags, A, X
+PHP
+STA $03
+; save A
+PLA
+STA $02
+; save flags
+STX $04
+; save X
+LDA $03
+AND $04
+TAX
+AND #$78
+STA $7700,Y
+TXS
+
+; A
+; and with X
+; remember A & X
+; High-byte of Address + 1
+; addr = A & X & H+1
+; sp = A & X
+
+; restore flags, A, X
+LDX $04
+; X
+LDA $03
+
+---
+Additional information can be found by searching:
+- "shy_opcode" which expands on instabilities used to derive sync behavior

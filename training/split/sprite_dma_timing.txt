@@ -1,0 +1,36 @@
+# C64 PAL/NTSC Raster Timing Reference - Timing and CPU impact of VIC-II sprite DMA. Each active sprite uses: 1 p-access (sprite pointer fetch) during VIC-II phi1, followed by 3 s-accesses (sprite data fetches) in the subsequent half-cycles. BA line goes low 3 cycles before the first s-access, causing CPU bus handover and effectively stealing ~2 extra CPU cycles per sprite for handover plus the time of the 3 s-accesses. Notes that positions vary slightly between chip variants. Gives worst-case example: on a PAL bad line with 8 sprites active, additional ~16 cycles lost, leaving ~7 cycles for CPU after bad-line stealing.
+
+
+=============================================================================
+SECTION 5: SPRITE DMA TIMING
+=============================================================================
+
+Each active sprite requires DMA (Direct Memory Access) cycles that steal
+additional CPU time:
+
+Per sprite per raster line:
+  - 1 p-access (sprite pointer fetch) - occurs in the VIC-II phi1 half-cycle
+  - 3 s-accesses (sprite data fetch) - occur in the 3 half-cycles directly
+    after the p-access
+
+The BA line goes low 3 cycles before the first s-access for each sprite,
+effectively stealing 2 additional CPU cycles per sprite for bus handover.
+
+Total CPU cycles stolen per active sprite: approximately 2 cycles for the
+bus handover + the time of the 3 s-accesses = effectively 2 cycles overhead
+per sprite.
+
+Sprite DMA cycle positions vary slightly between chip variants due to the
+different total cycle counts per line.
+
+Worst case (8 sprites active on a bad line, PAL):
+  Bad line alone:      ~23 cycles available
+  8 sprites penalty:   ~16 additional cycles lost
+  Remaining for CPU:   ~7 cycles (extremely tight)
+
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on combined effect of bad-line character fetches and sprite DMA on CPU availability
+- "vicii_memory_access_pattern" which expands on how sprite p-/s-accesses fit into the VIC-II's phi1/phi2 access phases

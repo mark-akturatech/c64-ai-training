@@ -1,0 +1,19 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initialize and start VIA 2 timer A for RS-232 transmit: save VIA CRA, load baud-rate-derived timer low/high bytes from pseudo-6551 registers ($0299/$029A) into VIA timer A ($DD04/$DD05), enable timer A interrupt, call VIA ICR setup and the next-Tx-byte setup routine, then write CRA to start the timer.
+
+.,F030 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,F033 AD 99 02 LDA $0299       get the baud rate bit time low byte
+.,F036 8D 04 DD STA $DD04       save VIA 2 timer A low byte
+.,F039 AD 9A 02 LDA $029A       get the baud rate bit time high byte
+.,F03C 8D 05 DD STA $DD05       save VIA 2 timer A high byte
+.,F03F A9 81    LDA #$81        enable timer A interrupt
+.,F041 20 3B EF JSR $EF3B       set VIA 2 ICR from A
+.,F044 20 06 EF JSR $EF06       setup next RS232 Tx byte
+.,F047 A9 11    LDA #$11        load timer A, start timer A
+.,F049 8D 0E DD STA $DD0E       save VIA 2 CRA
+.,F04C 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_get_byte_from_rx_buffer" which expands on RS232 status & buffer layout (receiving side)
+- "rs232_input_highlevel_handshake_and_interrupt_control" which expands on higher-level serial input/handshake handling and ICR management

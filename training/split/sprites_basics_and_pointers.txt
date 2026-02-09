@@ -1,0 +1,28 @@
+# An Introduction to Programming C-64 Demos - Sprite fundamentals: 8 hardware sprites, operations needed to use sprites (display, set position, shape, colour). Sprite pointers reside after screen memory ($07F8..$07FF default), each pointer byte selects a 64-byte-aligned sprite data block in current VIC bank (pointer*64). Sprite data is 63 bytes aligned to 64 bytes. VIC banks are $0000-$3FFF, $4000-$7FFF, etc.
+
+Sprites
+
+Sprite Basics
+Sprites can be used for lots of cool things. What's nice about them is that they can be moved around on the screen, without affecting the background. As you probably know already, the C-64 has 8 hardware sprites, so you can have 8 things moving around simultaneously, or synchronize their movement to make bigger objects move around the screen.
+
+You probably know that there are ways to get more than 8 sprites on the screen, but we'll go through the basics before we reveal that trick. The basics of sprites consist of the following:
+
+
+displaying them,
+setting their position,
+changing their shape and
+changing their colour.
+There are a number of things you need to do in order to make a sprite appear on the screen. You need to point it at a chunk of data, that defines what it should look like. Then you need to set the x and y coordinates. Of course, you probably also want to set the colour of the sprite. And, last but not least, you need to turn the sprite on. This is all the stuff that is listed above, and this is everything you need to be able to do to do some basic sprite effects, like moving them around on the screen, animating them, etc.
+
+
+Sprite Pointers
+The sprite pointers, ie. the adresses that contain the pointers to where the graphics data that is displayed on the screen as sprites, are located after the end of the screen memory, which is usually located at $0400. The screen memory takes up exactly 1000 bytes (40 times 25 characters), so the last 24 bytes of the memory from $0400 to $0800 are free. The last 8 ones of these are the sprite pointers, and the 16 bytes before the sprite pointers aren't used at all, unless I'm completely mistaken.
+
+So, the byte at $07f8 is the sprite pointer for the first sprite. Now, how do we fit a pointer into one byte? To represent an address in memory, we need two bytes. But sprite pointers are handled in a special way. First of all, you only point to sprite data that is located in the same VIC bank as the one where you keep the screen memory. There are four VIC banks, $0000-$3fff is the first one, the one that's used by default. A sprite takes up 63 bytes of data, but have to be aligned to 64 bytes, so you can put sprite data starting at adresses $0000, $0040, $0080, $00c0, $0100 etc.
+
+So, how many sprites can you fit into one VIC bank? 256. And how many numbers can a byte represent? 256. Aha! Now we can understand how the sprite pointers work: if you set a sprite pointer to 0, it will point to the address $0000, in the current VIC bank. If you set it to 1, it will point to $0040. If you set it to $80, it will point to $2000, and if you set it to $c0, it will point to $3000. Easy, isn't it? So, let's say you want to do a simple animation, consisting of 8 sprites, with the sprite data placed at $2000 (up to $21ff). You start by putting the value $80 into $07f8, then change it to $81, then $82, and so on up to $87, then you'd start over from $80.
+
+---
+Additional information can be found by searching:
+- "sprites_important_addresses" which expands on registers for enabling sprites and coordinates ($D015, $D000..$D00F, $D010, $D027..)
+- "sprite_multiplexer" which expands on re-using hardware sprites by changing Y coords and pointers mid-frame

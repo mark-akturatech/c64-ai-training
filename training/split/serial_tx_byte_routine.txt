@@ -1,0 +1,59 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Complete routine to transmit a byte on the IEC serial bus (starts at $ED40). Disables interrupts (SEI), sets serial data out high, checks serial data status (JSR $EEA9) to detect device presence, drives serial clock high/low via JSRs ($EE85/$EE8E), tests EOI flag (BIT $A3) and implements EOI handshake (wait for data high, then low, then high), then transmits 8 LSB-first bits: set bit count (#$08 into $A5), loop reading VIA2 DRA ($DD00) for timing/line status, shift/rotate transmit byte ($95), set data line accordingly (JSR $EEA0 or $EE97), pulse clock, delay (NOPs), write back VIA2 DRA with appropriate mask (AND/ORA/STA $DD00), decrement bit count (DEC $A5) and loop until done. Also handles serial bus timeout and device-not-present conditions.
+
+                                *** Tx byte on serial bus
+.,ED40 78       SEI             disable the interrupts
+.,ED41 20 97 EE JSR $EE97       set the serial data out high
+.,ED44 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,ED47 B0 64    BCS $EDAD       if the serial data is high go do 'device not present'
+.,ED49 20 85 EE JSR $EE85       set the serial clock out high
+.,ED4C 24 A3    BIT $A3         test the EOI flag
+.,ED4E 10 0A    BPL $ED5A       if not EOI go ??
+                                I think this is the EOI sequence so the serial clock has been released and the serial
+                                data is being held low by the peripheral. first up wait for the serial data to rise
+.,ED50 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,ED53 90 FB    BCC $ED50       loop if the data is low
+                                now the data is high, EOI is signalled by waiting for at least 200us without pulling
+                                the serial clock line low again. the listener should respond by pulling the serial
+                                data line low
+.,ED55 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,ED58 B0 FB    BCS $ED55       loop if the data is high
+                                the serial data has gone low ending the EOI sequence, now just wait for the serial
+                                data line to go high again or, if this isn't an EOI sequence, just wait for the serial
+                                data to go high the first time
+.,ED5A 20 A9 EE JSR $EEA9       get the serial data status in Cb
+.,ED5D 90 FB    BCC $ED5A       loop if the data is low
+                                serial data is high now pull the clock low, preferably within 60us
+.,ED5F 20 8E EE JSR $EE8E       set the serial clock out low
+                                now the C64 has to send the eight bits, LSB first. first it sets the serial data line
+                                to reflect the bit in the byte, then it sets the serial clock to high. The serial
+                                clock is left high for 26 cycles, 23us on a PAL Vic, before it is again pulled low
+                                and the serial data is allowed high again
+.,ED62 A9 08    LDA #$08        eight bits to do
+.,ED64 85 A5    STA $A5         set serial bus bit count
+.,ED66 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,ED69 CD 00 DD CMP $DD00       compare it with itself
+.,ED6C D0 F8    BNE $ED66       if changed go try again
+.,ED6E 0A       ASL             shift the serial data into Cb
+.,ED6F 90 3F    BCC $EDB0       if the serial data is low go do serial bus timeout
+.,ED71 66 95    ROR $95         rotate the transmit byte
+.,ED73 B0 05    BCS $ED7A       if the bit = 1 go set the serial data out high
+.,ED75 20 A0 EE JSR $EEA0       else set the serial data out low
+.,ED78 D0 03    BNE $ED7D       continue, branch always
+.,ED7A 20 97 EE JSR $EE97       set the serial data out high
+.,ED7D 20 85 EE JSR $EE85       set the serial clock out high
+.,ED80 EA       NOP             waste ..
+.,ED81 EA       NOP             .. a ..
+.,ED82 EA       NOP             .. cycle ..
+.,ED83 EA       NOP             .. or two
+.,ED84 AD 00 DD LDA $DD00       read VIA 2 DRA, serial port and video address
+.,ED87 29 DF    AND #$DF        mask xx0x xxxx, set the serial data out high
+.,ED89 09 10    ORA #$10        mask xxx1 xxxx, set the serial clock out low
+.,ED8B 8D 00 DD STA $DD00       save VIA 2 DRA, serial port and video address
+.,ED8E C6 A5    DEC $A5         decrement the serial bus bit count
+.,ED90 D0 D4    BNE $ED66       loop if not all done
+                                now all eight bits have been sent it's up to the peripheral to signal the byte was
+
+---
+Additional information can be found by searching:
+- "serial_bus_commands_and_send_control_character" which expands on invoked by send-control-character helper and other serial command code
+- "defer_serial_command_sequence" which expands on used after deferring a command to actually send the deferred byte

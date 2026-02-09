@@ -1,0 +1,73 @@
+# MACHINE - Explains linking machine language with BASIC: change BRK to RTS so a machine-language routine can return to BASIC, editing the byte for BRK to RTS (00 -> 60) or re-assembling the final line, using .X to return to BASIC, calling via SYS 828 (address $033C), and combining BASIC loops with machine-language SYS calls. Also lists the three different subroutine call types (GOSUB, SYS, JSR).
+
+
+Linking with BASIC
+------------------
+
+So far we have started up our programs with a .G (go) command from the MLM,
+and we have terminated our programs with a BRK command that returns us to the
+monitor.  That's not a convenient way to run a program; most users would
+prefer to say RUN out of BASIC and have the computer do everything.
+
+We can link to a machine language program from BASIC and when the program is
+finished, it can return to BASIC and allow the BASIC program to continue to
+run.  The commands we need are
+
+  (BASIC) SYS--Go to a machine language subroutine at the stated address;
+
+  (Machine language) RTS--Return to whoever called this subroutine.
+
+Let's change our machine language program first.  We must change from BRK at
+the end to RTS (return from subroutine) so that when the program is finished
+it will return to BASIC.  If you like, you may change it directly on the
+disassembly listing:  disassemble and then type over the 00 byte that
+represents BRK with a value of 60.  Press RETURN and you'll see that the
+instruction has now changed to RTS.  Alternatively, you may re-assemble with
+
+                                                                         :31:
+
+  .A 033C  LDA #$48
+  .A 033E  JSR $FFD2
+  .A 0341  RTS
+
+Now return to BASIC (using the .X command).  The computer will say READY; you
+may now call your program with a SYS command.
+
+Address $033C is 828 in decimal.  Thus, we type SYS 828.  When we press
+RETURN, the letter H will be printed.
+
+We're not finished.  Any machine language subroutine may be called from a
+BASIC program.  Type NEW, which clears out the BASIC work area; our machine
+language program is left untouched, since NEW is a BASIC command.  Now enter
+the following program:
+
+  100 FOR J=1 TO 10
+  110 SYS 828
+  120 NEXT J
+
+How many times will our program at 828 ($033C) be called?  How may times will
+the letter H be printed?  Will they be on the same line or separate lines?
+Type RUN and see.
+
+Project for enthusiasts:  Again, change the machine language program to say
+HI.  Use your imagination.  What else would you like the computer to say?
+Would you like to use colors or reverse font?
+
+We've achieved an important new plateau:  BASIC and machine language working
+together.  It's easier on the user, who doesn't have to learn specialized
+monitor commands.  It's easier on the programmer, too, since things that are
+easy to do in BASIC can be written in that language; things that are clumsy
+or slow in BASIC can be written in machine language.  We can get the best of
+both worlds.
+
+Let's distinguish our three different types of subroutine calls:
+
+  GOSUB--calls a BASIC subroutine from a BASIC program.
+  SYS--calls a machine language subroutine from a BASIC program.
+  JSR--calls a machine language subroutine from machine language.
+
+
+---
+Additional information can be found by searching:
+- "running_program_with_monitor" which expands on running from the monitor vs running from BASIC
+- "loops_introduction_indexed_addressing" which expands on building loops for longer output strings

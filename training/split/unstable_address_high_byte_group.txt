@@ -1,0 +1,86 @@
+# NMOS 6510 - Five unstable opcodes that AND the stored value with the high byte of the target address plus one (&{H+1}): SHA (zp),y ($93), TAS abs,y ($9B), SHY abs,x ($9C), SHX abs,y ($9E), SHA abs,y ($9F). Table: opcode, stored value (A&X, Y, X), cycle counts, and behaviour with/without DMA and page-cross conditions (shows when &{H+1} applies or drops off).
+
+DMA in Cycle N
+
+Page not crossed
+
+{H}
+
+{H}
+
+Value & {H+1}
+
+Value
+
+Page crossed
+
+{H+1} & Value
+
+{H+1} & Value
+
+Value & {H+1}
+
+Value
+
+- 48 -
+
+'To explain what's going on take a look at LDA ABX and STA ABX first.
+LDA ABX takes 4 cycles unless a page wrap occurred (address+X lies in another page than
+address) in which case the value read during the 4th cycle (which was read with the original high
+byte) is discarded and in the 5th cycle a read is made again, this time from the correct address.
+During the 4th cycle the high address byte is incremented in order to have a correct high byte if the
+5th cycle is necessary. The byte read from memory is buffered and copied to A during the read of
+the next command's opcode.
+But there's a problem with storage commands: they need to put the value to write on the internal
+bus which is used for address computations as well. To avoid collisions STA ABX contains a fix-up
+which makes it always take 5 cycles (the value is always written in the 5th cycle as the high byte is
+computed in the 4th cycle).
+This fix-up requires some transistors on the CPU; the guys at MOS forgot (or were unable?) to
+make them detect STX ABY (which becomes SHX) and a few others, they are missing that fix-up so
+this results in a collision between the value and high address byte computation.'
+
+- 49 -
+
+SHA (AXA, AHX, TEA)
+
+Type: Combinations of STA/STX/STY
+Opc.
+
+Mnemonic
+
+Function
+
+Size
+
+Cycles N V - B D I Z C
+
+$93
+
+SHA (zp), y
+
+{addr} = A & X & {H+1}
+
+2
+
+6
+
+$9F
+
+SHA abs, y
+
+{addr} = A & X & {H+1}
+
+3
+
+5
+
+Operation: This opcode stores the result of A AND X AND the high byte of the target address of
+the operand +1 in memory.
+Instabilities:
+• The value written is ANDed with &{H+1}, except when the RDY line goes low in the 4 th
+(opcode $9f) or 5th (opcode $93) cycle.
+
+---
+Additional information can be found by searching:
+- "sha_opcode" which expands on details for SHA (AXA/AHX/TEA) specific behavior
+- "shx_opcode" which expands on details for SHX behavior

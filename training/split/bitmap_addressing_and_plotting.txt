@@ -1,0 +1,52 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Formulas and method to find the byte BY containing the desired dot in the 320x200 bitmap: BY = BASE + 40*(Y AND 256) + (Y AND 7) + (X AND 504). BASIC examples to POKE or clear bits; notes on using arrays for speed (powers of two) and general plotting approach.
+
+
+                          When in bitmap mode, the lower four bits of this register, which
+                          normally control the base address of character dot-data, now control
+                          the location of the 8K bitmap.  Only Bit 3 is significant.  If it is
+                          set to 1, the graphics display memory will be in the second 8K of
+                          VIC-II memory (in this case, starting at 8192 ($2000)).  If that bit
+                          contains a 0, the first 8K will be used for the bitmap.  The upper
+                          four bits of this register, which normally control the location of the
+                          Video Display Matrix, are used in bitmap mode to establish the
+                          location of the color map within the VIC-II address space.  These four
+                          bits can hold a number from 0 to 15, which indicates on which 1K
+                          boundary the color map begins.  For example, if color memory began at
+                          1024 (1K), the value of these four bits would be 0001.
+
+                          Once the bitmap mode has been selected, and the screen and color
+                          memory areas set up, you must establish a method for turning each
+                          individual dot on and off.  The conventional method for identifying
+                          each dot is to assign it to a horizontal (X) position coordinate and a
+                          vertical (Y) coordinate.
+
+                          Horizontal position values will range from 0 to 319, where dot 0 is at
+                          the extreme left-hand side of the screen, and dot 319 at the extreme
+                          right.  Vertical positions will range from 0 to 199, where dot 0 is on
+                          the top line, and dot 199 is on the bottom line.
+
+                          Because of the unusual layout of bitmap screen data on the 64, it is
+                          fairly easy to transfer text characters to a bitmap screen, but it is
+                          somewhat awkward finding the bit which affects the screen dot having a
+                          given X-Y coordinate.  First, you must find the byte BY in which the
+                          bit resides, and then you must POKE a value into that byte which turns
+                          the desired bit on or off.  Given that the horizontal position of the
+                          dot is stored in the variable X, its vertical position is in the
+                          variable Y, and the base address of the bitmap area is in the variable
+                          BASE, you can find the desired byte with the formula:
+
+                          BY=BASE+40*(Y AND 256)+(Y AND 7)+(X AND 504)
+
+                          To turn on the desired dot,
+
+                              POKE BY, PEEK(BY) OR (2^(NOTX AND 7)
+
+                          To turn the dot off,
+
+                              POKE BY, PEEK(BY) AND (255-2^(NOTX AND 7))
+
+
+---
+Additional information can be found by searching:
+- "d011_bit5_bitmap_mode_and_bitmap_memory_layout" which expands on Bitmap memory layout and where BASE comes from (Memory Control Register)
+- "bitmap_basic_sample_program" which expands on BASIC sample showing plotting loop and BI array

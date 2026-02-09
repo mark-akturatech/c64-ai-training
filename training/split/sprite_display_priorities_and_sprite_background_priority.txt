@@ -1,0 +1,39 @@
+# COMMODORE 64 - Explains sprite priorities: sprite-to-sprite priority is fixed by sprite number (lower-numbered sprite drawn in front). Sprite-to-background priority is controlled by SPRITE-BACKGROUND PRIORITY register at 53275 ($D01B): each sprite has a bit; 0 -> sprite in front of background, 1 -> sprite behind background. Note that 'window' effects can occur when higher priority sprites have transparent 'holes' showing lower-priority sprites or background.
+
+
+  SPRITE DISPLAY PRIORITIES
+
+    Sprites have the ability to cross each other's paths, as well as cross
+  in front of, or behind other objects on the screen. This can give you a
+  truly three dimensional effect for games.
+    Sprite to sprite priority is fixed. That means that sprite 0 has the
+  highest priority, sprite 1 has the next priority, and so on, until we get
+  to sprite 7, which has the lowest priority. In other words, if sprite 1
+  and sprite 6 are positioned so that they cross each other, sprite 1 will
+  be in front of sprite 6.
+    So when you're planning which sprites will appear to be in the fore-
+  ground of the picture, they must be assigned lower sprite numbers than
+  those sprites you want to put towards the back of the scene. Those
+  sprites will be given higher sprite numbers,
+
+  +-----------------------------------------------------------------------+
+  | NOTE: A "window" effect is possible. If a sprite with higher priority |
+  | has "holes" in it (areas where the dots are not set to 1 and thus     |
+  | turned ON), the sprite with the lower priority will show through. This|
+  | also happens with sprite and background data.                         |
+  +-----------------------------------------------------------------------+
+
+    Sprite to background priority is controllable by the SPRITE-BACK-
+  GROUND priority register located at 53275 ($D01B). Each sprite has a bit
+  in this register. If that bit is 0, that sprite has a higher priority
+  than the background on the screen. In other words, the sprite appears in
+  front of background data. If that bit is a 1, that sprite has a lower
+  priority than the background. Then the sprite appears behind the back-
+  ground data.
+
+
+  COLLISION DETECTS
+
+---
+Additional information can be found by searching:
+- "sprite_multicolor_mode_bit_pairs" which expands on transparent areas in sprites affect priority blending

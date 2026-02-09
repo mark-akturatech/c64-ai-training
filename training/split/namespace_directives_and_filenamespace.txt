@@ -1,0 +1,38 @@
+# Kick Assembler - Section 9.4: The .namespace directive and how it places symbols/labels inside a named namespace, examples of defining vic.* labels and using them (vic.borderColor), and .filenamespace to place an entire file's content into a namespace — usage example for file partitioning.
+
+9.4. The Namespace Directives
+As already seen you can declare namespaces with the namespace directive. When declared it places a symbol
+inside the scope the parent namespace so the labels inside can be accessed as local fields of the namespace symbol:
+.namespace vic {
+.label borderColor = $d020
+.label backgroundColor0 = $d021
+.label backgroundColor1 = $d022
+
+38
+
+Scopes and Namespaces
+
+.label backgroundColor2 = $d023
+}
+lda #0
+sta vic.backgroundColor0
+sta vic.borderColor
+
+Namespaces are normally used to make sure that code in a source file (Like a library) is not colliding with
+other parts of the code. For this, Place the filenamespace directive at the top of the file and everything after that
+is placed in the desired namespace:
+/* FILE 0 */
+jsr part1.init
+jsr part1.exec
+jsr part2.init
+jsr part2.exec
+rts
+/* FILE 1 */
+.filenamespace part1
+init:
+...
+
+---
+Additional information can be found by searching:
+- "scopes_and_namespaces_namespaces" which expands on declaration and reuse of namespaces
+- "front_matter_and_table_of_contents_ignored" which expands on TOC references to Chapter 9 for namespace directives

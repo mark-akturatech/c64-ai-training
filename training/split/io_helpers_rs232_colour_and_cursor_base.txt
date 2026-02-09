@@ -1,0 +1,84 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - I/O helpers, RS232 parity/start-bit handling, colour RAM helper, waiting for STOP-key, baud table and small hardware helpers: wrappers to open output channels, RS232 start-bit/parity flagging, save current colour to colour RAM, wait routine sampling keyboard/jiffy clock, baud rate table for PAL, and routines returning base address of I/O devices and screen geometry and read/set cursor position helper.
+
+                                *** unused
+.:E4AC 5C
+
+                                *** open channel for output
+.,E4AD 48       PHA             save the flag byte
+.,E4AE 20 C9 FF JSR $FFC9       open channel for output
+.,E4B1 AA       TAX             copy the returned flag byte
+.,E4B2 68       PLA             restore the alling flag byte
+.,E4B3 90 01    BCC $E4B6       if there is no error skip copying the error flag
+.,E4B5 8A       TXA             else copy the error flag
+.,E4B6 60       RTS             
+
+                                *** unused bytes
+.:E4B7 AA AA AA AA AA AA AA AA
+.:E4BF AA AA AA AA AA AA AA AA
+.:E4C7 AA AA AA AA AA AA AA AA
+.:E4CF AA AA AA AA AA
+
+                                *** flag the RS232 start bit and set the parity
+.,E4D3 85 A9    STA $A9         save the start bit check flag, set start bit received
+.,E4D5 A9 01    LDA #$01        set the initial parity state
+.,E4D7 85 AB    STA $AB         save the receiver parity bit
+.,E4D9 60       RTS
+
+                                *** save the current colour to the colour RAM
+.,E4DA AD 21 D0 LDA $D021       get the current colour code
+.,E4DD 91 F3    STA ($F3),Y     save it to the colour RAM
+.,E4DF 60       RTS             
+
+                                *** wait ~8.5 seconds for any key from the STOP key column
+.,E4E0 69 02    ADC #$02        set the number of jiffies to wait
+.,E4E2 A4 91    LDY $91         read the stop key column
+.,E4E4 C8       INY             test for $FF, no keys pressed
+.,E4E5 D0 04    BNE $E4EB       if any keys were pressed just exit
+.,E4E7 C5 A1    CMP $A1         compare the wait time with the jiffy clock mid byte
+.,E4E9 D0 F7    BNE $E4E2       if not there yet go wait some more
+.,E4EB 60       RTS             
+
+                                *** baud rate tables for PAL C64
+                                baud rate word is calculated from ..
+                                
+                                (system clock / baud rate) / 2 - 100
+                                
+                                    system clock
+                                    ------------
+                                PAL       985248 Hz
+                                NTSC     1022727 Hz
+.:E4EC 19 26                      50   baud   985300
+.:E4EE 44 19                      75   baud   985200
+.:E4F0 1A 11                     110   baud   985160
+.:E4F2 E8 0D                     134.5 baud   984540
+.:E4F4 70 0C                     150   baud   985200
+.:E4F6 06 06                     300   baud   985200
+.:E4F8 D1 02                     600   baud   985200
+.:E4FA 37 01                    1200   baud   986400
+.:E4FC AE 00                    1800   baud   986400
+.:E4FE 69 00                    2400   baud   984000
+
+                                *** return the base address of the I/O devices
+.,E500 A2 00    LDX #$00        get the I/O base address low byte
+.,E502 A0 DC    LDY #$DC        get the I/O base address high byte
+.,E504 60       RTS             
+
+                                *** return the x,y organization of the screen
+.,E505 A2 28    LDX #$28        get the x size
+.,E507 A0 19    LDY #$19        get the y size
+.,E509 60       RTS             
+
+                                *** read/set the x,y cursor position
+.,E50A B0 07    BCS $E513       if read cursor go do read
+.,E50C 86 D6    STX $D6         save the cursor row
+.,E50E 84 D3    STY $D3         save the cursor column
+.,E510 20 6C E5 JSR $E56C       set the screen pointers for the cursor row, column
+.,E513 A6 D6    LDX $D6         get the cursor row
+.,E515 A4 D3    LDY $D3         get the cursor column
+.,E517 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "basic_io_wrappers_and_error_handler" which expands on open/close wrappers interact with channel open helpers
+- "screen_keyboard_init_and_input_handling" which expands on cursor/screen geometry helpers used by screen routines

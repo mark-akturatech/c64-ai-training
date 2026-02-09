@@ -1,0 +1,58 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Screen-scrolling routine. Saves tape buffer start/end pointers on the stack, adjusts cursor and input-row markers, decrements the screen-row marker, loops to fetch screen addresses (JSR $E9F0), shifts screen lines up (JSR $E9C8), clears the last screen line (JSR $E9FF), then adjusts the start-of-logical-line bits in the start-of-line pointer tables (D9/DA), marks the last line as a logical start, loops to handle multi-line scrolls, restores/increments cursor and row markers, and finally updates keyboard column drive via VIA writes and reads the keyboard row port. Ensures tape pointers are preserved across the scroll.
+
+
+                                *** scroll the screen
+.,E8EA A5 AC    LDA $AC         copy the tape buffer start pointer
+.,E8EC 48       PHA             save it
+.,E8ED A5 AD    LDA $AD         copy the tape buffer start pointer
+.,E8EF 48       PHA             save it
+.,E8F0 A5 AE    LDA $AE         copy the tape buffer end pointer
+.,E8F2 48       PHA             save it
+.,E8F3 A5 AF    LDA $AF         copy the tape buffer end pointer
+.,E8F5 48       PHA             save it
+.,E8F6 A2 FF    LDX #$FF        set to -1 for pre increment loop
+.,E8F8 C6 D6    DEC $D6         decrement the cursor row
+.,E8FA C6 C9    DEC $C9         decrement the input cursor row
+.,E8FC CE A5 02 DEC $02A5       decrement the screen row marker
+.,E8FF E8       INX             increment the line number
+.,E900 20 F0 E9 JSR $E9F0       fetch a screen address, set the start of line X
+.,E903 E0 18    CPX #$18        compare with last line
+.,E905 B0 0C    BCS $E913       branch if >= $16
+.,E907 BD F1 EC LDA $ECF1,X     get the start of the next line pointer low byte
+.,E90A 85 AC    STA $AC         save the next line pointer low byte
+.,E90C B5 DA    LDA $DA,X       get the start of the next line pointer high byte
+.,E90E 20 C8 E9 JSR $E9C8       shift the screen line up
+.,E911 30 EC    BMI $E8FF       loop, branch always
+.,E913 20 FF E9 JSR $E9FF       clear screen line X
+                                now shift up the start of logical line bits
+.,E916 A2 00    LDX #$00        clear index
+.,E918 B5 D9    LDA $D9,X       get the start of line X pointer high byte
+.,E91A 29 7F    AND #$7F        clear the line X start of logical line bit
+.,E91C B4 DA    LDY $DA,X       get the start of the next line pointer high byte
+.,E91E 10 02    BPL $E922       if next line is not a start of line skip the start set
+.,E920 09 80    ORA #$80        set line X start of logical line bit
+.,E922 95 D9    STA $D9,X       set start of line X pointer high byte
+.,E924 E8       INX             increment line number
+.,E925 E0 18    CPX #$18        compare with last line
+.,E927 D0 EF    BNE $E918       loop if not last line
+.,E929 A5 F1    LDA $F1         get start of last line pointer high byte
+.,E92B 09 80    ORA #$80        mark as start of logical line
+.,E92D 85 F1    STA $F1         set start of last line pointer high byte
+.,E92F A5 D9    LDA $D9         get start of first line pointer high byte
+.,E931 10 C3    BPL $E8F6       if not start of logical line loop back and
+                                scroll the screen up another line
+.,E933 E6 D6    INC $D6         increment the cursor row
+.,E935 EE A5 02 INC $02A5       increment screen row marker
+.,E938 A9 7F    LDA #$7F        set keyboard column c7
+.,E93A 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+.,E93D AD 01 DC LDA $DC01       read VIA 1 DRB, keyboard row port
+.,E940 C9 FB    CMP #$FB        compare with row r2 active, [CTL]
+.,E942 08       PHP             save status
+.,E943 A9 7F    LDA #$7F        set keyboard column c7
+.,E945 8D 00 DC STA $DC00       save VIA 1 DRA, keyboard column drive
+
+---
+Additional information can be found by searching:
+- "newline_and_carriage_return_handling" which expands on calls this routine when newline reaches the bottom of the screen
+- "insert_space_and_shift_screen_line" which expands on shares line/colour RAM shifting concepts (but operates across whole screen lines)
+- "set_colour_code" which expands on colour state preserved while scrolling

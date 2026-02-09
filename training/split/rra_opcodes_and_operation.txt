@@ -1,0 +1,123 @@
+# NMOS 6510 - Complete listing of the undocumented RRA (RRD) opcodes and addressing modes with opcode bytes, operand sizes and cycles; the operation semantics (ROR memory then ADC A,{addr}+C), how ROR shifts bits and that ADC sets flags N,V,Z,C and depends on the decimal flag; example usage (RRA $030C) and equivalent instruction sequence (ROR then ADC); test program references.
+
+2
+
+5
+
+o o
+
+i
+
+o x
+
+RRA zp, x
+
+2
+
+6
+
+o o
+
+i
+
+o x
+
+$63
+
+RRA (zp, x)
+
+2
+
+8
+
+o o
+
+i
+
+o x
+
+$73
+
+RRA (zp), y
+
+2
+
+8
+
+o o
+
+i
+
+o x
+
+$6F
+
+RRA abs
+
+3
+
+6
+
+o o
+
+i
+
+o x
+
+$7F
+
+RRA abs, x
+
+3
+
+7
+
+o o
+
+i
+
+o x
+
+$7B
+
+RRA abs, y
+
+3
+
+7
+
+o o
+
+i
+
+o x
+
+Operation: Rotate one bit right in memory, then add memory to accumulator (with carry).
+•
+•
+
+LSB is shifted into the carry flag and carry flag is shifted into bit 7 by the ROR
+then all flags are set according to the ADC
+
+This instruction inherits the decimal flag dependency from ADC. For the behaviour in decimal
+mode see Unintended decimal mode: RRA (RRD).
+
+Example:
+RRA $030C
+
+;6F 0C 03
+
+Equivalent Instructions:
+ROR $030C
+ADC $030C
+Test code: Lorenz-2.15/rraa.prg, Lorenz-2.15/rraax.prg,
+Lorenz-2.15/rraay.prg, Lorenz-2.15/rraix.prg,
+Lorenz-2.15/rraiy.prg, Lorenz-2.15/rraz.prg,
+Lorenz-2.15/rrazx.prg, 64doc/droradc.prg
+
+
+---
+Additional information can be found by searching:
+- "noise_lfsr_example_of_rra" which expands on example using RRA as a fast noise/LFSR generator
+- "rra_as_ror_simulation_addressing_modes" which expands on how RRA can simulate extra ROR addressing modes if clobbering A/flags is acceptable
+- "ignored_page_14" which expands on page footer near this section

@@ -1,0 +1,22 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - VPRTY: compute BCC over the loaded block by XOR-ing fetched bytes into SHCNH (running parity), incrementing addresses, and checking CMPSTE for end-of-block. If computed BCC doesn't match OCHAR, flag checksum error (CKERR via UDST). On success, return to PREND.
+
+                                ;COMPUTE PARITY OVER LOAD
+                                ;
+.,FB72 B1 AC    LDA ($AC),Y     VPRTY  LDA (SAL)Y      ;CALC BLOCK BCC
+.,FB74 45 AB    EOR $AB         EOR    SHCNH
+.,FB76 85 AB    STA $AB         STA    SHCNH
+.,FB78 20 DB FC JSR $FCDB       JSR    INCSAL          ;INCREMENT ADDRESS
+.,FB7B 20 D1 FC JSR $FCD1       JSR    CMPSTE          ;TEST AGAINST END
+.,FB7E 90 F2    BCC $FB72       BCC    VPRTY           ;NOT DONE YET...
+.,FB80 A5 AB    LDA $AB         LDA    SHCNH           ;CHECK FOR BCC CHAR MATCH...
+.,FB82 45 BD    EOR $BD         EOR    OCHAR
+.,FB84 F0 05    BEQ $FB8B       BEQ    RD180           ;...YES, EXIT
+                                ;CHKSUM ERROR
+.,FB86 A9 20    LDA #$20        LDA    #CKERR
+.,FB88 20 1C FE JSR $FE1C       JSR    UDST
+.,FB8B 4C BC FE JMP $FEBC       RD180  JMP PREND
+
+---
+Additional information can be found by searching:
+- "store_or_verify_and_address_increment" which expands on This parity routine uses the same SAL/SAH pointers managed during store/verify and is called after finishing read passes
+- "restore_addresses_and_newch_init" which expands on If more bytes are to be read or upon exit, RD300/NEWCH restore and init routines are used

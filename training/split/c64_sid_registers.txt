@@ -1,0 +1,59 @@
+# MACHINE - Commodore 64 SID (6581) register usage. Voice frequency low/high bytes: Voice1 $D400/$D401, Voice2 $D407/$D408, Voice3 $D40E/$D40F. Pulse width and high bits at $D402-$D403 etc. Waveform and control registers (Tst, Rng, Syn, On/Off, Mod) at $D404/$D40B/$D412. ADSR envelopes: Attack/Decay ($D405/$D40C/$D413), Sustain/Release ($D406/$D40D/$D414). Filter & Volume: $D415 low bits, $D416 filter freq high byte, $D417 resonance & filter voices selection, $D418 master volume/filter shape/voice3 off. Sense read-only registers: $D419 paddle X, $D41A paddle Y, $D41B voice 3 output, $D41C envelope 3.
+
+Commodore 64 6581 Usage (SID)
+-----------------------------
+
+                             Voices (write only)
+ Voice1 Voice2 Voice3                                   Voice1 Voice2 Voice3
+                      +---+---+---+---+---+---+---+---+
+ $D400  $D407  $D40E  |                       Low Byte|  54272  54279  54286
+                      +- Frequency - - - - - - - - - -+
+ $D401  $D408  $D40F  |                      High Byte|  54273  54280  54287
+                      +---+---+---+---+---+---+---+---+
+ $D402  $D409  $D410  | Pulse Width           Low Byte|  54274  54281  54288
+                      +---+---+---+---+- - - - - - - -+
+ $D403  $D40A  $D411  | 0 | 0 | 0 | 0 |      High Bits|  54275  54282  54289
+                      +---+---+---+---+---+---+---+---+
+ $D404  $D40B  $D412  |   Waveform    |Tst|Rng|Syn|On/|  54276  54283  54290
+                      |Noi|Pul|Saw|Tri|   |Mod|   |Off|
+                      +---+---+---+---+---+---+---+---+
+ $D405  $D40C  $D413  |     Attack    |     Decay     |  54277  54284  54291
+                      | 2 ms - 8 sec  | 6 ms - 24 sec |
+                      +---+---+---+---+---+---+---+---+
+ $D406  $D40D  $D414  |    Sustain    |    Release    |  54278  54285  54292
+                      |     Level     | 6 ms - 24 sec |
+                      +---+---+---+---+---+---+---+---+
+
+
+
+                        Filter & Volume (write only)
+
+                      +---+---+---+---+---+---+---+---+
+               $D415  | 0 | 0 | 0 | 0 |       Low Bits|  54293
+                      +---+---+---+---+- - - - - - - -+
+               $D416  | Filter Frequency     High Byte|  54294
+                      +---+---+---+---+---+---+---+---+
+               $D417  |   Resonance   | Filter Voices |  54295
+                      |               |ext| 1 | 2 | 3 |
+                      +---+---+---+---+---+---+---+---+
+               $D418  |V3 |FilterShape|    Master     |  54296
+                      |Off|Hi |BP |Low|    Volume     |
+                      +---+---+---+---+---+---+---+---+
+
+
+                            Sense (read only)
+
+                      +---+---+---+---+---+---+---+---+
+               $D419  |           Paddle X            |  54297
+                      +---+---+---+---+---+---+---+---+
+               $D41A  |           Paddle Y            |  54298
+                      +---+---+---+---+---+---+---+---+
+               $D41B  |        Voice 3 Output         |  54299
+                      +---+---+---+---+---+---+---+---+
+               $D41C  |          Envelope 3           |  54300
+                      +---+---+---+---+---+---+---+---+
+
+
+---
+Additional information can be found by searching:
+- "c64_memory_map_high_memory" which expands on SID I/O region in $D400 area

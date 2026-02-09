@@ -1,0 +1,44 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Explains the meaning of the diagram lines and symbols: 'Cycl-#' (clock cycle counts per raster line and variant-specific lengths: 63 cycles on 6569, 64 on 6567R56A, 65 on 6567R8), the included previous/next-line cycles, the bus signals lines ('�0', 'IRQ', 'BA', 'AEC') and their phase meaning, the VIC and 6510 access-type symbols (c, g, 0-7, s, r, i) and CPU markers (x, X) with full definitions, and the 'Graph.' and 'X coo.' projection notes (how the 40-column display projection relates to sprite positioning and that the visible border on actual video is generated ~8 pixels later than shown).
+
+
+
+The line "Cycl-#" show the number of the clock cycle within the raster
+line. The line starts with cycle 1 and consists of 63 cycles on the 6569,
+of 64 cycles on the 6567R56A and of 65 cycles on the 6567R8. The last cycle
+of the previous line and the first cycle of the next line have also been
+included in the diagrams to make things clearer.
+
+The lines "�0", "IRQ", "BA" and "AEC" reflect the state of the bus signals
+with the same names. �0 is low in the first phase and high in the second
+phase.
+
+The symbols in the lines "VIC" and "6510" show what kind of access VIC and
+6510 do in the corresponding clock phase (for an explanation of the
+different access types of the VIC see section 3.6.2.):
+
+  c  Access to video matrix and Color RAM (c-access)
+  g  Access to character generator or bitmap (g-access)
+ 0-7 Reading the sprite data pointer for sprite 0-7 (p-access)
+  s  Reading the sprite data (s-access)
+  r  DRAM refresh
+  i  Idle access
+
+  x  Read or write access of the processor
+  X  Processor may do write accesses, stops on first read (BA is low and so
+     is RDY)
+
+The line "X coo." contains the X coordinates of the beginning of each clock
+phase (thus the "\\\" as a reminder) and the line "Graph." is a projection
+of the 40 column display window and the border to these coordinates, for
+positioning sprites. However, this doesn't correspond to the signal on the
+VIC video output. Also you cannot see from the "Graph." line when the
+border unit generates the border. This happens approx. 8 pixels later than
+shown in the "Graph." line.
+
+---
+Additional information can be found by searching:
+- "timing_diagram_6569_badline_no_sprites" which expands on Diagram using the symbols and signals explained here
+- "timing_diagram_6569_nobadline_no_sprites" which expands on Diagram using the symbols and signals explained here
+- "timing_diagram_6567r56a_badline_sprites5_7" which expands on Diagram using the symbols and signals explained here
+- "timing_diagram_6567r8_nobadline_sprites2_7" which expands on Diagram using the symbols and signals explained here
+- "timing_cpu_access_using_vic_g_accesses" which expands on Practical timing technique that uses g-accesses to locate CPU writes

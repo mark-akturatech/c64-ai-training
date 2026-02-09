@@ -1,0 +1,22 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - Poll/wait sequence calling $F82E and handling result flags; calls device/listener routines ($F12F, $F8D0) and checks processor status bits (BIT $01) to determine flow. Ends by clearing carry and returning.
+
+.,F817 20 2E F8 JSR $F82E
+.,F81A F0 1A    BEQ $F836
+.,F81C A0 1B    LDY #$1B
+.,F81E 20 2F F1 JSR $F12F
+.,F821 20 D0 F8 JSR $F8D0
+.,F824 20 2E F8 JSR $F82E
+.,F827 D0 F8    BNE $F821
+.,F829 A0 6A    LDY #$6A
+.,F82B 4C 2F F1 JMP $F12F
+.,F82E A9 10    LDA #$10
+.,F830 24 01    BIT $01
+.,F832 D0 02    BNE $F836
+.,F834 24 01    BIT $01
+.,F836 18       CLC
+.,F837 60       RTS
+
+---
+Additional information can be found by searching:
+- "increment_a6_and_check_limit" which expands on invoked after counter updates
+- "initialize_system_and_device_state_for_io" which expands on higher-level init uses this wait loop

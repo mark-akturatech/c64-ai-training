@@ -1,0 +1,67 @@
+# 6502 Instruction Set - Additional W65C02 NOP opcodes (various sizes/cycles) listed numerically and by opcode values. Modified cycle times and penalties: BCD arithmetic cycle penalty for ADC/SBC (extra cycle in decimal mode), read-modify-write behaviors changed (no initial writeback; dummy read instead) and absolute-indexed RMW instructions may be faster if no page crossing. Indirect JMP page-boundary behavior fixed but adds cycle on boundary. Behavioral changes summary: decimal flag cleared on reset/interrupt, no undefined opcodes (reserved opcodes execute as NOPs), correct N/V/Z flags for decimal math, indexed addressing page behavior changes, read-modify-write timing changes, BRK timing changes, and RDY pin bidirectional WAI behavior.
+
+                      2 [-----0--]   BBR2 oper        2F   2      5**
+                      3 [----0---]   BBR3 oper        3F   2      5**
+                      4 [---0----]   BBR4 oper        4F   2      5**
+                      5 [--0-----]   BBR5 oper        5F   2      5**
+                      6 [-0------]   BBR6 oper        6F   2      5**
+                      7 [0-------]   BBR7 oper        7F   2      5**
+                 BBS  Branch on Bit Set***
+                      Similar to BBR, but branches on bit n set.
+                      Individual mnemonics designate the tested bit,
+                      as in BBSn, where n = 0..7.
+                      As with all branch instructions, the address
+                      mode is relative, taking a signed single-byte
+                      offset as operand.
+                      branch on An = 1                    N Z C I D V
+                                                          - - - - - -
+                      bit tested     assembler       opc bytes cycles
+                      0 [-------1]   BBS0 oper        8F   2      5**
+                      1 [------1-]   BBS1 oper        9F   2      5**
+                      2 [-----1--]   BBS2 oper        AF   2      5**
+                      3 [----1---]   BBS3 oper        BF   2      5**
+                      4 [---1----]   BBS4 oper        CF   2      5**
+                      5 [--1-----]   BBS5 oper        DF   2      5**
+                      6 [-1------]   BBS6 oper        EF   2      5**
+                      7 [1-------]   BBS7 oper        FF   2      5**
+                 BRA  Branch Always
+                      Similar to other branch instructions, but
+                      branches unconditionally.
+                      Equivalent to a relative jump.
+                      PC+2 + operand -> PC                N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                                                     6502 Instruction Set
+                      relative       BRA oper         80   2      3*
+                 PHX  Push X Register on Stack
+                      push X                              N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      stack/implied PHX               DA   1      3
+                 PHY  Push Y Register on Stack
+                      push Y                              N Z C I D V
+                                                          - - - - - -
+                      addressing     assembler       opc bytes cycles
+                      stack/implied PHY               5A   1      3
+                 PLX  Pull X Register from Stack
+                      pull X                              N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      implied        PLA              FA   1      4
+                 PLY  Pull Y Register from Stack
+                      pull Y                              N Z C I D V
+                                                          + + - - - -
+                      addressing     assembler       opc bytes cycles
+                      implied        PLA              7A   1      4
+                 RMB  Reset Memory Bit ***
+                      Resets a bit in memory at the given zeropage
+                      location. This is an entire family of eight
+                      instructions in total, resetting one of bits #0
+                      to #7, each. Individual mnemonics designate the
+                      bit to be reset, as in RMBn, where n = 0..7.
+                      The operand is always a zeropage address.
+
+---
+Additional information can be found by searching:
+- "w65c02_additional_instructions_bit_manipulation" which expands on bit-manipulation instruction set and opcodes
+- "implementation_specifics_and_illegal_opcodes_intro" which expands on differences between NMOS undocumented opcodes and WDC behavior

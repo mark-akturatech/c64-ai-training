@@ -1,0 +1,106 @@
+# ********* - Mirrored VIC-II register images in $D040-$D3FF due to limited decoding (every 64 bytes mirrors), then SID register block introduction ($D400-$D41C): 6581 SID provides three voices, each with frequency, pulse width, envelope (ADSR), waveform control, oscillator sync/ring mod, and programmable filters (low/high/band-pass).
+
+interrupt used for keyboard scanning, or the more complexly timed
+interrupts that drive the tape read and write routines).  As you will
+see below, the CIA chip has a host of other features to aid in
+Input/Output functions.
+
+Location Range: 56320-56321 ($DC00-$DC01)
+CIA #1 Data Ports A and B
+
+These registers are where the actual communication with outside
+devices takes place.  Bits of data written to these registers can be
+sent to external devices, while bits of data that those devices send
+can be read here.
+
+The keyboard is so necessary to the computer's operation that you may
+have a hard time thinking of it as a peripheral device.  Nonetheless,
+it cannot be directly read by the 6510 microprocessor.  Instead, the
+keys are connected in a matrix of eight rows by eight columns to CIA
+#1 Ports A and B.  The layout of this matrix is shown below.
+
+WRITE TO PORT A               READ PORT B (56321, $DC01)
+56320/$DC00
+         Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
+
+Bit 7    STOP    Q       C=      SPACE   2       CTRL    <-      1
+
+Bit 6    /       ^       =       RSHIFT  HOME    ;       *       LIRA
+
+Bit 5    ,       @       :       .       -       L       P       +
+
+Bit 4    N       O       K       M       0       J       I       9
+
+Bit 3    V       U       H       B       8       G       Y       7
+
+Bit 2    X       T       F       C       6       D       R       5
+
+Bit 1    LSHIFT  E       S       Z       4       A       W       3
+
+Bit 0    CRSR DN F5      F3      F1      F7      CRSR RT RETURN  DELETE
+
+As you can see, there are two keys which do not appear in the matrix.
+The SHIFT LOCK key is not read as a separate key, but rather is a
+mechanical device which holds the left SHIFT key switch in a closed
+position.  The RESTORE key is not read like the other keys either.  It
+is directly connected to the NMI interrupt line of the 6510
+microprocessor, and causes an NMI interrupt to occur whenever it is
+pressed (not just when it is pressed with the STOP key).
+
+In order to read the individual keys in the matrix, you must first set
+Port A for all outputs (255, $FF), and Port B for all inputs (0),
+using the Data Direction Registers.  Note that this is the default
+condition.  Next, you must write a 0 in the bit of Data Port A that
+corresponds to the column that you wish to read, and a 1 to the bits
+that correspond to columns you wish to ignore.  You will then be able
+to read Data Port B to see which keys in that column are being pushed.
+
+A 0 in any bit position signifies that the key in the corresponding
+row of the selected column is being pressed, while a 1 indicates that
+the key is not being pressed.  A value of 255 ($FF) means that no keys
+in that column are being pressed.
+
+Fortunately for us all, an interrupt routine causes the keyboard to be
+read, and the results are made available to the Operating System
+automatically every 1/60 second.  And even when the normal interrupt
+routine cannot be used, you can use the Kernal SCNKEY routine at 65439
+($FF9F) to read the keyboard.
+
+These same data ports are also used to read the joystick controllers.
+Although common sense might lead you to believe that you could read
+the joystick that is plugged into the port marked Controller Port 1
+from Data Port A, and the second joystick from Data Port B, there is
+nothing common about the Commodore 64.  Controller Port 1 is read from
+Data Port B, and Controller Port 2 is read from CIA #1 Data Port A.
+
+Joysticks consist of five switches, one each for up, down, right, and
+left directions, and another for the fire button.  The switches are
+read like the key switches--if the switch is pressed, the
+corresponding bit will read 0, and if it is not pressed, the bit will
+be set to 1.  From BASIC, you can PEEK the ports and use the AND and
+NOT operators to mask the unused bits and inverse the logic for easier
+comprehension.  For example, to read the joystick in Controller Port
+1, you could use the statement:
+
+S1=NOT PEEK(56321)AND15
+
+The meaning of the possible numbers returned are:
+
+ 0 = none pressed
+ 1 = up
+ 2 = down
+ 4 = left
+ 5 = up left
+ 6 = down left
+ 8 = right
+ 9 = up right
+10 = down right
+
+The same technique can be used for joystick 2, by substituting 56320
+as the number to PEEK.  By the way, the 3 and 7 aren't listed because
+they represent impossible combinations like up-down.
+
+
+---
+Additional information can be found by searching:
+- "sid_voice_registers_and_controls" which expands on Detailed SID register definitions follow

@@ -1,0 +1,36 @@
+# An Introduction to Programming C-64 Demos - Loop unrolling example: a loop of INC table,X / DEX / BNE takes ~12 cycles per iteration (256 iterations ~3074 cycles). Unrolled static sequence of INC table+N saves branch/loop overhead: 256 * 6 cycles = 1536 cycles. Trade-off: memory usage vs speed.
+
+Loop Unrolling
+Loop unrolling means that you optimize away the overhead that's inherent in all loops, ie. the code that changes and checks a counter and branches. Let's say you have the following loop in a speed critical section of a program:
+
+
+           ldx #$00      ; 2 cycles
+loop
+           inc table,x   ; 7 cycles
+           dex           ; 2 cycles
+           bne loop      ; 3 cycles
+If you count the cycles in the above code, you'll see each iteration through the loop will take 12 cycles9. It's executed 256 times, which means that the total number of cycles used for the above code is $ 256 * 12 + 2 = 3074$ cycles. That's quite a lot of raster time!
+
+Let's unroll the loop and see if we can get it any faster... The code will look like this:
+
+
+           inc table     ; 6 cycles
+           inc table+1   ; 6 cycles
+           inc table+2   ; 6 cycles
+           inc table+3   ; 6 cycles
+           inc table+4   ; 6 cycles
+
+           .
+           .
+           .
+
+           inc table+253 ; 6 cycles
+           inc table+254 ; 6 cycles
+           inc table+255 ; 6 cycles
+It's pretty obvious that this piece of code will need lots of more storage space (three whole pages), but let's say that we have lots of free memory, so that isn't a problem. What about the execution time? Well, each instruction takes 6 cycles, so we'll use $ 6 * 256 = 1536$ cycles. The used raster time is halved!
+
+Of course, you won't gain as much as this in the usual case, but there's a lot of time to spare with this technique.
+
+---
+Additional information can be found by searching:
+- "using_tables" which expands on table-driven approaches often used with unrolled code

@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - NXLN/NEWLIN/SCROL/CLRLN logic: routines for moving to next physical line, wrapping double lines, scrolling up/down and clearing lines. Handles pointer transfers, HI byte pointer fixes (LDTB1, LDTB2 table handling), and coordinates with SETPNT to set PNT/Y for display operations.
+
+.,E84E D0 04    BNE $E854       BNE    NXT6
+.,E850 A9 00    LDA #$00        LDA    #0
+.,E852 85 C7    STA $C7         STA    RVS
+.,E854 C9 1D    CMP #$1D        NXT6   CMP #$1D
+.,E856 D0 12    BNE $E86A       BNE    NXT61
+.,E858 98       TYA                    TYA
+.,E859 F0 09    BEQ $E864       BEQ    BAKBAK
+.,E85B 20 A1 E8 JSR $E8A1       JSR    CHKBAK
+.,E85E 88       DEY             DEY
+.,E85F 84 D3    STY $D3         STY    PNTR
+.,E861 4C A8 E6 JMP $E6A8              JMP LOOP2
+.,E864 20 01 E7 JSR $E701       BAKBAK JSR BKLN
+.,E867 4C A8 E6 JMP $E6A8       JMP    LOOP2
+.,E86A C9 13    CMP #$13        NXT61  CMP #$13
+.,E86C D0 06    BNE $E874       BNE    SCCL
+.,E86E 20 44 E5 JSR $E544       JSR    CLSR
+.,E871 4C A8 E6 JMP $E6A8       JPL2   JMP LOOP2
+                                SCCL
+.,E874 09 80    ORA #$80        ORA    #$80            ;MAKE IT UPPER CASE
+.,E876 20 CB E8 JSR $E8CB       JSR    CHKCOL          ;TRY FOR COLOR
+.,E879 4C 4F EC JMP $EC4F              JMP UPPER       ;WAS JMP LOOP2
+                                ;
+.,E87C 46 C9    LSR $C9         NXLN   LSR LSXP
+.,E87E A6 D6    LDX $D6         LDX    TBLX
+.,E880 E8       INX             NXLN2  INX
+.,E881 E0 19    CPX #$19        CPX    #NLINES         ;OFF BOTTOM?
+.,E883 D0 03    BNE $E888       BNE    NXLN1           ;NO...
+.,E885 20 EA E8 JSR $E8EA       JSR    SCROL           ;YES...SCROLL
+.,E888 B5 D9    LDA $D9,X       NXLN1  LDA LDTB1,X     ;DOUBLE LINE?
+.,E88A 10 F4    BPL $E880       BPL    NXLN2           ;YES...SCROLL AGAIN
+.,E88C 86 D6    STX $D6         STX    TBLX
+.,E88E 4C 6C E5 JMP $E56C       JMP    STUPT
+                                NXT1
+.,E891 A2 00    LDX #$00        LDX    #0
+.,E893 86 D8    STX $D8         STX    INSRT
+.,E895 86 C7    STX $C7         STX    RVS
+.,E897 86 D4    STX $D4         STX    QTSW
+.,E899 86 D3    STX $D3         STX    PNTR
+.,E89B 20 7C E8 JSR $E87C       JSR    NXLN
+.,E89E 4C A8 E6 JMP $E6A8       JPL5   JMP LOOP2
+                                ;
+                                ;
+                                ; CHECK FOR A DECREMENT TBLX
+                                ;
+.,E8A1 A2 02    LDX #$02        CHKBAK LDX #NWRAP
+.,E8A3 A9 00    LDA #$00               LDA #0
+.,E8A5 C5 D3    CMP $D3         CHKLUP CMP PNTR
+.,E8A7 F0 07    BEQ $E8B0              BEQ BACK
+.,E8A9 18       CLC                    CLC
+.,E8AA 69 28    ADC #$28               ADC #LLEN
+.,E8AC CA       DEX                    DEX
+.,E8AD D0 F6    BNE $E8A5              BNE CHKLUP
+.,E8AF 60       RTS                    RTS
+                                ;
+.,E8B0 C6 D6    DEC $D6         BACK   DEC TBLX
+.,E8B2 60       RTS                    RTS
+                                ;
+                                ; CHECK FOR INCREMENT TBLX
+                                ;
+.,E8B3 A2 02    LDX #$02        CHKDWN LDX #NWRAP
+
+---
+Additional information can be found by searching:
+- "scrol_and_scrlin" which expands on SCROL and SCRLIN routines used to perform actual scrolling

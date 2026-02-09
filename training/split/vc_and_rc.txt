@@ -1,0 +1,59 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - Internal VIC counters: VC (Video Counter, 10-bit), VCBASE (10-bit base), RC (Row Counter, 3-bit), and VMLI (40x12 video matrix line index). Rules: VCBASE reset outside Bad Line range; VC loaded from VCBASE in first phase of cycle 14 and VMLI cleared; Bad Line in cycles 12-54 starts c-accesses (cycles 15-54) and stores c-data into video matrix/color line at VMLI; VC and VMLI increment after each g-access; in first phase cycle 58, if RC=7, video logic goes idle and VCBASE loaded from VC (VC->VCBASE), RC incremented if still in display state. This explains how VC scans 1000 video matrix addresses and RC counts 8 pixel rows per text line.
+
+3.7.2. VC and RC
+----------------
+
+Probably the most important result of the VIC examinations is the discovery
+of the function of the internal registers "VC" and "RC" of the VIC. They
+are used to generate the addresses for accessing the video matrix and the
+character generator/bitmap.
+
+Strictly speaking there are three registers:
+
+ � "VC" (video counter) is a 10 bit counter that can be loaded with the
+   value from VCBASE.
+ � "VCBASE" (video counter base) is a 10 bit data register with reset input
+   that can be loaded with the value from VC.
+ � "RC" (row counter) is a 3 bit counter with reset input.
+
+Besides this, there is a 6 bit counter with reset input that keeps track of
+the position within the internal 40�12 bit video matrix/color line where
+read character pointers are stored resp. read again. I will call this
+"VMLI" (video matrix line index) here.
+
+There four registers behave according to the following rules:
+
+1. Once somewhere outside of the range of raster lines $30-$f7 (i.e.
+   outside of the Bad Line range), VCBASE is reset to zero. This is
+   presumably done in raster line 0, the exact moment cannot be determined
+   and is irrelevant.
+
+2. In the first phase of cycle 14 of each line, VC is loaded from VCBASE
+   (VCBASE->VC) and VMLI is cleared. If there is a Bad Line Condition in
+   this phase, RC is also reset to zero.
+
+3. If there is a Bad Line Condition in cycles 12-54, BA is set low and the
+   c-accesses are started. Once started, one c-access is done in the second
+   phase of every clock cycle in the range 15-54. The read data is stored
+   in the video matrix/color line at the position specified by VMLI. These
+   data is internally read from the position specified by VMLI as well on
+   each g-access in display state.
+
+4. VC and VMLI are incremented after each g-access in display state.
+
+5. In the first phase of cycle 58, the VIC checks if RC=7. If so, the video
+   logic goes to idle state and VCBASE is loaded from VC (VC->VCBASE). If
+   the video logic is in display state afterwards (this is always the case
+   if there is a Bad Line Condition), RC is incremented.
+
+These rules normally see that VC counts all 1000 addresses of the video
+matrix within the display frame and that RC counts the 8 pixel lines of
+each text line. The behavior of VC and RC is largely determined by Bad Line
+Conditions which you can control with the processor via YSCROLL, giving you
+control of the VC and RC within certain limits.
+
+
+---
+Additional information can be found by searching:
+- "bad_lines" which expands on Bad Line impact on VC/RC behavior and c-accesses
+- "timing_of_raster_line" which expands on where VC/VCBASE transfers occur in the cycle timeline

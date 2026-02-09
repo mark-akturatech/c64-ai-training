@@ -1,0 +1,107 @@
+# byRiclianll - BASIC program to create multiple (27) errors on a full track on the 1541: program structure, user prompts and safety checks (track range), SEEK/READ/WRITE job control via job queue, channel I/O (OPEN/PRINT#15/INPUT#15), buffer building (CHR$ concatenation), and final status messages. Uses job codes and M-R/M-W commands to instruct drive; includes loops to create many malformed sectors.
+
+7.13  How  to  Create  27  Errors  on  a  Full  Track 
+
+Limitations:  None. 
+
+Parameters:  Track  number. 
+
+FULL  TRACK  27  ERROR 
+
+100  REM  27M  ERROR  -  1541 
+110  DIMD*(25) 
+
+120  PRINT" CCLR] MULTIPLE  27  ERROR  -  1541" 
+
+130  PRINT" CDOWN> INSERT  CLONE   IN  DRIVE" 
+140   I NPUT " i D0WN3  DESTROY  TRACK " j  T 
+1 50   I FT< 1 ORT  >35THENEND 
+
+160   INPUT"  CD0WN3  ARE  YOU  SURE     Y<:LEFT  3>" 
+
+;q$ 
+
+170  ifd*<>"y"thenend 
+
+180  0PEN15,8, 15 
+
+190  PRINT#15, " 10" 
+
+200  INPUT#15,EN*,EM*,ET*,ES* 
+
+210  IFEN*="00"G0T0260 
+
+220  PR I NT "C DOWN J "EN*",    "EM*" , "ET* " , "ES* 
+
+230  CLOSE 15 
+
+240  END 
+
+250  REM  SEEK 
+
+260  NS=20+2* ( T  > 1 7 )  +  ( T  >24 )  +  ( T  >30 ) 
+
+270  S=NS 
+
+280  J0B=176 
+
+290  G0SUB5S0 
+
+300  F0RI=0T023 
+
+310  READD 
+
+320  D*=D*+CHR* (D) 
+
+330  I*=I*+CHR*(0) 
+
+340  NEXTI 
+
+350  PRINT#15, "M-W"CHR*(0)CHR*(6)CHR*(24) 
+D* 
+
+360  REM  EXECUTE 
+
+
+150 
+
+
+370  PRINT"  <:down>{:rvs>  DESTROY  I  ng<:roff>  tr 
+ack";t 
+
+380  J0B=224 
+390  G0SUB580 
+
+400  PR  I  NT#  1 5 ,  '■  M-W  "  CHR«  ( O )  CHR$  ( 6 )  CHR$  ( 24 ) 
+1$ 
+
+410  F0RJ=0T025 
+420  F0RI=0T07 
+430  READD 
+
+440  D*(J)=D$(J)+CHR*(D) 
+450  NEXTI 
+460  NEXT J 
+470  1=0 
+
+480  FDRJ=0T025 
+
+490  PRINT#15, "M-W'CHR* ( I ) CHR« (4) CHR* (8) D 
+*(J) 
+
+500  1=1+8 
+510  NEXTJ 
+520  REM  EXECUTE 
+
+530  PRINT#15. "M-E"CHR* (O) CHR* (4) 
+
+540  CLOSE 15 
+
+550  PRINT"  <:D0WN>D0NE  !  " 
+
+560  END 
+
+---
+Additional information can be found by searching:
+- "job_queue_and_mrw_protocol" which expands on how the BASIC job queue uses M-R and M-W sequences to communicate with the drive
+- "full_track_20_error_source_annotation" which expands on similar strategy used in machine-language formatting routine

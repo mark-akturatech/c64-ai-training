@@ -1,0 +1,71 @@
+# MACHINE - Commodore 64 interrupt example: ISR at $033C copies $91 to $0400 then JMP indirect to previously saved original IRQ routine via ($03A0). Setup routine copies original IRQ vector from $0314/$0315 to $03A0 (save), then SEI and store $033C into $0314/$0315 and CLI to enable custom interrupt; teardown restores $0314/$0315 from $03A0. SYS 836 to enable, SYS 861 to disable. Notes on color nybble table at $D800 for visible output issues.
+
+An Interrupt Project
+--------------------
+
+The following project is written for the Commodore 64 only.  The equivalent
+coding for PET/CBM may be found in Appendix E.
+
+Let's write the coding for the interrupt itself.  Sixty times a second, we'd
+like to copy the contents of address $91 to the top of the screen.  Here
+goes:
+
+  .A 033C  LDA $91
+  .A 033E  STA $0400
+  .A 0341  JMP ($03A0)
+
+Why the indirect jump?  We want to "pick up" the regular interrupt routine,
+but we don't know where it is yet.  When we find the address, we'll but it
+into locations $03A0/$03A1 so that the indirect jump will link things up for
+us.
+
+Now let's write the routine to enable the above interrupt coding.  First,
+let's copy the interrupt address from $0314 into the indirect address at
+$03A0:
+
+  .A 0344  LDA $0314
+  .A 0347  STA $03A0
+  .A 034A  LDA $0315
+  .A 034D  STA $03A1
+
+Now we are ready to put the address of our own interrupt routine (at $033C)
+into the IRQ vector:
+
+  .A 0350  SEI
+  .A 0351  LDA #$3C
+  .A 0353  STA $0314
+  .A 0356  LDA #$03
+  .A 0358  STA $0315
+  .A 035B  CLI
+  .A 035C  RTS
+
+We will enable the new interrupt procedure by a SYS to $0344, above (SYS
+836).  Before we give that command, let's write the coding to put everything
+back:
+
+  .A 035D  SEI
+  .A 035E  LDA $03A0
+  .A 0361  STA $0314
+  .A 0364  LDA $03A1
+  .A 0367  STA $0315
+  .A 036A  CLI
+  .A 036B  RTS
+
+As you can see, we put the original address back, copying it from the
+indirect address area where it was saved.
+
+Once this code is in place, disassembled, and checked, you may return to
+BASIC.  SYS 836 will invoke the new interrupt code; SYS 861 will turn it off.
+Note that the character (a copy of the contents of address $91) appears at
+the top left of the screen.  The character seems to be affected by pressing
+some keys; can you established how may keys are involved?
+
+Some models of Commodore 64 may print blue-on-blue when screen memory is
+POKEd, as we are doing now.  If so, the character may not always appear in
+the left-hand corner.  Project for enthusiasts:  Fix this problem by storing
+a value into the color nybble table at address $D800.
+
+---
+Additional information can be found by searching:
+- "using_irq_vector_and_masking_interrupts" which expands on how to set vector and preserve original using saved indirect address
+- "vic_and_c64_memory_extras" which expands on use of $D800 color memory to fix visual artifacts

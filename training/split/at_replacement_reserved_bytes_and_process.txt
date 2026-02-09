@@ -1,0 +1,26 @@
+# byRiclianll - Details the two bytes reserved for DOS during an @-replacement (SAVE "@0:...",8) operation: during @ replacement the file-type byte is ORed with $20, bytes 28-29 hold the track/sector pointer to the new copy while the copy is written, then these are moved to bytes 3-4 and restored. Mentions a bug in the @ replacement (see Chapter 9).
+
+.    18:    OO  OO  OO  OO  OO  OO  OD  OO   
+
+♦*         *♦  ♦* 
+
+
+The  following  two  bytes  are  reserved  for  use  by  the  DOS  during  the  save  and  replace 
+operation  (@  replacement).  Their  function  can  only  be  viewed  by  interrupting  the  drive 
+during  a  SAVE  "@0:file  name",8  routine.  This  is  not  recommended  for  obvious  reasons. 
+(During  an  @  replacement  the  file-type  byte  is  ORed  with  $20  first.  A  new  copy  of  the 
+file  is  then  written  to  the  disk.  Bytes  28  ($1C)  and  29  ($1D)  contain  the  track  and  sector 
+pointer  to  the  start  of  the  new  replacement  file.  At  the  end  of  the  @  operation  the  sec- 
+tors that  held  the  old  file  are  marked  as  free  in  the  BAM.  The  new  track  and  sector 
+
+
+44 
+
+
+pointer  is  then  moved  from  bytes  28  and  29  to  bytes  3  ($03)  and  4  ($04)  respectively 
+and  bytes  28  and  29  are  zeroed  again.  The  proper  file  type  is  then  restored  at  byte  2. 
+See  Chapter  9  about  the  bug  in  the  @  replacement  command.) 
+
+---
+Additional information can be found by searching:
+- "file_entry_start_pointer_to_first_sector" which expands on how the track/sector pointer is used

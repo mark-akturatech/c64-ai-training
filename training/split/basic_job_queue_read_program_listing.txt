@@ -1,0 +1,84 @@
+# byRiclianll - Complete BASIC listing of the example program that works the job queue directly. Includes the main program (open command channel, initialize drive, SEEK and READ job submissions, looping to GET# 256 bytes from buffer $0300-$03FF and printing them) and the JOB QUEUE subroutine (prepare job/header entries, write job code, poll for job completion, and return).
+
+
+
+lOO  REM  JOB  QUEUE  READ 
+
+no  OPEN   15,8,  15 
+
+120  PRINT#15, "10" 
+
+130  INPUT#15,EN*,EM*,ET*,ES* 
+
+140   IF  EN*<>"00"GOTO  340 
+
+150  REM  SEEK 
+
+160  T=18 
+
+170  S=0 
+
+180  J0B=176 
+
+190  GOBUB  370 
+
+200   IF  EOl   GOTO  340 
+
+210  REM  READ 
+
+220  J0B=128 
+
+230  GOBUB  370 
+
+240   IF  EOl   GOTO  340 
+
+250  FOR   1=0  TO  255 
+
+260  PRINT#15, "M-R"CHR* ( I >  CHR* (3> 
+270  GET#15,B* 
+
+280   IF  B*=""THEN  B*=CHR*(0> 
+290  A=ASC(B*) 
+300  PRINT  ST, I, A, 
+
+310  IF  A>31  AND  A<96  THEN  PRINT  B*, 
+320  PRINT 
+330  NEXT  I 
+340  GLOBE  15 
+350  END 
+
+360  REM  JOB  QUEUE 
+370  TRY=0 
+
+380  PRINT#15, "M-W"CHR*(6)CHR*(0)CHR*(2)C 
+HR*(T>CHR*(S> 
+
+390  PRINT#15,  "M-W"CHR*  (O)  CHR*  (O)  CHR*  (DC 
+
+
+105 
+
+
+HR*<JOB) 
+
+400  TRY=TRY+1 
+
+410  PRINT#15, "M-R"CHR*<0)CHR*<0) 
+420  GET#15,E* 
+
+430   IF  E*=""THEN  E*=CHR*<0) 
+
+440  E=ASC<E*) 
+
+450   IF  TRY=500  GOTO  470 
+
+460  IF  E>127  GOTO  400 
+
+470  RETURN 
+
+
+---
+Additional information can be found by searching:
+- "direct_access_intro_and_example_summary" which expands on Context and purpose of this BASIC example
+- "program_line_by_line_explanation" which expands on Line-range descriptions explaining each portion of this listing
+- "job_queue_mechanism_and_job_code_bit7" which expands on Mechanics of stuffing job/header entries and waiting for completion

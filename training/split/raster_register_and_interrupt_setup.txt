@@ -1,0 +1,27 @@
+# Contents - Raster register: VIC tracks current scan line as a 9-bit value. Low 8 bits available in RASTER ($D012), 9th bit in bit 7 of YSCRL. You can write 9-bit values to RASTER and YSCRL bit7; when scanline equals stored value bit of VIRQ ($D019) is set. If corresponding bit in VIRQM ($D01A) is set, an interrupt is generated. Use RAST macro to set 9-bit raster number. Remember to store the 9th bit when scheduling raster interrupts.
+
+
+THE RASTER REGISTER 
+
+The VIC chip keeps track of which scan line the 
+electron beam is currently on. Since there are more 
+than 255 scan lines in one TV frame, this will be 
+a 9 bit value. The least significant 8 bits of the cur- 
+rent scan line can be read by reading the RASTER 
+1$D012) register. The ninth bit can found in bit 7 
+of the YSCRL register. 
+
+You can write a 9 bit value to the RASTER 
+register and bit 7 of the YSCRL register. When the 
+scan line reaches the value that you stored, bit of 
+the VIRQ ($D019) register will be set. If bit of 
+the VIRQM ($D01 A) register is set, an interrupt will 
+be sent to the microprocessor. You must remember 
+to store a ninth bit when storing a RASTER 
+number, or the comparison will not take place. The 
+RAST macro will set the 9 bit raster number for 
+you. 
+
+---
+Additional information can be found by searching:
+- "video_interrupts_virq_and_virqm" which expands on how raster compares set VIRQ and can cause interrupts

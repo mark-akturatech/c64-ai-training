@@ -1,0 +1,72 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Kernal routine to open a logical file: checks logical file validity, verifies it is not already open, enforces maximum open file count, updates logical-file, device-number and secondary-address tables, handles keyboard/screen special cases, and dispatches to device-specific open handlers (serial bus, RS232, tape). Includes tape header searching/creation and sets up tape buffer index. Flags OK on success and returns.
+
+                                *** open a logical file
+.,F34A A6 B8    LDX $B8         get the logical file
+.,F34C D0 03    BNE $F351       if there is a file continue
+.,F34E 4C 0A F7 JMP $F70A       else do 'not input file error' and return
+.,F351 20 0F F3 JSR $F30F       find a file
+.,F354 D0 03    BNE $F359       if file not found continue
+.,F356 4C FE F6 JMP $F6FE       else do 'file already open' error and return
+.,F359 A6 98    LDX $98         get the open file count
+.,F35B E0 0A    CPX #$0A        compare it with the maximum + 1
+.,F35D 90 03    BCC $F362       if less than maximum + 1 go open the file
+.,F35F 4C FB F6 JMP $F6FB       else do 'too many files error' and return
+.,F362 E6 98    INC $98         increment the open file count
+.,F364 A5 B8    LDA $B8         get the logical file
+.,F366 9D 59 02 STA $0259,X     save it to the logical file table
+.,F369 A5 B9    LDA $B9         get the secondary address
+.,F36B 09 60    ORA #$60        OR with the OPEN CHANNEL command
+.,F36D 85 B9    STA $B9         save the secondary address
+.,F36F 9D 6D 02 STA $026D,X     save it to the secondary address table
+.,F372 A5 BA    LDA $BA         get the device number
+.,F374 9D 63 02 STA $0263,X     save it to the device number table
+.,F377 F0 5A    BEQ $F3D3       if it is the keyboard go do the ok exit
+.,F379 C9 03    CMP #$03        compare the device number with the screen
+.,F37B F0 56    BEQ $F3D3       if it is the screen go do the ok exit
+.,F37D 90 05    BCC $F384       if tape or RS232 device go ??
+                                else it is a serial bus device
+.,F37F 20 D5 F3 JSR $F3D5       send the secondary address and filename
+.,F382 90 4F    BCC $F3D3       go do ok exit, branch always
+.,F384 C9 02    CMP #$02        
+.,F386 D0 03    BNE $F38B       
+.,F388 4C 09 F4 JMP $F409       go open RS232 device and return
+.,F38B 20 D0 F7 JSR $F7D0       get tape buffer start pointer in XY
+.,F38E B0 03    BCS $F393       if >= $0200 go ??
+.,F390 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F393 A5 B9    LDA $B9         get the secondary address
+.,F395 29 0F    AND #$0F        
+.,F397 D0 1F    BNE $F3B8       
+.,F399 20 17 F8 JSR $F817       wait for PLAY
+.,F39C B0 36    BCS $F3D4       exit if STOP was pressed
+.,F39E 20 AF F5 JSR $F5AF       print "Searching..."
+.,F3A1 A5 B7    LDA $B7         get file name length
+.,F3A3 F0 0A    BEQ $F3AF       if null file name just go find header
+.,F3A5 20 EA F7 JSR $F7EA       find specific tape header
+.,F3A8 90 18    BCC $F3C2       branch if no error
+.,F3AA F0 28    BEQ $F3D4       exit if ??
+.,F3AC 4C 04 F7 JMP $F704       do file not found error and return
+.,F3AF 20 2C F7 JSR $F72C       find tape header, exit with header in buffer
+.,F3B2 F0 20    BEQ $F3D4       exit if end of tape found
+.,F3B4 90 0C    BCC $F3C2       
+.,F3B6 B0 F4    BCS $F3AC       
+.,F3B8 20 38 F8 JSR $F838       wait for PLAY/RECORD
+.,F3BB B0 17    BCS $F3D4       exit if STOP was pressed
+.,F3BD A9 04    LDA #$04        set data file header
+.,F3BF 20 6A F7 JSR $F76A       write tape header
+.,F3C2 A9 BF    LDA #$BF        
+.,F3C4 A4 B9    LDY $B9         get the secondary address
+.,F3C6 C0 60    CPY #$60        
+.,F3C8 F0 07    BEQ $F3D1       
+.,F3CA A0 00    LDY #$00        clear index
+.,F3CC A9 02    LDA #$02        
+.,F3CE 91 B2    STA ($B2),Y     save to tape buffer
+.,F3D0 98       TYA             clear A
+.,F3D1 85 A6    STA $A6         save tape buffer index
+.,F3D3 18       CLC             flag ok
+.,F3D4 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "send_secondary_address_and_filename" which expands on Called when opening serial-bus style devices to send the secondary address and filename
+- "open_rs232_device_and_buffer_setup" which expands on Called when opening an RS232 device (device #2) to set up the 6551 registers, baud, and buffers

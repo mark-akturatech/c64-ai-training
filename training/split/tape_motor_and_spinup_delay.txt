@@ -1,0 +1,17 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Enable cassette motor and perform long spin-up delay: read 6510 I/O port, mask and set the cassette motor bit, store motor interlock ($C0), then perform a nested delay loop (LDX/LDY with two nested decrement loops) to provide a large motor spin-up delay (counting to create ~326,656 cycles) before starting timed tape operations.
+
+.,F8AB A5 01    LDA $01         read the 6510 I/O port
+.,F8AD 29 1F    AND #$1F        mask 000x xxxx, cassette motor on ??
+.,F8AF 85 01    STA $01         save the 6510 I/O port
+.,F8B1 85 C0    STA $C0         set the tape motor interlock
+                                326656 cycle delay, allow tape motor speed to stabilise
+.,F8B3 A2 FF    LDX #$FF        outer loop count
+.,F8B5 A0 FF    LDY #$FF        inner loop count
+.,F8B7 88       DEY             decrement inner loop count
+.,F8B8 D0 FD    BNE $F8B7       loop if more to do
+.,F8BA CA       DEX             decrement outer loop count
+
+---
+Additional information can be found by searching:
+- "tape_read_write_setup_and_irq_save" which expands on called/used immediately after IRQ/vector setup to ensure motor is stabilised before data transfer
+- "cassette_sense_return" which expands on cassette sense/read routines are related to motor and switch control

@@ -1,0 +1,54 @@
+# MACHINE - Step-by-step: map assembled bytes to addresses starting at $033C, show listing with addresses and hex bytes, use .M 033C 0348 to display the target area, type over the hex bytes line-by-line (press RETURN to commit each line), and verify with another .M to ensure the program is correctly written to RAM.
+
+                                                                         :18:
+
+Entering the Program
+--------------------
+
+We might rewrite our program one last time, marking in the addresses that
+each instruction will occupy.  You will recall that we have decided to put
+our program into memory starting at address $033C (part of the cassette
+buffer).
+
+  033C AD 80 03     LDA $0380
+  033F AE 81 03     LDX $0381
+  0342 8D 81 03     STA $0381
+  0345 8E 80 03     STX $0380
+  0348 00           BRK
+
+Remember that most of the above listing is cosmetic.  The business end of the
+program is the set of two-digit hex numbers shown to the left.  At the
+extreme left, we have addresses--that's information, but not the program.  At
+the right, we have the "source code"--our notes on what the program means.
+
+How do we put it in?  Easy.  We must change memory.  So, we go to the MLM,
+and display memory with
+
+  .M 033C 0348
+
+We might have anything in that part of memory, but we'll get a display that
+looks something like
+
+  .:033C xx xx xx xx xx xx xx xx
+  .:0344 xx xx xx xx xx xx xx xx
+
+You won't see "xx," of course; there will be some hexadecimal value printed
+for each location.  Let's move the cursor back and change this display so
+that it looks like this:
+
+  .:033C AD 80 03 AE 81 03 8D 81
+  .:0344 03 8E 80 03 00 xx xx xx
+
+Don't type in the "xx"--just leave whatever was there before.  And be sure to
+press RETURN to activate each line; if you move the cursor down to get to the
+next line without pressing RETURN, the memory change would not happen.
+
+Display memory again (.M 033C 0348) and make sure that the program is in
+place correctly.  Check the memory display against the program listing, and
+be sure you understand how the program is being transcribed into memory.
+
+
+---
+Additional information can be found by searching:
+- "choosing_program_location" which expands on explains the cassette buffer $033C chosen as the target area
+- "preparing_and_running_program" which expands on next steps to prepare data values and run the program with .G

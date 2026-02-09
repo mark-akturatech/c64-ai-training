@@ -1,0 +1,33 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Handles RS-232 receiver bit processing and parity/start-bit management. Examines flags (B5,B6), shifts temporary receiver bit storage ($A7), compares with the RS232 parity byte ($BD) and sets/clears carry/zero as needed. Computes nibble ($AA) counts, decrements counters, sets buffer start conditions, and may call the routine to copy the I/O start address to the buffer (JSR $FB8E). Sets serial status bits (via JSR $FE1C) to indicate short-block or parity conditions and branches to the common interrupt-restore exit where appropriate.
+
+.,FA8D 70 31    BVS $FAC0       
+.,FA8F D0 18    BNE $FAA9       
+.,FA91 A5 B5    LDA $B5         
+.,FA93 D0 F5    BNE $FA8A       
+.,FA95 A5 B6    LDA $B6         
+.,FA97 D0 F1    BNE $FA8A       
+.,FA99 A5 A7    LDA $A7         get receiver input bit temporary storage
+.,FA9B 4A       LSR             
+.,FA9C A5 BD    LDA $BD         get RS232 parity byte
+.,FA9E 30 03    BMI $FAA3       
+.,FAA0 90 18    BCC $FABA       
+.,FAA2 18       CLC             
+.,FAA3 B0 15    BCS $FABA       
+.,FAA5 29 0F    AND #$0F        
+.,FAA7 85 AA    STA $AA         
+.,FAA9 C6 AA    DEC $AA         
+.,FAAB D0 DD    BNE $FA8A       
+.,FAAD A9 40    LDA #$40        
+.,FAAF 85 AA    STA $AA         
+.,FAB1 20 8E FB JSR $FB8E       copy I/O start address to buffer address
+.,FAB4 A9 00    LDA #$00        
+.,FAB6 85 AB    STA $AB         
+.,FAB8 F0 D0    BEQ $FA8A       
+.,FABA A9 80    LDA #$80        
+.,FABC 85 AA    STA $AA         
+.,FABE D0 CA    BNE $FA8A       restore registers and exit interrupt, branch always
+
+---
+Additional information can be found by searching:
+- "store_character_entry_and_initial_timing" which expands on This logic is reached from the entry/timing checks when serial-status bits select the RS232 path
+- "buffer_copy_and_load_store" which expands on When a byte or start-of-buffer is accepted this code calls FB8E and then control flows into buffer-copy/load handling

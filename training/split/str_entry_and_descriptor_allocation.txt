@@ -1,0 +1,100 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - STR$() entry and descriptor handling: ensure source numeric, call FAC1->string conversion routine, setup result descriptor pointer, copy descriptor pointer to working registers, and request making string-space A bytes long. Includes the 'string vector' path: saving descriptor pointer and calling the string-space allocator. Returns pointer/length in zero-page descriptors for later storage on the descriptor stack.
+
+                                *** perform STR$()
+.,B465 20 8D AD JSR $AD8D       check if source is numeric, else do type mismatch
+.,B468 A0 00    LDY #$00        set string index
+.,B46A 20 DF BD JSR $BDDF       convert FAC1 to string
+.,B46D 68       PLA             dump return address (skip type check)
+.,B46E 68       PLA             dump return address (skip type check)
+.,B46F A9 FF    LDA #$FF        set result string low pointer
+.,B471 A0 00    LDY #$00        set result string high pointer
+.,B473 F0 12    BEQ $B487print null terminated string to utility pointer
+
+                                *** do string vector
+                                copy descriptor pointer and make string space A bytes long
+.,B475 A6 64    LDX $64         get descriptor pointer low byte
+.,B477 A4 65    LDY $65         get descriptor pointer high byte
+.,B479 86 50    STX $50         save descriptor pointer low byte
+.,B47B 84 51    STY $51         save descriptor pointer high byte
+
+                                *** make string space A bytes long
+.,B47D 20 F4 B4 JSR $B4F4       make space in string memory for string A long
+.,B480 86 62    STX $62         save string pointer low byte
+.,B482 84 63    STY $63         save string pointer high byte
+.,B484 85 61    STA $61         save length
+.,B486 60       RTS
+
+                                *** scan, set up string
+                                print " terminated string to utility pointer
+.,B487 A2 22    LDX #$22        set terminator to "
+.,B489 86 07    STX $07         set search character, terminator 1
+.,B48B 86 08    STX $08         set terminator 2
+                                print search or alternate terminated string to utility pointer
+                                source is AY
+.,B48D 85 6F    STA $6F         store string start low byte
+.,B48F 84 70    STY $70         store string start high byte
+.,B491 85 62    STA $62         save string pointer low byte
+.,B493 84 63    STY $63         save string pointer high byte
+.,B495 A0 FF    LDY #$FF        set length to -1
+.,B497 C8       INY             increment length
+.,B498 B1 6F    LDA ($6F),Y     get byte from string
+.,B49A F0 0C    BEQ $B4A8       exit loop if null byte [EOS]
+.,B49C C5 07    CMP $07         compare with search character, terminator 1
+.,B49E F0 04    BEQ $B4A4       branch if terminator
+.,B4A0 C5 08    CMP $08         compare with terminator 2
+.,B4A2 D0 F3    BNE $B497       loop if not terminator 2
+.,B4A4 C9 22    CMP #$22        compare with "
+.,B4A6 F0 01    BEQ $B4A9       branch if " (carry set if = !)
+.,B4A8 18       CLC             clear carry for add (only if [EOL] terminated string)
+.,B4A9 84 61    STY $61         save length in FAC1 exponent
+.,B4AB 98       TYA             copy length to A
+.,B4AC 65 6F    ADC $6F         add string start low byte
+.,B4AE 85 71    STA $71         save string end low byte
+.,B4B0 A6 70    LDX $70         get string start high byte
+.,B4B2 90 01    BCC $B4B5       branch if no low byte overflow
+.,B4B4 E8       INX             else increment high byte
+.,B4B5 86 72    STX $72         save string end high byte
+.,B4B7 A5 70    LDA $70         get string start high byte
+.,B4B9 F0 04    BEQ $B4BF       branch if in utility area
+.,B4BB C9 02    CMP #$02        compare with input buffer memory high byte
+.,B4BD D0 0B    BNE $B4CA       branch if not in input buffer memory
+                                string in input buffer or utility area, move to string
+                                memory
+.,B4BF 98       TYA             copy length to A
+.,B4C0 20 75 B4 JSR $B475       copy descriptor pointer and make string space A bytes long
+.,B4C3 A6 6F    LDX $6F         get string start low byte
+.,B4C5 A4 70    LDY $70         get string start high byte
+.,B4C7 20 88 B6 JSR $B688       store string A bytes long from XY to utility pointer
+                                check for space on descriptor stack then ...
+                                put string address and length on descriptor stack and update stack pointers
+.,B4CA A6 16    LDX $16         get the descriptor stack pointer
+.,B4CC E0 22    CPX #$22        compare it with the maximum + 1
+.,B4CE D0 05    BNE $B4D5       if there is space on the string stack continue
+                                else do string too complex error
+.,B4D0 A2 19    LDX #$19        error $19, string too complex error
+.,B4D2 4C 37 A4 JMP $A437       do error #X then warm start
+                                put string address and length on descriptor stack and update stack pointers
+.,B4D5 A5 61    LDA $61         get the string length
+.,B4D7 95 00    STA $00,X       put it on the string stack
+.,B4D9 A5 62    LDA $62         get the string pointer low byte
+.,B4DB 95 01    STA $01,X       put it on the string stack
+.,B4DD A5 63    LDA $63         get the string pointer high byte
+.,B4DF 95 02    STA $02,X       put it on the string stack
+.,B4E1 A0 00    LDY #$00        clear Y
+.,B4E3 86 64    STX $64         save the string descriptor pointer low byte
+.,B4E5 84 65    STY $65         save the string descriptor pointer high byte, always $00
+.,B4E7 84 70    STY $70         clear FAC1 rounding byte
+.,B4E9 88       DEY             Y = $FF
+.,B4EA 84 0D    STY $0D         save the data type flag, $FF = string
+.,B4EC 86 17    STX $17         save the current descriptor stack item pointer low byte
+.,B4EE E8       INX             update the stack pointer
+.,B4EF E8       INX             update the stack pointer
+.,B4F0 E8       INX             update the stack pointer
+.,B4F1 86 16    STX $16         save the new descriptor stack pointer
+.,B4F3 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "string_space_allocate_and_gc_trigger" which expands on makes space in string memory and triggers garbage collection if necessary
+- "string_concatenation_and_descriptor_ops" which expands on uses descriptor pointers to copy and place strings on descriptor stack

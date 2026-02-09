@@ -1,0 +1,36 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Parser for OPEN/CLOSE statements: clear filename buffer, require and fetch logical file number, set default device/command, call KERNAL $FFBA to set logical/addresses, handle optional device/file parameters and convert device numbers for screen vs devices, save logical/file/device values into temporary BASIC variables and prepare A/X/Y for the KERNAL open/close calls. (Covers scanning for byte parameters, saving to $49/$4A, device-number comparisons and adjustments, and repeated use of E206/E200/E20E helpers.)
+
+                                *** get parameters for OPEN/CLOSE
+.,E219 A9 00    LDA #$00        clear the filename length
+.,E21B 20 BD FF JSR $FFBD       clear the filename
+.,E21E 20 11 E2 JSR $E211       scan for valid byte, else do syntax error then warm start
+.,E221 20 9E B7 JSR $B79E       get byte parameter, logical file number
+.,E224 86 49    STX $49         save logical file number
+.,E226 8A       TXA             copy logical file number to A
+.,E227 A2 01    LDX #$01        set default device number, cassette
+.,E229 A0 00    LDY #$00        set default command
+.,E22B 20 BA FF JSR $FFBA       set logical, first and second addresses
+.,E22E 20 06 E2 JSR $E206       exit function if [EOT] or ":"
+.,E231 20 00 E2 JSR $E200       scan and get byte, else do syntax error then warm start
+.,E234 86 4A    STX $4A         save device number
+.,E236 A0 00    LDY #$00        clear command
+.,E238 A5 49    LDA $49         get logical file number
+.,E23A E0 03    CPX #$03        compare device number with screen
+.,E23C 90 01    BCC $E23F       branch if less than screen
+.,E23E 88       DEY             else decrement command
+.,E23F 20 BA FF JSR $FFBA       set logical, first and second addresses
+.,E242 20 06 E2 JSR $E206       exit function if [EOT] or ":"
+.,E245 20 00 E2 JSR $E200       scan and get byte, else do syntax error then warm start
+.,E248 8A       TXA             copy command to A
+.,E249 A8       TAY             copy command to Y
+.,E24A A6 4A    LDX $4A         get device number
+.,E24C A5 49    LDA $49         get logical file number
+.,E24E 20 BA FF JSR $FFBA       set logical, first and second addresses
+.,E251 20 06 E2 JSR $E206       exit function if [EOT] or ":"
+.,E254 20 0E E2 JSR $E20E       scan for ",byte", else do syntax error then warm start
+
+
+---
+Additional information can be found by searching:
+- "perform_open_and_close" which expands on OPEN/CLOSE entry points call this parser to obtain their arguments
+- "scan_comma_and_valid_byte" which expands on uses comma-and-byte scanning to parse optional fields

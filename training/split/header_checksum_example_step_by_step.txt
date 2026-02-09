@@ -1,0 +1,104 @@
+# byRiclianll - Worked example computing a header block checksum: lists the header bytes (Sector $00, Track $12, ID LO $58, ID HI $5A), their binary representations, and shows iterative EOR steps (initialize with sector number, EOR with track, then ID LO, then ID HI) to produce the final checksum $10. Notes that the example corresponds to track 18, sector 0 on an example disk and references the earlier GCR conversion example as part of the same header block.
+
+
+The  following  example  demonstrates  how  a  header  block  checksum  is  calculated.  The 
+algorithm  for  calculating  a  data  block  checksum  is  identical,  only  longer. 
+
+
+Hexadecimal 
+
+
+Binary 
+
+
+Sector  Number 
+Track  Number 
+ID  LO 
+ID  HI 
+
+
+$00  (0) 
+$12  (18) 
+$58  (88) 
+$5A  (90) 
+
+
+00000000 
+00010010 
+01011000 
+01011010 
+
+
+STEP  1 
+
+
+Initialization 
+
+EOR  $00  (0)  With  Sector  Number 
+
+
+$00  =  00000000 
+Sector  Number  ($00)  =  00000000 
+
+
+00000000 
+
+
+STEP  2. 
+
+
+EOR  With  Track  Number 
+
+
+00000000 
+
+Track  Number  ($12)  =  00010010 
+
+
+00010010 
+
+
+118 
+
+
+STEP  3.  EOR  With  ID  LO 
+
+
+ID  LO  ($58) 
+
+
+00010010 
+01011000 
+
+
+01001010 
+
+
+STEP  4.  EOR  With  ID  HI 
+
+
+ID  HI  ($5A) 
+
+
+01001010 
+01011010 
+
+
+00010000 
+
+
+STEP  5.  Binary  to  Hexadecimal  Conversion 
+00010000 
+$10  (16) 
+
+The  checksum  for  $00,  $12,  $58,  and  $5A  is  thus  $10  (16).  This  checksum  just  happens 
+to  be  the  header  block  checksum  for  track  18,  sector  0  on  the  1541TE ST/DEMO.  In  ad- 
+dition, the  binary  to  GCR  conversion  tour  presented  earlier  was  for  the  first  four  bytes 
+($08  $10  $00  $12)  of  the  same  header  block. 
+
+
+---
+Additional information can be found by searching:
+- "checksum_definitions_for_header_and_data_blocks" which expands on Explains which bytes to include when computing this checksum
+- "gcr_packing_four_bytes_into_five_gcr_bytes_example" which expands on The example's first four bytes ($08 $10 $00 $12) were the first bytes of the same header block
+- "dos_read_error_evaluation_table_intro" which expands on Checksums are used by DOS when evaluating read errors

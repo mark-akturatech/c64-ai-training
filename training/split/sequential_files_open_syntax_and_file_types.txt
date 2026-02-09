@@ -1,0 +1,62 @@
+# ********* - Chapter 5.1: Sequential files overview and OPEN syntax for sequential files (OPEN file#, device#, channel#, "0:name,type,direction"); file type codes (PRG, SEQ, USR, REL), replace option with @0:, and examples.
+
+
+
+5. SEQUENTIAL FILES
+
+5.1 OPEN
+
+SEQuential files are limited by their sequential nature, which means
+they must be read from beginning to end.  Data is transferred byte by
+byte, through a buffer, onto the magnetic media.  To the disk drive
+all files are created equal.  That is, SEQuential files, program files,
+and user files all work the same on the disk.  Only program files can
+be LOADed, but that's really the only difference.  Even the directory
+works like this, except that it is read-only.  The only difference is
+with relative files.
+
+FORMAT FOR OPENING A SEQUENTIAL FILE:
+
+   OPEN file#, device#, channel#, "0:name,type,direction"
+
+The file number is the same as in all your other applications of the
+OPEN statement, and it is used throughout the program to refer to this
+particular file.  The device# is usually 8. The channel# is a data
+channel, number 2 through 14.  It is convenient to use the same number
+for both the channel# and file#, to keep them straight.  The name is
+the file name (no wild cards or pattern matching if you're creating a
+write file).  The type can be any of the ones from the chart below, at
+least the first letter of each type. The direction must be READ or
+WRITE, or at least the first letter of each.
+
+
+ FILE TYPE   MEANING
+
+ PRG         Program
+ SEQ         Sequential
+ USR         User
+ REL         Relative
+
+EXAMPLES OF OPENING SEQUENTIAL FILES:
+
+   OPEN 2, 8, 2, "0:DATA, S, W"
+   OPEN 8, 8, 8, "0:Program, P, R"
+   OPEN A, B, C, "0:" + A$ + "U,W"
+
+If the file already exists, you can use the replace option in the OPEN
+statement, similar to the SAVE-and-replace described in chapter 3.
+Simply add the @0: before the file's name in the OPEN statement.
+
+EXAMPLE OF SEQUENTIAL FILE WITH REPLACE OPTION:
+
+   OPEN 2, 8, 2, "@0:DATA,S,W"
+
+The 0: should always precede the name of the file or the drive will
+only allow you to use 2 of the available buffers.
+
+
+
+
+---
+Additional information can be found by searching:
+- "print_input_to_disk_formatting_and_examples" which expands on how data is written to sequential files with PRINT#/INPUT#

@@ -1,0 +1,28 @@
+# - C64 I/O Map (Mapping The Commodore 64) - Details of the sample program's data tables: which VIC-II registers are POKEd during each interrupt (Control Register 1 $D011, Control Register 2 $D016, Memory Control $D018, Background Color 0 $D021), explanation that the interrupt routine POKEs entries into four key locations during each interrupt, and that the machine-code/data block is stored at addresses corresponding to BASIC line numbers 49152-49276.
+
+                          The interrupt uses a table of values that are POKEd into four key
+                          locations during each of the three interrupts, as well as values to
+                          determine at what scan lines the interrupt will occur.  The locations
+                          affected are Control Register 1 (53265, $D011), Control Register 2
+                          (53270, $D016), the Memory Control Register (53272, $D018), and
+                          Background Color 0 (53281, $D021).  The data for the interrupt routine
+                          is contained in lines 49152-49276.  Each of these line numbers
+                          corresponds to the locations where the first data byte in the
+                          statement is POKEd into memory.
+
+                          If you look at lines 49264-49276 of the BASIC program, you will see
+                          REMark statements that explain which VIC-II registers are affected by
+                          the DATA statements in each line.  The number in these DATA
+                          statements appear in the reverse order in which they are put into the
+                          VIC register.  For example, line 49273 holds the data that will go
+                          into Control Register 2.  The last number, 8, is the one that will be
+                          placed into Control Register 2 while the top part of the screen is
+                          displayed.  The first number, 24, is placed into Control Register 2
+                          during the bottom part of the screen display, and changes that portion
+                          of the display to multicolor mode.
+
+---
+Additional information can be found by searching:
+- "two_raster_interrupts_and_program_introduction" which expands on Overview of the sample program's purpose
+- "data_table_mapping_and_examples" which expands on How the DATA items map to the interrupts and registers
+- "raster_interrupt_example_basic_and_data_listing" which expands on Exact BASIC and DATA listing used by the sample program

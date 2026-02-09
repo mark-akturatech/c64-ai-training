@@ -1,0 +1,85 @@
+# COMMODORE 64 - Description of the 10-character keyboard buffer and 'type-ahead' behavior. How to empty the buffer in a loop (GET JUNK$). Reading keyboard via PEEK(197) to get numeric key value (returns 64 if no key pressed). Explain keyboard matrix scanning performed by CIA #1 (MOS 6526) using registers 56320 ($DC00) for columns and 56321 ($DC01) for rows; bits correspond to columns/rows. Control keys (<RVS ON>, <CTRL>, <C=>, <SHIFT>) decoded separately and influence result placed in location 197. Also describes POKEing locations 631-640 to insert characters into buffer and setting count in 198 to cause automatic execution of direct-mode commands; example given to print to printer and resume program.
+
+  THE COMMODORE 64 KEYBOARD
+  AND FEATURES
+
+    The Operating System has a ton-character keyboard "buffer" that is used
+  to hold incoming keystrokes until they can be processed. This buffer, or
+  queue, holds keystrokes in the order in which they occur so that the
+  first one put into the queue is the first one processed. For example, if
+  a second keystroke occurs before the first can be processed, the second
+  character Is stored in the buffer, while processing of the first
+  character continues. After the program has finished with the first
+  character, the keyboard buffer is examined for more data, and the second
+  keystroke processed. Without this buffer, rapid keyboard input would
+  occasionally drop characters.
+    In other words, the keyboard buffer allows you to "type-ahead" of the
+  system, which means it can anticipate responses to INPUT prompts or GET
+  statements. As you type on the keys their character values are lined up,
+  single-file (queued) into the buffer to wait for processing in the order
+  the keys were struck. This type-ahead feature can give you an occasional
+  problem where an accidental keystroke causes a program to fetch an
+  incorrect character from the buffer.
+    Normally, incorrect keystrokes present no problem, since they can be
+  corrected by the CuRSoR-Left <CRSR LEFT> or DELete <INST/DEL> keys and
+  then retyping the character, and the corrections will be processed before
+  a following carriage-return. However, if you press the <RETURN> key, no
+  corrective action is possible, since all characters in the buffer up to
+  and including the carriage-return will be processed before any cor-
+  rections. This situation can be avoided by using a loop to empty the
+  keyboard buffer before reading an intended response:
+
+    10 GET JUNK$: IF JUNK$ <>"" THEN 10: REM EMPTY THE KEYBOARD BUFFER
+
+    In addition to GET and INPUT, the keyboard can also be read using
+  PEEK to fetch from memory location 197 ($00C5) the integer value of the
+  key currently being pressed. If no key Is being held when the PEEK is
+  executed, a value of 64 is returned, The numeric keyboard values,
+  keyboard symbols and character equivalents (CHR$) are shown in Ap-
+  pendix C. The following example loops until a key is pressed then con-
+  verts the integer to a character value.
+
+    10 AA=PEEK(197): IF AA=64 THEN 10
+    20 BB$=CHR$(AA)
+
+
+                                             BASIC LANGUAGE VOCABULARY   93
+~
+
+
+    The keyboard is treated as a set of switches organized into a matrix
+  of 8 columns by 8 rows. The keyboard matrix is scanned for key switch-
+  closures by the KERNAL using the CIA #l 1/0 chip (MOS 6526 Complex
+  Interface Adapter). Two CIA registers are used to perform the scan:
+  register #0 at location 56320 ($DC00) for keyboard columns and
+  register #l at location 56321 ($DC01) for keyboard rows.
+    Bits 0-7 of memory location 56320 correspond to the columns 0-7. Bits
+  0-7 of memory location 56321 correspond to rows 0-7. By writing column
+  values in sequence, then reading row values, the KERNAL decodes the
+  switch closures into the CHR$ (N) value of the key pressed.
+    Eight columns by eight rows yields 64 possible values. However, if you
+  first strike the <RVS ON>, <CTRL> or <C=> keys or hold down the <SHIFT>
+  key and type a second character, additional values are generated. This is
+  because the KERNAL decodes these keys separately and "remembers" when one
+  of the control keys was pressed. The result of the keyboard scan is then
+  placed in location 197.
+    Characters can also be written directly to the keyboard buffer at lo-
+  cations 631-640 using a POKE statement. These characters will be
+  processed when the POKE is used to set a character count into location
+  198. These facts can be used to cause a series of direct-mode commands to
+  be executed automatically by printing the statements onto the screen,
+  putting carriage-returns into the buffer, and then setting the character
+  count. In the example below, the program will LIST itself to the printer
+  and then resume execution.
+
+    10 PRINT CHR$(147)"PRINT#1: CLOSE 1: GOTO 50"
+    20 POKE 631119: POKE 632,13: POKE 633,13: POKE 198,3
+    30 OPEN 114: CMD1: LIST
+    40 END
+    50 REM PROGRAM RE-STARTS HERE
+
+
+---
+Additional information can be found by searching:
+- "cia_registers_and_ports" which expands on CIA #1 and CIA #2 I/O registers used for keyboard and bank selection
+- "peek_function" which expands on reading key state via PEEK(197)

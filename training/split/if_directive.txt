@@ -1,0 +1,48 @@
+# Kick Assembler - Section 5.2: .if directive behavior — executing a following directive or a block {..} based on a boolean expression, .else blocks, examples for conditional code generation and error handling with .error inside .if/.else.
+
+
+And are used like this:
+.var allTrue = 10HigherThan100 && aEqualsB // Is true if the two boolean
+// arguments are true.
+
+Like in languages like C++ or Java, the && and || operators are short circuited. This means that if the first
+argument of an && operator is false, then the second argument won't be evaluated since the result can only be
+false. The same happens if the first argument of an || operator is true.
+
+5.2. The .if directive
+If-directives work like in standard programming languages. With an .if directive you have the proceeding directive executed only if a given boolean expression is evaluated to true. Here are some examples:
+// Set x to 10 if x is higher that 10
+.if (x>10) .eval x=10
+// Only show rastertime if the ‘showRasterTime’ boolean is true
+.var showRasterTime = false
+.if (showRasterTime) inc $d020
+jsr PlayMusic
+.if (showRasterTime) dec $d020
+
+You can group several statements together in a block with {…} and have them executed together if the boolean
+expression is true:
+// If IrqNr is 3 then play the music
+.if (irqNr==3) {
+inc $d020
+jsr music+3
+dec $d020
+}
+
+By adding an else statement you can have an expression executed if the boolean expression is false:
+// Add the x’th entry of a table if x is positive or
+// subtract it if x is negative
+.if (x>=0) adc zpXtable+x else sbc zpXtable+abs(x)
+
+// Init an offset table or display a warning if the table length is exceeded
+.if (i<tableLength) {
+lda #0
+sta offset1+i
+sta offset2+i
+} else {
+.error "Error!! I is too high!"
+}
+
+---
+Additional information can be found by searching:
+- "ternary_if_question_mark" which expands on short conditional expression form (condition ? trueExpr : falseExpr)
+- "console_output_and_error_reporting" which expands on using .error and .errorif together with conditionals

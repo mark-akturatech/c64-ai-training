@@ -1,0 +1,58 @@
+# - C64 I/O Map (Mapping The Commodore 64) - D016 Bit 4: Multicolor mode behavior. In character (text) mode: characters with color nybble <8 display normally; those >=8 display in multicolor with bit-pair encoding mapping to 4 color sources (00 background0, 01 bg register1, 10 bg register2, 11 color RAM nybble). If both multicolor and bitmap enabled, this produces multicolor bitmap mode with color sources: 00=Background Color Register 0, 01=upper nybble of Video Matrix, 10=lower nybble of Video Matrix, 11=Color RAM nybble. Impact on plotting and resolution described.
+
+                          Bit 4.  This bit selects multicolor graphics.  The effect of setting
+                          this bit to 1 depends on whether or not the bitmap graphics mode is
+                          also enabled.
+
+                          If you are not in bitmap mode, and you select multicolor text
+                          character mode by setting this bit to 1, characters with a color
+                          nybble whose value is less than 8 are displayed normally.  There will
+                          be one background color and one foreground color.  But each dot of a
+                          character with a color nybble whose value is over 7 can have any one
+                          of four different colors.
+
+                          The two colors in the Background Control Registers 1 and 2 (53282-3,
+                          $D022-3) are available in addition to the colors supplied by the Color
+                          RAM.  The price of these extra colors is a reduction in horizontal
+                          resolution.  Instead of each bit controlling one dot, in multicolor
+                          mode a pair of bits control the color of a larger dot.  A pattern of
+                          11 will light it with the color from the lower three bits of color
+                          RAM.  Patterns of 01 and 10 will select the colors from Background
+                          Color Registers 1 and 2, respectively, for the double-width dot.
+
+                          You can see the effect that setting this bit has by typing in the
+                          following BASIC command line:
+
+                              POKE 53270,PEEK(53280)OR16:PRINT CHR$(149)"THIS IS MULTICOLOR MODE"
+
+                          It is obvious from this example that the normal set of text characters
+                          was not made to be used in multicolor mode.  In order to take
+                          advantage of this mode, you will need to design custom four-color
+                          characters.  For more information, see the alternate entry for 53248
+                          ($D000), the Character Generator ROM.
+
+                          If the multicolor and bitmap enable bits are both set to 1, the result
+                          is a multicolor bitmap mode.  As in multicolor text mode, pairs of
+                          graphics data bits are used to set each dot in a 4 by 8 matrix to one
+                          of four colors.  This results in a reduction of the horizontal
+                          resolution to 160 double-wide dots across.  But while text multicolor
+                          mode allows only one of the four colors to be set individually for
+                          each 4 by 8 dot area, bitmap multicolor mode allows up to three
+                          different colors to be individually selected in each 4 by 8 dot area.
+                          The source of the dot color for each bit-pair combination is shown
+                          below:
+
+                          00 Background Color Register 0 (53281, $D021)
+                          01 Upper four bits of Video Matrix
+                          10 Lower four bits of Video Matrix
+                          11 Color RAM nybble (area starts at 55296 ($D800))
+
+                          The fact that bit-pairs are used in this mode changes the strategy for
+                          plotting somewhat.  In order to find the byte BY in which the desired
+                          bit-pair resides, you must multiply the horizontal position X, which
+                          has a value of 0- 159, by 2, and then use the same formula as for
+
+---
+Additional information can be found by searching:
+- "color_ram_description" which expands on Color RAM usage in multicolor modes
+- "bitmap_multicolor_plotting" which expands on How to plot in multicolor bitmap mode (bit pairs)

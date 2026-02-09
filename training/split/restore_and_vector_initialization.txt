@@ -1,0 +1,34 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - RESTOR and VECTOR routines: RESTOR loads KERNAL indirect pointers and vector base (VECTSS), and VECTOR copies between KERNAL storage and user vectors. Implements MOVOS loop to move vector table entries between storage and the user area, and defines the VECTSS..VECTSE list of KERNAL vector words (KEY, TIMB, NNMI, NOPEN, etc.).
+
+                                ; RESTOR - SET KERNAL INDIRECTS AND VECTORS (SYSTEM)
+                                ;
+.,FD15 A2 30    LDX #$30        RESTOR LDX #<VECTSS
+.,FD17 A0 FD    LDY #$FD               LDY #>VECTSS
+.,FD19 18       CLC                    CLC
+                                ;
+                                ; VECTOR - SET KERNAL INDIRECT AND VECTORS (USER)
+                                ;
+.,FD1A 86 C3    STX $C3         VECTOR STX TMP2
+.,FD1C 84 C4    STY $C4                STY TMP2+1
+.,FD1E A0 1F    LDY #$1F               LDY #VECTSE-VECTSS-1
+.,FD20 B9 14 03 LDA $0314,Y     MOVOS1 LDA CINV,Y      ;GET FROM STORAGE
+.,FD23 B0 02    BCS $FD27              BCS MOVOS2      ;C...WANT STORAGE TO USER
+.,FD25 B1 C3    LDA ($C3),Y            LDA (TMP2)Y     ;...WANT USER TO STORAGE
+.,FD27 91 C3    STA ($C3),Y     MOVOS2 STA (TMP2)Y     ;PUT IN USER
+.,FD29 99 14 03 STA $0314,Y            STA CINV,Y      ;PUT IN STORAGE
+.,FD2C 88       DEY                    DEY
+.,FD2D 10 F1    BPL $FD20              BPL MOVOS1
+.,FD2F 60       RTS                    RTS
+                                ;
+                                VECTSS .WOR KEY,TIMB,NNMI
+                                .WOR   NOPEN,NCLOSE,NCHKIN
+                                .WOR   NCKOUT,NCLRCH,NBASIN
+                                .WOR   NBSOUT,NSTOP,NGETIN
+                                .WOR   NCLALL,TIMB     ;GOTO BREAK ON A USRCMD JMP
+.:FD30 31 EA 66 FE 47 FE 4A F3  .WOR   NLOAD,NSAVE
+                                VECTSE
+
+---
+Additional information can be found by searching:
+- "system_start_reset_sequence" which expands on RESTOR is invoked during the system startup sequence
+- "ramtas_memory_initialization_and_top_detection" which expands on RAM tests and tape buffer allocation occur prior to restoring vectors

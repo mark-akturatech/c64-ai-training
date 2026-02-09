@@ -1,0 +1,40 @@
+# COMMODORE 64 - Explanation of the DATA DIRECTION REGISTER (DDR) for the USER port at location 56579 ($DD03). Describes that each of the eight PORT lines has a corresponding DDR bit: 1 = output, 0 = input. Includes a bit-number/value example (bits 7..0 with VALUE: 0 0 1 1 1 0 0 0) and shows converting the bit pattern into a decimal value for use with PEEK/POKE (2^5 + 2^4 + 2^3 = 56). Notes that PEEK/POKE require 0-255 decimal values.
+
+
+
+  360   INPUT/OUTPUT GUIDE
+~
+
+
+    The DATA DIRECTION REGISTER has its location at 56579 ($DD03 hex). Each
+  of the eight lines in the PORT has a BIT in the eight-bit DATA DIRECTION
+  REGISTER (DDR) which controls whether that line will be an input or an
+  output. If a bit in the DDR is a ONE, the corresponding line of the PORT
+  will be an OUTPUT. If a bit in the DDR is a ZERO, the corresponding line
+  of the PORT will be an INPUT. For example, if bit 3 of the DDR is set to
+  1, then line 3 of the PORT will be an output. A further example:
+    If the DDR is set like this:
+
+                          BIT #: 7 6 5 4 3 2 1 0
+                          VALUE: 0 0 1 1 1 0 0 0
+
+  You can see that lines 5,4, and 3 will be outputs since those bits are
+  ones. The rest of the lines will be inputs, since those lines are zeros.
+    To PEEK or POKE the USER port, it is necessary to use both the DDR and
+  the PORT itself.
+    Remember that the PEEK and POKE statements want a number from 0-255.
+  The numbers given in the example must be translated into decimal before
+  they can be used. The value would be:
+
+                     2^5 + 2^4 + 2^3 = 32 + 16 + 8 = 56
+
+  Notice that the bit # for the DDR is the same number that = 2 raised to
+  a power to turn the bit value on.
+
+                      (16 = 2^4=2*2*2*2, 8 = 2^3=2*2*2)
+
+
+---
+Additional information can be found by searching:
+- "user_port_connector_and_pin_descriptions" which expands on which physical pins correspond to PORT bits (PB0-PB7)
+- "user_port_flag1_and_pa2_handshaking" which expands on how FLAG1 and PA2 differ from normal port lines and are used for handshaking

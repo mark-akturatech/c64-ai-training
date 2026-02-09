@@ -1,0 +1,65 @@
+# The MOS 6567/6569 video controller (VIC-II) and its application in the Commodore 64 - ECM=0, BMM=1, MCM=0 standard bitmap mode. VIC reads 320x200 bitmap; video matrix supplies color info per 8x8 block. Addressing: c-access uses VM bits + VC (1000 matrix addresses), c-data: color nybbles for '1' and '0' pixels; g-access addresses include CB13 with VC9..VC0 and RC2..RC0 (maps into bitmap). g-data: 8 pixels (1bpp) where '0' uses c-data bits 0-3 and '1' uses c-data bits 4-7.
+
+3.7.3.3. Standard bitmap mode (ECM/BMM/MCM=0/1/0)
+-------------------------------------------------
+
+In this mode (as in all bitmap modes), the VIC reads the graphics data from
+a 320�200 bitmap in which every bit corresponds to one pixel on the screen.
+The data from the video matrix is used for color information. As the video
+matrix is still only a 40�25 matrix, you can only specify the colors for
+blocks of 8�8 pixels individually (sort of a YC 8:1 format). As the
+designers of the VIC wanted to realize the bitmap mode with as little
+additional circuitry as possible (the VIC-I didn't have a bitmap mode), the
+arrangement of the bitmap in memory is somewhat weird: In contrast to
+modern video chips that read the bitmap in a linear fashion from memory,
+the VIC forms an 8�8 pixel block on the screen from 8 successive bytes of
+the bitmap. The video matrix and the bitmap can be moved in memory with the
+bits VM10-VM13 and CB13 of register $d018.
+
+In standard bitmap mode, every bit in the bitmap directly corresponds to
+one pixel on the screen. Foreground and background color can be arbitrarily
+set for every 8�8 block.
+
+c-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |VM13|VM12|VM11|VM10| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+
+ |       unused      |     Color of      |     Color of      |
+ |                   |    "1" pixels     |    "0" pixels     |
+ +-------------------+-------------------+-------------------+
+
+g-access
+
+ Addresses
+
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ | 13 | 12 | 11 | 10 |  9 |  8 |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ |CB13| VC9| VC8| VC7| VC6| VC5| VC4| VC3| VC2| VC1| VC0| RC2| RC1| RC0|
+ +----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+
+ Data
+
+ +----+----+----+----+----+----+----+----+
+ |  7 |  6 |  5 |  4 |  3 |  2 |  1 |  0 |
+ +----+----+----+----+----+----+----+----+
+ |         8 pixels (1 bit/pixel)        |
+ |                                       |
+ | "0": Color from bits 0-3 of c-data    |
+ | "1": Color from bits 4-7 of c-data    |
+ +---------------------------------------+
+
+---
+Additional information can be found by searching:
+- "fli" which expands on FLI uses Bad Lines to change video matrix per raster and increase per-line color granularity

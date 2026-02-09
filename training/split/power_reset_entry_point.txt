@@ -1,0 +1,33 @@
+# - Commented Commodore 64 KERNAL Disassembly (Magnus Nyman) - POWER RESET ENTRY POINT: Cold start vector ($FFFC) entry. Initializes stack pointer (TXS to #$FF), disables interrupts (SEI), clears decimal mode (CLD), checks for autostart cartridge at $8000 by calling $FD02, performs autostart indirect jump if present, otherwise initializes I/O ($FDA3), system constants ($FD50), KERNAL reset ($FD15) and PAL/NTSC setup ($FF5B). Ends by re-enabling interrupts (CLI) and jumping indirectly to BASIC coldstart ($A000).
+
+                                *** POWER RESET ENTRY POINT
+                                The system hardware reset vector ($FFFC) points here. This
+                                is the first routine executed when the computer is
+                                switched on. The routine firstly sets the stackpointer to
+                                #ff, disables interrupts and clears the decimal flag. It
+                                jumps to a routine at $fd02 which checks for autostart
+                                cartridges. If so, an indirect jump is performed to the
+                                cartridge coldstart vector at $8000. I/O chips are
+                                initiated, and system constants are set up. Finally the IRQ
+                                is enabled, and an indirect jump is performed to $a000,
+                                the basic cold start vector.
+.,FCE2 A2 FF    LDX #$FF
+.,FCE4 78       SEI
+.,FCE5 9A       TXS             Set stackpointer to #ff
+.,FCE6 D8       CLD
+.,FCE7 20 02 FD JSR $FD02       Check ROM at $8000
+.,FCEA D0 03    BNE $FCEF
+.,FCEC 6C 00 80 JMP ($8000)     Jump to autostart vector
+.,FCEF 8E 16 D0 STX $D016
+.,FCF2 20 A3 FD JSR $FDA3       Init I/O
+.,FCF5 20 50 FD JSR $FD50       Init system constants
+.,FCF8 20 15 FD JSR $FD15       KERNAL reset
+.,FCFB 20 5B FF JSR $FF5B       Setup PAL/NTSC
+.,FCFE 58       CLI
+.,FCFF 6C 00 A0 JMP ($A000)     Basic coldstart
+
+
+---
+Additional information can be found by searching:
+- "check_for_8rom" which expands on checks ROM autostart parameters at $8004-$8008
+- "ioinit_init_io" which expands on initializes I/O chips after power-on

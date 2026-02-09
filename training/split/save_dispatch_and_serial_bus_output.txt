@@ -1,0 +1,37 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Top-level SAVE dispatch and serial-bus SAVE implementation: validate device numbers (keyboard and screen illegal for SAVE), set up serial-bus secondary address ($60 ORed), verify filename present, send secondary address+filename, command devices to LISTEN, send post-LISTEN secondary address, copy I/O start address to buffer address, output buffer address bytes to the serial bus, and check read/write pointer condition (sets carry if pointer >= end). Covers $F5ED..$F624 (addresses and serial bus interactions for saving to devices).
+
+
+                                *** save
+.,F5ED A5 BA    LDA $BA         get the device number
+.,F5EF D0 03    BNE $F5F4       if not keyboard go ??
+                                else ..
+.,F5F1 4C 13 F7 JMP $F713       else do 'illegal device number' and return
+.,F5F4 C9 03    CMP #$03        compare device number with screen
+.,F5F6 F0 F9    BEQ $F5F1       if screen do illegal device number and return
+.,F5F8 90 5F    BCC $F659       branch if < screen
+                                is greater than screen so is serial bus
+.,F5FA A9 61    LDA #$61        set secondary address to $01
+                                when a secondary address is to be sent to a device on
+                                the serial bus the address must first be ORed with $60
+.,F5FC 85 B9    STA $B9         save the secondary address
+.,F5FE A4 B7    LDY $B7         get the file name length
+.,F600 D0 03    BNE $F605       if filename not null continue
+.,F602 4C 10 F7 JMP $F710       else do 'missing file name' error and return
+.,F605 20 D5 F3 JSR $F3D5       send secondary address and filename
+.,F608 20 8F F6 JSR $F68F       print saving <file name>
+.,F60B A5 BA    LDA $BA         get the device number
+.,F60D 20 0C ED JSR $ED0C       command devices on the serial bus to LISTEN
+.,F610 A5 B9    LDA $B9         get the secondary address
+.,F612 20 B9 ED JSR $EDB9       send secondary address after LISTEN
+.,F615 A0 00    LDY #$00        clear index
+.,F617 20 8E FB JSR $FB8E       copy I/O start address to buffer address
+.,F61A A5 AC    LDA $AC         get buffer address low byte
+.,F61C 20 DD ED JSR $EDDD       output byte to serial bus
+.,F61F A5 AD    LDA $AD         get buffer address high byte
+.,F621 20 DD ED JSR $EDDD       output byte to serial bus
+.,F624 20 D1 FC JSR $FCD1       check read/write pointer, return Cb = 1 if pointer >= end
+
+---
+Additional information can be found by searching:
+- "setup_save_ram_to_device" which expands on caller that sets up start/end addresses before invoking this SAVE dispatch
+- "print_searching_and_file_name" which expands on uses filename handling/printing for SAVE user messages

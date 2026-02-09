@@ -1,0 +1,20 @@
+# COMMODORE 64 - Method 3: Replace or augment system input/output or BASIC internal routines via the RAM vector table on page 3 (zero-page vectors). Each vector is a 2-byte low/high address. Use KERNAL VECTOR routine or POKEs to adjust individual vectors. New routines can call the original routine (JMP to old vector) or end with RTS to return to BASIC.
+
+    3) Any of the inpUt/OUtPUT or BASIC internal routines accessed through
+       the vector table located on page 3 (see ADDRESSING MODES, ZERO PAGE)
+       can be replaced, or amended by user code. Each 2-byte vector
+       consists of a low byte and a high byte address which is used by the
+       operating system.
+         The KERNAL VECTOR routine is the most reliable way to change any
+       of the vectors, but a single vector can be changed by POKES. A new
+       vector will point to a user prepared routine which is meant to
+       replace or augment the standard system routine. When the appropriate
+       BASIC command is executed, the user routine will be executed. If
+       after executing the user routine, it is necessary to execute the
+       normal system routine, the user program must JMP (JUMP) to the
+       address formerly contained in the vector. If not, the routine must
+       end with a RTS to transfer control back to BASIC.
+
+---
+Additional information can be found by searching:
+- "vector_kernal_routine" which expands on VECTOR routine used to read/alter vector table safely

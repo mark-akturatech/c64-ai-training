@@ -1,0 +1,21 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Local counters and motor control: sets FSBLK, calls NEWCH to prepare local counters/flags, turns cassette motor on via the R6510 port (enabling low bit), flags internal motor control (CAS1), runs a two-level delay loop to allow hardware settle, then enables interrupts (CLI).
+
+.,F8A4 A9 02    LDA #$02        LDA    #2              ;FSBLK STARTS AT 2
+.,F8A6 85 BE    STA $BE         STA    FSBLK
+.,F8A8 20 97 FB JSR $FB97       JSR    NEWCH           ;PREP LOCAL COUNTERS AND FLAGS
+.,F8AB A5 01    LDA $01         LDA    R6510           ;TURN MOTOR ON
+.,F8AD 29 1F    AND #$1F        AND    #%011111        ;LOW TURNS ON
+.,F8AF 85 01    STA $01         STA    R6510
+.,F8B1 85 C0    STA $C0         STA    CAS1            ;FLAG INTERNAL CONTROL OF CASS MOTOR
+.,F8B3 A2 FF    LDX #$FF        LDX    #$FF            ;DELAY BETWEEN BLOCKS
+.,F8B5 A0 FF    LDY #$FF        TP32   LDY #$FF
+.,F8B7 88       DEY             TP35   DEY
+.,F8B8 D0 FD    BNE $F8B7       BNE    TP35
+.,F8BA CA       DEX             DEX
+.,F8BB D0 F8    BNE $F8B5       BNE    TP32
+.,F8BD 58       CLI             CLI
+
+---
+Additional information can be found by searching:
+- "tape_operation_timer_and_irq_setup" which expands on Implements hardware enabling after timers/IRQ vectors are set
+- "tape_completion_wait_loop" which expands on After enabling interrupts, enters a wait loop until cassette IRQs indicate completion

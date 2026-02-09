@@ -1,0 +1,29 @@
+# SID 6581/8580 Sound Interface Device - Programming Guide - Cutoff frequency is 11-bit value across $D415 (low 3 bits) and $D416 (high 8 bits). CutoffValue = (HighByte << 3) | (LowByte & 0x07). Mapping differs by chip: 6581 non-linear ~200Hz–12kHz and temperature dependent; 8580 more linear ~30Hz–12kHz.
+
+--------------------------------------------------------------------------------
+7.2 FILTER CUTOFF FREQUENCY
+--------------------------------------------------------------------------------
+
+The cutoff frequency is an 11-bit value (0-2047) stored across two registers:
+  $D415 bits 2-0: Low 3 bits
+  $D416 bits 7-0: High 8 bits
+
+  CutoffValue = (HighByte << 3) | (LowByte & 0x07)
+
+The mapping from register value to actual frequency differs between chip
+revisions:
+
+  6581: Highly non-linear, temperature dependent
+        ~200 Hz (low values) to ~12 kHz (high values)
+        The lowest ~256 register values produce almost no change
+        Strong temperature dependence causes detuning
+
+  8580: More linear response
+        ~30 Hz (low values) to ~12 kHz (high values)
+        Less temperature sensitivity
+
+
+---
+Additional information can be found by searching:
+- "filter_overview" which expands on routing voices through the filter
+- "chip_variants_6581_8580" which expands on differences in cutoff mapping between revisions

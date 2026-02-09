@@ -1,0 +1,26 @@
+# ********* - INSRT ($D8) — Insert mode flag. Describes behavior when INST key is pressed: shifting the line right, allocating another physical line if needed and available, updating LNMX ($D5) and the screen line link table, and tracking how many insert spaces are open (any nonzero value is interpreted as the number of inserts). Explains how insert mode makes the editor act like quote mode until inserts are filled, with the difference that DELETE leaves a printed equivalent while INST inserts spaces normally.
+
+216           $D8            INSRT
+Flag: Insert Mode (Any Number Greater Than 0 Is the Number of Inserts)
+
+When the INST key is pressed, the screen editor shifts the line to the
+right, allocates another physical line to the logical line if
+necessary (and possible), updates the screen line length in 213 ($D5),
+and adjusts the screen line link table at 217 ($D9).  This location is
+used to keep track of the number of spaces that has been opened up in
+this way.
+
+Until the spaces that have been opened up are filled, the editor acts
+as if in quote mode (see location 212 ($D4), the quote mode flag).
+This means that cursor control characters that are normally
+nonprinting will leave a printed equivalent on the screen when
+entered, instead of having their normal effect on cursor movement,
+etc.  The only difference between insert and quote mode is that the
+DELETE key will leave a printed equivalent in insert mode, while the
+INST key will insert spaces as normal.
+
+
+---
+Additional information can be found by searching:
+- "qtsw_quote_mode_and_hook_example" which expands on similarities and differences between quote and insert modes
+- "ldtb1_screen_line_link_table" which expands on adjustments to the link table when inserts cause physical/logical line changes

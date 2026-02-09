@@ -1,0 +1,24 @@
+# Contents - KILL macro and interrupt vector changes: the KILL macro shuts down all devices that can generate interrupts so you can safely change interrupt vectors. After calling KILL, set the NMI vector to an RTI (since NMIs are rarely used in games) and set the maskable IRQ vector to your interrupt routine's entry.
+
+The KILL macro essentially shuts down all of 
+the devices in the system capable of generating in- 
+terrupts. Once the interrupts from these chips have 
+been disabled, you can safely change the interrupt 
+vectors to point at your interrupt routine. 
+
+After the KILL macro is called, there are no in- 
+terrupts generated in the system. This is a good 
+time to change the addresses stored in the interrupt 
+vectors. The nonmaskable interrupt vector 
+(NMINV) should be changed to point at a return 
+from interrupt (RTI) instruction. Nonmaskable in- 
+terrupts are rarely, if ever, used in a game program. 
+The maskable interrupt vector (CINV) should be 
+changed to point at the first instruction of your in- 
+terrupt routine. 
+
+
+---
+Additional information can be found by searching:
+- "disable_other_interrupts" which expands on Why disable other interrupt sources first
+- "raster_example_and_assembly_notes" which expands on Example program that installs a raster interrupt

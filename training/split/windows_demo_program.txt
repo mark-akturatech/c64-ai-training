@@ -1,0 +1,37 @@
+# - C64 I/O Map (Mapping The Commodore 64) - A BASIC program that demonstrates creating multiple colored 'windows' using extended background color mode, POKEing background color registers, and showing flashing/appearance techniques.
+
+
+                          A practical demonstration of the technique for setting up windows is
+                          given in the sample program below.  The program sets up three windows,
+                          and shows them flashing, appearing and disappearing.
+
+                              5 DIM RO$(25):RO$(0)=CHR$(19):FOR I=1 TO 24:RO$(I)=RO$(I-1)+CHR$(17):NEXT
+                              10 POKE 53265,PEEK(53265) OR 64
+                              20 POKE 53280,0:POKE 53281,0:POKE 53282,1:POKE 53283,2:POKE 53284,13
+                              25 OP$=CHR$(160):FOR I=1 TO 4:OP$=OP$:NEXTI:PRINTCHR$(147);RO$(3);
+                              30 FOR I=1 TO10:PRINTTAB(1);CHR$(18);"               ";TAB(23);OP$:NEXT
+                              40 PRINT CHR$(146):PRINT:PRINT:FOR I=1 TO 4:PRINTOP$;OP$;OP$;OP$;OP$;:NEXTI
+                              50 PRINT RO$(5);CHR$(5);CHR$(18);TAB(2);"A RED WINDOW"
+                              60 PRINT CHR$(18);TAB(2);"COULD BE USED"
+                              70 PRINT CHR$(18);TAB(2);"FOR ERROR"
+                              80 PRINT CHR$(18);TAB(2);"MESSAGES"
+                              100 A$="A GREEN WINDOW":GOSUB 300:PRINT      RO$(5);CHR$(144);CHR$(18);TAB(24);B$
+                              110 A$="COULD BE USED":GOSUB 300:PRINTTAB(24);CHR$(18);B$
+                              120 A$="TO GIVE":GOSUB 300:PRINTTAB(24);CHR$(18);B$
+                              130 A$="INSTRUCTIONS":GOSUB 300:PRINTTAB(24);CHR$(18);B
+                              140 PRINT CHR$(31);RO$(19);
+                              150 A$="  WHILE THE MAIN WINDOW COULD BE USED":GOSUB 300:PRINT B$
+                              160 A$="  FOR ACCEPTING COMMANDS.":GOSUB 300:PRINT B$
+                              170 FOR I=1 TO 5000:NEXT I:POKE 53284,0
+                              180 FOR I=1 TO 5:FOR J=1 TO 300:NEXT J:POKE 53282,15
+                              190 FOR J=1 TO 300:NEXT J:POKE 53282,1
+                              200 NEXT I:POKE 53283,-2*(PEEK(53283)=240):POKE 53284,-13*(PEEK(53284)=240)
+                              210 GOTO 180
+                              300 B$="":FOR I=1TOLEN(A$):B=ASC(MID$(A$,I,1))
+                              310 B=B+32:IFB<96THENB=B+96
+                              320 B$=B$+CHR$(B):NEXTI:RETURN
+
+
+---
+Additional information can be found by searching:
+- "extended_background_color_utilities" which expands on Uses conversion subroutine and register POKEs

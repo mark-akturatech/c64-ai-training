@@ -1,0 +1,50 @@
+# COMMODORE 64 - Describes sprite expansion (magnification) in X and Y. To expand horizontally set bit N in register 53277 ($D01D) with POKE 53277,PEEK(53277)OR(2^SN); to clear use AND (255-2^SN). To expand vertically set bit N in register 53271 ($D017) with POKE 53271,PEEK(53271)OR(2^SN); to clear use AND (255-2^SN). Expanded sprites double dot width/height but don't change resolution — sprite simply appears larger.
+
+  EXPANDED SPRITES
+
+    The VIC-II chip has the ability to expand a sprite in the vertical
+  direction, the horizontal direction, or both at once. When expanded, each
+  dot in the sprite is twice as wide or twice as tall. Resolution doesn't
+  actually increase... the sprite just gets bigger.
+    To expand a sprite in the horizontal direction, the corresponding bit
+  in the VIC-II control register at location 53277 ($D01D in HEX) must be
+  turned ON (set to a 1). The following POKE expands a sprite in the X
+  direction:
+
+    POKE 53277,PEEK(53277)OR(2^SN)
+
+  where SN is the sprite number from 0 to 7.
+
+  136   PROGRAMMING GRAPHICS
+~
+
+
+    To unexpand a sprite in the horizontal direction, the corresponding bit
+  in the VIC-II control register at location 53277 ($D01D in HEX) must be
+  turned OFF (set to a 0). The following POKE "unexpands" a sprite in the
+  X direction:
+
+    POKE 53277,PEEK(53277)AND (255-2^SN)
+
+  where SN is the sprite number from 0 to 7.
+    To expand a sprite in the vertical direction, the corresponding bit in
+  the VIC-II control register at location 53271 ($D017 in HEX) must be
+  turned ON (set to a 1). The following POKE expands a sprite in the Y
+  direction:
+
+    POKE 53271,PEEK(53271)OR(2^SN)
+
+  where SN is the sprite number from 0 to 7.
+
+    To unexpand a sprite in the vertical direction, the corresponding bit
+  in the VIC-II control register at location 53271 ($D017 in HEX) must be
+  turned OFF (set to a 0). The following POKE "unexpands" a sprite in the
+  Y direction:
+
+    POKE 53271,PEEK(53271)AND (255-2^SN)
+
+  where SN is the sprite number from 0 to 7.
+
+---
+Additional information can be found by searching:
+- "sprite_position_registers_and_addresses" which expands on positioning expanded sprites requires same X/Y regs and MSB handling

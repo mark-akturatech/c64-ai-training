@@ -1,0 +1,53 @@
+# MACHINE - 6545-1 CRT Controller (CRTC) concept and register map overview. The 6545-1 interfaces the 650x family to raster CRT displays. Presents register index map R0-R17 with names and stored info (e.g., R0 Horizontal Total, R1 Horizontal Displayed, R2 Horizontal Sync Position, R3 VSYNC/HSYNC widths, R4 Vertical Total, R5 Vertical Total Adjust, R6 Vertical Displayed, R7 Vertical Sync Position, R8 Mode Control, R9 Scan Line, R10 Cursor Start, R11 Cursor End, R12/R13 Display Start Address high/low, R14/R15 Cursor Position, R16/R17 Light Pen registers) and notes on R/W capabilities.
+
+6545-1 CRT Controller (CRTC)
+============================
+
+
+Concept
+-------
+
+The 6545-1 is a CRT Controller intended to provide capability for interfacing
+the 6500 microprocessor family to CRT or TV-type raster scan displays.
+
+
+Register Map
+------------
+
+  +----+----------------------+---------------+---+------------------------+
+  |Reg#|Register Name         |Stored Info    |R W| 7  6  5  4  3  2  1  0 |
+  +----+----------------------+---------------+---+------------------------+
+  |R0  |Horiz Total           |# Chars        |n Y| .  .  .  .  .  .  .  . |
+  |R1  |Horiz Displayed       |# Chars        |n Y| .  .  .  .  .  .  .  . |
+  |R2  |Horiz Sync Position   |# Chars        |n Y| .  .  .  .  .  .  .  . |
+  |R3  |VSYNC, HSYNC Widths   |# Scan Lines & |n Y| V3 V2 V1 V0 H3 H2 H1 H0|
+  |    |                      |# Char Times   |   |                        |
+  +----+----------------------+---------------+---+------------------------+
+  |R4  |Vert Total            |# Char Rows    |n Y| x  .  .  .  .  .  .  . |
+  |R5  |Vert Total Adjust     |# Scan Lines   |n Y| x  x  x  .  .  .  .  . |
+  |R6  |Vert Displayed        |# Char Rows    |n Y| x  .  .  .  .  .  .  . |
+  |R7  |Vert Sync Position    |# Char Rows    |n Y| x  .  .  .  .  .  .  . |
+  +----+----------------------+---------------+---+------------------------+
+  |R8  |Mode Control          |               |n Y| .  .  .  .  .  .  .  . |
+  |R9  |Scan Line             |# Scan Lines   |n Y| x  x  x  .  .  .  .  . |
+  |R10 |Cursor Start          |Scan Line #    |n Y| x  B1 B0 .  .  .  .  . |
+  |R11 |Cursor End            |Scan Line #    |n Y| x  x  x  .  .  .  .  . |
+  |R12 |Display Start Addr (H)|               |n Y| x  x  .  .  .  .  .  . |
+  |R13 |Display Start Addr (L)|               |n Y| .  .  .  .  .  .  .  . |
+  |R14 |Cursor Position (H)   |               |Y Y| x  x  .  .  .  .  .  . |
+  |R15 |Cursor Position (L)   |               |Y Y| .  .  .  .  .  .  .  . |
+  |R16 |Light Pen Reg (H)     |               |Y n| x  x  .  .  .  .  .  . |
+  |R17 |Light Pen Reg (L)     |               |Y n| .  .  .  .  .  .  .  . |
+  +----+----------------------+---------------+---+------------------------+
+
+  Notes:
+  . Designates binary bit
+  x Designates unused bit.  Reading this bit is always "0", except for R31,
+    which does not drive the data bus at all, and for CS "1" which operates
+    likewise.
+
+
+
+---
+Additional information can be found by searching:
+- "bseries_6545_crtc_registers" which expands on typical register values for the B-series 6545 mapping

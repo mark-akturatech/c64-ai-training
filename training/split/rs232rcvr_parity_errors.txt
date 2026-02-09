@@ -1,0 +1,66 @@
+# - Fully Commented Commodore 64 KERNAL ROM Disassembly (English, "CBM") - Receiver buffer storage & parity check: after collecting bits, RSRCVR stores bytes into RIBUF (handling RIDBE/RIDBS wrap), then checks 6551 command (M51CDR) to see if parity is expected and validates computed parity against RIPRTY. On parity mismatch, sets RSSTAT parity error; other errors include receiver overrun, break detect, frame error. Uses RSRABL to re-enable receiving after handling.
+
+.,EFCD A9 80    LDA #$80        BREAKE LDA #$80        ;BREAK DETECTED
+.:EFCF 2C       .BYTE $2C              .BYT $2C
+.,EFD0 A9 02    LDA #$02        FRAMEE LDA #$02        ;FRAME ERROR
+.,EFD2 0D 97 02 ORA $0297       ERR232 ORA RSSTAT
+.,EFD5 8D 97 02 STA $0297              STA RSSTAT
+.,EFD8 4C 7E EF JMP $EF7E              JMP RSRABL      ;BAD EXIT SO HANG ##????????##
+                                ;
+                                ; CHECK FOR ERRORS
+                                ;
+.,EFDB A5 AA    LDA $AA         RSR060 LDA RIDATA      ;EXPECTING STOP...
+.,EFDD D0 F1    BNE $EFD0              BNE FRAMEE      ;FRAME ERROR
+.,EFDF F0 EC    BEQ $EFCD              BEQ BREAKE      ;COULD BE A BREAK
+                                .END
+                                .LIB   RS232INOUT
+                                ; OUTPUT A FILE OVER USR PORT
+                                ;  USING RS232
+                                ;
+.,EFE1 85 9A    STA $9A         CKO232 STA DFLTO       ;SET DEFAULT OUT
+.,EFE3 AD 94 02 LDA $0294              LDA M51CDR      ;CHECK FOR 3/X LINE
+.,EFE6 4A       LSR                    LSR A
+.,EFE7 90 29    BCC $F012              BCC CKO100      ;3LINE...NO TURN AROUND
+                                ;
+                                ;*TURN AROUND LOGIC
+                                ;
+                                ; CHECK FOR DSR AND RTS
+                                ;
+.,EFE9 A9 02    LDA #$02               LDA #$02        ;BIT RTS IS ON
+.,EFEB 2C 01 DD BIT $DD01              BIT D2PRB
+.,EFEE 10 1D    BPL $F00D              BPL CKDSRX      ;NO DSR...ERROR
+.,EFF0 D0 20    BNE $F012              BNE CKO100      ;RTS...OUTPUTING OR FULL DUPLEX
+                                ;
+                                ; CHECK FOR ACTIVE INPUT
+                                ;  RTS WILL BE LOW IF CURRENTLY INPUTING
+                                ;
+.,EFF2 AD A1 02 LDA $02A1       CKO020 LDA ENABL
+.,EFF5 29 02    AND #$02               AND #$02        ;LOOK AT IER FOR T2
+.,EFF7 D0 F9    BNE $EFF2              BNE CKO020      ;HANG UNTILL INPUT DONE
+                                ;
+                                ; WAIT FOR CTS TO BE OFF AS SPEC REQS
+                                ;
+.,EFF9 2C 01 DD BIT $DD01       CKO030 BIT D2PRB
+.,EFFC 70 FB    BVS $EFF9              BVS CKO030
+                                ;
+                                ; TURN ON RTS
+                                ;
+.,EFFE AD 01 DD LDA $DD01              LDA D2PRB
+.,F001 09 02    ORA #$02               ORA #$02
+.,F003 8D 01 DD STA $DD01              STA D2PRB
+                                ;
+                                ; WAIT FOR CTS TO GO ON
+                                ;
+.,F006 2C 01 DD BIT $DD01       CKO040 BIT D2PRB
+.,F009 70 07    BVS $F012              BVS CKO100      ;DONE...
+.,F00B 30 F9    BMI $F006              BMI CKO040      ;WE STILL HAVE DSR
+                                ;
+.,F00D A9 40    LDA #$40        CKDSRX LDA #$40        ;A DATA SET READY ERROR
+.,F00F 8D 97 02 STA $0297              STA RSSTAT      ;MAJOR ERROR....WILL REQUIRE REOPEN
+                                ;
+.,F012 18       CLC             CKO100 CLC             ;NO ERROR
+.,F013 60       RTS                    RTS
+
+---
+Additional information can be found by searching:
+- "rs232rcvr_overview_and_variables" which expands on uses INBIT/BITCI/RIDATA/RIPRTY variables as defined

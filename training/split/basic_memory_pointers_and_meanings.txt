@@ -1,0 +1,86 @@
+# MACHINE - Detailed description of BASIC pointers: SOV marks where variables are stored (pointer at $2A/$2B PET or $2D/$2E VIC/C64); SAVE saves memory from SOB to just before SOV; SOA, EOA, TOM, BOS pointer meanings and their machine-specific pointer addresses; dynamic strings behavior and garbage collection notes.
+
+                                                                         :93:
+
+  4.  Start-of-variables (SOV) is often positioned directly behind the end-
+      of-BASIC.  When the BASIC program runs, the variables will be written
+      into memory starting at this point; each variable is exactly seven
+      bytes long.  A pointer marks this location.  The pointer is located at
+      $2A/$2B (decimal 42 and 43) in PET/CBM, and at $2D/$2E (decimal 45 and
+      46) in VIC-20, Commodore 64, and PLUS/4.
+
+      The SOV pointer is extremely important during BASIC load and save
+      activities.  If we give the BASIC command SAVE in direct mode, the
+      computer will automatically save all memory from SOB to just before the
+      SOV.  Thus, it saves the whole BASIC program, including the end-of-
+      BASIC marker of three zero bytes, but does not save any variables.  If
+      we give the BASIC command LOAD in direct mode, the computer will
+      automatically load the program, and then place the SOV pointer to just
+      behind the last byte loaded.  In this way, variables will never be
+      stored over the BASIC program; they will be written above the end-of-
+      BASIC.  More on this later.
+
+      If the BASIC program is changed, the SOV may move up or down as needed.
+
+  5.  Start-of-arrays (SOA) also represents one location beyond the end-of-
+      BASIC variables, and thus could be named end-of-variables.  Arrays
+      created by the BASIC program, either by use of a DIM statement or by
+      default dimensioning, will occupy memory starting at this point.  A
+      pointer marks this location.  The pointer is located at $2C/$2D
+      (decimal 44 and 45) in PET/CBM, and at $2F/$30 (decimal 47 and 48) in
+      VIC-20, Commodore 64, and PLUS/4.  If the BASIC program is changed, the
+      SOA pointer is set to match the SOV.  Thus, all BASIC variables are
+      wiped out the moment a change is made to the program.
+
+  6.  End-of-arrays (EOA) is set one location beyond the last array location
+      in BASIC.  Above this point is seemingly "free" memory--but it's not
+      really free, as we'll see soon.  A pointer marks this location.  The
+      pointer is located at $2E/$2F (decimal 46 and 47) in PET/CBM, and at
+      $31/$32 (decimal 49 and 50) in VIC-20, Commodore 64, and PLUS/4.
+
+      If the BASIC program is changed, the EOA pointer is set to match the
+      SOA and SOV.  Thus, all BASIC arrays are wiped out the moment a change
+      is made to the BASIC program.
+
+      Let's change direction and start to work our way down from the top of
+      BASIC memory.
+
+  7.  Top-of-memory (TOM) is set one location beyond the last byte available
+      to BASIC.  On the PET/CBM and VIC-20, its location depends on the
+      amount of memory fitted; a 32K PET would locate TOM at $8000.  On the
+      Commodore 64, the TOM will normally be located at $A000.  A pointer
+      marks this location.  The pointer is located at $34/$35 (decimal 52 and
+      53) in PET/CBM, and at $37/$38 (decimal 55 and 56) in VIC-20, Commodore
+      64, and PLUS/4.
+
+                                                                         :94:
+
+      If you examine the TOM pointer, you may find that it does not point at
+      the expected position.  That may be because of the machine language
+      monitor, which has taken up residence at the top of memory and stolen
+      away some memory.
+
+  8.  Bottom-of-strings, (BOS) is set to the last "dynamic" string that has
+      been created.  If there are no BASIC strings, the BOM will be set to
+      the same address as TOM.  As new dynamic strings are created, this
+      pointer moves down from the top-of-memory towards the EOA address.  A
+      pointer marks this location.  The pointer is located at $30/$31
+      (decimal 48 and 49) in PET/CBM, and at $33/$34 (decimal 51 and 52) in
+      VIC-20, Commodore 64, and PLUS/4.
+
+A dynamic string is one that cannot be used directly from the program where
+it is defined; you might like to think of it as a manufactured string.  If,
+within a BASIC program, I type:  100 X$="HAPPY NEW YEAR", the BASIC
+interpreter will not need to store the string in upper memory; it will use
+the string directly from where it lies within the program.  On the other
+hand, if I define strings with commands such as R$=R$+"*" or INPUT N$, the
+strings must be built into some spare part of memory.  That's where the BOS
+pointer comes in:  the computed string is placed high in memory, and the BOS
+moved down to mark the next free place.
+
+If the BASIC program is changed, the BOS pointer is set to match the TOM.
+Thus, all strings are wiped out the moment a change is made to the BASIC
+
+---
+Additional information can be found by searching:
+- "monitor_save_command_format_and_load_relocation" which expands on .S/.L monitor operations and effect on pointers

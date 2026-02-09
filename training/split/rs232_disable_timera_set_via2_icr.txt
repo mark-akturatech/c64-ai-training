@@ -1,0 +1,18 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Disable Timer A interrupt and program VIA2 ICR for RS-232 operation. Saves the VIA2 ICR ($DD0D), merges with the RS-232 interrupt enable byte ($02A1), ensures the interrupt-enable bit is set, and stores the updated enable byte and ICR. Ends with RTS.
+
+                                *** disable timer A interrupt
+.,EF39 A9 01    LDA #$01        disable timer A interrupt
+
+                                *** set VIA 2 ICR from A
+.,EF3B 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,EF3E 4D A1 02 EOR $02A1       EOR with the RS-232 interrupt enable byte
+.,EF41 09 80    ORA #$80        set the interrupts enable bit
+.,EF43 8D A1 02 STA $02A1       save the RS-232 interrupt enable byte
+.,EF46 8D 0D DD STA $DD0D       save VIA 2 ICR
+.,EF49 60       RTS             
+
+
+---
+Additional information can be found by searching:
+- "rs232_setup_next_tx_byte" which expands on called when Tx buffer is drained to disable Timer A and finalize VIA2 ICR
+- "rs232_setup_for_transmit" which expands on related to enabling/disabling interrupts before starting transmission

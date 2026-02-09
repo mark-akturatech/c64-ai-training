@@ -1,0 +1,26 @@
+# - Fully Commented Commodore 64 ROM Disassembly (English) - Initial setup of screen/keyboard state: calls VIC init, clears shift-mode switch and cursor blink phase, sets keyboard decode pointer, keyboard buffer size and repeat counters, default text colour, repeat speed and cursor flash timing/enable.
+
+                                *** initialise the screen and keyboard
+.,E518 20 A0 E5 JSR $E5A0       initialise the vic chip
+.,E51B A9 00    LDA #$00        clear A
+.,E51D 8D 91 02 STA $0291       clear the shift mode switch
+.,E520 85 CF    STA $CF         clear the cursor blink phase
+.,E522 A9 48    LDA #$48        get the keyboard decode logic pointer low byte
+.,E524 8D 8F 02 STA $028F       save the keyboard decode logic pointer low byte
+.,E527 A9 EB    LDA #$EB        get the keyboard decode logic pointer high byte
+.,E529 8D 90 02 STA $0290       save the keyboard decode logic pointer high byte
+.,E52C A9 0A    LDA #$0A        set the maximum size of the keyboard buffer
+.,E52E 8D 89 02 STA $0289       save the maximum size of the keyboard buffer
+.,E531 8D 8C 02 STA $028C       save the repeat delay counter
+.,E534 A9 0E    LDA #$0E        set light blue
+.,E536 8D 86 02 STA $0286       save the current colour code
+.,E539 A9 04    LDA #$04        speed 4
+.,E53B 8D 8B 02 STA $028B       save the repeat speed counter
+.,E53E A9 0C    LDA #$0C        set the cursor flash timing
+.,E540 85 CD    STA $CD         save the cursor timing countdown
+.,E542 85 CC    STA $CC         save the cursor enable, $00 = flash cursor
+
+---
+Additional information can be found by searching:
+- "initialise_vic_chip_registers" which expands on VIC-II register initialization values and loop
+- "build_line_start_table_and_clear_screen" which expands on next step: build line-start table and clear the screen
