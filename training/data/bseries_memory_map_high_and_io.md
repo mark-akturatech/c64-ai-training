@@ -1,0 +1,145 @@
+# MACHINE - B-Series memory map high regions and I/O mapping (B‑128 example)
+
+**Summary:** B‑Series (B‑128 example) high-memory and I/O map listing system vectors ($0302-$03FF), file/IEEE vectors and tables, top/bottom of system & user memory pointers, reserved RAM/ROM/cart mappings (BASIC $8000-$BFFF, Kernal $E000-$FFFF), and I/O device addresses (6545 CRTC $D800, SID/6581 $DA00-$DA1C, CIA $DB00/$DC00, ACIA/6551 $DD00, TPI/6525 $DE00/$DF00).
+
+## High-level description
+This chunk documents the high/upper-zero-page system vectors, DOS/file/IEEE vector table entries, various kernel variables (top/bottom pointers, flags, counters), reserved address regions for DOS/plug‑ins/cartridges, ROM locations (BASIC, Kernal), screen RAM, and mapped I/O devices for a B‑128 example machine that uses a 6545 CRTC (not the VIC‑II). The listing includes default vector targets (hex) where provided.
+
+Keep in mind this is a logical address table for a B‑Series machine (example values from a B‑128); addresses and defaults shown are the system layout used by that firmware.
+
+## Source Code
+```text
+0302-0303     770-771     BRK vector   (default EE21)
+0304-0305     772-773     NMI vector   (default FCAA)
+0306-0307     774-775     OPEN vector  (default F6BF)
+0308-0309     776-777     CLOSE vector (default F5ED)
+030A-030B     778-779     Connect-input vector  (default F549)
+030C-030D     780-781     Connect-output vector (default F5A3)
+030E-030F     782-783     Restore default I/O vector (default F6A6)
+0310-0311     784-785     Input vector  (default F49C)
+0312-0313     786-787     Output vector (default F4EE)
+0314-0315     788-789     STOP key test vector (default F96B)
+0316-0317     790-791     GET vector (default F43D)
+0318-0319     792-793     Abort all files vector (default F67F)
+031A-031B     794-795     LOAD vector (default F746)
+031C-031D     796-797     SAVE vector (default F84C)
+031E-031F     798-799     Monitor command vector  (default EE77)
+0320-0321     800-801     Keyboard control vector (default E01F)
+0322-0323     802-803     Print control vector (default E01F) [??? -wf]
+0324-0325     804-805     IEEE send LSA vector (default F274)
+0326-0327     806-807     IEEE send TSA vector (default F280)
+
+0328-0329     808-809     IEEE receive byte vector   (default F30A)
+032A-032B     810-811     IEEE send character vector (default F297)
+032C-032D     812-813     IEEE send untalk vector    (default F2AB)
+032E-032F     814-815     IEEE send unlisten vector  (default F2AF)
+0330-0331     816-817     IEEE send listen vector    (default F234)
+0332-0333     818-819     IEEE send talk vector      (default F230)
+0334-033D     820-829     File logical addresses table
+033E-0347     830-839     File device table
+0348-0351     840-849     File secondary address table
+0352-0354     850-852     Bottom of system memory
+0355-0357     853-855     Top of system memory
+0358-035A     856-858     Bottom of user memory
+035B-035D     859-861     Top of user memory
+035E          862         IEEE timeout:  0 = enabled
+035F          863         0 = load; 128 = verify
+0360          864         Number of open files
+0361          865         Message mode byte
+0362          866         [unused?  -wf]
+0363-0366     867-870     Miscellaneous register save bytes
+0369          873         Timer toggle
+036A-036B     874-875     Cassette vector (dead end)
+036C-036E     876-878     [unused?  -wf]
+036F-0371     879-881     Relocation start address
+0372-0374     882-884     [unused?  -wf]
+0375          885         Cassette motor flag (unused)
+0376-0377     886-887     RS-232 control, command
+0378-0379     888-889     [unused?  -wf]
+037A          890         RS-232 status
+037B          891         RS-232 handshake input
+037C          892         RS-232 input buffer
+037D          893         RS-232 arrival pointer
+037E-037F     894-895     [unused?  -wf]
+0380-0381     896-897     Top of memory pointer
+0382          898         Bank byte
+0383          899         RVS flag
+0384          900         Current line length
+0385          901         Temporary output character save
+0386          902         0 = normal; 255 = auto insert
+0387          903         0 = scrolling; 255 = no scroll
+0388          904         Miscellaneous work byte for screen
+
+0389          905         Index to programmed key
+038A          906         Scroll mode flag
+038B          907         Bell mode flag
+038C          908         Indirect bank save
+038D-03A0     909-928     Lengths of 'key' words
+03A1-03AA     929-938     Bitmapped tab stops
+03AB-03B4     939-948     Keyboard input buffer
+03B5-03B6     949-950     'Key' word link (default E91B)
+03B7-03F7     951-1015    [unused?  -wf]
+03F8-03F9    1016-1017    Restart vector
+03FA-03FB    1018-1019    Restart test mask
+03FC-03FF    1020-1023    [unused?  -wf]
+0400-07FF    1024-2047    Free RAM (reserved for DOS)
+0800-0FFF    2048-4095    Reserved for plug-in RAM
+1000-1FFF    4096-8191    Reserved for plug-in DOS ROM
+2000-7FFF    8192-32767   Reserved for cartridges
+8000-BFFF   32768-49151   BASIC ROM
+C000-CFFF   49152-53247   Unused
+D000-D7CF   53248-55247   Screen RAM
+D800-D801   55296-55297   Video controller 6545
+DA00-DA1C   55808-55836   Sound interface device 6581
+DB00-DB0F   56064-56079   Complex interface adapter 6526
+DC00-DC0F   56320-56335   Complex interface adapter 6526
+DD00-DD03   56576-56579   Asynchronous communications IA 6551
+DE00-DE07   56832-56839   Tri Port Interface Adapter 6525
+DF00-DF07   57088-57095   Tri Port Interface Adapter 6525
+E000-FFFF   57344-65535   Kernal ROM
+```
+
+## Key Registers
+- $0302-$0333 - System vectors and I/O vectors (BRK, NMI, OPEN, CLOSE, I/O/IEEE vectors)
+- $0334-$033D - File logical addresses table
+- $033E-$0347 - File device table
+- $0348-$0351 - File secondary address table
+- $0352-$0354 - Bottom of system memory pointer
+- $0355-$0357 - Top of system memory pointer
+- $0358-$035A - Bottom of user memory pointer
+- $035B-$035D - Top of user memory pointer
+- $035E - IEEE timeout flag
+- $035F - Load/verify mode flag
+- $0360 - Number of open files
+- $0361 - Message mode byte
+- $0363-$0366 - Misc register save bytes
+- $036A-$036B - Cassette vector (unused/dead end)
+- $036F-$0371 - Relocation start address
+- $0376-$0377 - RS‑232 control/command
+- $037A - RS‑232 status
+- $037B - RS‑232 handshake input
+- $037C - RS‑232 input buffer
+- $037D - RS‑232 arrival pointer
+- $0380-$0381 - Top of memory pointer
+- $0382 - Bank byte
+- $0383 - RVS flag
+- $03F8-$03F9 - Restart vector and related mask ($03FA-$03FB)
+- $0400-$07FF - Free RAM (reserved for DOS)
+- $0800-$0FFF - Reserved for plug-in RAM
+- $1000-$1FFF - Reserved for plug-in DOS ROM
+- $2000-$7FFF - Reserved for cartridges
+- $8000-$BFFF - BASIC ROM
+- $C000-$CFFF - Unused
+- $D000-$D7CF - Screen RAM
+- $D800-$D801 - 6545 CRTC (video controller)
+- $DA00-$DA1C - 6581 SID (sound interface device)
+- $DB00-$DB0F - 6526 CIA (Complex Interface Adapter)
+- $DC00-$DC0F - 6526 CIA (second adapter)
+- $DD00-$DD03 - 6551 ACIA (Asynchronous Communications Interface)
+- $DE00-$DE07 - 6525 TPI (Tri Port Interface Adapter)
+- $DF00-$DF07 - 6525 TPI (second block)
+- $E000-$FFFF - Kernal ROM
+
+## References
+- "bseries_memory_map_bank15_part2" — expands on vector defaults and link addresses used in this map
+- "bseries_6545_crtc_registers" — CRTC registers and typical values

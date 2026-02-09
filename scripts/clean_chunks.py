@@ -67,6 +67,9 @@ Your job: convert a raw text chunk into clean Markdown that makes a good, discre
 ## Key Registers
 - $XXXX - Chip - brief description
 
+## Incomplete
+- Missing: <description of what's missing>
+
 ## References
 - "chunk_name" — what it covers
 ```
@@ -74,7 +77,7 @@ Your job: convert a raw text chunk into clean Markdown that makes a good, discre
 CRITICAL FORMATTING RULES:
 - The title MUST be a `# ` heading (h1)
 - ALL content sections MUST use `## ` headings (h2) — NEVER plain uppercase text
-- `## Source Code`, `## Key Registers`, `## References` MUST be exactly these heading texts (parsed by downstream tools)
+- `## Source Code`, `## Key Registers`, `## Incomplete`, `## References` MUST be exactly these heading texts (parsed by downstream tools)
 
 ## Source Code section
 
@@ -83,10 +86,11 @@ This section holds reference material that should be retrievable but not searche
 - BASIC programs (numbered lines with POKE/PEEK/GOTO/GOSUB etc.)
 - Opcode/data tables
 - Detailed register maps (multi-line tables listing register addresses with bit names/layouts) — Key Registers already provides a searchable summary, so the full bit-level map is reference data
-- Use appropriate fenced code blocks: ```asm for assembly, ```basic for BASIC, ```text for data tables and register maps
+- ASCII art diagrams (block diagrams, timing waveforms, pin-out diagrams, circuit schematics, memory layout maps) — visual reference material that should be retrievable but not searched against
+- Use appropriate fenced code blocks: ```asm for assembly, ```basic for BASIC, ```text for data tables, register maps, and diagrams
 - Place AFTER all descriptive sections, BEFORE Key Registers
 - Do NOT duplicate: if code/maps appear in the source, move them here — don't also inline them in descriptive sections. Brief single-instruction examples in prose (e.g. "use `LDA #$01`") are fine
-- If the source has no code listings, data tables, or register maps, omit this section entirely
+- If the source has no code listings, data tables, register maps, or diagrams, omit this section entirely
 
 ## Key Registers section
 
@@ -98,6 +102,32 @@ These become keyword-indexed metadata for exact address matching:
   - VIC-II: base $D000 ($D000-$D02E)
   - CIA 1: base $DC00 ($DC00-$DC0F), CIA 2: base $DD00 ($DD00-$DD0F)
 - Only convert when CERTAIN it's a register offset. Non-C64 chips (6520, 6545, 6525): omit Key Registers entirely. Raster line numbers and timing values are NOT registers.
+
+## Incomplete section
+
+If ANYTHING appears to be missing, broken, or unreadable in the source, add this section BEFORE References:
+```
+## Incomplete
+- Missing: <what is missing>
+```
+
+Common cases to flag:
+- **Missing diagrams/figures**: "[PICTURE MISSING]", "[DIAGRAM]", "see figure X" with no figure, timing diagrams referenced but not present
+- **Missing tables or data**: truncated tables, "table continues..." with no continuation, columns cut off
+- **OCR artifacts**: garbled text that can't be reconstructed, unreadable characters, corrupted numeric values
+- **Missing images**: pin-out diagrams, block diagrams, schematics, waveform illustrations
+- **Incomplete code listings**: truncated assembly/BASIC, "..." indicating omitted lines, missing subroutines referenced by the listing
+- **Missing formulas or equations**: mathematical expressions that didn't survive text conversion
+- **Broken cross-references**: "see page X" or "refer to table Y" where the referenced content should have been inline
+
+Each bullet should be specific enough to know what to look for, e.g.:
+- `- Missing: Timing diagram for read cycle (referenced in text but not present in source)`
+- `- Missing: Pin-out diagram for 28-pin DIP package`
+- `- Missing: Rows 5-8 of opcode table (table appears truncated after row 4)`
+- `- Missing: OCR damage — formula for filter cutoff frequency is unreadable`
+
+Do NOT use this section for content that was intentionally omitted by the split config or simply doesn't belong in this chunk.
+If nothing is missing, omit this section entirely.
 
 ## References section
 - Only include if cross-references exist at bottom of source

@@ -16,6 +16,7 @@ documents/*.txt ──→ auto_split.py ──→ split_config/*.json
                                           ↓
 documents/*.txt ──→ split_training.py ──→ training/split/*.txt ──→ clean_chunks.py ──→ training/data/*.md
 examples/*.asm  ──→ document_examples.py ──→ training/data/example_*.md
+training/data/*.md ──→ fix_incomplete.py ──→ training/data/*.md (patched)
 training/data/*.md ──→ Qdrant import
 ```
 
@@ -103,7 +104,21 @@ This reads `.asm` files from `examples/`, writes `example_*.md` to `training/dat
 To reprocess everything: `uv run scripts/document_examples.py --force`
 To process one file: `uv run scripts/document_examples.py examples/bars256.asm`
 
-### 5. Import to Qdrant
+### 5. Fix incomplete chunks (OpenAI + web search)
+
+Fix chunks that have `## Incomplete` sections by searching authoritative sources:
+
+```bash
+uv run scripts/fix_incomplete.py
+```
+
+This uses `gpt-4o-search-preview` with web search to fill in missing datasheet values, reconstruct diagrams, and resolve other gaps. False positives are auto-skipped.
+
+To fix specific files: `uv run scripts/fix_incomplete.py chunk_name.md`
+To see what needs fixing: `uv run scripts/fix_incomplete.py --list`
+To include false positives: `uv run scripts/fix_incomplete.py --force`
+
+### 6. Import to Qdrant
 
 Skip if `--no-import` was specified.
 
