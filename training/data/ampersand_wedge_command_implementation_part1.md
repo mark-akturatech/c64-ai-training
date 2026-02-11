@@ -42,3 +42,8 @@
 ## References
 - "ampersand_wedge_command_installation" — expands on code to install wedge vector and enable via SYS
 - "kernal_chrout_and_charget" — expands on use of $FFD2 (CHROUT) and $0073 (CHRGET) in wedge
+
+## Labels
+- CHRGET
+- CHROUT
+- TXTPTR

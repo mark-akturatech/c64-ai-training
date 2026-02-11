@@ -108,3 +108,13 @@ This code fragment (starting at $E7DA) is the KERNAL routine for processing type
 
 ## References
 - "key_tables_mode1_2_3" — expands on keyboard translation tables used during shift/case handling
+
+## Labels
+- PNT
+- PNTR
+- QTSW
+- LNMX
+- TBLX
+- INSRT
+- USER
+- COLOR

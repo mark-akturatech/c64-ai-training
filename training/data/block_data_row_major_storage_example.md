@@ -17,20 +17,5 @@ This layout means the memory index for a tile at coordinates (x, y) inside a blo
 
 The same approach is applied to every block in the tileset: blocks are contiguous in memory with their rows in order. This storage pattern simplifies reading entire rows (contiguous reads) and supports precomputed map-row techniques (see referenced chunk).
 
-## Source Code
-```text
-Block visual (4x4):
-Row 0: A B C D
-Row 1: E F G H
-Row 2: I J K L
-Row 3: M N O P
-
-Serialized (row-major, sequential in memory):
-ABCDEFGHIJKLMNOP
-```
-
-## Key Registers
-(omitted — this chunk documents data layout, not hardware registers)
-
 ## References
 - "map_row_storage_and_precalculation" — expands on similar storage approach for map rows and precomputed row operations

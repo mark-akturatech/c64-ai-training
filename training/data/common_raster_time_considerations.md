@@ -24,9 +24,6 @@
 - Each reposition must be synchronized to the raster and account for VIC-II sprite DMA cycle stealing (sprite DMA steals CPU cycles during sprite fetches), which affects cycle budgets for time-critical code.
 - Plan timing so sprite DMA windows do not collide with other cycle-critical operations (raster splits, sample output, etc.).
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps provided in source)
-
 ## Key Registers
 - $D000-$D02E - VIC-II - raster counter, control, IRQ and sprite registers (includes $D012 raster counter and $D019 IRQ status/control)
 

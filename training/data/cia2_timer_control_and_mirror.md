@@ -72,3 +72,7 @@ $DD10-$DDFF  - CIA#2 Images       Registers $DD00-$DD0F appear repeated every $1
 - "cia2_timers" — expands on timer counters and control registers (detailed bit layouts and timer behavior)
 - MOS 6526 CIA Datasheet
 - Commodore 64 Programmer's Reference Guide
+
+## Labels
+- CRA
+- CRB

@@ -145,3 +145,13 @@ Bit 7:  Read / did any CIA #2 source cause an interrupt?  (1=yes)
 ## References
 - "ci2pra_ci2prb_and_data_direction_defaults" — expands on default DDR setups and RS-232 opening effects
 - "ciaicr_interrupt_control" — expands on interrupt control semantics similar to CIA #1
+
+## Labels
+- C2DDRA
+- C2DDRB
+- TI2ALO
+- TI2AHI
+- TI2BLO
+- TI2BHI
+- CI2SDR
+- CI2ICR

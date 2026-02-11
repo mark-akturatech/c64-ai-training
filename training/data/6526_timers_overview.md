@@ -71,3 +71,12 @@ $DD0F CRB
 - "6526_register_map" — full CIA register map and offsets
 - "6526_timer_control_functions" — detailed CRA/CRB bit meanings and modes
 - "6526_timer_registers_and_load_behavior" — detailed latch/counter transfer and byte-order behavior
+
+## Labels
+- TALO
+- TAHI
+- TBLO
+- TBHI
+- CRA
+- CRB
+- ICR

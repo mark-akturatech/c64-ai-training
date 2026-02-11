@@ -103,3 +103,15 @@ This ROM routine assembles a tape header in the tape buffer and initiates a tape
 - "set_tape_buffer_start_and_end_pointers" — derives I/O and end pointers from buffer start (JSR $F7D7)
 - "initiate_tape_write" — calls the tape write entry (JSR $F86B)
 - "get_tape_buffer_start_pointer" — helper used by the set-pointer routine
+
+## Labels
+- C1
+- C2
+- AE
+- AF
+- B2
+- BB
+- B7
+- 9E
+- 9F
+- AB

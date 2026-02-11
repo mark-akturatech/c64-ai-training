@@ -57,3 +57,13 @@ Bit 0: XSC0  - Horizontal Fine Scrolling Bit 0
 ## References
 
 - "d011_vertical_fine_scrolling_bits0_2_and_demo" — expands on D011 vertical fine-scrolling bits and demonstrates their use.
+
+## Labels
+- RSEL
+- YSC0
+- YSC1
+- YSC2
+- XSC0
+- XSC1
+- XSC2
+- CSEL

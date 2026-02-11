@@ -91,8 +91,12 @@ Important behavior notes preserved from the code:
                                 ;***************************************
 ```
 
-## Key Registers
-- (none) — This chunk documents KERNAL ROM code paths and zero-page/KERNAL variables (T1/TAPE1, BUFPT, ROBUF) rather than hardware I/O registers ($D000, $DC00, $DD00, $D400 etc.), so no chip register addresses are indexed here.
-
 ## References
 - "rs232inout_buffer_and_protection" — expands on BSO232; shows how ROBUF and T1 are used to queue RS232 bytes and how the transmitter is started (BSO100/BSPIN)
+
+## Labels
+- BSOUT
+- CASOUT
+- T1
+- TAPE1
+- BUFPT

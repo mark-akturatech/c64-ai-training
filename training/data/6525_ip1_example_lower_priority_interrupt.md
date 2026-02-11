@@ -17,3 +17,7 @@ This preserves the priority: a latched lower-priority interrupt waits until the 
 ## References
 - "6525_functional_description_IP1_intro_priority_order" — expands on priority ordering I4..I0  
 - "6525_active_interrupt_register_AIR" — expands on transfer of latched interrupts from ILR to AIR
+
+## Labels
+- AIR
+- ILR

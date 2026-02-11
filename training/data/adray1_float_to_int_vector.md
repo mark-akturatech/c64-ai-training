@@ -10,9 +10,6 @@ ADRAY1 is a two-byte zero-page vector ($0003-$0004) containing the address of a 
 - Using ADRAY1 protects your program from future ROM address changes; jump indirectly via the vector instead of hard-coding the ROM address.
 - See the USR vector entry (at decimal 785 / $0311) for an example of calling BASIC routines from machine code and passing parameters in floating-point form.
 
-## Source Code
-(omitted — no assembly or tables provided in source)
-
 ## Key Registers
 - $0003-$0004 - Zero page - ADRAY1 vector: address of BASIC routine to convert floating-point to two-byte signed integer
 
@@ -20,3 +17,6 @@ ADRAY1 is a two-byte zero-page vector ($0003-$0004) containing the address of a 
 - "adray2_int_to_float_vector" — complementary integer-to-floating-point conversion vector (ADRAY2)
 - "zero_page_unused_02" — previous zero-page entries
 - "usr_vector" — USR vector entry (decimal 785 / $0311): using USR to call BASIC routines and pass floating-point parameters
+
+## Labels
+- ADRAY1

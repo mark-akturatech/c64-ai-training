@@ -16,3 +16,6 @@ This byte is consulted by routines that need to know whether the two floating-po
 ## References
 - "fac1_fields_exponent_mantissa_sign" — FAC1 sign semantics and field layout  
 - "fac2_fields_exponent_mantissa_sign" — FAC2 sign semantics and field layout
+
+## Labels
+- ARISGN

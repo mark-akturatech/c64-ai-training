@@ -3,9 +3,6 @@
 ## Summary
 Bootloader handling RLE (Run-Length Encoded) data decompression with control code $C2 as compression marker. Unpacks font, sprite, music, and text data into target memory locations. Uses self-modifying code for 16-bit address arithmetic during unpacking, incrementing high/low destination address bytes. Relocates decompressed code to $8000 for execution.
 
-## Key Registers
-- Self-modifying address writes for 16-bit decompression targets
-
 ## Techniques
 - RLE decompression
 - 16-bit address handling
@@ -32,7 +29,6 @@ CPU
 
 C_INFLATE_CACHE         .equ $6d00                      ; storage location for data inflate at startup
 C_INTRO_START           .equ $8000
-
 
                         ; program start
 

@@ -22,3 +22,6 @@
 
 ## References
 - "instruction_tables_lda" — expands on LDA absolute and zero-page opcodes
+
+## Mnemonics
+- LDA

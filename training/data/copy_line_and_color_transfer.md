@@ -81,8 +81,15 @@ This chunk implements new-line generation and per-line scrolling/copying used by
 .,E9D6 91 D1    STA ($D1),Y            STA (PNT)Y
 ```
 
-## Key Registers
-(omitted — this chunk documents code/zero-page variables and KERNAL routines, not hardware register addresses)
-
 ## References
 - "scroll_routines_and_newline_generation" — expands on SCRLIN and TOFROM invoked during scroll/newline operations
+
+## Labels
+- SCRLIN
+- TOFROM
+- SETPNT
+- CLRLN
+- SAL
+- SAH
+- PNT
+- LLEN

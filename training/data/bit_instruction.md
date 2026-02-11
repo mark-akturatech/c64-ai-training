@@ -24,3 +24,6 @@ BIT	Bit Test	Absolute	BIT $aaaa	$2C	3	N,V,Z
 
 ## References
 - "cmp_instruction" — related compare operations (CMP/CPX/CPY)
+
+## Mnemonics
+- BIT

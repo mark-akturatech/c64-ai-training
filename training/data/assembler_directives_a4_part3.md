@@ -90,9 +90,6 @@
 .zp { label: .byte 0 ... }   ; mark label as zeropage (unresolved labels in this block)
 ```
 
-## Key Registers
-(omitted — this chunk documents assembler directives, not hardware registers)
-
 ## References
 - "auto_include_file_plugins" — expands on .plugin and AutoIncludeFile usage
 - "macro_plugins_interface" — expands on .macro directive and macro plugin interface

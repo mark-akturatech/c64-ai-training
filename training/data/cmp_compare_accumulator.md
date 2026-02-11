@@ -39,3 +39,6 @@ Timing notes:
 ## References
 - "clv_clear_overflow_flag" — covers CLV (clear overflow flag) related flag behaviour.  
 - "cpx_compare_index_x" — covers CPX (compare X register) instruction and related addressing/modes.
+
+## Mnemonics
+- CMP

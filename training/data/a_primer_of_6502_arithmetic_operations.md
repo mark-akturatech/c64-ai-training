@@ -101,3 +101,12 @@ Important flag meanings for ADC/SBC:
 ## References
 - "decimal_mode_bcd" — BCD/decimal mode behavior and W65C02 differences
 - "flags_with_adc_and_sbc" — detailed flag behavior for ADC and SBC (N, V, Z, C)
+
+## Mnemonics
+- ADC
+- SBC
+- JMP
+- BRK
+- CLC
+- SEC
+- CLD

@@ -24,3 +24,6 @@ The original text does not specify the containing control register or the bit po
 ## References
 - "6525_functional_description_IP0_no_priority" — expands on behavior when IP = 0  
 - "6525_functional_description_IP1_intro_priority_order" — expands on behavior when IP = 1
+
+## Labels
+- IP

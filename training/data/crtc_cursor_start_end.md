@@ -19,11 +19,11 @@ Notes:
 - Bits 0–4 of R11 = cursor end scan line (0–31).
 - R14 and R15 are the CRTC registers that determine the cursor character position within the entire 16K address field (i.e., which character position the cursor overlays).
 
-## Source Code
-(omitted — no assembly/listings or register maps provided in source)
-
-## Key Registers
-(omitted — CRTC/6545 is a non-C64 chip; no absolute C64 $Dxxx register conversions supplied)
-
 ## References
 - "crtc_mode_control" — expands on cursor skew bit interaction with R10/R11
+
+## Labels
+- R10
+- R11
+- R14
+- R15

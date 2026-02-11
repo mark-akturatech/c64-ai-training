@@ -115,3 +115,8 @@ The canonical, address-by-address listing is placed in the Source Code section (
 
 ## References
 - "bseries_memory_map_bank15_zeropage" — expanded continuation of Bank 15 zero-page and vectors
+
+## Labels
+- CHRGET
+- CHRGOT
+- IRQ

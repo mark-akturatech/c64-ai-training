@@ -50,9 +50,6 @@ Control Port 2
 +-----+-------------+-----------+
 ```
 
-## Key Registers
-- (none) — This chunk documents physical connector pinouts, not memory-mapped registers.
-
 ## References
 - "appendix_i_pinouts_intro" — Overview of pinout categories in Appendix I
 - "user_port_pinout_and_connector_diagram" — Other I/O port (User Port) pinouts and signals

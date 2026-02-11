@@ -12,13 +12,15 @@
 - Practical implication: when D=1, these derived/undocumented instructions will perform BCD math and set flags according to the NMOS decimal implementation, which differs in subtle ways from pure binary arithmetic (see referenced chunks for opcode‑specific quirks).
 - Validation: the statement above is supported by test suites / scanners that exercise decimal behavior across documented and undocumented opcodes.
 
-## Source Code
-(omitted — this chunk contains no assembly or register map)
-
-## Key Registers
-(omitted — this chunk documents CPU instruction behavior, not memory‑mapped chip registers)
-
 ## References
 - "arr_decimal_mode" — detailed ARR behavior in decimal mode  
 - "rra_instruction" — RRA behavior and note that it inherits ADC decimal mode  
 - "test_code_scanner" — validation tests and scanner used to confirm decimal behavior across opcodes
+
+## Mnemonics
+- ADC
+- SBC
+- ARR
+- RRA
+- ISB
+- ISC

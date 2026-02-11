@@ -13,9 +13,6 @@
   - Survives a cold-start RESET (remains running across a reset).
   - Useful for elapsed-time measurement: set TOD to 00:00:00:0 and read elapsed hours:minutes:seconds:tenths.
 
-## Source Code
-(omitted — no code or register bitmaps provided in this chunk)
-
 ## Key Registers
 - $DC08-$DC0B - CIA1 - Time-of-Day registers: tenths ($DC08), seconds ($DC09), minutes ($DC0A), hours ($DC0B)
 - $DC0F - CIA1 - Control register (CIACRB) bit that selects whether writes to TOD registers set the alarm or set the TOD clock
@@ -25,3 +22,6 @@
 - "dc0f_control_register_b_cia1" — expands on Control of TOD write/select via CIACRB ($DC0F)
 - "dc08_dc0b_time_of_day_registers" — expands on individual TOD registers (tenths, seconds, minutes, hours)
 - "basic_tod_clock_example" — BASIC example that reads/writes TOD registers
+
+## Labels
+- CIACRB

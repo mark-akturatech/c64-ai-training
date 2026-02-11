@@ -28,9 +28,9 @@ Operation:  Branch on N = 0                           N Z C I D V
 * Add 2 if branch occurs to different page.
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "bne_branch_on_result_not_zero" — previous branch instruction (BNE)
 - "brk_force_break" — next instruction (BRK)
+
+## Mnemonics
+- BPL

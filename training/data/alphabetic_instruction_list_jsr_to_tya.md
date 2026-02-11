@@ -35,3 +35,33 @@
 ## References
 - "alphabetic_instruction_list_a_to_jmp" — expands on previous part of the alphabetic instruction summary (ADC..JMP)
 - "instruction_table_notation_and_references" — expands on notation used in the detailed instruction tables
+
+## Mnemonics
+- JSR
+- LDA
+- LDX
+- LDY
+- LSR
+- NOP
+- ORA
+- PHA
+- PHP
+- PLA
+- PLP
+- ROL
+- ROR
+- RTI
+- RTS
+- SBC
+- SEC
+- SED
+- SEI
+- STA
+- STX
+- STY
+- TAX
+- TAY
+- TSX
+- TXA
+- TXS
+- TYA

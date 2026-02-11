@@ -31,3 +31,6 @@ Operation:  0 -> C                                    N Z C I D V
 ## References
 - "bvs_branch_on_overflow_set" — branch on overflow set (BVS)
 - "cld_clear_decimal_mode" — clear decimal mode (CLD)
+
+## Mnemonics
+- CLC

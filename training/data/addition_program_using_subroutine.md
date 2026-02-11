@@ -54,3 +54,6 @@ $0375:   RTS              ; return
 ## References
 - "subroutines_intro_and_example" — expands on the numeric-input subroutine used here
 - "immediate_mode" — expands on use of immediate ASCII constants like #$2B and #$3D
+
+## Labels
+- CHROUT

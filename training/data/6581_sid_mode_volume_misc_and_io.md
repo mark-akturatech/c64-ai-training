@@ -81,3 +81,10 @@ ENV 3 (Register $1C)  -> SID absolute $D41C
 ## References
 - "6581_sid_envelopes_and_voice2_voice3_filter" — expands on filter routing and voice routing bits
 - "6581_sid_pin_descriptions_part1" — expands on hardware pins (POTX/POTY, EXT IN, AUDIO OUT) for these functions
+
+## Labels
+- MODE/VOL
+- POTX
+- POTY
+- OSC3/RANDOM
+- ENV3

@@ -35,3 +35,6 @@ $DC01        CIAPRB       Data Port Register B
 
 ## References
 - "ciapra_data_port_register_a" — companion port A mapping for keyboard matrix and joystick mapping
+
+## Labels
+- CIAPRB

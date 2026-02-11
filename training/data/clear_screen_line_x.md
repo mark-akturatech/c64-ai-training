@@ -38,3 +38,6 @@ Notes on addressing:
 ## References
 - "fetch_screen_address" — initializes the ($D1/$D2) pointer used to write the spaces
 - "calculate_colour_ram_pointer_ea24" — computes colour-RAM pointer for the current line before writing colours
+
+## Mnemonics
+- STA

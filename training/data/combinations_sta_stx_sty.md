@@ -91,3 +91,11 @@ NOP ; No operation
 - "unintended_opcodes_overview" — expands on SHA/SHX/SHY listing
 - ([masswerk.at](https://www.masswerk.at/nowgobang/2021/6502-illegal-opcodes?utm_source=openai))
 - ([masswerk.at](https://www.masswerk.at/6502/6502_instruction_set.html?utm_source=openai))
+
+## Mnemonics
+- SHA
+- SHX
+- SHY
+- TAS
+- LAS
+- NOP

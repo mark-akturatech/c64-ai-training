@@ -103,3 +103,10 @@ sta $d000   ; lower right of the screen
 lda #$ff    ; $d000 corresponds to X-Coord (0-504 incl 9th Bit on PAL systems)
 sta $d001   ; $d001 corresponds to Y-Coord (0-255 on PAL systems)
 ```
+
+## Labels
+- SPRITE_SHIP_CURRENT_FRAME
+- DELAY_ANIMATION_POINTER
+- SPRITE_FRAMES_SHIP
+- SPRITE_POINTER_SHIP
+- SPRITE_SHIP_COLOR

@@ -15,3 +15,6 @@ specified for the array descriptor.
 ## References
 - "array_lookup_and_creation_isary" — Uses array descriptors when searching for or creating arrays
 - "umult_array_size_multiplication" — Computes multidimensional sizes used when allocating descriptors
+
+## Labels
+- ARYGET

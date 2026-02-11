@@ -50,3 +50,6 @@ Behavioral notes preserved from code:
 
 ## References
 - "atncon_constants_table" — contains the ATN series counter and 5-byte floating-point constants used by this routine
+
+## Labels
+- ATN

@@ -65,3 +65,7 @@ outlines as follows:
 
 ## References
 - "6545_crtc_concept_and_register_map" — expands on R8's placement among CRTC registers and broader register map of the 6545-1
+
+## Labels
+- R8
+- MODE_CONTROL

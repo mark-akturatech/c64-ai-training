@@ -22,3 +22,7 @@ Behavioral note from the source: "The number of open files are set to zero, and 
 
 ## References
 - "clrchn_restore_default_io" — expands on CLALL and may be used before restoring default I/O channels
+
+## Labels
+- CLALL
+- LDTND

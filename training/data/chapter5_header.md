@@ -28,11 +28,9 @@ To illustrate the use of direct-access commands, the following examples demonstr
 
 **Example 1: Writing Data to a Specific Sector**
 
-
 In this program, the user inputs a message and specifies the track and sector where the data should be written. The program then opens a command channel to the disk drive, sets the buffer pointer, writes the data to the specified location, and closes the channel.
 
 **Example 2: Reading Data from a Specific Sector**
-
 
 This program prompts the user for the track and sector to read from, opens a command channel to the disk drive, reads the data from the specified location, and displays the retrieved data.
 
@@ -86,7 +84,6 @@ Understanding the internal workings of the 1541 disk drive is crucial for effect
 70 CLOSE 15
 ```
 
-
 ```text
 +-------------------+
 | 1541 Disk Layout  |
@@ -99,11 +96,6 @@ Understanding the internal workings of the 1541 disk drive is crucial for effect
 | 31–35 | 17        |
 +-------------------+
 ```
-
-## Key Registers
-
-- **Command Channel (15):** Used to send commands to the disk drive.
-- **Data Channel (Secondary Address 0–14):** Used for data transfer between the computer and the disk drive.
 
 ## References
 

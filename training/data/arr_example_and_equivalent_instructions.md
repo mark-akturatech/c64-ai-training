@@ -28,3 +28,6 @@ ARR (opcode $6B with immediate operand) is shown here as an example using immedi
 ## References
 - "arr_flag_mapping_table" — expands on how to use the mapping table to see exactly how the flags differ for this example
 - "arr_carry_and_overflow_intro" — background on why the Carry and Overflow differ
+
+## Mnemonics
+- ARR

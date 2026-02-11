@@ -35,9 +35,6 @@ Note: The sample also shows using a separate data channel (non-15 secondary) for
 90 CLOSE 5:CLOSE 15
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "block_free_command" — expands on freeing blocks no longer needed
 - "using_random_files_with_sequential_indexing_examples" — example programs showing allocation and use of sequential index files

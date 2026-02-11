@@ -114,9 +114,6 @@ noswap2:
         bne sortloop
 ```
 
-## Key Registers
-(omit — this chunk documents algorithms and code, not hardware registers)
-
 ## References
 - "sprite_arrays_and_terms" — expands on using sortorder as an index array
 - "mapping_virtual_to_physical_sprites" — expands on mapping sorted order to physical sprites

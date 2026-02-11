@@ -94,3 +94,6 @@ CPU/decimalmode/adc11.prg CPU/decimalmode/adc12.prg
 ## References
 - "adc_decimal_mode_pseudocode" — detailed pseudocode for BCD fixups and exact flag computations
 - "adc_decimal_examples_and_compatibility" — worked examples and NMOS vs CMOS compatibility tests
+
+## Mnemonics
+- ADC

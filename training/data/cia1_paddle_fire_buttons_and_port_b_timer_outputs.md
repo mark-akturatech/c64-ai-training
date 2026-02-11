@@ -62,3 +62,11 @@ Reference addresses mentioned in text:
 ## References
 - "game_paddle_inputs_and_sid_paddle_reading" — combined use of SID and CIA for paddles & fire buttons
 - "dc04_dc07_timers" — timer registers and modes to toggle/pulse port bits (CRA/CRB)
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB
+- CRA
+- CRB

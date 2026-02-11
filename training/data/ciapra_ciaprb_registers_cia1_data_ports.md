@@ -64,3 +64,7 @@ Bit 7:  Read keyboard row 7
 ## References
 - "reading_joystick_fire_buttons" — examples reading joystick buttons using PEEK on these ports  
 - "data_port_b_timer_output" — Timer A/B outputs on Data Port B bits 6 and 7
+
+## Labels
+- CIAPRA
+- CIAPRB

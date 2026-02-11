@@ -51,3 +51,14 @@ Cycle counts per instruction as used here: load abs (4), store abs to $D021 (4),
 ## References
 - "blackmail_fli_variants_a_lred_to_b_dgrey" — expands on variants a–b and the LAX#imm note/fix
 - "blackmail_fli_overview_and_common_prologue" — overview and common prologue preceding these per-opcode tails
+
+## Mnemonics
+- LDY
+- STY
+- LDA
+- STA
+- LDX
+- STX
+- LAX
+- SAX
+- NOP

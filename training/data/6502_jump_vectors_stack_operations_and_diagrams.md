@@ -105,3 +105,11 @@ JSR/RTS example:
 ## References
 - "interrupts_and_vectors" — expands on interrupt vector addresses and hardware semantics
 - "break_flag_and_stack_examples" — expands on BRK/RTI and PHP/PLP stack behavior
+
+## Mnemonics
+- BRK
+- RTI
+- RTS
+- JSR
+- PHP
+- PLP

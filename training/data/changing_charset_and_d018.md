@@ -22,11 +22,11 @@ Example from source:
 
 (Equivalently: treat screen nibble = screen_start / $0400, charset nibble = charset_start / $0800, then write (screen_nibble << 4) | charset_nibble to $D018.)
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps in this chunk)
-
 ## Key Registers
 - $D018 - VIC-II - Screen memory (upper 4 bits, $0400 units) and character set base (lower 4 bits, $0800 units)
 
 ## References
 - "altering_charset_realtime_example" — real-time charset modification example that sets $D018 and writes into character memory
+
+## Labels
+- D018

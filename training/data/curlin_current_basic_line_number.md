@@ -10,9 +10,6 @@ CURLIN is a two-byte zero-page word (LSB at $0039, MSB at $003A) that contains t
 - TRACE/monitoring: the token-execution vector at decimal 776 ($0308) points to the routine that executes the next token. By diverting that vector to a user routine which reads $0039-$003A and prints the line number, a TRACE facility can be implemented. (Listing the entire source line is harder because LIST and related code use many zero-page locations that must be preserved/restored.)
 - BREAK and errors: the line number stored in CURLIN is used by BREAK and error routines to report where execution stopped. STOP, END, and the stop-key BREAK copy CURLIN into OLDLIN ($003B), and CONT copies OLDLIN back into CURLIN when resuming.
 
-## Source Code
-(omitted — no code/listings present in source)
-
 ## Key Registers
 - $0039-$003A - Zero Page - CURLIN: current BASIC line number (LSB/MSB)
 - $003B - Zero Page - OLDLIN: saved previous BASIC line number (CURLIN copied here by STOP/END/BREAK; restored by CONT)
@@ -20,3 +17,7 @@ CURLIN is a two-byte zero-page word (LSB at $0039, MSB at $003A) that contains t
 ## References
 - "oldlin_previous_basic_line_number" — expands on OLDLIN storing the previous BASIC line number and its copy relationship with CURLIN
 - "oldtxt_pointer_to_current_basic_statement" — expands on OLDTXT holding the pointer to the text of the current statement referenced by CURLIN
+
+## Labels
+- CURLIN
+- OLDLIN

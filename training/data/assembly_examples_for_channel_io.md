@@ -81,3 +81,13 @@ JSR $FFAE        ; UNLISTEN
 ## References
 - "kernal_low_level_calls" — expands on low-level vectors used by assembly routines
 - "high_level_channel_io" — expands on how assembly maps to high-level channel operations
+
+## Labels
+- SETLFS
+- SETNAM
+- OPEN
+- CHKIN
+- CHRIN
+- LOAD
+- LISTEN
+- CIOUT

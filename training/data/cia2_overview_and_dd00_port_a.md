@@ -41,3 +41,7 @@ DD00       56576                 Data Port A (Serial Bus, RS-232, VIC Memory Con
 ## References
 - "cia1_control_registers_dc0e_dc0f" — expands on CIA #1 control registers preceding CIA #2
 - "cia2_dd01_port_b" — expands on CIA #2 Data Port B (user port / RS-232) bit definitions
+
+## Labels
+- DATA_PORT_A
+- DD00

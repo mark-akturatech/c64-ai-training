@@ -37,3 +37,6 @@ Effectively: Z=1 on return means the 5 bytes at $8004-$8008 match the 5 bytes at
 ## References
 - "8rom_identifier" — expands on identifier bytes compared by this routine
 - "power_reset_entry_point" — expands on called at reset to detect autostart cartridges
+
+## Labels
+- CHECK_FOR_8_ROM

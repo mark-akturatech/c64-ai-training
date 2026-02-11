@@ -90,3 +90,7 @@ WEDGE_ROUTINE:
 
 - "infiltrating_basic_wedge_intro_and_CHRGET_location" — expands on CHRGET locations and wedge opportunities
 - "txtptr_and_$0308_vector" — expands on using the $0308 vector to intercept commands on VIC-20 / C64
+
+## Labels
+- CHRGET
+- CHRGOT

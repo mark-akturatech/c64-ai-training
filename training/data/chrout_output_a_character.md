@@ -34,3 +34,6 @@ Important: when using serial devices the C64 will send the byte to every open ou
 ## References
 - "chkout_open_output_channel" — OPEN+CHKOUT usage to set up destination for CHROUT  
 - "clrchn_clear_io_channels" — CLRCHN usage to close other open serial output channels
+
+## Labels
+- CHROUT

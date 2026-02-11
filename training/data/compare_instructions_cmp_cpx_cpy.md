@@ -44,9 +44,11 @@ CPY         | Absolute        | $CC    | 3     | 4      |
 - The table lists opcode bytes in hexadecimal with a leading `$` as in common 6502 notation.
 - For addressing modes marked with "+1 cycle if page boundary crossed," an additional cycle is required if the effective address calculation crosses a page boundary. ([nesdev.org](https://www.nesdev.org/obelisk-6502-guide/reference.html?utm_source=openai))
 
-## Key Registers
-- (none) — This chunk documents instruction opcodes, not memory-mapped I/O or chip registers.
-
 ## References
 - "standard_table_header_addressing_modes" — expands on addressing-mode column usage in the mnemonic table
 - "decrement_instructions" — follows with decrement instructions (DEC/DEX/DEY)
+
+## Mnemonics
+- CMP
+- CPX
+- CPY

@@ -48,3 +48,7 @@ Typical SID_Clock values:
 
 ## References
 - "voice3_registers_list" — expands on Voice 3 other registers & control
+
+## Labels
+- FRELO3
+- FREHI3

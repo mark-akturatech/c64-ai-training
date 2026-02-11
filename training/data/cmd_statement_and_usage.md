@@ -31,8 +31,5 @@ PRINT#4: CLOSE 4                        REM UN-LISTENS AND CLOSES PRINTER
 70 CLOSE 1 : REM WRITE UNFINISHED BUFFER, PROPERLY FINISH
 ```
 
-## Key Registers
-(none)
-
 ## References
 - "close_statement" — finalizing file output properly (PRINT# then CLOSE)

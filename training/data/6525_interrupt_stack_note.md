@@ -13,12 +13,9 @@ The 6525 maintains Priority Interrupt information using an Interrupt Stack. Beha
 
 (For clarity: AIR = Active Interrupt Register.)
 
-## Source Code
-This chunk contains no code listings, register maps, or data tables.
-
-## Key Registers
-This chunk documents behavior of the 6525 chip (non-C64 chip); no C64 absolute register addresses are provided here, so no Key Registers section is included.
-
 ## References
 - "6525_active_interrupt_register_AIR" — expands on how read/write operations affect AIR and the Interrupt Stack  
 - "6525_IP1_example_higher_priority_interrupt" — example of stack usage when nested/higher-priority interrupts occur
+
+## Labels
+- AIR

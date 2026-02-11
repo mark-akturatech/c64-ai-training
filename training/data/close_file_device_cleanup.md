@@ -75,3 +75,6 @@ All code paths eventually return to the caller (RTS) after updating file tables 
 ## References
 - "close_file_table_update" — completes close by updating open-file tables and counts
 - "open_file_create_and_device_dispatch" — opening reverse: sets up device-specific state when opening files
+
+## Labels
+- CLOSE

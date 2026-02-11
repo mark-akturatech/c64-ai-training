@@ -5,10 +5,9 @@
 """
 Query the Qdrant C64 knowledge base with hybrid search.
 
-Combines semantic vector search with keyword filtering on hex addresses.
-When hex addresses are detected in the query, runs a filtered search to
-find documents referencing those addresses — semantic search alone can't
-match register tokens like $D020.
+Combines semantic vector search with keyword filtering on tags (hex addresses,
+KERNAL labels, register mnemonics, color names). When known tags are detected
+in the query, runs a filtered search to find documents tagged with those terms.
 
 Usage:
     uv run scripts/query_qdrant.py "What does setting 53280, 13 do?"
@@ -30,7 +29,9 @@ from openai import OpenAI
 QDRANT_URL = "http://localhost:6333"
 COLLECTION_NAME = "c64_training"
 EMBEDDING_MODEL = "text-embedding-3-large"
-DEFAULT_LIMIT = 8
+DEFAULT_LIMIT = 15
+FETCH_LIMIT = 20          # always overfetch, then trim by quality
+MIN_SCORE_RATIO = 0.6     # drop results scoring < 60% of the best hit
 
 
 # ---------------------------------------------------------------------------
@@ -80,6 +81,75 @@ C64_MEMORY_MAP = [
     (0xA000, 0xBFFF, "BASIC ROM", "BASIC interpreter"),
     (0xE000, 0xFFFF, "KERNAL ROM", "operating system routines, I/O, vectors"),
 ]
+
+
+# ---------------------------------------------------------------------------
+# Known C64 tags — for query-side detection and tag filtering
+# ---------------------------------------------------------------------------
+
+# KERNAL API entry point labels (jump table $FF81-$FFF3)
+KERNAL_LABELS = {
+    "ACPTR", "CHKIN", "CHKOUT", "CHRIN", "CHROUT", "CINT", "CIOUT",
+    "CLALL", "CLOSE", "CLRCHN", "GETIN", "IOBASE", "IOINIT", "LISTEN",
+    "LOAD", "MEMBOT", "MEMTOP", "OPEN", "PLOT", "RAMTAS", "RDTIM",
+    "READST", "RESTOR", "SAVE", "SCNKEY", "SCREEN", "SECOND", "SETLFS",
+    "SETMSG", "SETNAM", "SETTIM", "SETTMO", "STOP", "TALK", "TKSA",
+    "TALKSA", "UDTIM", "UNLSN", "UNTLK", "UNTALK", "VECTOR",
+}
+
+# I/O register symbolic names (Mapping the C64 / common usage)
+REGISTER_MNEMONICS = {
+    # VIC-II
+    "SP0X", "SP0Y", "SP1X", "SP1Y", "SP2X", "SP2Y", "SP3X", "SP3Y",
+    "SP4X", "SP4Y", "SP5X", "SP5Y", "SP6X", "SP6Y", "SP7X", "SP7Y",
+    "MSIGX", "SCROLY", "RASTER", "LPENX", "LPENY", "SPENA", "SCROLX",
+    "YXPAND", "VMCSB", "VICIRQ", "IRQMASK", "SPBGPR", "SPMC", "XXPAND",
+    "SPSPCL", "SPBGCL", "EXTCOL", "BGCOL0", "BGCOL1", "BGCOL2", "BGCOL3",
+    "SPMC0", "SPMC1",
+    "SP0COL", "SP1COL", "SP2COL", "SP3COL", "SP4COL", "SP5COL", "SP6COL", "SP7COL",
+    # SID
+    "FRELO1", "FREHI1", "PWLO1", "PWHI1", "VCREG1", "ATDCY1", "SUREL1",
+    "FRELO2", "FREHI2", "PWLO2", "PWHI2", "VCREG2", "ATDCY2", "SUREL2",
+    "FRELO3", "FREHI3", "PWLO3", "PWHI3", "VCREG3", "ATDCY3", "SUREL3",
+    "CUTLO", "CUTHI", "RESON", "SIGVOL", "POTX", "POTY", "RANDOM", "ENV3",
+    # CIA 1
+    "CIAPRA", "CIAPRB", "CIDDRA", "CIDDRB", "TIMALO", "TIMAHI", "TIMBLO",
+    "TIMBHI", "TODTEN", "TODSEC", "TODMIN", "TODHRS", "CIASDR", "CIAICR",
+    "CIACRA", "CIACRB",
+    # CIA 2
+    "CI2PRA", "CI2PRB", "C2DDRA", "C2DDRB", "TI2ALO", "TI2AHI", "TI2BLO",
+    "TI2BHI", "TO2TEN", "TO2SEC", "TO2MIN", "TO2HRS", "CI2SDR", "CI2ICR",
+    "CI2CRA", "CI2CRB",
+}
+
+# C64 color names (VIC-II 4-bit palette) — single-word only for tag matching
+COLOR_NAMES = {
+    "BLACK", "WHITE", "RED", "CYAN", "PURPLE", "GREEN", "BLUE", "YELLOW",
+    "ORANGE", "BROWN",
+}
+
+# Combined set of all known single-word tags for fast lookup
+ALL_KNOWN_TAGS = KERNAL_LABELS | REGISTER_MNEMONICS | COLOR_NAMES
+
+# Pre-compiled pattern for stripping known tags from queries
+_KNOWN_TAG_PATTERN = re.compile(
+    r'(?<!\w)(' + '|'.join(re.escape(t) for t in sorted(ALL_KNOWN_TAGS, key=len, reverse=True)) + r')(?!\w)',
+    re.IGNORECASE
+)
+
+
+def extract_known_tags(query: str) -> list[str]:
+    """Extract known C64 labels, mnemonics, and color names from query.
+
+    Returns uppercase tag strings that match known terms.
+    """
+    tags = set()
+    words = re.findall(r'\b[A-Za-z][A-Za-z0-9_]{1,7}\b', query)
+    for word in words:
+        up = word.upper()
+        if up in ALL_KNOWN_TAGS:
+            tags.add(up)
+    return sorted(tags)
 
 
 def lookup_address_region(addr_int: int) -> list[str]:
@@ -263,18 +333,20 @@ def enrich_query(query: str) -> str:
 
 
 def has_natural_language(query: str) -> bool:
-    """Check if query has meaningful natural language beyond just addresses/numbers.
+    """Check if query has meaningful natural language beyond just addresses/numbers/tags.
 
-    Returns False for queries like "$D016", "STA $D020,7", "$D018 $D011".
-    Returns True for "what does $D020 do" or "how to use border color register".
+    Returns False for queries like "$D016", "CHROUT", "EXTCOL BGCOL0", "STA $D020,7".
+    Returns True for "what does $D020 do" or "how to use CHROUT to print".
     """
-    # Strip hex addresses, mnemonics, numbers, punctuation
+    # Strip hex addresses, 6502 mnemonics, known tags, numbers, punctuation
     stripped = _HEX_ADDR_PATTERN.sub("", query)
     stripped = re.sub(r'(?<!\w)(LDA|STA|STX|STY|LDX|LDY|ADC|SBC|AND|ORA|EOR|'
                       r'INC|DEC|INX|INY|DEX|DEY|ASL|LSR|ROL|ROR|BIT|CMP|CPX|CPY|'
                       r'JMP|JSR|RTS|RTI|BRK|NOP|BCC|BCS|BEQ|BNE|BMI|BPL|BVC|BVS|'
                       r'CLC|SEC|CLD|SED|CLI|SEI|CLV|PHA|PLA|PHP|PLP|TAX|TXA|TAY|TYA|'
                       r'TSX|TXS)(?!\w)', '', stripped, flags=re.IGNORECASE)
+    # Strip known C64 tags (KERNAL labels, register mnemonics, color names)
+    stripped = _KNOWN_TAG_PATTERN.sub('', stripped)
     stripped = re.sub(r'[0-9$%,#()\s]+', ' ', stripped)
     words = [w for w in stripped.split() if len(w) > 1]
     return len(words) >= 2
@@ -289,20 +361,20 @@ def get_embedding(client: OpenAI, text: str) -> list[float]:
     return response.data[0].embedding
 
 
-def qdrant_search(vector: list[float], limit: int, filter_addrs: list[str] | None = None) -> list[dict]:
-    """Vector search, optionally filtered to points with matching registers metadata."""
+def qdrant_search(vector: list[float], limit: int, filter_tags: list[str] | None = None) -> list[dict]:
+    """Vector search, optionally filtered to points with matching tags metadata."""
     body = {
         "vector": vector,
         "limit": limit,
         "with_payload": True,
     }
-    if filter_addrs:
-        # Filter on registers metadata field (keyword indexed)
-        # $-prefixed to match stored format: ["$D020", "$D016"]
+    if filter_tags:
+        # Filter on tags metadata field (keyword indexed)
+        # Hex addresses are $-prefixed: "$D020". Labels/mnemonics are plain: "CHROUT".
         body["filter"] = {
             "should": [
-                {"key": "registers", "match": {"value": f"${addr}"}}
-                for addr in filter_addrs
+                {"key": "tags", "match": {"value": tag}}
+                for tag in filter_tags
             ]
         }
     r = requests.post(
@@ -328,6 +400,24 @@ def merge_results(primary: list[dict], secondary: list[dict], limit: int) -> lis
             seen.add(pid)
             merged.append(hit)
     return merged[:limit]
+
+
+def trim_by_score(results: list[dict], limit: int) -> list[dict]:
+    """Adaptively trim results based on score quality.
+
+    Keeps results that score >= MIN_SCORE_RATIO of the best hit's score,
+    capped at limit. This way narrow queries with a few great matches
+    return fewer results, while broad queries with many good matches
+    return more.
+    """
+    if not results:
+        return results
+    best_score = results[0].get("score", 0)
+    if best_score <= 0:
+        return results[:limit]
+    cutoff = best_score * MIN_SCORE_RATIO
+    trimmed = [r for r in results if r.get("score", 0) >= cutoff]
+    return trimmed[:limit]
 
 
 # ---------------------------------------------------------------------------
@@ -411,14 +501,17 @@ def main():
         print(enriched)
         return
 
-    # Extract hex addresses for keyword filtering
+    # Extract hex addresses and known tags for keyword filtering
     hex_addrs = extract_hex_addresses(query)
+    known_tags = extract_known_tags(query)
+    filter_tags = [f"${addr}" for addr in hex_addrs] + known_tags
+    has_filters = bool(filter_tags)
     nl = has_natural_language(query)
 
     if enriched != query:
         print(f"Enriched query:\n  {enriched}", file=sys.stderr)
-    if hex_addrs:
-        print(f"Hex addresses detected: {', '.join(hex_addrs)}", file=sys.stderr)
+    if filter_tags:
+        print(f"Filter tags: {', '.join(filter_tags)}", file=sys.stderr)
     print(f"Natural language: {'yes' if nl else 'no'}", file=sys.stderr)
     print(file=sys.stderr)
 
@@ -438,29 +531,34 @@ def main():
 
     # ---------------------------------------------------------------------------
     # Search strategy:
-    #   hex addrs + natural language → filtered vector (primary) + unfiltered vector (fill)
-    #   hex addrs only              → filtered scroll (keyword match, no vector needed)
-    #   no hex addrs                → standard semantic search
+    #   tags + natural language → filtered vector (primary) + unfiltered vector (fill)
+    #   tags only               → filtered vector (keyword match, ranked by relevance)
+    #   no tags                 → standard semantic search
     # ---------------------------------------------------------------------------
 
-    if hex_addrs and nl:
+    fetch = max(FETCH_LIMIT, limit)
+
+    if has_filters and nl:
         # Hybrid: filtered vector search primary, unfiltered to fill remaining slots
         vector = get_embedding(client, enriched)
-        filtered = qdrant_search(vector, limit, filter_addrs=hex_addrs)
-        unfiltered = qdrant_search(vector, limit)
-        results = merge_results(filtered, unfiltered, limit)
-        mode = f"hybrid (filtered vector on {', '.join(hex_addrs)} + semantic)"
+        filtered = qdrant_search(vector, fetch, filter_tags=filter_tags)
+        unfiltered = qdrant_search(vector, fetch)
+        results = merge_results(filtered, unfiltered, fetch)
+        results = trim_by_score(results, limit)
+        mode = f"hybrid (filtered on {', '.join(filter_tags)} + semantic)"
 
-    elif hex_addrs and not nl:
-        # Register lookup: filtered vector search for ranked results
+    elif has_filters and not nl:
+        # Tag lookup: filtered vector search for ranked results
         vector = get_embedding(client, enriched)
-        results = qdrant_search(vector, limit, filter_addrs=hex_addrs)
-        mode = f"filtered vector ({', '.join(hex_addrs)})"
+        results = qdrant_search(vector, fetch, filter_tags=filter_tags)
+        results = trim_by_score(results, limit)
+        mode = f"filtered ({', '.join(filter_tags)})"
 
     else:
         # Pure semantic search
         vector = get_embedding(client, enriched)
-        results = qdrant_search(vector, limit)
+        results = qdrant_search(vector, fetch)
+        results = trim_by_score(results, limit)
         mode = "semantic"
 
     print(format_results(results, search_mode=mode))

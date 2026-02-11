@@ -9,11 +9,11 @@ $D416 is the CUTHI register in the SID chip. It contains bits 10..3 of the 11-bi
 
 Writes to $D416 change the filter cutoff frequency when the filter is enabled; reads return the last written value (behavior is write/register state). $D416 is addressed as $D416 (54294 decimal) in the C64 I/O map.
 
-## Source Code
-(omitted — no code or tables in source)
-
 ## Key Registers
 - $D415-$D418 - SID - Filter cutoff low+high (11-bit cutoff) and adjacent filter control registers
 
 ## References
 - "sid_filter_controls_overview" — expands on Cutoff composed of $D415 low bits + $D416 high byte
+
+## Labels
+- CUTHI

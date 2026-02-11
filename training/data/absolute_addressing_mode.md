@@ -18,9 +18,6 @@ Concrete examples from source text:
   - VIC-20 sound volume at 36878 (hex $900E).
   - Commodore 64 screen background color at 53281 (hex $D021).
 
-## Source Code
-(omitted — source contained no assembly listings, BASIC programs, or register maps)
-
 ## Key Registers
 - $D021 - VIC-II - screen background color (C64)
 

@@ -47,3 +47,6 @@ Notes:
 ## References
 - "iobase_define_io_memory_page" — locating memory-mapped I/O (VIC registers) after video init
 - "chrout_output_a_character" — console output and interaction with KERNAL screen editor (CHROUT)
+
+## Labels
+- CINT

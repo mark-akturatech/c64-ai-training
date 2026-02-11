@@ -37,3 +37,6 @@ ISARY implements the BASIC V2 array lookup/allocation path for arrays stored in 
 - "umult_array_size_multiplication" — Uses UMULT to compute total storage size for multidimensional arrays  
 - "bad_subscript_and_illegal_quantity_errors" — May trigger BAD SUBSCRIPT or ILLEGAL QUANTITY error messages when validation fails  
 - "intidx_subscript_conversion" — Converts floating-point subscripts to positive integers for ISARY's checks
+
+## Labels
+- ISARY

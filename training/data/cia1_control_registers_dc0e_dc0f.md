@@ -47,3 +47,7 @@ Notes:
 ## References
 - "cia1_time_of_day_and_interrupts" — expands on interrupts and TOD registers affected by these controls
 - "cia2_overview_and_dd00_port_a" — expands on CIA #2 mapping and related port behavior
+
+## Labels
+- CIA1_CRA
+- CIA1_CRB

@@ -21,9 +21,6 @@ use. Therefore the blocks free on that particular track are not returned to us (
 16 = 558). Sixteen sectors on track 18 are still free, but available only to the DOS.
 ```
 
-## Key Registers
-(omitted — this chunk documents BAM table rows and a DOS reservation note, not hardware registers)
-
 ## References
 - "bam_entries_12_zone_and_garbled_rows" — expands on the BAM rows that precede these final $11 rows
 - "bam_table_zone_1f_entries" — expands on the BAM table entries beginning with $1F earlier in the listing

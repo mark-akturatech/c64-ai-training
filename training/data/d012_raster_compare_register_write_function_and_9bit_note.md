@@ -8,9 +8,6 @@
 - The raster compare is nine bits wide. $D012 contains only the low 8 bits; the 9th bit (bit 8 of the raster value) is stored as Bit 7 of $D011 (Control Register 1). You must set and read that bit when working with lines >= 256.
 - Common pitfall: assuming the high bit of the raster defaults to 0 can produce results off by 256. Example from source: early programs assumed $D011 bit 7 = 0; a later Kernal initialized that bit to 1, so code intending to set raster 150 ended up comparing against 406 (150 + 256) and no interrupt occurred because scan line numbers do not reach that value.
 
-## Source Code
-(omitted — no code/listings present in source)
-
 ## Key Registers
 - $D012 - VIC-II - Raster Compare Register (low 8 bits)
 - $D011 - VIC-II - Control Register 1 — Bit 7 is the high (9th) bit of the raster compare
@@ -18,3 +15,8 @@
 
 ## References
 - "d01a_irqmask_and_raster_interrupts" — expands on enabling raster interrupts and using vectors
+
+## Labels
+- D012
+- D011
+- D01A

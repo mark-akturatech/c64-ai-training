@@ -44,3 +44,7 @@ mainloop:  lda $d012       ; read current raster line
            dec $d020       ; restore border color
            jmp mainloop    ; loop forever
 ```
+
+## Labels
+- D012
+- D020

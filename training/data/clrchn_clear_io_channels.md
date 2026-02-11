@@ -41,3 +41,6 @@ CLRCHN = $FFCC
 ## References
 - "chro_ut_output_a_character" — expands on using CLRCHN so CHROUT only reaches intended device
 - "clall_close_all_files" — CLALL automatically calls CLRCHN as part of closing all files
+
+## Labels
+- CLRCHN

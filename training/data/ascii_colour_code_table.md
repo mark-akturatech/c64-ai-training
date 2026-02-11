@@ -31,3 +31,21 @@ $E8E9  $9B  (155)  - light grey
 
 ## References
 - "set_colour_code" — routine that scans this table and sets $0286
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- GRAY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY

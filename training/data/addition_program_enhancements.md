@@ -64,8 +64,12 @@ NUM2    = $FC
 SUM     = $FD
 ```
 
-## Key Registers
-- (none) — this chunk uses KERNAL entry points ($FFE4 / $FFD2) for I/O, not direct VIC/CIA/SID registers.
-
 ## References
 - "addition_program_using_subroutine" — expands on extension to handle multi-digit output and carry
+
+## Labels
+- CHRIN
+- CHROUT
+- NUM1
+- NUM2
+- SUM

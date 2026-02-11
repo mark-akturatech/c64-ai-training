@@ -17,9 +17,6 @@ This routine implements COS(x) by using the identity COS(x) = SIN(x + pi/2). It 
 .,E268 20 67 B8 JSR $B867       add fltp at (A/Y) to fac#1
 ```
 
-## Key Registers
-- (omitted) — this chunk documents code addresses and data pointers, not hardware I/O registers
-
 ## References
 - "sin_routine_sequence" — expands on the SIN implementation called after pi/2 is added
 - "pi2_trig_constants_table" — contains the pi/2 floating-point constant stored at $E2E0 used by this routine

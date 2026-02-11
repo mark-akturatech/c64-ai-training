@@ -12,9 +12,6 @@
   - Sawtooth + Pulse   — $60 : Bright, edgy tone
 - Avoid combining Noise with other waveform bits: mixing Noise with other waveforms can lock the SID’s LFSR (linear-feedback shift register), producing undesired or stuck noise behavior.
 
-## Source Code
-(omitted — no assembly/BASIC/register-map blocks in source)
-
 ## Key Registers
 - $D400-$D414 - SID - Voice registers (three voices). Each voice's control register is at offset +4 within its 7-byte block (waveform bits set here; combined-waveform behavior described above).
 

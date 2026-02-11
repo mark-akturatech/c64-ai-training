@@ -79,3 +79,6 @@ String descriptor (3 bytes of value area):
 
 ## References
 - "data_exchange_methods_between_basic_and_machine_language" — discusses scanning the variable table (starting at SOV) for ML/BASIC data exchange and reading variable entries.
+
+## Labels
+- SOV

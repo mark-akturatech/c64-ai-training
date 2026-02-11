@@ -45,3 +45,6 @@ Array entry byte layout (sequential):
 - "vartab_variable_storage_pointer_and_variable_format" — variable name encoding and high-bit type flags
 - "strend_array_free_ram" — STREND marks end of array storage and start of free RAM
 - "freetop_string_text_pointer" — FREETOP points to string-text area where string bytes are stored
+
+## Labels
+- ARYTAB

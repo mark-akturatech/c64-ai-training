@@ -15,8 +15,5 @@ This method provides a simple parity-like integrity check for tape dropouts and 
 checksum = $00 XOR byte1 XOR byte2 XOR ... XOR byte192
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "data_block_structure" — expands on one-byte checksum included per block copy

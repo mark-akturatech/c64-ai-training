@@ -30,9 +30,9 @@ Absolute,Y             CMP $aaaa,Y     $D9    3    4*   N,Z,C
 Flags affected: Negative (N), Zero (Z), Carry (C)
 ```
 
-## Key Registers
-(none)
-
 ## References
 - "cpx_instruction" — CPX (Compare X register)
 - "cpy_instruction" — CPY (Compare Y register)
+
+## Mnemonics
+- CMP

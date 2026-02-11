@@ -12,14 +12,6 @@ To use the CP/M cartridge, users would insert it into the C64's expansion port a
 
 The CP/M cartridge enabled the use of various CP/M software titles, including programming languages like COBOL, PL/1, ALGOL, FORTRAN, and BASIC variants such as CBASIC and MBASIC. Other software included word processors like WordStar and spreadsheets like SuperCalc. ([c64-wiki.com](https://www.c64-wiki.com/wiki/CP/M?utm_source=openai))
 
-## Source Code
-
-(omitted — no code, listings, or register maps present in source)
-
-## Key Registers
-
-- (none)
-
 ## References
 
 - "machine_code_programming_resources" — expands on low-level software and cross-platform tools

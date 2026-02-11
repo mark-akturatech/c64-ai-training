@@ -24,12 +24,6 @@ The ROM tape loader decodes serial bits by using a countdown timer plus IRQs:
 
 The ROM code typically separates the IRQ handler that detects timer vs. edge (low-level timing comparison) from higher-level pulse classification and character assembly code that maps measured cycle times into the B/C/D classes and then into bytes.
 
-## Source Code
-(omitted — no assembly listings or tables were provided in this chunk)
-
-## Key Registers
-- (none) — This chunk describes timing and IRQ strategy but does not list specific hardware registers.
-
 ## References
 - "irq_routine_read_t2c_and_compute_difference" — expands on the IRQ routine that implements the timer-vs-edge decoding comparison  
 - "pulse_classification_and_store_character_calls" — expands on the subsequent code that classifies measured pulses into B/C/D and performs character assembly and storage

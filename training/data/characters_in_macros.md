@@ -10,11 +10,5 @@ When assembling with -t, ca65 converts character literals into the current targe
 
 This distinction is usually transparent outside of macros, but macros can delay or rearrange expression evaluation. As a result, comparisons or arithmetic that mix character constants and numeric literals inside macros may compare untranslated (source) codepoints against numeric values, or vice versa, depending on when the macro expands and when translation is applied. Therefore, when writing macros that test or compute with character constants, explicitly account for translation timing (e.g., avoid assuming character constants already match target numeric codes).
 
-## Source Code
-(omitted — no code/listings in source)
-
-## Key Registers
-(none)
-
 ## References
 - "c_style_macros" — expands on string constants and .DEFINE usage for textual macros

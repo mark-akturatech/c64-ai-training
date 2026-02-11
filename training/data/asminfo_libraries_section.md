@@ -38,6 +38,3 @@ Library entries are declared using a semicolon-separated line:
 
 .asserterror "Test1" , 20/10
 ```
-
-## Key Registers
-(omitted)

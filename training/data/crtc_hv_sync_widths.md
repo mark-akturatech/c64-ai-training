@@ -29,3 +29,6 @@ These fields allow the 6545-1 CRTC to generate variable-width sync pulses so the
 
 ## References
 - "6545_crtc_concept_and_register_map" — expands on R3 bit positions and the full CRTC register map.
+
+## Labels
+- R3

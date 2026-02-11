@@ -39,3 +39,7 @@ $D012 - VIC-II Raster Compare (low 8 bits)
 
 ## References
 - "d012_raster_compare_register" — expands on how this high bit forms the 9th bit of the raster compare value
+
+## Labels
+- D011
+- D012

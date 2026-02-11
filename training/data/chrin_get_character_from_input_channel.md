@@ -58,3 +58,6 @@ RD:     JSR $FFCF         ; JSR CHRIN
 ## References
 - "chkin_open_input_channel" — defines which logical file is the input channel used by CHRIN
 - "getin_get_a_character" — covers GETIN and differences in keyboard buffering and low-level character retrieval
+
+## Labels
+- CHRIN

@@ -210,3 +210,12 @@ sync3:
   bne sync3           // Continue until countdown reaches 0
   rts                 // X=0 on exit (used by caller)
 ```
+
+## Labels
+- ZP1
+- ZP2
+- BITCOUNT
+- BYTEBUFFER
+- ZP3
+- ZP4
+- CHKBYTE

@@ -78,3 +78,6 @@ Notes:
 - "Commodore 64 Programmer's Reference Guide" – Chapter 3: Programming Graphics
 - "Mapping the Commodore 64" – Memory Map and VIC-II Details
 - "C64-Wiki" – Articles on VIC Bank and Character Set
+
+## Labels
+- CHAREN

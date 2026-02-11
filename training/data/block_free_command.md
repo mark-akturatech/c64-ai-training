@@ -8,7 +8,6 @@ The B-F (Block-Free) command is sent to the disk drive's command channel to mark
 
 **Syntax:**
 
-
 - **file#**: Logical file number of the command channel (e.g., 15).
 - **drive**: Drive number (typically 0).
 - **track**: Track number (1 to 35).
@@ -16,11 +15,9 @@ The B-F (Block-Free) command is sent to the disk drive's command channel to mark
 
 **Example:**
 
-
 The B-E (Block-Execute) command loads a specific block into the drive's memory and executes the machine language program contained in that block. This command is primarily used for diagnostic purposes and requires caution, as executing arbitrary code can affect drive operation.
 
 **Syntax:**
-
 
 - **file#**: Logical file number of the command channel (e.g., 15).
 - **channel**: Secondary address of the associated open statement.
@@ -29,7 +26,6 @@ The B-E (Block-Execute) command loads a specific block into the drive's memory a
 - **sector**: Sector number (0 to the maximum sector count for the given track).
 
 **Example:**
-
 
 **Caveats:**
 
@@ -54,7 +50,6 @@ PRINT# file#, "B-E:"; channel; drive; track; sector
 ```basic
 PRINT#15, "B-E:2,0,1,0"
 ```
-
 
 The following BASIC program demonstrates the use of the Block-Execute command.
 
@@ -86,10 +81,6 @@ The following BASIC program demonstrates the use of the Block-Execute command.
 
 - This program opens the command channel and a secondary channel, sends initialization and memory-write commands, and executes a block on the disk.
 - Ensure that the disk used is a test diskette to prevent data loss.
-
-## Key Registers
-
-- None. This chunk documents CBM DOS commands and the BAM location (track 18, sector 0), not memory-mapped C64 chip registers.
 
 ## References
 

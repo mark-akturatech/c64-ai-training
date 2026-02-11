@@ -32,9 +32,9 @@ Example:
     JSR $FFC3        ; CLOSE
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "clall_close_all_files" — covers CLALL, which closes all files at once
 - "clrchn_clear_io_channels" — covers CLRCHN, which restores default I/O channels after closing files
+
+## Labels
+- CLOSE

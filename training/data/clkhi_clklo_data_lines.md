@@ -95,3 +95,12 @@ These primitives are used by higher-level serial transfer routines (for example 
 ## References
 - "acptr_and_eoi_timeout" — expands on ACPTR usage of these primitives to sample bits and detect timeouts
 - "RS232TRANS" — RS‑232 transmit helpers referenced by .LIB and comments (RSTRAB, RSTBGN)
+
+## Labels
+- CLKHI
+- CLKLO
+- DATAHI
+- DATALO
+- DEBPIA
+- W1MS
+- D2PRA

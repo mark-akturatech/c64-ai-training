@@ -65,3 +65,7 @@ The following table provides the timing values for the attack, decay, and releas
 *Note:* The decay and release phases share the same timing values. The sustain phase is not time-dependent; it maintains the volume level set by the sustain parameter until the gate is released.
 
 *Source:* [Technical SID Information/Software Stuff](https://www.sidmusic.org/sid/sidtech2.html)
+
+## Labels
+- ATDCY2
+- SUREL2

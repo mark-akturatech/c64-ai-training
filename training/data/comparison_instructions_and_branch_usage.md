@@ -52,9 +52,15 @@ Use common-sense arithmetic reasoning to transform <= tests into a single unsign
 ; CPY #imm    CPY addr
 ```
 
-## Key Registers
-(omitted — this chunk documents instructions and branches, not memory-mapped hardware registers)
-
 ## References
 - "flag_summary_and_status_register_overview" — expands on which flags compares affect (Z/C/N)
 - "flags_introduction_and_z_flag" — expands on Z flag behavior in compares
+
+## Mnemonics
+- CMP
+- CPX
+- CPY
+- BEQ
+- BNE
+- BCS
+- BCC

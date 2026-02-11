@@ -50,3 +50,11 @@ The logical layout from low to high memory is: Cassette buffer | BASIC PROGRAM |
 
 ## References
 - "sov_pointer_dangers_and_effects" — expands on the role of SOV in memory protection and potential problems
+
+## Labels
+- SOB
+- SOV
+- SOA
+- EOA
+- BOS
+- TOM

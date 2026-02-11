@@ -35,9 +35,9 @@ CPY $10       ; Zero Page compare Y to [#$0010]     -> $C4 $10
 CPY $1234     ; Absolute compare Y to [#$1234]      -> $CC $34 $12
 ```
 
-## Key Registers
-- (omitted) — instruction uses the Y index register but no memory-mapped chip registers are referenced.
-
 ## References
 - "cpx_compare_index_x" — related compare instruction for X register (CPX)
 - "dec_decrement_memory" — next data-modifying instruction (DEC)
+
+## Mnemonics
+- CPY

@@ -44,3 +44,7 @@ $DD02 / 56578 - CIA-2 Port A Data Direction Register (DDR)
 ## References
 - "vic_bank_overview" — which bits select the bank
 - "basic_example_switch_bank2" — BASIC example for switching banks
+
+## Labels
+- DD00
+- DD02

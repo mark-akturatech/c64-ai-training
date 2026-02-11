@@ -85,3 +85,8 @@ Behavioral notes preserved from code
 ## References
 - "get_from_serial_rs232" — expands on receiving counterpart for serial/RS232 I/O
 - "send_secondary_address" — expands on sends secondary address and filenames when opening serial files
+
+## Labels
+- CHROUT
+- DFLTO
+- PTR1

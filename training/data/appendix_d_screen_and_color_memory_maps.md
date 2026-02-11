@@ -102,3 +102,21 @@ COLOR MEMORY MAP (decimal addresses)
 
 ## References
 - "appendix_b_screen_display_codes" — expands on where to POKE character codes to display specific characters
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- GRAY_1
+- GRAY_2
+- LIGHT_GREEN
+- LIGHT_BLUE
+- GRAY_3

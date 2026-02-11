@@ -22,3 +22,7 @@ For detailed step-by-step scenarios (single interrupt, arrival of a higher-prior
 - "6525_IP1_example_single_interrupt" — example: single interrupt under IP = 1  
 - "6525_IP1_example_higher_priority_interrupt" — example: a higher-priority interrupt arrives while another is pending  
 - "6525_IP1_example_lower_priority_interrupt" — example: a lower-priority interrupt arrives while a higher one is pending
+
+## Labels
+- ILR
+- AIR

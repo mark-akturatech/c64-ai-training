@@ -33,20 +33,8 @@ loop:
     ; Continue with the rest of the program
 ```
 
-
-## Key Registers
-- (none) — instruction does not reference fixed memory-mapped I/O registers
-
-**Example Usage**
-CPY is commonly used in loops and conditional branches. Below is an example demonstrating its use in a loop to process an array:
-
-
-In this example:
-- `LDY #0` initializes the Y register to 0.
-- `LDA array,Y` loads the value from the array at the current index Y.
-- `INY` increments the Y register.
-- `CPY #array_size` compares Y with the size of the array.
-- `BNE loop` branches back to `loop` if Y is not equal to `array_size`, effectively iterating over the array.
-
 ## References
 - "cmp_instruction" — CMP compare accumulator (related comparison operation)
+
+## Mnemonics
+- CPY

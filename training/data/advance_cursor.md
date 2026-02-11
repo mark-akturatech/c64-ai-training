@@ -60,3 +60,10 @@
 - "setup_screen_print" — called after printing a character to move the cursor
 - "output_to_screen_unshifted_and_control_codes" — usage of advance-cursor logic for wrapping and scrolling
 - "retreat_cursor" — inverse operation for backing up across logical lines
+
+## Labels
+- PNTR
+- LNMX
+- TBLX
+- LDTB1
+- AUTODN

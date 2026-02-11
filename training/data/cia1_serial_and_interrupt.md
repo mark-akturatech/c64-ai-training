@@ -49,3 +49,7 @@ Register: $DC0D  - CIA1 Interrupt Control Register (ICR)
 ## References
 
 - "serial_and_rs232_zero_page" — expands on serial bit handling in zero page and CIA usage
+
+## Labels
+- SDR
+- ICR

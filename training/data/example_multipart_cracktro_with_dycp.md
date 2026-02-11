@@ -1642,3 +1642,10 @@ scroller_bar_colours    .byte 006, 000, 000, 000, 000, 006, 000, 006
                         .byte 014, 006, 006, 000, 006, 014, 006, 014
                         .byte 003, 014
 ```
+
+## Labels
+- REG_INTSERVICE_LOW
+- REG_INTSERVICE_HIGH
+- REG_RASTERLINE
+- REG_INTFLAG
+- REG_SPRITE_X_MSB

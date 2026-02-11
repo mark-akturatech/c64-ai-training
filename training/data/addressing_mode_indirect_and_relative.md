@@ -9,9 +9,6 @@ The two short column labels in Kick Assembler's quick-reference table — "ind" 
 
 These columns simply map each row's instruction to the opcode bytes used for that addressing mode in the table.
 
-## Key Registers
-(omitted — this chunk documents addressing-mode column labels, not hardware registers)
-
 ## References
 - "arithmetic_and_processor_status_and_transfers" — expands on processor-status and transfer instruction entries
 - "illegal_mnemonics_intro" — introduces illegal 6502 mnemonics (A.3.2)

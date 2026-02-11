@@ -51,9 +51,14 @@ Key behavioral points:
 ; (*) Unmodified data is written back to the target address
 ```
 
-## Key Registers
-- (none) — this chunk documents CPU memory-access/timing behavior, not specific C64 hardware registers
-
 ## References
 - "unintended_addressing_modes_absolute_y_rmw" — expands on unintended abs,Y opcodes and timing
 - visual6502 simulation (searchable) — per-cycle visualizations and notes
+
+## Mnemonics
+- DCP
+- ISC
+- RRA
+- RLA
+- SLO
+- SRE

@@ -108,3 +108,13 @@ Notes:
 - "write_end_of_block_and_bit_processing" — expands on arrives here after per-byte bit handling
 - "block_completion_sync_and_write_zero_sequence" — expands on follows to complete block and write trailing sync/zeros
 - "increment_address_pointer_insal" — expands on INCSAL used to increment source address (SAL) during header/data fetch
+
+## Labels
+- OCHAR
+- PCNTR
+- CNTDN
+- DATA
+- FSBLK
+- SAL
+- SAH
+- PRTY

@@ -25,3 +25,6 @@ Operational notes from the source:
 ## References
 - "d418_sigvol_volume_and_filter_select" — expands on Bit 7 which can disconnect voice 3 output
 - "d41c_env3_envelope_generator_3_output" — expands on Envelope output from voice 3 and related modulation information
+
+## Labels
+- RANDOM

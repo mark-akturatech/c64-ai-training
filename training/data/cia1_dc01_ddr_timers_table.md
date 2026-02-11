@@ -40,3 +40,12 @@ CIA #1 Port B ($DC01) is the primary input for the C64 keyboard row reads and Ga
 ## References
 - "color_ram_and_cia1_dc00_port_a" — expands on Port A and general CIA #1 mapping
 - "cia1_time_of_day_and_interrupts" — expands on time-of-day, serial buffer and interrupt control registers
+
+## Labels
+- DC01
+- DC02
+- DC03
+- DC04
+- DC05
+- DC06
+- DC07

@@ -121,9 +121,21 @@ Notes:
 - DEC/DEX/DEY only affect N and Z (carry unaffected).
 - Branch timing: base 2 cycles; +1 if branch is taken; +1 additional if the branch crosses a page boundary.
 
-## Key Registers
-(omitted — this chunk documents CPU instructions, not memory-mapped I/O)
-
 ## References
 - "pragmatics_of_comparisons_and_bit" — expands on how comparisons encode relations via flags
 - "status_register_and_flags" — expands on impact of these instructions on SR flags
+
+## Mnemonics
+- BVC
+- BVS
+- CLC
+- CLD
+- CLI
+- CLV
+- CMP
+- CPX
+- CPY
+- DEC
+- DEX
+- DEY
+- EOR

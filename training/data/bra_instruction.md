@@ -37,8 +37,8 @@ label:  ; target
 ; - Assembled offset is target - (PC + 2) where PC is the instruction address.
 ```
 
-## Key Registers
-(omitted — this chunk documents an instruction, not hardware registers)
-
 ## References
 - "bbr_bbs_branch_on_bit_reset_set" — expands on other branch families (BBR/BBS) and how branch opcodes are arranged
+
+## Mnemonics
+- BRA

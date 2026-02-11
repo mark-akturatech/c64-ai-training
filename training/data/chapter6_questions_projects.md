@@ -180,9 +180,5 @@ COPY_LOOP:
 150 REM Fill new name bytes in memory and call ML_RENAME via SYS
 ```
 
-
-## Key Registers
-- (none) — this chunk contains code examples and boot patterns; no chip register ranges are required for searching/filtering here.
-
 ## References
 - "data_exchange_methods_between_basic_and_machine_language" — practical ML

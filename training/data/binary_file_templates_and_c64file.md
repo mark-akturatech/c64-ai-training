@@ -28,34 +28,6 @@ Behavior summary:
 - BF_KOALA
   - Meaning: Represents files from Koala Paint, consisting of Bitmap, ScreenRam, ColorRam, and BackgroundColor blocks.
 
-## Source Code
-
-```text
-Example template:
-"Xcoord=0,Ycoord=$100,BounceData=$200"
-
-Special template tag:
-C64FILE    (tell LoadBinary to ignore the first two address bytes of native C64 files)
-
-Flag tokens:
-BF_C64FILE
-
-A C64 file (The two first bytes are
-skipped)
-
-BF_BITMAP_SINGLECOLOR
-
-ScreenRam,Bitmap
-
-The Bitmap single color format outputted from Timanthes.
-
-BF_KOALA
-
-Bitmap,ScreenRam,ColorRam,BackgroundColor
-
-Files from Koala Paint.
-```
-
 ## References
 
 - "import_of_binary_files_loadbinary" — expands on LoadBinary usage and templates (search this for extended examples and API details)

@@ -21,8 +21,5 @@ The Upgrade-ROM PET/CBM is the first PET able to handle disk systems. The source
 
 **[Note: Source truncated — startup message and further Upgrade ROM details omitted from original text.]**
 
-## Key Registers
-(omitted — chunk does not describe specific hardware register addresses)
-
 ## References
 - "pet_original_rom_characteristics" — expands on start-of-PET descriptions and distinctions

@@ -46,3 +46,6 @@ $FC     NOP abs,X    Absolute,X    3     4  (+1)
 - "Lorenz-2.15/nopzx.prg" — related NOP tests (zero-page/zero-page,X analogs)
 - "zero_page_x_nops" — discusses zero-page,X NOP variants (analogous indexed-mode read-only NOPs)
 - "examples_irq_and_skip_examples" — shows examples using abs,X NOPs (acknowledge IRQ, skipping instructions)
+
+## Mnemonics
+- NOP

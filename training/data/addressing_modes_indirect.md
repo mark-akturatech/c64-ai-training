@@ -24,8 +24,8 @@ This mode applies exclusively to the JMP instruction and is written with parenth
         .byte $30
 ```
 
-## Key Registers
-(omitted — this chunk documents an addressing mode, not hardware registers)
-
 ## References
 - "instruction_tables_jmp" — expands on JMP absolute and indirect opcodes and cycles
+
+## Mnemonics
+- JMP

@@ -78,11 +78,14 @@ BIT semantics examples:
   A = $FF, M = $01 -> (A & M) = $01 -> Z=0; N = 0; V = 0
 ```
 
-## Key Registers
-- (none) — instruction-group reference; no specific memory-mapped registers
-
 ## References
 - "cmp_instruction" — detailed CMP description and examples
 - "cpx_instruction" — detailed CPX description and examples
 - "cpy_instruction" — detailed CPY description and examples
 - "bit_instruction" — detailed BIT description and examples
+
+## Mnemonics
+- CMP
+- CPX
+- CPY
+- BIT

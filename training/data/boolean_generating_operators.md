@@ -37,9 +37,6 @@ Notes:
 ; a<=b
 ```
 
-## Key Registers
-(omitted — this chunk does not document hardware registers)
-
 ## References
 - "branching_and_looping_intro_and_boolean_examples" — Introduction and boolean variable assignment examples
 - "boolean_logical_operators" — Boolean logical operators (!, &&, ||) and combining/negating boolean values

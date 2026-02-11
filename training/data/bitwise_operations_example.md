@@ -21,9 +21,6 @@ This allows extracting individual bytes from a larger integer at assembly time (
 .word x & $00ff, [x>>16] & $00ff  ; gives .word $0078, $0034
 ```
 
-## Key Registers
-(omit — this chunk does not reference hardware registers)
-
 ## References
 - "numeric_values_and_basic_arithmetic" — expands on Basic numeric expressions and arithmetic operators
 - "numeric_values_table_and_number_function" — expands on Full list and descriptions of bitwise and shift operators

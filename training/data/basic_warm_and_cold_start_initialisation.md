@@ -174,3 +174,7 @@ Key details from the RAM initialization sequence ($E3BF..$E421):
 ## References
 - "startup_message_and_memory_initialization" — expands on cold start prints the startup banner and computes free memory
 - "basic_vectors_and_startup_messages" — expands on vector table bytes copied into RAM during initialization
+
+## Labels
+- USR
+- FAC1

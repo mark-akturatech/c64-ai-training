@@ -78,8 +78,5 @@ Examples:
 (Use address = 1024 + row*40 + col; row 0..24, col 0..39)
 ```
 
-## Key Registers
-(omitted — this chunk documents screen RAM addresses, not I/O registers)
-
 ## References
 - "appendix_d_screen_color_memory_table" — color RAM addresses corresponding to screen locations

@@ -22,12 +22,22 @@
 ## Branch substitution note
 - Because CMP sets C to indicate >=, some loop branches can be expressed using carry tests instead of equality tests. Example equivalence noted in the source: a BNE used to loop until a register equals 6 can, depending on the comparison used, be replaced by BCC (branch if less than) to achieve the same control flow. (The underlying equivalence depends on how the comparison was performed and which flags were affected.)
 
-## Source Code
-(none)
-
-## Key Registers
-(none)
-
 ## References
 - "flags_introduction_and_z_flag" — related Z flag behavior and compare/branch examples  
 - "v_flag_and_overflow" — contrast with V flag (signed overflow)
+
+## Mnemonics
+- CMP
+- CPX
+- CPY
+- ADC
+- SBC
+- ASL
+- LSR
+- ROL
+- ROR
+- BCS
+- BCC
+- SEC
+- CLC
+- LDA

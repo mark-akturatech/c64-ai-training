@@ -31,18 +31,12 @@ This fragment serves as a documentation and control snippet rather than a comple
 
 ;  COMPUTE  CHECKSUM 
 
-
 ;    INCREMENT  CHECKSUM 
-
 
 710  ; 
 
 720  INC  $0628 
 ```
-
-## Key Registers
-
-(none — $0628 is a RAM variable, not a hardware I/O register)
 
 ## References
 

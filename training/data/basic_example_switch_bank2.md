@@ -44,3 +44,8 @@ POKE 32768,42   ; writes to the new screen location after POKE 648,128
 ## References
 - "bank_selection_registers_and_rw" — expands on safe $DD00 modification
 - "d018_vmcsb_overview" — expands on $D018 configuration referenced in line 30
+
+## Labels
+- D018
+- DD00
+- DD02

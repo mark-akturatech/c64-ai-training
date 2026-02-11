@@ -21,3 +21,6 @@ This chapter introduces the SID features and gives worked examples (register-by-
 ## References
 - "sid_registers_and_examples_index" — full SID register map and appendix reference
 - "example_program_1_code_and_explanation" — first SID example showing basic sound programming and line-by-line explanation
+
+## Labels
+- SID

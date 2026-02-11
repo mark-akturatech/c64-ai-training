@@ -24,9 +24,12 @@ $0B    ANC #imm     A = A & #{imm}        2     2      o o o          o
 $2B    ---
 ```
 
-## Key Registers
-(omit — this chunk documents opcodes, not memory-mapped registers)
-
 ## References
 - "isc_examples_and_usage_patterns" — expands on nearby examples for ISC (related undocumented opcodes)
 - "isc_opcode_variants_and_addressing_modes" — expands on other undocumented arithmetic/logical opcode patterns in this document
+
+## Mnemonics
+- ANC
+- ANC2
+- ANA
+- ANB

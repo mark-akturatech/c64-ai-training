@@ -47,3 +47,9 @@ mainloop:  LDA $D012    ; load current raster line (low 8 bits)
 ## References
 - "how_to_implement_interrupts_example" — expands on using raster interrupts (vectors and writing $D012)
 - "raster_bars_timing" — expands on making raster bars by changing $D020/$D021 at specific lines
+
+## Labels
+- D012
+- D011
+- D020
+- D021

@@ -43,9 +43,6 @@ Notes:
 .,BDF5 4C 04 BF JMP $BF04       save last character, [EOT] and exit
 ```
 
-## Key Registers
-- (omitted) — this chunk does not define hardware chip register mappings; it references zero page and FAC1 bytes ($61, $66, $71) used by the ROM floating-point routines.
-
 ## References
 - "choose_notation_and_scale_fac1_to_get_digit_count" — expands the next steps: determine scaling/division/multiplication of FAC1 and choice of scientific vs normal notation
 - "finalize_string_pointer_and_return" — expands the special-case zero path that jumps to final string pointer setup and routine return

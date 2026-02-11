@@ -45,3 +45,7 @@ Caveats:
 ## References
 - "block_completion_sync_and_write_zero_sequence" — expands on called-to change IRQ handlers for zero/data write sequences
 - "interrupt_restore_and_vic_keyboard_restore_tnif_tniq" — covers restoration routines that depend on proper IRQ vector management
+
+## Labels
+- BSIV
+- CINV

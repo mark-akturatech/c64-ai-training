@@ -81,3 +81,12 @@ Keyboard scanning example (algorithmic, not machine code):
 - "port_a_data_register_pra" — expands on Port A driving keyboard columns and joystick 2
 - "port_b_data_register_prb" — expands on Port B reading keyboard rows and joystick 1
 - "interrupt_handling" — expands on FLAG pin generating IRQ (ICR / FLAG enable)
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB
+- ICR
+- CRA
+- CRB

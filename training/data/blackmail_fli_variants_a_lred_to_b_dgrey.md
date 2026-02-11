@@ -43,3 +43,11 @@ The code below shows opcode bytes and explicit NOP padding used to meet the exac
 ## References
 - "blackmail_fli_variants_8_orange_to_9_brown" — expands on Previous variants 8-9 (orange, brown)
 - "blackmail_fli_variants_c_mgrey_to_f_lgrey" — expands on Following variants c-f which use absolute addressing for background table lookups
+
+## Labels
+- D011
+- D021
+
+## Mnemonics
+- LAX
+- SAX

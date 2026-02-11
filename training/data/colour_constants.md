@@ -158,3 +158,21 @@ X(Vector)            Vector(0,1,0).X(Vector(1,0,0))   Returns the cross product 
 
 ## References
 - "Kick Assembler Manual" — C64 colour constants and Vector functions (source excerpt)
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- GRAY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY

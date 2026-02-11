@@ -11,23 +11,6 @@ Notes from the source:
 
 No character bitmap data (the 8K ROM bytes) are included in this chunk — only the location and behavioral rules.
 
-## Source Code
-```text
-36864-40959   $9000-$9FFF
-Character ROM Image for VIC-II Chip When Using Memory Bank 2
-
-When the VIC-II chip is set up to use the third 16K block of memory
-for graphics (as would be the case when the 64 is set up to emulate
-the PET, which has its text screen memory at 32768 ($8000), it sees
-the character generator ROM at this address (see entry at 4096 ($1000)
-above for more details).
-
-It should be noted that the character ROM is available only when the
-VIC-II chip is using banks 0 or 2.  When using one of the other two
-banks, the user must supply all of the character shape data in a RAM
-table.
-```
-
 ## Key Registers
 - $9000-$9FFF - Character ROM image (VIC-II character generator ROM presented when VIC-II uses memory bank 2)
 

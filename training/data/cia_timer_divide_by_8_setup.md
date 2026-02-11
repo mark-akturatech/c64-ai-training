@@ -53,3 +53,10 @@ Note: CIA register offsets used are on CIA 2 ($DD00-$DD0F). Control register CRA
 ## References
 - "pulse_length_values" — expands on pulse lengths expressed in timer units
 - "get_pulse_routine" — routine that reads the configured timers
+
+## Labels
+- TALO
+- TAHI
+- TBLO
+- TBHI
+- CRA

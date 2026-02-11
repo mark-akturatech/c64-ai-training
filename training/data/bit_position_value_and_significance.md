@@ -19,9 +19,6 @@ Bit position:  3   2   1   0
 Bit value:     8   4   2   1
 ```
 
-## Key Registers
-(omitted — this chunk does not describe specific hardware registers)
-
 ## References
 - "bits_grouping_and_nibble" — expands on grouping and the nibble concept
 - "bytes_and_8-bit_machine" — applies positional-value idea to 8-bit bytes

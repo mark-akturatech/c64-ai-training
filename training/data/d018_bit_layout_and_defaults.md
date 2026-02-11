@@ -77,3 +77,6 @@ Bitmap mode special-case:
 - "d018_vmcsb_overview" — expands on what $D018 controls
 - "screen_memory_offsets" — expands on detail mapping of bits 7-4
 - "character_memory_offsets" — expands on detail mapping of bits 3-1
+
+## Labels
+- D018

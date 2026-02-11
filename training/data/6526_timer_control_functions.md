@@ -44,9 +44,6 @@ Control bits in the timer control register select which clock or pulses decremen
 
 These selection bits determine whether the timer decrements on internal system clock ticks, external pulses, or events from Timer A.
 
-## Source Code
-(omitted — no assembly/BASIC/code listings or register bit tables were supplied)
-
 ## Key Registers
 - $DC04-$DC07 - CIA 1 - Timer A low/high ($DC04/$DC05) and Timer B low/high ($DC06/$DC07)
 - $DC0E-$DC0F - CIA 1 - Timer A/B control registers (CRA/CRB: Start/Stop, PB On/Off, Toggle/Pulse, One‑Shot/Continuous, Force Load, Input Mode)
@@ -56,3 +53,7 @@ These selection bits determine whether the timer decrements on internal system c
 ## References
 - "6526_timers_overview" — general purpose and capabilities of the timers
 - "6526_timer_registers_and_load_behavior" — latch/load timing and register formats
+
+## Labels
+- CRA
+- CRB

@@ -107,3 +107,7 @@ Each 16K bank has specific characteristics and considerations:
 - Commodore 64 Programmer's Reference Guide: Programming Graphics - Overview
 - VIC bank - C64-Wiki
 - VIC-II graphics, accessing ROM font images from different banks (C64) | Retro64
+
+## Labels
+- $DD00
+- $DD02

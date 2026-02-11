@@ -36,3 +36,6 @@ Operation:  A /\ M -> A                               N Z C I D V
 ## References
 - "adc_add_with_carry_instruction" — expands on previous arithmetic instruction (ADC)
 - "asl_arithmetic_shift_left_instruction" — expands on next instruction in the document (ASL)
+
+## Mnemonics
+- AND

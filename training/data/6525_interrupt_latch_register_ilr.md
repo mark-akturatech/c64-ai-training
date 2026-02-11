@@ -24,3 +24,11 @@ ILR is a 5-bit register with bit fields labeled I4..I0 (MSB to LSB). The registe
 ## References
 - "6525_active_interrupt_register_AIR" — expands on how ILR interacts with AIR when servicing interrupts
 - "6525_interrupt_stack_note" — expands on how reads of AIR affect the interrupt stack
+
+## Labels
+- ILR
+- I4
+- I3
+- I2
+- I1
+- I0

@@ -37,3 +37,6 @@ Run in 64MON:
 - "subroutines_and_kernal_print" — expands on using the KERNAL character-print routine ($FFD2)
 - "branches_and_testing" — expands on using INX, CPX, and BNE to loop until 'Z' is passed
 - "writing_your_first_program_example" — expands on practical assembly and execution examples using 64MON
+
+## Labels
+- CHROUT

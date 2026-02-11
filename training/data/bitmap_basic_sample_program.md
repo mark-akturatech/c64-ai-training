@@ -44,3 +44,7 @@ The program uses decimal addresses in the listing (e.g., 53272, 53265). These co
 
 ## References
 - "bitmap_addressing_and_plotting" — expands on BY address formula, BI array usage, and bitmap addressing details
+
+## Labels
+- D011
+- D018

@@ -60,9 +60,6 @@ Caveats:
 
 **[Note: Source may contain an error — the second "M-W" write (line 390) contains garbled/uncertain bytes (shown here as the original OCR text `CHR$(DC)CHR$(JOB)`); the exact header/job-bytes should be confirmed against the device/job-queue specification or the original listing.]**
 
-## Key Registers
-- (none) — this chunk is a BASIC program using the IEC command channel and a RAM buffer ($0300–$03FF), not specific C64 hardware I/O registers.
-
 ## References
 - "direct_access_intro_and_example_summary" — context and purpose of this BASIC example
 - "program_line_by_line_explanation" — expanded line-range descriptions of the listing

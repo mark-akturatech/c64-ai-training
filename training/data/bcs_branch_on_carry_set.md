@@ -30,9 +30,9 @@ Timing notes:
   * Add 2 if branch occurs to next  page.
 ```
 
-## Key Registers
-- (none) — instruction-level operation; no direct chip register addresses.
-
 ## References
 - "bcc_branch_on_carry_clear" — paired carry branch (BCC)
 - "beq_branch_on_result_zero" — branch on zero result (BEQ)
+
+## Mnemonics
+- BCS

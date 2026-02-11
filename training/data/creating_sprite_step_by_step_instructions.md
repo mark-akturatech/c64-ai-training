@@ -38,9 +38,6 @@
 130 DATA 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 ```
 
-## Key Registers
-(none — this chunk does not describe hardware registers)
-
 ## References
 - "sprite_example_hot_air_balloon_program" — expands on example uses DATA to define sprite bytes
 - "sprite_program_crunched_example" — expands on how to crunch DATA statements for a sprite

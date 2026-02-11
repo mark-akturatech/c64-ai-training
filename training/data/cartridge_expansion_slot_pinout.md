@@ -79,9 +79,6 @@ ASCII edge-connector diagram (from source)
 (Physical pins 1–22 correspond to the separate numbered contact side; see the numbered table above.)
 ```
 
-## Key Registers
-- (omitted) — This chunk documents connector pin signals and edge-pad mappings, not memory-mapped chip registers.
-
 ## References
 - "appendix_i_pinouts_intro" — expands on Appendix overview
 - "audio_video_and_serial_io_connectors" — expands on nearby connector pinouts (Audio/Video, Serial) shown on the same appendix pages

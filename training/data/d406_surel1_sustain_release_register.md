@@ -44,3 +44,6 @@ Release/Decay timing table (index => duration):
 
 ## References
 - "d405_atdcy1_attack_decay_register" — Attack/decay mapping for complementary phases
+
+## Labels
+- SUREL1

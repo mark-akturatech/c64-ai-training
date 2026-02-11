@@ -26,9 +26,6 @@
   - The CPU is effectively prevented from accessing the bus for the Bad Line duration, which can break timing-critical programs.
   - The exact timing and whether a Bad Line occurs for a particular raster line depend on the instantaneous values of RASTER, YSCROLL and the historical setting of DEN during raster $30.
 
-## Source Code
-(omitted — no code or register maps in source)
-
 ## Key Registers
 - $D011 - VIC-II - DEN bit (bit 4) (DEN enables vertical display; used in the Bad Line condition); YSCROLL = lower 3 bits (vertical fine scroll)
 - $D012 - VIC-II - Raster register (RASTER) — used in Bad Line condition checks
@@ -36,3 +33,9 @@
 ## References
 - "memory_access_timing" — expands on BA/AEC takeover sequence for Bad Line fetches  
 - "vc_and_rc" — expands on VC/RC behavior and how Bad Lines affect VC/RC and VCBASE/RC
+
+## Labels
+- D011
+- D012
+- DEN
+- YSCROLL

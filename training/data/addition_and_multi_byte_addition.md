@@ -42,9 +42,9 @@
         BVS SignedOverflow16     ; signed overflow for 16-bit (V indicates signed overflow)
 ```
 
-## Key Registers
-(omitted — this chunk documents addition principles and example memory locations, not hardware registers)
-
 ## References
 - "signed_vs_unsigned_numbers" — differences and when to use V vs C to detect overflow
 - "subtraction_and_multi_byte_subtraction" — subtraction rules (SEC before SBC) and multi-byte subtraction generalization
+
+## Mnemonics
+- ADC

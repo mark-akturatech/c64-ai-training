@@ -77,3 +77,6 @@ Only every 4th column changes:
 ## References
 - "scrolling_overview_doublebuffering" — explains why doublebuffering doesn't solve color memory update timing
 - "drawing_new_data_on_sides_block_examples" — discusses side drawing optimizations when colors are block-based
+
+## Labels
+- COLORRAM

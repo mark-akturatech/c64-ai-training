@@ -58,3 +58,7 @@ $ff
 ## References
 - "bit_instruction_65c02" — expands on bit instruction and related opcodes (test bit)
 - "smb_instructions" — expands on complementary single-bit memory set operations (SMB family)
+
+## Mnemonics
+- BBR
+- BBS

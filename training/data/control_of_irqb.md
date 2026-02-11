@@ -35,3 +35,7 @@ Notes:
 
 ## References
 - "6520_control_registers" — expands on CRB bits usage analogous to CRA and other control register details
+
+## Labels
+- CRB
+- PRB

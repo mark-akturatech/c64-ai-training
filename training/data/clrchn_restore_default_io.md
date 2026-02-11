@@ -51,3 +51,8 @@ This routine is typically invoked by error-handling paths that need to close/res
 
 ## References
 - "output_kernal_error_messages" — expands on CLRCHN being called by error handling to close I/O channels
+
+## Labels
+- CLRCHN
+- DFLTO
+- DFLTI

@@ -146,3 +146,13 @@ Common error handling:
 ## References
 - "basic_io_error_and_simple_io" — expands on I/O error handling (BIOERR) used by these routines
 - "parameter_parsing_and_open_close_helpers" — expands on parameter extraction (SLPARA/OCPARA) used by OPEN/CLOSE/SAVE/LOAD
+
+## Labels
+- VRECK
+- TXTTAB
+- VARTAB
+- TXTPTR
+- SAVE
+- LOAD
+- OPEN
+- CLOSE

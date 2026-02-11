@@ -31,8 +31,8 @@ This behavior is a commonly-used diagnostic: observing Z after the example ADC d
 ; 65C02 (CMOS):     Z == 1  ; Z based on decimal-adjusted result (0x00)
 ```
 
-## Key Registers
-(omit — chunk documents CPU instruction/flag behavior, not I/O registers)
-
 ## References
 - "adc_instruction_decimal_mode" — Z flag handling in decimal mode
+
+## Mnemonics
+- ADC

@@ -24,23 +24,6 @@ This documented Kernal routine (CINT) performs the Screen Editor / VIC-II initia
   - After determining PAL vs NTSC, the routine programs CIA #1 Timer A to generate an IRQ every 1/60 second.
   - It writes appropriate values into CIA #1 Timer A low and high registers and configures CIA #1 Control Register A (prescaler / start / interrupt enable) to achieve the 1/60s cadence, using values selected for PAL or NTSC timing.
 
-## Source Code
-```text
-Routine summary and addresses:
-- CINT entry point: $FF5B (65371)
-- Jump-table entry: $FF81 -> $FF5B (65409)
-- Patched call to old init routine at $E518 (58648)
-- PAL/NTSC flag stored at memory location 678 (decimal) = $2A6 (hex)
-
-Behavioral steps (reference):
-1) JSR $E518   ; call old VIC/screen init
-2) Check VIC Interrupt register for Raster Compare condition
-   - Raster compare initialized to 311 => only true on PAL
-3) Set PAL/NTSC flag at $02A6 (decimal 678)
-4) Program CIA#1 Timer A (write $DC04/$DC05) and set control ($DC0E)
-   to generate IRQ every 1/60 s using prescaler values chosen for PAL/NTSC
-```
-
 ## Key Registers
 - $D000-$D02E - VIC-II - VIC-II register range (includes raster compare $D012 and interrupt register $D019 used by this routine)
 - $DC04-$DC05 - CIA1 - Timer A low/high (set to trigger 1/60s IRQ)
@@ -48,3 +31,6 @@ Behavioral steps (reference):
 
 ## References
 - "kernal_patches_pal_ntsc_timer_compensation" — expands on the patch code used in CINT for PAL/NTSC detection and timer selection
+
+## Labels
+- CINT

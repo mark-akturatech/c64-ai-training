@@ -43,3 +43,11 @@ All writes use absolute CIA2 addresses ($DD00-$DD0D). The routine does not alter
 ## References
 - "open_rs232_init_and_param_transfer" — expands on CLN232 invocation at the start of OPN232 to prepare RS-232 hardware
 - "rs232_line_response_checks" — describes subsequent validation of port and line states set by CLN232
+
+## Labels
+- CLN232
+- D2ICR
+- D2DDRB
+- D2PRB
+- D2PRA
+- ENABL

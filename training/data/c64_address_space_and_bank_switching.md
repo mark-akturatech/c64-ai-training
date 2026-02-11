@@ -51,3 +51,8 @@ The default value of this register is $37 (%00110111), which enables BASIC and K
 ## References
 - "memory_control_and_mapping" — expands on control lines and detailed $0001 bit definitions used to select memory maps
 - "using_an_assembler_pseudo_opcodes" — discusses loader/relocation options for placing code at different target addresses
+
+## Labels
+- NMI
+- RESET
+- IRQ

@@ -24,3 +24,6 @@ $D01F        SPBGCL       Sprite to Foreground Collision Register
 
 ## References
 - "sprite_collision_rules_and_notes" — rules for collision detection and interpretation
+
+## Labels
+- SPBGCL

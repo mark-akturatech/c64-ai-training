@@ -94,3 +94,7 @@ CrazyBorderLoop:
 Done:
         rts
 ```
+
+## Labels
+- BORDER_COLOR_ADDR
+- BACKGROUND_COLOR_ADDR

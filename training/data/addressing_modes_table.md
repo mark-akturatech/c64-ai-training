@@ -83,3 +83,24 @@ LIGHT_GRAY/LIGHT_GREY 15
 
 ## References
 - "opcode_constants_and_asmcommandsize" — expands on use of asmCommandSize with these constants and opcode constant usage.
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- DARK_GREY
+- GRAY
+- GREY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY
+- LIGHT_GREY

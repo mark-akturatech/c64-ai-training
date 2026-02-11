@@ -67,3 +67,11 @@
 ## References
 - "Lorenz-2.15/ancb.prg" — test code implementing/validating ANC behavior
 - "arr_opcode_and_behavior" — related ARR/combined opcodes and flag behaviors (ARR is another combined AND+rotate opcode)
+
+## Mnemonics
+- ANC
+- ANC2
+- ANA
+- ANB
+- ALR
+- ASR

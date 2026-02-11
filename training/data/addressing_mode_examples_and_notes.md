@@ -74,9 +74,10 @@
 ; LDA ($70),Y   ; read pointer at $0070 (low) and $0071 (high), then add Y to that 16-bit address
 ```
 
-## Key Registers
-- (none) — this chunk documents addressing modes and examples, not fixed C64 hardware registers.
-
 ## References
 - "6502_address_modes_in_detail" — expands on mode summaries and NMOS quirks
 - "branch_addressing_modes" — expands on relative branch cycle penalties
+
+## Mnemonics
+- LDA
+- JMP

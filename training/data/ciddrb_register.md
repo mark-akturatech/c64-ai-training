@@ -25,3 +25,6 @@ Bit 0: Select Bit 0 of Data Port B for input or output (0=input, 1=output)
 
 ## References
 - "cia_data_direction_registers_overview" — expands on default DDR values and usage
+
+## Labels
+- CIDDRB

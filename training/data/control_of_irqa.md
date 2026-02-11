@@ -8,8 +8,11 @@
 - Both CRA bit 6 and CRA bit 7 are reset (cleared) by performing a "Read Peripheral Output Register A" operation — i.e., the processor reads the Port A peripheral I/O register.
 - (“Active transition” is used by the source text; the source does not specify which edge/polarity.)
 
-## Key Registers
-- (Omitted — this chunk documents 6520 PIA control bits; non-C64 chip registers are not included in Key Registers metadata.)
-
 ## References
 - "6520_interrupt_request_line" — expands on how ISO flags map to /IRQA line
+
+## Labels
+- CRA
+- CA1
+- CA2
+- IRQA

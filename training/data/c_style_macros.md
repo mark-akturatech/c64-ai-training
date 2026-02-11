@@ -52,9 +52,6 @@ foo     EQU     $1234           ; This is accepted now
         lda 0+DUO(5,4), Y       ; LDA absolute indexed, Y
 ```
 
-## Key Registers
-- (none) This chunk does not describe hardware registers.
-
 ## References
 - "macro_parameters_and_curly_braces" — expands on classic macro parameter behavior vs .DEFINE behavior
 - "macro_detect_parameter_types" — token/list handling considerations when mixing macros

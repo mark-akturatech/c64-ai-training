@@ -198,3 +198,13 @@ CRB bit definitions (register F)
 
 ## References
 - "6556/6567 (VIC-II) Chip Specifications" — VIC-II details (next section in original source)
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB
+- TA
+- TB
+- SDR
+- ICR

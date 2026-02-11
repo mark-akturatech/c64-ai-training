@@ -10,11 +10,5 @@ The 6520 provides two independent 8-bit peripheral data ports and four control/i
 - The microprocessor programs the data directions and control modes during system initialization, allowing flexible I/O and control schemes for connected peripherals.
 - The diagram (Figure I.1) illustrates the conceptual data/control flow: 650x microprocessor ⇄ 6520 PIA ⇄ peripheral devices.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps present in the source)
-
-## Key Registers
-(omitted — 6520 is not a C64-specific register map; no absolute C64 addresses provided)
-
 ## References
 - "6520_pia_overview" — expanded PIA explanation and functions

@@ -47,3 +47,8 @@ Max-emulation specifics (as described):
 ## References
 - "r6510_internal_io_port_overview" — expands on how GAME/EXROM combine with port bits to alter the memory map
 - "loram_hiram_and_moving_rom_to_ram_examples" — expands on implications of replacing ROMs and using alternate ROMs mapped by cartridges
+
+## Labels
+- $0001
+- GAME
+- EXROM

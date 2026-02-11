@@ -66,9 +66,6 @@
 1090 END
 ```
 
-## Key Registers
-- (none) — this chunk is a BASIC program manipulating program variables and using POKE to zero-page locations; no VIC/SID/CIA register ranges are defined here.
-
 ## References
 - "job_queue_and_channel_io" — job-queue command send/receive used by the write loop (PRINT#15 / GET#15)
 - "format_two_digit_str_and_c000_marker" — STR$ subroutine for formatting track/sector strings called from the write loop

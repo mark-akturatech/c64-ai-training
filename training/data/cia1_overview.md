@@ -159,3 +159,13 @@ CLI
 ## References
 - "ciapra_data_port_register_a" — expands on CIA #1 Data Port A usage (keyboard column select / paddles)
 - "cia_timers_and_tod" — expands on CIA timers and Time‑Of‑Day clock functionality
+
+## Labels
+- DATA_PORT_A
+- DATA_PORT_B
+- DDRA
+- DDRB
+- TALO
+- TAHI
+- ICR
+- CRA

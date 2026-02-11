@@ -62,9 +62,11 @@ A ← (A | CONST) & X & imm
 ; 8B FF     ; ANE #$FF  -> experimental read of CONST
 ```
 
-## Key Registers
-(omitted — this chunk documents an instruction, not specific memory-mapped registers)
-
 ## References
 - "magic_constant_group_overview" — overview of magic-constant unstable opcodes
 - "ane_real_world_and_emulation" — real-world usage and emulation recommendations for ANE
+
+## Mnemonics
+- ANE
+- XAA
+- AXM

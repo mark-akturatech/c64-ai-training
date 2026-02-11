@@ -13,9 +13,6 @@ Joining the COMMODORE INFORMATION NETWORK on CompuServe gives access to:
 
 This entry is an overview; detailed procedures for modem setup, dialing, terminal software, and printing or saving communications output are covered in related entries.
 
-## Key Registers
-- (none)
-
 ## References
 - "intro_overview" — expands on CompuServe, user groups, and network overview  
 - "printing_support_printers_plotters" — covers printing or saving communications output and printer/plotter support

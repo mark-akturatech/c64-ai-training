@@ -71,3 +71,7 @@ Location range 56832-57087 ($DE00-$DEFF): Reserved I/O expansion / cartridge map
 ## References
 - "cia2_data_direction_timers_tod_and_serial_port" — expands on timer and TOD register addresses
 - "reserved_io_expansion_and_cartridge_usage" — expands on $DE00 expansion area and cartridge control
+
+## Labels
+- CI2CRA
+- CI2CRB

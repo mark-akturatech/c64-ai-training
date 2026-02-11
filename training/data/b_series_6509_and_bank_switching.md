@@ -21,11 +21,5 @@ The B-128, B-256, CBM-128 and CBM-256 are 80‑column successors that replace th
   - .V — switch banks
   - .@ — test disk status
 
-## Source Code
-(omitted — no code or register maps present in this chunk)
-
-## Key Registers
-(omitted — chunk describes memory addresses and bank-switching behavior, not specific device register mappings)
-
 ## References
 - "appendix_c_memory_maps" — Bank-switching affects memory map and placement of code/data

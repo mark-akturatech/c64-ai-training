@@ -72,10 +72,6 @@ Notes:
   This sequence loads the accumulator with the value $05, stores it in memory location $31, and then jumps to address $FCAA.
 - The intent appears to be building both a zero-page value ($51) and the runtime bytes needed for a jump/loader. How those bytes are executed or chained is not included in this chunk.
 
-## Key Registers
-
-- (omitted — this chunk documents memory writes into RAM locations, not hardware registers)
-
 ## References
 
 - "convert_data_to_gcr_with_rom_routines" — expands on conversion done before building the jump/loader

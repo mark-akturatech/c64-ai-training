@@ -7,9 +7,6 @@ AYINT validates the value currently held in the Floating Point Accumulator to en
 
 Entry point: $B1BF.
 
-## Source Code
-(omitted — no assembly listing provided in source)
-
 ## Key Registers
 - $0064-$0065 - Zero Page - Signed 16-bit conversion result (high byte at $0064, low byte at $0065)
 
@@ -17,3 +14,6 @@ Entry point: $B1BF.
 - "floating_point_constant_n32768" — Uses -32768 constant for lower-range checking  
 - "fp_to_signed_in_a_and_y_registers" — Called by that routine to perform the actual conversion  
 - "intidx_subscript_conversion" — Related routine for subscript conversion and positivity checks
+
+## Labels
+- AYINT

@@ -10,12 +10,6 @@ Locations $DC00-$DC0F are the register window for Complex Interface Adapter chip
 
 Common usages documented for CIA #1 include keyboard scanning, reading joystick and paddle fire buttons, and providing the timing/interrupt sources required by tape routines. The two timers support fine-grained timing (short intervals) and can be combined for much longer intervals.
 
-## Source Code
-```text
-56320-56335 $DC00-$DC0F
-Complex Interface Adapter (CIA) #1 Registers
-```
-
 ## Key Registers
 - $DC00-$DC0F - CIA #1 - full register range for data ports, timers, and interrupt/control registers
 

@@ -53,3 +53,8 @@ Notes:
 ## References
 - "timalo_timahi_timblo_timbhi_list" — expands on timer low/high byte register addresses
 - "ciaicr_interrupt_control" — expands on timer underflow setting interrupt bits in ICR
+
+## Labels
+- ICR
+- CRA
+- CRB

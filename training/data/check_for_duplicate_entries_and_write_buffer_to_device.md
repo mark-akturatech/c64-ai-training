@@ -68,3 +68,12 @@ Notes:
 ## References
 - "store_name_bytes_into_directory_buffer_and_update_counters" — expands on examines the just-written $0100..$0101 entries for duplicates
 - "finalize_write_compute_xor_and_cleanup" — expands on successful checks lead to JSR $FCDB which is handled in the finalization step
+
+## Labels
+- $9F
+- $9E
+- $AC
+- $AD
+- $93
+- $BD
+- $B6

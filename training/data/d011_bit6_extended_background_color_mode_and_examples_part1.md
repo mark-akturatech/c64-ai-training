@@ -53,3 +53,10 @@ Quick reference addresses (decimal / hex)
 ## References
 - "bgcolor_registers" — expands on Background Color Registers $D021-$D024  
 - "extended_background_color_utilities" — subroutines/programs using extended background for windows
+
+## Labels
+- D011
+- D021
+- D022
+- D023
+- D024

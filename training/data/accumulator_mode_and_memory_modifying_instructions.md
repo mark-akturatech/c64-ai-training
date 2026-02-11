@@ -15,3 +15,15 @@ When an instruction modifies memory, its addressing mode is a memory-reference f
 
 ## References
 - "shift_rotate_comments" — expands on flag effects when shifting memory vs A (N, Z, C behavior)
+
+## Mnemonics
+- ASL
+- ROL
+- LSR
+- ROR
+- INC
+- DEC
+- INX
+- INY
+- DEX
+- DEY

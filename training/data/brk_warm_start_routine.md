@@ -47,3 +47,6 @@ This information is sourced from the Commodore 64 ROM disassembly. ([cbmitapages
 ## References
 - "restore_and_vector_table_management" — details on RESTOR restoring RAM vectors
 - "ioinit_initialize_cia_and_sid" — details on IOINIT reinitialization of CIA and SID components
+
+## Labels
+- BRK

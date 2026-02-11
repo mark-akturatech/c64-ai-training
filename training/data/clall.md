@@ -10,9 +10,6 @@ CLALL (KERNAL $FFE7) clears the system file table (the KERNAL-managed channel/fi
 - No parameters documented in this chunk.
 - Effect: file table cleared, CLRCHN invoked for channel teardown and I/O restoration.
 
-## Source Code
-(omitted — original chunk contained no assembly/BASIC listing)
-
 ## Key Registers
 - $FFE7 - KERNAL - CLALL entry point (clears file table; calls CLRCHN)
 - $032C - RAM - two-byte indirect vector used by $FFE7 to reach ROM routine
@@ -20,3 +17,6 @@ CLALL (KERNAL $FFE7) clears the system file table (the KERNAL-managed channel/fi
 
 ## References
 - "CLRCHN ($FFCC)" — closes channels and performs UNLISTEN/UNTALK (channel teardown)
+
+## Labels
+- CLALL

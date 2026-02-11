@@ -19,9 +19,6 @@ OPEN file#, device#, channel#, "#buffer#"
 OPEN 2,8,2,"#0"   ' select buffer 0 for file# 2, device 8, channel 2
 ```
 
-## Key Registers
-- (omitted — this chunk documents DOS buffer selection and OPEN syntax, not hardware registers)
-
 ## References
 - "buffer_address_map_1541" — expands on the actual memory address ranges for each 256-byte buffer and reserved regions
 - "memory_read_parameters_and_defaults" — explains the M-R parameters and defaults used to read from the selected buffer or other memory areas

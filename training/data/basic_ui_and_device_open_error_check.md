@@ -35,9 +35,6 @@ This BASIC chunk:
 270 END
 ```
 
-## Key Registers
-- (none) — this chunk is a BASIC program interacting with device channels; no VIC/SID/CIA registers are referenced.
-
 ## References
 - "seek_read_and_disk_name_fetch_and_edit_input" — performs SEEK/READ and retrieves the disk name after device open
 - "job_queue_subroutine_and_error_handler" — uses the job-queue subroutine (GOSUB 660) to perform SEEK/READ and handle errors

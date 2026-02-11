@@ -40,8 +40,5 @@ Checksum formula:
 CHECKSUM = data[0] EOR data[1] EOR ... EOR data[255]
 ```
 
-## Key Registers
-(omitted — this chunk documents disk sector layout, not memory-mapped registers)
-
 ## References
 - "header_block_structure_and_fields" — expands on differences between header and data blocks

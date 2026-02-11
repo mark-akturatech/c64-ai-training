@@ -253,3 +253,13 @@ spritedata      .byte $00, $28, $00, $02, $be, $80, $0b, $d7, $e0, $2d, $69, $78
                 .byte $60, $27, $bb, $60, $27, $bb, $60, $27, $67, $60, $09, $fd, $80, $02, $56, $00
                 .byte $00, $a8, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $8b
 ```
+
+## Labels
+- SPRITEPOS
+- SPRITEPOSHIGH
+- SPRITEENABLE
+- SPRITEPTR
+- SPRITEMULTI
+- SPRITECOLOUR
+- MULTI1
+- MULTI2

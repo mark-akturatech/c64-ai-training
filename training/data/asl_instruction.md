@@ -34,3 +34,6 @@ Addressing modes and opcodes:
 ## References
 - "lsr_instruction" — LSR logical shift right (opposite direction)
 - "rol_instruction" — ROL rotate left (through Carry)
+
+## Mnemonics
+- ASL

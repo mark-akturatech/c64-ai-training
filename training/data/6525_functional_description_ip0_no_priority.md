@@ -11,3 +11,8 @@
 ## References
 - "6525_interrupt_latch_register_ILR" — expands on ILR → AIR transfer and ILR xor AIR clearing
 - "6525_interrupt_stack_note" — cautions about reading/writing AIR and interrupt sequencing
+
+## Labels
+- ILR
+- AIR
+- IRQ

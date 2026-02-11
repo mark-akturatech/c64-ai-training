@@ -33,8 +33,15 @@ BVC       Branch if overflow flag clear      Relative   BVC aa   $50    2    non
 BVS       Branch if overflow flag set        Relative   BVS aa   $70    2    none
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "jmp_instruction" — expands on unconditional jump (JMP)
+
+## Mnemonics
+- BCC
+- BCS
+- BEQ
+- BMI
+- BNE
+- BPL
+- BVC
+- BVS

@@ -39,3 +39,8 @@ Behavioral notes preserved from source:
 ## References
 - "retreat_cursor" — expands on adjusting line/table pointers when retreating across logical/physical lines
 - "output_to_screen_unshifted_and_control_codes" — expands on DEL and cursor-left handling in the output path
+
+## Labels
+- TBLX
+- PNTR
+- LNMX

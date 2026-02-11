@@ -109,10 +109,41 @@ SHY: {addr}:=Y and {addr hi +1};
 ; also see long_jsr_jmp_rts .SMART .A8 .A16 .I8 .I16
 ```
 
-## Key Registers
-- (None) — this chunk documents CPU modes and mnemonics, not hardware registers.
-
 ## References
 - "detailed_command_line_options" — expands on --cpu option and supported CPU types
 - "smart_mode_and_65816_specifics" — expands on smart mode and 65816 operand-size handling
 - "C65_system_and_4510_info" — external resources about the Commodore C65/4510 (e.g., zimmers.net C65 archive)
+
+## Mnemonics
+- ALR
+- ANC
+- ANE
+- ARR
+- AXS
+- DCP
+- ISC
+- JAM
+- LAS
+- LAX
+- NOP
+- RLA
+- RRA
+- SAX
+- SHA
+- SHX
+- SHY
+- SLO
+- SRE
+- TAS
+- BRA
+- SAC
+- SIR
+- MVN
+- MVP
+- CPA
+- DEA
+- INA
+- SWA
+- TAD
+- TDA
+- TSA

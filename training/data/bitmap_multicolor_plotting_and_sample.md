@@ -68,3 +68,8 @@ POKE BY, PEEK(BY) AND (NOT 3*CA(BI)) OR (CO*CA(BI))
 ## References
 - "d016_bit4_multicolor_mode_text_and_bitmap" — expands on Color sources & plotting rules for multicolor bitmap
 - "bitmap_basic_sample_program" — hi-res plotting example for comparison
+
+## Labels
+- D018
+- D011
+- D016

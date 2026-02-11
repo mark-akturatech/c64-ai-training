@@ -43,10 +43,6 @@ no  F0RI  =  1T032
 150  DIMT-/.  (681)  ,S7.  (681) 
 ```
 
-## Key Registers
-
-- (none) — this chunk contains BASIC program and string/array initialization only; no C64 hardware register addresses are referenced.
-
 ## References
 
 - "user_prompts_and_drive_check" — expands on user prompts and drive status checking used by the certifier

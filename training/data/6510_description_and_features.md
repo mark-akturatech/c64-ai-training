@@ -36,3 +36,7 @@ The device uses a single +5 V supply and N-channel silicon-gate, depletion-load 
 ## References
 - "pin_configuration_and_pinout" — ASCII pinout diagram and pin labels (P0–P7, A0–A15, D0–D7, control pins)
 - "6510_characteristics_maximum_ratings" — electrical and timing characteristics, maximum ratings
+
+## Labels
+- IO_PORT_OUTPUT
+- IO_PORT_DDR

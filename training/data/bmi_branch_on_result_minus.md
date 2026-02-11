@@ -47,9 +47,9 @@ Relative        | BMI Oper      | $30    |    2      |    2*
 ;   store offset as two's complement in operand byte
 ```
 
-## Key Registers
-- (none — BMI is an instruction, not a memory-mapped register)
-
 ## References
 - "bit_test_bits_instruction" — covers BIT instruction details referenced in adjacent table
 - "bne_branch_on_result_not_zero" — covers the BNE branch instruction (next entry)
+
+## Mnemonics
+- BMI

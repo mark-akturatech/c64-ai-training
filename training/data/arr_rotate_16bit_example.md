@@ -34,9 +34,9 @@ Key points preserved from the source:
 ; (or #$00 or #$80 in case of ARR — the latter only if A has bit 7 set, so be careful).
 ```
 
-## Key Registers
-- (none) — this chunk describes a code technique using zero-page stores ($FB/$FC), not hardware registers; no chip register ranges included.
-
 ## References
 - "arr_opcode_flags_and_table" — expands on ARR flags and the mapping table used to understand ARR effects on multi-byte rotates
 - "arr_load_register_depending_on_carry" — another example of exploiting ARR's effect on Carry for control flow or data loading
+
+## Mnemonics
+- ARR

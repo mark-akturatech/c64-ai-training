@@ -101,3 +101,15 @@ Behavioral notes preserved from source:
 - "iterate_string_arrays_and_prepare_descriptors" — expands on repeated invocation while scanning array element descriptors
 - "gc_init_and_process_descriptor_stack" — expands on invocation from the descriptor-stack scanning loop
 - "collect_string_and_compact_memory" — expands on when this logic decides a string must be moved and uses the working pointer left by this routine
+
+## Labels
+- $22
+- $23
+- $33
+- $34
+- $4E
+- $4F
+- $53
+- $55
+- $5F
+- $60

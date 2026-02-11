@@ -5,15 +5,6 @@
 ## Description
 $A000-$BFFF contains the BASIC interpreter (8192 bytes). This 8 KB region can be banked out or overlaid with RAM; whether the ROM or RAM is visible to the CPU is determined by the processor port $0001, specifically bits #0–#2.
 
-## Source Code
-```text
-BASIC ROM ($A000-$BFFF)
-
-$A000-$BFFF  BASIC ROM/RAM      BASIC interpreter or RAM (8192 bytes)
-
-Visibility controlled by processor port $0001 bits #0-#2.
-```
-
 ## Key Registers
 - $A000-$BFFF - Memory - BASIC ROM/RAM (BASIC interpreter or RAM, 8192 bytes)
 - $0001 - CPU - processor port controlling memory bank visibility (bits #0-#2)

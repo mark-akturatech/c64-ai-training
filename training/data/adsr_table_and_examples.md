@@ -68,3 +68,7 @@ Notes on the numeric examples:
 
 ## References
 - "envelope_generator_and_example_program_4" — expands on register encoding and example program that sets ADSR
+
+## Labels
+- $D405
+- $D406

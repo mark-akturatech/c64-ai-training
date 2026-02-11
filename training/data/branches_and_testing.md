@@ -41,10 +41,18 @@ Branch offset range (signed one-byte):
 -128 .. +127    ; relative to the next instruction
 ```
 
-## Key Registers
-- (none — this chunk documents CPU flags and instructions, not C64 memory-mapped registers)
-
 ## References
 - "machine_code_and_registers_overview" — expands on Status register and flags among internal registers
 - "subroutines_and_kernal_print" — covers branches used for control flow, subroutines and loops
 - "alphabet_program_example" — example loop using CPX/INX/BNE to produce ordered output
+
+## Mnemonics
+- LDA
+- BEQ
+- BNE
+- INX
+- DEX
+- INY
+- DEY
+- CPX
+- CPY

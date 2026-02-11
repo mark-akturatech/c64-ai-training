@@ -22,11 +22,5 @@ Kick Assembler exposes assembled-source information via the AsmInfo option to su
 - The AsmInfo interface is experimental/stable subject to change — tools should tolerate additions or reordering.  
 - Contact the Kick Assembler author for guarantees or if you require a stable contract.
 
-## Source Code
-(omitted — this chunk contains descriptive metadata names and their meanings; no assembly or data listings provided)
-
-## Key Registers
-(omitted)
-
 ## References
 (omitted)

@@ -26,3 +26,9 @@ $DC0B   TOD Hours               Hours counter in BCD with AM/PM bit
 
 ## References
 - "system_area_time_counters" — expands on system time counters and TI variable mapping
+
+## Labels
+- TOD TENTHS
+- TOD SECONDS
+- TOD MINUTES
+- TOD HOURS

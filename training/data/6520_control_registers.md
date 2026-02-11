@@ -36,3 +36,7 @@ Additional descriptive excerpt retained from source:
 ## References
 - "6520_ddr" — expands on Data Direction Registers referenced by CRA/CRB
 - "control_of_irqa" — expands on how CRA bits affect /IRQA
+
+## Labels
+- CRA
+- CRB

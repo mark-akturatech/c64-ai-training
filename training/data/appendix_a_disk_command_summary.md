@@ -43,9 +43,6 @@ PRINT#file#, "M-E"; CHR$(addr_lo); CHR$(addr_hi)     ' MEMORY-EXECUTE
 PRINT#file#, "Un"
 ```
 
-## Key Registers
-(omitted — this chunk documents disk command PRINT# forms, not specific memory-mapped registers)
-
 ## References
 - "disk_command_summary" — expanded succinct command summary used in in-chapter examples
 - "appendix_b_error_code_summary_list" — Appendix B: disk error code list and meanings

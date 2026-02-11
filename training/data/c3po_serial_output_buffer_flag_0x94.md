@@ -7,12 +7,12 @@ This zero-page location (C3PO, $0094) is set by the serial output routines when 
 
 Do not assume bit-level semantics beyond "flag set when buffered" — the source only documents that the location indicates an occupied output buffer, not the exact value used.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps present in this chunk)
-
 ## Key Registers
 - $0094 - Zero Page - Serial output buffered flag (C3PO): set when a character has been placed in the serial output buffer and is waiting to be sent
 
 ## References
 - "bsour_serial_buffered_character_0x95" — holds the actual buffered character for serial output
 - "st_status_io_status_word_0x90" — serial device status bits and timeouts
+
+## Labels
+- C3PO

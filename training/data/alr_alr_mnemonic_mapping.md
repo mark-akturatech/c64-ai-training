@@ -24,9 +24,10 @@ ASR
 ALR, ASR
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "anc_anc_mnemonic_mapping" — expands on previous mnemonic (ANC)
 - "arr_arr_mnemonic_mapping" — expands on next group (ARR)
+
+## Mnemonics
+- ALR
+- ASR

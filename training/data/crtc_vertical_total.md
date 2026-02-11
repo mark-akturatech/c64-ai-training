@@ -7,11 +7,8 @@ R4 is a 7-bit register containing (Total character rows per frame) − 1. The st
 
 This register, together with R5, defines the vertical timing and overall frame rate. To avoid visible flicker the resulting frame time should be kept close to the line frequency; if the frame time is made longer than the line-frequency period, the /RES input may be used to obtain absolute synchronism.
 
-## Source Code
-(omitted — no code/listings in source)
-
-## Key Registers
-- (omitted — CRTC/6845 is not a C64 VIC-II register set)
-
 ## References
 - "CRTC Register Set" — general register descriptions (R0..R17)
+
+## Labels
+- R4

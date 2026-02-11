@@ -46,3 +46,33 @@ JMP   Jump to New Location
 ## References
 - "alphabetic_instruction_list_jsr_to_tya" — continuation of the alphabetic instruction summary (JSR..TYA)
 - "instruction_table_notation_and_references" — notation used in instruction tables (flags, symbols, immediates)
+
+## Mnemonics
+- ADC
+- AND
+- ASL
+- BCC
+- BCS
+- BEQ
+- BIT
+- BMI
+- BNE
+- BPL
+- BRK
+- BVC
+- BVS
+- CLC
+- CLD
+- CLI
+- CLV
+- CMP
+- CPX
+- CPY
+- DEC
+- DEX
+- DEY
+- EOR
+- INC
+- INX
+- INY
+- JMP

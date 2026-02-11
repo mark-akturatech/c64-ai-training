@@ -42,3 +42,6 @@ Bit 7: Select Time of Day write (0=writing to TOD registers sets alarm, 1=writin
 
 ## References
 - "cia1_timers_and_usage" — Implications of Timer B input modes for threshold schemes
+
+## Labels
+- CIACRB

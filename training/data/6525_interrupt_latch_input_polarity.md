@@ -49,3 +49,9 @@ for input in [I2, I1, I0]:
 ## References
 - "6525_interrupt_latch_register_ILR" — how latched inputs are recorded in ILR
 - "6525_active_interrupt_register_AIR" — how latched interrupts become active in AIR
+
+## Labels
+- ILR
+- AIR
+- IE3
+- IE4

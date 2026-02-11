@@ -16,12 +16,9 @@ Assembly forms (operand syntax):
 
 Reference: 6502 manual section Ref: 7.8.
 
-## Source Code
-(omitted — no assembly listings or data tables provided in source)
-
-## Key Registers
-(omitted — instruction does not reference specific memory-mapped chip registers)
-
 ## References
 - "cmp_compare_accumulator" — CMP (Compare Accumulator) related instruction
 - "cpy_compare_index_y" — CPY (Compare Index Y) related instruction
+
+## Mnemonics
+- CPX

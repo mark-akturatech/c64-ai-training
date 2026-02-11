@@ -42,9 +42,6 @@ This chunk is a concise reference for how the listed Commodore 64 BASIC keywords
   +-----------+----------------------+----------------+-------------------+
 ```
 
-## Key Registers
-(omitted — this chunk documents BASIC keywords, not hardware registers)
-
 ## References
 - "ignored_page_header_vocabulary_31" — expands on page header / non-technical separator following this table segment
 - "basic_keywords_end_to_log" — expands on the next block of BASIC keywords (END through LOG)

@@ -28,9 +28,6 @@ Notes and observable facts from the data:
 .:ECB8 FF
 ```
 
-## Key Registers
-- (omitted) — this chunk documents ROM data bytes, not hardware registers.
-
 ## References
 - "shift_c_lock_handling" — expands on invoked or consulted code when Control+key sequences (e.g. SHIFT+C) are processed
 - "auto_load_run_keyboard_buffer" — expands on keyboard buffer format and sample entries for auto load/run

@@ -35,3 +35,7 @@ This 8-bit register holds the count of displayed character positions (columns) o
 ## References
 - "crtc_horizontal_total" — horizontal total vs displayed relationship
 - ([cantrell.org.uk](https://www.cantrell.org.uk/david/tech/cpc/cpc-firmware/crtc.htm?utm_source=openai))
+
+## Labels
+- CRTC_R1
+- HORIZONTAL_DISPLAYED

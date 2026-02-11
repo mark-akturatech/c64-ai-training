@@ -71,9 +71,6 @@ Important points preserved from the source:
 560 END
 ```
 
-## Key Registers
-- (none) — This chunk is a BASIC driver and communicates with the 1541 via device channel #15 commands; it does not document specific C64 memory-mapped registers for indexing.
-
 ## References
 - "job_queue_and_communication_subroutines" — job-queue and low-level drive communication routines called by the BASIC program
 - "embedded_machine_language_data_blocks_21_and_20m" — embedded DATA blocks (machine-code) written/read by this BASIC driver

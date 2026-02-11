@@ -12,3 +12,8 @@ This is distinct from SID register mirroring (see references) where implemented 
 
 ## References
 - "sid_register_image_mirroring" — SID register mirroring in $D420-$D7FF
+
+## Labels
+- $D41D
+- $D41E
+- $D41F

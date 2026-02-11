@@ -15,6 +15,7 @@ Usage:
     uv run scripts/auto_split.py --model gpt-4o       # Use different model
     uv run scripts/auto_split.py --refine             # Refine all configs with oversized chunks
     uv run scripts/auto_split.py --refine config.json # Refine a specific config
+    uv run scripts/auto_split.py --workers 8          # Process 8 files concurrently (default: 4)
 """
 
 import hashlib
@@ -22,7 +23,9 @@ import json
 import os
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from openai import OpenAI
@@ -925,15 +928,19 @@ def fix_gaps_and_overlaps(config, lines, client=None, model=None, filename=None)
     return config, num_fixes
 
 
-def _run_refine(client, model, _config_dir, docs_dir, config_files):
+def _run_refine(client, model, _config_dir, docs_dir, config_files, workers=1):
     """Refine configs: fix gaps/overlaps first, then sub-split oversized chunks.
     Runs iteratively until all chunks are within MAX_CHUNK_LINES."""
-    refined_total = 0
-    errors = 0
+    counter = {'refined': 0, 'errors': 0, 'done': 0}
+    counter_lock = threading.Lock()
     refine_start_time = time.time()
+    total = len(config_files)
 
-    for i, config_path in enumerate(config_files, 1):
-        print(f"\n[{i}/{len(config_files)}] Refining: {config_path.name}")
+    def refine_one(config_path):
+        with counter_lock:
+            counter['done'] += 1
+            n = counter['done']
+        print(f"\n[{n}/{total}] Refining: {config_path.name}")
         file_start = time.time()
 
         try:
@@ -943,14 +950,12 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             raw_path = docs_dir / config['source_file']
             if not raw_path.exists():
                 print(f"  Warning: Source file not found: {raw_path}")
-                continue
+                return
 
             file_content = raw_path.read_text(encoding='utf-8', errors='replace')
             lines = file_content.splitlines(keepends=True)
             total_lines = len(lines)
 
-            # Iterate: fix gaps/overlaps then sub-split oversized, repeat
-            # until no more changes (each step can introduce new issues)
             iteration = 0
             max_iterations = 5
             while iteration < max_iterations:
@@ -958,24 +963,21 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
                 if iteration > 1:
                     print(f"  --- Pass {iteration} ---")
 
-                # Fix gaps and overlaps
                 config, gap_fixes = fix_gaps_and_overlaps(
                     config, lines, client=client, model=model,
                     filename=config['source_file'])
                 if gap_fixes:
                     print(f"  Fixed {gap_fixes} gaps/overlaps")
 
-                # Sub-split oversized chunks
                 config, num_refined = refine_config(client, model, config, docs_dir,
                                                      verbose=True)
                 if num_refined:
-                    refined_total += num_refined
+                    with counter_lock:
+                        counter['refined'] += num_refined
 
-                # Stop when neither step made changes
                 if gap_fixes == 0 and num_refined == 0:
                     break
 
-            # Mark any still-oversized chunks as no_refine
             marked = 0
             for s in config.get('splits', []):
                 if (not s.get('ignore', False)
@@ -986,12 +988,10 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             if marked:
                 print(f"  Marked {marked} chunks as no_refine (cannot split further)")
 
-            # Normalize: ensure 'ignored' in name → ignore flag set
             norm_fixed = normalize_ignored(config)
             if norm_fixed:
                 print(f"  Fixed {norm_fixed} entries missing ignore flag")
 
-            # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)
             if validation_errors:
                 config['warnings'] = validation_errors
@@ -1001,7 +1001,6 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             else:
                 config.pop('warnings', None)
 
-            # Write updated config
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
                 f.write('\n')
@@ -1011,12 +1010,23 @@ def _run_refine(client, model, _config_dir, docs_dir, config_files):
             print(f"  Result: {num_splits} total chunks in {_fmt_elapsed(file_elapsed)}")
 
         except Exception as e:
-            errors += 1
+            with counter_lock:
+                counter['errors'] += 1
             print(f"  ERROR: {e}")
+
+    if workers > 1:
+        print(f"Refining with {workers} workers...")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(refine_one, cp) for cp in config_files]
+            for f in as_completed(futures):
+                f.result()
+    else:
+        for cp in config_files:
+            refine_one(cp)
 
     total_elapsed = time.time() - refine_start_time
     print(f"\nRefine total time: {_fmt_elapsed(total_elapsed)}")
-    return refined_total, errors
+    return counter['refined'], counter['errors']
 
 
 def main():
@@ -1035,15 +1045,20 @@ def main():
         idx = sys.argv.index('--model')
         model = sys.argv[idx + 1]
 
+    workers = 4
+    if '--workers' in sys.argv:
+        idx = sys.argv.index('--workers')
+        workers = int(sys.argv[idx + 1])
+
     # Collect positional args
-    skip_flags = {'--force', '--all', '--model', '--refine'}
+    skip_flags = {'--force', '--all', '--model', '--refine', '--workers'}
     args = []
     skip_next = False
     for a in sys.argv[1:]:
         if skip_next:
             skip_next = False
             continue
-        if a == '--model':
+        if a in ('--model', '--workers'):
             skip_next = True
             continue
         if a not in skip_flags:
@@ -1098,7 +1113,7 @@ def main():
 
             print(f"Found {len(config_files)} configs to refine")
 
-        refined, errors = _run_refine(client, model, config_dir, docs_dir, config_files)
+        refined, errors = _run_refine(client, model, config_dir, docs_dir, config_files, workers=workers)
         print(f"\n{'='*50}")
         print(f"Refined {refined} oversized chunks, {errors} errors")
         sys.exit(0)
@@ -1147,14 +1162,17 @@ def main():
     config_dir.mkdir(parents=True, exist_ok=True)
 
     # Process documents
-    processed = 0
-    errors = 0
+    counter = {'processed': 0, 'errors': 0, 'done': 0}
+    counter_lock = threading.Lock()
     configs_to_refine = []
 
     run_start_time = time.time()
 
-    for i, doc_path in enumerate(doc_files, 1):
-        print(f"\n[{i}/{len(doc_files)}] Processing: {doc_path.name}")
+    def generate_one(doc_path):
+        with counter_lock:
+            counter['done'] += 1
+            n = counter['done']
+        print(f"\n[{n}/{len(doc_files)}] Processing: {doc_path.name}")
         file_start = time.time()
 
         try:
@@ -1164,15 +1182,12 @@ def main():
 
             config = split_document(client, model, doc_path.name, content, total_lines)
 
-            # Add source_md5
             config['source_md5'] = md5_content(content)
 
-            # Normalize: ensure 'ignored' in name → ignore flag set
             norm_fixed = normalize_ignored(config)
             if norm_fixed:
                 print(f"    Fixed {norm_fixed} entries missing ignore flag")
 
-            # Validate and store warnings in config
             validation_errors = validate_config(config, total_lines)
             if validation_errors:
                 config['warnings'] = validation_errors
@@ -1182,7 +1197,6 @@ def main():
             else:
                 config.pop('warnings', None)
 
-            # Write config
             config_path = config_dir / f"{doc_path.stem}.json"
             with open(config_path, 'w', encoding='utf-8') as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
@@ -1192,24 +1206,31 @@ def main():
             num_ignored = len([s for s in config.get('splits', []) if s.get('ignore')])
             file_elapsed = time.time() - file_start
             print(f"    Created: {config_path.name} ({num_splits} chunks, {num_ignored} ignored) in {_fmt_elapsed(file_elapsed)}")
-            processed += 1
 
-            # Check if auto-refine is needed
-            has_oversized = any(
-                not s.get('ignore', False)
-                and (s.get('end', 0) - s.get('start', 0) + 1) > MAX_CHUNK_LINES
-                for s in config.get('splits', [])
-            )
-            if has_oversized:
-                configs_to_refine.append(config_path)
+            with counter_lock:
+                counter['processed'] += 1
+                has_oversized = any(
+                    not s.get('ignore', False)
+                    and (s.get('end', 0) - s.get('start', 0) + 1) > MAX_CHUNK_LINES
+                    for s in config.get('splits', [])
+                )
+                if has_oversized:
+                    configs_to_refine.append(config_path)
 
         except Exception as e:
-            errors += 1
+            with counter_lock:
+                counter['errors'] += 1
             print(f"    ERROR: {e}")
 
-        # Rate limit
-        if i < len(doc_files):
-            time.sleep(1)
+    if workers > 1:
+        print(f"Processing with {workers} workers...")
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(generate_one, dp) for dp in doc_files]
+            for f in as_completed(futures):
+                f.result()
+    else:
+        for dp in doc_files:
+            generate_one(dp)
 
     # Auto-refine any newly generated configs with oversized chunks
     refined_total = 0
@@ -1217,13 +1238,13 @@ def main():
         print(f"\n{'='*50}")
         print(f"Auto-refining {len(configs_to_refine)} configs with oversized chunks...")
         refined_total, refine_errors = _run_refine(client, model, config_dir,
-                                                    docs_dir, configs_to_refine)
-        errors += refine_errors
+                                                    docs_dir, configs_to_refine, workers=workers)
+        counter['errors'] += refine_errors
 
     # Summary
     total_run_time = time.time() - run_start_time
     print(f"\n{'='*50}")
-    print(f"Documents: {processed} processed, {errors} errors")
+    print(f"Documents: {counter['processed']} processed, {counter['errors']} errors")
     if refined_total:
         print(f"Auto-refined: {refined_total} oversized chunks")
     print(f"Total time: {_fmt_elapsed(total_run_time)}")

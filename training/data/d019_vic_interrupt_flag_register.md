@@ -39,3 +39,6 @@ Behavior notes:
 ## References
 - "d01a_irqmask_and_raster_interrupts" — Masking and enabling VIC interrupts
 - "sprite_collision_registers" — Which registers to read to determine colliding sprites ($D01E-$D01F)
+
+## Labels
+- VICIRQ

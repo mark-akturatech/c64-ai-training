@@ -16,3 +16,7 @@ Key facts preserved from the source:
 
 ## References
 - "m51ctr_rs232_control_register" — expands on M51CTR word-length configuration used by BITNUM.
+
+## Labels
+- BITNUM
+- M51CTR

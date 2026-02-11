@@ -62,3 +62,6 @@ This example demonstrates how to use the CHROUT subroutine to output a string to
 ## References
 - "common_kernal_subroutines_table" — expands on CHROUT location and role  
 - "printing_single_character_steps" — expands on how to use CHROUT to print a single character
+
+## Labels
+- CHROUT

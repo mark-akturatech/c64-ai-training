@@ -21,3 +21,6 @@ This short ROM routine zeroes the four mantissa bytes of FAC1 (the BASIC floatin
 ## References
 - "convert_fac1_floating_to_fixed" — expands on calls that clear FAC1 when FAC1 exponent is zero  
 - "compare_fac1_with_pointer_ay" — expands on comparisons that may detect zero values mapping to cleared FAC1
+
+## Labels
+- FAC1

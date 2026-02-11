@@ -38,3 +38,6 @@ Notes:
 - "mid_string_function" — expands on uses of byte-parameter parsing to retrieve optional MID length
 - "chr_string_creation" — expands on uses of byte-expression evaluator for CHR$ argument
 - "pull_string_and_byte_param" — invoked during parameter parsing and retrieval sequences
+
+## Labels
+- FAC1

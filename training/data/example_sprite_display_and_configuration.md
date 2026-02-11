@@ -287,3 +287,10 @@ skip_multicolor_1:
 
         rts                     // program done, return
 ```
+
+## Labels
+- SPRITE_ENABLE_REG_ADDR
+- SPRITE_COLOR_1_ADDR
+- SPRITE_COLOR_2_ADDR
+- SPRITE_MODE_REG_ADDR
+- ALL_SPRITE_X_HIGH_BIT_ADDR

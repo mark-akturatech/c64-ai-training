@@ -152,3 +152,15 @@ update_loop             inc REG_INTFLAG         ; acknowledge interrupt
 
 music_data              ; music data removed for release
 ```
+
+## Labels
+- REG_INTSERVICE_LOW
+- REG_INTSERVICE_HIGH
+- REG_SCREENCTL_1
+- REG_RASTERLINE
+- REG_INTFLAG
+- REG_INTCONTROL
+- REG_BORCOLOUR
+- REG_BGCOLOUR
+- REG_INTSTATUS_1
+- REG_INTSTATUS_2

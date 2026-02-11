@@ -46,3 +46,9 @@ These four consecutive zero-page locations are used by the BASIC/ROM interrupt r
 ## References
 - "pnt_pointer_and_pntr_cursor_column" — expands on cursor position used by blink routines
 - "rvs_reverse_print_flag" — expands on reversed-character printing concept related to cursor inversion
+
+## Labels
+- BLNSW
+- BLNCT
+- GDBLN
+- BLNON

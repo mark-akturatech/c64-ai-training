@@ -68,3 +68,13 @@
 ## References
 - "rs232_parity_and_startbit_handling" — expands on this section receiving control after parity/start-bit checks
 - "verify_and_pointer_increment" — expands on the verify/pointer-increment logic jumped to after storing the byte
+
+## Labels
+- $00B5
+- $00BD
+- $00AC
+- $00AD
+- $009E
+- $00A7
+- $0093
+- $00B6

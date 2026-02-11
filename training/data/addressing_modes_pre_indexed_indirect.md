@@ -30,8 +30,8 @@
 ; Note: if P == $FF, high is read from $00 (zero-page wrap).
 ```
 
-## Key Registers
-- (none) — This chunk documents an addressing mode, not specific C64 I/O registers.
-
 ## References
 - "instruction_tables_lda" — expands on LDA (Oper,X) opcode and cycles
+
+## Mnemonics
+- LDA

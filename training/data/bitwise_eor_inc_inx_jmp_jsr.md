@@ -104,3 +104,14 @@ The chunk begins the LDA load-group table at the end (immediate/zeropage/absolut
 ## References
 - "indirect_and_indexed_indirect_examples" — expands on JMP (indirect) special-case behavior
 - "literals_and_loads_ldx_ldy" — expands on LDA/LDX/LDY instruction group
+
+## Mnemonics
+- INC
+- INX
+- INY
+- JMP
+- JSR
+- EOR
+- LDA
+- LDX
+- LDY

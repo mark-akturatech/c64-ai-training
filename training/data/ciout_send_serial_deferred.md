@@ -43,3 +43,7 @@ This routine therefore sets up the deferred-output flag and ensures the byte is 
 ## References
 - "tksa_send_talk_sa" — expands on send-byte handshake primitives ($ED36 / $ED40)
 - "flag_errors" — expands on error-flag setting and exit handshake when send fails
+
+## Labels
+- C3PO
+- BSOUR

@@ -70,10 +70,6 @@ The connector is designed for straightforward alignment and insertion into the C
   +-------+--------------------+
 ```
 
-## Key Registers
-
-(Omitted — this document focuses on the physical connector and its specifications, not memory-mapped registers.)
-
 ## References
 
 - ([en.wikipedia.org](https://en.wikipedia.org/wiki/Commodore_Datasette?utm_source=openai))

@@ -241,3 +241,16 @@ FILENAME: .BYTE "PRINTER",0
 - Commodore 64 Programmer's Reference Guide
 - Commodore 1541 User's Guide
 - Commodore 64 KERNAL API Documentation
+
+## Labels
+- SETLFS
+- SETNAM
+- OPEN
+- CLOSE
+- CHKIN
+- CHKOUT
+- CLRCHN
+- CHRIN
+- CHROUT
+- GETIN
+- READST

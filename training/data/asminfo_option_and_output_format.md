@@ -45,8 +45,5 @@ java -jar KickAss.jar mysource.asm -asminfo all
 java -jar KickAss.jar mysource.asm -asminfo allPredefined|errors -asminfofile custom_asminfo.txt
 ```
 
-## Key Registers
-(omitted — not applicable)
-
 ## References
 - "asminfo_sections_details" — expands on details of asminfo sections

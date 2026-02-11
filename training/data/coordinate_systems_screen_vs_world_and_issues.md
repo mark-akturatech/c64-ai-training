@@ -14,12 +14,6 @@ Recommendation: represent object positions in a world-coordinate system and perf
 
 (If you need speed, optimize the world-to-screen conversion and collision lookup rather than relying on the screen buffer as the authoritative source.)
 
-## Source Code
-<!-- No code or listings in this chunk -->
-
-## Key Registers
-<!-- None — not register-specific -->
-
 ## References
 - "world_coordinate_representation_block_highbyte_lowbyte_subpixel_accuracy" — expands on efficient world-coordinate representation and subpixel accuracy
 - "object_activation_actor_leveldata_and_spawning" — expands on using world coordinates to decide active/on-screen objects and spawning logic

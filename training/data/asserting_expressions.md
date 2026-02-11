@@ -41,8 +41,5 @@ test.plugins.macros.MyMacro1
 test.plugins.macros.MyMacro2
 ```
 
-## Key Registers
-(omitted — this chunk does not document C64/6502 hardware registers)
-
 ## References
 (none)

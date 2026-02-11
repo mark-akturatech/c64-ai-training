@@ -7,3 +7,6 @@ This register contains a 5-bit value (bits D0–D4) that the CRTC uses to determ
 
 ## References
 - "MACHINE - CRTC Register List" — full register map and surrounding register behavior
+
+## Labels
+- R9

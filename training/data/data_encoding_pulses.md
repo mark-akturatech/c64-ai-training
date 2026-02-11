@@ -15,12 +15,6 @@ Data bits are encoded by sequences of pulses — specifically the standard CBM l
 
 For related topics, see the CBM loader (ROM loader) discussion and material on pulse sampling/edge detection and on turbo loaders (which contrast by using two pulse lengths rather than CBM's three).
 
-## Incomplete
-- Missing: Exact bit-to-pulse mapping (which medium/short pulse pairs encode logical 0 vs 1).  
-- Missing: TAP format structure, header/sync block formats, and example byte streams.  
-- Missing: Waveform diagrams or sample audio timing traces showing transitions and back‑to‑back pulse placement.  
-- Missing: Implementation details of the CBM ROM loader algorithm (referenced but not included here).
-
 ## References
 - "loaders:ROM_Loader" — CBM Loader structure and software details  
 - "pulse_sample_and_edge_detection" — how pulses appear on the C2N READ pin and edge detection details  

@@ -61,3 +61,11 @@ This chunk documents the KERNAL cassette entry points used to initiate tape read
 ## References
 - "press_play_prompt_and_debounce" — expands on Uses CSTE1 to prompt before reads
 - "tape_operation_timer_and_irq_setup" — expands on Transfers flow to TAPE entry to configure timers and IRQs for cassette operation
+
+## Labels
+- RBLK
+- TRD
+- WBLK
+- TWRT
+- TWRT2
+- TWRT3

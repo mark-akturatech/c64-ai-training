@@ -11,9 +11,6 @@ Key points preserved:
 - Intervening bytes are set to $02 to accommodate modified ROMs and ensure predictable control transfer.
 - This layout supports a single‑sector autostart flow without changing BASIC vector tables.
 
-## Source Code
-(omitted — no assembly or data listings provided in source)
-
 ## Key Registers
 - $01ED-$01F7 - RAM (stack area) - region used to place loader code and padding bytes
 - $0203 - ROM/KERNAL (system return path) - address used to catch execution when ROM loader returns

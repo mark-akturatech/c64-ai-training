@@ -73,3 +73,9 @@ ASCII figure (low/high bytes and carry):
 ## References
 - "big_numbers_multi_byte" — expands on carries across bytes and sizing multi-byte numbers
 - "subtraction_multi_byte_machine_code" — rules for multi-byte subtraction (borrows, SEC, SBC)
+
+## Mnemonics
+- ADC
+- CLC
+- BCS
+- BVS

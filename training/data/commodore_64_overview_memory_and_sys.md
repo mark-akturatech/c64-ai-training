@@ -14,9 +14,6 @@ BASIC on the C64 is the same dialect as the VIC-20 (no built-in disk commands). 
 - The address range $C000-$CFFF is a block of RAM not used by the system in typical configurations and is commonly used to stage machine-language programs, loaders, or temporary data. Because BASIC and the Kernal/ROM can be banked out via $0000/$0001, it is common for large applications to swap out BASIC entirely to free more RAM for machine-code-only programs (word processors, spreadsheets, etc.).
 - Writing entirely in machine language is often desirable on the C64 for performance and RAM usage reasons; the 6510 bank-switching port makes it practical to remove ROM images from the address space to reclaim RAM.
 
-## Source Code
-(omitted — no assembly/BASIC listings in source)
-
 ## Key Registers
 - $0000-$0001 - 6510 - Processor port / bank-switching control (selects RAM/ROM/I/O visibility)
 - $0400 - Memory - Default screen RAM start (BASIC screen memory)

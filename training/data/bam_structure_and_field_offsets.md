@@ -40,9 +40,6 @@ Notes:
 - DOS version/format example "2A" corresponds to decimal bytes 50/65 (hex $32/$41).
 ```
 
-## Key Registers
-(omitted — this chunk documents disk sector layout, not hardware registers)
-
 ## References
 - "bam_sector_dump_and_overview" — expands on example hex dump of the BAM  
 - "bam_entry_format_and_track14_example" — expands on per-track 4-byte BAM entry unpacking and a track 14 example

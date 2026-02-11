@@ -39,3 +39,6 @@ How to use:
 ## References
 - "clrchn_clear_io_channels" — CLRCHN: clears I/O channels and is called automatically by CLALL
 - "close_close_a_logical_file" — CLOSE: closes a single logical file (CLALL is the bulk counterpart)
+
+## Labels
+- CLALL

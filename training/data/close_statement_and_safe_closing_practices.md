@@ -26,8 +26,5 @@ CLOSE file#
 OPEN 15,8,15,"I"
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "directory_bam_and_listing" — expands on why CLOSE is required to update the BAM and directory entries

@@ -19,3 +19,7 @@ Behavioral points preserved from source:
 
 ## References
 - "implicit_addressing" — expands on implicit vs accumulator (implicit requires no operand)
+
+## Mnemonics
+- ASL
+- ROR

@@ -61,3 +61,8 @@ Notes:
 ## References
 - "display_generation_dimensions" — expands on CSEL/RSEL effect on window size and border positions
 - "hyperscreen" — technique to open the border by manipulating CSEL/RSEL
+
+## Labels
+- D020
+- D011
+- D016

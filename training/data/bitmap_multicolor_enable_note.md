@@ -8,18 +8,6 @@
 - Plotting rules change: bitmap bytes are interpreted as bit-pairs; addressing and pixel plotting must account for the reduced horizontal resolution and the 8×8 cell grouping.
 - The multicolor bit is often referenced in related topics such as horizontal fine scrolling behavior and bitmap addressing/plotting rules.
 
-## Source Code
-```text
-There is a slightly lower resolution bitmap graphics mode available
-which offers up to four colors per 8 by 8 dot matrix.  To enable this
-mode, you must set the multicolor bit (Bit 4 of 53270 ($D016)) while
-in bitmap graphics mode.  For more information on this mode, see the
-entry for the multicolor enable bit.
-
-Note: Multicolor bitmap reduces horizontal resolution to 160 and
-changes plotting rules (byte addressing and bit-pairs).
-```
-
 ## Key Registers
 - $D016 ($D016 / 53270) - VIC-II - Bit 4: Multicolor enable (active only in bitmap mode; interprets bitmap data as bit-pairs, producing 4 colors per 8×8 cell and reducing horizontal resolution to 160)
 

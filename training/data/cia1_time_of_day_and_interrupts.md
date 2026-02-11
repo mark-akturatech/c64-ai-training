@@ -70,3 +70,11 @@ $DC0D = 56333
 ## References
 - "cia1_dc01_ddr_timers_table" — expands on Timer A/B and DDR usages described earlier
 - "cia1_control_registers_dc0e_dc0f" — expands on control registers that start/stop timers and select modes
+
+## Labels
+- DC08
+- DC09
+- DC0A
+- DC0B
+- DC0C
+- DC0D

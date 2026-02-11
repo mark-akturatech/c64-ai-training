@@ -19,3 +19,8 @@ Together CHROUT and GETIN provide simple character-based I/O; STOP is used to de
 ## References
 - "prewritten_kernal_subroutines" — expands on context for KERNAL routines
 - "chrout_output_subroutine" — expands on detailed CHROUT behavior
+
+## Labels
+- CHROUT
+- GETIN
+- STOP

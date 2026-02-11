@@ -14,9 +14,6 @@ Separate multiple statements with a colon (:) on the Commodore 64. Do not use ba
 ## MAT functions
 Code that uses MAT ... (matrix) functions available in some BASIC dialects must be rewritten to use explicit loops on the C64. Replace MAT operations with FOR...NEXT loops that perform the same element-wise operations.
 
-## Key Registers
-(omitted — this chunk is about BASIC syntax, not hardware registers)
-
 ## References
 - "ignored_page_footer_before_appendix_k" — expands on page break/footer preceding Appendix K  
 - "appendix_k_intro_and_errors_part1" — begins the Appendix K error-message list

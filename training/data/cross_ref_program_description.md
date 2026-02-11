@@ -32,16 +32,6 @@ This program produces a cross-reference listing for a selected BASIC program sto
 
 - The description references table contents (256-element classification table and the state-transition table) and the BASIC listing, but the actual tables and listings are not present in this text. The differences in I/O and entry points between PET/CBM and C64 are implied but not detailed here.
 
-## Source Code
-
-```text
-(omitted — original source listing, tables, and BASIC program not included in this chunk)
-```
-
-## Key Registers
-
-- (none) — This chunk documents algorithmic and BASIC-level behavior; no specific C64 hardware registers are described.
-
 ## References
 
 - "factors_program_overview" — expands on the binary-to-decimal conversion technique and related implementation details.

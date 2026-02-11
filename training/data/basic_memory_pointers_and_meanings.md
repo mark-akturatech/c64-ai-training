@@ -73,3 +73,10 @@ Notes:
 
 ## References
 - "monitor_save_command_format_and_load_relocation" — monitor .S/.L operations and effects on BASIC pointers
+
+## Labels
+- SOV
+- SOA
+- EOA
+- BOS
+- TOM

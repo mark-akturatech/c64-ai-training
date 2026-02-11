@@ -182,3 +182,6 @@ BC52:  LDA #$81
 BC54:  STA $61
 BC56:  RTS
 ```
+
+## Labels
+- CHRGET

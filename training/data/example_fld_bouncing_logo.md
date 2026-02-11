@@ -510,3 +510,17 @@ bitmap_data             .byte $00, $00, $00, $04, $0c, $7f, $0c, $04, $40, $00, 
                         .byte $55, $51, $10, $00, $00, $05, $11, $45, $50, $00, $01, $14, $45, $15, $59, $66
                         .byte $22, $8a, $2e, $bb, $af, $bd, $f7, $dd, $5d, $7c, $f4, $f4, $d0, $d0, $90, $80
 ```
+
+## Labels
+- REG_INTSERVICE_LOW
+- REG_INTSERVICE_HIGH
+- REG_SCREENCTL_1
+- REG_RASTERLINE
+- REG_SCREENCTL_2
+- REG_MEMSETUP
+- REG_INTFLAG
+- REG_INTCONTROL
+- REG_BORCOLOUR
+- REG_BGCOLOUR
+- REG_INTSTATUS_1
+- REG_INTSTATUS_2

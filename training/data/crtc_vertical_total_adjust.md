@@ -61,3 +61,7 @@ In this example, setting R5 to 6 adds 6 additional scan lines to the frame, resu
 - "CRTC register set" — general CRTC register descriptions (covers how Vertical Total and Vertical Total Adjust combine)
 - "Motorola MC6845 Cathode Ray Tube Controller" — detailed timing calculations and register descriptions
 - "The Amstrad CPC CRTC" — comprehensive guide on CRTC registers and their functions
+
+## Labels
+- CRTC_R5
+- VERTICAL_TOTAL_ADJUST

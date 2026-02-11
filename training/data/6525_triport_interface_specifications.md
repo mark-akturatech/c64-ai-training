@@ -102,8 +102,15 @@ Notes from source:
 - Interrupt latch can be cleared by writing a zero to the corresponding I bit in PRC.
 ```
 
-## Key Registers
-- (omitted) — 6525 is not a C64-mapped peripheral; no absolute C64 addresses provided.
-
 ## References
 - (none)
+
+## Labels
+- PRA
+- PRB
+- PRC
+- DDRA
+- DDRB
+- DDRC
+- CR
+- AIR

@@ -47,3 +47,7 @@ STX $D401
 
 ## References
 - "voice1_frequency_control" — expands on Frequency combining formula
+
+## Labels
+- FRELO1
+- FREHI1

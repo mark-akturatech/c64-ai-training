@@ -60,3 +60,6 @@ $D01B        SPBGPR       Sprite to Foreground Display Priority Register
 ## References
 - "spena_sprite_enable_register" — covers sprite enable bits ($D015) which determine whether sprites are visible (priority applies only when sprite pixels are enabled)
 - "spmc_sprite_multicolor_registers" — expands on multicolor bit-pair behavior and shared colors
+
+## Labels
+- SPBGPR

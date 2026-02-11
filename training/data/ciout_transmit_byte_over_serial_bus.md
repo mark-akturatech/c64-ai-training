@@ -33,3 +33,6 @@ CIOUT is a KERNAL routine that places one data byte onto the serial bus using fu
 ## References
 - "chkout_open_output_channel" — expands on higher-level channel setup that issues LISTEN before using CIOUT
 - "acptr_get_byte_from_serial_bus_full_handshake" — complementary serial read routine using full handshaking
+
+## Labels
+- CIOUT

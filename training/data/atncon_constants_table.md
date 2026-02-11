@@ -33,8 +33,5 @@ The table begins with a one-byte count (0x0B = 13) followed by a sequence of 5-b
 .:E376 81 00 00 00 00           ; 1               (ATN constant 13)
 ```
 
-## Key Registers
-(omitted — table is ROM data, not hardware registers)
-
 ## References
 - "atn_routine" — expands on the ATN series implementation and uses of these constants

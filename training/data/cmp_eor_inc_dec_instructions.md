@@ -57,9 +57,12 @@ D1  CMP (zp),Y      ; CMP (zp),Y
 51  EOR (zp),Y      ; EOR (zp),Y
 ```
 
-## Key Registers
-- (omitted) — This chunk documents opcodes, not memory-mapped registers.
-
 ## References
 - "bit_instruction_65c02" — BIT and flag behavior affecting CMP/EOR-like operations
 - "sbc_instruction" — related arithmetic instruction SBC
+
+## Mnemonics
+- CMP
+- DEC
+- EOR
+- INC

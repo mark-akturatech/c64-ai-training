@@ -11,12 +11,6 @@
 - Separate assembly implies either: arrange for the graphics to be linked/loaded at a fixed known address, or provide relocation information so the main program can compute final addresses at load time (see referenced relocation materials).
 - Changes to graphics mode (VIC-II mode selection) must be coordinated: if the application requires a specific graphics mode, the graphics package must generate data in that mode or the main program must be modified to accommodate the package's output.
 
-## Source Code
-(omitted — no assembly listings or register maps in the source)
-
-## Key Registers
-(omitted — source discusses graphics modes in general, no specific register addresses listed)
-
 ## References
 - "koala_pad_overview_and_file_format" — expands on using externally created graphics from a tablet (Koala Pad)
 - "display_pic_usage_and_relocation" — expands on displaying and relocating graphics data after loading

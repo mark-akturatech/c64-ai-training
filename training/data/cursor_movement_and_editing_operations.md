@@ -25,4 +25,12 @@ Control flow is implemented with conditional branches to labels NJT1, NJT8, NJT9
 
 The exact assembly listing is provided in the Source Code section below for detailed reference.
 
-## Source Code
+## Labels
+- PNTR
+- PNT
+- LNMX
+- TBLX
+- DATA
+- CRSW
+- INSRT
+- USER

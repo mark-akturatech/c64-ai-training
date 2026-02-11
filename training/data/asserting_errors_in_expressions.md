@@ -29,9 +29,6 @@ public class MyMacro3 implements IMacro {
 }
 ```
 
-## Key Registers
-(The directive and plugin information do not reference hardware registers; none provided.)
-
 ## References
 - "test.plugins.macros.MyMacro3" — example macro plugin class
 - "3rd Party Java plugins" — plugin chapter / section in documentation

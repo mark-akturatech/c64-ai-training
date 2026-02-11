@@ -49,9 +49,6 @@
 270 END
 ```
 
-## Key Registers
-- (none) — this chunk documents DOS commands and a BASIC demo, not hardware registers.
-
 ## References
 - "block_read_and_block_write_interaction_and_recommendation" — expands on the root cause of the B-R EOI behavior previously described
 - "effect_of_block_write_on_subsequent_block_read" — shows practical results when reading the rewritten sector with B-R vs UI

@@ -31,9 +31,24 @@ COLOR CODES (D3 D2 D1 D0 => HEX => DEC => COLOR)
   1  1  1  1    F   15   LT GREY
 ```
 
-## Key Registers
-- (none) — this chunk documents color codes only; no specific register addresses are listed here.
-
 ## References
 - "6566_vicii_pin_configuration_and_register_map" — expands on VIC-II register fields that store color nybbles
 - "6566_vicii_character_display_and_color_modes" — explains how these color codes are used in character, bitmap and multicolor modes
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- GRAY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY

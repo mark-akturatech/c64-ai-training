@@ -13,12 +13,10 @@ Processor status changes observed on NMOS 6502/6510 implementations:
 
 Different assemblers and documentation use the names ANE or XAA for the same opcode and semantics; both names appear in historical opcode lists. The opcode is only available as an immediate-mode instruction ($8B #imm) on NMOS implementations — behaving as an illegal/undocumented opcode and therefore comes with the usual caveats about portability and future-CPU differences.
 
-## Source Code
-(omitted — no assembly listings or register maps in source)
-
-## Key Registers
-(omitted — this chunk documents an instruction, not hardware registers)
-
 ## References
 - "lax_lxa_variants" — expands on related LAX/LXA illegal-opcode variants  
 - "nops_tops_dops_and_jam" — expands on NOP/TOP/DOP/JAM opcode variants and related undocumented opcodes
+
+## Mnemonics
+- ANE
+- XAA

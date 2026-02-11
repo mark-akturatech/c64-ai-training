@@ -15,3 +15,11 @@ Operational details and the precise Control Register bit interactions (including
 ## References
 - "control_of_irqa" — details for CA1/CA2 control bits and interaction with /IRQA  
 - "control_of_irqb" — details for CB1/CB2 control bits and interaction with /IRQB
+
+## Labels
+- CA1
+- CA2
+- CB1
+- CB2
+- IRQA
+- IRQB

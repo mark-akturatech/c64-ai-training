@@ -39,3 +39,6 @@ LDA $FF,X      ; opcode: $B5  $FF  ; accesses zero-page $01
 ## References
 - "addressing_modes_pre_indexed_indirect" — pre-indexed indirect uses X for zero-page addition
 - "addressing_modes_post_indexed_indirect" — post-indexed indirect uses Y for adding after indirection
+
+## Mnemonics
+- LDA

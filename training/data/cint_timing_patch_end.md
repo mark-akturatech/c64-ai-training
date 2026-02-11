@@ -12,17 +12,6 @@ Key points preserved from the source:
 - **Purpose:** compensate for extra routine length to keep timer setup and PAL/NTSC prescaler selection correct.
 - **Context pointer:** part of the CINT initialization flow that finalizes screen/editor and VIC-II related setup and then chooses prescaler values for the timer.
 
-## Source Code
-
-```text
-65390         $FF6E
-End of Routine to Set Timer for Sixtieth of a Second IRQ
-
-This appears to be a patch added to compensate for the extra length of
-the current version of this routine, which chooses either the PAL or
-NTSC prescaler values for the timer.
-```
-
 ## Key Registers
 
 - **CIA #1 Timer A Control Register:** $DC0E (56334)

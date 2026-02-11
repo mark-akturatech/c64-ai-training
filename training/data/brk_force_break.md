@@ -30,9 +30,9 @@ Operation:  Forced Interrupt PC + 2 toS P toS         N Z C I D V
 ~
 ```
 
-## Key Registers
-(This chunk documents an instruction, not specific I/O or chip registers; no Key Registers entries.)
-
 ## References
 - "bpl_branch_on_result_plus" — expands on previous branch instruction (BPL)
 - "bvc_branch_on_overflow_clear" — expands on next branch instruction (BVC)
+
+## Mnemonics
+- BRK

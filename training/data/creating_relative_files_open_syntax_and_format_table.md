@@ -73,8 +73,5 @@ Table 7.1: RELATIVE FILE FORMAT
 +--------+------------------------------------------------------+
 ```
 
-## Key Registers
-- (None — this chunk documents file-format and BASIC OPEN syntax, not hardware registers.)
-
 ## References
 - "using_relative_files_position_command_and_record_numbering" — expands on opening, positioning within, and numbering records in existing relative files.

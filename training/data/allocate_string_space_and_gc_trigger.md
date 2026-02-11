@@ -58,3 +58,12 @@
 
 ## References
 - "garbage_collection_main_routine" — covers the garbage collection called at $B526 when allocation would fail
+
+## Labels
+- $000F
+- $0031
+- $0032
+- $0033
+- $0034
+- $0035
+- $0036

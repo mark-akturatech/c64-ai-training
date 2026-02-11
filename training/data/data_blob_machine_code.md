@@ -16,12 +16,5 @@ No load address, labels, or assembler source is present in this fragment — it 
 
 ```
 
-## Incomplete
-- Missing: Load address (where these bytes are READ/POKEed into memory).
-- Missing: Execution entry point / starting address for the machine code.
-- Missing: Full assembler source or symbolic labels mapping these bytes to routines.
-- Missing: The BASIC bootstrap/loader code in this chunk (see referenced chunk for loader details).
-- Missing: Any subsequent DATA lines or continuation of the machine-code blob if this is a fragment.
-
 ## References
 - "source_listing_and_basic_bootstrap" — Full source listing and BASIC bootstrap that loads/executes the machine code

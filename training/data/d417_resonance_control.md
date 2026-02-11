@@ -44,3 +44,6 @@ $D417        RESON        Filter Resonance Control Register
 ## References
 - "sid_filter_controls_overview" — expands on filter routing and resonance relationships
 - "d418_sigvol_volume_and_filter_select" — expands on global volume and filter selection
+
+## Labels
+- RESON

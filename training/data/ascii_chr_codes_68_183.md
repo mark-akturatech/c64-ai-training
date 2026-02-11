@@ -139,9 +139,6 @@ Column: 155–183 (control codes continued, then C= key graphics)
 183   upper one-quarter block
 ```
 
-## Key Registers
-(omitted — this chunk documents printable CHR$ mappings, not hardware registers)
-
 ## References
 - "appendix_c_intro_and_ascii_chr_codes_0_63" — initial CHR$ table and introduction covering codes 0–63
 - "ascii_chr_codes_184_191_and_extended_mappings" — final CHR$ entries (184–191) and notes on 192–255 mappings

@@ -32,3 +32,9 @@ $DD0B   TOD Hours               Hours counter in BCD with AM/PM bit
 ## References
 - "cia1_time_of_day" — comparison of CIA1 and CIA2 TOD registers
 - Commodore 64 Programmer's Reference Manual ([manualslib.com](https://www.manualslib.com/manual/809983/Commodore-Commodore-64.html?utm_source=openai))
+
+## Labels
+- CIA2_TOD_TENTHS
+- CIA2_TOD_SECONDS
+- CIA2_TOD_MINUTES
+- CIA2_TOD_HOURS

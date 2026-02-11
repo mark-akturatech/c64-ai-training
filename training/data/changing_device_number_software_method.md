@@ -60,10 +60,6 @@ PRINT#file#,"M-W" CHR$(119) CHR$(0) CHR$(2) CHR$(address+32) CHR$(address+64)
 30 CLOSE 15
 ```
 
-## Key Registers
-
-- (none) — This chunk documents a drive controller RAM write protocol, not C64 memory-mapped registers.
-
 ## References
 
 - "changing_device_number_hardware_method_and_jumper_table" — hardware method and jumper table for permanent multi-drive setups

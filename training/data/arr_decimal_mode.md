@@ -82,12 +82,12 @@ else:
 ; 4) various patterns to validate V = bit6 XOR bit5 and decimal high/low nibble corrections
 ```
 
-## Key Registers
-(none — this chunk documents an opcode, not memory-mapped registers)
-
 ## References
 - "adc_instruction_decimal_mode" — expands on ADC's BCD correction rules which ARR reuses
 - Visual 6502 / 6502.org opcode notes on undocumented instructions — ARR/$6B behavior and test observations
 - NESDev / other community documentation on undocumented 6502 opcodes (search "ARR opcode 6B") 
 
 **[Note: Source behavior for the final carry and V in decimal mode shows small variations across documentation and implementations; if exact corner-case behavior matters, validate on the target NMOS 6510 silicon or a cycle-accurate simulator.]**
+
+## Mnemonics
+- ARR

@@ -5,9 +5,6 @@
 ## Summary
 Main project file defining CPU type (6510), output filename, and BASIC SYS loader at $0801 with code assembly starting at $C000. Organizes and includes all sub-modules (main loop, setup, data tables, init routines, subroutines, and resources) in proper assembly order.
 
-## Key Registers
-- No runtime registers (build configuration only)
-
 ## Techniques
 - modular project organization
 - BASIC SYS loader

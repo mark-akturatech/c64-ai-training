@@ -75,3 +75,6 @@ JMP (abs)      -> (indirect JMP; opcode 6C low high)
 ## References
 - "indirect_and_indexed_indirect_examples" — expands on examples of JMP ($FF82), LDA ($70,X), LDA ($70),Y
 - "w65c02_extensions_address_modes" — expands on W65C02 extra modes and behavior differences
+
+## Mnemonics
+- JMP

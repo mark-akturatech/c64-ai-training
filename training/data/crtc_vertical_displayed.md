@@ -7,3 +7,6 @@ R6 (Vertical Displayed) holds a 7-bit value equal to the number of character row
 
 - Range: 0–127 (7 bits).  
 - Interpretation: value = displayed character rows (not scanlines). (Character height must be multiplied to get pixel/scanline count.)
+
+## Labels
+- R6

@@ -64,3 +64,7 @@ the rights of others.
 
 ## References
 - "6526_cia_overview_and_pin_configuration" — expands on 6526 CIA Appendix M, for CIA chip details and pinouts
+
+## Labels
+- DATA_DIRECTION_REGISTER
+- OUTPUT_REGISTER

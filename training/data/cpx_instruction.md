@@ -27,8 +27,8 @@ CPX $20         ; Compare X with zero page at $0020
 CPX $1234       ; Compare X with absolute address $1234
 ```
 
-## Key Registers
-(Instruction-focused; no memory-mapped registers.)
-
 ## References
 - "cmp_instruction" — CMP (compare accumulator) and equivalent flag semantics
+
+## Mnemonics
+- CPX

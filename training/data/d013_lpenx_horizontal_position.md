@@ -11,21 +11,11 @@ Use cases:
 
 (Chip: VIC‑II)
 
-## Source Code
-```text
-$D013        LPENX        Light Pen Horizontal Position
-
-                          This location holds the horizontal position of the light pen.  Since
-                          there are only eight bits available (which give a range of 256 values)
-                          for 320 possible horizontal screen positions, the value here is
-                          accurate only to every second dot position.  The number here will
-                          range from 0 to 160 and must be multiplied by 2 in order to get a
-                          close approximation of the actual horizontal dot position of the light
-                          pen.
-```
-
 ## Key Registers
 - $D013 - VIC-II - LPENX: Light Pen Horizontal Position (8-bit, value 0..160; multiply by 2 for approximate pixel X)
 
 ## References
 - "light_pen_overview" — General light pen behavior
+
+## Labels
+- LPENX

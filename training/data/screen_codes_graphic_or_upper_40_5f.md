@@ -1,0 +1,54 @@
+# PETSCII Screen Codes $40-$5F (Dec 64–95)
+
+**Summary:** Screen codes $40-$5F (decimal 64–95) — PETSCII mapping for uppercase/graphics and lowercase/uppercase modes. In uppercase/graphics mode these codes show graphic characters; in lowercase/uppercase mode they produce uppercase letters A–Z and several symbols.
+
+## Overview
+These 32 screen codes (hex $40–$5F, dec 64–95) are used by the C64 character ROM/VIC to represent either graphic glyphs (when the character set is in uppercase/graphics mode) or uppercase letters and symbols (when in lowercase/uppercase mode). Code $40 ($64) is documented as a horizontal line in the source; $41–$5A map to A–Z in lo/up mode. Several slots map to symbol glyphs in lo/up mode (e.g. Shift-@, Shift-+, CBM--, CBM-+, Pi symbol). See the Source Code table below for the full per-code mapping. For conversion rules to PETSCII ranges (e.g. $C0–$DF) see the References.
+
+## Source Code
+```text
+SCREEN CODES: GRAPHIC CHARACTERS / UPPERCASE LETTERS ($40-$5F)
+--------------------------------------------------------------------------------
+
+In uppercase/graphics mode: graphic characters
+In lowercase/uppercase mode: uppercase letters A-Z and symbols
+
+Dec  Hex   up/gfx              lo/up
+---  ----  ------------------  -----
+ 64  $40   Horizontal line     Shift-@
+ 65  $41   Graphic character   A
+ 66  $42   Graphic character   B
+ 67  $43   Graphic character   C
+ 68  $44   Graphic character   D
+ 69  $45   Graphic character   E
+ 70  $46   Graphic character   F
+ 71  $47   Graphic character   G
+ 72  $48   Graphic character   H
+ 73  $49   Graphic character   I
+ 74  $4A   Graphic character   J
+ 75  $4B   Graphic character   K
+ 76  $4C   Graphic character   L
+ 77  $4D   Graphic character   M
+ 78  $4E   Graphic character   N
+ 79  $4F   Graphic character   O
+ 80  $50   Graphic character   P
+ 81  $51   Graphic character   Q
+ 82  $52   Graphic character   R
+ 83  $53   Graphic character   S
+ 84  $54   Graphic character   T
+ 85  $55   Graphic character   U
+ 86  $56   Graphic character   V
+ 87  $57   Graphic character   W
+ 88  $58   Graphic character   X
+ 89  $59   Graphic character   Y
+ 90  $5A   Graphic character   Z
+ 91  $5B   Graphic character   Shift-+
+ 92  $5C   Graphic character   CBM--
+ 93  $5D   Graphic character   Shift--
+ 94  $5E   Graphic character   Pi symbol
+ 95  $5F   Graphic character   CBM-+
+```
+
+## References
+- "petscii_graphic_c0_df" — expands on PETSCII $C0-$DF map to these screen codes with conversion rules  
+- "petscii_to_screen_conversion" — expands on conversion rules that produce these screen code values

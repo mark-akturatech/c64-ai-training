@@ -70,9 +70,6 @@ BYTE = BASE + ROW*320 + CHAR*8 + LINE
 POKE BYTE, PEEK(BYTE) OR 2^BIT
 ```
 
-## Key Registers
-- (none) — This chunk documents bitmap memory layout and address calculation; it does not define specific hardware registers or absolute BASE values.
-
 ## References
 - "bitmap_example_and_clearing_screen" — expands on BASE and clearing before plotting
 - "sine_curve_bitmap_example" — example plotting using these formulas

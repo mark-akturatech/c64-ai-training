@@ -127,3 +127,16 @@ DCP abs, x
 - "MOS Technology 6510 Datasheet"
 - "Commodore 64 Service Manual"
 - "Commodore 64 RAM Expansion Unit User's Guide"
+
+## Mnemonics
+- ASL
+- RRA
+- DEC
+- RLA
+- INC
+- SLO
+- LSR
+- SRE
+- ROL
+- ROR
+- DCP

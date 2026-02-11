@@ -53,3 +53,12 @@ Behavioral notes taken directly from the routine: the write bit is toggled per b
 ## References
 - "write_end_of_block_and_bit_processing" — expands on continued bit-level processing and end-of-block handling
 - "bsiv_change_irq_vectors" — expands on uses of IRQ vector changes for write-zero/data timing
+
+## Labels
+- WRITE
+- OCHAR
+- D1T2L
+- D1T2H
+- D1ICR
+- D1CRB
+- R6510

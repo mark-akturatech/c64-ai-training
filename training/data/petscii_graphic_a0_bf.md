@@ -1,0 +1,52 @@
+# PETSCII Graphic Characters $A0-$BF
+
+**Summary:** PETSCII graphic characters in the range $A0-$BF (decimal 160–191), used in uppercase/graphics and shifted modes on the C64; includes block pieces, line elements, corner pieces, suits/arrows and CBM-specific graphics. Searchable terms: PETSCII, $A0-$BF, screen codes $60-$7F, graphics mode.
+
+## Description
+This chunk lists PETSCII graphic characters for hex $A0 through $BF (decimal 160–191). These codes produce graphic symbols when the C64 is in uppercase/graphics mode or in lowercase/uppercase mode with Shift key combinations (shifted key outputs). The set contains half/quarter/full block characters, thin/thick diagonal and straight line pieces, corner pieces, suit symbols and arrows — the building blocks for text-mode graphics on the VIC-II character screen.
+
+Note: PETSCII codes $E0–$FE are copies of $A0–$BE (see References). Corresponding screen-code positions for these graphic glyphs appear in the $60–$7F range (see References).
+
+## Source Code
+```text
+PETSCII GRAPHIC CHARACTERS ($A0-$BF)
+
+Dec  Hex   Character Description
+---  ----  ---------------------
+160  $A0   Shift-Space (non-breaking space / solid space)
+161  $A1   Graphic: CBM-K (left half block)
+162  $A2   Graphic: Shift-+ (lower-left to upper-right thick diagonal)
+163  $A3   Graphic: CBM-I (upper-left corner line)
+164  $A4   Graphic: CBM-T (underline / horizontal line at bottom)
+165  $A5   Graphic: CBM-@ (horizontal line at top)
+166  $A6   Graphic: CBM-L (left half thick vertical line)
+167  $A7   Graphic: CBM-Y (left-right cross / plus shape)
+168  $A8   Graphic: CBM-G (lower-left to upper-right thin diagonal)
+169  $A9   Graphic: Shift-Pound (upper-right to lower-left thick curve)
+170  $AA   Graphic: CBM-J (lower-right corner line)
+171  $AB   Graphic: CBM-+ (quarter block upper-left)
+172  $AC   Graphic: CBM-- (lower half thick horizontal line)
+173  $AD   Graphic: CBM-H (vertical line left side)
+174  $AE   Graphic: CBM-Z (vertical line right side)
+175  $AF   Graphic: CBM-S (quarter block lower-left)
+176  $B0   Graphic: CBM-E (upper-left quarter block)
+177  $B1   Graphic: CBM-Q (lower-left quarter block)
+178  $B2   Graphic: CBM-W (lower-right quarter block)
+179  $B3   Graphic: Shift-* (upper solid half block)
+180  $B4   Graphic: CBM-A (spade suit / solid)
+181  $B5   Graphic: Shift-up arrow (vertical line middle)
+182  $B6   Graphic: CBM-X (horizontal line middle)
+183  $B7   Graphic: CBM-V (quarter block lower-right)
+184  $B8   Graphic: CBM-N (lower half block)
+185  $B9   Graphic: CBM-C (upper-right quarter block)
+186  $BA   Graphic: CBM-D (upper-right corner line)
+187  $BB   Graphic: CBM-F (lower-right corner line)
+188  $BC   Graphic: CBM-B (upper-left quarter block thick)
+189  $BD   Graphic: Shift-- (upper half horizontal line)
+190  $BE   Graphic: CBM-period (upper-right quarter)
+191  $BF   Graphic: CBM-R (lower-left corner line)
+```
+
+## References
+- "petscii_graphic_e0_fe" — covers PETSCII codes $E0–$FE (copies of $A0–$BE)
+- "screen_codes_graphic_60_7f" — covers screen-code positions for these graphic characters ($60–$7F)

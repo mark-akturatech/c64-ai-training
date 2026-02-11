@@ -58,3 +58,10 @@ Behavior notes:
 ## References
 - "store_or_verify_and_address_increment" — expands on SAL/SAH pointer usage and store/verify management
 - "restore_addresses_and_newch_init" — expands on RD300/NEWCH restore and init routines used after reads or on exit
+
+## Labels
+- VPRTY
+- SHCNH
+- SAL
+- SAH
+- OCHAR

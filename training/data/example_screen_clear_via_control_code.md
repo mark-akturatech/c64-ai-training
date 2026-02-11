@@ -31,3 +31,6 @@ main    lda #$93        ; clear screen char
         jsr chrout
         rts             ; return to BASIC
 ```
+
+## Labels
+- CHROUT

@@ -52,8 +52,10 @@ Behavioral notes from source:
 - Handshake mode (CA1 + CA2) is described: CA1 interrupts CPU when data ready; CPU reads data and then CA2 is driven low to allow peripheral to prepare next data.
 ```
 
-## Key Registers
-- (None — this chunk documents 6520 PIA control lines; per schema non-C64 chips omit Key Registers.)
-
 ## References
 - "control_of_irqa" — expands on CRA bit interactions and how reads clear flags
+
+## Labels
+- CRA
+- CA1
+- CA2

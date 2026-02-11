@@ -11,3 +11,8 @@
 
 ## References
 - "control_of_irqb" — expands on CRB bit usage for CB interrupts
+
+## Labels
+- CRB
+- CB1
+- CB2

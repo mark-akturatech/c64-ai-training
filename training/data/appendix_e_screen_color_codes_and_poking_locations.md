@@ -106,3 +106,9 @@ nybbles and POKE the result into location 0 of screen memory.
 
 ## References
 - "appendix_d_screen_color_memory_table" — expands on using these addresses with the listed color codes
+
+## Labels
+- $D020
+- $D021-$D024
+- $D800-$DBFF
+- $0400-$07FF

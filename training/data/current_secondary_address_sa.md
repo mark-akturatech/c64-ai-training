@@ -25,9 +25,6 @@ Datasette conventions:
 - Secondary 7 selects the uppercase/lowercase character set.
 - Secondary 0, or omitting the secondary address, selects the uppercase/graphics character set.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register tables included in this chunk)
-
 ## Key Registers
 - $00B9 - KERNAL (system variable) - Current secondary address for the open device (SA); valid ranges: 0–31 for serial devices, 0–127 for other devices
 
@@ -35,3 +32,6 @@ Datasette conventions:
 - "current_logical_file_number_la" — expands on logical file numbers used together with secondary addresses in OPEN statements  
 - "pointer_current_filename_fnadr" — expands on filename pointer used when opening files (relevant to LOAD/SAVE and tape/disk behavior)  
 - "current_device_number_fa" — expands on device number and device-type context for secondary-address meanings
+
+## Labels
+- SA

@@ -23,9 +23,6 @@ A   N   S   P   O   R   T   A
 (shows: "ANSPORTA")
 ```
 
-## Key Registers
-(omitted — chunk documents byte/string layout, not hardware registers)
-
 ## References
 - "sector_offset_C0_and_transition_to_text" — expands on preceding transition bytes into ASCII text  
 - "ascii_block_D8_E0_callable" — continues ASCII content into D8:/E0: regions (file/record name fragments)

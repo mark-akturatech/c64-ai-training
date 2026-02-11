@@ -35,3 +35,6 @@ Bank base addresses:
 - "screen_memory_offsets" — expands on screen offset table  
 - "character_memory_offsets" — expands on charset offset table  
 - "bitmap_mode_base" — expands on bitmap base selection
+
+## Labels
+- D018

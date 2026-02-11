@@ -7,9 +7,6 @@ The CIA #2 PC2 line is exposed on the C64 User Port and is used as a handshaking
 
 This feature is not applicable to CIA #1 because that CIA's corresponding PC line is not wired to the C64 external connectors; only CIA #2's PC2 is accessible from the User Port.
 
-## Source Code
-(Reference material not provided in this chunk.)
-
 ## Key Registers
 - $DD01 - CIA #2 - Port B (read/write triggers PC2 low pulse)
 

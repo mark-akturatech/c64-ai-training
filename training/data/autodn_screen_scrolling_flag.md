@@ -14,3 +14,6 @@ The KERNAL sets this flag to disable autoscroll temporarily while the keyboard b
 
 ## References
 - "xmax_keyboard_buffer_size" — expands on how keyboard buffer state affects AUTODN behavior
+
+## Labels
+- AUTODN

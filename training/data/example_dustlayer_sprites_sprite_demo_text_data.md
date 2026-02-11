@@ -5,9 +5,6 @@
 ## Summary
 Contains three 40-character text lines in screen code format: title with heart symbols (']' mapped to heart via custom charset), author attribution, and keyboard control instructions.
 
-## Key Registers
-- Screen RAM destinations (set by write routine)
-
 ## Techniques
 - screen code encoding
 - custom character mapping

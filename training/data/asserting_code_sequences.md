@@ -43,8 +43,5 @@ public class MyMacro implements IMacro {
 ```
 **[Note: Source truncated — constructor/body and execute implementation are not present in the provided text.]**
 
-## Key Registers
-(omitted — this chunk does not describe C64 hardware registers)
-
 ## References
 (omitted — no cross-chunk references present in source)

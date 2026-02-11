@@ -85,3 +85,12 @@ BIT Test Bits in Memory with Accumulator
 ## References
 - "shift_and_rotate_instructions" — expands on ASL relation to ROL/ROR/LSR
 - "adc_and_and_instructions" — expands on ADC/AND further usage in arithmetic/logic
+
+## Mnemonics
+- ADC
+- AND
+- ASL
+- BCC
+- BCS
+- BEQ
+- BIT

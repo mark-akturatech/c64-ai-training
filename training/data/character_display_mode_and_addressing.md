@@ -53,3 +53,6 @@ Additional reference values (from source):
 - "vicii_overview_and_spec_intro" — General VIC-II overview and device purpose
 - "standard_character_mode_behavior" — How character dot data are displayed in standard mode
 - "extended_color_mode_and_constraints" — How character pointer bits are re-used for background selection in ECM
+
+## Labels
+- D018

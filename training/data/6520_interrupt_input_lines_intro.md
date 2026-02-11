@@ -9,12 +9,12 @@ The 6520 provides four dedicated control/interrupt lines that augment the two ge
 
 These lines are not general-purpose data pins; they provide special peripheral-control functions and interrupt input capability to the respective port, allowing external devices to signal events or participate in control/handshake schemes with the 6520-controlled port pins.
 
-## Source Code
-(omitted — no assembly, BASIC listings, or register maps provided in source)
-
-## Key Registers
-(omitted — source describes 6520 control lines conceptually; no C64/absolute-register addresses apply)
-
 ## References
 - "6520_peripheral_a_ca1_ca2" — detailed behavior of CA1 and CA2  
 - "6520_peripheral_b_cb1_cb2" — detailed behavior of CB1 and CB2
+
+## Labels
+- CA1
+- CA2
+- CB1
+- CB2

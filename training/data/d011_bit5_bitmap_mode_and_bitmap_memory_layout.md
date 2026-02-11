@@ -24,9 +24,6 @@ Unlike many systems that map display bytes sequentially left-to-right/top-to-bot
   - The color map can be placed at the default text display color memory area: $0400-$07FF (1024–2047).
 - Placement of both bitmap base and color base addresses (which half of the 16 KB) is controlled by the VIC Memory Control Register ($D018 / 53272). Selecting a different VIC-II bank (other 16 KB) can be desirable because bitmap consumes much memory; see bank-selection notes in the VIC-II memory-control documentation.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps in this chunk)
-
 ## Key Registers
 - $D011 - VIC-II - Bitmap enable: bit 5 enables 320×200 bitmap graphics
 - $D018 - VIC-II - VIC Memory Control Register (controls bitmap & color base addresses) 
@@ -35,3 +32,8 @@ Unlike many systems that map display bytes sequentially left-to-right/top-to-bot
 ## References
 - "vmcsb_vic_memory_control_register" — expands on controlling bitmap & color base addresses ($D018)
 - "bitmap_addressing_and_plotting" — practical formulas for finding a bitmap byte for a given X,Y
+
+## Labels
+- $D011
+- $D018
+- $D800

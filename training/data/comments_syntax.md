@@ -28,8 +28,5 @@ sta /* Comments can be placed anywhere */ $d021
 rts
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "getting_started_example_interrupt" — expands on example code uses comments

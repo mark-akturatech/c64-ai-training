@@ -46,10 +46,6 @@ These routines are useful for formatting bytes as hexadecimal strings and parsin
 1200 RETURN
 ```
 
-## Key Registers
-
-(This chunk documents BASIC routines; no hardware registers are referenced.)
-
 ## References
 
 - "compute_and_display_old_load_address_and_prompt_new" — formats LOW/HIGH bytes as printable hex address

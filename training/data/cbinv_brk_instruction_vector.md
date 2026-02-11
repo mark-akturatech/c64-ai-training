@@ -12,11 +12,11 @@ This vector contains the address of the routine executed when the 6510 BRK instr
 
 Machine-language monitor programs typically overwrite CBINV so that BRK will return control to the monitor warm-start address, enabling breakpoints to transfer control to the monitor for debugging.
 
-## Source Code
-(omitted — no assembly/listing included in source)
-
 ## Key Registers
 - $0316-$0317 - Vector - CBINV (BRK instruction interrupt vector); default points to KERNAL warm-start routine at $FE66
 
 ## References
 - "warm_start_and_brk_behavior" — Warm start vector and BRK/STOP/RESTORE behavior
+
+## Labels
+- CBINV

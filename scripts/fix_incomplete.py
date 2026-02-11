@@ -16,12 +16,15 @@ Usage:
     uv run scripts/fix_incomplete.py --list                    # List incomplete files + issues
     uv run scripts/fix_incomplete.py --model gpt-4o            # Use different model (no search)
     uv run scripts/fix_incomplete.py --force                   # Include false-positive files too
+    uv run scripts/fix_incomplete.py --workers 8                # Process 8 files concurrently (default: 4)
 """
 
 import os
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from openai import OpenAI
@@ -314,15 +317,20 @@ def main():
         idx = sys.argv.index('--model')
         model = sys.argv[idx + 1]
 
+    workers = 4
+    if '--workers' in sys.argv:
+        idx = sys.argv.index('--workers')
+        workers = int(sys.argv[idx + 1])
+
     # Collect positional args (specific filenames)
-    skip_flags = {'--force', '--dry-run', '--list', '--model'}
+    skip_flags = {'--force', '--dry-run', '--list', '--model', '--workers'}
     args = []
     skip_next = False
     for a in sys.argv[1:]:
         if skip_next:
             skip_next = False
             continue
-        if a == '--model':
+        if a in ('--model', '--workers'):
             skip_next = True
             continue
         if a not in skip_flags:
@@ -409,53 +417,62 @@ def main():
         print(f"  (web search enabled)")
     print()
 
-    processed = 0
-    errors = 0
-
-    for i, (file_path, incomplete_text, _) in enumerate(all_incomplete, 1):
-        name = file_path.name
-
-        if dry_run:
+    if dry_run:
+        for i, (file_path, incomplete_text, _) in enumerate(all_incomplete, 1):
             lines = incomplete_text.strip().split('\n')
             issue_count = sum(1 for l in lines if l.strip().startswith('- '))
-            print(f"  [{i}/{total}] Would fix: {name} ({issue_count} issue(s))")
-            processed += 1
-            continue
+            print(f"  [{i}/{total}] Would fix: {file_path.name} ({issue_count} issue(s))")
+        print(f"\n{'='*50}")
+        print(f"Fixed: {total} to process (of {total} total)")
+        print("(dry run - no files were modified)")
+        return
 
-        print(f"  [{i}/{total}] Fixing: {name} ...", end='', flush=True)
+    # Worker function for thread pool
+    counter = {'processed': 0, 'errors': 0, 'done': 0}
+    counter_lock = threading.Lock()
+
+    def process_one(file_path, incomplete_text):
+        name = file_path.name
+
+        with counter_lock:
+            counter['done'] += 1
+            n = counter['done']
+        print(f"  [{n}/{total}] Fixing: {name} ...", flush=True)
 
         try:
             md_content = file_path.read_text(encoding='utf-8', errors='replace')
             result, resp_info = fix_chunk(client, model, md_content, incomplete_text)
 
-            # Sanity check: result should still have a # title
             if not result.startswith('#'):
-                print(f" WARNING: result doesn't start with # heading, skipping write")
-                errors += 1
-                continue
+                print(f"    WARNING {name}: result doesn't start with # heading, skipping write")
+                with counter_lock:
+                    counter['errors'] += 1
+                return
 
             file_path.write_text(result, encoding='utf-8')
 
-            # Check if ## Incomplete was removed
             still_incomplete = '## Incomplete' in result
             status = "partially fixed" if still_incomplete else "fully fixed"
-            print(f" done ({status})")
-            print(f"    [{resp_info}]")
+            print(f"    done -> {name} ({status}) [{resp_info}]")
 
-            processed += 1
-
-            if i < total:
-                time.sleep(0.5)
+            with counter_lock:
+                counter['processed'] += 1
 
         except Exception as e:
-            errors += 1
-            print(f" ERROR: {e}")
+            with counter_lock:
+                counter['errors'] += 1
+            print(f"    ERROR {name}: {e}")
+
+    print(f"Using {workers} workers...")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(process_one, fp, txt)
+                   for fp, txt, _ in all_incomplete]
+        for f in as_completed(futures):
+            f.result()
 
     # Summary
     print(f"\n{'='*50}")
-    print(f"Fixed: {processed} processed, {errors} errors (of {total} total)")
-    if dry_run:
-        print("(dry run - no files were modified)")
+    print(f"Fixed: {counter['processed']} processed, {counter['errors']} errors (of {total} total)")
 
 
 if __name__ == '__main__':

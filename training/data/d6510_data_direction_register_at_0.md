@@ -42,3 +42,6 @@ LDA $00
 ## References
 - "zero_page_intro_and_basic_working_storage" — context on zero page special locations (0 and 1)
 - "r6510_internal_io_port_overview" — how D6510 bits affect R6510 port bits at $01
+
+## Labels
+- D6510

@@ -72,3 +72,6 @@ Notes:
 ## References
 - "voice1_registers" — expands on Voice register layout and addresses
 - "read_only_registers" — expands on which registers are readable ($D419-$D41C)
+
+## Labels
+- SID

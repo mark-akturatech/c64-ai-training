@@ -87,3 +87,9 @@ LAS $2000,Y     ; tmp = M[$2010] & SP = $00, A = tmp, X = tmp, SP = tmp
 ## References
 
 - "unintended_opcodes_overview" — expands on TAS/LAS entries and other undocumented opcodes. ([esocop.org](https://www.esocop.org/docs/MOS6510UnintendedOpcodes-20152412.pdf?utm_source=openai))
+
+## Mnemonics
+- TAS
+- LAS
+- NOP
+- JAM

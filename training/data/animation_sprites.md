@@ -5,9 +5,6 @@
 ## Animation
 Commodore's Sprite Graphics enable creation of true cartoon-style animation by offering eight distinct display levels. Sprites can be arranged so individual shapes appear in front of or behind other shapes and the background, allowing layered motion and simple depth ordering without redrawing the background graphics.
 
-## Source Code
-(none)
-
 ## Key Registers
 - $D000-$D02E - VIC-II - Sprite registers (sprite X/Y positions, pointers, control and priority bits, collision/status)
 

@@ -56,3 +56,10 @@ Write/ set or clear bits of this register (1=bits written with 1 will be set, 0=
 ## References
 - "cia1_timers_and_usage" — expands on Timer registers referenced here
 - "irq_isr" — expands on Interrupt latch clearing via reading $DC0D within ISR
+
+## Labels
+- TIMALO
+- TIMAHI
+- TIMBLO
+- TIMBHI
+- CIAICR

@@ -12,12 +12,9 @@ CRUNCH is the tokenizer used when a BASIC program line is entered into the text 
 
 This routine is invoked on lines entered through the normal input flow; related handlers exist for special input paths (see References).
 
-## Source Code
-(omitted — no assembly listing provided in source)
-
-## Key Registers
-(none)
-
 ## References
 - "inlin_input_line" — expands on operation for lines placed into the input buffer by INLIN  
 - "linkprg_relink_tokenized_lines" — expands on how LINKPRG updates link addresses after CRUNCH and insertion
+
+## Labels
+- CRUNCH

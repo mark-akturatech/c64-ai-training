@@ -40,3 +40,6 @@ In this pinout:
 - Commodore 64 Programmer's Reference Guide: User Port Pinout
 - C64-Wiki: User Port Pinout
 - Hardware Book: C64/128 User Port
+
+## Labels
+- PC2

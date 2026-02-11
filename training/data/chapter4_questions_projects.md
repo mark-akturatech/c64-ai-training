@@ -39,3 +39,8 @@ continue:
 ## References
 
 - "addition_program_using_subroutine" — expands on techniques for subtraction and subroutine organization.
+
+## Mnemonics
+- LSR
+- BCC
+- BCS

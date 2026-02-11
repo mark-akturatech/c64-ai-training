@@ -53,3 +53,7 @@ Bit 7   | Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0
 - "6545_crtc_concept_and_register_map" — expanded CRTC register set and detailed mapping for R12/R13
 - MOS Technology 6545-1 CRT Controller Datasheet
 - Motorola MC6845 CRT Controller Datasheet
+
+## Labels
+- R12
+- R13

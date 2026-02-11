@@ -45,3 +45,6 @@ CLI
 ## References
 - "irqtmp_cassette_irq_vector_save"—expands on saving/restoring IRQ vector for cassette I/O
 - "register_storage_area"—expands on effects of disabling keyboard/IRQ-driven services
+
+## Labels
+- CINV

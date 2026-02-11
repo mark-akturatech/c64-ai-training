@@ -12,12 +12,9 @@
 
 (Note: "rotate" here refers to the single-bit rotate operation performed by ARR.)
 
-## Source Code
-(omitted — original mapping table and example instruction sequences referenced but not included in this chunk)
-
-## Key Registers
-(omitted — this chunk documents opcode/flags, not memory-mapped hardware registers)
-
 ## References
 - "arr_flag_mapping_table" — expands on complete mapping table showing how inputs map to output bits, Carry and Overflow
 - "arr_example_equivalent_instructions" — expands on example usage and equivalent instruction sequence
+
+## Mnemonics
+- ARR

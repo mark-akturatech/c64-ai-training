@@ -118,13 +118,23 @@ The following table summarizes the undocumented opcodes, their byte values, addr
 
 *Note: The above opcodes are undocumented and may exhibit unstable behavior across different hardware implementations.*
 
-## Key Registers
-
-This document focuses on undocumented opcodes and does not detail specific memory-mapped I/O registers.
-
 ## References
 
 - "NMOS 6510 Unintended Opcodes — No More Secrets" by Groepaz
 - "6502/6510/8500/8502 Opcodes" by Oxyron
 - "C64 Studio" by Georg Rottensteiner
 - "MOS 6502 6510 65xx CPU Processor Opcodes" by ElfQrin
+
+## Mnemonics
+- ANE
+- LAX
+- ANC
+- ALR
+- ARR
+- SBX
+- SHA
+- AHX
+- SHX
+- SHS
+- SHY
+- SAY

@@ -10,12 +10,13 @@ Cross assemblers run on other platforms (Amiga, PC, etc.) to produce C‑64 mach
 
 Because demos often rely on precise raster timing and undocumented VIC‑II behavior, always test on real hardware before release.
 
-## Source Code
-(omitted — no code or tables provided in source)
-
 ## Key Registers
 - $D012 - VIC‑II - Raster line register (raster timing/position)
 - $D020 - VIC‑II - Border color register (affected by known border-color latch bug)
 
 ## References
 - "d012_raster_register" — expands on hardware raster behavior differences in emulators
+
+## Labels
+- D012
+- D020

@@ -53,3 +53,6 @@ A = tmp;
 ## References
 - "adc_opcode_table_and_decimal_flags" — expands on high-level ADC decimal-mode flag behavior and opcode contexts referenced by the pseudocode
 - "adc_decimal_examples_and_compatibility" — expands on example usage patterns that rely on decimal-mode ADC behavior and the pseudocode's results
+
+## Mnemonics
+- ADC

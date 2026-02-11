@@ -50,8 +50,5 @@ EOR Truth Table
 1 EOR 1 = 0
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "Inside Commodore DOS" by Richard Immers and Gerald G. Neufeld, Chapter 7.2: Checksums

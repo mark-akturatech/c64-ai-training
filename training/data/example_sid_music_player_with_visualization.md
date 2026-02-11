@@ -282,3 +282,11 @@ music_data              .byte $4c, $48, $11, $4c, $21, $11, $78, $a9, $0a, $8d, 
                         .byte $5e, $60, $62, $64, $66, $68, $6a, $6c, $6e, $70, $72, $74, $76, $78, $7a, $7c
                         .byte $7e, $80, $82, $84, $2d, $45, $4e, $44, $2d, $c2, $00
 ```
+
+## Labels
+- KER_CLRSCREEN
+- REG_INTFLAG
+- REG_BORCOLOUR
+- REG_BGCOLOUR
+- REG_KEYBOARD_PORT_A
+- REG_KEYBOARD_PORT_B

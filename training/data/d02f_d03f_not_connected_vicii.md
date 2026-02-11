@@ -10,9 +10,6 @@ The VIC-II provides 47 register bytes inside a 64-byte I/O slot. The remaining 1
 
 This behavior applies to the entire contiguous range $D02F-$D03F.
 
-## Source Code
-(omitted — no code or register tables in source)
-
 ## Key Registers
 - $D02F-$D03F - VIC-II - Not connected; reads return $FF, writes ignored
 

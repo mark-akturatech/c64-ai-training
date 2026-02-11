@@ -53,3 +53,15 @@ Notes
 ## References
 - "blackmail_fli_variants_4_violet_to_7_yellow" — expands on previous variants 4–7 (violet through yellow)
 - "blackmail_fli_variants_a_lred_to_b_dgrey" — expands on next variants a and b (register transfers and immediate LAX)
+
+## Labels
+- $D021
+- $D011
+
+## Mnemonics
+- TAY
+- LDY
+- STY
+- NOP
+- LDA
+- STA

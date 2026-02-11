@@ -30,3 +30,6 @@ Bank Selection Table
 ## References
 - "vic_bank_overview" — VIC bank addressing summary
 - "rom_charset_shadows" — effects of ROM charset in banks 0 and 2
+
+## Labels
+- DD00

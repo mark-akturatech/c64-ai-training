@@ -108,3 +108,6 @@ These examples illustrate how different $D018 values configure the VIC-II's memo
 - "screen_memory_offsets" — lookup table and examples for bits 7–4 (video matrix offsets)
 - "character_memory_offsets" — lookup table and examples for bits 3–1 (charset offsets)
 - "bitmap_mode_base" — explains bitmap base selection and interactions with bit 3
+
+## Labels
+- VMCSB

@@ -9,11 +9,5 @@ Tells ca65 to generate a makefile-syntax dependency list for the assembled modul
 --create-full-dep name
 Tells ca65 to generate a makefile-syntax dependency list for the assembled module and write it to the specified filename. The dependency list DOES include files that were passed to the assembler via debug information.
 
-## Source Code
-(This chunk contains no assembly listings, register maps, or code examples.)
-
-## Key Registers
-(This chunk does not refer to hardware registers.)
-
 ## References
 - "debug_info_option" — expands on interaction with debug information and dependency inclusion

@@ -43,3 +43,9 @@ $DD03 - DDRB
 - "6526_register_map" — expands on register addresses for PRA/PRB/DDRA/DDRB
 - "6526_handshaking_and_port_bit_map" — per-bit layout and handshaking signals
 - "6526_timers_overview" — relation of PB6/PB7 to timer outputs
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB

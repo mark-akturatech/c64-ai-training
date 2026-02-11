@@ -88,9 +88,6 @@ $83 = USR (closed)
 $84 = REL (closed)
 ```
 
-## Key Registers
-(omitted — this chunk does not document CPU/memory-mapped hardware registers)
-
 ## References
 - "virtual_directory_and_edit_track_sector_tools" — expands on the VIRTUAL DIRECTORY and EDIT TRACK & SECTOR tools
 - "recover_soft_vs_hard_errors_overview" — expands on classification of read/write errors and recovery suggestions

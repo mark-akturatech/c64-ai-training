@@ -36,3 +36,8 @@ $FFFF    65535   IRQ/BRK vector (high byte)
 ## References
 - "nmi_interrupt_entry_point" — expands on NMI vector target  
 - "main_irq_brk_interrupt_entry_point" — expands on IRQ/BRK vector target
+
+## Labels
+- NMI
+- RES
+- IRQ

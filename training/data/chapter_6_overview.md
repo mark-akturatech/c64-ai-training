@@ -119,3 +119,11 @@ Data exchange between BASIC and machine language can be achieved through several
 - Commodore 64 Programmer's Reference Guide, Chapter 5: BASIC to Machine Language
 - C64-Wiki: Memory (BASIC)
 - C64-Wiki: Memory Map
+
+## Labels
+- TXTTAB
+- VARTAB
+- ARYTAB
+- STREND
+- FRETOP
+- USR

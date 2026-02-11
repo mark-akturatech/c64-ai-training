@@ -12,11 +12,12 @@ Practical implications:
 
 Technical note (address decoding): because only the low 5 address bits are used by the SID, the effective SID offset = (address & $1F). This is why the 1K block appears as repeated 32-byte images.
 
-## Source Code
-(omitted — no code or register maps provided in the source)
-
 ## Key Registers
-- $D400-$D41F - SID - primary SID register set (29 documented registers, 32-byte decode; mirrored throughout $D400-$D7FF every $20 bytes)
+- $D400-$D41F - SID - primary SID register set (29 documented registers, 32-byte decode)
+- $D420-$D4FF - SID - mirror images of $D400-$D41F (repeated every $20 bytes)
+- $D500-$D5FF - SID - mirror images of $D400-$D41F (repeated every $20 bytes)
+- $D600-$D6FF - SID - mirror images of $D400-$D41F (repeated every $20 bytes)
+- $D700-$D7FF - SID - mirror images of $D400-$D41F (repeated every $20 bytes)
 
 ## References
 - "sid_overview_intro" — expands on SID base register set and behavior

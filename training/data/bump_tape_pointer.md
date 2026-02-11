@@ -28,3 +28,7 @@ This small ROM routine advances the active tape buffer index and performs a boun
 ## References
 - "get_tape_buffer_start_pointer" — covers the ROM routine called at $F7D0
 - "find_specific_tape_header" — covers advancing to the next tape header when a name comparison fails
+
+## Labels
+- ACTIVE_TAPE_BUFFER_INDEX
+- GET_TAPE_BUFFER_START_POINTER

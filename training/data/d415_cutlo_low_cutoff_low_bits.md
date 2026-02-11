@@ -25,3 +25,6 @@ b3-b7 = Unused
 
 ## References
 - "sid_filter_controls_overview" — expands on Cutoff composed of $D415 low bits + $D416 high byte
+
+## Labels
+- CUTLO

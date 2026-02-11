@@ -32,11 +32,6 @@ Behavior notes:
 770  ;
 ```
 
-## Incomplete
-- Missing: Initialization of the accumulator (A) before the EOR sequence — the checksum seed or starting value is not shown in this snippet.
-- Missing: Definition or code for the branch target "HEADER" (the loop destination is referenced but not present).
-- Missing / OCR artifact: original line 650 contained "1i02FB,X"; it has been corrected here to "*$02FB,X" based on context.
-
 ## References
 - "write_gap_and_header_table" — expands on header bytes that are inputs to this checksum
 - "create_data_block_1541_format" — expands on data block creation that uses the validated header

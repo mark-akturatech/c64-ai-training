@@ -69,9 +69,6 @@ Design note (the "dilemma"):
 .endif
 ```
 
-## Key Registers
-(omitted — this chunk documents assembler pseudo variables and CPU/ISET constants, not hardware registers)
-
 ## References
 - ".CAP" — similar CPU-capability mechanism (alternate selection mechanism)
 - "asize_pseudo_variable" — register-size pseudo variable (.ASIZE) and related CPU behavior

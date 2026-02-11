@@ -82,3 +82,6 @@ VIC-II memory areas and access summary (reference)
 ## References
 - "sprite_memory_access_and_display" — expands on p-access and s-access timing for sprites
 - "vc_and_rc" — expands on VC/VCBASE/RC involvement in c/g-access sequences
+
+## Labels
+- D018

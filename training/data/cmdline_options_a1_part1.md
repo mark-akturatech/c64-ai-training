@@ -86,8 +86,5 @@ Option             Example                     Description
 -nooutput          -nooutput                  Disable output of files during assembling.
 ```
 
-## Key Registers
-- (none — this chunk documents assembler command-line options, not hardware registers)
-
 ## References
 - "cmdline_options_a1_part2" — continues the Kick Assembler command-line option listing (remaining options)

@@ -93,10 +93,6 @@
 - **$EFF0** - RS-232 set line termination
 - **$EFFD** - RS-232 set line delay
 
-## Source Code
-
-(omitted — this chunk contains only the routine index and short descriptions; no assembly or tables were provided)
-
 ## References
 
 - "c64_rom_vectors_efe1_to_fffa" — expands on remaining KERNAL and IRQ/NMI/serial handlers up to hardware vectors

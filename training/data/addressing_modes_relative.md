@@ -24,3 +24,13 @@ Instruction example:
 
 ## References
 - "branch_instructions_behavior" — expands on BCC, BCS, BEQ, BNE, BMI, BPL, BVC, BVS timing and page‑cross penalty
+
+## Mnemonics
+- BCC
+- BCS
+- BEQ
+- BNE
+- BMI
+- BPL
+- BVC
+- BVS

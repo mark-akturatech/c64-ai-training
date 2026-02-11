@@ -75,3 +75,6 @@ F1DC: 60        RTS             ; Return from subroutine
 - "CHRIN ($FFCF)" — reading a byte from the default input device (related KERNAL input entry)
 - Commodore 64 Programmer's Reference Guide, Chapter 5: BASIC to Machine Language - User Callable KERNAL Routines
 - Commodore 64 ROM Disassembly
+
+## Labels
+- CHROUT

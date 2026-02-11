@@ -91,3 +91,7 @@ In this example:
 
 ## References
 - Commodore 64 Programmer's Reference Guide, Chapter 5: "BASIC to Machine Language - Using Machine Language from BASIC"
+
+## Labels
+- CHRGET
+- TXTPTR

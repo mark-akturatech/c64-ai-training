@@ -12,9 +12,6 @@ CHRIN is the KERNAL entry for character input. Behavior:
 
 No other calling parameters or status flags are returned in processor status; higher-level input parsing (line editing, CR/NL handling) may be handled by the device-specific handler reached through the vector.
 
-## Source Code
-(omitted — no assembly or register-map listings in source)
-
 ## Key Registers
 - $FFCF - KERNAL - CHRIN entry vector (JSR entry for character input)
 - $0324 - KERNAL - indirect pointer/address used by CHRIN to locate the input handler
@@ -23,3 +20,6 @@ No other calling parameters or status flags are returned in processor status; hi
 ## References
 - "chrout" — CHROUT $FFD2, default output (writing characters)
 - "getin" — GETIN $FFE4, lower-level input routine
+
+## Labels
+- CHRIN

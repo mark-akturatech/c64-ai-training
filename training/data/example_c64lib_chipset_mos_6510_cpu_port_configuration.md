@@ -92,3 +92,10 @@ MOS 6510
   end:
 }
 ```
+
+## Labels
+- MOS_6510_DIRECTION
+- MOS_6510_IO
+- PLA_CHAREN
+- PLA_HIRAM
+- PLA_LORAM

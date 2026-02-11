@@ -101,9 +101,6 @@ This chunk contains the main control flow of a Full BASIC "1541 COPY" utility (l
 690 END
 ```
 
-## Key Registers
-- (None) — this chunk is a BASIC program and does not document specific C64 hardware register addresses for exact-match lookup.
-
 ## References
 - "support_routines_delay_and_return" — Small supporting subroutines (close, delay/press-return) called by the main program
 - "initialization_and_error_handling_and_mldata" — Initialization, file-not-found handling, and embedded machine-code DATA bytes used by the SYS routines

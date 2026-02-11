@@ -16,11 +16,11 @@
 - Avoid overlap with ROM: do not place the RAM character set in addresses that conflict with the VIC's visibility of the on-chip character ROM. Specifically, avoid placing the character set at $1000–$17FF or $1800–$1FFF in bank 0, and at $9000–$97FF or $9800–$9FFF in bank 2, as these areas are "overshadowed" by the ROM character sets as seen by the VIC-II chip. ([c64-wiki.com](https://www.c64-wiki.com/wiki/Character_set?utm_source=openai))
 - Save: after constructing a RAM character set (for example with a machine-language monitor), save it to disk if you want to reuse it later.
 
-## Source Code
-(omitted — source contained no assembly/BASIC listings, opcode/data tables, or register maps)
-
 ## Key Registers
 - $D018 - VIC-II - Graphics base / memory bank and character/screen pointer (controls where VIC fetches character generator and screen memory)
 
 ## References
 - "standard_text_mode_and_vidbas" — expands on changing the graphics base so VIC obtains character data from RAM
+
+## Labels
+- $D018

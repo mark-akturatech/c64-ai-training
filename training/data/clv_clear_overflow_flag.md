@@ -19,9 +19,9 @@ Operation: 0 -> V                                     N Z C I D V
 +----------------+-----------------------+---------+---------+----------+
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "cli_clear_interrupt_disable" — clears the interrupt disable flag (CLI)
 - "cmp_compare_accumulator" — comparison instructions (CMP)
+
+## Mnemonics
+- CLV

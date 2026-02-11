@@ -9,11 +9,11 @@ SPSPCL is a single-byte, read-to-clear status register in the VIC-II ($D000-$D02
 - Bits are independent; multiple bits may be set if multiple sprites were involved in collisions.
 - The register reports collisions for each sprite (0..7) — the bit flags indicate which sprites experienced collisions, not which sprite they collided with.
 
-## Source Code
-(omitted — no code or tables in source)
-
 ## Key Registers
 - $D01E - VIC-II - Sprite-to-Sprite Collision Register (bits 0–7 map to Sprite 0–7; read clears)
 
 ## References
 - "sprite_collision_rules_and_notes" — Rules for collision detection and interpretation
+
+## Labels
+- SPSPCL

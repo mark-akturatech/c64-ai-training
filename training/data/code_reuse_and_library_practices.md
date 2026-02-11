@@ -9,12 +9,6 @@ Be deliberate about placement:
 - Use a macro when inline expansion is acceptable and you prefer speed or simplicity (but accept increased code size).
 - Use a subroutine when you need to minimize repeated code and can tolerate call/return overhead (saves ROM/RAM at the cost of slightly slower execution).
 
-## Source Code
-(omitted — no code listings in this chunk)
-
-## Key Registers
-- (none)
-
 ## References
 - "macros_vs_subroutines_memory_tradeoff" — discusses why to choose subroutines vs macros based on reuse and size
 - "data_definition_text_storage_and_assembler_requirements" — covers assemblers' capabilities for defining and storing data and text

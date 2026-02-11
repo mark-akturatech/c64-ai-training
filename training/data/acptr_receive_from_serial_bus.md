@@ -85,3 +85,8 @@
 ## References
 - "flag_errors" — expands on setting I/O status word (ST) on read timeout or EOI
 - "wait_for_clock" — expands on serial clock/data primitives (set CLK/data routines)
+
+## Labels
+- ACPTR
+- CNTDN
+- ST

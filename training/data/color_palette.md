@@ -34,3 +34,21 @@ Decimal  Hex   Name
 
 ## References
 - "vic_registers_table" — expands on background and sprite color registers $D020-$D02E
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PINK
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- MEDIUM_GRAY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY

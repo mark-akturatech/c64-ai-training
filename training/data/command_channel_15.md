@@ -11,12 +11,6 @@
 - Termination semantics: The receiver (drive) uses the EOI/UNLISTEN end-of-stream condition (or the named-channel-open semantics) to know the command is complete and ready for processing.
 - Return/status: Command responses and status reporting are returned over the IEC bus (see referenced material for detailed status codes and reporting behavior).
 
-## Source Code
-(omitted — no code or register maps in source)
-
-## Key Registers
-(omitted — this chunk documents IEC bus channel behavior, not memory-mapped registers)
-
 ## References
 - "commodore_dos_channel_architecture" — expands on role and position of channel 15
 - "status_reporting_and_error_codes" — expands on how drives return status via command channel

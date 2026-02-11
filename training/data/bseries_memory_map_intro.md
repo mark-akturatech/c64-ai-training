@@ -24,9 +24,6 @@ This applies to B systems released after April 1983 containing the revised machi
     - Placement in another bank (bank 3 is preferred).
   - Supplementary code is usually required to manage bank-switching and to make all code/data components fit across banks.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps provided in source)
-
 ## Key Registers
 - $029E - Link address — insert wedge-type coding here (CHRGOT relocation)
 - $02A0 - Link address — insert wedge-type coding here (CHRGOT relocation)

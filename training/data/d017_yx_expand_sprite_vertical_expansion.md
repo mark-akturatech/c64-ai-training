@@ -31,3 +31,6 @@ Notes:
 
 ## References
 - "xexpand_and_yexpand_registers" — expands on Horizontal expansion ($D01D) & how vertical expansion pairs with it
+
+## Labels
+- YXPAND

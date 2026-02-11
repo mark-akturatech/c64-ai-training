@@ -37,9 +37,6 @@ String      "Hello"                      A string value.
 Struct      MyStruct(1,2)                Represents a user defined structure.
 ```
 
-## Key Registers
-(omitted — this chunk documents assembler directives and value types only)
-
 ## References
 - "assembler_directives_a4_part3" — expands on function, macro, and segment directives
 - "value_types_a5" — expands on value types accepted by directives

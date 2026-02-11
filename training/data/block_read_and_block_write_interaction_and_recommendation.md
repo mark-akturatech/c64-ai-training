@@ -62,10 +62,6 @@ Where:
 
 After executing the Ul command, the data can be retrieved from the buffer using the GET# command.
 
-## Key Registers
-
-- (none) — This document describes disk sector contents and DOS command interactions, not CPU or chip registers.
-
 ## References
 
 - "block_read_demo_program" — expands on which demo line (160) to change to observe the effect.

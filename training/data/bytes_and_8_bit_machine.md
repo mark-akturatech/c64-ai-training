@@ -11,14 +11,6 @@ Grouping N = 8 bits yields 2^N possible values. For N = 8:
 
 A group of 8 bits is called a byte. The numeric values a byte can represent range from 0 to 255 inclusive (0 is the lowest value; 255 is the highest). Inside the Commodore 64, all data is represented and transferred as bytes; this is why the C-64 is commonly described as an "8-bit machine." A byte is the standard unit of storage and data transfer on the system.
 
-## Source Code
-
-(omitted — no assembly/BASIC listings or register maps in this chunk)
-
-## Key Registers
-
-- (none)
-
 ## References
 
 - "bit_position_value_and_significance" — expands on positional-value calculation to define byte values

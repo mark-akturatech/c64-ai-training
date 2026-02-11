@@ -36,3 +36,6 @@ This BASIC listing performs the steps required to put a custom character set int
 ## References
 - "switching_io_and_interrupts_for_copying_char_rom" — expands on must disable interrupts and switch ROM/I/O while copying
 - "standard_character_mode_and_address_formula" — expands on setting the character pointer to RAM via 53272
+
+## Labels
+- CHAREN

@@ -82,3 +82,9 @@ INC $D019
   ```
 
   Replace `VIA_IFR` and `VIA_IER` with the actual addresses of the Interrupt Flag Register and Interrupt Enable Register, respectively. The bit positions correspond to the specific interrupt sources as defined in the MOS 6522 VIA documentation.
+
+## Labels
+- $D019
+
+## Mnemonics
+- INC

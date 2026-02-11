@@ -32,3 +32,6 @@ ARR #$FF      ; -> A = $0F  -> CLC
 ## References
 - "arr_opcode_flags_and_table" — expands the flag behavior behind repeated ARR
 - "arr_load_register_depending_on_carry" — related trick using ARR to move carry state into a register
+
+## Mnemonics
+- ARR

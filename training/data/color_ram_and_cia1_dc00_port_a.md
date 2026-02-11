@@ -123,3 +123,9 @@ CIA #1 Data Port A
 - "cia1_control_registers_dc0e_dc0f" — expands control register functionality for timers and TOD clock
 
 **Note:** The above information is compiled from authoritative sources, including the MOS 6526 CIA datasheet and the Commodore 64 Programmer's Reference Guide.
+
+## Labels
+- DDRA
+- DDRB
+- PORTA
+- PORTB

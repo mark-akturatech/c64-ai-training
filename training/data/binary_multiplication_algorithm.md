@@ -52,9 +52,6 @@ x 101
 11110
 ```
 
-## Key Registers
-- (none) — this chunk describes a generic binary multiplication algorithm, not specific C64 hardware registers
-
 ## References
 - "one_byte_multiplication_routine" — one-byte machine code implementation of this algorithm
 - "two_byte_multiplication_routine" — extension to wider operands (multi-byte multiplication)

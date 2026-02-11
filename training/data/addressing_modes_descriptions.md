@@ -45,11 +45,8 @@ Absolute Indirect (JMP (abs))
 - EA = (pointer_high << 8) | pointer_low.
 - **6502 hardware quirk:** If PTR low byte = $FF, the high byte is fetched from PTR & $FF00 (i.e., high byte read wraps within the same page) instead of PTR+1. This is the classic JMP (ABS) indirect page-boundary bug on NMOS 6502.
 
-## Source Code
-(omitted — no code or register maps in source)
-
-## Key Registers
-(omitted — this chunk documents addressing modes, not specific C64 chip registers)
-
 ## References
 - "instruction_timing_and_opcode_table" — opcode formats, sizes and timing implications for these addressing modes
+
+## Mnemonics
+- JMP

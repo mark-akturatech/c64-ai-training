@@ -82,9 +82,6 @@ NOTES:
 3 - Tco is measured from the later of 02 high or /CS low. Valid data is available only after the later of Tacc or Tco.
 ```
 
-## Key Registers
-- (omitted) — this chunk describes interface signals and timing; no specific CIA register offsets were enumerated here.
-
 ## References
 - "6526_timing_diagrams_and_interface_overview" — expands on timing diagram placeholders related to these timing parameters
 - "6526_register_map_and_functional_description" — expands on register map and functional descriptions addressed by these signals

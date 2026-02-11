@@ -15,7 +15,8 @@ Usage:
     uv run scripts/clean_chunks.py --force           # Reprocess all
     uv run scripts/clean_chunks.py --model gpt-4o    # Use different model
     uv run scripts/clean_chunks.py --dry-run          # Show what would be processed
-    uv run scripts/clean_chunks.py --shrink           # Shrink .md files in training/data/ over 6KB
+    uv run scripts/clean_chunks.py --workers 8          # Process 8 chunks concurrently (default: 4)
+    uv run scripts/clean_chunks.py --shrink              # Shrink .md files in training/data/ over 6KB
     uv run scripts/clean_chunks.py --shrink --threshold 4096  # Custom size threshold
 """
 
@@ -23,7 +24,9 @@ import hashlib
 import json
 import os
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from openai import OpenAI
@@ -367,6 +370,11 @@ def main():
         idx = sys.argv.index('--threshold')
         threshold = int(sys.argv[idx + 1])
 
+    workers = 4
+    if '--workers' in sys.argv:
+        idx = sys.argv.index('--workers')
+        workers = int(sys.argv[idx + 1])
+
     # Shrink mode: operate on training/data/*.md directly
     if shrink:
         api_key = os.environ.get('OPENAI_API_KEY')
@@ -378,14 +386,14 @@ def main():
         return
 
     # Collect target files
-    skip_flags = {'--force', '--dry-run', '--model', '--shrink', '--threshold'}
+    skip_flags = {'--force', '--dry-run', '--model', '--shrink', '--threshold', '--workers'}
     args = []
     skip_next = False
     for a in sys.argv[1:]:
         if skip_next:
             skip_next = False
             continue
-        if a in ('--model', '--threshold'):
+        if a in ('--model', '--threshold', '--workers'):
             skip_next = True
             continue
         if a not in skip_flags:
@@ -428,36 +436,47 @@ def main():
     if not dry_run:
         client = OpenAI(api_key=api_key)
 
-    # Process chunks
-    processed = 0
+    # Filter to chunks that need processing
+    to_process = []
     skipped = 0
-    errors = 0
-    refs_fetched = 0
     total = len(chunk_files)
 
-    for i, chunk_path in enumerate(chunk_files, 1):
+    for chunk_path in chunk_files:
         name = chunk_path.name
         current_md5 = md5_file(chunk_path)
 
-        # Check cache
         cached = cache['chunks'].get(name)
         if cached and cached.get('source_md5') == current_md5 and not force:
-            # Verify output still exists
             output_path = data_dir / cached['output']
             if output_path.exists():
                 skipped += 1
                 continue
 
+        to_process.append((chunk_path, current_md5))
+
+    if dry_run:
+        for i, (chunk_path, _md5) in enumerate(to_process, 1):
+            cached = cache['chunks'].get(chunk_path.name)
+            reason = "forced" if force else ("changed" if cached else "new")
+            print(f"  [{i}/{len(to_process)}] Would process: {chunk_path.name} ({reason})")
+        print(f"\n{'='*50}")
+        print(f"Chunks: {len(to_process)} to process, {skipped} skipped (of {total} total)")
+        print("(dry run - no files were modified)")
+        return
+
+    # Worker function for thread pool
+    cache_lock = threading.Lock()
+    counter = {'processed': 0, 'errors': 0, 'refs': 0, 'done': 0}
+
+    def process_one(chunk_path, current_md5):
+        name = chunk_path.name
         output_name = chunk_path.stem + '.md'
         output_path = data_dir / output_name
 
-        if dry_run:
-            reason = "forced" if force else ("changed" if cached else "new")
-            print(f"  [{i}/{total}] Would process: {name} ({reason})")
-            processed += 1
-            continue
-
-        print(f"  [{i}/{total}] Processing: {name} ...", end='', flush=True)
+        with cache_lock:
+            counter['done'] += 1
+            n = counter['done']
+        print(f"  [{n}/{len(to_process)}] Processing: {name} ...", flush=True)
 
         try:
             chunk_content = chunk_path.read_text(encoding='utf-8', errors='replace')
@@ -465,35 +484,36 @@ def main():
 
             output_path.write_text(result, encoding='utf-8')
 
-            cache['chunks'][name] = {
-                'source_md5': current_md5,
-                'output': output_name,
-            }
-            save_cache(cache_path, cache)
+            with cache_lock:
+                cache['chunks'][name] = {
+                    'source_md5': current_md5,
+                    'output': output_name,
+                }
+                save_cache(cache_path, cache)
+                counter['processed'] += 1
+                if ref_used:
+                    counter['refs'] += 1
 
-            processed += 1
-            if ref_used:
-                refs_fetched += 1
-                print(f" done -> {output_name} (ref: {ref_used})")
-            else:
-                print(f" done -> {output_name}")
-            print(f"    [{resp_info}]")
-
-            # Rate limiting: small delay between API calls
-            if i < total:
-                time.sleep(0.5)
+            ref_msg = f" (ref: {ref_used})" if ref_used else ""
+            print(f"    done -> {output_name}{ref_msg} [{resp_info}]")
 
         except Exception as e:
-            errors += 1
-            print(f" ERROR: {e}")
+            with cache_lock:
+                counter['errors'] += 1
+            print(f"    ERROR {name}: {e}")
+
+    # Run with thread pool
+    print(f"Processing {len(to_process)} chunks with {workers} workers...")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(process_one, cp, md5) for cp, md5 in to_process]
+        for f in as_completed(futures):
+            f.result()  # propagate unexpected exceptions
 
     # Summary
     print(f"\n{'='*50}")
-    print(f"Chunks: {processed} processed, {skipped} skipped, {errors} errors (of {total} total)")
-    if refs_fetched:
-        print(f"References fetched: {refs_fetched} (extra API calls for self-containment)")
-    if dry_run:
-        print("(dry run - no files were modified)")
+    print(f"Chunks: {counter['processed']} processed, {skipped} skipped, {counter['errors']} errors (of {total} total)")
+    if counter['refs']:
+        print(f"References fetched: {counter['refs']} (extra API calls for self-containment)")
 
 
 if __name__ == '__main__':

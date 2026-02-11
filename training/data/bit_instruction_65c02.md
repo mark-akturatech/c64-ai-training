@@ -21,9 +21,9 @@ $3c
 
 ```
 
-## Key Registers
-(omitted — this chunk lists opcodes, not hardware registers)
-
 ## References
 - "bbr_bbs_branch_on_bit_reset_set" — expands on branch-on-bit (BBR/BBS) instructions that rely on tested bit results
 - "cmp_eor_inc_dec_group" — expands on logical/arithmetic instructions that interact with flags affected by BIT
+
+## Mnemonics
+- BIT

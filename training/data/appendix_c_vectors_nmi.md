@@ -21,18 +21,11 @@ The default NMI handler (via the vector) discriminates the cause and proceeds:
 
 Because the ROM jumps through the RAM-stored vector, altering $0318/$0319 changes what happens when RESTORE is pressed. Pointing the vector at an address containing an RTI will cause the NMI to immediately return, effectively disabling the STOP/RESTORE warm-start sequence.
 
-## Source Code
-```text
-792-793 $318-$319 NMINV
-Vector: Non-Maskable Interrupt
-
-This vector points to the address of the routine that will be executed when a Non-Maskable Interrupt (NMI) occurs (currently at 65095 ($FE47)).
-```
-
-(quoted behavior and decision flow as in source; source text truncated after "A simple" — no further example code included)
-
 ## Key Registers
 - $0318-$0319 - CPU/RAM vector - Non-Maskable Interrupt vector (points to NMI handler; default reported as $FE47 / 65095)
 
 ## References
 - "disable_restore_vector_example" — code example changing NMI vector to RTI
+
+## Labels
+- NMINV

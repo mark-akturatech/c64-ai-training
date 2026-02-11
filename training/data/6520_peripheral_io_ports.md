@@ -12,3 +12,6 @@ Each peripheral I/O line on the 6520 is controlled by a corresponding bit in the
 
 ## Notes
 - Data Direction Register (DDR) controls direction only; the exact behavior of read/write operations on the port registers depends on the specific 6520 implementation and system wiring.
+
+## Labels
+- DDR

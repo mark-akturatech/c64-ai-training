@@ -46,3 +46,6 @@ Table: A values → character memory start (2K blocks)
 ## References
 - "video_bank_value_table" — expands on adding bank base when computing full character addresses
 - "switching_io_and_character_rom_access" — how to access/copy character ROM (switch out I/O), including interrupt handling
+
+## Labels
+- $D018

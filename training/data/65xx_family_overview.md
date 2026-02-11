@@ -94,3 +94,24 @@
 ## References
 - "pinouts_and_physical_signals" — expands on physical interface differences across variants
 - "external_links_and_tools" — expands on emulators, assemblers, disassemblers and community resources
+
+## Mnemonics
+- RLA
+- SRE
+- RRA
+- SAX
+- LAX
+- DCP
+- ISC
+- ANC
+- ALR
+- ARR
+- ANE
+- LXA
+- SBX
+- USBC
+- SLO
+- SHA
+- TAS
+- LAS
+- JAM

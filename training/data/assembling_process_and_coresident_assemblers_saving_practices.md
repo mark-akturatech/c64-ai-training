@@ -8,9 +8,6 @@
 - Coresident assemblers speed up the edit → assemble → test cycle, which is useful when you iteratively write small code sections and immediately assemble to check for errors.
 - Regardless of assembler type, save your source frequently while editing. Running newly-assembled code can lock up the machine (forcing a power-cycle), which risks losing unsaved source—this risk applies whether using a coresident package or loading the assembler on demand.
 
-## Source Code
-(omitted — no assembly listings or register maps in this chunk)
-
 ## References
 - "text_editor_role_and_selection" — expands on what you do with source entered in the editor  
 - "assembly_speed_and_printouts_intro" — expands on performance and output considerations after assembly  

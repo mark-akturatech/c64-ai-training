@@ -50,9 +50,6 @@ CLOSE range:  $E0 .. $EF   (SA 0..15)
 OPEN range:   $F0 .. $FF   (SA 0..15)
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "atn_command_mode" — expands on commands being sent while ATN is held
 - "kernal_low_level_calls" — expands on KERNAL routines that issue these commands

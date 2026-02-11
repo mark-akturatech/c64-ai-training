@@ -12,12 +12,10 @@ Important behavioral details preserved from the source:
 
 Analogy: This mechanism corresponds to BASIC's GOSUB/RETURN (call and resume at the next statement).
 
-## Source Code
-(omitted — no assembly listings or register maps in this chunk)
-
-## Key Registers
-(omitted — no specific C64 hardware registers referenced)
-
 ## References
 - "chapter2_overview_and_toc" — expands on chapter topics and context
 - "prewritten_kernal_subroutines" — expands on calls to ROM 'kernal' subroutines described next
+
+## Mnemonics
+- JSR
+- RTS

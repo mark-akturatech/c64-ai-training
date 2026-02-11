@@ -81,3 +81,8 @@ POKE BY, PEEK(BY) AND (255 - BIT_MASK)
 
 - "d011_bit5_bitmap_mode_and_bitmap_memory_layout" — Details on Bitmap memory layout and BASE address derivation.
 - "bitmap_basic_sample_program" — BASIC sample demonstrating plotting loop and BIT_MASK array usage.
+
+## Labels
+- $D011
+- $D018
+- $DD00

@@ -24,9 +24,6 @@ The C64 BASIC interpreter is closely related to the Microsoft BASIC used on the 
 ## Memory banking note
 - BASIC ROM can be bank‑switched out so the VIC‑II can access the RAM beneath the ROM area; this behavior is controlled via system I/O (see $DD00 for the referenced bank‑switching control context).
 
-## Source Code
-(omitted — no code listings or register maps in this chunk)
-
 ## Key Registers
 - $A000-$BFFF - BASIC ROM - BASIC V2 interpreter code and data area
 - $DD00-$DD0F - CIA 2 - I/O region referenced for bank‑switching so VIC‑II can access RAM under the BASIC ROM

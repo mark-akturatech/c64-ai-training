@@ -71,3 +71,14 @@ bit $24
 ## References
 - "blackmail_fli_variants_0_black_to_3_cyan" — expands on opcode variants 0–3 (black through cyan) with the same structure
 - "blackmail_fli_variants_8_orange_to_9_brown" — expands on variants 8–9 which switch addressing/loads but retain the same pattern
+
+## Mnemonics
+- LDY
+- STY
+- LDA
+- STA
+- LDX
+- STX
+- BIT
+- LAX
+- SAX

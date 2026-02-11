@@ -102,8 +102,5 @@ The following table lists the Commodore 64 BASIC keywords, their abbreviations, 
 
 *Note: The [GRAPHIC SYMBOL] represents the graphical character displayed when the corresponding key is pressed with the SHIFT key held down.*
 
-## Source Code
-(omitted — no code or assembly listings provided in this chunk)
-
 ## References
 - "how_to_use_syntax_conventions" — expands on syntax rules for parentheses and spacing

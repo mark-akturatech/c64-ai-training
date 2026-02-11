@@ -61,3 +61,6 @@ Guidelines and implementation details from the ROM:
 
 ## References
 - "irqtmp_save_area_for_cassette_io" — expands on cassette I/O save/restore of the IRQ vector before changing it
+
+## Labels
+- CINV

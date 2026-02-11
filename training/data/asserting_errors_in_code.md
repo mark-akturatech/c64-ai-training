@@ -26,8 +26,5 @@ public MacroDefinition getDefinition() {
 @Override
 ```
 
-## Key Registers
-(omitted — this chunk documents an assembler directive, not hardware registers)
-
 ## References
 (none)

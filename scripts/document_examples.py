@@ -16,6 +16,7 @@ Usage:
     uv run scripts/document_examples.py --model gpt-4o       # Use different model
     uv run scripts/document_examples.py --dry-run             # Show what would be processed
     uv run scripts/document_examples.py --register            # Register existing files in cache (no AI)
+    uv run scripts/document_examples.py --workers 8            # Process 8 files concurrently (default: 4)
 """
 
 import hashlib
@@ -23,7 +24,9 @@ import json
 import os
 import re
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from openai import OpenAI
@@ -270,15 +273,20 @@ def main():
         idx = sys.argv.index('--model')
         model = sys.argv[idx + 1]
 
+    workers = 4
+    if '--workers' in sys.argv:
+        idx = sys.argv.index('--workers')
+        workers = int(sys.argv[idx + 1])
+
     # Collect target files
-    skip_flags = {'--force', '--dry-run', '--register', '--model'}
+    skip_flags = {'--force', '--dry-run', '--register', '--model', '--workers'}
     args = []
     skip_next = False
     for a in sys.argv[1:]:
         if skip_next:
             skip_next = False
             continue
-        if a == '--model':
+        if a in ('--model', '--workers'):
             skip_next = True
             continue
         if a not in skip_flags:
@@ -321,14 +329,12 @@ def main():
     if not dry_run and not register:
         client = OpenAI(api_key=api_key)
 
-    # Process examples
-    processed = 0
+    # Filter to files that need processing
+    to_process = []
     skipped = 0
-    errors = 0
     total = len(asm_files)
 
-    for i, asm_path in enumerate(asm_files, 1):
-        # Use relative path as cache key
+    for asm_path in asm_files:
         try:
             cache_key = str(asm_path.relative_to(project_root))
         except ValueError:
@@ -336,7 +342,6 @@ def main():
 
         current_md5 = md5_file(asm_path)
 
-        # Check cache
         cached = cache['examples'].get(cache_key)
         if cached and cached.get('source_md5') == current_md5 and not force:
             output_path = data_dir / cached['output']
@@ -344,14 +349,20 @@ def main():
                 skipped += 1
                 continue
 
-        if dry_run:
-            reason = "forced" if force else ("changed" if cached else "new")
-            print(f"  [{i}/{total}] Would process: {cache_key} ({reason})")
-            processed += 1
-            continue
+        to_process.append((asm_path, cache_key, current_md5))
 
-        if register:
-            # Register mode: parse # header from .asm source, reformat as markdown
+    if dry_run:
+        for i, (asm_path, cache_key, _) in enumerate(to_process, 1):
+            cached = cache['examples'].get(cache_key)
+            reason = "forced" if force else ("changed" if cached else "new")
+            print(f"  [{i}/{len(to_process)}] Would process: {cache_key} ({reason})")
+        print(f"\n{'='*50}")
+        print(f"Examples: {len(to_process)} to process, {skipped} skipped (of {total} total)")
+        print("(dry run - no files were modified)")
+        return
+
+    if register:
+        for i, (asm_path, cache_key, current_md5) in enumerate(to_process, 1):
             raw_text = asm_path.read_text(encoding='utf-8', errors='replace')
             header_lines, clean_source = strip_comment_header(raw_text)
             if header_lines and any(l.strip().startswith('#') for l in header_lines):
@@ -368,12 +379,22 @@ def main():
                 'output': output_name,
             }
             save_cache(cache_path, cache)
+            print(f"  [{i}/{len(to_process)}] Registered: {cache_key} -> {output_name}")
 
-            processed += 1
-            print(f"  [{i}/{total}] Registered: {cache_key} -> {output_name}")
-            continue
+        print(f"\n{'='*50}")
+        print(f"Examples: {len(to_process)} registered, {skipped} skipped (of {total} total)")
+        print("(register mode - files copied as-is, no AI processing)")
+        return
 
-        print(f"  [{i}/{total}] Processing: {cache_key} ...", end='', flush=True)
+    # Worker function for thread pool
+    cache_lock = threading.Lock()
+    counter = {'processed': 0, 'errors': 0, 'done': 0}
+
+    def process_one(asm_path, cache_key, current_md5):
+        with cache_lock:
+            counter['done'] += 1
+            n = counter['done']
+        print(f"  [{n}/{len(to_process)}] Processing: {cache_key} ...", flush=True)
 
         try:
             raw_text = asm_path.read_text(encoding='utf-8', errors='replace')
@@ -382,38 +403,34 @@ def main():
                 clean_source = raw_text
             header, resp_info = document_example(client, model, raw_text, asm_path, project_root)
 
-            # Derive output filename from the AI response header
             output_name = derive_output_name(header, asm_path, project_root)
             output_path = data_dir / output_name
-
-            # Combine markdown header with clean source code in fenced block
             output_path.write_text(format_markdown(header, clean_source), encoding='utf-8')
 
-            cache['examples'][cache_key] = {
-                'source_md5': current_md5,
-                'output': output_name,
-            }
-            save_cache(cache_path, cache)
+            with cache_lock:
+                cache['examples'][cache_key] = {
+                    'source_md5': current_md5,
+                    'output': output_name,
+                }
+                save_cache(cache_path, cache)
+                counter['processed'] += 1
 
-            processed += 1
-            print(f" done -> {output_name}")
-            print(f"    [{resp_info}]")
-
-            # Rate limiting
-            if i < total:
-                time.sleep(0.5)
+            print(f"    done -> {output_name} [{resp_info}]")
 
         except Exception as e:
-            errors += 1
-            print(f" ERROR: {e}")
+            with cache_lock:
+                counter['errors'] += 1
+            print(f"    ERROR {cache_key}: {e}")
+
+    print(f"Processing {len(to_process)} examples with {workers} workers...")
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(process_one, ap, ck, md5) for ap, ck, md5 in to_process]
+        for f in as_completed(futures):
+            f.result()
 
     # Summary
     print(f"\n{'='*50}")
-    print(f"Examples: {processed} processed, {skipped} skipped, {errors} errors (of {total} total)")
-    if dry_run:
-        print("(dry run - no files were modified)")
-    if register:
-        print("(register mode - files copied as-is, no AI processing)")
+    print(f"Examples: {counter['processed']} processed, {skipped} skipped, {counter['errors']} errors (of {total} total)")
 
 
 if __name__ == '__main__':

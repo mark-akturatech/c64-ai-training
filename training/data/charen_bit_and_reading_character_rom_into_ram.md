@@ -37,3 +37,6 @@ Notes on the listing:
 ## References
 - "r6510_internal_io_port_overview" — definition of CHAREN and conflict with I/O device addressing
 - "loram_hiram_and_moving_rom_to_ram_examples" — copying ROM into RAM for BASIC & KERNAL use
+
+## Labels
+- CHAREN

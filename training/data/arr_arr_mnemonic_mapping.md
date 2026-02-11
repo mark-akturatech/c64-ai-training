@@ -23,3 +23,6 @@ ARR           ARR
 ## References
 - "alr_alr_mnemonic_mapping" — expands on previous mnemonic (ALR)
 - "sbx_axs_mnemonics" — expands on next related group (SBX / AXS)
+
+## Mnemonics
+- ARR

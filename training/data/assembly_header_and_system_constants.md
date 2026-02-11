@@ -55,3 +55,11 @@ CHRIN  = $FFCF  ; INPUT CHARACTER  ; corrected from corrupted source line
 ## References
 - "machine_code_data_and_track_skip_table" — binary DATA bytes for assembler routines at $C000
 - "disk_commands_and_mr_entry" — defines constants, M-R/M-W command definitions, and M-R entry point
+
+## Labels
+- POINT
+- CHKOUT
+- CHROUT
+- CLRCHN
+- CHKIN
+- CHRIN

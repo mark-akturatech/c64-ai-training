@@ -36,3 +36,9 @@ WRITE (PRESCALER)
 ## References
 - "6526_timers_overview" — purpose of the timer counter and latch and general behavior
 - "6526_timer_control_functions" — control bits that affect load and operation (Force Load, Input Mode, etc.)
+
+## Labels
+- TA_LO
+- TA_HI
+- TB_LO
+- TB_HI

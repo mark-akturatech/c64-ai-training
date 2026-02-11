@@ -70,9 +70,6 @@ Per-sector summary for track 18 (sectors 0..20):
 Free-sector total: count of 1-bits = 5 (byte1) + 8 (byte2) + 3 (byte3) = 16 -> matches $10.
 ```
 
-## Key Registers
-(none)
-
 ## References
 - "bam_bit_map_for_track14" — similar bit-map decoding technique applied to track 14
 - "directory_entries_overview_and_track18_sector1_example" — directory sectors reside on track 18 sectors 1-18

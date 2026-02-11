@@ -77,3 +77,13 @@ READ_END:
 
 ## References
 - "memory_read_command_and_sample_program" — related low-level memory read and execution examples
+
+## Labels
+- SETLFS
+- SETNAM
+- OPEN
+- CLOSE
+- CHKIN
+- CLRCH
+- BASIN
+- BSOUT

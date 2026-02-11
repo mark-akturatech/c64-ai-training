@@ -69,10 +69,6 @@ Below is the complete sample program illustrating the creation and manipulation 
 
 - **Line 120:** Closes the relative file and the command channel.
 
-## Key Registers
-
-This section is not applicable as the document focuses on file and position commands, not hardware registers.
-
 ## References
 
 - "relative_files_introduction_and_structure_overview" — background on relative-file structure and side sectors

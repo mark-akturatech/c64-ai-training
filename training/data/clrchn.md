@@ -11,12 +11,9 @@ Notes:
 - CLRCHN may call or otherwise invoke the routines that implement UNTALK and UNLISTEN when necessary; see those routines for details of serial-bus command sequences and side effects.
 - Registers affected: A, X (destroyed by the call).
 
-## Source Code
-(omitted — no assembly or register tables provided in this chunk)
-
-## Key Registers
-(omitted — this chunk documents a KERNAL entry, not hardware registers)
-
 ## References
 - "untalk" — describes UNTALK behavior and its KERNAL entry ($FFAB)
 - "unlstn" — describes UNLISTEN behavior and its KERNAL entry ($FFAE)
+
+## Labels
+- CLRCHN

@@ -16,3 +16,6 @@ This zero-page byte contains the logical file number for the device currently in
 ## References
 - "current_secondary_address_sa" — expands on secondary address used alongside logical file numbers when opening devices
 - "current_device_number_fa" — expands on device number assignments that work together with logical file numbers
+
+## Labels
+- LA

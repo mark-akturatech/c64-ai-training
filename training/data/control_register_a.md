@@ -28,3 +28,6 @@ Operational notes preserved from source:
 - "timer_a_16bit" — expands on CRA bits controlling Timer A start, input source, and PB6 behavior
 - "serial_data_register_sdr" — expands on CRA bit 6 selecting serial port input/output mode
 - "time_of_day_clock" — expands on CRA bit 7 selecting TOD input frequency (50/60 Hz)
+
+## Labels
+- CRA

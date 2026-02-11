@@ -5,9 +5,6 @@
 ## Summary
 Main build file for sprite tutorial defining CPU type, output filename, BASIC SYS loader at $0801, and code at $C000. Includes all sub-modules in assembly order.
 
-## Key Registers
-- No runtime registers (build configuration only)
-
 ## Techniques
 - modular project organization
 - BASIC SYS loader
@@ -56,7 +53,6 @@ MOS 6510
 * = $0801                               ; BASIC start address (#2049)
 !byte $0d,$08,$dc,$07,$9e,$20,$34,$39   ; BASIC loader to start at $c000...
 !byte $31,$35,$32,$00,$00,$00           ; puts BASIC line 2012 SYS 49152
-
 
 ;============================================================
 ;  we assemble all our actual 6502 code starting at $c000

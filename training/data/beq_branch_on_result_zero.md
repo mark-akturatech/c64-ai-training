@@ -33,9 +33,9 @@ BEQ tests the Zero (Z) flag and performs a branch if Z = 1. No processor status 
   * Add 2 if branch occurs to next  page.
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "bcs_branch_on_carry_set" — expands on previous branch instruction (BCS)
 - "bit_test_bits_instruction" — expands on next table entry (BIT)
+
+## Mnemonics
+- BEQ

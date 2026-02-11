@@ -23,7 +23,6 @@ The U0 subcommands are used to control various aspects of the drive's operation.
 
 These commands are issued by opening the command channel to the drive and sending the appropriate string. For example, to switch the 1571 to 1571 mode:
 
-
 ([retro-bobbel.de](https://retro-bobbel.de/zimmers/cbm/manuals/drives/1570-1571_Disk_Drive_Users_Guide.pdf?utm_source=openai))
 
 **Packet/Frame Layouts and Checksums for Burst Mode**
@@ -43,15 +42,11 @@ To perform a data transfer using the Burst API, the host (C128) would typically 
 
 1. **Open the Command Channel**: Establish communication with the drive.
 
-
 2. **Send U0 Subcommand**: Issue the desired U0 command to the drive.
-
 
 3. **Perform Data Transfer**: Depending on the operation, read from or write to the drive.
 
-
 4. **Close the Command Channel**: Terminate communication with the drive.
-
 
 ([retro-bobbel.de](https://retro-bobbel.de/zimmers/cbm/manuals/drives/1570-1571_Disk_Drive_Users_Guide.pdf?utm_source=openai))
 
@@ -102,11 +97,6 @@ CLOSE 15
    ```basic
    CLOSE 15
    ```
-
-
-## Key Registers
-
-- (none) — this chunk documents a drive/firmware protocol feature, not specific C64/C128 memory-mapped registers.
 
 ## References
 

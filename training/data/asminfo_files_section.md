@@ -33,8 +33,5 @@ Test2 – OK.     | 2000:8d,00,04,8d,01,04,8d,02,04,8d,03,04
 .asserterror "Test", { lda #"This must fail" }
 ```
 
-## Key Registers
-(Not applicable)
-
 ## References
 (Not applicable)

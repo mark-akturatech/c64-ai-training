@@ -90,3 +90,12 @@ Behavioral notes preserved from source:
 ## References
 - "parameter_parsing_and_open_close_helpers" — expands on parsing of device/file parameters for OPEN/CLOSE
 - "file_io_and_serial_open_close" — expands on higher-level OPEN/CLOSE/CHKIN/CHKOUT semantics
+
+## Labels
+- BIOERR
+- BCHOUT
+- BCHIN
+- BCKOUT
+- BCKIN
+- BGETIN
+- MEMSIZ

@@ -26,9 +26,6 @@
   - Locate the two zeros that mark the end of the program.
   - Set the pointers at decimal 45, 47, and 49 (zero-page addresses $002D, $002F, $0031) — these all point to the end of a BASIC program before RUN — to the byte following those two zeros.
 
-## Source Code
-(omitted — no assembly/BASIC listings in the source)
-
 ## Key Registers
 - $1000-$1FFF - VIC-II - Character ROM image visible to VIC-II when using memory bank 0 (4096–8191)
 - $C000 - CPU - Character ROM base (49152) — CPU can access this ROM when mapped into CPU space

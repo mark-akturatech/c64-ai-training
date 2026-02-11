@@ -76,3 +76,6 @@ Test program filenames (from source):
 - "CPU/decimalmode/arr11.prg" — test: ARR additional decimal cases
 - "CPU/decimalmode/arr12.prg" — test: ARR edge cases
 - "sbc_instruction_decimal_mode_overview" — related decimal-mode fixup behavior (SBC and general BCD rules)
+
+## Mnemonics
+- ARR

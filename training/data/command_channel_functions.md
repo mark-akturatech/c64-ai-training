@@ -13,11 +13,5 @@ This section (source chapter) concentrates on the first two roles — error moni
 
 (From BASIC: the command channel is typically accessed via OPEN/PRINT#/GET#/CLOSE for text commands and responses.)
 
-## Source Code
-<!-- No code/listings included in the source. -->
-
-## Key Registers
-<!-- Omitted: this chunk does not describe specific C64/1541 hardware registers. -->
-
 ## References
 - "using_command_channel_steps" — expands on using the command channel from BASIC (OPEN/PRINT#/GET#/CLOSE)

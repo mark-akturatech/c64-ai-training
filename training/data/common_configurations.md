@@ -82,3 +82,7 @@ bitmap = $C000 + 0x4 * $0800 = $E000  (bit3=1 indicates bitmap area)
 - "bank_selection_table" — bank base addresses and ROM shadows
 - "d018_bit_layout_and_defaults" — expanded $D018 bit layouts and default values
 - "basic_example_switch_bank2" — BASIC bank switching example
+
+## Labels
+- DD00
+- D018

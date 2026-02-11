@@ -48,3 +48,7 @@ Control-flow targets referenced:
 ## References
 - "init_cold_start" — expands on the BASIC cold start sequence that follows warm start
 - "initcz_initialize_basic_ram" — expands on zero-page variables and vectors set up during cold init referenced by warm-start behavior
+
+## Labels
+- BASSFT
+- IERROR

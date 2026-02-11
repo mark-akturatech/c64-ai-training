@@ -98,9 +98,11 @@ SAX addr       ; *addr = A & X
 EOR addr
 ```
 
-## Key Registers
-(omitted — this chunk does not reference specific C64 hardware registers)
-
 ## References
 - "opcode_naming_in_different_assemblers_matrix" — expands on mnemonics such as LAX and SBX from the opcode matrix
 - "six_sprites_over_fli_routines" — the 6-sprites FLI routine uses similar undocumented R-M-W opcodes and side-effects
+
+## Mnemonics
+- LAX
+- SBX
+- SAX

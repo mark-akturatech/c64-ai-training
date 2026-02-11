@@ -34,3 +34,21 @@ Location in the disassembly: the table begins at $E8DA and defines entries color
 
 ## References
 - "set_colour_code" — compares A to this table to select COLOR
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- PINK
+- GREY1
+- GREY2
+- LIGHT_GREEN
+- LIGHT_BLUE
+- GREY3

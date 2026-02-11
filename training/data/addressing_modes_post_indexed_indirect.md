@@ -34,8 +34,8 @@ $2105     $6D      ; final effective address contains this value
 ; (iii) load A <- [$2105] -> $6D
 ```
 
-## Key Registers
-(omitted — this chunk describes an addressing mode, not specific C64 I/O registers)
-
 ## References
 - "instruction_tables_lda" — expands on LDA (Oper),Y opcode and cycle counts
+
+## Mnemonics
+- LDA

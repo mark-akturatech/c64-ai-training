@@ -95,3 +95,12 @@ Cross-references (other KERNAL blocks that continue the flow):
 ## References
 - "finish_byte_and_newchar_call" — expands on RADJ stored FSBLK and then control flows here to handle the assembled byte per RDFLG
 - "load_sync_and_block_start_handling" — expands on If in load mode, flow branches to RD20/RD200 to configure address pointers and data mode
+
+## Labels
+- RDFLG
+- DIFF
+- FSBLK
+- SPERR
+- CKERR
+- SBERR
+- LBERR

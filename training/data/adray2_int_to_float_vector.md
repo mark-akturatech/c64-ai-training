@@ -7,9 +7,6 @@ This zero-page vector contains the two-byte address of the BASIC routine which c
 
 The entry in the documentation cross-references the USR vector for an example of using BASIC routines from machine code; see the USR vector entry referenced at 785 ($311).
 
-## Source Code
-(omitted — no assembly or register bitmaps provided in the source)
-
 ## Key Registers
 - $0005-$0006 - Zero page - ADRAY2: pointer to BASIC integer→floating-point conversion routine (ROM address noted as $B391)
 
@@ -17,3 +14,6 @@ The entry in the documentation cross-references the USR vector for an example of
 - "USR vector" — entry referenced at 785 ($311) for using BASIC routines from machine code  
 - "adray1_float_to_int_vector" — inverse conversion vector (floating→integer)  
 - "input_scanning_chars_charac_endchr_trmpos" — next group of BASIC input-scanning variables
+
+## Labels
+- ADRAY2

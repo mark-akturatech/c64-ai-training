@@ -208,3 +208,13 @@ Hardware pins referenced
 
 ## Key Registers
 - $9110-$911F - 6522 VIA - Port B, Port A (with/without handshaking), DDRB, DDRA, Timer1 (low/high/latches), Timer2 (low/high), Shift Register, Auxiliary Control Register (ACR), Peripheral Control Register (PCR), Interrupt Flags (IFR), Interrupt Enable (IER)
+
+## Labels
+- PORTA
+- PORTB
+- DDRA
+- DDRB
+- ACR
+- PCR
+- IFR
+- IER

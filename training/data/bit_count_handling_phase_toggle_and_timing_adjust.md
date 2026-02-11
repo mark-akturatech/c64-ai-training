@@ -65,3 +65,12 @@ This ROM fragment handles bookkeeping after a detected tape pulse (bit classifie
 ## References
 - "pulse_classification_and_store_character_calls" — expands on bookkeeping after a classified pulse
 - "timer_a_check_clear_phase_and_timing_setup" — expands on subsequent checks that clear phase or set timing and may exit the IRQ
+
+## Labels
+- B4
+- A8
+- A9
+- B1
+- 92
+- A4
+- D7

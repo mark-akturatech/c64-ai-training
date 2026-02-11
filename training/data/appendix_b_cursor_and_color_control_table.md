@@ -31,8 +31,5 @@ Read:         Press:                   Read:          Press:
 [YEL]        CTRL 8                    [F8]         SHIFT F8
 ```
 
-## Key Registers
-(none)
-
 ## References
 (none)

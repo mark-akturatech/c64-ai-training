@@ -42,3 +42,6 @@ is 2048 bytes ($0800) apart. The offset is added to the bank base address.
 ## References
 - "d018_bit_layout_and_defaults" — expands on bits 3-1 meaning
 - "rom_charset_shadows" — expands on ROM charset mapping in banks 0 and 2
+
+## Labels
+- $D018

@@ -25,9 +25,9 @@ AND	Logical AND	Absolute	AND $aaaa	$2D	3	N,Z
 Flags affected: Negative, Zero.
 ```
 
-## Key Registers
-(This instruction is not specific to any I/O or chip registers; no Key Registers.)
-
 ## References
 - "eor_instruction" — expands on EOR (exclusive OR) related logical operation
 - "ora_instruction" — expands on ORA (inclusive OR) related logical operation
+
+## Mnemonics
+- AND

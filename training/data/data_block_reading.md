@@ -34,9 +34,10 @@ g1: jsr get_byte
 g2: rts
 ```
 
-## Key Registers
-- (none) — routine-level zero-page variables (count, ptr) only; no hardware registers referenced
-
 ## References
 - "get_byte_routine" — covers get_byte and its end-of-data carry signaling
 - "header_format" — describes the header read as a 192-byte data block
+
+## Labels
+- COUNT
+- PTR

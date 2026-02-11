@@ -29,9 +29,9 @@ Manual reference: (Ref: 3.2.2)
   +----------------+-----------------------+---------+---------+----------+
 ```
 
-## Key Registers
-(omitted — instruction operates on processor status flags, not memory-mapped registers)
-
 ## References
 - "cld_clear_decimal_mode" — expands on previous flag-clearing instruction (CLD)
 - "clv_clear_overflow_flag" — expands on next flag-clearing instruction (CLV)
+
+## Mnemonics
+- CLI

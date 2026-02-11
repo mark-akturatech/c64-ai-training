@@ -33,3 +33,10 @@ prb             = $dc01     ; CIA#1 (Port Register B)
 ddra            = $dc02     ; CIA#1 (Data Direction Register A)
 ddrb            = $dc03     ; CIA#1 (Data Direction Register B)
 ```
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB
+- DELAY_COUNTER

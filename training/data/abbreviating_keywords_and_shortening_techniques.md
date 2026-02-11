@@ -22,8 +22,5 @@ REM (remark) statements consume program memory. Removing REM lines after develop
 40 GOTO 10
 ```
 
-## Key Registers
-*(none — this chunk documents BASIC program/text techniques, not hardware registers)*
-
 ## References
 - "rem_statements_removal" — expands on removing REM statements after development

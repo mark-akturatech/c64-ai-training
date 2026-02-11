@@ -21,8 +21,5 @@ This chunk is a minimal Commodore BASIC program header that opens a file on devi
 140 SYS 40960
 ```
 
-## Key Registers
-(omitted — this chunk does not document chip registers)
-
 ## References
 - "assembler_directives_and_origin" — assembler options and origin for the machine code invoked by SYS 40960

@@ -15,3 +15,6 @@ The flag is part of the Kernal input handling state and affects how CHRIN select
 
 ## References
 - "ndx_keyboard_buffer_count_and_dynamic_keyboard" — keyboard buffer usage and dynamic keyboard/input-source behavior
+
+## Labels
+- CRSW

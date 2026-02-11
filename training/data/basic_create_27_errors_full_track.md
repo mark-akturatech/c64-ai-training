@@ -74,9 +74,6 @@ Caveats and fidelity notes:
 
 **[Note: Source may contain an error — the program issues GOSUB 550 and GOSUB 580 but no corresponding RETURN statements or subroutines at those targets; DATA statements referenced by READ are missing in the supplied source.]**
 
-## Key Registers
-- (none) — This chunk is a drive-protocol / BASIC program and does not document memory-mapped C64 I/O registers.
-
 ## References
 - "job_queue_and_mrw_protocol" — expands on how the BASIC job queue uses M-R and M-W sequences to communicate with the drive
 - "full_track_20_error_source_annotation" — expands on a similar strategy used in a machine-language formatting routine

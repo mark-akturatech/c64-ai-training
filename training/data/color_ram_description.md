@@ -54,3 +54,21 @@ Color values (0..15) -> color name
 
 ## References
 - "vicii_color_registers_border_bg_and_sprite_colors" — expands on how VIC-II hardware color registers differ from Color RAM (Color RAM is a fixed memory area)
+
+## Labels
+- BLACK
+- WHITE
+- RED
+- CYAN
+- PURPLE
+- GREEN
+- BLUE
+- YELLOW
+- ORANGE
+- BROWN
+- LIGHT_RED
+- DARK_GRAY
+- GRAY
+- LIGHT_GREEN
+- LIGHT_BLUE
+- LIGHT_GRAY

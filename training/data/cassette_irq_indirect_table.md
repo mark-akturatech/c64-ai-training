@@ -27,9 +27,12 @@ $FDA1    2C F9       -> $F92C        READ? / fourth entry
 
 (Labels as shown in the disassembly line: WRTZ, WRTN, KEY, READ — table label or assembler token ".WOR" appears before them in the original line.)
 
-## Key Registers
-- (none) — This chunk documents ROM vector data at $FD9B, not CPU I/O registers
-
 ## References
 - "ramtas_memory_initialization_and_top_detection" — tape buffer allocation and cassette routines referenced by this table
 - "ioinit_configure_io_devices_and_ports" — broader I/O initialization including cassette I/O
+
+## Labels
+- WRTZ
+- WRTN
+- KEY
+- READ

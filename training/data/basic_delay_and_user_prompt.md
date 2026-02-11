@@ -31,8 +31,5 @@ Original (OCR/transcribed) input as provided:
 1170  RETURN
 ```
 
-## Key Registers
-(omit — this chunk documents a BASIC subroutine, not hardware registers)
-
 ## References
 - "basic_write_loop_and_completion" — used by the main program to pause between operations and wait for user to swap disks or confirm

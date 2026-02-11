@@ -9,9 +9,6 @@ The Commodore 64 includes a built-in music synthesizer (SID) supporting:
 - Four controllable waveforms for each voice (selectable per-voice waveform types).
 Commodore published companion Music Cartridges and Music books aimed at helping users create or reproduce music and sound effects. For advanced sound routines, consult machine code programming resources; for game/animation sound integration, see animation sprites references.
 
-## Source Code
-Omitted — no assembly listings, BASIC programs, register maps, or diagrams present in the original text.
-
 ## Key Registers
 - $D400-$D406 - SID - Voice 1 registers (frequency, pulse width, waveform/control, envelope)
 - $D407-$D40D - SID - Voice 2 registers (frequency, pulse width, waveform/control, envelope)

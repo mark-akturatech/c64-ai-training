@@ -50,3 +50,9 @@ Detailed register map (RS3-RS0 → register) is in Source Code below.
 ## References
 - "6526_io_ports_overview" — Functional descriptions of the I/O registers (PRA/PRB/DDRA/DDRB)
 - "6526_timers_overview" — Timer register addresses (TA/TB LO/HI) and behavior
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB

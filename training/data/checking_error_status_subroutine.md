@@ -22,9 +22,6 @@ Common usage: open the command channel early in your program and keep it open un
 530 CLOSE 15 : END : REM ABORT ON BAD STATUS
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "input_get_syntax_and_usage" — expands on uses of INPUT# to read the error message
 - "validate_operation_and_risks_unclosed_files" — expands on error handling and consequences of leaving files/command channels open

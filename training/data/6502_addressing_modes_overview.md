@@ -39,9 +39,6 @@ bbr1 $12,label     ; zeropage-relative (65C02)
 jmp ($1234,x)      ; indirect with absolute+X (65C02)
 ```
 
-## Key Registers
-(omitted — this chunk documents addressing modes, not specific hardware registers)
-
 ## References
 - "zeropage_conversion_and_explicit_mode_forcing" — expands on automatic zeropage conversion and suffixes to force addressing forms
 - "deprecated_mnemonic_extensions" — deprecated mnemonic suffixes that also force addressing modes (kept for backward compatibility)

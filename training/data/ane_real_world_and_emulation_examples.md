@@ -83,8 +83,10 @@ Simulation:
 - visual6502 JSSim: http://visual6502.org/JSSim/expert.html?graphics=f&a=0&steps=13&d=a200a900abffea
 ```
 
-## Key Registers
-(omitted — this chunk documents opcode behavior, not specific hardware registers)
-
 ## References
 - "ane_opcode_and_description" — expands on undocumented ANE details and magic-constant behavior
+
+## Mnemonics
+- LAX
+- ANE
+- ANX

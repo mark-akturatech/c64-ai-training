@@ -21,7 +21,7 @@ This BASIC listing (original tokenized export) performs the following actions:
   - 200: POKEs s+4 with 129 then 128 and RETURN (toggle Voice 1 control).
   - 300: POKEs s+11 with 129 then 128 and RETURN (toggle Voice 2 control).
 
-Note: The listing includes large DATA blocks for 3 sprite frames and a few DATA entries that appear corrupted (see Incomplete). The program uses direct POKE addressing (s and v variables) rather than symbolic $Dxxx in the BASIC text.
+Note: The listing includes large DATA blocks for 3 sprite frames. OCR artifacts "5630" and "25463" in the original tok64 dump have been corrected to "56,30" and "254,63" (merged comma/digits). The end-of-data sentinel "-1" on line 109 is never READ by the sprite loops. The program uses direct POKE addressing (s and v variables) rather than symbolic $Dxxx in the BASIC text.
 
 ## Source Code
 ```basic
@@ -49,8 +49,8 @@ Note: The listing includes large DATA blocks for 3 sprite frames and a few DATA 
   103 data3,192,0,30,0,120,63,0,252,127,129,254,127,129,254,127,189,254,127
   104 data255,254,63,255,252,31,221,248,3,221,192,1,255,128,3,255,192,1,195
   105 data128,1,231,3,31,255,255,0,124,0,0,254,0,1,199,0,7,1,128,7,0,204,1
-  106 data128,124,7,128,5630,0,120,63,0,252,127,129,254,127,129,254,127,189
-  107 data254,127,255,25463,255,252,31,221,248,3,221,192,1,255,134,3,189
+  106 data128,124,7,128,56,30,0,120,63,0,252,127,129,254,127,129,254,127,189
+  107 data254,127,255,254,63,255,252,31,221,248,3,221,192,1,255,134,3,189
   108 data204,1,199,152,1,255,48,1,255,224,1,252,0,3,254,0
   109 data7,14,0,204,14,0,248,56,0,112,112,0,0,60,0,-1
   200 pokes+4,129:pokes+4,128:return
@@ -66,14 +66,6 @@ stop tok64
 - $3000-$303E - RAM — sprite bitmap block 1 (loaded by READ loop starting at line 20).
 - $3040-$307E - RAM — sprite bitmap block 2 (loaded by READ loop starting at line 25).
 - $3080-$30BE - RAM — sprite bitmap block 3 (loaded by READ loop starting at line 30).
-
-## Incomplete
-- Missing / Corrupted DATA entries: lines 106–109 contain apparent OCR or transcription errors:
-  - Line 106 includes "5630" (invalid as an 0–255 DATA byte).
-  - Line 107 contains "25463" and a malformed sequence ("255,25463") — invalid bytes.
-  - Line 109 ends with "-1" which is invalid as a BASIC DATA byte (expected 0–255).
-- Minor formatting/artifact: line 101 ends with a trailing comma, suggesting a truncated DATA value.
-- The tokenized POKE syntax in the listing appears as "pokes" and "pokev+..." without spaces — verify original tokenized BASIC if exact syntax is required.
 
 ## References
 - "dancing_mouse_program_explanation" — line-by-line explanation and SID poke details

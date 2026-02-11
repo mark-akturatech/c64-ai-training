@@ -17,3 +17,6 @@ The entry is a single JMP instruction; the real work happens at $ED0C in the ROM
 
 ## References
 - "serial_bus_control" — expands on LISTEN implementation (converts device number to listen address and transmits on IEC bus)
+
+## Labels
+- LISTEN

@@ -37,3 +37,6 @@ Branch (take the relative branch) when V = 1. Flags unaffected: N Z C I D V rema
 ## References
 - "bvc_branch_on_overflow_clear" — paired branch instruction (BVC)
 - "clc_clear_carry_flag" — the next instruction in example sequences (CLC)
+
+## Mnemonics
+- BVS

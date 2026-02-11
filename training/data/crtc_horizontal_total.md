@@ -16,3 +16,8 @@ Changing R0 changes the horizontal timing: increasing R0 lengthens each horizont
 
 ## References
 - "6545_crtc_concept_and_register_map" — full list of 6545/CRTC registers and register indexes
+
+## Labels
+- R0
+- CRTC_R0
+- HORIZONTAL_TOTAL

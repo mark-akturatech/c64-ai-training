@@ -23,3 +23,6 @@ STA DATA
 ## References
 - "chkin_open_input_channel" — expands on input-channel setup (TALK/TKSA for serial devices)
 - "ciout_transmit_byte_over_serial_bus" — complementary routine for sending bytes (LISTEN/SECOND preparatory calls)
+
+## Labels
+- ACPTR

@@ -28,3 +28,7 @@ Notes:
 ## References
 - "dtv_instruction_set" — expands on alternate CPU modes and modified mnemonic sets
 - "dcp_dcm_and_lax_lxa_group" — compares unofficial 6502 opcodes to 65C02 official additions/removals
+
+## Mnemonics
+- ADC
+- AND

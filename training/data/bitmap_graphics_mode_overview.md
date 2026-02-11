@@ -83,3 +83,10 @@ By configuring $D018 and the VIC-II bank appropriately, you can control the memo
 - [C64 on an FPGA: Implementing Multicolor Bitmap Mode](https://c64onfpga.blogspot.com/2019/08/implementing-multicolor-bitmap-mode.html)
 - [C64-Wiki: 53265](https://www.c64-wiki.com/wiki/53265)
 - [C64 Programmer's Reference Guide: Programming Graphics - Smooth scrolling](https://www.devili.iki.fi/Computers/Commodore/C64/Programmers_Reference/Chapter_3/page_130.html)
+
+## Labels
+- SCROLY
+- VM13
+- CB13
+- SP0X
+- MSIGX

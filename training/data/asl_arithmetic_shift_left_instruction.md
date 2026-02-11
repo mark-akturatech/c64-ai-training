@@ -27,3 +27,6 @@ ASL shifts the operand one bit toward the high bit. The prior bit7 is moved into
 ## References
 - "and_logical_and_instruction" — previous logical instruction (AND)
 - "bcc_branch_on_carry_clear" — next instruction group (BCC)
+
+## Mnemonics
+- ASL

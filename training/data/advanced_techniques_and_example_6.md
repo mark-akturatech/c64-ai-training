@@ -56,3 +56,8 @@ A common modulation technique is to add the 8-bit oscillator-3 output to the fre
 ## References
 - "example_program_7_code_and_explanation" — siren example using oscillator 3 output for modulation
 - "example_program_6_code_and_explanation" — detailed explanation of Example Program 6
+
+## Labels
+- $D419
+- $D41A
+- $D41B

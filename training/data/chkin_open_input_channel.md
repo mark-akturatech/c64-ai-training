@@ -43,3 +43,6 @@ Example usage is shown below.
 ## References
 - "acptr_get_byte_from_serial_bus_full_handshake" — expands on reading from a device commanded to TALK (ACPTR/CHRIN interaction)
 - "chkin_chkin_to_chkin_relationship_chkout" — expands on paired I/O concept: CHKIN (input) vs CHKOUT (output)
+
+## Labels
+- CHKIN

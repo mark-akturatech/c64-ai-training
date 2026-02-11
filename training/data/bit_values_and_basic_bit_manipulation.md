@@ -92,3 +92,10 @@ Notes:
 
 ## References
 - "d000_dfff_overview_i_o_devices_vic_sid_cia_colorram" — expands on VIC-II and other I/O registers and Color RAM usage
+
+## Labels
+- MEMORY_CONTROL
+- CONTROL_REGISTER_1
+- CONTROL_REGISTER_2
+- BORDER_COLOR
+- COLOR_RAM

@@ -56,9 +56,9 @@ SKIP    EOR #$30      ; maps $00-$09 and $71-$76 -> $30-$39 and $41-$46
 ; On 65C02: Z flag set if result zero (Z valid). On NMOS 6502: Z may not match accumulator (Z invalid).
 ```
 
-## Key Registers
-(omitted — this chunk is about ADC and flag behavior, not memory-mapped registers)
-
 ## References
 - "adc_opcode_table_and_decimal_flags" — expands on which ADC opcodes and flags the examples exercise
 - "adc_decimal_mode_pseudocode" — explains underlying BCD fixup and flag-setting logic that produces the behaviors above
+
+## Mnemonics
+- ADC

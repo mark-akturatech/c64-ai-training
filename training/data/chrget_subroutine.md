@@ -69,3 +69,8 @@
 ## References
 - "basic_numeric_work_area_and_fac" — expands on TXTPTR use and numeric/text parsing interactions
 - "basic_runtime_editor_io_and_screen_pointers" — expands on TXTPTR and editor/input pointers
+
+## Labels
+- CHRGET
+- CHRGOT
+- TXTPTR

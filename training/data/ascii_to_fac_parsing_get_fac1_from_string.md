@@ -144,3 +144,14 @@ These bytes are incremented/decremented and tested to determine whether to multi
 ## References
 - "val_string_to_fac_parsing" — expands on VAL() routine uses this parser to get FAC1 from a string
 - "multiply_divide_and_accumulator_algorithms" — expands on uses FAC multiplication/division primitives while building FAC1 from digits
+
+## Labels
+- $5D
+- $5E
+- $5F
+- $60
+- $61
+- $66
+- $67
+- $6E
+- $6F

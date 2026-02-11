@@ -46,11 +46,10 @@ $FFFE-$FFFF - IRQ/BRK vector (CPU)
 - $0314-$0331 - KERNAL ROM/RAM vectors - OPEN/CLOSE/IO vector block (KERNAL routines)
 - $FFFA-$FFFF - CPU vectors - NMI/RESET/IRQ-BRK vectors
 
-## Incomplete
-- Missing: Exact addresses of BASIC zero-page pointers (BASIC pointer map not listed here).
-- Missing: Precise SYS register save locations (which zero-page bytes BASIC uses to save registers).
-- Missing: Full label-to-address mapping for each vector within $0314-$0331 (individual KERNAL vector names and offsets).
-- Missing: Any bit-level layout for $0001 (memory configuration bits) in this chunk — consult detailed CPU/C64 documentation for bit definitions.
-
 ## References
 - "commodore64_memory_map_part2" — continuation covering ROM and device areas (expanded C64 memory map)
+
+## Labels
+- NMI
+- RESET
+- IRQ

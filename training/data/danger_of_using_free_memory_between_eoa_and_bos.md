@@ -13,14 +13,9 @@ If you place machine language code in the free-looking area between EOA and BOS,
 - Do not place ML code between EOA and BOS; the area is not stable.
 - See the cross-reference below ("where_to_put_machine_language_programs") for safer alternatives that the source lists (cassette buffer, top-of-memory, after end-of-BASIC with SOV adjusted).
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps present in this chunk)
-
-## Key Registers
-(none — this chunk does not document specific hardware registers)
-
-## Incomplete
-(none)
-
 ## References
 - "where_to_put_machine_language_programs" — discusses safer areas for ML programs (cassette buffer, top-of-memory, after end-of-BASIC with SOV adjusted)
+
+## Labels
+- EOA
+- BOS

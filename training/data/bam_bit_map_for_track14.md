@@ -66,8 +66,5 @@ Free-sector count:
   Matches BAM byte at $38 = $11 (decimal 17)
 ```
 
-## Key Registers
-- (none — this chunk documents disk BAM bytes/offsets, not CPU or chip registers)
-
 ## References
 - "bam_entry_format_and_track14_example" — per-track BAM format and expanded example

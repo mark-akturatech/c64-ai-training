@@ -18,9 +18,6 @@ CHANNL at $0013 holds the logical-file (CMD channel) number that BASIC uses to d
 - Many BASIC routines will reset CHANNL and UNLISTEN the device after their I/O, restoring output to the screen. In particular, GET, GET#, INPUT, INPUT#, and PRINT# reset CHANNL after completion; PRINT and LIST do not reset CHANNL.
 - Because BASIC checks CHANNL for device selection, it is possible to trick BASIC into treating tape (or other devices) as keyboard input by manipulating CHANNL and related buffers. An alternative technique uses the keyboard buffer at $0200.
 
-## Source Code
-(omitted — no code or register maps in source)
-
 ## Key Registers
 - $0013 - Zero Page (BASIC) - CHANNL: current logical-file (CMD) number used by BASIC to select active I/O device and adjust prompting/output behavior
 - $00B8 - Zero Page (BASIC) - Secondary BASIC device-location used when deciding which device to actually perform input/output with (location 184 decimal)
@@ -29,3 +26,6 @@ CHANNL at $0013 holds the logical-file (CMD channel) number that BASIC uses to d
 - "tansgn_trig_and_comparison_flag" — expands on previous flag usage
 - "linnum_target_line_integer" — expands on storage of target line numbers used by control-flow commands
 - "txttab_basic_text_pointer_and_relocation" — expands on BASIC text relocation and buffer techniques (alternate I/O redirection methods)
+
+## Labels
+- CHANNL

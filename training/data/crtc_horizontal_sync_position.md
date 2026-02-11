@@ -10,8 +10,8 @@ Notes:
 - Units: character-location numbers (counts character cells, not individual pixels).
 - Effect: incrementing R2 shifts the displayed text to the right by one character cell per unit; decrementing shifts left.
 
-## Key Registers
-- (None — this chunk documents a generic CRTC/6845 register; no absolute C64 addresses provided.)
-
 ## References
 - "CRTC Registers Overview" — register map and usage summary
+
+## Labels
+- R2

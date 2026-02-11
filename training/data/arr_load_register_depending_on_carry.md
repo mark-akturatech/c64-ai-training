@@ -29,10 +29,10 @@ cont
         TAY
 ```
 
-## Key Registers
-(none)
-
 ## References
 - "arr_opcode_flags_and_table" — expands on ARR's flag behavior
 - "arr_rotate_16bit_example" — ARR usage for multi-byte manipulation
 - "arr_shift_zeros_ones_into_accumulator" — other ARR patterns to derive A values
+
+## Mnemonics
+- ARR

@@ -149,3 +149,13 @@ The zero-page addresses from $003B to $0070 are utilized by the BASIC and KERNAL
 | $00DA   | TEMPST | Temporary storage |
 | $00DB   | TEMPST | Temporary storage |
 | $00DC   | TEMPST |
+
+## Labels
+- TXTTAB
+- VARTAB
+- ARYTAB
+- STREND
+- CURLIN
+- INPPTR
+- CHRGET
+- CHRBUF

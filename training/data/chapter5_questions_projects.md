@@ -71,9 +71,6 @@ Techniques to avoid immediate addressing (i.e., avoid LDA #$nn, etc.):
 Is it hard?
 - Not usually impossible, but avoiding immediates tends to complicate code, increase memory use, and reduce speed. Immediate addressing is available to speed loads of constants and is normally preferred for constants known at assemble time. Avoidance might be justified if you need to patch values at runtime or reduce relocatable code dependencies, but these are niche cases.
 
-## Source Code
-(omitted — exercise text contains no code listings)
-
 ## Key Registers
 - $0400-$07E7 - Screen memory (default C64 text screen, 1000 bytes)
 

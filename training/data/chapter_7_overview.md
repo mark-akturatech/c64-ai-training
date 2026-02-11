@@ -255,3 +255,22 @@ Message:
 
 - "stack_overview" — expands on stack for temporary storage
 - "using_irq_vector_and_masking_interrupts" — expands on interrupts overview
+
+## Labels
+- SP
+- USR_VECTOR
+- IRQ_VECTOR
+- NMI_VECTOR
+- CIA1_PORTA
+- CIA1_PORTB
+- CIA1_TIMERA
+- CIA1_TIMERB
+- CIA1_ICR
+
+## Mnemonics
+- JSR
+- RTS
+- RTI
+- BRK
+- PHA
+- PLA

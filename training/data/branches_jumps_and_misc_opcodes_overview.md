@@ -30,10 +30,24 @@ This chunk documents opcode-byte mappings and the consistent low-nibble addressi
                                                     Misc. -0, -4, -C
 ```
 
-## Key Registers
-- (This chunk documents opcodes; no memory-mapped chip registers are included.)
-
 ## References
 - "single_byte_opcode_nibble_map" — expands on single-byte opcode patterns and control instruction grouping
 - "instruction_table_header" — expands on Addresses/mode column definitions and cycle counts used by these opcodes
 - "instruction_timing_table_part1" — expands on full timing/opcode rows for branches and jump-related instructions
+
+## Mnemonics
+- BPL
+- BMI
+- BVC
+- BVS
+- BCC
+- BCS
+- BNE
+- BEQ
+- JSR
+- JMP
+- BIT
+- STY
+- LDY
+- CPY
+- CPX

@@ -83,3 +83,9 @@ Notes about control flow:
 ## References
 - "chkin_set_input_device" — symmetrical input-device logic (TALK vs LISTEN)
 - "send_secondary_address" — SA/send logic used when selecting serial devices
+
+## Labels
+- CHKOUT
+- DFLTO
+- FA
+- SA

@@ -31,3 +31,10 @@ Called from tape header/data output and other tape I/O code paths that need to c
 
 ## References
 - "byte_finish_parity_and_header_character_output" — expands on CMPSTE usage to compare start:end when writing header/data ranges
+
+## Labels
+- CMPSTE
+- SAL
+- SAH
+- EAL
+- EAH

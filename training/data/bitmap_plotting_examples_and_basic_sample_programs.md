@@ -91,3 +91,9 @@ This setup allows for the creation of multiple display modes on a single screen 
 
 - "bitmap_pixel_addressing_and_plotting" — expands on BY formula and BI masks (bitmap plotting details)
 - "Commodore 64 Video: A Guided Tour" — provides insights into raster interrupts and screen splitting techniques. ([atarimagazines.com](https://www.atarimagazines.com/compute/issue38/094_1_COMMODORE_64_VIDEO.php?utm_source=openai))
+
+## Labels
+- D012
+- D011
+- D01A
+- DC0D

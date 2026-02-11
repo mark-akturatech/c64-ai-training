@@ -26,3 +26,9 @@
 ## References
 - "6526_io_ports_overview" — expands on General I/O port behavior and PB6/PB7 timer outputs
 - "6526_timers_overview" — expands on use of PB6/PB7 for timer outputs which override DDRB
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB

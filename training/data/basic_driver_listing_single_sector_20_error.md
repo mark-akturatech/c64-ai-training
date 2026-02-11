@@ -96,11 +96,6 @@
 830 DATA 32,0,254,169,1,76,105,249
 ```
 
-## Key Registers
-- (omitted — this chunk does not document specific C64/1541 memory-mapped I/O registers)
-
-**[Note: Source may contain an error — the NS calculation at line 160 (NS=20+2*(T>17)+(T>24)+(T>30)) is a compact boolean-arithmetic expression for determining sector count that should be verified against the intended 1541 track-to-sector mapping before use.]**
-
 ## References
 - "overview_and_parameters_single_sector_20_error" — expands on Title, limitations and parameters for the BASIC driver
 - "asm_source_listing_single_sector_20_error" — expands on Corresponding assembly source used by the BASIC program (DATA bytes and routines)

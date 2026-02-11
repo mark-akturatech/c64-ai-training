@@ -49,3 +49,9 @@
 ## References
 - "verck_load_verify_and_count" — expands on previous I/O/indexing flag context  
 - "subflg_subscript_and_fn_handling" — expands on next flag used when parsing variable names and function calls
+
+## Labels
+- DIMFLG
+- VALTYP
+- INTFLG
+- GARBFL

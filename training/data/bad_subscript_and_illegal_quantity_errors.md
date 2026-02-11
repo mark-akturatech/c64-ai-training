@@ -10,12 +10,6 @@
   - ISARY (array_lookup_and_creation_isary) may call BSERR when subscript validation fails.
   - AYINT (ayint_fp_to_signed_integer) may call FCERR when a conversion produces a value outside the legal range.
 
-## Source Code
-(omitted — original source contained only labels and brief notes; no listings provided)
-
-## Key Registers
-- (none — this chunk documents routines/labels, not hardware registers)
-
 ## References
 - "array_lookup_and_creation_isary" — expands on ISARY; may call BSERR when subscript validation fails  
 - "ayint_fp_to_signed_integer" — expands on AYINT; may call FCERR when conversion is out of legal range

@@ -22,3 +22,19 @@ The Accumulator is the microprocessor's central data register. Machine instructi
 
 ## References
 - "instruction_alphabetic_sequence" — expands on list of instructions that operate on the accumulator
+
+## Mnemonics
+- LDA
+- STA
+- ADC
+- SBC
+- AND
+- ORA
+- EOR
+- CMP
+- ASL
+- LSR
+- ROL
+- ROR
+- TAX
+- TAY

@@ -98,11 +98,6 @@ Notes:
 ## Key Registers
 - $0400 - RAM - buffer start used for M-W writes (drive memory-write source)
 
-## Incomplete
-- Missing: GOSUB 1030 subroutine (write/commit routine) referenced at lines 700/890 is not included in this chunk.
-- Missing: Exact PETSCII control-sequence byte values used in the PRINT statements were garbled by OCR (e.g., "<:UP>", "<:RVS>") — the intended control bytes are not available in the source.
-- Missing: Full BAM$ content (the saved BAM snapshot) is not included here; code references MID$(BAM$,...) but the BAM data blob is outside this chunk.
-
 ## References
 - "read_bam_and_dos_check" — expands on using the BAM snapshot read earlier to restore after certification
 - "job_queue_and_subroutines" — expands on disk subroutines (seek/write) and job-queue logic referenced later

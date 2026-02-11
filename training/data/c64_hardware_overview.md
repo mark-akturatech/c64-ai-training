@@ -43,12 +43,6 @@ The CPU is a MOS 6510 microprocessor implementing the 6502 instruction set. Key 
   - CPU (6510) to write the registers of those chips at appropriate times.
 - Understanding these chips and bank switching is sufficient to implement most system capabilities; the CIAs are used for I/O and timers.
 
-## Source Code
-(omitted — this chunk contains no assembly listings, BASIC, register maps, or diagrams)
-
-## Key Registers
-(omitted — this chunk is a high‑level overview and does not enumerate specific memory‑mapped register addresses)
-
 ## References
 - "6510_architecture_and_registers" — expands on 6510 registers and stack  
 - "graphics_memory_locations_and_vic_bank_selection" — expands on VIC‑II visible 16K bank selection and graphics memory locations  

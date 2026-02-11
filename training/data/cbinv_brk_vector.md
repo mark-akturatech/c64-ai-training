@@ -13,11 +13,11 @@ Default behavior:
 Common modifications:
 - Machine-language monitors typically repoint CBINV to a monitor warm-start address so breakpoints can return control to the monitor for debugging.
 
-## Source Code
-(omitted — no assembly listings or register maps provided)
-
 ## Key Registers
 - $0316-$0317 - RAM - CBINV: BRK instruction interrupt vector (stores little-endian address of BRK handler; default -> 65126 / $FE66)
 
 ## References
 - "nminv_vector" — expands on other system interrupt vectors (NMI)
+
+## Labels
+- CBINV

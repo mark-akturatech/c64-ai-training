@@ -42,3 +42,6 @@ Interpretation:
 ## References
 - "wait_for_play_prompt_and_display" — expands on detecting the PLAY switch state
 - "wait_for_play_or_record_prompt" — expands on detecting PLAY/RECORD switch state for write operations
+
+## Mnemonics
+- BIT

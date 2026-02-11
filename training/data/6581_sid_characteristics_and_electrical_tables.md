@@ -99,3 +99,9 @@ POWER
 
 - "6581 Sound Interface Device (SID) Datasheet" — MOS Technology, October 1982.
 - "Commodore 64 Programmer's Reference Guide" — Commodore Business Machines, 1982.
+
+## Labels
+- POTX
+- POTY
+- AUDIOIN
+- AUDIOOUT

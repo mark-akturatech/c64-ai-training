@@ -68,3 +68,10 @@ The routine relies on these KERNAL zero-page/file variables: $BA (current device
 ## References
 - "find_file_lat_search" — expands on finding logical file index used here
 - "clrchn_restore_default_io" — expands on reverting default devices (UNTALK/UNLISTEN)
+
+## Labels
+- CHKIN
+- DFLTN
+- SA
+- FA
+- STATUS

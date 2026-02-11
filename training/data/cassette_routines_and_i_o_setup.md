@@ -101,3 +101,12 @@ Due to the extensive length of the assembly code for these routines, providing t
 
 ## References
 - "kernal_chrin_chrout_and_file_routines" — expands on OPEN/CLOSE/SETNAM/SETLFS interactions with tape and serial I/O
+
+## Labels
+- GETIN
+- CHRIN
+- CHROUT
+- CHKIN
+- CHKOUT
+- OPEN
+- CLOSE

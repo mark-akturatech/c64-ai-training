@@ -289,3 +289,10 @@ sync_part               sei
 
 load_address            nop
 ```
+
+## Labels
+- SETLFS
+- SETNAME
+- LOAD_FILE
+- CLOSE_FILE
+- CLOSE_CHANNEL

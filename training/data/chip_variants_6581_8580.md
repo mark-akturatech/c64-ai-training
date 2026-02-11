@@ -73,3 +73,6 @@ Digi mod:
 ## References
 - "filter_resonance_and_characteristics" — expanded behavior and measurements of filter differences (6581 vs 8580)
 - "sample_playback_digi_techniques" — expanded details on 4-bit digi playback techniques and the 8580 resistor mod
+
+## Labels
+- $D418

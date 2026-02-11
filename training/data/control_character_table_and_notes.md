@@ -32,8 +32,5 @@ NOTE 2:
 All programs have been listed in a column 40 characters wide. Except where special characters have been spelled out between curly brackets, the lines are listed exactly as they appear on a Commodore 64 display. Spaces must be typed in as listed. Where necessary, count the character columns to determine the appropriate number of spaces.
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "typing_conventions_and_lister" — expands on why control characters were spelled out in listings

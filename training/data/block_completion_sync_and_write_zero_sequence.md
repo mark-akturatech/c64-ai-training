@@ -61,3 +61,13 @@ Notes on control flow and side-effects:
 - "bsiv_change_irq_vectors" — expands on uses BSIV to set IRQ vectors for zero/data writing
 - "turn_off_cassette_motor_tnof" — expands on calls TNOF to shut the motor after the final block
 - "interrupt_restore_and_vic_keyboard_restore_tnif_tniq" — expands on eventual system state restore after write completes
+
+## Labels
+- WRNC
+- WREND
+- WRTZ
+- FSBLK
+- SHCNL
+- SHCNH
+- CNTDN
+- PRP

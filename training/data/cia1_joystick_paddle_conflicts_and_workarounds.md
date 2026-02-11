@@ -85,3 +85,6 @@ Addresses referenced (decimal / hex)
 ## References
 - "cia1_data_ports_keyboard_matrix_and_layout" — expands on where joystick bits are read within the keyboard matrix
 - "cia_serial_and_timer_outputs" — expands on how timers can be used to toggle Port B outputs as alternative uses
+
+## Labels
+- POTX

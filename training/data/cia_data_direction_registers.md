@@ -11,11 +11,12 @@ These two bytes control the direction of data flow on CIA #1's parallel I/O port
 
 The documented default values correspond to the keyboard scanning arrangement: the keyboard column index is written to Data Port A (so Port A lines are outputs), and the keyboard row is read from Data Port B (so Port B lines are inputs).
 
-## Source Code
-(omitted — no code or tables in the source)
-
 ## Key Registers
 - $DC02-$DC03 - CIA 1 - Data Direction Registers A and B (per-bit direction: 1=output, 0=input)
 
 ## References
 - "ciapra_data_port_register_a" — expands on reasons to set DDR bits before reading keyboard or external devices
+
+## Labels
+- DDRA
+- DDRB

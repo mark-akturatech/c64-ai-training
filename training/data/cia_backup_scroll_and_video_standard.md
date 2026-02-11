@@ -16,9 +16,6 @@ This System Area region (addresses $02A1–$02FF) is used by the C64 KERNAL/OS t
 
 These bytes are small persistence/working storage used by system routines to save/restore CIA state during interrupt handling and vertical scrolling operations. The PAL/NTSC flag here is consulted by routines that must adapt to VIC-II differences between standards (see referenced vic_bank_selection material for VIC-II effects).
 
-## Source Code
-(omitted — no assembly/BASIC listings or register maps in source)
-
 ## Key Registers
 - $02A1-$02A4 - System RAM - CIA backup bytes (CIA2 interrupt; CIA1 Timer A; CIA1 interrupt; CIA1 Timer B)
 - $02A5 - System RAM - Scroll line count (current scrolled raster line)
@@ -27,3 +24,11 @@ These bytes are small persistence/working storage used by system routines to sav
 
 ## References
 - "vic_bank_selection" — expands on PAL/NTSC effects on VIC-II behavior (timing/bank implications)
+
+## Labels
+- CIA2_INTERRUPT_BACKUP
+- CIA1_TIMER_A_BACKUP
+- CIA1_INTERRUPT_BACKUP
+- CIA1_TIMER_B_BACKUP
+- SCROLL_LINE_COUNT
+- PAL_NTSC_FLAG

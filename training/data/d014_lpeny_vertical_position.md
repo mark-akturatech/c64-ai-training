@@ -10,3 +10,6 @@ This single-byte location contains the vertical position of the light pen. When 
 
 ## References
 - "light_pen_overview" — expands on general light pen behavior
+
+## Labels
+- LPENY

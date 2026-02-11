@@ -16,19 +16,13 @@ Behavioral notes captured from the source:
 
 (No assembly listing provided in the source; see referenced tokenizer/executor vectors for call sites.)
 
-## Source Code
-```text
-$0073-$008A  CHRGET             Machine code for reading BASIC bytes (24 bytes)
-$0079        CHRGOT             Entry point to read current byte
-$007A-$007B  CHRGET Ptr         Pointer to current BASIC byte
-
-Additional information can be found by searching:
-- "tokenizer_and_executor_vectors" which expands on tokenizer routines that call CHRGET
-```
-
 ## Key Registers
 - $0073-$008A - Zero Page - CHRGET machine code (24 bytes), entry at $0079
 - $007A-$007B - Zero Page - Pointer to current BASIC byte (used by tokenizer/listing)
 
 ## References
 - "tokenizer_and_executor_vectors" — expands on tokenizer routines that call CHRGET
+
+## Labels
+- CHRGET
+- CHRGOT

@@ -22,8 +22,5 @@ B(5,6) = 0   ' 2-dimensional array: row 5, column 6 set to 0
 C(1,2,3) = 0 ' 3-dimensional array: positions 1,2,3 set to 0
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "arrays_overview_and_dimensions" — expands on array dimension limits and storage calculation

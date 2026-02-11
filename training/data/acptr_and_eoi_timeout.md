@@ -87,3 +87,10 @@ Labels/variables from the listing:
 
 ## References
 - "clkhi_clklo_data_lines" — expands on uses of CLKHI/CLKLO/DATAHI/DATALO primitives defined later
+
+## Labels
+- ACPTR
+- EOIACP
+- COUNT
+- BSOUR1
+- CSBERR

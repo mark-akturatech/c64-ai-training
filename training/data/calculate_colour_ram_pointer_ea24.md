@@ -41,3 +41,9 @@ This pointer can then be used to access the colour RAM address range $D800-$DBFF
 - "shift_screen_line_up_down" — this routine is called (JSR) by the line-shift routine to set colour pointers
 - "clear_screen_line_x" — used when clearing a line to compute where to store colours
 - "print_and_store_char_and_colour_at_cursor" — used to compute the colour RAM pointer before storing the colour at the cursor
+
+## Labels
+- $00D1
+- $00D2
+- $00F3
+- $00F4

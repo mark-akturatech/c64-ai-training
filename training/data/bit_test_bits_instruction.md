@@ -26,9 +26,9 @@ Flags affected (notation from source): N Z C I D V
 (Bit 7 of M -> N, Bit 6 of M -> V; Z set if A /\ M == 0)
 ```
 
-## Key Registers
-- (omitted) — this chunk documents an instruction, not memory-mapped registers
-
 ## References
 - "beq_branch_on_result_zero" — expands on previous branch instruction (BEQ)
 - "bmi_branch_on_result_minus" — expands on next branch instruction (BMI)
+
+## Mnemonics
+- BIT

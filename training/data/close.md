@@ -97,3 +97,6 @@ FFC3: 6C 1C 03  JMP ($031C)
 
 - "open" — opens files (context for files that CLOSE will close).
 - "clrchn" — CLRCHN closes default I/O files and performs cleanup.
+
+## Labels
+- CLOSE

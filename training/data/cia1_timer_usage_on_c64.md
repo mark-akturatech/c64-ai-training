@@ -33,3 +33,9 @@ It is set to count to 0 every 17045/1022730 seconds (≈ 1/60 second on NTSC).
 ## References
 - "cia_timers_register_behavior_and_timing" — expands on timer latch and timing formula  
 - "irq_handler_and_keyscan" — expands on IRQ-driven keyboard scanning and software clock update
+
+## Labels
+- TIMALO
+- TIMAHI
+- TIMBLO
+- TIMBHI

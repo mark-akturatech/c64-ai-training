@@ -32,3 +32,6 @@ Page-boundary timing: Absolute,X; Absolute,Y; and (Indirect),Y incur +1 cycle if
 ## References
 - "instruction_table_notation_and_references" — expands on notation used for flags and addressing modes in this table  
 - "and_logical_and_instruction" — expands on the subsequent logical/bitwise instruction (AND)
+
+## Mnemonics
+- ADC

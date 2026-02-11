@@ -99,3 +99,13 @@ This KERNAL subroutine calculates an offset used for device, disk, or tape trans
 
 - "initialize_system_and_device_state_for_io" — Details the setup and usage of tables at $DCxx during system initialization.
 - "store_c1_c2_into_ad_ac" — Describes helper routines that rearrange pointer bytes for I/O operations, following conventions used elsewhere in the KERNAL.
+
+## Labels
+- B0
+- B1
+- TALO
+- TAHI
+- TBLO
+- TBHI
+- CRA
+- CRB

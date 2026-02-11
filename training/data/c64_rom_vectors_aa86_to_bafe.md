@@ -92,21 +92,6 @@ The routines below are ROM entry points (hex addresses) with their names as give
 - $BAFE: Divide by 10
 - $BB12: Evaluate / (division)
 
-## Source Code
-
-This chunk contains only the routine index (addresses and names). No assembly listings, register maps, or code were provided in the source; therefore, no Source Code section is included.
-
-## Key Registers
-
-- (none) — This chunk is an index of ROM routine entry addresses, not hardware registers. Key Registers omitted.
-
-## Incomplete
-
-- Missing: Disassembly or code listings for each routine (entry point bytes, mnemonic sequences, and parameter/stack conventions).
-- Missing: Per-routine descriptions of inputs/outputs, exact behavior, and calling conventions used by BASIC and the KERNAL.
-- Missing: Continuation beyond $BB12 (the source references a continuation chunk "c64_rom_vectors_bb.._to_e.." for later ROM routines).
-- Missing: Any cross-reference table linking these routine names to higher-level BASIC/KERNAL calls or symbols.
-
 ## References
 
 - "c64_rom_vectors_bb.._to_e.." — continuation of ROM routine table covering later addresses and routines

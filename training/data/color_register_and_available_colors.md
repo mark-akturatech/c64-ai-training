@@ -40,3 +40,6 @@ POKE COLOR#   COLOR        CHR$   KEYS TO PRESS
 ## References
 - "gdcol_color_under_cursor" — expands on GDCOL storing original color under the cursor
 - "hibase_screen_memory_top_page" — expands on PRINT effects when HIBASE is changed to print to other memory (examples)
+
+## Labels
+- COLOR

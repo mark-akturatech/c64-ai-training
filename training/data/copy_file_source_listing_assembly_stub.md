@@ -36,10 +36,6 @@ This listing is only the header/stub; the full machine-code DATA bytes and the f
 180  * = $C000
 ```
 
-## Key Registers
-
-(omitted — this chunk does not document hardware registers or addresses beyond the code origin)
-
 ## References
 
 - "initialization_and_error_handling_and_mldata" — contains/expands on the machine-code DATA bytes the assembler stub would reference.

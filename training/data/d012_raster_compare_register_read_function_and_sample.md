@@ -41,3 +41,6 @@ Note: the VIC-II has a 9th raster bit in $D011 bit 7 to extend the raster compar
 ## References
 - "d011_bit7_raster_compare_high_bit_and_blank_waiting" — covers $D011 bit 7 (high-order raster bit) and blank-waiting behavior
 - "d01a_irqmask_and_raster_interrupts" — covers IRQ mask at $D01A and using raster compare as interrupt source
+
+## Labels
+- $D012

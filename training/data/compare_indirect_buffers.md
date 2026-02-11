@@ -54,3 +54,11 @@
 ## References
 - "prepare_channel_registers" — expands on registers/pointers prepared and used by the JSR $F72C call
 - "increment_a6_and_check_limit" — expands on calling sequences used after comparisons and limit checks
+
+## Labels
+- $F7EA
+- $009E
+- $009F
+- $00B2
+- $00BB
+- $00B7

@@ -65,8 +65,5 @@ PRINT#file#, "BUFFER-POINTER:" channel; location
 PRINT#file#, "B-P:" channel; location
 ```
 
-## Key Registers
-- (none) — This topic is about DOS device command strings and file channels, not hardware registers.
-
 ## References
 - "user1_user2_behaviour_and_usage" — expands on how USER1/USER2 commands interact with buffer pointers

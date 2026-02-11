@@ -5,9 +5,6 @@
 ## Summary
 Assembly-time diagnostic that extracts and prints SID music file metadata using KickAssembler's LoadSid function. Outputs location, init/play addresses, song count, size, name, author, copyright, header version, speed flags, and memory layout during compilation for debugging. No runtime code is generated.
 
-## Key Registers
-- No runtime registers (assembly-time only)
-
 ## Techniques
 - SID file parsing
 - assembly-time printing

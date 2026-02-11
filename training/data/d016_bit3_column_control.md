@@ -39,3 +39,6 @@ Reference: works together with Bits 0-2 (coarse horizontal scrolling).
 
 ## References
 - "scrolx_horizontal_fine_scrolling" — expands on Register $D016 and Bits 0–2 (horizontal coarse/fine scrolling)
+
+## Labels
+- D016

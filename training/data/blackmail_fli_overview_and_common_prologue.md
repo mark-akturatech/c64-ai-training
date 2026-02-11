@@ -70,3 +70,15 @@ Notes:
 - "blackmail_fli_variants_8_orange_to_9_brown" — opcode sequences and background writes for Variants 8–9 (orange, brown)
 - "blackmail_fli_variants_a_lred_to_b_dgrey" — Variants A–B (light red, dark grey) and notes on LAX#imm
 - "blackmail_fli_variants_c_mgrey_to_f_lgrey" — Variants C–F (mid‑grey, light green, light blue, light grey), absolute addressing variants
+
+## Labels
+- $D011
+- $D018
+- $D021
+
+## Mnemonics
+- LDX
+- LDA
+- STA
+- STX
+- LAX

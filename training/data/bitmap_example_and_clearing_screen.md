@@ -37,3 +37,7 @@ Additional variant with RUN/STOP & RESTORE suggestion (as in original):
 
 ## References
 - "bitmap_mode_how_it_works_and_color_memory_usage" — expands on clearing bitmap area and initializing screen colors
+
+## Labels
+- $D018
+- $D011

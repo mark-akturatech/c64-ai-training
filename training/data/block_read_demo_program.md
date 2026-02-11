@@ -40,9 +40,6 @@ Notes:
 310 END
 ```
 
-## Key Registers
-- (none) — This chunk documents a CBM DOS/IEC command sequence and BASIC I/O; it does not reference VIC-II/SID/CIA hardware registers.
-
 ## References
 - "direct_access_entomology_intro_and_block_read_overview" — expands on B-R anomalies and overview
 - "block_read_and_block_write_interaction_and_recommendation" — expands on B-R behavior after block-write (B-W) rewrites and recommendations

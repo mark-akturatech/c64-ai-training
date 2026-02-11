@@ -39,9 +39,6 @@
 800 GOTO 990
 ```
 
-## Key Registers
-- (none) — this chunk does not reference hardware I/O registers at $Dxxx/$DCxx/$DDxx/$D4xx etc.; it performs BASIC variable assignments and a POKE to zero-page address 252 decimal ($FC), which is not listed here as a hardware register.
-
 ## References
 - "backup_overview_and_initialization" — expands on buffer and table initialization performed at program start
 - "master_disk_seek_and_read_loops" — expands on the master READ phase and the parallel seek logic used before sector writes

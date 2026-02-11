@@ -36,9 +36,6 @@ Notes:
                                 ; and length on descriptor stack and update stack pointers
 ```
 
-## Key Registers
-(omitted — this chunk does not reference C64 hardware registers)
-
 ## References
 - "descriptor_stack_check_and_cleanup" — ensures descriptor stack has room for pushed descriptor and performs push/update
 - "byte_parameter_parsing_and_evaluation" — details the byte-expression evaluator (JSR $B7A1)

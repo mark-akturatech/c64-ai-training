@@ -42,3 +42,8 @@ Step-by-step behavior:
 
 ## References
 - "check_line_decrement" — inverse operation: moving backward past start of line
+
+## Labels
+- CHECK_LINE_INCREMENT
+- PNTR
+- TBLX

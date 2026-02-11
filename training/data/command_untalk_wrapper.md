@@ -17,3 +17,6 @@ This entry is part of the C64 KERNAL ROM API and provides a stable vector for co
 
 ## References
 - "serial_bus_control" — expands on the UNTALK implementation and serial bus protocol (external)
+
+## Labels
+- UNTALK

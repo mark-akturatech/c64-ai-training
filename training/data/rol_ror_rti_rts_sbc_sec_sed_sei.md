@@ -1,0 +1,141 @@
+# 6502 Instruction Set — STX/STY/TAX/TAY/TSX/TXA/TXS/TYA and cycle notes
+
+**Summary:** This document provides an excerpt of the 6502 instruction set, focusing on the store and transfer instructions: STX, STY, TAX, TAY, TSX, TXA, TXS, and TYA. It details their effects, flag modifications, and cycle counts. Additionally, it includes footnotes on page-boundary and branching timing adjustments, as well as the original NMOS JMP (indirect) behavior.
+
+**Overview**
+
+This section documents the store-index and transfer instructions that move values between the accumulator (A), index registers (X and Y), stack pointer (SP), and memory, along with the flags they modify.
+
+- **Store Instructions (STX, STY):** Store the contents of the X or Y register into memory. These instructions do not modify any flags.
+- **Transfer Instructions (TAX, TAY, TSX, TXA, TXS, TYA):** Transfer data between registers and the accumulator. Most transfer instructions update the Negative (N) and Zero (Z) flags based on the result, except for TXS, which does not affect any flags.
+
+**Legend for Flag Effects:**
+
+- **+** = Flag is modified
+- **-** = Flag is not modified
+- **1** = Flag is set
+- **0** = Flag is cleared
+
+**Instruction Summaries**
+
+**STX — Store X Register in Memory**
+
+- **Effect:** M ← X
+- **Flags Affected:** None
+
+**STY — Store Y Register in Memory**
+
+- **Effect:** M ← Y
+- **Flags Affected:** None
+
+**TAX — Transfer Accumulator to X Register**
+
+- **Effect:** X ← A
+- **Flags Affected:** N, Z
+
+**TAY — Transfer Accumulator to Y Register**
+
+- **Effect:** Y ← A
+- **Flags Affected:** N, Z
+
+**TSX — Transfer Stack Pointer to X Register**
+
+- **Effect:** X ← SP
+- **Flags Affected:** N, Z
+
+**TXA — Transfer X Register to Accumulator**
+
+- **Effect:** A ← X
+- **Flags Affected:** N, Z
+
+**TXS — Transfer X Register to Stack Pointer**
+
+- **Effect:** SP ← X
+- **Flags Affected:** None
+
+**TYA — Transfer Y Register to Accumulator**
+
+- **Effect:** A ← Y
+- **Flags Affected:** N, Z
+
+**Timing and CPU Notes**
+
+- **Page Boundary Crossings:** Add 1 cycle to memory-mode instructions if a page boundary is crossed.
+- **Branch Instructions:** Add 1 cycle if the branch occurs on the same page; add 2 cycles if the branch crosses to a different page.
+- **Original NMOS 6502 JMP (Indirect) Behavior:** The lookup of the effective address high-byte is always performed on the same memory page as the low-byte. For example, `JMP ($11FF)` resolves to a lookup at $11FF for the low-byte and at $1100 for the high-byte.
+
+## Source Code
+
+```text
+          STX Store Index X in Memory
+              X -> M                               N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              zeropage      STX oper        86      2      3
+              zeropage,Y    STX oper,Y      96      2      4
+              absolute      STX oper        8E      3      4
+          STY Store Index Y in Memory
+              Y -> M                               N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              zeropage      STY oper        84      2      3
+              zeropage,X    STY oper,X      94      2      4
+              absolute      STY oper        8C      3      4
+          TAX Transfer Accumulator to Index X
+              A -> X                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TAX             AA      1      2
+          TAY Transfer Accumulator to Index Y
+              A -> Y                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TAY             A8      1      2
+          TSX Transfer Stack Pointer to Index X
+              SP -> X                              N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TSX             BA      1      2
+          TXA Transfer Index X to Accumulator
+              X -> A                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TXA             8A      1      2
+          TXS Transfer Index X to Stack Register
+              X -> SP                              N Z C I D V
+                                                   - - - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TXS             9A      1      2
+          TYA Transfer Index Y to Accumulator
+              Y -> A                               N Z C I D V
+                                                   + + - - - -
+              addressing    assembler       opc   bytes cycles
+              implied       TYA             98      1      2
+           *  add 1 to cycles if page boundary is crossed
+           **
+               add 1 to cycles if branch occurs on same page
+               add 2 to cycles if branch occurs to different page
+           *** on the original NMOS CPU, the lookup of the effective address high-byte is
+               always performed on the same memory page as the low-byte (e.g., "JMP ($11FF)"
+               resolves to a lookup at $11FF for the low-byte and at $1100 for the high-byte)
+               for the CMOS version, add 1 to cycle, if the address is at a page boundary
+          Legend to Flags:  + .... modified
+                            - .... not modified
+                            1 .... set
+                            0 .... cleared
+```
+
+## References
+
+- "pragmatics_of_comparisons_and_bit" — expands on how SBC/ADC affect flags and multi-byte arithmetic
+- "interrupts_and_vectors" — expands on RTI and interrupt return sequence
+
+## Mnemonics
+- STX
+- STY
+- TAX
+- TAY
+- TSX
+- TXA
+- TXS
+- TYA

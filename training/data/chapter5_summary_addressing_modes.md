@@ -33,11 +33,5 @@
 - Indexed, Indirect ((zp,X))
   - The operand is a zero-page base which is first added to X, then the resulting zero-page address is read as a vector (low/high) to form the final address. Rare on Commodore but available.
 
-## Source Code
-(omitted — no code listings or register maps in this summary)
-
-## Key Registers
-(omitted — this chunk does not document specific hardware register addresses)
-
 ## References
 - "addressing_modes_overview" — expands on summary of all modes and tradeoffs

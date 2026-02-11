@@ -28,9 +28,9 @@ Timing summary:
 - Add 1 additional cycle if branch is taken and crosses page boundary => 4 cycles total.
 ```
 
-## Key Registers
-(omitted — instruction uses Relative addressing, no fixed memory-mapped registers)
-
 ## References
 - "bmi_branch_on_result_minus" — expands on the previous branch instruction (BMI)
 - "bpl_branch_on_result_plus" — expands on the next branch instruction (BPL)
+
+## Mnemonics
+- BNE

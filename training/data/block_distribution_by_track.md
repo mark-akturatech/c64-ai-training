@@ -31,9 +31,6 @@ Total blocks on a standard 35-track 1540/1541 disk:
  +--------------+-------------+-------------+
 ```
 
-## Key Registers
-(omitted — this chunk documents disk block allocation, not CPU or I/O registers)
-
 ## References
 - "bam_format_1541" — expands on how the BAM stores availability for tracks 1–35
 - "relative_file_format" — describes Relative file side-sector allocation and per-track block usage

@@ -87,3 +87,13 @@ Notes on return addresses:
   | **4** | RTI   | EOR (ind,X) |       |       |       | EOR zpg | LSR zpg |       | PHA   | EOR # | LSR A |       | JMP abs | EOR abs | LSR abs |       |
   | **5** | BVC   | EOR (ind),Y |       |       |       | EOR zpg,X | LSR zpg,X |       | CLI   | EOR abs,Y |       |       |       | EOR abs,X | LSR abs,X |       |
   | **6** | RTS   | ADC (ind,X) |       |       |
+
+## Mnemonics
+- BRK
+- PHP
+- PLP
+- RTI
+- ADC
+- SBC
+- SED
+- CLD

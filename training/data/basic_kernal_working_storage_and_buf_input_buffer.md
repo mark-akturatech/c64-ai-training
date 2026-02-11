@@ -12,19 +12,12 @@ This working-storage area (addresses $0200–$0258; decimal 512–600) is alloca
 
 **[Note: Source may contain an imprecise historical aside about the VIC's exact maximum line length.]**
 
-## Source Code
-```text
-512-600   $0200-$0258   BUF
-BASIC Line Editor Input Buffer
-
-Buffer length: 89 bytes (600 - 512 + 1 = 89)
-Screen editor max: 80 characters (+1 zero terminator)
-Last 8 bytes: typically unused / available to programmer
-```
-
 ## Key Registers
 - $0200-$0258 - BASIC/Kernal - BUF (BASIC Line Editor Input Buffer, 89 bytes; used by immediate-mode input and INPUT/GET)
 
 ## References
 - "microprocessor_stack_overview_and_basic_usage" — expands on stack usage by BASIC and Kernal  
 - "i_o_tables_lat_fat_sat_and_clall" — tables for open files, devices, and secondary addresses
+
+## Labels
+- BUF

@@ -41,9 +41,6 @@ TBLA0R  .BYT $C3,$C2,$CD,$38,$30   ; ..CBM80..
 TBLA0E
 ```
 
-## Key Registers
-- (none) — this chunk is a ROM/string comparison routine; no hardware register addresses are defined.
-
 ## References
 - "system_start_reset_sequence" — called early in startup to decide whether to jump to an alternate ROM
 - "restore_and_vector_initialization" — vector/table initialization that follows the ROM test in startup

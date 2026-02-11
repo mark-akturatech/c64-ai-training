@@ -19,11 +19,11 @@ Behavior and notes:
 
 **[Note: Source may contain an error — the one-line register summary lists "Disconnect output of voice 4, 1=voice 3 off", while the descriptive text says "disconnects the output of voice 3." The intended behavior is to disconnect voice 3's output (commonly documented), but the source is inconsistent.]**
 
-## Source Code
-(omitted — no assembly/BASIC listings or register tables provided in source)
-
 ## Key Registers
 - $D418 - SID - Global Volume & Filter Select register (bits 0-7: volume, low-/band-/high-pass selects, voice disconnect)
 
 ## References
 - "d417_resonance_control" — Route voices to filter via D417 then select filter type via D418
+
+## Labels
+- SIGVOL

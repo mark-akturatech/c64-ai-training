@@ -59,3 +59,6 @@ POKE 56333,129  ' $DC0D <- 0x81 : Bit7=1, sets Bit0 -> enable Timer A interrupt
 ## References
 - "ciacra_control_register_a" — expands on control of Timer A behavior
 - "ciacrb_control_register_b" — expands on control of Timer B behavior
+
+## Labels
+- CIAICR

@@ -527,3 +527,13 @@ VIC-II
   sta (charPointer),y
 }
 ```
+
+## Labels
+- VIC2
+- CONTROL_1
+- RASTER
+- MEMORY_CONTROL
+- IRR
+- IMR
+- BORDER_COL
+- COLOR_RAM

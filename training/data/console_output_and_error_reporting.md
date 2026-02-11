@@ -70,8 +70,5 @@ nop
 label1:
 ```
 
-## Key Registers
-- (None — this chunk documents assembler directives, not hardware registers.)
-
 ## References
 - "testing_asserts_and_tools" — expands on testing and assertion features (see Chapter 16)

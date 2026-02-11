@@ -39,9 +39,6 @@ The conversion subroutine at 1010 is responsible for taking the decimal byte in 
 680 GOTO 960
 ```
 
-## Key Registers
-- None
-
 ## References
 - "load_disk_block_into_buffer_and_read_bytes" — preceding chunk that reads LOW and HIGH from the buffer
 - "confirm_and_convert_new_address" — follows this fragment; confirms and converts the entered new hex address

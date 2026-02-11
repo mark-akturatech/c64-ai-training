@@ -71,3 +71,10 @@ exit_to_basic           lda #$00
 
 skip                    rts              ; don't change Y-Coordinate
 ```
+
+## Labels
+- DC00
+- DC01
+- DC02
+- DC03
+- D001

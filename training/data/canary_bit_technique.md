@@ -41,8 +41,8 @@ got_canary:
     ; Carry contains the canary (zero) — use BCC/BCS decision already made
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "get_byte_routine" — expands on mechanics of stopping after 8 bits
+
+## Mnemonics
+- ROR

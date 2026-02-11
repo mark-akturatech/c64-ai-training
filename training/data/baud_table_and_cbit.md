@@ -38,3 +38,7 @@
 ## References
 - "t2nmi_subroutine_sample_and_timer_update" — expands on how BAUDOF values from BAUDO are used to compute mid-bit timer adjustments
 - "popen_patch_and_baudof_calculation_and_end" — shows where POpen computes BAUDOF derived from M51AJB and CBIT
+
+## Labels
+- BAUDO
+- CBIT

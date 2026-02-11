@@ -354,3 +354,9 @@ TryBit7:
 Done:
 }
 ```
+
+## Labels
+- PORT_REG_A
+- DATA_DIR_REG_A
+- PORT_REG_B
+- DATA_DIR_REG_B

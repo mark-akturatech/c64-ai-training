@@ -23,12 +23,6 @@ Supported types:
 - 65816 - the CPU used in the SNES and the SCPU (65xx extended 16-bit architecture)
 - sweet16 - an interpreter for a pseudo 16-bit CPU
 
-## Source Code
-(omitted — no assembly listings or register maps in this chunk)
-
-## Key Registers
-(none)
-
 ## References
 - "target_system_option" — expands on how the target option may set a default CPU type
 - "smart_mode_option" — explains 65816-specific smart-mode behavior for operand sizes

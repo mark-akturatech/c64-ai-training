@@ -24,9 +24,6 @@ Note about the lookup indexing: the code uses `start = 3*(ASC(c$)-127)`. For `AS
 920 c$=mid$(ss$,3*(asc(c$)-127),3):return
 ```
 
-## Key Registers
-- (none) — this chunk contains a BASIC string/lookup routine and references no hardware registers
-
 ## References
 - "read_and_crt_display" — expands on building the ASCII column for screen hex dumps
 - "printer_display_loop_reading_disk_buffer" — expands on building the ASCII column for printer hex dumps

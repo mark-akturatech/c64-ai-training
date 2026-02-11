@@ -13,3 +13,6 @@ This variable is conceptually paired with a buffer-occupied/flag location (see r
 ## References
 - "c3po_serial_output_buffer_flag_0x94" — expands on buffer-occupied flag corresponding to this buffered character  
 - "st_status_io_status_word_0x90" — expands on serial status and error reporting
+
+## Labels
+- BSOUR

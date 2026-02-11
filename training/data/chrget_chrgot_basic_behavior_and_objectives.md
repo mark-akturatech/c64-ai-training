@@ -44,3 +44,7 @@ SET_Z   LDA #$00       ; Load zero into A to set Z flag
 
 ## References
 - "infiltrating_basic_wedge_intro_and_CHRGET_location" — expands on where CHRGET resides and additional context for its operation.
+
+## Labels
+- CHRGET
+- CHRGOT

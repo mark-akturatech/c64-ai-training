@@ -36,3 +36,6 @@ $DC00        CIAPRA       Data Port Register A
 ## References
 - "cia1_data_ports_keyboard_matrix_and_layout" — expands on writing column selects and reading rows
 - "potx_poty_register_labels" — expands on Paddle inputs read via SID registers ($D419-$D41A) after selecting port via CIA
+
+## Labels
+- CIAPRA

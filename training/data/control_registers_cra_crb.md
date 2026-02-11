@@ -86,10 +86,11 @@ REGNAME ALARM    IN MODE        LOAD  RUN MODE OUT MODE   PB ON   START
                +-------------------------- TB ----------------------------+
 ```
 
-## Key Registers
-- (omitted — source defines CRA/CRB conceptually by name only; no absolute CIA addresses provided in this chunk)
-
 ## References
 - "time_of_day_tod_clock" — TOD/ALARM and TODIN behavior
 - "serial_port_sdr" — CRA SPMODE and CNT/serial shift clock relationship
 - "interrupt_control_icr" — Timer underflow interrupts and ICR behavior
+
+## Labels
+- CRA
+- CRB

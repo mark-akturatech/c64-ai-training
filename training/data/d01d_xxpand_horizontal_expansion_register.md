@@ -31,3 +31,6 @@ $D01D        XXPAND       Sprite Horizontal Expansion Register (53277)
 
 ## References
 - "d017_yx_expand_sprite_vertical_expansion" — expands on Vertical expansion register $D017
+
+## Labels
+- XXPAND

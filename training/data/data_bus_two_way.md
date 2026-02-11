@@ -8,7 +8,7 @@ The data bus on 650x systems is an 8-bit, bidirectional set of lines that carrie
 - Width: 8 bits (8 wires) — (8 bits => 256 possible values).
 - Read cycle: the selected memory/peripheral places an 8-bit value onto the bus; the 650x samples those lines and loads the value into the processor.
 - Write cycle: the 650x drives an 8-bit value onto the bus; the selected memory/peripheral latches and stores that value.
-- Direction and timing are controlled by dedicated control signals (read/write strobes and timing lines). These control signals determine when a device may drive the bus and when the CPU samples it (see Incomplete for missing specifics).
+- Direction and timing are controlled by dedicated control signals (read/write strobes and timing lines). These control signals determine when a device may drive the bus and when the CPU samples it.
 
 ## Source Code
 ```text
@@ -45,10 +45,6 @@ Example data byte on the 8-bit data bus:
 
            Figure 1.2  Two-way data bus
 ```
-
-## Incomplete
-- Missing: Detailed names and timing diagrams for the control signals that govern data bus direction and sampling (e.g., explicit R/W strobe, ready/strobe timing, bus-enable/tri-state timing).
-- Missing: Explicit timing relationships showing when the CPU drives the bus vs when memory/peripheral must drive it (waveform or cycle timing table referenced but not present).
 
 ## References
 - "bus_overview_650x" — expands on address bus selection process and complements this description

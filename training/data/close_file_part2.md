@@ -48,3 +48,10 @@ Indexing notes: X is the closed slot index (from stack), Y is set to the last-en
 
 ## References
 - "close_file_part1" — complements close operations and updates file tables
+
+## Labels
+- CLOSE
+- LDTND
+- LAT
+- FAT
+- SAT

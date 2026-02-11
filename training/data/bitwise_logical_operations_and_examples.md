@@ -47,9 +47,6 @@ Note: EOR with 255 produces the bitwise complement: result = 255 - original
 Formula: BYTEVALUE EOR MASK   (MASK = BITVALUE to flip one bit; MASK = 255 to invert all bits)
 ```
 
-## Key Registers
-- (none) — this chunk documents bitwise operations in general; no specific C64 register addresses.
-
 ## References
 - "bits_bytes_and_binary_numbering" — expands on bit weights (Bit0..Bit7) used in masks and operations  
 - "hexadecimal_and_nybbles" — expands on representing masks/values in hexadecimal  

@@ -48,3 +48,7 @@ $D011 ($D011 / 53265) — VIC-II control register (vertical fine scrolling + fla
 
 ## References
 - "d011_vertical_fine_scrolling_bits0_2_and_demo" — expands on D011 bits 0-2 and contains a demo
+
+## Labels
+- D011
+- D020

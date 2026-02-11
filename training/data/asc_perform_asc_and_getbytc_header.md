@@ -11,3 +11,7 @@
 ## References
 - "len_perform_len" — expands on related simple string functions returning numeric values
 - "getspa_allocate_string_space" — expands on string memory and descriptors referenced by ASC when accessing characters
+
+## Labels
+- ASC
+- GETBYTC

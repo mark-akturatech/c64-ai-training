@@ -13,3 +13,13 @@ Control of which active transition (edge/level/polarity) sets each flag is defin
 
 ## References
 - "6520_control_registers" — CRA/CRB bits layout and how flags are stored
+
+## Labels
+- IRQA
+- IRQB
+- CRA
+- CRB
+- CA1
+- CA2
+- CB1
+- CB2

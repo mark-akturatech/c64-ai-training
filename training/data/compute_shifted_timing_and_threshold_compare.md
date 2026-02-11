@@ -37,3 +37,7 @@ This code performs a 16-bit right shift by 2 on the inverted T2C timer value and
 
 - "cassette_pulse_types_and_loader_overview" — expands on uses the timing difference concept described in the overview.
 - "pulse_classification_and_store_character_calls" — expands on continues to classify pulses as B/C/D and possibly store bytes.
+
+## Labels
+- B0
+- B1

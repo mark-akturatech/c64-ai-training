@@ -9,23 +9,5 @@ This chunk identifies the CBM Header block used by the tape loader. The header c
 - File-details pointer: $033C-$0350 (see CBM File header)
 - Related loader routine: loader_core_leader_sync_and_header_read (reads leader/sync/header bytes immediately after this block)
 
-## Source Code
-```text
-<code>
-********************
-* CBM Header block *
-********************
-
-033C-0350  File details (see CBM File header)
-</code>
-
----
-Additional information can be found by searching:
-- "loader_core_leader_sync_and_header_read" which expands on Loader's Core starts immediately after this header and reads leader/sync/header bytes
-```
-
-## Key Registers
-- (none) — this chunk references memory addresses, not hardware registers
-
 ## References
 - "loader_core_leader_sync_and_header_read" — expands on Loader's Core: starts immediately after this header and reads leader/sync/header bytes

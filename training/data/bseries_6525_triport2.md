@@ -38,15 +38,13 @@ $DF06 |                            Unused                             | 57094
       +-------+-------+-------+-------+-------+-------+-------+-------+
 ```
 
-## Incomplete
-- Missing: Bit-level mapping for $DF00 (which bits correspond to which keyboard rows/columns).
-- Missing: Bit-level mapping for $DF01 (which bits correspond to which select lines).
-- Missing: Bit-level mapping for $DF02 (which bit(s) are CRT Mode and which bit(s) are Keyboard Read).
-- Missing: Signal polarities / active-high vs active-low for keyboard lines, select lines, and CRT Mode.
-- Missing: Electrical details (pull-up/down usage), default/reset values, and recommended DDR settings for typical keyboard scanning.
-- Missing: Mapping or purpose for $DF07 (address in $DF00-$DF07 range not documented).
-- Missing: Timing/handshaking details for keyboard-read operation (scan timing, strobe behavior).
-- Missing: Any example code or wiring diagrams that assign specific bits to matrix rows/columns.
-
 ## References
 - "bseries_6525_triport1" — other tri port mapping and interrupt registers
+
+## Labels
+- KEYBOARD
+- SELECT
+- CRT_MODE
+- DATA_DIR_DF00
+- DATA_DIR_DF01
+- DATA_DIR_DF02

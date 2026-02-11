@@ -36,8 +36,8 @@ Output Carry  = Input Carry
 Output Overflow = Input Bit 7
 ```
 
-## Key Registers
-(omitted — this chunk documents opcode/flag mappings, not memory-mapped registers)
-
 ## References
 - "arr_flag_mapping_table_data" — complete lookup table rows for all input combinations (raw output bits listed)
+
+## Mnemonics
+- ARR

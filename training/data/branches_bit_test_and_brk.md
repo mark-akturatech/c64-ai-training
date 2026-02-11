@@ -69,9 +69,18 @@ BIT abs      $2C     3      4
 BRK          $00     1      7      ; push PC+2, push SR (B=1 in pushed copy), vector $FFFE/$FFFF
 ```
 
-## Key Registers
-- (none) — this chunk documents instructions and opcodes, not memory-mapped hardware registers.
-
 ## References
 - "conditional_branching_and_interrupts" — expands on branch/interrupt interactions and timing
 - "bit_test_and_practical_examples" — expands on BIT usage and examples
+
+## Mnemonics
+- BPL
+- BMI
+- BVC
+- BVS
+- BCC
+- BCS
+- BNE
+- BEQ
+- BIT
+- BRK

@@ -34,9 +34,18 @@ TYA (Y -> A)         $98
 
 **[Note: Source may contain an error — the original raw block ended with extra bytes "$96 $8e $94 $8c 88" which appear unrelated or truncated; those bytes are not part of the instructions listed above (they match other store/decrement opcodes).]**
 
-## Key Registers
-(omitted — this chunk documents opcodes, not hardware registers)
-
 ## References
 - "store_instructions_sta_stx_sty" — expands on the store instruction opcodes referenced elsewhere
 - "addressing_mode_indirect_and_relative" — explains ind/rel addressing-mode labels used in quick-reference tables
+
+## Mnemonics
+- SBC
+- SEC
+- SED
+- SEI
+- TAX
+- TAY
+- TSX
+- TXA
+- TXS
+- TYA

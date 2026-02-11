@@ -18,9 +18,6 @@ For general register definitions and bit layouts, see the CIA #1 documentation (
 
 **[Note: Source may contain an error — one sentence referred to "CIA chips #1 and #1"; it should read "#1 and #2".]**
 
-## Source Code
-(omitted — no assembly/BASIC listings or register tables provided in source)
-
 ## Key Registers
 - $DD00-$DD0F - CIA #2 (Complex Interface Adapter) - Data Port A/B, Data Direction Registers, Timer A/B, Time‑of‑day/Alarm, Serial Shift register, Interrupt Control/Mask, Control registers; used for Serial Bus, RS‑232, User Port, and VIC‑II 16K bank selection (Data Port A). Interrupt output is wired to the 6510 NMI line.
 

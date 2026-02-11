@@ -79,3 +79,10 @@ FLAG pin / SRQ / NMI:
 - "port_a_data_register_pra" — expands on CIA2 Port A bits 0-1 and IEC wiring
 - "port_b_data_register_prb" — expands on RS-232 signals on CIA2 Port B
 - "interrupt_handling" — expands on CIA ICR and NMI triggering behavior
+
+## Labels
+- PRA
+- PRB
+- DDRA
+- DDRB
+- ICR

@@ -35,9 +35,6 @@ sourcerange fields: startLine, startPosition, endLine, endPosition, fileIndex
 MyMacro()
 ```
 
-## Key Registers
-(omitted — chunk does not concern hardware registers)
-
 ## References
 - "3rd_party_java_plugins_intro" — full list of plugin types with communication parameters
 - "archive_plugins_interface" — IArchive plugin API, registration, and asminfo export flags

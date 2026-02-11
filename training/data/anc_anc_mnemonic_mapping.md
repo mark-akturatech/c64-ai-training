@@ -37,9 +37,10 @@ Cross-reference suggestions:
 - Search "alr_alr_mnemonic_mapping" (next mnemonic group)
 ```
 
-## Key Registers
-(omitted — this chunk documents CPU/opcode mnemonics, not memory-mapped registers)
-
 ## References
 - "isc_isc_mnemonic_mapping" — expands on previous mnemonic (ISC)
 - "alr_alr_mnemonic_mapping" — expands on next group (ALR)
+
+## Mnemonics
+- ANC
+- ANC2

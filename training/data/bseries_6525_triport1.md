@@ -107,3 +107,13 @@ Additional information can be found by searching:
 ## References
 
 - "bseries_6525_triport2" — Mapping and details for the second tri port adapter ($DF00-$DF07).
+
+## Labels
+- PORTA
+- PORTB
+- PORTC
+- DDRA
+- DDRB
+- INTERRUPT_REGISTER
+- CONTROL_REGISTER
+- ACTIVE_INTERRUPT_REGISTER

@@ -70,8 +70,8 @@ Do not interpret these bits without consulting the header chunk. The header prov
 1
 ```
 
-## Key Registers
-- (none) — this chunk contains only a data table for an opcode mapping; no C64 hardware registers are referenced.
-
 ## References
 - "arr_flag_mapping_table_header" — column labels and formulas required to interpret these rows (maps outputs/flags to columns)
+
+## Mnemonics
+- ARR

@@ -64,9 +64,6 @@
 .print "Hello"
 ```
 
-## Key Registers
-- (none) — this chunk documents assembler directives and contains no CPU or I/O register addresses.
-
 ## References
 - "preprocessor_directives_a2" — expands on preprocessor directives and conditional compile related to .if / .eval
 

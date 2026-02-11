@@ -16,3 +16,6 @@ No operand addresses or immediate data bytes are present for implied-mode instru
 
 ## References
 - "instruction_tables_tax" — expands on TAX implied opcode and behavior
+
+## Mnemonics
+- TAX

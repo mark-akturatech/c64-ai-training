@@ -73,3 +73,7 @@ sax $d021
 ## References
 - "blackmail_fli_overview_and_common_prologue" — Overview and common prologue that precede these 10-cycle opcode variants
 - "blackmail_fli_variants_4_violet_to_7_yellow" — Next set of opcode variants (4–7) continuing the per-nibble organisation
+
+## Mnemonics
+- LAX
+- SAX

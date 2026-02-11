@@ -27,9 +27,9 @@ Manual reference: (Ref: 3.3.2)
   +----------------+-----------------------+---------+---------+----------+
 ```
 
-## Key Registers
-- (None — instruction operates on processor status flags, no memory-mapped registers)
-
 ## References
 - "clc_clear_carry_flag" — expands on previous flag-clearing instruction (CLC)
 - "cli_clear_interrupt_disable" — expands on next flag-clearing instruction (CLI)
+
+## Mnemonics
+- CLD

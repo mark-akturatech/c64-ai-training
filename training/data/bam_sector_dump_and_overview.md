@@ -45,9 +45,6 @@ Annotations:
 - remainder = unused / padding
 ```
 
-## Key Registers
-- (none) — This chunk documents disk sector contents (BAM/directory), not CPU or I/O registers.
-
 ## References
 - "bam_structure_and_field_offsets" — expands on the table mapping byte offsets to BAM contents
 - "bam_entry_format_and_track14_example" — expands on how each track is represented by four bytes (free count + 3‑byte bitmask) and gives a track 14 example

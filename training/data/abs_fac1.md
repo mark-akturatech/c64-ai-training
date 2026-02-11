@@ -17,3 +17,9 @@ This routine implements the ABS() operation for FAC1 by performing a single logi
 ## References
 - "save_a_as_integer_byte_and_prepare_fac1_for_abs" — prepares FAC1 and then uses ABS/normalise to finish
 - "round_fac1" — how normalization and rounding routines interact with FAC1 sign clearing
+
+## Labels
+- FAC1
+
+## Mnemonics
+- LSR

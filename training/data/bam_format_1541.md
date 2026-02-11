@@ -69,9 +69,6 @@ Bit ordering example:
     - remaining bits (21..23) ignored
 ```
 
-## Key Registers
-(omitted — this chunk documents disk BAM layout, not CPU/PIO registers)
-
 ## References
 - "directory_header_1541" — expands on the BAM located on Track 18 Sector 0 alongside the directory header
 - "dos_error_messages_50_to_74" — covers Directory error (71) and BAM integrity checks

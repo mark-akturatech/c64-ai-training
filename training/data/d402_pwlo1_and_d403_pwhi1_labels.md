@@ -25,3 +25,7 @@ pulse_width_12bit = ((PWHI1 & $0F) << 8) | PWLO1
 
 ## References
 - "voice1_pulse_waveform_width_control" — expands on Pulse width register composition
+
+## Labels
+- PWLO1
+- PWHI1

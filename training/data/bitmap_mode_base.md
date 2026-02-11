@@ -13,12 +13,12 @@ Details:
 - Bitmap size: 8000 bytes (decimal) = $1F40 (end address = start + $1F40 − 1).
 - Both placements fit within a single 16 KB VIC-II bank (bank size = $4000), so starting at $0000 or $2000 does not cross the bank boundary.
 
-## Source Code
-(omitted — no code or register map listed in source)
-
 ## Key Registers
 - $D018 - VIC-II - Control register for character/bitmap memory layout; bit 3 selects bitmap base at bank base + $0000 or + $2000
 
 ## References
 - "d018_vmcsb_overview" — expanded overview of $D018 bitmap/character base selection
 - "address_calculation_quick_reference" — details on calculating VIC-II addresses relative to bank base
+
+## Labels
+- D018

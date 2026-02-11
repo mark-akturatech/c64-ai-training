@@ -43,3 +43,7 @@ xloop   jsr chrout
         bne yloop
         rts         ; return to BASIC
 ```
+
+## Labels
+- CHROUT
+- PLOT

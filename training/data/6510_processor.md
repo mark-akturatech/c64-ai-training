@@ -34,9 +34,6 @@ The 6-bit I/O port lines (P0–P5) can be individually programmed as inputs or o
 - RDY is used to insert wait states on CPU read cycles when the VIC-II requires additional cycles (e.g., fetching character pointers or sprite data). While RDY is low (during a read), the CPU stops with the current address present on the bus.
 - AEC tri-states the CPU address bus so the VIC-II can drive addresses directly during its DMA cycles. Together, AEC (tri-stating addresses) and RDY (inserting CPU wait states) implement bus arbitration between CPU and VIC-II.
 
-## Source Code
-(omitted — no code/listings in source)
-
 ## Key Registers
 - $0000-$0001 - 6510 (CPU) - Built-in 6-bit I/O port (P0–P5): Data Direction Register ($0000) and Data Register ($0001).
 

@@ -24,3 +24,6 @@ Complementary/related KERNAL calls:
 ## References
 - "CHKOUT ($FFC9)" — complementary operation to set default output
 - "OPEN" — file must be OPEN before CHKIN can set it as default input
+
+## Labels
+- CHKIN

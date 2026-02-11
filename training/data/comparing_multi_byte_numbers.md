@@ -7,11 +7,11 @@ For unsigned multi-byte comparisons, subtract one number from the other and exam
 
 Note: CMP/CPX/CPY perform single-byte compares only; for multi-byte values the subtraction must be carried out over all bytes (least significant byte first), with carries/borrows propagated between bytes. You do not need to preserve the numeric result — only the final carry matters.
 
-## Source Code
-(omitted — no code listing present in source)
-
-## Key Registers
-(omitted — not applicable)
-
 ## References
 - "subtraction_and_multi_byte_subtraction" — expands on using subtraction and the C flag to compare multi-byte unsigned values
+
+## Mnemonics
+- SBC
+- CMP
+- CPX
+- CPY

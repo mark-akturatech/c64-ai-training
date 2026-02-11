@@ -21,3 +21,6 @@ Color RAM is used by text and bitmap display modes:
 
 - "multicolor_text_bitpair_mapping"—expands on lower 3 bits of color RAM used in multicolor text mode
 - "multicolor_bitmapped_mode"—expands on color RAM usage in multicolor bitmap mode
+
+## Labels
+- COLOR_RAM

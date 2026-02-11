@@ -39,9 +39,6 @@ for (outer = 0; outer < maximum_sprites-1; outer++)
 ; Note: Alternative approach mentioned — do not copy Y table; keep unsorted table and only swap/operate on the index table.
 ```
 
-## Key Registers
-- (none) — this chunk documents an algorithm and does not reference specific C64 hardware register addresses.
-
 ## References
 - "find_next_lowest_y_sort" — expands on another O(N^2) approach with a clear rejection point for >8 sprites on a row
 - "continuous_insertion_sort_ocean_algorithm" — describes a faster practical alternative used in commercial games

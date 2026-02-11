@@ -11,12 +11,9 @@ This ROM routine implements the CMD operation. Its behavior, as described in the
 
 The routine is intended for sending text to a previously selected device/channel while keeping that channel open for additional output (contrast with PRINT#, which closes the channel after the transfer).
 
-## Source Code
-(omitted — no assembly listing or register maps provided in this source)
-
-## Key Registers
-(none)
-
 ## References
 - "print_hash_print_channel" — covers how PRINT# uses CMD and then closes the channel
 - "print_statement" — covers how CMD delegates text handling to PRINT
+
+## Labels
+- CMD

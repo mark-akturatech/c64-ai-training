@@ -97,10 +97,15 @@ test_nmos_vs_65c02:
     RTS
 ```
 
-## Key Registers
-(Omitted — this chunk documents instruction sequences and flag behaviour, not specific C64 hardware registers.)
-
 ## References
 - "adc_instruction_decimal_mode" — decimal-mode ADC pseudocode and flag details
 
 **[Note: Source contained a truncated SBC/instruction table fragment; that fragment was omitted here and standard 6502 behaviour was used for ADC/SBC flag explanations and sequences.]**
+
+## Mnemonics
+- ADC
+- SED
+- CLD
+- CLC
+- SEC
+- BEQ

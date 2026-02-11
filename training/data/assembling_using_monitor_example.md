@@ -48,9 +48,6 @@ Example monitor verification command (monitor-dependent):
 .M 033C    ; display bytes starting at $033C (use your monitor's memory display)
 ```
 
-## Key Registers
-*(none — this chunk documents monitor assembly usage and memory bytes, not hardware registers)*
-
 ## References
 - "monitor_assembler_extensions_nonsymbolic" — expands on context for the .A assembler command
 - "display_memory_and_object_bytes" — expands on viewing the assembled bytes in memory with .M

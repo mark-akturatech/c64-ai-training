@@ -107,3 +107,10 @@ Light pen behavior:
 ## References
 - "6566_vicii_bitmap_and_mob_overview" — MOB collision details and MOB‑related interrupt behavior
 - "6566_vicii_theory_of_operation_and_memory_interface" — implementation details via bus/memory timing and refresh
+
+## Labels
+- LPX
+- LPY
+- RC8
+- RSEL
+- CSEL

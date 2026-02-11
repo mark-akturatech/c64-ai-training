@@ -24,9 +24,9 @@ Reference: 4.1.1.3
   * Add 2 if branch occurs to different page.
 ```
 
-## Key Registers
-- (None — this chunk documents an instruction, not memory-mapped registers.)
-
 ## References
 - "asl_arithmetic_shift_left_instruction" — expands on the preceding ASL instruction
 - "bcs_branch_on_carry_set" — covers the paired carry-true branch (BCS)
+
+## Mnemonics
+- BCC

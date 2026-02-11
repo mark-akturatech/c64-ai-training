@@ -23,7 +23,6 @@ This section transitions from general housekeeping to specialized direct-access 
 
   The following BASIC program demonstrates how to read a specific data block from the diskette into the 1541's RAM and display its contents:
 
-
   **Explanation:**
   - Line 10: Opens the command channel to the disk drive.
   - Line 20: Opens a data channel for direct access.
@@ -53,14 +52,9 @@ This section transitions from general housekeeping to specialized direct-access 
   110 CLOSE 2
   ```
 
-
 ```text
 (No additional source code provided in this section.)
 ```
-
-## Key Registers
-
-(This section does not reference specific C64/1541 registers or addresses.)
 
 ## References
 

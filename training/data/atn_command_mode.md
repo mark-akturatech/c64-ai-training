@@ -9,9 +9,6 @@
 - End Or Identify (EOI) signaling is NOT used for ATN command transmissions.
 - Devices typically provide a response within 1000 µs (1 ms) after command transmission (ATN response timing).
 
-## Key Registers
-(omit — this chunk documents protocol behavior, not C64 hardware registers)
-
 ## References
 - "layer3_overview" — expands on controller broadcast behavior and role orchestration  
 - "command_codes" — lists LISTEN/TALK/SECOND/OPEN/CLOSE command opcodes used under ATN

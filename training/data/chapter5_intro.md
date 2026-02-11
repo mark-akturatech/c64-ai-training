@@ -18,11 +18,5 @@ Common utilities and operations made possible by direct-access programming inclu
 - Copy a file
 - Catalog a disk library
 
-## Source Code
-(omitted — no assembly/BASIC/listings provided in this chunk)
-
-## Key Registers
-(omitted — this chunk does not document specific hardware registers)
-
 ## References
 - "direct_access_command_list" — expands on list of direct-access commands and short descriptions

@@ -17,3 +17,6 @@ No code, bitfields, or timing constants are included here; related buffer handli
 ## References
 - "tape_buffer_count_and_force_output_BUFPNT" — expands on buffer handling during tape write/read operations
 - "tape_timing_constant_CMP0_B0_B1" — expands on timing constants relevant to tape I/O
+
+## Labels
+- CNTDN

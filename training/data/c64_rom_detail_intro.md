@@ -23,3 +23,7 @@ These entries are the supported, portable method to perform basic console I/O an
 ## References
 - "Mapping the Commodore 64" — in-depth study of the ROM and system internals
 - "c64_rom_vectors_a000_to_ba80" — expands the list of ROM routine addresses with brief descriptions
+
+## Labels
+- CHROUT
+- CHRIN

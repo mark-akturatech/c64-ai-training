@@ -39,3 +39,6 @@ JSR $FFC9     ; JSR CHKOUT (define file 3 as output)
 ## References
 - "chkin_open_input_channel" — covers opening input (CHKIN) vs output (CHKOUT) channels
 - "ciout_transmit_byte_over_serial_bus" — covers transmitting bytes after a LISTEN (OPEN+CHKOUT) has been sent
+
+## Labels
+- CHKOUT

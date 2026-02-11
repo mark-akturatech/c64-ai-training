@@ -45,3 +45,6 @@ Register calculation:
 
 ## References
 - "voice1_envelope_adrs_overview" — expands on how to trigger ADSR via VCREG1 Gate bit
+
+## Labels
+- ATDCY1

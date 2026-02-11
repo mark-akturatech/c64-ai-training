@@ -32,3 +32,6 @@ $D010        MSIGX        Most Significant Bits of Sprites 0-7 Horizontal Positi
 
 ## References
 - "sprite_horizontal_and_vertical_position_registers_description" — How to form 9-bit horizontal position
+
+## Labels
+- MSIGX

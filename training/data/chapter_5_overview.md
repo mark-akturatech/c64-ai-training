@@ -215,3 +215,12 @@ Indirect,Y      |   $B1  |   2   | 5 (+1 if page crossed)
 - "6502 Addressing Modes" — Detailed coverage, examples, and opcode mappings. [Source](https://www.nesdev.org/obelisk-6502-guide/addressing.html)
 - "6502 Instruction Set" — Comprehensive instruction set reference. [Source](https://masswerk.at/6502/6502_instruction_set.html)
 - "6502 Programmers Reference" — In-depth programming reference. [Source](https://www.csh.rit.edu/~moffitt/docs/6502.html)
+
+## Mnemonics
+- INX
+- ASL
+- LDA
+- BEQ
+- JMP
+- LDX
+- STX

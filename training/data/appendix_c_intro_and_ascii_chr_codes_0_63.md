@@ -76,3 +76,9 @@ This table shows what appears when you execute PRINT CHR$(X) for X = 0..63. (PRI
 ## References
 - "ascii_chr_codes_68_183" — continued CHR$ table covering codes 68–183 (letters, function keys, extended graphics/colors)
 - "ascii_chr_codes_184_191_and_extended_mappings" — remaining CHR$ values and extended-code mapping notes (184–255)
+
+## Labels
+- WHITE
+- RED
+- GREEN
+- BLUE

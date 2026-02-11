@@ -40,8 +40,8 @@ Performs accumulator + memory + Carry (A + M + C) and stores the result in the a
 ;   Indirect Indexed      ADC ($aa),Y   $71  2  N,V,Z,C
 ```
 
-## Key Registers
-(omitted — ADC is an instruction, not a specific memory-mapped register)
-
 ## References
 - "sbc_instruction" — related arithmetic (Subtract with Carry, SBC)
+
+## Mnemonics
+- ADC

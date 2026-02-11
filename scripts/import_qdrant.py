@@ -171,6 +171,27 @@ def extract_code_addresses(content: str) -> list[str]:
     return sorted(addrs)
 
 
+def extract_section_items(content: str, heading: str) -> list[str]:
+    """Extract list items from a markdown section by heading name.
+
+    Parses "- ITEM" lines under the given ## heading until the next ## or EOF.
+    Returns the first whitespace-delimited token from each line (uppercase).
+    """
+    items = []
+    in_section = False
+    for line in content.split("\n"):
+        if line.startswith(f"## {heading}"):
+            in_section = True
+            continue
+        elif line.startswith("## ") and in_section:
+            break
+        elif in_section and line.startswith("- "):
+            token = line[2:].strip().split()[0] if line[2:].strip() else ""
+            if token:
+                items.append(token.upper())
+    return items
+
+
 def extract_metadata(content: str, filename: str) -> dict:
     """Extract structured metadata from the markdown content."""
     meta = {"filename": filename}
@@ -232,10 +253,10 @@ def extract_metadata(content: str, filename: str) -> dict:
         if registers:
             unique = sorted(set(registers))
             if has_source_code or len(unique) <= MAX_REGISTERS_PER_CHUNK:
-                meta["registers"] = unique
+                meta["tags"] = unique
 
     # For all types, parse ## Key Registers if present
-    if "registers" not in meta:
+    if "tags" not in meta:
         in_registers = False
         registers = []
         for line in content.split("\n"):
@@ -249,14 +270,24 @@ def extract_metadata(content: str, filename: str) -> dict:
         if registers:
             unique = sorted(set(registers))
             if has_source_code or len(unique) <= MAX_REGISTERS_PER_CHUNK:
-                meta["registers"] = unique
+                meta["tags"] = unique
 
     # Merge in disassembly instruction addresses from ## Source Code
     # These bypass MAX_REGISTERS_PER_CHUNK — they're precise code locations, not area descriptions
     code_addrs = extract_code_addresses(content)
     if code_addrs:
-        existing = set(meta.get("registers", []))
-        meta["registers"] = sorted(existing | set(code_addrs))
+        existing = set(meta.get("tags", []))
+        meta["tags"] = sorted(existing | set(code_addrs))
+
+    # Merge labels and mnemonics from ## Labels and ## Mnemonics sections
+    # These are curated by OpenAI and bypass the register cap
+    labels = extract_section_items(content, "Labels")
+    mnemonics = extract_section_items(content, "Mnemonics")
+    if labels or mnemonics:
+        existing = set(meta.get("tags", []))
+        existing.update(labels)
+        existing.update(mnemonics)
+        meta["tags"] = sorted(existing)
 
     return meta
 
@@ -290,16 +321,16 @@ def qdrant_create_collection():
     r.raise_for_status()
     print(f"  Created collection '{COLLECTION_NAME}' ({EMBEDDING_DIMENSIONS}d cosine)")
 
-    # Create payload index on registers for keyword filtering
+    # Create payload index on tags for keyword filtering
     r = requests.put(
         f"{QDRANT_URL}/collections/{COLLECTION_NAME}/index",
         json={
-            "field_name": "registers",
+            "field_name": "tags",
             "field_schema": "keyword",
         },
     )
     r.raise_for_status()
-    print(f"  Created payload index on 'registers' (keyword)")
+    print(f"  Created payload index on 'tags' (keyword)")
 
 
 def qdrant_delete_collection():

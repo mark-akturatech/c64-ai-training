@@ -16,3 +16,9 @@
 ## References
 - "6525_functional_description_IP1_intro_priority_order" — expands on IP=1 priority mode overview  
 - "6525_active_interrupt_register_AIR" — details AIR behavior, bits (A1) set/cleared during this sequence
+
+## Labels
+- ILR
+- AIR
+- A1
+- IRQ

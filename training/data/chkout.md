@@ -9,12 +9,9 @@
 - Addressing/dispatch: The documented vector is $FFC9, but the actual implementation is reached indirectly via the zero-page vector at ($0320) and then through $F250.
 - Complementary function: CHKIN ($FFC6) sets the default input device (logical file) and is the input counterpart to CHKOUT.
 
-## Source Code
-(omitted — no assembly listing or register map provided in source)
-
-## Key Registers
-(omitted — this chunk documents a KERNAL entry, not memory-mapped hardware registers)
-
 ## References
 - "chkin" — sets default input device (CHKIN $FFC6)
 - "open" — describes requirement that a file must be OPEN before CHKOUT is used
+
+## Labels
+- CHKOUT

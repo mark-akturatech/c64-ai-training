@@ -33,9 +33,6 @@ Figure 1.1 (below) illustrates a 650x connected to three memory chips via the ad
                Figure 1.1  Address bus connecting 650x & 3 chips
 ```
 
-## Key Registers
-(omitted — this chunk describes the bus concept, not specific C64 addresses)
-
 ## References
 - "data_bus_two_way" — explains data flow once a chip is selected
 - "memory_elements_and_mapped_io" — describes types of devices attached to the address bus (RAM/ROM/IO)

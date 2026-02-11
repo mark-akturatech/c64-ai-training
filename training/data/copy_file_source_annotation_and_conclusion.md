@@ -81,3 +81,9 @@ This chapter concludes by emphasizing the importance of studying the provided pr
 
 - "copy_file_machine_code_listing" — expands on the machine-language routines being annotated
 - "getting_out_of_trouble_unscratching_file" — expands on the next chapter and troubleshooting/unscratching content
+
+## Labels
+- SETLFS
+- SETNAM
+- LOAD
+- SAVE

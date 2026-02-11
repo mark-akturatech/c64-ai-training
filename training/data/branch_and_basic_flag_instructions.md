@@ -96,3 +96,17 @@ CLD  $D8
 
 - "standard_table_header_addressing_modes" — expands on the quick-reference table header and addressing-mode columns
 - "arithmetic_and_processor_status_and_transfers" — expands on related processor-status instructions (SEC/SED/SEI) that appear later in the table
+
+## Mnemonics
+- BMI
+- BNE
+- BPL
+- BVC
+- BVS
+- BCC
+- BCS
+- BEQ
+- BRK
+- CLC
+- CLD
+- CLI

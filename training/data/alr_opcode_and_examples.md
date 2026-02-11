@@ -59,9 +59,10 @@ ADC #stuff
 ; Lorenz-2.15/alrb.prg
 ```
 
-## Key Registers
-(omit — this chunk documents an instruction, not hardware registers)
-
 ## References
 - "Lorenz-2.15/alrb.prg" — test program for ALR
 - "anc_opcode_and_behavior" — related undocumented AND+shift/rotate opcodes and flag behaviors
+
+## Mnemonics
+- ALR
+- ASR

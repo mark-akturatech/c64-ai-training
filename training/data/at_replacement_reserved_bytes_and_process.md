@@ -10,9 +10,6 @@
 - The proper file type is restored at byte $02.
 - The only practical way to view these intermediate bytes is to interrupt the drive during a SAVE "@0:filename",8 operation; doing so is not recommended.
 
-## Source Code
-(omitted — source contains no assembly listings or register maps)
-
 ## Key Registers
 - $02 - Directory entry offset - file-type byte (temporarily ORed with $20 during @ replacement)
 - $03-$04 - Directory entry offsets - canonical track/sector pointer to first sector of file (start pointer)

@@ -101,3 +101,13 @@ Register access side-effects:
 ## References
 - "bseries_memory_map_high_and_io" — expands on screen RAM and video controller addresses
 - MOS Technology 6545 CRTC Datasheet: [https://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/6545/index.html](https://www.zimmers.net/anonftp/pub/cbm/documents/chipdata/6545/index.html)
+
+## Labels
+- HORIZONTAL_TOTAL
+- HORIZONTAL_CHARS_DISPLAYED
+- HORIZONTAL_SYNC_POSITION
+- MODE
+- SCAN_LINES
+- CURSOR_START
+- CURSOR_END
+- DISPLAY_ADDRESS

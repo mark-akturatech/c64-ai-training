@@ -43,8 +43,5 @@ color:
     ; modifications placed here will overwrite Base where they overlap
 ```
 
-## Key Registers
-(omitted — this chunk documents assembler behaviour and file/segment directives, not hardware registers)
-
 ## References
 - "access_local_labels_of_macros_and_pseudocommands" — expands on label scopes for different constructs

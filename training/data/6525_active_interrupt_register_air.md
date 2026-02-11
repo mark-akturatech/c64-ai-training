@@ -20,3 +20,6 @@
 ## References
 - "6525_interrupt_latch_register_ILR" — expands on ILR behavior (reading AIR clears ILR bits via ILR xor AIR)
 - "6525_interrupt_priority_select" — explains how AIR behavior differs with priority mode
+
+## Labels
+- AIR

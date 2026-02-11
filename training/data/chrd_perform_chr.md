@@ -48,3 +48,6 @@ CHRD:
 
 ## References
 - "frestr_discard_temporary_string" — expands on how temporary descriptors created by CHR$ are cleared by FRESTR/FRETMS when discarded.
+
+## Labels
+- CHRD

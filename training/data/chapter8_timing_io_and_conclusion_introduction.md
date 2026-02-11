@@ -14,12 +14,6 @@ This chunk is the Chapter 8 header and table of contents. It enumerates the main
 - Symbolic assemblers
 - Next steps / conclusion
 
-## Source Code
-(omitted — this chunk contains no code listings, register maps, or diagrams)
-
-## Key Registers
-(omitted — chapter header / table of contents; no specific hardware registers listed)
-
 ## References
 - "timing_rules_and_memory_cycles" — expands on Timing rules introduced in this chapter
 - "input_output_kernal_calls" — expands on I/O handling via KERNAL routines covered later

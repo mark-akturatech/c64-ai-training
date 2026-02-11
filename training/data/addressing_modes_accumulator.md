@@ -40,8 +40,8 @@ Binary/bit-level summary:
 ; LSR         Absolute,X      $5E     3     7
 ```
 
-## Key Registers
-*(none — this chunk documents an instruction/addressing mode, not memory-mapped registers)*
-
 ## References
 - "instruction_tables_lsr" — expanded forms and timings for LSR (zero page, absolute, X-indexed)
+
+## Mnemonics
+- LSR

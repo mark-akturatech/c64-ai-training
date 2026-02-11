@@ -92,3 +92,7 @@ Default upper nybble = 1 -> Video Matrix at VIC offset 1K
 
 ## References
 - "bitmap_pixel_addressing_and_plotting" — How to find pixel byte for given X-Y in bitmap space (expanded guide)
+
+## Labels
+- VMCSB
+- YXPAND

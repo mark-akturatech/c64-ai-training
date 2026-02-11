@@ -18,11 +18,5 @@
 ## Assembler command requirement
 - The assembler must accept and assemble assembly language commands (mnemonics, directives, labels) — this is the fundamental purpose of the tool.
 
-## Source Code
-(omitted — no code listings or register maps provided in source)
-
-## Key Registers
-- (none)
-
 ## References
 - "code_reuse_and_library_practices" — reuse practices and where to store commonly used routines

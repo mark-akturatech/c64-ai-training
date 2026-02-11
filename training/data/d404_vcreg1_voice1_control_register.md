@@ -58,3 +58,6 @@ Notes:
 - "voice1_pulse_waveform_width_control" — pulse width and its effect on Voice 1 pulse waveform
 - "voice1_adsr_and_envelope" — ADSR registers and envelope behavior for Voice 1
 - "voice2_voice3_control_registers" — control registers and behavior for Voices 2 and 3
+
+## Labels
+- VCREG1

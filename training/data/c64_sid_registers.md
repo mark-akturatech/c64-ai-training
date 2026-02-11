@@ -97,3 +97,9 @@ Commodore 64 6581 Usage (SID)
 
 ## References
 - "c64_memory_map_high_memory" — expands on SID I/O region in $D400 area
+
+## Labels
+- PADDLE_X
+- PADDLE_Y
+- VOICE3_OUTPUT
+- ENVELOPE3

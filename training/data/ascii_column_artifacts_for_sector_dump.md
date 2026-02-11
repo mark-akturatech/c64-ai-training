@@ -19,7 +19,6 @@ Alignment note: this column is intended to be read vertically in parallel with t
 ```text
 66 
 
-
 ■ 
 
 oV 
@@ -107,9 +106,6 @@ Uo
 
 UU 
 ```
-
-## Key Registers
-- (none) — this chunk is an ASCII artifact column, not a hardware register map
 
 ## References
 - "offsets_60_68_70_78_hex_ascii_dump" — expands on hex rows which these ASCII artifacts annotate  

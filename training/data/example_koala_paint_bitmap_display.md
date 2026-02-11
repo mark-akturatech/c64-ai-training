@@ -78,3 +78,10 @@ copyloop:
 
 mainloop:  jmp mainloop    ; display picture forever
 ```
+
+## Labels
+- $D011
+- $D016
+- $D018
+- $D020
+- $D021

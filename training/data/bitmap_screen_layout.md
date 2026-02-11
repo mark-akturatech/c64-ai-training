@@ -9,11 +9,5 @@
 - In layout terms: memory is ordered column-major within each 8-pixel cell, then advances across the 40 columns of the character grid; after filling 40 cells across, the next bytes continue on the next character-row down (the next group of 8 scanlines).
 - Practical consequence: plotting single pixels or horizontal spans is non-linear in memory — a horizontal run of pixels may be spread across many non-contiguous bytes. Efficient bitmap effects and plotters must account for this vertical-chunk addressing scheme.
 
-## Source Code
-(omitted — no assembly/BASIC listings or register tables in the source)
-
-## Key Registers
-(omitted — this chunk documents bitmap layout, not specific C64 I/O registers)
-
 ## References
 - "bitmap_graphics_koala_example" — practical example using Koala bitmap layout

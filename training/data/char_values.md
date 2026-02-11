@@ -45,10 +45,6 @@ lda #'L'+1    ; -> #'M'
 sta $0402
 ```
 
-## Key Registers
-
-(omitted — this chunk documents assembler character literals and directives, not hardware registers)
-
 ## References
 
 - "string_values_escape_codes_and_string_functions" — expands on string/char interplay and .charAt usage

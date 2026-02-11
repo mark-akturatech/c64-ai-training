@@ -19,3 +19,6 @@ When BASIC is not required, it may be switched out so the RAM beneath the BASIC 
 - "58260 ($E394)" — BASIC initialization routine details
 - "56576 ($DD00)" — switching out BASIC / VIC-II RAM access
 - "warm_start_and_brk_behavior" — warm start and BRK-related vector behavior
+
+## Labels
+- COLD_START_VECTOR

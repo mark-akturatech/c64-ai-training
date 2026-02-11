@@ -31,4 +31,5 @@ Important symbols referenced in this fragment:
 
 This fragment focuses on the RS-232 close path and the initial file lookup/dispatch logic; serial secondary close and cassette-finalization code paths are included here.
 
-## Source Code
+## Labels
+- CLOSE

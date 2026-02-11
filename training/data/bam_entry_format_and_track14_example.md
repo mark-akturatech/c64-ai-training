@@ -34,8 +34,5 @@ Interpretation:
 - Next three bytes ($D7 $5F $IF) -> 3-byte bitmap (21 bits) describing free (1) / allocated (0) sectors.
 ```
 
-## Key Registers
-- (none)
-
 ## References
 - "bam_bit_map_for_track14" — detailed bit-map decoding for track 14

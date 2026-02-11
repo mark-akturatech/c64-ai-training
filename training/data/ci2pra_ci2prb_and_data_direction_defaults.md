@@ -91,3 +91,9 @@ to output when the RS-232 device is opened.
 
 - "serial_bus_rs232_and_user_port_overview" — expands how Port A/B map to the serial bus and RS-232 signals.
 - "CIA #1 Data Direction Registers ($DC02)" — referenced for additional DDR operation details.
+
+## Labels
+- CI2PRA
+- CI2PRB
+- CI2DDRA
+- CI2DDRB

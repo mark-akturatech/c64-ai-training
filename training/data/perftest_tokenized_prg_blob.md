@@ -1,0 +1,72 @@
+# PERFTEST.PRG — Tokenized PRG blob (TOK64 / uuencoded)
+
+**Summary:** Tokenized PRG archive for PERFTEST.PRG packaged with a TOK64 marker and a uuencode-style header ("begin 644 PERFTEST.PRG"). Contains the binary/tokenized form of the program as uuencoded lines (many lines beginning with "M") and the terminating "end" marker.
+
+## Description
+This chunk is the distributed binary/tokenized form of PERFTEST.PRG as embedded after a BASIC listing. Packaging markers present in the source:
+- "stop tok64" — packaging boundary indicating the end of an upstream tokenized/BASIC section and the start of the embedded binary archive.
+- "begin 644 PERFTEST.PRG" — standard uuencode header declaring filename and mode.
+- UUencoded data lines — many lines beginning with "M" (typical uuencode 45-byte blocks).
+- A lone backtick/empty-line end-of-data marker followed by the "end" line terminating the uuencode block.
+
+The archive contains trailing blank lines and the uuencode termination. This blob is intended for retrieval and uudecode/uuextract to yield the original PERFTEST.PRG binary/tokenized file for direct loading on target Commodore 64 systems.
+
+## Source Code
+```text
+stop tok64
+
+begin 644 PERFTEST.PRG
+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
+5"(T@,3@U,``H$`P(H"!#2#J.````
+`
+end
+```
+
+## References
+- "perftest_intro_and_disk_format" — expands on binary/tok64 packaging and the BASIC program beginning
+- "perftest_track_write_read_test" — expands on the compiled/tokenized form used for direct loading on targets

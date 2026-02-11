@@ -33,3 +33,7 @@ The appendix supplies four interrogation utilities that complement one another:
 ## References
 - "interrogate_formatting_ids" — expands on the Interrogate Formatting ID's utility (returns embedded disk ID per track)
 - "interrogate_a_track" — expands on scanning a single track and verifying sectors
+
+## Labels
+- $0016
+- $0017

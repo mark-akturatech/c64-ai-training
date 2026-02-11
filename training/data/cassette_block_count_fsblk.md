@@ -13,3 +13,6 @@ This byte is used together with the tape input buffer during block read/write op
 ## References
 - "tape_input_byte_buffer_mych" — expands on FSBLK; used together with the tape input buffer when reading/writing blocks  
 - "io_start_address_stal" — expands on STAL; points to the RAM area used during LOAD/SAVE operations including tape I/O
+
+## Labels
+- FSBLK

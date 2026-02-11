@@ -112,3 +112,13 @@ reset_screen_mode       inc REG_INTFLAG
         
                         jmp $ea81
 ```
+
+## Labels
+- REG_INTSERVICE_LOW
+- REG_INTSERVICE_HIGH
+- REG_SCREENCTL_1
+- REG_RASTERLINE
+- REG_INTFLAG
+- REG_INTCONTROL
+- REG_INTSTATUS_1
+- REG_INTSTATUS_2

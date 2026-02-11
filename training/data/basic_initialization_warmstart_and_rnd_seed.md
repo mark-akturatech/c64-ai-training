@@ -42,13 +42,11 @@
 - $E460 (58464) — WORDS
   - ROM area holding power-up/start-up message text (the messages printed by $E422 and related routines).
 
-## Source Code
-
-(omitted — original source contained descriptive offsets and summaries but no assembly listings or program text to include)
-
-## Key Registers
-
-(omitted — this chunk documents ROM routines and memory/vector locations, not hardware chip registers)
-
 ## References
 - "chapter7_kernal_rom_intro_and_ram_underlying_kernal" — expanded context for power-up routines and RAM-under-Kernal behavior
+
+## Labels
+- CHRGET
+- INIT
+- INITAT
+- ATN

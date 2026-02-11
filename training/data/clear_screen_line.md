@@ -40,3 +40,7 @@ Behavioral notes (from code):
 - "set_start_of_line" — computes the address to start clearing from
 - "synchronise_colour_pointer" — positions the colour RAM pointer before clearing colours
 - "print_to_screen" — routines that write to both screen and colour RAM at computed pointers
+
+## Labels
+- D1
+- D2

@@ -70,3 +70,6 @@ Examples (binary -> brief meaning):
 ## References
 - "timer_b_16bit" — expands on CRB bits selecting Timer B input source and start/mode/pulse behavior
 - "time_of_day_clock" — expands on CRB bit 7 (ALARM) selecting alarm write mode for TOD
+
+## Labels
+- CRB

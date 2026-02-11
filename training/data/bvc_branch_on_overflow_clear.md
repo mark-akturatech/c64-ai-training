@@ -27,3 +27,6 @@ Example usage (assembly):
 ## References
 - "brk_force_break" — expands on the previous instruction (BRK)
 - "bvs_branch_on_overflow_set" — the paired branch instruction when V = 1 (BVS)
+
+## Mnemonics
+- BVC

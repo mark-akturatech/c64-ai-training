@@ -30,3 +30,11 @@ Each vector contains the 16-bit address (low byte first) of the ROM routine (poi
 ## References
 - "basic_indirect_vector_table_overview" — overview and reasons to modify these vectors  
 - "qp_lop_and_crunch_handlers" — details on QPLOP and CRUNCH token conversion/tokenizing routines
+
+## Labels
+- IERROR
+- IMAIN
+- ICRNCH
+- IQPLOP
+- IGONE
+- IEVAL

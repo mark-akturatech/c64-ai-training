@@ -10,11 +10,5 @@
 - Store one character as eight consecutive bytes; each byte represents one row of the 8×8 pixel glyph (bit = pixel on/off).
 - Place the generated character data in the character ROM/RAM area appropriate to your text/bitmap mode (see referenced setup for placement details).
 
-## Source Code
-(omitted — no listings in source)
-
-## Key Registers
-(omitted — this chunk does not cover specific hardware registers)
-
 ## References
 - "employing_user_defined_characters_setup" — where to place the generated character data
