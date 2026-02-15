@@ -39,3 +39,7 @@ Query examples:
 - Use KickAssembler syntax (`.const`, `!label+`, `BasicUpstart2()`)
 - Zero page ($00-$FF) for frequently accessed variables
 - Comment VIC/SID register usage
+- When writing code with no filename specified, save to `test/` directory
+
+## Plans
+- Always save implementation plans to `plans/` directory
