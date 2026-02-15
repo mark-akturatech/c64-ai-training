@@ -104,7 +104,7 @@ def insert_key_registers(content, registers_section):
 
 
 def main():
-    data_dir = Path(__file__).parent.parent / "training" / "data"
+    data_dir = Path(__file__).parent.parent / "data"
 
     dry_run = "--dry-run" in sys.argv
     model = "gpt-5-mini"

@@ -429,7 +429,7 @@ Reclassified blocks get removed from the code analysis queue and added to the da
 
 ### Qdrant Integration
 
-Extract core search functions from [query_qdrant.py](scripts/query_qdrant.py) into a shared `qdrant_search.ts` module:
+Extract core search functions from [query_qdrant.py](query/scripts/query_qdrant.py) into a shared `qdrant_search.ts` module:
 - `enrichQuery()` — number enrichment, memory map enrichment
 - `extractHexAddresses()` — find hex addresses in query
 - `qdrantSearch()` — hybrid filtered + semantic search
@@ -1170,7 +1170,7 @@ Before querying the project collection, Pass 2 also searches the patterns collec
 #### Seeding the Patterns Collection
 
 Initial seeding from known sources:
-1. **Our documented examples** (in `examples/`): Already analyzed and documented. Convert their documentation into pattern format and embed.
+1. **Our documented examples** (in `training/examples/`): Already analyzed and documented. Convert their documentation into pattern format and embed.
 2. **Well-known C64 routines**: Standard SID player init, sprite multiplexer, raster split, scroll routines — well-documented patterns that appear across hundreds of C64 programs.
 3. **First RE projects**: After successfully reverse-engineering 2-3 C64 programs, the patterns collection will have enough data to meaningfully accelerate subsequent projects.
 

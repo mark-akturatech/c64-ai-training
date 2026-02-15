@@ -305,7 +305,7 @@ def _fix_headings(md):
 def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    data_dir = project_root / 'training' / 'data'
+    data_dir = project_root / 'data'
 
     # Parse arguments
     force = '--force' in sys.argv

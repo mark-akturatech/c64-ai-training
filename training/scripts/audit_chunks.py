@@ -209,9 +209,9 @@ def audit_with_openai(client, model: str, content: str) -> tuple[str, str]:
 def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    data_dir = project_root / 'training' / 'data'
-    split_dir = project_root / 'training' / 'split'
-    config_dir = project_root / 'training' / 'split_config'
+    data_dir = project_root / 'data'
+    split_dir = project_root / 'split'
+    config_dir = project_root / 'split_config'
 
     # Parse arguments
     apply = '--apply' in sys.argv

@@ -8,7 +8,7 @@ import re
 import sys
 from pathlib import Path
 
-data_dir = Path(__file__).parent.parent / "training" / "data"
+data_dir = Path(__file__).parent.parent / "data"
 pattern = re.compile(
     r'\n## Incomplete\n.*?(?=\n## |\Z)',
     re.DOTALL

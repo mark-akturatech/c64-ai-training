@@ -1033,7 +1033,7 @@ def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
     docs_dir = project_root / 'documents'
-    config_dir = project_root / 'training' / 'split_config'
+    config_dir = project_root / 'split_config'
 
     # Parse arguments
     force = '--force' in sys.argv

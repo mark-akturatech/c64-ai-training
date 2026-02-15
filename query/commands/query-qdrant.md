@@ -1,8 +1,3 @@
----
-description: Search the C64/6502 knowledge base with automatic number base enrichment
-argument-hint: [--shallow|--deep] <your question about C64/6502 programming>
----
-
 # Query Qdrant Knowledge Base
 
 You have access to a comprehensive C64/6502 knowledge base via Qdrant vector search. This contains 30+ reference books (chip datasheets, programmer's reference, KickAssembler manual, ROM disassembly, etc.) split into concept-focused chunks, plus 70+ documented assembly code examples.
@@ -24,7 +19,7 @@ Parse the first word of `$ARGUMENTS` to detect mode. If it starts with `--shallo
 Run the query and answer:
 
 ```bash
-uv run scripts/query_qdrant.py --limit 4 "<query>"
+uv run query/scripts/query_qdrant.py --limit 4 "<query>"
 ```
 
 - If top result score > 0.5: read it, extract the answer, respond concisely. Done.
@@ -42,7 +37,7 @@ For **deep** mode, always follow all steps. For **auto** mode, follow all steps 
 ### Step 1: Run the initial query
 
 ```bash
-uv run scripts/query_qdrant.py --limit 8 "<query>"
+uv run query/scripts/query_qdrant.py --limit 8 "<query>"
 ```
 
 The script automatically:
@@ -78,7 +73,7 @@ These contain **full working assembly source code** in the document payload, alo
 **Study what the code does.** If the example uses registers or techniques you don't fully understand from the initial results, run follow-up queries to fill in the gaps. For instance, if a raster interrupt example writes `$7F` to `$DC0D` and you don't have a result explaining CIA interrupt control, query for that:
 
 ```bash
-uv run scripts/query_qdrant.py --limit 4 "$DC0D CIA interrupt control"
+uv run query/scripts/query_qdrant.py --limit 4 "$DC0D CIA interrupt control"
 ```
 
 Read ALL returned results, not just the top one. Lower-ranked results often contain complementary information — result 1 might be the register reference, result 4 a code example showing practical usage, result 6 a related technique.
@@ -88,7 +83,7 @@ Read ALL returned results, not just the top one. Lower-ranked results often cont
 Check the **`references`** at the bottom of each result. These are curated cross-links to related chunks. If any reference looks relevant to answering the question fully, run a follow-up query:
 
 ```bash
-uv run scripts/query_qdrant.py --limit 4 "<topic from the reference description>"
+uv run query/scripts/query_qdrant.py --limit 4 "<topic from the reference description>"
 ```
 
 Common cases where following references matters:

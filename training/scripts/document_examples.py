@@ -260,8 +260,8 @@ def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
     examples_dir = project_root / 'examples'
-    data_dir = project_root / 'training' / 'data'
-    cache_path = project_root / 'training' / 'parsed_sources.json'
+    data_dir = project_root / 'data'
+    cache_path = project_root / 'parsed_sources.json'
 
     # Parse arguments
     force = '--force' in sys.argv

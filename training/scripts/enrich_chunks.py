@@ -280,8 +280,8 @@ def file_md5(path: Path) -> str:
 def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    data_dir = project_root / 'training' / 'data'
-    cache_path = project_root / 'training' / 'parsed_sources.json'
+    data_dir = project_root / 'data'
+    cache_path = project_root / 'parsed_sources.json'
 
     # Parse arguments
     dry_run = '--dry-run' in sys.argv

@@ -35,8 +35,8 @@ QDRANT_URL = "http://localhost:6333"
 COLLECTION_NAME = "c64_training"
 EMBEDDING_MODEL = "text-embedding-3-large"
 EMBEDDING_DIMENSIONS = 3072
-DATA_DIR = Path(__file__).parent.parent / "training" / "data"
-CACHE_FILE = Path(__file__).parent.parent / "training" / "import_cache.json"
+DATA_DIR = Path(__file__).parent.parent / "data"
+CACHE_FILE = Path(__file__).parent.parent / "import_cache.json"
 BATCH_SIZE = 20  # embeddings per API call
 
 

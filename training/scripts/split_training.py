@@ -156,9 +156,9 @@ def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
 
-    config_dir = project_root / 'training' / 'split_config'
+    config_dir = project_root / 'split_config'
     raw_dir = project_root / 'documents'
-    split_dir = project_root / 'training' / 'split'
+    split_dir = project_root / 'split'
 
     split_dir.mkdir(parents=True, exist_ok=True)
 

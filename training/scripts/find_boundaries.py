@@ -150,7 +150,7 @@ def analyze_config(config_path, raw_dir, max_lines=80):
 def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    config_dir = project_root / 'training' / 'split_config'
+    config_dir = project_root / 'split_config'
     raw_dir = project_root / 'documents'
 
     max_lines = 80

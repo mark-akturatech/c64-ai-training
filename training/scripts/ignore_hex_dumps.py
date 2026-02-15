@@ -5,9 +5,9 @@ and remove their output files from training/data/ and training/split/."""
 import json
 from pathlib import Path
 
-CONFIG = Path(__file__).parent.parent / "training" / "split_config" / "Inside_Commodore_DOS.json"
-DATA_DIR = Path(__file__).parent.parent / "training" / "data"
-SPLIT_DIR = Path(__file__).parent.parent / "training" / "split"
+CONFIG = Path(__file__).parent.parent / "split_config" / "Inside_Commodore_DOS.json"
+DATA_DIR = Path(__file__).parent.parent / "data"
+SPLIT_DIR = Path(__file__).parent.parent / "split"
 
 GARBAGE_CHUNKS = {
     "ascii_block_C8_D0_transport",

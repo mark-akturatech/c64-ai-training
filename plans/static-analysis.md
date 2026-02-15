@@ -1983,21 +1983,21 @@ Static database of known C64 addresses. NOT an analysis step — just a data mod
 - Block builder: sub-split large blocks
 
 ### Integration Tests
-- Load a known `.prg` (from our examples/), run full pipeline, verify blocks.json
+- Load a known `.prg` (from our training/examples/), run full pipeline, verify blocks.json
 - Compare our subroutine boundaries against Regenerator's output for the same binary
 - Verify all KERNAL calls are correctly identified
 - Verify all hardware register accesses are correctly identified
 
 ### Test Fixtures
-Use small C64 programs from our `examples/` directory as test inputs. These are simple enough to manually verify the expected output.
+Use small C64 programs from our `training/examples/` directory as test inputs. These are simple enough to manually verify the expected output.
 
 ---
 
 ## File Structure
 
 ```
-src/
-  static-analysis/
+static-analysis/
+  src/
     index.ts                  # CLI entry point, orchestrates steps 1-6
     binary_loader.ts          # Step 1: Calls input_parsers/index.ts, auto-detect, load
     input_parsers/
@@ -2031,6 +2031,8 @@ src/
     block_builder.ts          # Step 6: Assemble blocks.json
     symbol_db.ts              # Known C64 symbols (KERNAL, hardware, ZP)
     types.ts                  # Shared TypeScript interfaces
+  package.json
+  tsconfig.json    
 ```
 
 ---

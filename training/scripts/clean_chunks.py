@@ -351,9 +351,9 @@ def run_shrink(data_dir, client, model, threshold, dry_run):
 def main():
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    split_dir = project_root / 'training' / 'split'
-    data_dir = project_root / 'training' / 'data'
-    cache_path = project_root / 'training' / 'parsed_sources.json'
+    split_dir = project_root / 'split'
+    data_dir = project_root / 'data'
+    cache_path = project_root / 'parsed_sources.json'
 
     # Parse arguments
     force = '--force' in sys.argv
