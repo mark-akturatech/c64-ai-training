@@ -41,5 +41,9 @@ Query examples:
 - Comment VIC/SID register usage
 - When writing code with no filename specified, save to `test/` directory
 
+## Git Safety
+- **NEVER** run `git revert`, `git checkout .`, `git restore`, `git reset`, `git stash`, or any destructive git command
+- There are often many uncommitted changes in progress — destructive git operations risk losing work
+
 ## Plans
 - Always save implementation plans to `plans/` directory
