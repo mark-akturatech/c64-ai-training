@@ -8,6 +8,7 @@ import { basename } from "node:path";
 import { loadBinary, detectPacker } from "./binary_loader.js";
 import { detectEntryPoints } from "./entry_point_detector.js";
 import { buildDependencyTree } from "./tree_walker.js";
+import { discoverCode } from "./code_discoverer.js";
 import { classifyDataRegions } from "./data_classifier.js";
 import { assembleBlocks } from "./block_assembler.js";
 import { loadEnrichers } from "./block_enrichers/index.js";
@@ -24,7 +25,7 @@ async function main(): Promise<void> {
   const startTime = Date.now();
 
   // Step 1: Binary Loader
-  console.error(`[1/6] Loading ${args.files[0]}...`);
+  console.error(`[1/7] Loading ${args.files[0]}...`);
   const image = await loadBinary(args.files[0], {
     format: args.format,
     loadAddress: args.loadAddress,
@@ -41,7 +42,7 @@ async function main(): Promise<void> {
   }
 
   // Step 2: Entry Point Detection
-  console.error("[2/6] Detecting entry points...");
+  console.error("[2/7] Detecting entry points...");
   const { entryPoints, bankingState } = detectEntryPoints(image, args.entryPoints);
   if (entryPoints.length === 0) {
     console.error("  ERROR: No entry points found. Use --entry to specify one.");
@@ -60,17 +61,38 @@ async function main(): Promise<void> {
   );
 
   // Step 3: Dependency Tree Builder
-  console.error("[3/6] Building dependency tree...");
-  const { tree, byteRole } = await buildDependencyTree(image, entryPoints, bankingState);
-  const codeNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "code");
-  const dataNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "data");
+  console.error("[3/7] Building dependency tree...");
+  let { tree, byteRole } = await buildDependencyTree(image, entryPoints, bankingState);
+  let codeNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "code");
+  let dataNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "data");
   console.error(
     `  ${codeNodes.length} code nodes, ${dataNodes.length} data nodes, ` +
     `${tree.getSubroutines().length} subroutines`
   );
 
-  // Step 4: Data Classifier
-  console.error("[4/6] Classifying data regions...");
+  // Step 4: Code Discovery — find unreached code islands, trace them through tree walker
+  console.error("[4/7] Discovering unreached code...");
+  const discoveredEntryPoints = await discoverCode(image.bytes, tree, bankingState, byteRole, image.loaded);
+  if (discoveredEntryPoints.length > 0) {
+    console.error(`  Found ${discoveredEntryPoints.length} unreached code region(s), re-tracing...`);
+    for (const ep of discoveredEntryPoints) {
+      console.error(
+        `  $${ep.address.toString(16).toUpperCase().padStart(4, "0")} [${ep.confidence}] — ${ep.description}`
+      );
+    }
+    ({ tree, byteRole } = await buildDependencyTree(image, discoveredEntryPoints, bankingState, { tree, byteRole }));
+    codeNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "code");
+    dataNodes = Array.from(tree.nodes.values()).filter((n) => n.type === "data");
+    console.error(
+      `  After re-trace: ${codeNodes.length} code nodes, ${dataNodes.length} data nodes, ` +
+      `${tree.getSubroutines().length} subroutines`
+    );
+  } else {
+    console.error("  No unreached code found");
+  }
+
+  // Step 5: Data Classifier
+  console.error("[5/7] Classifying data regions...");
   const dataCandidates = await classifyDataRegions(
     image.bytes,
     tree,
@@ -80,13 +102,13 @@ async function main(): Promise<void> {
   );
   console.error(`  ${dataCandidates.length} data candidates from ${dataNodes.length} data nodes`);
 
-  // Step 5: Block Assembler
-  console.error("[5/6] Assembling blocks...");
-  let blocks = assembleBlocks(tree, dataCandidates, image.loaded);
+  // Step 6: Block Assembler
+  console.error("[6/7] Assembling blocks...");
+  let blocks = assembleBlocks(tree, dataCandidates, image.loaded, image.bytes);
   console.error(`  ${blocks.length} raw blocks`);
 
-  // Step 6: Block Enrichment
-  console.error("[6/6] Enriching blocks...");
+  // Step 7: Block Enrichment
+  console.error("[7/7] Enriching blocks...");
   const enrichers = await loadEnrichers();
   const enricherContext = {
     tree,

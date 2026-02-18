@@ -206,17 +206,17 @@ export class VsfParser implements InputParser {
 
   private parseCpu(data: Uint8Array, mod: VsfModule): CpuState {
     const d = mod.dataOffset;
-    // MAINCPU data layout:
-    // +0: 4 bytes clock (LE)
-    // +4: A, +5: X, +6: Y, +7: SP
-    // +8-9: PC (LE), +10: Status
+    // MAINCPU register offsets differ by module version:
+    //   v1.1 (VICE 3.5):  +4=A, +5=X, +6=Y, +7=SP, +8-9=PC, +10=Status
+    //   v1.4 (VICE 3.10): +8=A, +9=X, +10=Y, +11=SP, +12-13=PC, +14=Status
+    const regBase = mod.majorVersion >= 1 && mod.minorVersion >= 4 ? 8 : 4;
     return {
-      a: data[d + 4],
-      x: data[d + 5],
-      y: data[d + 6],
-      sp: data[d + 7],
-      pc: data[d + 8] | (data[d + 9] << 8),
-      status: data[d + 10],
+      a: data[d + regBase],
+      x: data[d + regBase + 1],
+      y: data[d + regBase + 2],
+      sp: data[d + regBase + 3],
+      pc: data[d + regBase + 4] | (data[d + regBase + 5] << 8),
+      status: data[d + regBase + 6],
     };
   }
 
@@ -226,19 +226,22 @@ export class VsfParser implements InputParser {
   ): { ram: Uint8Array; cpuPortData: number; cpuPortDir: number } {
     const d = mod.dataOffset;
 
-    // First 2 bytes are CPU port data ($01) and direction ($00)
+    // C64MEM layout: 4-byte prefix (CPU port state) + 65536 bytes RAM + suffix
+    // First 2 bytes of prefix are CPU port data ($01) and direction ($00)
     const cpuPortData = data[d];
     const cpuPortDir = data[d + 1];
 
-    // RAM is the last 65536 bytes of the module data
-    // (prefix size varies by VICE version, but RAM is always 64KB at the end)
-    const prefixSize = mod.dataSize - 65536;
-    if (prefixSize < 0) {
+    if (mod.dataSize < 65538) {
       throw new Error(
-        `C64MEM module too small: ${mod.dataSize} bytes (need at least 65536)`
+        `C64MEM module too small: ${mod.dataSize} bytes (need at least 65538)`
       );
     }
 
+    // Old VICE (no suffix): dataSize - 65536 = correct prefix size
+    // New VICE 3.10 (15-byte suffix): dataSize - 65536 = 19, wrong
+    // Prefix is always small (2-4 bytes), so cap at 4
+    const calcPrefix = mod.dataSize - 65536;
+    const prefixSize = calcPrefix > 8 ? 4 : calcPrefix;
     const ramOffset = d + prefixSize;
     const ram = data.slice(ramOffset, ramOffset + 65536);
 

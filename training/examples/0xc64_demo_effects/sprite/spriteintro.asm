@@ -43,8 +43,6 @@
 
 BasicUpstart2(main)
 
-*= $c000 "Main Code"
-
 main:
                 jsr $e544               // clear screen
 
@@ -236,12 +234,12 @@ spriteset1:     .byte 89, 50, 113, 60, 137, 70, 161, 80         // sprite positi
                 .byte 185, 80, 209, 70, 230, 60, 255, 50
                 .byte 2, 4, 6, 8, 8, 6, 4, 2                   // sprite colours
                 .byte 10, 15                                    // multi colours 1 & 2
-                .byte $80, $81, $81, $80, $80, $81, $81, $80    // sprite data pointers
+                .byte spritedata/64, spritedata2/64, spritedata2/64, spritedata/64, spritedata/64, spritedata2/64, spritedata2/64, spritedata/64    // sprite data pointers
 spriteset2:     .byte 89, 208, 113, 198, 137, 188, 161, 178     // sprite positions (x, y)
                 .byte 185, 178, 209, 188, 230, 198, 255, 208
                 .byte 1, 5, 8, 9, 9, 8, 5, 1                   // sprite colours
                 .byte 13, 15                                    // multi colours 1 & 2
-                .byte $81, $81, $80, $81, $81, $80, $81, $81    // sprite data pointers
+                .byte spritedata2/64, spritedata2/64, spritedata/64, spritedata2/64, spritedata2/64, spritedata/64, spritedata2/64, spritedata2/64    // sprite data pointers
 intindex:       .byte 0
 intqueuelow:    .byte <spritesplit, <spritesplit, <update        // interrupt queue
 intqueuehigh:   .byte >spritesplit, >spritesplit, >update
@@ -249,13 +247,13 @@ inttrigger:     .byte 0, 140, 250
 setptrlow:      .byte <spriteset1, <spriteset2
 setptrhigh:     .byte >spriteset1, >spriteset2
 
-*= $2000 "Sprite Data"
-
+// .align 64
+* = $2000
 spritedata:     .byte $00, $28, $00, $02, $be, $80, $0b, $d7, $e0, $2d, $69, $78, $2d, $be, $78, $b6
                 .byte $d7, $9e, $b7, $69, $de, $b6, $d7, $9e, $b7, $69, $de, $b6, $d7, $9e, $b7, $69
                 .byte $de, $b6, $d7, $9e, $2d, $be, $78, $2d, $69, $78, $0b, $d7, $e0, $02, $be, $80
                 .byte $00, $28, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $82
-                .byte $00, $20, $00, $00, $98, $00, $00, $98, $00, $02, $76, $00, $02, $76, $00, $02
+spritedata2:    .byte $00, $20, $00, $00, $98, $00, $00, $98, $00, $02, $76, $00, $02, $76, $00, $02
                 .byte $66, $00, $09, $dd, $80, $09, $ed, $80, $09, $dd, $80, $09, $dd, $80, $27, $77
                 .byte $60, $27, $bb, $60, $27, $bb, $60, $27, $67, $60, $09, $fd, $80, $02, $56, $00
                 .byte $00, $a8, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $00, $8b

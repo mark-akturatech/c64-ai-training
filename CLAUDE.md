@@ -45,5 +45,30 @@ Query examples:
 - **NEVER** run `git revert`, `git checkout .`, `git restore`, `git reset`, `git stash`, or any destructive git command
 - There are often many uncommitted changes in progress — destructive git operations risk losing work
 
+## Build Pipeline: analyze → build → compile → VSF
+
+The static analyzer loads input files (.vsf, .prg, etc.) and produces blocks.json with all data embedded (base64 `raw` field). The builder uses only blocks.json — it does NOT need the original binary.
+
+```bash
+# 1. Static analysis (accepts .vsf or .prg)
+npx tsx static-analysis/src/index.ts path/to/input.vsf
+# → outputs static-analysis/blocks.json
+
+# 2. Builder (uses blocks.json only — all data is embedded)
+npx tsx builder/src/index.ts static-analysis/blocks.json -o test/output-dir/
+# → outputs main.asm
+
+# 3. KickAssembler
+kickass test/output-dir/main.asm -o test/output-dir/compiled.prg
+# → outputs compiled.prg
+
+# 4. PRG → VSF snapshot (optional)
+npx tsx helper/prg2vsf/src/index.ts test/output-dir/compiled.prg --pc 0xENTRY -o test/output-dir/output.vsf
+# For BASIC SYS programs: omit --pc (auto-detected, uses keyboard buffer RUN)
+# For raw/game snapshots: pass --pc 0xADDR
+```
+
+**Do NOT modify pipeline code** when asked to build something — just run the commands above.
+
 ## Plans
 - Always save implementation plans to `plans/` directory

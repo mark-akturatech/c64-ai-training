@@ -2,7 +2,7 @@
 
 ## Overview
 
-A 6-step deterministic pipeline that analyzes C64 binaries and produces `blocks.json` — a structured representation of every code block, data region, and unknown area in the program. No AI, no API calls. All intelligence lives in pluggable plugins.
+A 7-step deterministic pipeline that analyzes C64 binaries and produces `blocks.json` — a structured representation of every code block, data region, and unknown area in the program. No AI, no API calls. All intelligence lives in pluggable plugins.
 
 **Language:** TypeScript/Node.js
 **Input:** Binary files (`.prg`, `.sid`, `.vsf`, `.asm` disassembly dumps) + optional entry points
@@ -32,19 +32,22 @@ Input (.prg, .sid, .vsf, .asm)
 [3. tree_walker] ────────────── queue-based code/data discovery
     |                            pluggable discovery plugins (instruction/node/tree phases)
     v
-[4. data_classifier] ────────── pluggable data detector plugins
+[4. code_discoverer] ──────────  pluggable code discovery plugins
+    |                            find unreached code islands, re-trace through tree walker
+    v
+[5. data_classifier] ────────── pluggable data detector plugins
     |                            classify data nodes + orphan regions
     v
-[5. block_assembler] ────────── tree nodes + candidates → blocks
+[6. block_assembler] ────────── tree nodes + candidates → blocks
     |                            code blocks, data blocks, gap filling
     v
-[6. block_enrichers] ────────── pluggable enricher plugins
-    |                            promote, label, split, annotate, validate
+[7. block_enrichers] ────────── pluggable enricher plugins
+    |                            label, split, merge, annotate, validate
     v
 blocks.json
 ```
 
-No iterative fixpoint loop. The tree walker uses a queue — when any plugin discovers new code targets, they go into the queue and get processed in the same pass. The tree grows until the queue drains.
+No iterative fixpoint loop. The tree walker uses a queue — when any plugin discovers new code targets, they go into the queue and get processed in the same pass. The tree grows until the queue drains. The code discoverer (step 4) may find additional entry points and re-invoke the tree walker incrementally — the existing tree and byteRole array are preserved, only new code is traced.
 
 ---
 
@@ -201,9 +204,49 @@ Plugins return `PluginResult` which can: queue new targets, create new nodes, ad
 
 Tree-phase plugins can queue new targets. After tree plugins run, the queue is re-processed with the same `walkTarget()` logic, so discoveries from tree plugins get fully walked.
 
+The tree walker supports **incremental mode**: when called with an `existing` parameter (`{ tree, byteRole }`), it reuses the existing tree and byte role array, only walking new entry points. This is used by the code discoverer (step 4) to add discovered code without rebuilding the entire tree.
+
 ---
 
-## Step 4: Data Classifier
+## Step 4: Code Discoverer
+
+**Files:** `code_discoverer.ts`, `code_discovery/`
+
+Finds code that the tree walker couldn't reach from known entry points — "code islands" that are only called indirectly, via computed jumps, or from code that hasn't been traced yet.
+
+Runs **before** data classification so that data detectors have access to all code edges (data reads, hardware writes) from discovered code. This solves a chicken-and-egg problem: data classification needs code context, but some code is only discoverable by scanning unclaimed regions.
+
+### Process
+
+1. Load code discovery plugins from `code_discovery/`
+2. Find orphan regions (loaded bytes not claimed by any tree node)
+3. Run each plugin on each orphan region → collect new entry points
+4. If any entry points found, re-invoke the tree walker in incremental mode
+5. The tree grows with new code nodes, data nodes, and edges
+
+### Code Discovery Plugins
+
+Auto-discovered from `code_discovery/` directory. Each implements:
+
+```typescript
+interface CodeDiscoveryPlugin {
+  name: string;
+  description: string;
+  discover(
+    memory: Uint8Array,
+    region: { start: number; end: number },
+    context: CodeDiscoveryContext
+  ): EntryPoint[];
+}
+```
+
+| Plugin | Description |
+|--------|-------------|
+| `general_code_discoverer` | Scans for valid 6502 instruction sequences bounded by terminators (RTS/RTI/JMP) or invalid bytes. Scores islands based on instruction count, flow control, JSR targets, ZP access, load/store pairs, and undocumented opcode ratio. Minimum confidence threshold of 50 filters false positives. |
+
+---
+
+## Step 5: Data Classifier
 
 **File:** `data_classifier.ts`
 
@@ -229,7 +272,7 @@ interface DataDetector {
 | `basic` | Tokenized BASIC programs (linked list at $0801) |
 | `bitmap` | 8000-byte hi-res/multicolor bitmap data |
 | `charset` | 1024/2048-byte character sets (checks VIC $D018) |
-| `code` | Unreached code islands: valid 6502 instruction sequences with flow control, terminators, ZP access patterns. Scores based on instruction count, JSR/branch presence, known target references. |
+| `color_data` | Color tables written to Color RAM ($D800-$DBFF). Code-pattern driven: scans all code nodes for indexed LDA→STA Color RAM patterns, determines source data regions via loop count analysis. Disambiguates color values ($00-$0F) from screen codes ($00-$3F) using code context. |
 | `compressed` | Shannon entropy analysis + packer signatures (Exomizer, ByteBoozer, PuCrunch) |
 | `jump_table` | Address dispatch tables (2+ valid code addresses, handles RTS dispatch offset) |
 | `lookup_table` | Byte tables: sine curves, screen line offsets, bit masks, indexed data |
@@ -244,7 +287,7 @@ Each candidate includes: start/end, type/subtype, confidence (0-100), evidence s
 
 ---
 
-## Step 5: Block Assembler
+## Step 6: Block Assembler
 
 **File:** `block_assembler.ts`
 
@@ -256,7 +299,7 @@ Converts the dependency tree + data candidates into output blocks:
 
 ---
 
-## Step 6: Block Enrichers
+## Step 7: Block Enrichers
 
 **File:** `block_enrichers/`
 
@@ -272,10 +315,11 @@ interface BlockEnricher {
 
 | Enricher | Priority | Description |
 |----------|----------|-------------|
-| `code_promotion` | 5 | Promotes data/unknown blocks to code when the code detector found unreached code islands inside them. Splits the block: code island becomes a subroutine/fragment with decoded instructions, remaining gaps stay as data. |
+| `string_discovery` | 7 | Promotes unknown/low-confidence blocks to strings by scanning raw bytes. Splits blocks when a text prefix is followed by non-text data. |
+| `string_merge` | 8 | Merges adjacent single-byte data blocks into neighboring string blocks. Absorbs 1-byte gaps between strings when the byte is a valid string character. |
 | `symbol_enricher` | 10 | Applies known C64 symbols: KERNAL routine labels ($FFD2=CHROUT), hardware register names, zero-page hints |
 | `sub_splitter` | 20 | Breaks oversized code blocks (>120 instructions) into sub-blocks at natural boundaries (loop headers, branch targets) |
-| `label_generator` | 30 | Auto-generates labels: `sub_XXXX`, `irq_XXXX`, `dat_XXXX`, `frag_XXXX` |
+| `label_generator` | 30 | Auto-generates labels: `sub_XXXX`, `irq_XXXX`, `dat_XXXX`, `frag_XXXX`, `str_XXXX` |
 | `comment_generator` | 40 | Adds structural comments: loop detection, data type hints, KERNAL function descriptions |
 | `coverage_validator` | 99 | Final validation: ensures every loaded byte is owned by exactly one block. Reports gaps and conflicts. |
 
@@ -286,7 +330,9 @@ interface BlockEnricher {
 ### Core Data Flow
 
 ```
-MemoryImage → EntryPoint[] + BankingState → DependencyTree → DataCandidate[] → Block[]
+MemoryImage → EntryPoint[] + BankingState → DependencyTree
+    → [code discovery → re-trace] → DependencyTree (enriched)
+    → DataCandidate[] → Block[]
 ```
 
 ### TreeNode
@@ -383,17 +429,18 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree → DataCandidate
 
 ## File Inventory
 
-### Core (9 files)
-- `index.ts` — CLI entry point, 6-step orchestration
+### Core (12 files)
+- `index.ts` — CLI entry point, 7-step orchestration
 - `types.ts` — all shared type definitions
 - `binary_loader.ts` — step 1: load + parse binary
 - `opcode_decoder.ts` — decode single 6502 instruction
 - `opcode_table.ts` — complete 256-entry opcode table
 - `entry_point_detector.ts` — step 2: entry points + banking
 - `dependency_tree.ts` — tree data structure (nodes, edges, lookups)
-- `tree_walker.ts` — step 3: queue-based code walker
-- `data_classifier.ts` — step 4: run detectors on data regions
-- `block_assembler.ts` — step 5: tree → blocks
+- `tree_walker.ts` — step 3: queue-based code walker (supports incremental mode)
+- `code_discoverer.ts` — step 4: orchestrates code discovery plugins on orphan regions
+- `data_classifier.ts` — step 5: run detectors on data regions
+- `block_assembler.ts` — step 6: tree → blocks
 - `symbol_db.ts` — C64 symbol reference (KERNAL, hardware, ZP)
 
 ### Input Parsers (9 files)
@@ -402,8 +449,11 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree → DataCandidate
 ### Discovery Plugins (13 files)
 `discovery_plugins/`: types.ts, index.ts, branch_resolver_plugin.ts, jump_resolver_plugin.ts, flow_terminator_plugin.ts, data_ref_resolver_plugin.ts, indirect_resolver_plugin.ts, smc_resolver_plugin.ts, xref_enricher_plugin.ts, inline_data_plugin.ts, pointer_pair_plugin.ts, rts_dispatch_plugin.ts, speculative_refiner_plugin.ts, subroutine_grouper_plugin.ts, jump_table_resolver_plugin.ts
 
-### Data Detectors (16 files)
-`data_detectors/`: types.ts, index.ts, basic_detector.ts, bitmap_detector.ts, charset_detector.ts, code_detector.ts, compressed_detector.ts, jump_table_detector.ts, lookup_table_detector.ts, padding_detector.ts, rom_shadow_detector.ts, screen_map_detector.ts, sid_music_detector.ts, sprite_detector.ts, string_detector.ts
+### Code Discovery Plugins (3 files)
+`code_discovery/`: types.ts, index.ts, general_code_discoverer.ts
 
-### Block Enrichers (8 files)
-`block_enrichers/`: types.ts, index.ts, code_promotion_enricher.ts, symbol_enricher.ts, sub_splitter_enricher.ts, label_generator_enricher.ts, comment_generator_enricher.ts, coverage_validator_enricher.ts
+### Data Detectors (15 files)
+`data_detectors/`: types.ts, index.ts, basic_detector.ts, bitmap_detector.ts, charset_detector.ts, color_data_detector.ts, compressed_detector.ts, jump_table_detector.ts, lookup_table_detector.ts, padding_detector.ts, rom_shadow_detector.ts, screen_map_detector.ts, sid_music_detector.ts, sprite_detector.ts, string_detector.ts
+
+### Block Enrichers (9 files)
+`block_enrichers/`: types.ts, index.ts, string_discovery_enricher.ts, string_merge_enricher.ts, symbol_enricher.ts, sub_splitter_enricher.ts, label_generator_enricher.ts, comment_generator_enricher.ts, coverage_validator_enricher.ts

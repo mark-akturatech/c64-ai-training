@@ -14,6 +14,11 @@ const ROLE_OPERAND = 2;
 
 const MIN_FILL_LENGTH = 8;
 
+/** VIC-II sprite block alignment. Fills ending 1-3 bytes past a 64-byte
+ *  boundary are trimmed back so adjacent sprite data gets its own block. */
+const BLOCK_ALIGN = 64;
+const ALIGN_TOLERANCE = 3;
+
 export class PaddingDetector implements DataDetector {
   name = "padding";
   description = "Detects fill/padding regions (zero fill, NOP sleds, repeated byte patterns)";
@@ -102,6 +107,15 @@ export class PaddingDetector implements DataDetector {
     }
 
     if (bestLength < MIN_FILL_LENGTH) return null;
+
+    // Trim fill to 64-byte boundary when it ends just past one.
+    // This prevents fill from swallowing the first byte(s) of sprite data
+    // that must be 64-byte aligned for VIC-II addressing.
+    const runEnd = bestStart + bestLength;
+    const pastBoundary = runEnd % BLOCK_ALIGN;
+    if (pastBoundary > 0 && pastBoundary <= ALIGN_TOLERANCE && bestLength - pastBoundary >= MIN_FILL_LENGTH) {
+      bestLength -= pastBoundary;
+    }
 
     return { start: bestStart, length: bestLength, value: bestValue };
   }

@@ -23,10 +23,11 @@ const BYTE_DATA = 3;
 export async function buildDependencyTree(
   image: MemoryImage,
   entryPoints: EntryPoint[],
-  bankingState: BankingState
+  bankingState: BankingState,
+  existing?: { tree: DependencyTree; byteRole: Uint8Array }
 ): Promise<{ tree: DependencyTree; byteRole: Uint8Array }> {
-  const tree = new DependencyTree();
-  const byteRole = new Uint8Array(65536);
+  const tree = existing?.tree ?? new DependencyTree();
+  const byteRole = existing?.byteRole ?? new Uint8Array(65536);
   const plugins = await loadDiscoveryPlugins();
 
   const instructionPlugins = plugins.filter((p) => p.phase === "instruction");

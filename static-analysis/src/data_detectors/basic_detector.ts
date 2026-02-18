@@ -89,9 +89,12 @@ export class BasicDetector implements DataDetector {
     let prevLineNum = -1;
     let hasTokens = false;
 
-    while (addr < region.end && lineCount < MAX_LINES) {
+    // Follow the BASIC line-link chain. The chain is self-validating via
+    // next-line pointers, so we follow it beyond region.end into memory.
+    const memEnd = memory.length;
+    while (addr < memEnd && lineCount < MAX_LINES) {
       // Read next-line pointer (little-endian)
-      if (addr + 2 > region.end) return null;
+      if (addr + 2 > memEnd) return null;
       const nextPtr = memory[addr] | (memory[addr + 1] << 8);
 
       // End of program marker
@@ -110,10 +113,10 @@ export class BasicDetector implements DataDetector {
       // Validate next-line pointer
       // It must point forward (past the current position), and within a reasonable range
       if (nextPtr <= addr + 4) return null; // must advance past header + at least 1 byte
-      if (nextPtr > region.end + MAX_LINE_LENGTH) return null; // too far
+      if (nextPtr > region.start + MAX_LINES * MAX_LINE_LENGTH) return null;
 
       // Read line number (little-endian)
-      if (addr + 4 > region.end) return null;
+      if (addr + 4 > memEnd) return null;
       const lineNum = memory[addr + 2] | (memory[addr + 3] << 8);
       if (lineNum > MAX_LINE_NUMBER) return null;
 
@@ -124,10 +127,12 @@ export class BasicDetector implements DataDetector {
       lastLineNum = lineNum;
       prevLineNum = lineNum;
 
-      // Scan the line body for tokens and the $00 terminator
+      // Scan the line body for tokens and the $00 terminator.
+      // Use nextPtr (not region.end) as the bound — the BASIC line-link chain
+      // is self-validating and may extend past the analyzer's region boundary.
       let bodyAddr = addr + 4;
       let foundTerminator = false;
-      while (bodyAddr < nextPtr && bodyAddr < region.end) {
+      while (bodyAddr < nextPtr && bodyAddr < memory.length) {
         const b = memory[bodyAddr];
         if (b === 0x00) {
           foundTerminator = true;
@@ -151,7 +156,7 @@ export class BasicDetector implements DataDetector {
     }
 
     // If we exited the loop without finding the end marker, check for $0000 at current position
-    if (addr + 2 <= region.end) {
+    if (addr + 2 <= memEnd) {
       const finalPtr = memory[addr] | (memory[addr + 1] << 8);
       if (finalPtr === 0x0000 && lineCount > 0) {
         return {

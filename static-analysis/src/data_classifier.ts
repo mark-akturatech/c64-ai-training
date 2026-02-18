@@ -57,8 +57,12 @@ export async function classifyDataRegions(
     }
   }
 
-  // Filter out any candidates that overlap proven code
+  // Filter out any candidates that overlap proven code.
+  // Exception: BASIC programs at $0801 — the line-link chain is strong
+  // evidence that overrides code discovery (BASIC data can look like valid
+  // 6502 instructions).
   const filtered = allCandidates.filter((c) => {
+    if (c.start === 0x0801 && c.type === "basic_program") return true;
     for (let addr = c.start; addr < c.end; addr++) {
       if (byteRole[addr] === 1 || byteRole[addr] === 2) return false;  // code
     }

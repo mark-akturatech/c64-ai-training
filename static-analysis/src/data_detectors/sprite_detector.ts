@@ -105,7 +105,7 @@ export class SpriteDetector implements DataDetector {
               ? regionSize / SPRITE_BLOCK_SIZE
               : Math.floor(regionSize / SPRITE_DATA_SIZE);
 
-          const confidence = hasPointerTrace ? 95 : 20;
+          const confidence = hasPointerTrace ? 95 : 15;
           candidates.push({
             start: region.start,
             end: region.end,
@@ -116,6 +116,7 @@ export class SpriteDetector implements DataDetector {
             evidence: this.buildEvidence(hasPointerTrace, spriteCount, false),
             label: spriteCount === 1 ? "sprite" : `sprite_sheet_${spriteCount}`,
             comment: `${spriteCount} sprite frame(s), ${regionSize} bytes`,
+            metadata: { colorMode: "hires", spriteCount },
           });
         }
       }
@@ -133,75 +134,114 @@ export class SpriteDetector implements DataDetector {
           detector: this.name,
           type: "sprite_data",
           subtype: "single_sprite",
-          confidence: hasPointerTrace ? 95 : 20,
+          confidence: hasPointerTrace ? 95 : 15,
           evidence: this.buildEvidence(hasPointerTrace, 1, false),
           label: "sprite",
           comment: `Sprite data (unaligned), ${regionSize} bytes`,
+          metadata: { colorMode: "hires", spriteCount: 1 },
         });
       }
       return candidates;
     }
 
-    if (numBlocks > 0 && !hasCode(regionAlignedStart, regionAlignedStart + numBlocks * SPRITE_BLOCK_SIZE)) {
-      // Check how many blocks actually look like sprite data
-      let spriteLikeBlocks = 0;
-      for (let i = 0; i < numBlocks; i++) {
-        const blockStart = regionAlignedStart + i * SPRITE_BLOCK_SIZE;
-        if (this.looksLikeSpriteData(memory, blockStart)) {
-          spriteLikeBlocks++;
+    // Scan for runs of consecutive sprite-like blocks.
+    // This handles sprites embedded in large padding/fill regions where most
+    // 64-byte blocks are empty but a few contain actual sprite data.
+    const spriteRuns: Array<{ start: number; count: number }> = [];
+    let runStart: number | null = null;
+    let runCount = 0;
+
+    for (let i = 0; i < numBlocks; i++) {
+      const blockStart = regionAlignedStart + i * SPRITE_BLOCK_SIZE;
+      const blockEnd = blockStart + SPRITE_BLOCK_SIZE;
+      if (!hasCode(blockStart, blockEnd) && this.looksLikeSpriteData(memory, blockStart)) {
+        if (runStart === null) {
+          runStart = blockStart;
+        }
+        runCount++;
+      } else {
+        if (runStart !== null && runCount > 0) {
+          spriteRuns.push({ start: runStart, count: runCount });
+        }
+        runStart = null;
+        runCount = 0;
+      }
+    }
+    // Check for a trailing partial sprite (63 bytes without the padding byte)
+    // after the last full 64-byte block. Common when the region boundary
+    // splits off the final padding byte.
+    const trailingStart = regionAlignedStart + numBlocks * SPRITE_BLOCK_SIZE;
+    const trailingSize = region.end - trailingStart;
+    if (trailingSize >= SPRITE_DATA_SIZE && trailingSize < SPRITE_BLOCK_SIZE) {
+      if (!hasCode(trailingStart, trailingStart + SPRITE_DATA_SIZE) &&
+          this.looksLikeSpriteData63(memory, trailingStart)) {
+        if (runStart !== null) {
+          // Extend the current run
+          runCount++;
+        } else {
+          runStart = trailingStart;
+          runCount = 1;
         }
       }
+    }
 
-      // Need at least half the blocks to look like sprites
-      const spriteRatio = spriteLikeBlocks / numBlocks;
-      if (spriteRatio < 0.5 && !hasPointerTrace) return candidates;
+    if (runStart !== null && runCount > 0) {
+      spriteRuns.push({ start: runStart, count: runCount });
+    }
 
-      // Determine confidence based on evidence
+    // Emit a candidate for each run of sprite-like blocks
+    for (const run of spriteRuns) {
+      // End may extend past the last full block if a trailing 63-byte sprite was included
+      const runEnd = Math.min(run.start + run.count * SPRITE_BLOCK_SIZE, region.end);
+
+      // Check pointer trace for this specific run
+      const runHasPointerTrace = this.checkPointerTrace(
+        memory,
+        { start: run.start, end: runEnd },
+        context,
+        vicBankBase,
+        spritePtrsStart,
+        spritePtrsEnd
+      );
+
       let confidence: number;
-      if (hasPointerTrace) {
+      if (runHasPointerTrace) {
         confidence = 95;
-      } else if (spriteRatio >= 0.8) {
-        confidence = 55;
-      } else if (spriteRatio >= 0.5) {
-        confidence = 35;
+      } else if (run.count >= 4) {
+        confidence = 60;
+      } else if (run.count >= 2) {
+        confidence = 56;
       } else {
-        confidence = 20;
+        // Single block, no pointer trace
+        confidence = 40;
       }
 
       // Large sprite sheets (>32 sprites) are unusual — reduce confidence
-      if (numBlocks > 32 && !hasPointerTrace) {
-        confidence = Math.max(15, confidence - 15);
+      if (run.count > 32 && !runHasPointerTrace) {
+        confidence = Math.max(10, confidence - 15);
       }
 
       // Check adjacency to other known sprite data for boost
-      const adjacentSpriteNode = context.tree.findNodeContaining(
-        regionAlignedStart - 1
-      );
-      if (
-        adjacentSpriteNode &&
-        adjacentSpriteNode.metadata?.dataType === "sprite_data"
-      ) {
-        confidence = Math.min(95, Math.max(confidence, 50));
+      const adjacentSpriteNode = context.tree.findNodeContaining(run.start - 1);
+      if (adjacentSpriteNode?.metadata?.dataType === "sprite_data") {
+        confidence = Math.min(95, Math.max(confidence, 40));
       }
 
       candidates.push({
-        start: regionAlignedStart,
-        end: regionAlignedStart + numBlocks * SPRITE_BLOCK_SIZE,
+        start: run.start,
+        end: runEnd,
         detector: this.name,
         type: "sprite_data",
-        subtype:
-          numBlocks === 1 ? "single_sprite" : `${numBlocks}_sprites`,
+        subtype: run.count === 1 ? "single_sprite" : `${run.count}_sprites`,
         confidence,
         evidence: this.buildEvidence(
-          hasPointerTrace,
-          numBlocks,
-          region.start % SPRITE_BLOCK_SIZE === 0
+          runHasPointerTrace,
+          run.count,
+          run.start % SPRITE_BLOCK_SIZE === 0
         ),
-        label:
-          numBlocks === 1
-            ? "sprite"
-            : `sprite_sheet_${numBlocks}`,
-        comment: `${numBlocks} sprite frame(s), ${numBlocks * SPRITE_BLOCK_SIZE} bytes, 64-byte aligned`,
+        label: run.count === 1 ? "sprite" : `sprite_sheet_${run.count}`,
+        comment: `${run.count} sprite frame(s), ${run.count * SPRITE_BLOCK_SIZE} bytes, 64-byte aligned`,
+        metadata: { colorMode: "hires", spriteCount: run.count },
       });
     }
 
@@ -211,39 +251,44 @@ export class SpriteDetector implements DataDetector {
   /**
    * Heuristic check: does a 64-byte block look like sprite pixel data?
    * Real sprites typically have:
-   *  - Non-trivial data in the 63 pixel bytes (not all $00 or all $FF)
-   *  - The 64th padding byte is usually $00
-   *  - Some row structure (24x21 = 3 bytes per row x 21 rows)
-   *  - Mix of set and unset bits (not uniform fill)
+   *  - The 64th padding byte is $00 (required — VIC ignores it, tools zero it)
+   *  - Non-trivial data with moderate variety (not fill, not random)
+   *  - Contiguous active rows (sprites are shapes, not scattered dots)
+   *  - Moderate bit density (not too sparse, not saturated)
+   */
+  /**
+   * Heuristic score: how much does a 64-byte block look like sprite pixel data?
+   * Returns 0 (definitely not) or a positive score used for confidence.
    */
   private looksLikeSpriteData(memory: Uint8Array, blockStart: number): boolean {
-    // Check padding byte (64th byte) — usually $00
-    const paddingByte = memory[blockStart + 63];
-    const goodPadding = paddingByte === 0x00;
-
-    // Check the 63 pixel bytes
+    // Scan the 63 pixel bytes
     let nonZeroCount = 0;
-    let uniqueBytes = new Set<number>();
+    const uniqueBytes = new Set<number>();
     let allSame = true;
     const firstByte = memory[blockStart];
+    let totalBitsSet = 0;
 
     for (let i = 0; i < SPRITE_DATA_SIZE; i++) {
       const b = memory[blockStart + i];
       if (b !== 0) nonZeroCount++;
       uniqueBytes.add(b);
       if (b !== firstByte) allSame = false;
+      let v = b;
+      while (v) { totalBitsSet += v & 1; v >>= 1; }
     }
 
-    // All zero or all same byte = not a sprite (it's fill/padding)
+    // All zero or uniform fill = not a sprite
     if (nonZeroCount === 0) return false;
     if (allSame) return false;
 
-    // Need some variety — sprites have pixel patterns
-    // At least 3 unique byte values in 63 bytes
-    if (uniqueBytes.size < 3) return false;
+    // At least 4 unique byte values — filters out simple fill patterns
+    if (uniqueBytes.size < 4) return false;
 
-    // Check for row structure: in multicolor sprites, bytes within a row
-    // are often similar. Check if at least some rows have non-zero data
+    // Bit density: 63 bytes = 504 bits. Very sparse or saturated = not a sprite.
+    const density = totalBitsSet / 504;
+    if (density < 0.05 || density > 0.75) return false;
+
+    // Row structure: at least 5 active rows out of 21
     let activeRows = 0;
     for (let row = 0; row < 21; row++) {
       const rowStart = blockStart + row * 3;
@@ -251,15 +296,45 @@ export class SpriteDetector implements DataDetector {
         activeRows++;
       }
     }
+    if (activeRows < 5) return false;
 
-    // Sprites typically have at least a few active rows
-    if (activeRows < 3) return false;
+    return true;
+  }
 
-    // Bonus: good padding byte
-    if (goodPadding && activeRows >= 5 && uniqueBytes.size >= 4) return true;
+  /** Same as looksLikeSpriteData but for a trailing 63-byte block without the padding byte. */
+  private looksLikeSpriteData63(memory: Uint8Array, blockStart: number): boolean {
+    let nonZeroCount = 0;
+    const uniqueBytes = new Set<number>();
+    let allSame = true;
+    const firstByte = memory[blockStart];
+    let totalBitsSet = 0;
 
-    // Moderate: some structure present
-    return activeRows >= 5;
+    for (let i = 0; i < SPRITE_DATA_SIZE; i++) {
+      const b = memory[blockStart + i];
+      if (b !== 0) nonZeroCount++;
+      uniqueBytes.add(b);
+      if (b !== firstByte) allSame = false;
+      let v = b;
+      while (v) { totalBitsSet += v & 1; v >>= 1; }
+    }
+
+    if (nonZeroCount === 0) return false;
+    if (allSame) return false;
+    if (uniqueBytes.size < 4) return false;
+
+    const density = totalBitsSet / 504;
+    if (density < 0.05 || density > 0.75) return false;
+
+    let activeRows = 0;
+    for (let row = 0; row < 21; row++) {
+      const rowStart = blockStart + row * 3;
+      if (memory[rowStart] !== 0 || memory[rowStart + 1] !== 0 || memory[rowStart + 2] !== 0) {
+        activeRows++;
+      }
+    }
+    if (activeRows < 5) return false;
+
+    return true;
   }
 
   private checkPointerTrace(

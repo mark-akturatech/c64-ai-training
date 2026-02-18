@@ -1,8 +1,36 @@
 // ============================================================================
-// Shared types for the C64 static analysis pipeline
+// Types for the C64 static analysis pipeline
+//
+// Shared types (Block, BlockInstruction, etc.) are defined in @c64/shared
+// and re-exported here so existing imports remain unchanged.
 // ============================================================================
 
-// --- Step 1: Binary Loader ---
+// --- Import shared types for local use ---
+import type {
+  AddressingMode as _AddressingMode,
+  LoadedRegion as _LoadedRegion,
+} from "@c64/shared";
+
+// Re-export all shared types so existing imports remain unchanged
+export type {
+  AddressingMode,
+  AnalysisOutput,
+  BasicBlock,
+  Block,
+  BlockEnrichment,
+  BlockInstruction,
+  BlockType,
+  CoverageReport,
+  DataCandidate,
+  LoadedRegion,
+  Reachability,
+} from "@c64/shared";
+
+// Local aliases for use within this file
+type AddressingMode = _AddressingMode;
+type LoadedRegion = _LoadedRegion;
+
+// --- Step 1: Binary Loader (private to static-analysis) ---
 
 export interface MemoryImage {
   bytes: Uint8Array;       // 65536 bytes, initialized to 0
@@ -11,12 +39,6 @@ export interface MemoryImage {
   endAddress: number;      // last loaded byte + 1
   parserEntryPoints?: EntryPointHint[];
   parserBankingHints?: BankingHints;
-}
-
-export interface LoadedRegion {
-  start: number;
-  end: number;             // exclusive
-  source: string;          // plugin name or filename
 }
 
 export interface EntryPointHint {
@@ -47,22 +69,7 @@ export interface ParsedRegion {
   };
 }
 
-// --- Opcode Decoder ---
-
-export type AddressingMode =
-  | "implied"
-  | "accumulator"
-  | "immediate"
-  | "zero_page"
-  | "zero_page_x"
-  | "zero_page_y"
-  | "absolute"
-  | "absolute_x"
-  | "absolute_y"
-  | "indirect"
-  | "indirect_x"
-  | "indirect_y"
-  | "relative";
+// --- Opcode Decoder (private to static-analysis) ---
 
 export type FlowType =
   | "sequential"    // normal instruction, continues to next
@@ -104,7 +111,8 @@ export type EntryPointSource =
   | "user_specified"
   | "reset_vector"
   | "snapshot_pc"
-  | "snapshot_vector";
+  | "snapshot_vector"
+  | "code_discoverer";
 
 export type EntryPointConfidence = "high" | "medium" | "low";
 
@@ -163,106 +171,4 @@ export interface TreeNode {
   edges: TreeEdge[];
   subroutineId?: string;
   metadata: Record<string, unknown>;
-}
-
-// --- Step 4: Data Classifier ---
-
-export interface DataCandidate {
-  start: number;
-  end: number;              // exclusive
-  detector: string;
-  type: string;
-  subtype?: string;
-  confidence: number;       // 0-100
-  evidence: string[];
-  label?: string;
-  comment: string;
-}
-
-// --- Steps 5 & 6: Block Assembly & Enrichment ---
-
-export type BlockType =
-  | "subroutine"
-  | "irq_handler"
-  | "fragment"
-  | "data"
-  | "unknown";
-
-export type Reachability = "proven" | "indirect" | "unproven";
-
-export interface BasicBlock {
-  start: number;
-  end: number;              // exclusive
-  successors: number[];
-}
-
-export interface BlockInstruction {
-  address: number;
-  rawBytes: string;         // hex string e.g. "A9 00"
-  mnemonic: string;
-  operand: string;
-  addressingMode: AddressingMode;
-  label: string | null;
-}
-
-export interface Block {
-  id: string;
-  address: number;
-  endAddress: number;       // exclusive
-  type: BlockType;
-  reachability: Reachability;
-  instructions?: BlockInstruction[];
-  basicBlocks?: BasicBlock[];
-  callsOut?: number[];
-  calledBy?: number[];
-  loopBackEdges?: Array<{ from: number; to: number }>;
-  hardwareRefs?: number[];
-  dataRefs?: number[];
-  smcTargets?: number[];
-  isIrqHandler?: boolean;
-  entryPoints?: number[];
-  inputNameHint?: string;
-  candidates?: DataCandidate[];
-  bestCandidate?: number;
-  parentBlock?: string | null;
-  subBlockIndex?: number | null;
-  subBlockCount?: number | null;
-  siblings?: string[] | null;
-  siblingSummaries?: Record<string, string> | null;
-  annotations?: Record<string, string>;
-  comments?: string[];
-  labels?: string[];
-}
-
-export interface CoverageReport {
-  loadedRegions: LoadedRegion[];
-  classified: {
-    code: { bytes: number; pct: number };
-    data: { bytes: number; pct: number };
-    unknown: { bytes: number; pct: number };
-  };
-  gaps: Array<{ start: number; end: number }>;
-  conflicts: Array<{ address: number; block1: string; block2: string }>;
-}
-
-export interface AnalysisOutput {
-  metadata: {
-    source: string;
-    loadAddress: string;
-    endAddress: string;
-    entryPoints: string[];
-    totalBytesLoaded: number;
-    totalBlocks: number;
-    blockCounts: Record<BlockType, number>;
-  };
-  coverage: {
-    loadedRegions: Array<{ start: string; end: string }>;
-    classified: {
-      code: { bytes: number; pct: number };
-      data: { bytes: number; pct: number };
-      unknown: { bytes: number; pct: number };
-    };
-    gaps: Array<{ start: string; end: string }>;
-  };
-  blocks: Block[];
 }

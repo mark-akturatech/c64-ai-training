@@ -1,21 +1,21 @@
 // ============================================================================
-// Unreached Code Detector
-// Scans unknown/orphan regions for valid 6502 instruction sequences that
-// the tree walker couldn't reach from known entry points.
-// Finds "code islands" within larger regions — stretches of valid instructions
-// bounded by terminators (RTS/RTI/JMP) or invalid bytes.
-// Non-code gaps are left for other detectors (sprite, charset, etc.).
+// General Code Discoverer
+// Scans orphan regions for valid 6502 instruction sequences that the tree
+// walker couldn't reach from known entry points.
+// Finds "code islands" — stretches of valid instructions bounded by
+// terminators (RTS/RTI/JMP) or invalid bytes.
 // ============================================================================
 
 import { decode } from "../opcode_decoder.js";
-import type { DataCandidate } from "../types.js";
-import type { DetectorContext, DataDetector } from "./types.js";
+import type { EntryPoint } from "../types.js";
+import type { CodeDiscoveryContext, CodeDiscoveryPlugin } from "./types.js";
 
 const ROLE_OPCODE = 1;
 const ROLE_OPERAND = 2;
 
 const MIN_CODE_BYTES = 6;
 const MIN_INSTRUCTIONS = 3;
+const MIN_CONFIDENCE = 50;
 
 // Opcodes that halt/crash — end a code island
 const JAM_OPCODES = new Set([
@@ -38,53 +38,48 @@ interface CodeIsland {
   ldaStaPairs: number;
 }
 
-export class CodeDetector implements DataDetector {
-  name = "code";
+export class GeneralCodeDiscoverer implements CodeDiscoveryPlugin {
+  name = "general_code";
   description = "Detects unreached code islands by scoring instruction validity and flow patterns";
 
-  detect(
+  discover(
     memory: Uint8Array,
     region: { start: number; end: number },
-    context: DetectorContext
-  ): DataCandidate[] {
+    context: CodeDiscoveryContext
+  ): EntryPoint[] {
     const regionSize = region.end - region.start;
     if (regionSize < MIN_CODE_BYTES) return [];
 
-    // Find all code islands within this region
     const islands = this.findIslands(memory, region, context);
+    const entryPoints: EntryPoint[] = [];
 
-    // Score each island and build candidates
-    const candidates: DataCandidate[] = [];
     for (const island of islands) {
       const result = this.scoreIsland(island, context);
-      if (result) candidates.push(result);
+      if (result) entryPoints.push(result);
     }
 
-    return candidates;
+    return entryPoints;
   }
 
   private findIslands(
     memory: Uint8Array,
     region: { start: number; end: number },
-    context: DetectorContext
+    context: CodeDiscoveryContext
   ): CodeIsland[] {
     const islands: CodeIsland[] = [];
     let pos = region.start;
 
     while (pos < region.end) {
-      // Skip bytes that are already claimed as code
       if (context.byteRole[pos] === ROLE_OPCODE || context.byteRole[pos] === ROLE_OPERAND) {
         pos++;
         continue;
       }
 
-      // Try to start a code island here
       const island = this.traceIsland(memory, pos, region.end, context);
       if (island && island.end - island.start >= MIN_CODE_BYTES && island.instrCount >= MIN_INSTRUCTIONS) {
         islands.push(island);
         pos = island.end;
       } else {
-        // Not valid code at this position — skip forward
         pos++;
       }
     }
@@ -96,7 +91,7 @@ export class CodeDetector implements DataDetector {
     memory: Uint8Array,
     start: number,
     regionEnd: number,
-    context: DetectorContext
+    context: CodeDiscoveryContext
   ): CodeIsland | null {
     let addr = start;
     let instrCount = 0;
@@ -113,23 +108,18 @@ export class CodeDetector implements DataDetector {
     let consecutiveUndoc = 0;
 
     while (addr < regionEnd) {
-      // Already claimed — stop island here
       if (context.byteRole[addr] === ROLE_OPCODE || context.byteRole[addr] === ROLE_OPERAND) {
         break;
       }
 
       const opcode = memory[addr];
-
-      // JAM opcode — end island
       if (JAM_OPCODES.has(opcode)) break;
 
       const inst = decode(memory, addr);
       if (!inst) break;
 
-      // Would extend past region
       if (addr + inst.info.bytes > regionEnd) break;
 
-      // Check operand bytes aren't claimed
       let operandClaimed = false;
       for (let i = 1; i < inst.info.bytes; i++) {
         if (context.byteRole[addr + i] === ROLE_OPCODE || context.byteRole[addr + i] === ROLE_OPERAND) {
@@ -144,18 +134,15 @@ export class CodeDetector implements DataDetector {
       if (inst.info.undocumented) {
         undocumentedCount++;
         consecutiveUndoc++;
-        // Too many consecutive undocumented = probably data
         if (consecutiveUndoc >= 3) {
-          // Rewind past the undocumented stretch
           instrCount -= consecutiveUndoc;
-          addr -= consecutiveUndoc; // approximate — not perfect but prevents garbage
+          addr -= consecutiveUndoc;
           break;
         }
       } else {
         consecutiveUndoc = 0;
       }
 
-      // Track zero-page accesses
       if (
         inst.info.addressingMode === "zero_page" ||
         inst.info.addressingMode === "zero_page_x" ||
@@ -164,15 +151,13 @@ export class CodeDetector implements DataDetector {
         zpAccesses++;
       }
 
-      // Track LDA/STA pairing
       if (
-        (inst.info.mnemonic === "STA" || inst.info.mnemonic === "STX" || inst.info.mnemonic === "STY") &&
-        (lastMnemonic === "LDA" || lastMnemonic === "LDX" || lastMnemonic === "LDY")
+        (inst.info.mnemonic === "sta" || inst.info.mnemonic === "stx" || inst.info.mnemonic === "sty") &&
+        (lastMnemonic === "lda" || lastMnemonic === "ldx" || lastMnemonic === "ldy")
       ) {
         ldaStaPairs++;
       }
 
-      // Track flow instructions
       if (inst.info.flowType === "call") {
         flowCount++;
         jsrCount++;
@@ -197,7 +182,7 @@ export class CodeDetector implements DataDetector {
         branchCount++;
         if (inst.operandAddress !== undefined) {
           if (inst.operandAddress >= start && inst.operandAddress < regionEnd) {
-            knownTargets++; // internal branch
+            knownTargets++;
           }
         }
       }
@@ -205,7 +190,6 @@ export class CodeDetector implements DataDetector {
       lastMnemonic = inst.info.mnemonic;
       addr += inst.info.bytes;
 
-      // Terminator ends this island (but it's a clean end)
       if (
         inst.info.flowType === "return" ||
         inst.info.flowType === "halt" ||
@@ -234,17 +218,15 @@ export class CodeDetector implements DataDetector {
     };
   }
 
-  private scoreIsland(island: CodeIsland, context: DetectorContext): DataCandidate | null {
+  private scoreIsland(island: CodeIsland, context: CodeDiscoveryContext): EntryPoint | null {
     const size = island.end - island.start;
 
-    // Too many undocumented opcodes = likely data
     const undocRatio = island.undocumentedCount / island.instrCount;
     if (undocRatio > 0.4) return null;
 
     let score = 0;
     const evidence: string[] = [];
 
-    // Base: instruction count and size (0-25 points)
     if (island.instrCount >= 10) {
       score += 25;
     } else if (island.instrCount >= 5) {
@@ -254,13 +236,11 @@ export class CodeDetector implements DataDetector {
     }
     evidence.push(`${island.instrCount} instructions, ${size} bytes`);
 
-    // Terminator bonus (0-15 points)
     if (island.hasTerminator) {
       score += 15;
       evidence.push("Ends with RTS/RTI/JMP (proper termination)");
     }
 
-    // Flow instructions (0-20 points)
     if (island.jsrCount > 0) {
       score += Math.min(island.jsrCount * 5, 15);
       evidence.push(`${island.jsrCount} JSR call(s)`);
@@ -270,7 +250,6 @@ export class CodeDetector implements DataDetector {
       evidence.push(`${island.branchCount} conditional branch(es)`);
     }
 
-    // Known targets bonus (0-20 points)
     if (island.knownTargets > 0) {
       score += Math.min(island.knownTargets * 7, 20);
       evidence.push(`${island.knownTargets} target(s) point to known code or internal branches`);
@@ -279,7 +258,6 @@ export class CodeDetector implements DataDetector {
       evidence.push(`${island.plausibleTargets} target(s) point to plausible code addresses`);
     }
 
-    // Common code patterns (0-10 points)
     if (island.zpAccesses > 0) {
       score += Math.min(island.zpAccesses, 5);
       evidence.push(`${island.zpAccesses} zero-page access(es)`);
@@ -289,40 +267,28 @@ export class CodeDetector implements DataDetector {
       evidence.push(`${island.ldaStaPairs} load/store pair(s)`);
     }
 
-    // Undocumented penalty
     if (island.undocumentedCount > 0) {
       score -= island.undocumentedCount * 3;
       evidence.push(`${island.undocumentedCount} undocumented opcode(s) (penalty)`);
     }
 
-    // No flow at all is suspicious in longer sequences
     if (island.flowCount === 0 && !island.hasTerminator && island.instrCount > 8) {
       score -= 10;
       evidence.push("No flow control or terminator in long sequence (suspicious)");
     }
 
-    // Clamp to 10-85
     const confidence = Math.max(10, Math.min(85, score));
-
-    // Minimum threshold
-    if (confidence < 20) return null;
-
-    const subtype = island.hasTerminator ? "unreached_subroutine" : "unreached_fragment";
+    if (confidence < MIN_CONFIDENCE) return null;
 
     return {
-      start: island.start,
-      end: island.end,
-      detector: this.name,
-      type: "code",
-      subtype,
-      confidence,
-      evidence,
-      label: subtype,
-      comment: `Potential unreached code, ${island.instrCount} instructions, ${size} bytes`,
+      address: island.start,
+      source: "code_discoverer",
+      confidence: confidence >= 60 ? "high" : confidence >= 40 ? "medium" : "low",
+      description: `Unreached code: ${island.instrCount} instructions, ${size} bytes [${evidence.join("; ")}]`,
     };
   }
 
-  private isKnownCode(addr: number, context: DetectorContext): boolean {
+  private isKnownCode(addr: number, context: CodeDiscoveryContext): boolean {
     const node = context.tree.findNodeContaining(addr);
     return node !== undefined && node.type === "code";
   }

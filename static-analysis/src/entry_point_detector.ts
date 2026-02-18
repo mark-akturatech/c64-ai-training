@@ -98,7 +98,7 @@ function detectBasicStub(memory: Uint8Array, image: MemoryImage): EntryPoint | n
 
   // Extract digits after SYS token (skip spaces)
   let pos = base + 5;
-  while (memory[pos] === 0x20) pos++; // skip spaces
+  while (memory[pos] === 0x20 || memory[pos] === 0x28) pos++; // skip spaces and parens
 
   let numStr = "";
   while (pos < base + 20 && memory[pos] >= 0x30 && memory[pos] <= 0x39) {

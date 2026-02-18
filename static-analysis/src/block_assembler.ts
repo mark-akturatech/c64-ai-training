@@ -2,12 +2,14 @@
 // Step 5: Block Assembler — tree nodes → blocks.json format
 // ============================================================================
 
+import { Buffer } from "node:buffer";
 import type { DependencyTree } from "./dependency_tree.js";
 import { formatInstruction } from "./opcode_decoder.js";
 import type {
   Block,
   BlockType,
   DataCandidate,
+  DecodedInstruction,
   LoadedRegion,
   TreeNode,
   Reachability,
@@ -15,35 +17,75 @@ import type {
   BlockInstruction,
 } from "./types.js";
 
+/** Base64-encode raw bytes from memory for a given address range. */
+function encodeRaw(memory: Uint8Array, start: number, end: number): string {
+  return Buffer.from(memory.slice(start, end)).toString("base64");
+}
+
+/** Extract the operand portion from a formatted instruction string. */
+function extractOperand(inst: DecodedInstruction): string {
+  const formatted = formatInstruction(inst);
+  const mnemonic = inst.info.mnemonic.toUpperCase();
+  // Implied-mode instructions have no operand (formatted === mnemonic)
+  if (formatted === mnemonic) return "";
+  return formatted.slice(mnemonic.length + 1);
+}
+
 export function assembleBlocks(
   tree: DependencyTree,
   dataCandidates: DataCandidate[],
-  loadedRegions: LoadedRegion[]
+  loadedRegions: LoadedRegion[],
+  memory: Uint8Array
 ): Block[] {
   const blocks: Block[] = [];
 
   // 1. Code blocks — one per contiguous run of nodes within each subroutine
+  //    Only include blocks that fall within loaded regions
   const subroutines = tree.getSubroutines();
   for (const subNodes of subroutines) {
-    const contiguousRuns = splitIntoContiguousRuns(subNodes);
+    const inRegion = subNodes.filter((n) => isWithinLoadedRegions(n.start, n.end, loadedRegions));
+    if (inRegion.length === 0) continue;
+    const contiguousRuns = splitIntoContiguousRuns(inRegion);
     for (const run of contiguousRuns) {
-      blocks.push(buildCodeBlock(run, tree));
+      blocks.push(buildCodeBlock(run, tree, memory));
+    }
+  }
+
+  // 1b. Remove code blocks that overlap with BASIC programs at $0801.
+  //     BASIC data can look like valid 6502 instructions; the line-link
+  //     chain is stronger evidence than code discovery in this region.
+  const basicCandidate = dataCandidates.find(
+    (c) => c.start === 0x0801 && c.type === "basic_program"
+  );
+  if (basicCandidate) {
+    for (let i = blocks.length - 1; i >= 0; i--) {
+      const b = blocks[i];
+      if (b.address >= basicCandidate.start && b.address < basicCandidate.end) {
+        blocks.splice(i, 1);
+      }
     }
   }
 
   // 2. Data blocks — from tree data nodes + candidates
+  //    Only include blocks that fall within loaded regions
   for (const [, node] of tree.nodes) {
     if (node.type !== "data") continue;
+    if (!isWithinLoadedRegions(node.start, node.end, loadedRegions)) continue;
     const candidates = dataCandidates.filter(
       (c) => c.start >= node.start && c.end <= node.end
     );
-    blocks.push(buildDataBlock(node, candidates));
+    blocks.push(buildDataBlock(node, candidates, memory));
   }
 
   // 3. Fill gaps — promote to data blocks if candidates exist, else unknown
-  blocks.push(...fillGaps(blocks, loadedRegions, dataCandidates));
+  blocks.push(...fillGaps(blocks, loadedRegions, dataCandidates, memory));
 
   return blocks;
+}
+
+/** Check that a range falls entirely within at least one loaded region. */
+function isWithinLoadedRegions(start: number, end: number, regions: LoadedRegion[]): boolean {
+  return regions.some((r) => start >= r.start && end <= r.end);
 }
 
 /** Split a subroutine's nodes into contiguous runs (no gaps between nodes). */
@@ -71,7 +113,7 @@ function splitIntoContiguousRuns(subNodes: TreeNode[]): TreeNode[][] {
   return runs;
 }
 
-function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree): Block {
+function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree, memory: Uint8Array): Block {
   const entry = subNodes[0];
   const subId = entry.subroutineId || entry.id;
   const isFragment = subId.startsWith("frag_");
@@ -91,7 +133,7 @@ function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree): Block {
           .map((b) => b.toString(16).toUpperCase().padStart(2, "0"))
           .join(" "),
         mnemonic: inst.info.mnemonic,
-        operand: formatInstruction(inst).replace(`${inst.info.mnemonic.toUpperCase()} `, ""),
+        operand: extractOperand(inst),
         addressingMode: inst.info.addressingMode,
         label: null,
       });
@@ -169,10 +211,11 @@ function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree): Block {
     smcTargets,
     isIrqHandler: isIrq,
     entryPoints: [address],
+    raw: encodeRaw(memory, address, endAddress),
   };
 }
 
-function buildDataBlock(node: TreeNode, candidates: DataCandidate[]): Block {
+function buildDataBlock(node: TreeNode, candidates: DataCandidate[], memory: Uint8Array): Block {
   // Sort candidates by confidence
   const sorted = [...candidates].sort((a, b) => b.confidence - a.confidence);
 
@@ -184,13 +227,15 @@ function buildDataBlock(node: TreeNode, candidates: DataCandidate[]): Block {
     reachability: node.metadata.speculative ? "indirect" : "proven",
     candidates: sorted,
     bestCandidate: sorted.length > 0 ? 0 : undefined,
+    raw: encodeRaw(memory, node.start, node.end),
   };
 }
 
 function fillGaps(
   blocks: Block[],
   loadedRegions: LoadedRegion[],
-  dataCandidates: DataCandidate[]
+  dataCandidates: DataCandidate[],
+  memory: Uint8Array
 ): Block[] {
   const owned = new Set<number>();
   for (const block of blocks) {
@@ -207,34 +252,104 @@ function fillGaps(
       if (isGap && gapStart === null) {
         gapStart = addr;
       } else if (!isGap && gapStart !== null) {
-        // Check if any data candidates overlap this gap
-        const overlapping = dataCandidates.filter(
-          (c) => c.start < addr && c.end > gapStart!
-        );
-        if (overlapping.length > 0) {
-          const sorted = [...overlapping].sort((a, b) => b.confidence - a.confidence);
-          gapBlocks.push({
-            id: `data_${gapStart.toString(16).padStart(4, "0")}`,
-            address: gapStart,
-            endAddress: addr,
-            type: "data",
-            reachability: "unproven",
-            candidates: sorted,
-            bestCandidate: 0,
-          });
-        } else {
-          gapBlocks.push({
-            id: `unknown_${gapStart.toString(16).padStart(4, "0")}`,
-            address: gapStart,
-            endAddress: addr,
-            type: "unknown",
-            reachability: "unproven",
-          });
-        }
+        gapBlocks.push(...splitGap(gapStart, addr, dataCandidates, memory));
         gapStart = null;
       }
     }
   }
 
   return gapBlocks;
+}
+
+/** Split a gap into blocks using candidate boundaries rather than one monolithic block. */
+function splitGap(gapStart: number, gapEnd: number, dataCandidates: DataCandidate[], memory: Uint8Array): Block[] {
+  // Find candidates fully within this gap, sorted by start address then by
+  // range size ascending — so narrower (more specific) candidates define block
+  // boundaries before broader fallback candidates at the same start position
+  const contained = dataCandidates
+    .filter((c) => c.start >= gapStart && c.end <= gapEnd)
+    .sort((a, b) => a.start - b.start || (a.end - a.start) - (b.end - b.start));
+
+  if (contained.length === 0) {
+    // No candidates — entire gap is unknown
+    return [makeGapBlock(memory,gapStart, gapEnd, [])];
+  }
+
+  // Walk the gap, emitting blocks for each candidate and unknown stretches between them
+  const result: Block[] = [];
+  let pos = gapStart;
+
+  for (const candidate of contained) {
+    // Unknown stretch before this candidate
+    if (candidate.start > pos) {
+      // Check for partially overlapping candidates in this unknown stretch
+      const partial = dataCandidates.filter(
+        (c) => c.start < candidate.start && c.end > pos && c.start >= gapStart && c.end <= gapEnd
+      );
+      result.push(makeGapBlock(memory,pos, candidate.start, partial));
+    }
+
+    // Only emit if we haven't already covered this address (avoid duplicates from overlapping candidates)
+    if (candidate.start >= pos) {
+      // Use the candidate's own end — don't extend to cover overlapping candidates
+      // that span a larger range (e.g., a jump_table covering the whole gap should
+      // not swallow a code island that starts later)
+      const blockEnd = candidate.end;
+
+      // Find all candidates that overlap this block's range
+      const colocated = contained.filter(
+        (c) => c.start < blockEnd && c.end > candidate.start
+      );
+      // Sort by confidence DESC, then by range size ASC (prefer specific candidates)
+      const sorted = [...colocated].sort((a, b) =>
+        b.confidence - a.confidence || (a.end - a.start) - (b.end - b.start)
+      );
+
+      result.push({
+        id: `data_${candidate.start.toString(16).padStart(4, "0")}`,
+        address: candidate.start,
+        endAddress: blockEnd,
+        type: "data",
+        reachability: "unproven",
+        candidates: sorted,
+        bestCandidate: 0,
+        raw: encodeRaw(memory, candidate.start, blockEnd),
+      });
+      pos = blockEnd;
+    }
+  }
+
+  // Unknown stretch after last candidate
+  if (pos < gapEnd) {
+    const partial = dataCandidates.filter(
+      (c) => c.start >= pos && c.start < gapEnd && c.end > pos
+    );
+    result.push(makeGapBlock(memory,pos, gapEnd, partial));
+  }
+
+  return result;
+}
+
+function makeGapBlock(memory: Uint8Array, start: number, end: number, candidates: DataCandidate[]): Block {
+  if (candidates.length > 0) {
+    const sorted = [...candidates].sort((a, b) => b.confidence - a.confidence);
+    return {
+      id: `data_${start.toString(16).padStart(4, "0")}`,
+      address: start,
+      endAddress: end,
+      type: "data",
+      reachability: "unproven",
+      candidates: sorted,
+      bestCandidate: 0,
+      raw: encodeRaw(memory, start, end),
+    };
+  }
+  return {
+    id: `unknown_${start.toString(16).padStart(4, "0")}`,
+    address: start,
+    endAddress: end,
+    type: "unknown",
+    reachability: "unproven",
+    raw: encodeRaw(memory, start, end),
+  };
 }
