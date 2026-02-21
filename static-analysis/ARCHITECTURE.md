@@ -314,7 +314,6 @@ interface DataDetector {
 | `jump_table` | Address dispatch tables (2+ valid code addresses, handles RTS dispatch offset) |
 | `lookup_table` | Byte tables: sine curves, screen line offsets, bit masks, indexed data |
 | `padding` | Zero fill ($00), NOP sleds ($EA), repeated byte patterns |
-| `rom_shadow` | RAM copying BASIC/KERNAL/CHARGEN ROM content |
 | `screen_map` | 1000-byte screen maps (40x25) and color RAM |
 | `sid_music` | SID frequency tables (PAL 16-bit values) |
 | `sprite` | 63-byte sprite data blocks (64-byte aligned) |
@@ -359,10 +358,9 @@ interface EnricherContext {
 |----------|----------|-------------|
 | `string_discovery` | 7 | Promotes unknown/low-confidence blocks to strings by scanning raw bytes. Splits blocks when a text prefix is followed by non-text data. |
 | `string_merge` | 8 | Merges adjacent single-byte data blocks into neighboring string blocks. Absorbs 1-byte gaps between strings when the byte is a valid string character. Calls `tree.mergeNodes()` to keep the tree in sync. |
-| `symbol_enricher` | 10 | Applies known C64 symbols: KERNAL routine labels ($FFD2=CHROUT), hardware register names, zero-page hints |
 | `sub_splitter` | 20 | Breaks oversized code blocks (>120 instructions) into sub-blocks at natural boundaries (loop headers, branch targets). Calls `tree.splitNode()` to keep the tree in sync. |
 | `label_generator` | 30 | Auto-generates labels: `sub_XXXX`, `irq_XXXX`, `dat_XXXX`, `frag_XXXX`, `str_XXXX` |
-| `comment_generator` | 40 | Adds structural comments: loop detection, data type hints, KERNAL function descriptions |
+| `comment_generator` | 40 | Adds structural comments: loop detection, SMC warnings, hardware access counts, data candidate hints |
 | `coverage_validator` | 99 | Final validation: ensures every loaded byte is owned by exactly one block. Reports gaps and conflicts. |
 
 ---
@@ -492,7 +490,7 @@ Mutable graph data structure with the following capabilities:
 
 ## File Inventory
 
-### Core (12 files)
+### Core (11 files)
 - `index.ts` — CLI entry point, 7-step orchestration, writes `blocks.json` + `dependency_tree.json`
 - `types.ts` — all shared type definitions (TreeNode, TreeEdge, IDChangeEvent, OverlapConflict)
 - `binary_loader.ts` — step 1: load + parse binary
@@ -504,8 +502,6 @@ Mutable graph data structure with the following capabilities:
 - `code_discoverer.ts` — step 4: orchestrates code discovery plugins on orphan regions
 - `data_classifier.ts` — step 5: run detectors on data regions
 - `block_assembler.ts` — step 6: tree → blocks (sets treeNodeIds/blockId cross-references)
-- `symbol_db.ts` — C64 symbol reference (KERNAL, hardware, ZP)
-
 ### Input Parsers (9 files)
 `input_parsers/`: types.ts, index.ts, prg_parser.ts, sid_parser.ts, vice_parser.ts, regenerator_parser.ts, c64_debugger_parser.ts, vsf_parser.ts, generic_parser.ts
 
@@ -515,8 +511,8 @@ Mutable graph data structure with the following capabilities:
 ### Code Discovery Plugins (3 files)
 `code_discovery/`: types.ts, index.ts, general_code_discoverer.ts
 
-### Data Detectors (15 files)
-`data_detectors/`: types.ts, index.ts, basic_detector.ts, bitmap_detector.ts, charset_detector.ts, color_data_detector.ts, compressed_detector.ts, jump_table_detector.ts, lookup_table_detector.ts, padding_detector.ts, rom_shadow_detector.ts, screen_map_detector.ts, sid_music_detector.ts, sprite_detector.ts, string_detector.ts
+### Data Detectors (14 files)
+`data_detectors/`: types.ts, index.ts, basic_detector.ts, bitmap_detector.ts, charset_detector.ts, color_data_detector.ts, compressed_detector.ts, jump_table_detector.ts, lookup_table_detector.ts, padding_detector.ts, screen_map_detector.ts, sid_music_detector.ts, sprite_detector.ts, string_detector.ts
 
-### Block Enrichers (9 files)
-`block_enrichers/`: types.ts, index.ts, string_discovery_enricher.ts, string_merge_enricher.ts, symbol_enricher.ts, sub_splitter_enricher.ts, label_generator_enricher.ts, comment_generator_enricher.ts, coverage_validator_enricher.ts
+### Block Enrichers (8 files)
+`block_enrichers/`: types.ts, index.ts, string_discovery_enricher.ts, string_merge_enricher.ts, sub_splitter_enricher.ts, label_generator_enricher.ts, comment_generator_enricher.ts, coverage_validator_enricher.ts

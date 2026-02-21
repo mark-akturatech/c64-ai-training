@@ -25,8 +25,6 @@ Static analysis deliberately does NOT answer **"what does this mean?"** The foll
 
 The `block.enrichment` field (`BlockEnrichment` in shared types) is reserved for the RE pipeline. Static analysis never writes to it.
 
-> **NOTE:** `symbol_enricher.ts` and parts of `comment_generator_enricher.ts` currently perform interpretive work (KERNAL/hardware symbol lookup, comparison hints). These are scheduled for removal — the logic will be reimplemented as RE pipeline Stage 1 plugins (deterministic, no AI). See [docs/re-extraction-plan.md](../docs/re-extraction-plan.md).
-
 ## Setup
 
 ```bash
@@ -213,7 +211,6 @@ src/
   tree_walker.ts           Step 3: queue-based code walker
   data_classifier.ts       Step 4: run detectors on data regions
   block_assembler.ts       Step 5: tree → blocks (with treeNodeIds cross-refs)
-  symbol_db.ts             C64 symbol reference (⚠ scheduled for RE extraction)
   input_parsers/
     prg_parser.ts          Standard .prg files
     sid_parser.ts          PSID/RSID music files
@@ -245,19 +242,16 @@ src/
     jump_table_detector.ts Address dispatch tables
     lookup_table_detector.ts Byte tables (sine, masks, etc.)
     padding_detector.ts    Zero fill, NOP sleds
-    rom_shadow_detector.ts ROM shadow copies (⚠ scheduled for RE extraction)
     screen_map_detector.ts Screen maps + color RAM
     sid_music_detector.ts  SID frequency tables
     sprite_detector.ts     Sprite data blocks (64-byte alignment)
     string_detector.ts     PETSCII/screen-code strings
     color_data_detector.ts Color RAM data ($00-$0F range)
   block_enrichers/
-    code_promotion_enricher.ts    Promote unreached code to code blocks
     string_discovery_enricher.ts  Promote unknown blocks to strings
     string_merge_enricher.ts      Merge adjacent string blocks
-    symbol_enricher.ts            KERNAL/hardware labels (⚠ scheduled for RE extraction)
     sub_splitter_enricher.ts      Break oversized blocks at back-edges
     label_generator_enricher.ts   Auto-generate labels from type+address
-    comment_generator_enricher.ts Structural comments (⚠ partially scheduled for RE extraction)
+    comment_generator_enricher.ts Structural comments (loops, SMC, hardware counts, data hints)
     coverage_validator_enricher.ts Final coverage validation
 ```
