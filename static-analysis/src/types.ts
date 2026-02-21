@@ -8,6 +8,7 @@
 // --- Import shared types for local use ---
 import type {
   AddressingMode as _AddressingMode,
+  EdgeCategory as _EdgeCategory,
   LoadedRegion as _LoadedRegion,
 } from "@c64/shared";
 
@@ -22,12 +23,21 @@ export type {
   BlockType,
   CoverageReport,
   DataCandidate,
+  EdgeCategory,
+  EdgeType as SharedEdgeType,
   LoadedRegion,
   Reachability,
 } from "@c64/shared";
 
+export {
+  CONTROL_FLOW_EDGES,
+  DATA_EDGES,
+  edgeCategory,
+} from "@c64/shared";
+
 // Local aliases for use within this file
 type AddressingMode = _AddressingMode;
+type EdgeCategory = _EdgeCategory;
 type LoadedRegion = _LoadedRegion;
 
 // --- Step 1: Binary Loader (private to static-analysis) ---
@@ -153,6 +163,7 @@ export type EdgeType =
 export interface TreeEdge {
   target: number;
   type: EdgeType;
+  category?: EdgeCategory;   // "control_flow" or "data" — auto-computed from type by DependencyTree
   sourceInstruction: number;
   confidence: number;        // 0-100
   discoveredBy: string;      // plugin name
@@ -170,5 +181,24 @@ export interface TreeNode {
   instructions?: DecodedInstruction[];
   edges: TreeEdge[];
   subroutineId?: string;
+  blockId?: string;          // set by block_assembler: which block this node belongs to
   metadata: Record<string, unknown>;
+}
+
+// --- ID Change Events (emitted by DependencyTree on split/merge) ---
+
+export interface IDChangeEvent {
+  type: "split" | "merge" | "remove";
+  oldIds: string[];
+  newIds: string[];
+  mapping: Map<string, string>;  // old → new (best-effort)
+}
+
+// --- Overlap Conflict (returned by addNode on address conflicts) ---
+
+export interface OverlapConflict {
+  existingNode: TreeNode;
+  newNode: TreeNode;
+  overlapStart: number;
+  overlapEnd: number;
 }

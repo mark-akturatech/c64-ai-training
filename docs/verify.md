@@ -13,9 +13,9 @@ your_source.asm → kickass ──┘
 ```
 
 **Related plans:**
-- [static-analysis.md](plans/static-analysis.md) — produces `blocks.json` (optional input to verify for junk filtering)
-- [builder.md](plans/builder.md) — produces `.asm` files from `blocks.json`
-- [reverse-engineering-pipeline.md](plans/reverse-engineering-pipeline.md) — enriches `blocks.json` with AI analysis
+- [static-analysis.md](docs/static-analysis.md) — produces `blocks.json` (optional input to verify for junk filtering)
+- [builder.md](docs/builder.md) — produces `.asm` files from `blocks.json`
+- [reverse-engineering-pipeline.md](docs/reverse-engineering-pipeline.md) — enriches `blocks.json` with AI analysis
 
 ---
 
@@ -152,5 +152,5 @@ cd ../verify && npx tsx src/index.ts my-reverse-engineered/main.asm --original o
 
 ## Key Files
 - [@c64/shared](shared/) — Block type with `junk` field (shared with static-analysis and builder)
-- [builder.md](plans/builder.md) — produces the .asm files verify checks
+- [builder.md](docs/builder.md) — produces the .asm files verify checks
 - [static-analysis/ARCHITECTURE.md](static-analysis/ARCHITECTURE.md) — blocks.json format reference

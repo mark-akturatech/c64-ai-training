@@ -16,15 +16,15 @@ Hybrid search tool for querying the knowledge base. Supports hex address filteri
 
 Automated reverse engineering pipeline for C64 binaries. Static analysis engine + AI-powered semantic analysis produces documented, multi-file KickAssembler source from `.prg` files.
 
-- [plans/static-analysis.md](plans/static-analysis.md) -- deterministic code/data classification
-- [plans/reverse-engineering-pipeline.md](plans/reverse-engineering-pipeline.md) -- AI annotation, naming, and documentation passes
-- [plans/ai-disassembler-mcp.md](plans/ai-disassembler-mcp.md) -- MCP tools and output format
+- [docs/static-analysis.md](docs/static-analysis.md) -- deterministic code/data classification
+- [docs/reverse-engineering-pipeline.md](docs/reverse-engineering-pipeline.md) -- AI annotation, naming, and documentation passes
+- [docs/ai-disassembler-mcp.md](docs/ai-disassembler-mcp.md) -- MCP tools and output format
 
 ### KickAssembler LSP (planned)
 
 VS Code extension with a built-in Language Server for KickAssembler.
 
-- [plans/kickassembler-lsp-extension.md](plans/kickassembler-lsp-extension.md) -- architecture and research
+- [docs/kickassembler-lsp-extension.md](docs/kickassembler-lsp-extension.md) -- architecture and research
 
 ## Prerequisites
 

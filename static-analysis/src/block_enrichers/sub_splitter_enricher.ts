@@ -8,7 +8,7 @@ export class SubSplitterEnricher implements BlockEnricher {
   description = "Breaks oversized blocks into sub-blocks at natural boundaries";
   priority = 20;
 
-  enrich(blocks: Block[], _context: EnricherContext): Block[] {
+  enrich(blocks: Block[], context: EnricherContext): Block[] {
     const result: Block[] = [];
 
     for (const block of blocks) {
@@ -32,6 +32,23 @@ export class SubSplitterEnricher implements BlockEnricher {
       if (splitPoints.length === 0) {
         result.push(block);
         continue;
+      }
+
+      // Split tree nodes at the corresponding addresses
+      const instructions = block.instructions || [];
+      for (const splitIdx of splitPoints) {
+        const splitAddr = instructions[splitIdx]?.address;
+        if (splitAddr !== undefined) {
+          // Find the tree node that contains this address and split it
+          const treeNode = context.tree.findNodeContaining(splitAddr);
+          if (treeNode && splitAddr > treeNode.start && splitAddr < treeNode.end) {
+            try {
+              context.tree.splitNode(treeNode.start, splitAddr);
+            } catch {
+              // Node may have already been split by a previous split point
+            }
+          }
+        }
       }
 
       // Split into sub-blocks

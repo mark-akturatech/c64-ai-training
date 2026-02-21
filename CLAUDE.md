@@ -52,10 +52,10 @@ The static analyzer loads input files (.vsf, .prg, etc.) and produces blocks.jso
 ```bash
 # 1. Static analysis (accepts .vsf or .prg)
 npx tsx static-analysis/src/index.ts path/to/input.vsf
-# → outputs static-analysis/blocks.json
+# → outputs blocks.json in CWD (project root)
 
 # 2. Builder (uses blocks.json only — all data is embedded)
-npx tsx builder/src/index.ts static-analysis/blocks.json -o test/output-dir/
+npx tsx builder/src/index.ts blocks.json -o test/output-dir/
 # → outputs main.asm
 
 # 3. KickAssembler
@@ -71,4 +71,4 @@ npx tsx helper/prg2vsf/src/index.ts test/output-dir/compiled.prg --pc 0xENTRY -o
 **Do NOT modify pipeline code** when asked to build something — just run the commands above.
 
 ## Plans
-- Always save implementation plans to `plans/` directory
+- Always save implementation plans to `docs/` directory

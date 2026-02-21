@@ -9,6 +9,8 @@
 // Respects hard read boundaries (addresses in code blocks' dataRefs):
 // - Only merges FORWARD (right) — code references create hard start boundaries
 // - Caps forward merge at the next hard boundary
+//
+// Tree mutations: mergeNodes() called when two adjacent blocks are merged.
 // ============================================================================
 
 import { Buffer } from "node:buffer";
@@ -57,6 +59,22 @@ export class StringMergeEnricher implements BlockEnricher {
   }
 
   /**
+   * Merge tree nodes for two adjacent blocks being combined.
+   * Silently skips if either node is not found (tree may not have nodes for gap-fill blocks).
+   */
+  private mergeTreeNodes(addr1: number, addr2: number, context: EnricherContext): void {
+    const node1 = context.tree.getNode(addr1) ?? context.tree.findNodeContaining(addr1);
+    const node2 = context.tree.getNode(addr2) ?? context.tree.findNodeContaining(addr2);
+    if (node1 && node2 && node1 !== node2 && context.tree.hasNode(node1.start) && context.tree.hasNode(node2.start)) {
+      try {
+        context.tree.mergeNodes(node1.start, node2.start);
+      } catch {
+        // Nodes may not be adjacent in the tree — skip
+      }
+    }
+  }
+
+  /**
    * Absorb 1-byte data blocks into adjacent string blocks.
    * Only merges FORWARD (right). Caps at the next hard boundary so we
    * don't merge across separate data access ranges.
@@ -89,6 +107,9 @@ export class StringMergeEnricher implements BlockEnricher {
             const mergeEnd = this.nextHardBoundary(block.endAddress, right.endAddress, hardBoundaries);
 
             if (mergeEnd > block.endAddress) {
+              // Merge tree nodes
+              this.mergeTreeNodes(block.address, right.address, context);
+
               result[i + 1] = this.expandBlock(right, block.address, mergeEnd, context);
               // If we capped the merge, keep the remainder as a separate block
               if (mergeEnd < right.endAddress) {
@@ -129,6 +150,9 @@ export class StringMergeEnricher implements BlockEnricher {
         const leftSub = this.getStringSubtype(left);
         const rightSub = this.getStringSubtype(right);
         if (leftSub !== rightSub) continue;
+
+        // Merge tree nodes
+        this.mergeTreeNodes(left.address, right.address, context);
 
         // Merge right into left
         result[i] = this.expandBlock(left, left.address, right.endAddress, context);

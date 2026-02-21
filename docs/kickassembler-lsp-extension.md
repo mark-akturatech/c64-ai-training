@@ -4,16 +4,16 @@
 
 A VS Code extension for KickAssembler - the most popular modern Commodore 64 assembler - with AI integration via MCP.
 
-**This extension wraps the [KickAssembler LSP core library](kickassembler-lsp.md)** with VS Code-specific features: TextMate grammar, snippets, diagnostics, debug adapter, and MCP integration. The core parser, symbol table, scope tracking, and cross-file resolution live in the LSP library (see [plans/kickassembler-lsp.md](kickassembler-lsp.md)).
+**This extension wraps the [KickAssembler LSP core library](kickassembler-lsp.md)** with VS Code-specific features: TextMate grammar, snippets, diagnostics, debug adapter, and MCP integration. The core parser, symbol table, scope tracking, and cross-file resolution live in the LSP library (see [docs/kickassembler-lsp.md](kickassembler-lsp.md)).
 
 ```
-kickassembler-lsp (core library - TypeScript)    <-- See plans/kickassembler-lsp.md
+kickassembler-lsp (core library - TypeScript)    <-- See docs/kickassembler-lsp.md
     │
     ├──> THIS PROJECT: kickassembler-vscode (VS Code extension)
     │    Adds: TextMate grammar, snippets, diagnostics, debug adapter, Serena/MCP
     │
     └──> c64-disasm-mcp (Python disassembler MCP - connects as LSP client)
-         See: plans/ai-disassembler-mcp.md
+         See: docs/ai-disassembler-mcp.md
 ```
 
 **No production-ready KickAssembler LSP exists today.** Three existing VS Code extensions (CaptainJiNX, sanmont, paulhocker) were analysed. All three shell out to Java for every operation and lack their own parser.

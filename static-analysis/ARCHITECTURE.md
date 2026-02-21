@@ -2,11 +2,13 @@
 
 ## Overview
 
-A 7-step deterministic pipeline that analyzes C64 binaries and produces `blocks.json` — a structured representation of every code block, data region, and unknown area in the program. No AI, no API calls. All intelligence lives in pluggable plugins.
+A 7-step deterministic pipeline that analyzes C64 binaries and produces `blocks.json` + `dependency_tree.json` — structured representations of every code block, data region, and the full dependency graph. No AI, no API calls. All intelligence lives in pluggable plugins.
 
 **Language:** TypeScript/Node.js
 **Input:** Binary files (`.prg`, `.sid`, `.vsf`, `.asm` disassembly dumps) + optional entry points
-**Output:** `blocks.json` — classified blocks with full coverage of all loaded bytes
+**Output:**
+- `blocks.json` — classified blocks with full coverage of all loaded bytes
+- `dependency_tree.json` — full dependency graph with typed edges, category classification, and serialized node/edge data
 
 ```
 npx tsx src/index.ts game.prg
@@ -43,8 +45,8 @@ Input (.prg, .sid, .vsf, .asm)
     v
 [7. block_enrichers] ────────── pluggable enricher plugins
     |                            label, split, merge, annotate, validate
-    v
-blocks.json
+    v                            tree mutations: splitNode(), mergeNodes()
+blocks.json + dependency_tree.json
 ```
 
 No iterative fixpoint loop. The tree walker uses a queue — when any plugin discovers new code targets, they go into the queue and get processed in the same pass. The tree grows until the queue drains. The code discoverer (step 4) may find additional entry points and re-invoke the tree walker incrementally — the existing tree and byteRole array are preserved, only new code is traced.
@@ -52,6 +54,8 @@ No iterative fixpoint loop. The tree walker uses a queue — when any plugin dis
 ---
 
 ## Output Format
+
+### blocks.json
 
 ```json
 {
@@ -78,6 +82,39 @@ No iterative fixpoint loop. The tree walker uses a queue — when any plugin dis
 ```
 
 **Coverage guarantee:** Every byte in every loaded region belongs to exactly one block. Gaps are bugs.
+
+### dependency_tree.json
+
+```json
+{
+  "metadata": {
+    "source": "game.prg",
+    "generatedBy": "static-analysis",
+    "totalNodes": 62,
+    "totalEdges": 180,
+    "edgeCategoryCounts": { "control_flow": 120, "data": 60 },
+    "edgeTypeCounts": { "branch": 40, "call": 30, "fallthrough": 50, ... }
+  },
+  "entryPoints": ["code_0810"],
+  "irqHandlers": ["code_c200"],
+  "nodes": {
+    "code_0810": {
+      "type": "code", "start": "0x0810", "end": "0x0850",
+      "blockId": "sub_0810", "discoveredBy": "tree_walker", "endConfidence": 100
+    }
+  },
+  "edges": [
+    {
+      "source": "code_0810", "sourceInstruction": "0x0820",
+      "target": "0x0900", "targetNodeId": "code_0900",
+      "type": "call", "category": "control_flow",
+      "confidence": 100, "discoveredBy": "jump_resolver"
+    }
+  ]
+}
+```
+
+**Cross-references:** Each block in `blocks.json` carries `treeNodeIds` (which tree nodes it was assembled from). Each tree node in `dependency_tree.json` carries `blockId` (which block it belongs to).
 
 ### Block Types
 
@@ -293,8 +330,8 @@ Each candidate includes: start/end, type/subtype, confidence (0-100), evidence s
 
 Converts the dependency tree + data candidates into output blocks:
 
-1. **Code blocks** — groups subroutine nodes into contiguous runs, builds instruction lists and basic block CFGs
-2. **Data blocks** — attaches detector candidates to tree data nodes, sorted by confidence
+1. **Code blocks** — groups subroutine nodes into contiguous runs, builds instruction lists and basic block CFGs. Records `treeNodeIds` (which tree nodes the block was assembled from) and sets `blockId` on each tree node for bidirectional cross-referencing.
+2. **Data blocks** — attaches detector candidates to tree data nodes, sorted by confidence. Sets `blockId` and `treeNodeIds`.
 3. **Gap filling** — any loaded bytes not owned by code or data blocks become data blocks (if candidates overlap) or unknown blocks
 
 ---
@@ -303,7 +340,7 @@ Converts the dependency tree + data candidates into output blocks:
 
 **File:** `block_enrichers/`
 
-Auto-discovered enrichers transform the block list in priority order. Each receives the full block array and returns a (possibly modified) block array.
+Auto-discovered enrichers transform the block list in priority order. Each receives the full block array and an `EnricherContext` (which includes the `DependencyTree` and `memory` buffer), and returns a (possibly modified) block array. Enrichers that split or merge blocks also mutate the dependency tree via `splitNode()` / `mergeNodes()`.
 
 ```typescript
 interface BlockEnricher {
@@ -311,14 +348,19 @@ interface BlockEnricher {
   priority: number;
   enrich(blocks: Block[], context: EnricherContext): Block[];
 }
+
+interface EnricherContext {
+  tree: DependencyTree;
+  memory: Uint8Array;
+}
 ```
 
 | Enricher | Priority | Description |
 |----------|----------|-------------|
 | `string_discovery` | 7 | Promotes unknown/low-confidence blocks to strings by scanning raw bytes. Splits blocks when a text prefix is followed by non-text data. |
-| `string_merge` | 8 | Merges adjacent single-byte data blocks into neighboring string blocks. Absorbs 1-byte gaps between strings when the byte is a valid string character. |
+| `string_merge` | 8 | Merges adjacent single-byte data blocks into neighboring string blocks. Absorbs 1-byte gaps between strings when the byte is a valid string character. Calls `tree.mergeNodes()` to keep the tree in sync. |
 | `symbol_enricher` | 10 | Applies known C64 symbols: KERNAL routine labels ($FFD2=CHROUT), hardware register names, zero-page hints |
-| `sub_splitter` | 20 | Breaks oversized code blocks (>120 instructions) into sub-blocks at natural boundaries (loop headers, branch targets) |
+| `sub_splitter` | 20 | Breaks oversized code blocks (>120 instructions) into sub-blocks at natural boundaries (loop headers, branch targets). Calls `tree.splitNode()` to keep the tree in sync. |
 | `label_generator` | 30 | Auto-generates labels: `sub_XXXX`, `irq_XXXX`, `dat_XXXX`, `frag_XXXX`, `str_XXXX` |
 | `comment_generator` | 40 | Adds structural comments: loop detection, data type hints, KERNAL function descriptions |
 | `coverage_validator` | 99 | Final validation: ensures every loaded byte is owned by exactly one block. Reports gaps and conflicts. |
@@ -344,9 +386,11 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree
   end: number;              // exclusive
   endConfidence: number;    // 0-100
   discoveredBy: string;     // plugin name
+  refinedBy: string[];      // enrichers that modified this node ("split", "merge", etc.)
   instructions?: DecodedInstruction[];
   edges: TreeEdge[];
   subroutineId?: string;    // set by subroutine_grouper
+  blockId?: string;         // set by block_assembler: which block this node belongs to
 }
 ```
 
@@ -355,13 +399,29 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree
 {
   target: number;
   type: EdgeType;           // branch | fallthrough | jump | indirect_jump | call |
-                            // data_read | data_write | pointer_ref |
-                            // hardware_read | hardware_write | smc_write
+                            // rts_dispatch | data_read | data_write | pointer_ref |
+                            // hardware_read | hardware_write | smc_write | vector_write
+  category?: EdgeCategory;  // "control_flow" | "data" — auto-computed from type
   sourceInstruction: number;
   confidence: number;       // 0-100
   discoveredBy: string;
 }
 ```
+
+Edge categories are defined in `shared/src/edge_categories.ts` and shared between static-analysis and the RE pipeline. Control-flow edges (`branch`, `fallthrough`, `jump`, `indirect_jump`, `call`, `rts_dispatch`) participate in SCC decomposition and scheduling. Data edges (`data_read`, `data_write`, etc.) do not.
+
+### DependencyTree
+
+**File:** `dependency_tree.ts`
+
+Mutable graph data structure with the following capabilities:
+
+- **Node operations:** `addNode()` (with overlap detection), `addNodeUnchecked()` (internal use by tree_walker), `getNode()`, `hasNode()`, `findNodeContaining()`
+- **Edge operations:** `addEdge()` (auto-fills edge category), `getEdgesTo()`, `rebuildEdgeIndex()`
+- **Split/Merge:** `splitNode(nodeStart, splitAt)` splits a node into two, redistributes edges, adds fallthrough edge. `mergeNodes(addr1, addr2)` combines adjacent nodes. Both emit `IDChangeEvent`s.
+- **ID change events:** `onIDChange(listener)` — downstream systems can subscribe to node ID changes caused by split/merge
+- **Serialization:** `toJSON()` — produces the `dependency_tree.json` output with all nodes, edges (with categories), entry points, IRQ handlers, and metadata
+- **Queries:** `getSubroutines()`, `getDataNodes()`, `getOrphanRegions()`
 
 ### Block (output)
 ```typescript
@@ -371,6 +431,7 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree
   endAddress: number;
   type: BlockType;          // subroutine | irq_handler | fragment | data | unknown
   reachability: Reachability; // proven | indirect | unproven
+  treeNodeIds?: string[];   // which tree nodes this block was assembled from
 
   // Code blocks:
   instructions?: BlockInstruction[];
@@ -423,24 +484,26 @@ MemoryImage → EntryPoint[] + BankingState → DependencyTree
 - **ByteRole:** `Uint8Array[65536]` with 0=unknown, 1=code_opcode, 2=code_operand, 3=data
 - **Plugin discovery:** Auto-loaded by filename pattern (`*_parser.ts`, `*_plugin.ts`, `*_detector.ts`, `*_enricher.ts`)
 - **Addresses:** Stored as numbers internally, formatted as hex strings in JSON output
-- **No AI dependency:** Entire pipeline is deterministic. The downstream AI pipeline consumes `blocks.json` but is not required.
+- **Edge categories:** Every edge is classified as `control_flow` or `data` (auto-computed from edge type). Only control-flow edges participate in SCC decomposition and scheduling. Defined in `shared/src/edge_categories.ts`.
+- **Tree/Block cross-references:** Blocks carry `treeNodeIds`, tree nodes carry `blockId`. Bidirectional mapping maintained by `block_assembler.ts`.
+- **No AI dependency:** Entire pipeline is deterministic. The downstream AI pipeline consumes `blocks.json` + `dependency_tree.json` but is not required.
 
 ---
 
 ## File Inventory
 
 ### Core (12 files)
-- `index.ts` — CLI entry point, 7-step orchestration
-- `types.ts` — all shared type definitions
+- `index.ts` — CLI entry point, 7-step orchestration, writes `blocks.json` + `dependency_tree.json`
+- `types.ts` — all shared type definitions (TreeNode, TreeEdge, IDChangeEvent, OverlapConflict)
 - `binary_loader.ts` — step 1: load + parse binary
 - `opcode_decoder.ts` — decode single 6502 instruction
 - `opcode_table.ts` — complete 256-entry opcode table
 - `entry_point_detector.ts` — step 2: entry points + banking
-- `dependency_tree.ts` — tree data structure (nodes, edges, lookups)
+- `dependency_tree.ts` — mutable graph: nodes, edges, split/merge, overlap detection, ID change events, JSON serialization
 - `tree_walker.ts` — step 3: queue-based code walker (supports incremental mode)
 - `code_discoverer.ts` — step 4: orchestrates code discovery plugins on orphan regions
 - `data_classifier.ts` — step 5: run detectors on data regions
-- `block_assembler.ts` — step 6: tree → blocks
+- `block_assembler.ts` — step 6: tree → blocks (sets treeNodeIds/blockId cross-references)
 - `symbol_db.ts` — C64 symbol reference (KERNAL, hardware, ZP)
 
 ### Input Parsers (9 files)

@@ -160,7 +160,7 @@ export async function buildDependencyTree(
     }
 
     // Add node to tree
-    tree.addNode(node);
+    tree.addNodeUnchecked(node);
 
     // Run node-phase plugins
     for (const plugin of nodePlugins) {
@@ -199,7 +199,7 @@ export async function buildDependencyTree(
       if (result.newNodes) {
         for (const partial of result.newNodes) {
           const newNode = createNodeFromPartial(partial);
-          tree.addNode(newNode);
+          tree.addNodeUnchecked(newNode);
           markNodeBytes(newNode, byteRole);
         }
       }
@@ -247,7 +247,7 @@ function applyResult(
     for (const partial of result.newNodes) {
       const node = createNodeFromPartial(partial, pluginName);
       if (!tree.hasNode(node.start)) {
-        tree.addNode(node);
+        tree.addNodeUnchecked(node);
       }
     }
   }

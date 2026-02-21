@@ -20,3 +20,14 @@ export type {
   CoverageReport,
   LoadedRegion,
 } from "./analysis.js";
+
+export {
+  CONTROL_FLOW_EDGES,
+  DATA_EDGES,
+  edgeCategory,
+} from "./edge_categories.js";
+
+export type {
+  EdgeType,
+  EdgeCategory,
+} from "./edge_categories.js";

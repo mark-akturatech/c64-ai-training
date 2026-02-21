@@ -8,10 +8,10 @@ A standalone TypeScript library providing KickAssembler language intelligence: p
 kickassembler-lsp (this plan - core library + LSP server)
     │
     ├──> kickassembler-vscode (VS Code extension - IDE features, debug adapter)
-    │    See: plans/kickassembler-lsp-extension.md
+    │    See: docs/kickassembler-lsp-extension.md
     │
     └──> c64-disasm-mcp (Python MCP server - connects as LSP client)
-         See: plans/ai-disassembler-mcp.md
+         See: docs/ai-disassembler-mcp.md
 ```
 
 **Why separate?** The LSP provides code intelligence that both projects need:
@@ -321,7 +321,7 @@ Imports the LSP library and wraps it with VS Code-specific features:
 
 The extension adds the **UX layer** on top of the LSP's **intelligence layer**.
 
-See: [plans/kickassembler-lsp-extension.md](kickassembler-lsp-extension.md)
+See: [docs/kickassembler-lsp-extension.md](kickassembler-lsp-extension.md)
 
 ### Disassembler MCP (c64-disasm-mcp)
 
@@ -334,7 +334,7 @@ Connects to the LSP server as a client to navigate generated KickAssembler outpu
 
 Connection: The disassembler MCP launches the LSP server as a subprocess and communicates via stdio LSP protocol. This keeps the Python MCP and TypeScript LSP cleanly separated.
 
-See: [plans/ai-disassembler-mcp.md](ai-disassembler-mcp.md)
+See: [docs/ai-disassembler-mcp.md](ai-disassembler-mcp.md)
 
 ---
 

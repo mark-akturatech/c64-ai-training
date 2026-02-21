@@ -195,6 +195,12 @@ function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree, memory: Uint
       ? "proven"
       : "unproven";
 
+  // Record tree node IDs and set blockId cross-reference on tree nodes
+  const treeNodeIds = subNodes.map(n => n.id);
+  for (const node of subNodes) {
+    node.blockId = subId;
+  }
+
   return {
     id: subId,
     address,
@@ -211,6 +217,7 @@ function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree, memory: Uint
     smcTargets,
     isIrqHandler: isIrq,
     entryPoints: [address],
+    treeNodeIds,
     raw: encodeRaw(memory, address, endAddress),
   };
 }
@@ -218,6 +225,9 @@ function buildCodeBlock(subNodes: TreeNode[], tree: DependencyTree, memory: Uint
 function buildDataBlock(node: TreeNode, candidates: DataCandidate[], memory: Uint8Array): Block {
   // Sort candidates by confidence
   const sorted = [...candidates].sort((a, b) => b.confidence - a.confidence);
+
+  // Set blockId cross-reference on tree node
+  node.blockId = node.id;
 
   return {
     id: node.id,
@@ -227,6 +237,7 @@ function buildDataBlock(node: TreeNode, candidates: DataCandidate[], memory: Uin
     reachability: node.metadata.speculative ? "indirect" : "proven",
     candidates: sorted,
     bestCandidate: sorted.length > 0 ? 0 : undefined,
+    treeNodeIds: [node.id],
     raw: encodeRaw(memory, node.start, node.end),
   };
 }

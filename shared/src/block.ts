@@ -79,6 +79,9 @@ export interface Block {
    *  Set by static analysis (padding detector) or RE pipeline enrichment. */
   junk?: boolean;
 
+  /** Which tree nodes this block was assembled from */
+  treeNodeIds?: string[];
+
   /** Optional enrichment from RE pipeline */
   enrichment?: BlockEnrichment;
 }

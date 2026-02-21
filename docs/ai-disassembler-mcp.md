@@ -1093,7 +1093,7 @@ Claude Code Session
             |-- Code navigation (definition, references, rename, call hierarchy)
             |-- Connected to by: c64-disasm MCP (as LSP client)
             '-- Connected to by: VS Code extension (as LSP client)
-            See: plans/kickassembler-lsp.md
+            See: docs/kickassembler-lsp.md
 ```
 
 ### LSP Integration

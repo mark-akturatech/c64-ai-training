@@ -4,7 +4,7 @@
 // ============================================================================
 
 import { writeFileSync } from "node:fs";
-import { basename } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { loadBinary, detectPacker } from "./binary_loader.js";
 import { detectEntryPoints } from "./entry_point_detector.js";
 import { buildDependencyTree } from "./tree_walker.js";
@@ -128,8 +128,14 @@ async function main(): Promise<void> {
   const outputPath = args.output || "blocks.json";
   writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
+  // Write dependency_tree.json alongside blocks.json
+  const treeOutputPath = join(dirname(outputPath), "dependency_tree.json");
+  const treeJson = tree.toJSON();
+  (treeJson.metadata as Record<string, unknown>).source = basename(args.files[0]);
+  writeFileSync(treeOutputPath, JSON.stringify(treeJson, null, 2));
+
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
-  console.error(`\nDone in ${elapsed}s. Output: ${outputPath}`);
+  console.error(`\nDone in ${elapsed}s. Output: ${outputPath}, ${treeOutputPath}`);
   console.error(`  Code: ${output.coverage.classified.code.bytes} bytes (${output.coverage.classified.code.pct}%)`);
   console.error(`  Data: ${output.coverage.classified.data.bytes} bytes (${output.coverage.classified.data.pct}%)`);
   console.error(`  Unknown: ${output.coverage.classified.unknown.bytes} bytes (${output.coverage.classified.unknown.pct}%)`);
