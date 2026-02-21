@@ -1,10 +1,9 @@
 import type { Block } from "../types.js";
 import type { BlockEnricher, EnricherContext } from "./types.js";
-import { HARDWARE_SYMBOLS, KERNAL_SYMBOLS } from "../symbol_db.js";
 
 export class CommentGeneratorEnricher implements BlockEnricher {
   name = "comment_generator";
-  description = "Adds structural comments for AI consumption";
+  description = "Adds structural comments derived from control flow and data classification";
   priority = 40;
 
   enrich(blocks: Block[], _context: EnricherContext): Block[] {
@@ -26,34 +25,20 @@ export class CommentGeneratorEnricher implements BlockEnricher {
         }
       }
 
-      // Hardware access summary
+      // Hardware access counts (structural — just counts, no names)
       if (block.hardwareRefs && block.hardwareRefs.length > 0) {
         const vicRefs = block.hardwareRefs.filter((a) => a >= 0xD000 && a < 0xD030);
         const sidRefs = block.hardwareRefs.filter((a) => a >= 0xD400 && a < 0xD420);
         const ciaRefs = block.hardwareRefs.filter((a) => a >= 0xDC00 && a < 0xDE00);
 
         if (vicRefs.length > 0) {
-          const names = vicRefs
-            .map((a) => HARDWARE_SYMBOLS[a]?.name)
-            .filter(Boolean)
-            .slice(0, 5);
-          block.comments.push(`VIC-II access: ${names.join(", ")}${vicRefs.length > 5 ? ` (+${vicRefs.length - 5} more)` : ""}`);
+          block.comments.push(`VIC-II access: ${vicRefs.length} register${vicRefs.length > 1 ? "s" : ""}`);
         }
         if (sidRefs.length > 0) {
           block.comments.push(`SID access: ${sidRefs.length} register${sidRefs.length > 1 ? "s" : ""}`);
         }
         if (ciaRefs.length > 0) {
           block.comments.push(`CIA access: ${ciaRefs.length} register${ciaRefs.length > 1 ? "s" : ""}`);
-        }
-      }
-
-      // KERNAL call summary
-      if (block.callsOut && block.callsOut.length > 0) {
-        const kernalCalls = block.callsOut
-          .map((a) => KERNAL_SYMBOLS[a]?.name)
-          .filter(Boolean);
-        if (kernalCalls.length > 0) {
-          block.comments.push(`KERNAL calls: ${kernalCalls.join(", ")}`);
         }
       }
 

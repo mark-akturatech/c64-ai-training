@@ -1,6 +1,31 @@
 # C64 Static Analysis Pipeline
 
-Deterministic 6-step pipeline that analyzes C64/6502 binaries and produces `blocks.json` — a structured decomposition of every code block, data region, and unknown area in the program. No AI, no API calls. All pattern recognition lives in pluggable plugins.
+Deterministic pipeline that analyzes C64/6502 binaries and produces `blocks.json` + `dependency_tree.json` — a structured decomposition of every code block, data region, and unknown area in the program, plus a full dependency graph. No AI, no API calls. All pattern recognition lives in pluggable plugins.
+
+## Scope — What This Tool Does and Does NOT Do
+
+Static analysis answers **"what bytes are here and how are they structured?"** It performs structural decomposition only:
+
+- **Code discovery** — traces control flow from entry points, builds a dependency tree of code and data nodes
+- **Data classification** — identifies data types by byte patterns (sprite alignment, string encoding ranges, table structures, BASIC line-link chains, etc.)
+- **Block assembly** — converts tree nodes + candidates into blocks with full byte coverage
+- **Structural enrichment** — promotes/splits/merges blocks, generates labels from type+address, validates coverage
+
+Static analysis deliberately does NOT answer **"what does this mean?"** The following belong in the **reverse engineering (RE) pipeline**, not here:
+
+| Concern | Why it's RE, not static analysis |
+|---------|----------------------------------|
+| Naming KERNAL routines (`JSR $FFD2` → "CHROUT") | Requires a human-curated symbol database |
+| Naming hardware registers (`$D020` → "VIC_BORDER_COLOR") | Same — symbol lookup, not structural |
+| Describing purpose ("initialize sprites", "main game loop") | Requires semantic understanding |
+| Module grouping ("graphics", "sound", "input") | Requires understanding what code *does* |
+| Inline comments, header comments, variable names | Documentation, not structure |
+| Comparison hints (`CMP #$28` → "screen width") | Domain knowledge, not byte patterns |
+| ROM shadow identification | Requires external ROM files for comparison |
+
+The `block.enrichment` field (`BlockEnrichment` in shared types) is reserved for the RE pipeline. Static analysis never writes to it.
+
+> **NOTE:** `symbol_enricher.ts` and parts of `comment_generator_enricher.ts` currently perform interpretive work (KERNAL/hardware symbol lookup, comparison hints). These are scheduled for removal — the logic will be reimplemented as RE pipeline Stage 1 plugins (deterministic, no AI). See [docs/re-extraction-plan.md](../docs/re-extraction-plan.md).
 
 ## Setup
 
@@ -43,13 +68,22 @@ npx tsx src/index.ts raw.bin --format generic --load-address 0xC000 --entry 0xC0
 
 ## Output
 
-`blocks.json` (or `--output path`) containing:
+`blocks.json` + `dependency_tree.json` in the current working directory.
+
+**blocks.json** contains:
 
 - **metadata** — source file, load address, entry points, block counts
 - **coverage** — byte classification breakdown (code/data/unknown percentages)
 - **blocks** — array of classified blocks with instructions, edges, candidates
 
 Every loaded byte belongs to exactly one block. No gaps.
+
+**dependency_tree.json** contains:
+
+- **metadata** — source, total nodes/edges, category counts
+- **entryPoints** / **irqHandlers** — root node IDs
+- **nodes** — code and data nodes with addresses, types, cross-references to blocks
+- **edges** — typed, categorized edges (control_flow: call/branch/fallthrough/jump; data: data_read/data_write/hardware_read/hardware_write/pointer_ref)
 
 ### Block Types
 
@@ -86,7 +120,7 @@ Input (.prg, .sid, .vsf, .asm)
     |
 [6] block_enrichers ────── promote, label, split, annotate, validate (pluggable enrichers)
     |
-blocks.json
+blocks.json + dependency_tree.json
 ```
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for full details on every plugin, type, and data structure.
@@ -169,17 +203,17 @@ export class MyEnricher implements BlockEnricher {
 
 ```
 src/
-  index.ts                 CLI entry point, 6-step orchestration
+  index.ts                 CLI entry point, orchestration
   types.ts                 All shared type definitions
   binary_loader.ts         Step 1: load + parse binary
   opcode_decoder.ts        Decode single 6502 instruction
   opcode_table.ts          Complete 256-entry opcode table
   entry_point_detector.ts  Step 2: entry points + banking
-  dependency_tree.ts       Tree data structure
+  dependency_tree.ts       Tree data structure (first-class artifact)
   tree_walker.ts           Step 3: queue-based code walker
   data_classifier.ts       Step 4: run detectors on data regions
-  block_assembler.ts       Step 5: tree → blocks
-  symbol_db.ts             C64 symbol reference
+  block_assembler.ts       Step 5: tree → blocks (with treeNodeIds cross-refs)
+  symbol_db.ts             C64 symbol reference (⚠ scheduled for RE extraction)
   input_parsers/
     prg_parser.ts          Standard .prg files
     sid_parser.ts          PSID/RSID music files
@@ -207,20 +241,23 @@ src/
     bitmap_detector.ts     Hi-res/multicolor bitmaps
     charset_detector.ts    Character sets
     code_detector.ts       Unreached code islands
-    compressed_detector.ts Packed/compressed data
+    compressed_detector.ts Packed/compressed data (entropy analysis)
     jump_table_detector.ts Address dispatch tables
     lookup_table_detector.ts Byte tables (sine, masks, etc.)
     padding_detector.ts    Zero fill, NOP sleds
-    rom_shadow_detector.ts ROM shadow copies
+    rom_shadow_detector.ts ROM shadow copies (⚠ scheduled for RE extraction)
     screen_map_detector.ts Screen maps + color RAM
     sid_music_detector.ts  SID frequency tables
-    sprite_detector.ts     Sprite data blocks
+    sprite_detector.ts     Sprite data blocks (64-byte alignment)
     string_detector.ts     PETSCII/screen-code strings
+    color_data_detector.ts Color RAM data ($00-$0F range)
   block_enrichers/
-    code_promotion_enricher.ts   Promote unreached code to code blocks
-    symbol_enricher.ts           KERNAL/hardware labels
-    sub_splitter_enricher.ts     Break oversized blocks
-    label_generator_enricher.ts  Auto-generate labels
-    comment_generator_enricher.ts Structural comments
+    code_promotion_enricher.ts    Promote unreached code to code blocks
+    string_discovery_enricher.ts  Promote unknown blocks to strings
+    string_merge_enricher.ts      Merge adjacent string blocks
+    symbol_enricher.ts            KERNAL/hardware labels (⚠ scheduled for RE extraction)
+    sub_splitter_enricher.ts      Break oversized blocks at back-edges
+    label_generator_enricher.ts   Auto-generate labels from type+address
+    comment_generator_enricher.ts Structural comments (⚠ partially scheduled for RE extraction)
     coverage_validator_enricher.ts Final coverage validation
 ```

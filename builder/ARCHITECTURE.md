@@ -2,17 +2,19 @@
 
 ## Overview
 
-A code generator that reads `blocks.json` (output from static-analysis) and produces compilable KickAssembler `.asm` files. Priority-sorted emitter plugins handle each block type. All data is embedded in `blocks.json` — the original binary is optional.
+A code generator that reads `blocks.json` (output from static-analysis) and produces compilable KickAssembler `.asm` files. Priority-sorted emitter plugins handle each block type. All data is embedded in `blocks.json` — the original binary is optional. When a `dependency_tree.json` is available alongside blocks.json, the builder also generates a human-readable `dependency_tree.md` and annotates unreachable blocks in the ASM output.
 
 **Language:** TypeScript/Node.js
-**Input:** `blocks.json` + optional `.prg` binary
-**Output:** `main.asm` + optional `assets/` directory
+**Input:** `blocks.json` + optional `.prg` binary + optional `dependency_tree.json`
+**Output:** `main.asm` + optional `dependency_tree.md` + optional `assets/` directory
 
 ```
 npx tsx src/index.ts blocks.json
 npx tsx src/index.ts blocks.json -o output/
 npx tsx src/index.ts blocks.json --binary game.prg
 npx tsx src/index.ts blocks.json --include-junk -o output/
+npx tsx src/index.ts blocks.json --tree dependency_tree.json -o output/
+npx tsx src/index.ts blocks.json --no-tree-doc -o output/
 ```
 
 **Round-trip goal:** `game.prg → static-analysis → blocks.json → builder → main.asm → kickass → compiled.prg` produces byte-identical output to the original.
@@ -22,10 +24,10 @@ npx tsx src/index.ts blocks.json --include-junk -o output/
 ## Pipeline Flow
 
 ```
-blocks.json
+blocks.json + dependency_tree.json (optional)
     |
     v
-[1. Load & filter] ────────── parse JSON, filter junk blocks
+[1. Load & filter] ────────── parse JSON, filter junk blocks, load tree
     |
     v
 [2. Sort & dedup] ─────────── sort by address, remove overlapping blocks
@@ -41,9 +43,12 @@ blocks.json
     |
     v
 [6. Assembly] ──────────────── concatenate emitted blocks into main.asm
+    |                           + unreachable block warnings (if tree loaded)
+    v
+[7. Tree renderer] ────────── render dependency_tree.md (if tree loaded)
     |
     v
-main.asm + assets/
+main.asm + dependency_tree.md + assets/
 ```
 
 ---
@@ -56,18 +61,40 @@ Hand-rolled argument parser (no third-party CLI lib). First non-flag argument is
 |------|-------------|
 | `-b, --binary <file>` | Original `.prg` file. Loaded into 64K memory image, takes precedence over block-embedded `raw` data for byte resolution. |
 | `-o, --output <dir>` | Output directory (default: `.`) |
+| `--tree <file>` | Explicit path to `dependency_tree.json`. If omitted, auto-detected alongside `blocks.json`. |
+| `--integration <file>` | Path to `integration.json` (optional, for module names in tree doc). |
 | `--include-junk` | Emit junk-flagged blocks instead of skipping them |
+| `--no-tree-doc` | Suppress `dependency_tree.md` generation (UNREACHABLE warnings still appear in ASM) |
+| `--include-dead` | Emit dead/unreachable blocks with warnings (default) |
+| `--exclude-dead` | Skip dead/unreachable blocks entirely |
 | `-h, --help` | Show usage |
 
-Prints stats on completion: total/emitted/skipped-junk/unmatched block counts, output files, and asset count.
+Prints stats on completion: total/emitted/skipped-junk/unmatched block counts, output files, asset count, and tree node count (if tree loaded).
+
+### Tree Auto-Detection
+
+When no `--tree` flag is provided, the CLI checks for `dependency_tree.json` in the same directory as the input `blocks.json`. If found, it is loaded automatically. This makes the common case seamless — static-analysis outputs both files to the same directory.
 
 ---
 
 ## Step 1–2: Load, Filter, Sort
 
-`build()` in `builder.ts` orchestrates the full pipeline:
+`build()` in `builder.ts` orchestrates the full pipeline. `BuilderOptions` controls behavior:
 
-1. **Filter junk** — blocks with `junk: true` are dropped unless `--include-junk` is set. Skipped count tracked for stats.
+| Option | Description |
+|--------|-------------|
+| `outputDir` | Where to write files |
+| `memory` | Optional 64K memory image from `.prg` |
+| `loadAddress` / `endAddress` | Address range |
+| `includeJunk` | Emit junk blocks |
+| `treeJson` | Parsed `dependency_tree.json` (optional) |
+| `integrationJson` | Parsed `integration.json` (optional) |
+| `noTreeDoc` | Suppress `dependency_tree.md` output |
+| `includeDead` | Whether to emit unreachable blocks |
+
+Steps:
+
+1. **Filter junk** — blocks with `junk: true` are dropped unless `includeJunk` is set. Skipped count tracked for stats.
 2. **Sort by address** — ascending.
 3. **Remove overlaps** — iterates sorted blocks; any block whose `address < lastEnd` (previous block's `endAddress`) is skipped. First occurrence wins.
 
@@ -173,10 +200,54 @@ interface EmittedBlock {
 
 1. **Header** — comment block with source file, load address, and total block count
 2. **Per block** — origin directive `*=$XXXX "blockId"` (unless `skipOrigin` or contiguous with previous block), then the emitted lines
-3. **Duplicate label dedup** — tracks emitted label names in a `Set`; strips duplicate labels to prevent KickAssembler errors
-4. **Gap detection** — inserts origin directives when `block.address !== lastEnd`
+3. **Unreachable block warnings** — if a dependency tree is loaded, blocks that are not reachable from any entry point or IRQ handler via control-flow edges are annotated with a 5-line `UNREACHABLE` comment block. The warning differentiates data blocks ("Not referenced by any code") from code blocks ("No path from any entry point"). These are KickAssembler comments that do not affect compiled output.
+4. **Duplicate label dedup** — tracks emitted label names in a `Set`; strips duplicate labels to prevent KickAssembler errors
+5. **Gap detection** — inserts origin directives when `block.address !== lastEnd`
+
+### Dead Node Detection
+
+`findUnreachableBlockIds()` performs BFS from entry points + IRQ handlers following only `control_flow` edges. Any tree node not reached → its `blockId` is unreachable. Data nodes are inherently "unreachable" by this metric since they are only connected via `data` category edges — this is expected and correct.
 
 Output is always a single `main.asm` file. Multi-file output is stubbed in the `EmittedBlock` interface (`module`, `segment`, `imports` fields) but not implemented.
+
+---
+
+## Step 7: Tree Renderer
+
+**File:** `tree_renderer.ts`
+
+When `dependency_tree.json` is loaded and `--no-tree-doc` is not set, `renderDependencyTree()` produces `dependency_tree.md` — a human-readable markdown document for reviewing the program's structure.
+
+### Input
+
+```typescript
+interface TreeRendererInput {
+  tree: Record<string, unknown>;    // Parsed dependency_tree.json
+  blocks: readonly Block[];          // All non-overlapping blocks
+  integration?: Record<string, unknown>; // Optional integration.json
+  labelMap: ReadonlyMap<number, string>; // Global label map
+}
+```
+
+### Sections
+
+1. **Summary** — entry point count, IRQ handler count, total nodes (code/data split), total edges (with category breakdown), reachable/unreachable counts with percentages.
+
+2. **Call Chains** — one section per entry point. Depth-first walk following `call` edges (control-flow). Each node shows label, address, reachability status, and purpose (if enriched). Data edges shown as `→ reads/writes target` sub-lines. Cycle-safe via visited set.
+
+3. **IRQ Handler Chains** — listed separately from call chains. Shows each handler's data/hardware edges.
+
+4. **Data Blocks Table** — all data-type blocks with columns: Address, Label, Type (from `bestCandidate`), Size, Purpose (from `block.enrichment.purpose`), Reachable (from `block.reachability`).
+
+5. **Dead/Unreachable Nodes** — tree nodes not reachable via control-flow BFS. Sorted by address. Shows Address, Node ID, Type, Size.
+
+### Edge Description
+
+`describeDataEdge()` formats data edges as readable strings:
+- `data_read` / `hardware_read` → "reads"
+- `data_write` / `hardware_write` → "writes"
+- `pointer_ref` → "refs"
+- Labels resolved when available, otherwise raw hex address
 
 ---
 
@@ -255,9 +326,10 @@ The `shared/` package provides interchange types used by both `static-analysis/`
 
 ## File Inventory
 
-### Core (6 files)
-- `index.ts` — CLI entry point, argument parsing, stats output
-- `builder.ts` — core orchestrator: load, filter, sort, dispatch, assemble
+### Core (7 files)
+- `index.ts` — CLI entry point, argument parsing, tree auto-detection, stats output
+- `builder.ts` — core orchestrator: load, filter, sort, dispatch, assemble, dead node detection
+- `tree_renderer.ts` — renders `dependency_tree.md` from tree JSON + blocks
 - `label_resolver.ts` — two-pass global label map builder
 - `address_formatter.ts` — hex formatting, operand label rewriting
 - `kickass.ts` — KickAssembler formatting primitives
