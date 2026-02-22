@@ -61,7 +61,15 @@ export class SpriteEmitter implements EmitterPlugin {
       const offset = s * SPRITE_BLOCK_SIZE;
 
       if (spriteCount > 1) {
-        if (s > 0) lines.push("");
+        if (s > 0) {
+          lines.push("");
+          // Emit sub-label for sprite frames 1+ (if present in label map)
+          const subAddr = block.address + offset;
+          const subLabel = context.resolveLabel(subAddr);
+          if (subLabel && subLabel !== label) {
+            lines.push(ka.label(subLabel));
+          }
+        }
         lines.push(ka.comment(`--- Sprite ${s} ---`));
       }
 

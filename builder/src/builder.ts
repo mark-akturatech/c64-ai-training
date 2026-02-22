@@ -141,11 +141,27 @@ function assembleMainFile(
 ): string[] {
   const lines: string[] = [];
 
-  // Header comment
-  lines.push(ka.comment(`Generated from ${context.metadata.source}`));
-  lines.push(ka.comment(`Load address: ${context.metadata.loadAddress}`));
-  lines.push(ka.comment(`Total blocks: ${context.metadata.totalBlocks}`));
+  // Header comment — use program description from Stage 5 Polish if available
+  const progDesc = (context.metadata as Record<string, unknown>).programDescription as string | undefined;
+  if (progDesc) {
+    for (const descLine of progDesc.split("\n")) {
+      lines.push(ka.comment(descLine));
+    }
+    lines.push(ka.comment(`Generated from ${context.metadata.source}`));
+  } else {
+    lines.push(ka.comment(`Generated from ${context.metadata.source}`));
+    lines.push(ka.comment(`Load address: ${context.metadata.loadAddress}`));
+    lines.push(ka.comment(`Total blocks: ${context.metadata.totalBlocks}`));
+  }
   lines.push("");
+
+  // Generate .const definitions for labels outside the program's address space
+  // (hardware registers, KERNAL ROM, system vectors, etc.)
+  const constDefs = buildExternalConstants(context, emittedBlocks);
+  if (constDefs.length > 0) {
+    lines.push(...constDefs);
+    lines.push("");
+  }
 
   // Build a set of reachable block IDs from the tree (if available)
   const unreachableBlockIds = treeJson ? findUnreachableBlockIds(treeJson) : new Set<string>();
@@ -161,7 +177,17 @@ function assembleMainFile(
     // Skip if emitter handles its own origin (e.g. BasicUpstart2)
     if (block.address !== lastEnd && !emitted.skipOrigin) {
       lines.push("");
-      lines.push(ka.origin(block.address, block.id));
+      const segmentName = context.resolveLabel(block.address) ?? block.id;
+      lines.push(ka.origin(block.address, segmentName));
+    } else if (lastEnd >= 0) {
+      // Blank line between contiguous blocks for readability
+      lines.push("");
+    }
+
+    // Section header from Stage 5 Polish (e.g., "--- Animation state ---")
+    if (block.enrichment?.sectionHeader) {
+      lines.push("");
+      lines.push(ka.comment(block.enrichment.sectionHeader));
     }
 
     // Dead node warning (if tree is loaded and block is unreachable)
@@ -190,18 +216,126 @@ function assembleMainFile(
     lastEnd = block.endAddress;
   }
 
-  return lines;
+  // Dead label elimination: remove label definitions and .const declarations
+  // that aren't referenced anywhere else in the file
+  return eliminateDeadLabels(lines);
+}
+
+/**
+ * Remove label: definitions and .const declarations that aren't referenced
+ * anywhere else in the file. Eliminates noise from unreferenced data sub-labels,
+ * consumed-block constants, etc.
+ */
+function eliminateDeadLabels(lines: string[]): string[] {
+  // Collect all label definitions: "name:" at start of line
+  const labelDefs = new Map<string, number[]>();
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^([a-z_]\w*):$/);
+    if (m) {
+      const existing = labelDefs.get(m[1]);
+      if (existing) { existing.push(i); }
+      else { labelDefs.set(m[1], [i]); }
+    }
+  }
+
+  // Collect all .const definitions
+  const constDefs = new Map<string, number>();
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^\.const\s+(\w+)\s*=/);
+    if (m) constDefs.set(m[1], i);
+  }
+
+  const allNames = [...labelDefs.keys(), ...constDefs.keys()];
+  if (allNames.length === 0) return lines;
+
+  // Build regex patterns once for efficiency
+  const patterns = new Map<string, RegExp>();
+  for (const name of allNames) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    patterns.set(name, new RegExp(`(?<![a-zA-Z0-9_])${escaped}(?![a-zA-Z0-9_:])`));
+  }
+
+  // Find which names are actually used (referenced in non-definition lines)
+  const used = new Set<string>();
+  for (const line of lines) {
+    if (/^[a-z_]\w*:$/.test(line)) continue;
+    if (/^\.const\s+\w+\s*=/.test(line)) continue;
+    for (const [name, re] of patterns) {
+      if (!used.has(name) && re.test(line)) {
+        used.add(name);
+      }
+    }
+  }
+
+  // Remove unreferenced definitions
+  const deadLines = new Set<number>();
+  for (const [name, indices] of labelDefs) {
+    if (!used.has(name)) {
+      for (const i of indices) deadLines.add(i);
+    }
+  }
+  for (const [name, idx] of constDefs) {
+    if (!used.has(name)) deadLines.add(idx);
+  }
+
+  if (deadLines.size === 0) return lines;
+
+  const filtered = lines.filter((_, i) => !deadLines.has(i));
+  return cleanOrphanedHeaders(filtered);
+}
+
+/**
+ * Remove region comment headers (e.g., "//  Other") that have no remaining
+ * .const definitions below them (before the next header or blank line).
+ */
+function cleanOrphanedHeaders(lines: string[]): string[] {
+  // Only clean region headers within the .const section, not the file header.
+  // Find where .const declarations start and end.
+  let constStart = -1;
+  let constEnd = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].startsWith(".const ")) {
+      if (constStart === -1) constStart = i;
+      constEnd = i;
+    }
+  }
+  if (constStart === -1) return lines;
+
+  // Scan backwards from constStart to find region headers that precede .const
+  let regionStart = constStart;
+  for (let i = constStart - 1; i >= 0; i--) {
+    if (/^\/\/\s{1,2}\w/.test(lines[i])) { regionStart = i; }
+    else break;
+  }
+
+  const result: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    // Only apply orphaned-header cleanup within the .const region
+    if (i >= regionStart && i <= constEnd + 1) {
+      const isRegionHeader = /^\/\/\s{1,2}\w/.test(lines[i])
+        && !lines[i].includes("BASIC:")
+        && !lines[i].includes("Generated")
+        && !lines[i].includes("---");
+
+      if (isRegionHeader) {
+        let hasConst = false;
+        for (let j = i + 1; j < lines.length; j++) {
+          if (lines[j].startsWith(".const ")) { hasConst = true; break; }
+          if (lines[j].trim() === "" || /^\/\/\s{1,2}\w/.test(lines[j])) break;
+        }
+        if (!hasConst) continue;
+      }
+    }
+    result.push(lines[i]);
+  }
+  return result;
 }
 
 /**
  * Find block IDs that are unreachable based on the dependency tree.
- * A block is unreachable if its reachability is "unproven" — meaning no proven
- * path from any entry point through resolved control flow.
- *
- * We determine this by checking the tree nodes: if all tree nodes for a block
- * have no incoming control-flow edges from proven reachable nodes, the block
- * is considered unreachable. For simplicity, we use the block's own
- * reachability field from blocks.json (set by block_assembler).
+ * A block is unreachable if there is no path from any entry point or IRQ handler
+ * through any edge type (control_flow or data). Data blocks are reachable if
+ * referenced by reachable code blocks via data_read/data_write edges.
  */
 function findUnreachableBlockIds(treeJson: Record<string, unknown>): Set<string> {
   const unreachable = new Set<string>();
@@ -212,17 +346,17 @@ function findUnreachableBlockIds(treeJson: Record<string, unknown>): Set<string>
   const entryPoints = (treeJson.entryPoints ?? []) as string[];
   const irqHandlers = (treeJson.irqHandlers ?? []) as string[];
 
-  // Build adjacency list for control-flow edges
-  const cfSuccessors = new Map<string, string[]>();
+  // Build adjacency list for ALL edges (control_flow + data)
+  // Data blocks are reachable via data_read/data_write edges from code
+  const successors = new Map<string, string[]>();
   for (const edge of edges) {
-    if (edge.category !== "control_flow") continue;
     const source = edge.source as string;
     const targetNodeId = edge.targetNodeId as string | undefined;
     if (!targetNodeId) continue;
-    let list = cfSuccessors.get(source);
+    let list = successors.get(source);
     if (!list) {
       list = [];
-      cfSuccessors.set(source, list);
+      successors.set(source, list);
     }
     list.push(targetNodeId);
   }
@@ -234,7 +368,7 @@ function findUnreachableBlockIds(treeJson: Record<string, unknown>): Set<string>
     const nodeId = queue.pop()!;
     if (reachableNodes.has(nodeId)) continue;
     reachableNodes.add(nodeId);
-    for (const succ of cfSuccessors.get(nodeId) ?? []) {
+    for (const succ of successors.get(nodeId) ?? []) {
       if (!reachableNodes.has(succ)) queue.push(succ);
     }
   }
@@ -293,6 +427,79 @@ function getBytesFromBlocks(blocks: readonly Block[], start: number, length: num
   }
 
   return filled === length ? result : null;
+}
+
+/**
+ * Build .const definitions for labels that point outside the program's block range.
+ * These are hardware registers, KERNAL entries, system vectors, etc. — addresses
+ * that have semantic labels but no block/instruction definition.
+ */
+function buildExternalConstants(
+  context: BuilderContext,
+  emittedBlocks: Array<{ block: Block; emitted: EmittedBlock }>,
+): string[] {
+  // Build set of all block addresses + instruction addresses (where labels are defined in code)
+  const internalAddrs = new Set<number>();
+  for (const { block } of emittedBlocks) {
+    internalAddrs.add(block.address);
+    if (block.instructions) {
+      for (const inst of block.instructions) internalAddrs.add(inst.address);
+    }
+  }
+
+  // Build ranges from ALL blocks (including consumed ones) — prevents
+  // labels within consumed blocks from leaking into .const declarations
+  const blockRanges: Array<{ start: number; end: number }> = [];
+  for (const block of context.allBlocks) {
+    blockRanges.push({ start: block.address, end: block.endAddress });
+  }
+  const isInternalAddr = (addr: number): boolean => {
+    if (internalAddrs.has(addr)) return true;
+    return blockRanges.some(r => addr >= r.start && addr < r.end);
+  };
+
+  // Find labels that are external (not within any block range)
+  // Skip offset expressions (e.g. COLOR_RAM+$1B8) — the base name (COLOR_RAM)
+  // is emitted as its own .const entry.
+  const externals: Array<{ addr: number; name: string }> = [];
+  for (const [addr, name] of context.labelMap) {
+    if (!isInternalAddr(addr) && !name.includes("+")) {
+      externals.push({ addr, name });
+    }
+  }
+
+  if (externals.length === 0) return [];
+
+  // Sort by address and group by chip/region
+  externals.sort((a, b) => a.addr - b.addr);
+
+  const lines: string[] = [];
+  lines.push(ka.comment("Hardware registers and system constants"));
+
+  let lastRegion = "";
+  for (const { addr, name } of externals) {
+    const region = addr < 0x0100 ? "Zero Page"
+      : addr < 0x0400 ? "System"
+      : addr >= 0x0400 && addr <= 0x07E7 ? "Screen RAM"
+      : addr >= 0x07F8 && addr <= 0x07FF ? "Sprite Pointers"
+      : addr >= 0xA000 && addr <= 0xBFFF ? "BASIC ROM"
+      : addr >= 0xD000 && addr <= 0xD3FF ? "VIC-II"
+      : addr >= 0xD400 && addr <= 0xD7FF ? "SID"
+      : addr >= 0xD800 && addr <= 0xDBFF ? "Color RAM"
+      : addr >= 0xDC00 && addr <= 0xDC0F ? "CIA1"
+      : addr >= 0xDD00 && addr <= 0xDD0F ? "CIA2"
+      : addr >= 0xE000 ? "KERNAL"
+      : "Other";
+    if (region !== lastRegion) {
+      lines.push(ka.comment(` ${region}`));
+      lastRegion = region;
+    }
+    const width = addr < 0x0100 ? 2 : 4;
+    const hex = `$${addr.toString(16).toUpperCase().padStart(width, "0")}`;
+    lines.push(`.const ${name} = ${hex}`);
+  }
+
+  return lines;
 }
 
 /** Write build results to disk. */

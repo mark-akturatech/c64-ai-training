@@ -13,7 +13,7 @@ export type {
 
 export type { DataCandidate } from "./data.js";
 
-export type { BlockEnrichment } from "./enrichment.js";
+export type { BlockEnrichment, DataLayoutEntry } from "./enrichment.js";
 
 export type {
   AnalysisOutput,

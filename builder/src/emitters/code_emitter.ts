@@ -40,11 +40,9 @@ export class CodeEmitter implements EmitterPlugin {
   emit(block: Block, context: BuilderContext): EmittedBlock {
     const lines: string[] = [];
 
-    // Header comment from enrichment
+    // Header comment from enrichment (word-wrapped)
     if (block.enrichment?.headerComment) {
-      for (const line of block.enrichment.headerComment.split("\n")) {
-        lines.push(ka.comment(line));
-      }
+      lines.push(...ka.wrapComment(block.enrichment.headerComment));
     }
 
     // Block label
@@ -75,12 +73,26 @@ export class CodeEmitter implements EmitterPlugin {
           }
         }
 
-        // Inline comment from enrichment
-        const addrHex = inst.address.toString(16).toUpperCase().padStart(4, "0");
-        const inlineComment = block.enrichment?.inlineComments?.[addrHex];
-
         const mnemonic = inst.mnemonic.toLowerCase();
         const expectedSize = MODE_SIZES[inst.addressingMode] ?? rawSize;
+
+        // Compute rewritten operand early (needed for ZP name resolution)
+        const operand = inst.addressingMode === "accumulator"
+          ? ""
+          : rewriteOperand(inst.operand, context);
+
+        // Inline comment from enrichment, with ZP name integration
+        const addrHex = inst.address.toString(16).toUpperCase().padStart(4, "0");
+        let inlineComment = block.enrichment?.inlineComments?.[addrHex] ?? null;
+
+        // Resolve ZP name from rewritten operand — skip if operand was already
+        // rewritten to a label (avoids redundant "sta src_ptr // src_ptr" comments)
+        const zpName = resolveZpName(operand, block, context);
+        if (zpName && inlineComment) {
+          inlineComment = `${zpName} — ${inlineComment}`;
+        } else if (zpName && !inlineComment) {
+          inlineComment = zpName;
+        }
 
         // Safety net: emit as raw bytes when KickAssembler would produce
         // different output. Catches: undocumented opcodes, BRK (2 vs 1),
@@ -91,11 +103,6 @@ export class CodeEmitter implements EmitterPlugin {
           cursor = inst.address + rawSize;
           continue;
         }
-
-        // Accumulator addressing: KickAssembler uses "rol" not "rol A"
-        const operand = inst.addressingMode === "accumulator"
-          ? ""
-          : rewriteOperand(inst.operand, context);
 
         // Relative branches: emit as raw bytes when the branch offset is
         // large (|offset| > 100) or the target has no label.  PC drift from
@@ -122,7 +129,7 @@ export class CodeEmitter implements EmitterPlugin {
           emitMnemonic = `${mnemonic}.abs`;
         }
 
-        lines.push(ka.instruction(emitMnemonic, operand, inlineComment));
+        lines.push(ka.instruction(emitMnemonic, operand, inlineComment ?? undefined));
         cursor = inst.address + rawSize;
       }
     }
@@ -192,4 +199,20 @@ function emitRawInstruction(inst: BlockInstruction, comment: string): string[] {
     .map((h) => `$${h.toUpperCase()}`)
     .join(", ");
   return [`${ka.INDENT}.byte ${rawHex}`.padEnd(40) + `// ${comment}`];
+}
+
+/** Resolve ZP address ($XX) in an operand to its variable/symbol name. */
+function resolveZpName(operand: string, block: Block, context: BuilderContext): string | null {
+  const m = operand.match(/^\$([0-9A-Fa-f]{2})(?:[,)]|$)/);
+  if (!m) return null;
+  const zpHex = m[1].toUpperCase().padStart(4, "0");
+  // Check block's variableNames (from RE pipeline)
+  const varName = block.enrichment?.variableNames?.[zpHex]
+    ?? block.enrichment?.variableNames?.[m[1].toUpperCase()];
+  if (varName) return varName;
+  // Check label map (might have ZP labels)
+  const addr = parseInt(m[1], 16);
+  const label = context.resolveLabel(addr);
+  if (label) return label;
+  return null;
 }

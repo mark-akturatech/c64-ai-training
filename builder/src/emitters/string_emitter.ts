@@ -15,6 +15,8 @@ export class StringEmitter implements EmitterPlugin {
 
   handles(block: Block): boolean {
     if (block.type !== "data") return false;
+    // Stage 5 Polish can override data format to "text" via enrichment
+    if (block.enrichment?.dataFormat?.type === "text") return true;
     if (!block.candidates || block.bestCandidate === undefined) return false;
     const best = block.candidates[block.bestCandidate];
     return best?.type === "string" || best?.type === "text";
@@ -22,7 +24,7 @@ export class StringEmitter implements EmitterPlugin {
 
   emit(block: Block, context: BuilderContext): EmittedBlock {
     const lines: string[] = [];
-    const best = block.candidates![block.bestCandidate!];
+    const best = block.bestCandidate !== undefined ? block.candidates?.[block.bestCandidate] : undefined;
 
     // Label
     const label = context.resolveLabel(block.address);
@@ -33,12 +35,12 @@ export class StringEmitter implements EmitterPlugin {
     // Get raw bytes
     const bytes = this.getBlockBytes(block, context);
 
-    if (best.comment) {
+    if (best?.comment) {
       lines.push(ka.comment(best.comment));
     }
 
     if (bytes) {
-      const subtype = block.enrichment?.dataFormat?.subtype ?? best.subtype ?? "";
+      const subtype = block.enrichment?.dataFormat?.subtype ?? best?.subtype ?? "";
 
       if (isScreenCodeSubtype(subtype)) {
         // Screen code string — use KickAssembler's screencode encoding

@@ -46,7 +46,8 @@ function hex(n: number): string {
   return "$" + n.toString(16).toUpperCase().padStart(4, "0");
 }
 
-function parseHex(s: string): number {
+function parseHex(s: string | number): number {
+  if (typeof s === "number") return s;
   return parseInt(s.replace("0x", ""), 16);
 }
 

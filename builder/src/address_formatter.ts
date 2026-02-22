@@ -11,13 +11,15 @@ export function formatHex(value: number, width: number = 4): string {
 
 /**
  * Rewrite an instruction operand, replacing known addresses with labels.
- * Falls back to $XXXX hex format for unknown addresses.
+ * Falls back to hex format for unknown addresses.
  *
- * Zero-page addresses ($XX, 2 hex digits) are NOT rewritten to labels
- * because KickAssembler might re-encode them as absolute (3 bytes)
- * instead of zero page (2 bytes), breaking byte-identical output.
+ * Handles both:
+ * - 16-bit addresses ($XXXX): rewritten unless $00XX (ZP via absolute mode)
+ * - 2-digit ZP addresses ($XX): rewritten when a label exists in the map.
+ *   This is safe because KickAssembler uses ZP encoding for values < $100
+ *   regardless of whether the operand is a literal or a .const label.
  *
- * Absolute references to zero-page ($00XX) are also NOT rewritten because
+ * Absolute references to zero-page ($00XX) are NOT rewritten because
  * KickAssembler will optimize them from absolute (3 bytes) to zero page
  * (2 bytes), causing PC drift.
  */
@@ -25,15 +27,24 @@ export function rewriteOperand(
   operand: string,
   context: BuilderContext
 ): string {
-  // Only match 16-bit addresses ($XXXX, exactly 4 hex digits)
-  // Skip zero-page addresses ($00XX) to prevent KickAssembler optimization
-  return operand.replace(/\$([0-9A-Fa-f]{4})/g, (match, hex) => {
+  // First pass: 16-bit addresses ($XXXX, exactly 4 hex digits)
+  let result = operand.replace(/\$([0-9A-Fa-f]{4})/g, (match, hex) => {
     const addr = parseInt(hex, 16);
-    // Don't rewrite zero-page addresses — KickAssembler would optimize
-    // the encoding from absolute (3 bytes) to zero page (2 bytes)
+    // Don't rewrite zero-page addresses via absolute mode ($00XX)
     if (addr < 0x0100) return match;
     const label = context.resolveLabel(addr);
     if (label) return label;
-    return match; // keep original hex
+    return match;
   });
+
+  // Second pass: 2-digit ZP addresses ($XX) — only when a label exists
+  // Skip immediates (#$XX) via negative lookbehind
+  result = result.replace(/(?<!#)\$([0-9A-Fa-f]{2})(?=[,)\s]|$)/g, (match, hex) => {
+    const addr = parseInt(hex, 16);
+    const label = context.resolveLabel(addr);
+    if (label) return label;
+    return match;
+  });
+
+  return result;
 }

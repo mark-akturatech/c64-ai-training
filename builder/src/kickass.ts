@@ -10,6 +10,38 @@ export function comment(text: string): string {
   return `// ${text}`;
 }
 
+/** Word-wrap a comment block, returning multiple `// ` prefixed lines. */
+export function wrapComment(text: string, maxWidth: number = 80): string[] {
+  const prefix = "// ";
+  const maxContent = maxWidth - prefix.length;
+  const lines: string[] = [];
+
+  for (const paragraph of text.split("\n")) {
+    if (paragraph.trim() === "") {
+      lines.push(prefix.trimEnd());
+      continue;
+    }
+    if (paragraph.length <= maxContent) {
+      lines.push(`${prefix}${paragraph}`);
+      continue;
+    }
+    // Word wrap
+    const words = paragraph.split(/\s+/);
+    let current = "";
+    for (const word of words) {
+      if (current && current.length + 1 + word.length > maxContent) {
+        lines.push(`${prefix}${current}`);
+        current = word;
+      } else {
+        current = current ? `${current} ${word}` : word;
+      }
+    }
+    if (current) lines.push(`${prefix}${current}`);
+  }
+
+  return lines;
+}
+
 /** Format a section header comment block. */
 export function sectionHeader(title: string): string {
   const line = "=".repeat(60);

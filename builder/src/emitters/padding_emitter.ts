@@ -14,6 +14,8 @@ export class PaddingEmitter implements EmitterPlugin {
 
   handles(block: Block): boolean {
     if (block.type !== "data") return false;
+    // Stage 5 Polish can set alignmentTarget for padding blocks
+    if (block.enrichment?.alignmentTarget) return true;
     if (!block.candidates || block.bestCandidate === undefined) return false;
     const best = block.candidates[block.bestCandidate];
     return best?.type === "padding" || best?.type === "fill";
@@ -27,6 +29,14 @@ export class PaddingEmitter implements EmitterPlugin {
     const label = context.resolveLabel(block.address);
     if (label) {
       lines.push(ka.label(label));
+    }
+
+    // Alignment target: emit .fill $XXXX - *, $00 instead of .fill N, $00
+    if (block.enrichment?.alignmentTarget) {
+      const target = block.enrichment.alignmentTarget;
+      const targetHex = `$${target.toString(16).toUpperCase().padStart(4, "0")}`;
+      lines.push(`${ka.INDENT}.fill ${targetHex} - *, $00`);
+      return { lines };
     }
 
     // Detect fill byte
